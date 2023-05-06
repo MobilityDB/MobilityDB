@@ -375,19 +375,12 @@ SELECT minusMax(tfloat '{[1@2001-01-01, 3@2001-01-03), (3@2001-01-03, 1@2001-01-
 			<listitem id="atGeometry">
 				<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
-<<<<<<< HEAD
 				<para>Restringir a (al complemento de) una geometría, un rango de Z y/o un período &Z_support;</para>
 				<para><varname>atGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
 				<para><varname>minusGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
 				<para><varname>atGeometryTime(tgeompoint,geometry,zspan=NULL,period) → tgeompoint</varname></para>
 				<para><varname>minusGeometryTime(tgeompoint,geometry,zspan=NULL,period) → tgeompoint</varname></para>
 				<para>La geometría debe estar en 2D y el cálculo con respecto a ella se realiza en 2D. El resultado conserva la dimensión Z del punto temporal, si existe.</para>
-=======
-				<para>Restringir a (al complemento de) una geometría y un rango de Z opcional  &Z_support;</para>
-				<para><varname>atGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
-				<para><varname>minusGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
-				<para>La geometría debe estar en 2D y el cálculo se realiza en 2D. El resultado conserva la dimensión Z del punto temporal, si existe.</para>
->>>>>>> develop
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
   geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
@@ -426,7 +419,6 @@ SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2
   Point(3 1 3)@2000-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
 /* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 1 1)@2000-01-02),
     (POINT Z (3 1 2)@2000-01-04, POINT Z (3 1 3)@2000-01-05]} */
-<<<<<<< HEAD
 </programlisting>
 
 				<programlisting language="sql" xml:space="preserve">
@@ -443,8 +435,6 @@ SELECT asText(minusGeometryTime(tgeompoint '[Point(1 1 1)@2000-01-01,
 /* {[POINT Z (1 1 1)@2000-01-01, POINT Z (3 1 3)@2000-01-03),
     (POINT Z (4 1 4)@2000-01-04, POINT Z (5 1 5)@2000-01-05,
      POINT Z (1 1 9)@2000-01-09]} */
-=======
->>>>>>> develop
 </programlisting>
 			</listitem>
 

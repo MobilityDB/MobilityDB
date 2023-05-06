@@ -88,18 +88,6 @@ SELECT ST_AsText(round(trajectory(tnpoint '{[npoint(2, 0.2)@2000-01-01, npoint(2
  MULTILINESTRING((83.283201 86.090332,69.080715 81.20815,13.548737 71.815356),(18.168105 90.908621,20.439308 87.595631))
 (1 row)
 
-SELECT atGeometry(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
- atgeometry 
-------------
- 
-(1 row)
-
-SELECT atGeometry(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
- atgeometry 
-------------
- 
-(1 row)
-
 SELECT round(atGeometry(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
  round 
 -------
@@ -169,6 +157,24 @@ SELECT atGeometry(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4
 SELECT atGeometry(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
  atgeometry 
 ------------
+ 
+(1 row)
+
+SELECT atGeometryTime(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)', tstzspan '[2000-01-02, 2000-01-02]');
+ atgeometrytime 
+----------------
+ 
+(1 row)
+
+SELECT atGeometryTime(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry, tstzspan '[2000-01-02, 2000-01-02]');
+ atgeometrytime 
+----------------
+ 
+(1 row)
+
+SELECT atGeometryTime(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Point(1 1)', NULL::tstzspan);
+ atgeometrytime 
+----------------
  
 (1 row)
 
