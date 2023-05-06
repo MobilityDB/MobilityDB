@@ -2276,11 +2276,14 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
     seq_t = (TSequence *) seq;
 
   /* Restrict to the spatial dimension */
-  int newcount;
-  result = tpointseq_linear_at_stbox_xyz(seq_t, box, border_inc, &newcount);
-  *count = newcount;
-  if (hast)
-    pfree(seq_t);
+  if (seq_t)
+  {
+    int newcount;
+    result = tpointseq_linear_at_stbox_xyz(seq_t, box, border_inc, &newcount);
+    *count = newcount;
+    if (hast)
+      pfree(seq_t);
+  }
   return result;
 }
 
