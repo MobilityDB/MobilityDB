@@ -388,7 +388,7 @@ Set *
 set_parse(const char **str, meosType settype)
 {
   if (!p_obrace(str))
-    elog(ERROR, "Could not parse the set");
+    elog(ERROR, "Could not parse the set: Missing open brace");
 
   /* First parsing */
   meosType basetype = settype_basetype(settype);
@@ -401,7 +401,7 @@ set_parse(const char **str, meosType settype)
     elem_parse(str, basetype);
   }
   if (!p_cbrace(str))
-    elog(ERROR, "Could not parse the set");
+    elog(ERROR, "Could not parse the set: Missing closing brace");
 
   *str = bak;
   Datum *values = palloc(sizeof(Datum) * count);
@@ -477,7 +477,7 @@ SpanSet *
 spanset_parse(const char **str, meosType spansettype)
 {
   if (! p_obrace(str))
-    elog(ERROR, "Could not parse span set");
+    elog(ERROR, "Could not parse span set: Missing open brace");
 
   meosType spantype = spansettype_spantype(spansettype);
   /* First parsing */
@@ -490,7 +490,7 @@ spanset_parse(const char **str, meosType spansettype)
     span_parse(str, spantype, false, NULL);
   }
   if (! p_cbrace(str))
-    elog(ERROR, "Could not parse span set");
+    elog(ERROR, "Could not parse span set: Missing closing brace");
 
   /* Second parsing */
   *str = bak;
@@ -554,7 +554,7 @@ tdiscseq_parse(const char **str, meosType temptype)
     tinstant_parse(str, temptype, false, false);
   }
   if (!p_cbrace(str))
-    elog(ERROR, "Could not parse temporal value");
+    elog(ERROR, "Could not parse temporal value: Missing closing brace");
   /* Ensure there is no more input */
   ensure_end_input(str, true, "temporal");
 

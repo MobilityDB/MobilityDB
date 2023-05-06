@@ -4969,7 +4969,8 @@ tcontseq_at_period(const TSequence *seq, const Span *p)
   /* Compute the value at the beginning of the intersecting period */
   inst1 = TSEQUENCE_INST_N(seq, n);
   inst2 = TSEQUENCE_INST_N(seq, n + 1);
-  instants[0] = tsegment_at_timestamp(inst1, inst2, (interp == LINEAR), inter.lower);
+  instants[0] = tsegment_at_timestamp(inst1, inst2, (interp == LINEAR),
+    inter.lower);
   int k = 1;
   for (int i = n + 2; i < seq->count; i++)
   {
@@ -4988,7 +4989,8 @@ tcontseq_at_period(const TSequence *seq, const Span *p)
   /* The last two values of sequences with step interpolation and
    * exclusive upper bound must be equal */
   if (interp == LINEAR || inter.upper_inc)
-    instants[k++] = tsegment_at_timestamp(inst1, inst2, (interp == LINEAR), inter.upper);
+    instants[k++] = tsegment_at_timestamp(inst1, inst2, (interp == LINEAR),
+      inter.upper);
   else
   {
     Datum value = tinstant_value(instants[k - 1]);
@@ -5029,7 +5031,7 @@ tsequence_at_period(const TSequence *seq, const Span *p)
  * @return Number of resulting sequences returned
  */
 int
-tcontseq_minus_period1(const TSequence *seq, const Span *p,
+tcontseq_minus_period_iter(const TSequence *seq, const Span *p,
   TSequence **result)
 {
   /* Bounding box test */
@@ -5065,7 +5067,7 @@ TSequenceSet *
 tcontseq_minus_period(const TSequence *seq, const Span *p)
 {
   TSequence *sequences[2];
-  int count = tcontseq_minus_period1(seq, p, sequences);
+  int count = tcontseq_minus_period_iter(seq, p, sequences);
   if (count == 0)
     return NULL;
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
@@ -5154,51 +5156,35 @@ tcontseq_at_periodset1(const TSequence *seq, const SpanSet *ps,
  * @param[in] from Index from which the processing starts
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
- * @return Number of resulting sequences returned
+ * @return Number of elements in the output array
  * @note This function is called for each sequence of a temporal sequence set
+ * @note To avoid roundoff errors in the loop we must use (1) compute the
+ * complement of the period set and (2) compute the "at" function
  */
 int
 tcontseq_minus_periodset_iter(const TSequence *seq, const SpanSet *ps,
-  int from, TSequence **result)
+  TSequence **result)
 {
   /* Singleton period set */
   if (ps->count == 1)
-    return tcontseq_minus_period1(seq, spanset_sp_n(ps, 0), result);
+    return tcontseq_minus_period_iter(seq, spanset_sp_n(ps, 0), result);
 
   /* The sequence can be split at most into (count + 1) sequences
    *    |----------------------|
    *        |---| |---| |---|
    */
-  TSequence *curr = tsequence_copy(seq);
+
+  /* Compute the complement of the period set */
+  SpanSet *ps1 = minus_span_spanset(&seq->period, ps);
+  if (! ps1)
+    return 0;
   int k = 0;
-  for (int i = from; i < ps->count; i++)
+  for (int i = 0; i < ps1->count; i++)
   {
-    const Span *p1 = spanset_sp_n(ps, i);
-    /* If the remaining periods are to the left of the current period */
-    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(curr->period.upper),
-      DatumGetTimestampTz(p1->lower));
-    if (cmp < 0 || (cmp == 0 && curr->period.upper_inc && ! p1->lower_inc))
-    {
-      result[k++] = curr;
-      break;
-    }
-    TSequence *minus[2];
-    int countminus = tcontseq_minus_period1(curr, p1, minus);
-    pfree(curr);
-    /* minus can have from 0 to 2 periods */
-    if (countminus == 0)
-      break;
-    else if (countminus == 1)
-      curr = minus[0];
-    else /* countminus == 2 */
-    {
-      result[k++] = minus[0];
-      curr = minus[1];
-    }
-    /* There are no more periods left */
-    if (i == ps->count - 1)
-      result[k++] = curr;
+    const Span *p1 = spanset_sp_n(ps1, i);
+    result[k++] = tcontseq_at_period(seq, p1);
   }
+  pfree(ps1);
   return k;
 }
 
@@ -5231,7 +5217,7 @@ tcontseq_restrict_periodset(const TSequence *seq, const SpanSet *ps,
   int count = atfunc ? ps->count : ps->count + 1;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int count1 = atfunc ? tcontseq_at_periodset1(seq, ps, sequences) :
-    tcontseq_minus_periodset_iter(seq, ps, 0, sequences);
+    tcontseq_minus_periodset_iter(seq, ps, sequences);
   return tsequenceset_make_free(sequences, count1, NORMALIZE_NO);
 }
 

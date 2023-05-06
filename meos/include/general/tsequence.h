@@ -135,7 +135,7 @@ extern int tcontseq_minus_period1(const TSequence *seq, const Span *p,
 extern int tcontseq_at_periodset1(const TSequence *seq, const SpanSet *ps,
   TSequence **result);
 extern int tcontseq_minus_periodset_iter(const TSequence *seq, const SpanSet *ps,
-  int from, TSequence **result);
+  TSequence **result);
 
 /*****************************************************************************/
 

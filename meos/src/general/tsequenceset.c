@@ -2115,7 +2115,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const SpanSet *ps,
          * Notice that we cannot compute the difference with the
          * current period without replicating the functionality in
          * #tcontseq_minus_periodset_iter */
-        k += tcontseq_minus_periodset_iter(seq, ps, j, &sequences[k]);
+        k += tcontseq_minus_periodset_iter(seq, ps, &sequences[k]);
         i++;
       }
     }
