@@ -350,27 +350,30 @@ fastvoxel_bm(int *coords1, double *eps1, int *coords2, double *eps2,
 /**
  * @brief Generate a tile from the current state of the multidimensional grid
  * @param[in] x,y,z,t Lower coordinates of the tile to output
- * @param[in] size Tile size for the spatial dimensions in the units of the SRID
- * @param[in] tunits Tile size for the temporal dimension in PostgreSQL time units
+ * @param[in] xsize,ysize,zsize Tile sizes for the spatial dimensions in the
+ * units of the SRID
+ * @param[in] tunits Tile size for the temporal dimension in PostgreSQL time
+ * units
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] srid SRID of the spatial coordinates
  * @param[out] result Box representing the tile
  */
 void
-stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
-  int64 tunits, bool hasz, bool hast, int32 srid, STBox *result)
+stbox_tile_set(double x, double y, double z, TimestampTz t, double xsize,
+  double ysize, double zsize, int64 tunits, bool hasz, bool hast, int32 srid,
+  STBox *result)
 {
   double xmin = x;
-  double xmax = xmin + size;
+  double xmax = xmin + xsize;
   double ymin = y;
-  double ymax = ymin + size;
+  double ymax = ymin + ysize;
   double zmin = 0, zmax = 0;
   Span p;
   if (hasz)
   {
     zmin = z;
-    zmax = zmin + size;
+    zmax = zmin + zsize;
   }
   if (hast)
   {
@@ -383,11 +386,14 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
 }
 
 /**
- * @brief Create the initial state that persists across multiple calls of the function
+ * @brief Create the initial state that persists across multiple calls of the
+ * function
  * @param[in] temp Optional temporal point to split
  * @param[in] box Bounds for generating the multidimensional grid
- * @param[in] size Tile size for the spatial dimensions in the units of the SRID
- * @param[in] tunits Tile size for the temporal dimension in PostgreSQL time units
+ * @param[in] xsize,ysize,zsize Tile sizes for the spatial dimensions in the
+ * units of the SRID
+ * @param[in] tunits Tile size for the temporal dimension in PostgreSQL time
+ * units
  * @param[in] sorigin Spatial origin of the tiles
  * @param[in] torigin Time origin of the tiles
  *
@@ -396,23 +402,26 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
  * dimension is tiled.
  */
 STboxGridState *
-stbox_tile_state_make(const Temporal *temp, const STBox *box, double size,
-  int64 tunits, POINT3DZ sorigin, TimestampTz torigin)
+stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
+  double ysize, double zsize, int64 tunits, POINT3DZ sorigin,
+  TimestampTz torigin)
 {
-  assert(size > 0);
+  assert(xsize > 0 && ysize > 0 && zsize > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
   STboxGridState *state = palloc0(sizeof(STboxGridState));
   /* Fill in state */
   state->done = false;
   state->i = 1;
-  state->size = size;
+  state->xsize = xsize;
+  state->ysize = ysize;
+  state->zsize = zsize;
   state->tunits = tunits;
-  state->box.xmin = float_bucket(box->xmin, size, sorigin.x);
-  state->box.xmax = float_bucket(box->xmax, size, sorigin.x);
-  state->box.ymin = float_bucket(box->ymin, size, sorigin.y);
-  state->box.ymax = float_bucket(box->ymax, size, sorigin.y);
-  state->box.zmin = float_bucket(box->zmin, size, sorigin.z);
-  state->box.zmax = float_bucket(box->zmax, size, sorigin.z);
+  state->box.xmin = float_bucket(box->xmin, xsize, sorigin.x);
+  state->box.xmax = float_bucket(box->xmax, xsize, sorigin.x);
+  state->box.ymin = float_bucket(box->ymin, ysize, sorigin.y);
+  state->box.ymax = float_bucket(box->ymax, ysize, sorigin.y);
+  state->box.zmin = float_bucket(box->zmin, zsize, sorigin.z);
+  state->box.zmax = float_bucket(box->zmax, zsize, sorigin.z);
   if (tunits)
   {
     state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket1(
@@ -444,13 +453,13 @@ stbox_tile_state_next(STboxGridState *state)
   /* Move to the next cell. We need to take into account whether
    * hasz and/or hast and thus there are 4 possible cases */
   state->i++;
-  state->x += state->size;
+  state->x += state->xsize;
   state->coords[0]++;
   if (state->x > state->box.xmax)
   {
     state->x = state->box.xmin;
     state->coords[0] = 0;
-    state->y += state->size;
+    state->y += state->ysize;
     state->coords[1]++;
     if (state->y > state->box.ymax)
     {
@@ -459,7 +468,7 @@ stbox_tile_state_next(STboxGridState *state)
         /* has Z */
         state->y = state->box.ymin;
         state->coords[1] = 0;
-        state->z += state->size;
+        state->z += state->zsize;
         state->coords[2]++;
         if (state->z > state->box.zmax)
         {
@@ -535,8 +544,9 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
   }
   bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
   bool hast = MEOS_FLAGS_GET_T(state->box.flags);
-  stbox_tile_set(state->x, state->y, state->z, state->t, state->size,
-    state->tunits, hasz, hast, state->box.srid, box);
+  stbox_tile_set(state->x, state->y, state->z, state->t, state->xsize,
+    state->ysize, state->zsize, state->tunits, hasz, hast, state->box.srid,
+    box);
   return true;
 }
 
@@ -589,12 +599,12 @@ stbox_tile_list(const STBox *bounds, double size, const Interval *duration,
   bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
   bool hast = MEOS_FLAGS_GET_T(state->box.flags);
   int *cellcount = palloc0(sizeof(int) * MAXDIMS);
-  cellcount[0] = ceil((state->box.xmax - state->box.xmin) / state->size) + 1;
-  cellcount[1] = ceil((state->box.ymax - state->box.ymin) / state->size) + 1;
+  cellcount[0] = ceil((state->box.xmax - state->box.xmin) / state->xsize) + 1;
+  cellcount[1] = ceil((state->box.ymax - state->box.ymin) / state->ysize) + 1;
   int count = cellcount[0] * cellcount[1];
   if (hasz)
   {
-    cellcount[2] = ceil((state->box.zmax - state->box.zmin) / state->size) + 1;
+    cellcount[2] = ceil((state->box.zmax - state->box.zmin) / state->zsize) + 1;
     count *= cellcount[2];
   }
   if (hast)
@@ -607,8 +617,9 @@ stbox_tile_list(const STBox *bounds, double size, const Interval *duration,
   /* Stop when we've used up all the grid tiles */
   for (int i = 0; i < count; i++)
   {
-    stbox_tile_set(state->x, state->y, state->z, state->t, state->size,
-      state->tunits, hasz, hast, state->box.srid, &result[i]);
+    stbox_tile_set(state->x, state->y, state->z, state->t, state->xsize,
+      state->ysize, state->zsize, state->tunits, hasz, hast, state->box.srid,
+      &result[i]);
     stbox_tile_state_next(state);
   }
   *no_cells = cellcount;
@@ -632,10 +643,10 @@ tile_get_coords(double x, double y, double z, TimestampTz t,
 {
   /* Transform the minimum values of the tile into matrix coordinates */
   int k = 0;
-  coords[k++] = (int) ((x - state->box.xmin) / state->size);
-  coords[k++] = (int) ((y - state->box.ymin) / state->size);
+  coords[k++] = (int) ((x - state->box.xmin) / state->xsize);
+  coords[k++] = (int) ((y - state->box.ymin) / state->ysize);
   if (MEOS_FLAGS_GET_Z(state->box.flags))
-    coords[k++] = (int) ((z - state->box.zmin) / state->size);
+    coords[k++] = (int) ((z - state->box.zmin) / state->zsize);
   if (MEOS_FLAGS_GET_T(state->box.flags))
     coords[k++] = (int) ((t - DatumGetTimestampTz(state->box.period.lower)) /
       state->tunits);
@@ -654,10 +665,10 @@ tile_get_eps(double dx, double dy, double dz, TimestampTz dt,
 {
   /* Transform the values in a tile into relative positions in matrix cells */
   int k = 0;
-  eps[k++] = dx / state->size;
-  eps[k++] = dy / state->size;
+  eps[k++] = dx / state->xsize;
+  eps[k++] = dy / state->ysize;
   if (MEOS_FLAGS_GET_Z(state->box.flags))
-    eps[k++] = dz / state->size;
+    eps[k++] = dz / state->zsize;
   if (MEOS_FLAGS_GET_T(state->box.flags))
     eps[k++] = (double) dt / state->tunits;
   return;
@@ -679,12 +690,12 @@ tpointinst_get_coords_eps(const TInstant *inst, bool hasz, bool hast,
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
   datum_point4d(tinstant_value(inst), &p);
-  double x = float_bucket(p.x, state->size, state->box.xmin);
-  double y = float_bucket(p.y, state->size, state->box.ymin);
+  double x = float_bucket(p.x, state->xsize, state->box.xmin);
+  double y = float_bucket(p.y, state->ysize, state->box.ymin);
   double z = 0;
   TimestampTz t = 0;
   if (hasz)
-    z = float_bucket(p.z, state->size, state->box.zmin);
+    z = float_bucket(p.z, state->zsize, state->box.zmin);
   if (hast)
     t = timestamptz_bucket1(inst->t, state->tunits,
       DatumGetTimestampTz(state->box.period.lower));

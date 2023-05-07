@@ -807,7 +807,7 @@ meos_call_geos2(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
  * @brief Return true if the geometries intersect or the first contains
  * the other, where the function called depend on the third argument
  * @param[in] geom1,geom2 Geometries
- * @param[in] inter: True when performing intersection, false for contains
+ * @param[in] inter: True when performing intersects, false for contains
  * @note PostGIS functions: Datum ST_Intersects(PG_FUNCTION_ARGS) and
  * Datum contains(PG_FUNCTION_ARGS)
  */

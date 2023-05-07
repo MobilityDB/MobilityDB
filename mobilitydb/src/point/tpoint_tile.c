@@ -76,22 +76,26 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     STBox *bounds = PG_GETARG_STBOX_P(0);
     ensure_has_X_stbox(bounds);
     ensure_not_geodetic(bounds->flags);
-    double size = PG_GETARG_FLOAT8(1);
-    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
+    double xsize = PG_GETARG_FLOAT8(1);
+    double ysize = PG_GETARG_FLOAT8(2);
+    double zsize = PG_GETARG_FLOAT8(3);
+    ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+    ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
+    ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
     GSERIALIZED *sorigin;
     int64 tunits = 0; /* make compiler quiet */
     TimestampTz torigin = 0; /* make compiler quiet */
-    if (PG_NARGS() == 3)
-      sorigin = PG_GETARG_GSERIALIZED_P(2);
-    else /* PG_NARGS() == 5 */
+    if (PG_NARGS() == 5)
+      sorigin = PG_GETARG_GSERIALIZED_P(4);
+    else /* PG_NARGS() == 7 */
     {
       /* If time arguments are given */
       ensure_has_T_stbox(bounds);
-      Interval *duration = PG_GETARG_INTERVAL_P(2);
+      Interval *duration = PG_GETARG_INTERVAL_P(4);
       ensure_valid_duration(duration);
       tunits = interval_units(duration);
-      sorigin = PG_GETARG_GSERIALIZED_P(3);
-      torigin = PG_GETARG_TIMESTAMPTZ(4);
+      sorigin = PG_GETARG_GSERIALIZED_P(5);
+      torigin = PG_GETARG_TIMESTAMPTZ(6);
     }
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
@@ -121,8 +125,8 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, size, tunits, pt,
-      torigin);
+    funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, xsize, ysize,
+      zsize, tunits, pt, torigin);
     /* Build a tuple description for a multidim_grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -174,30 +178,36 @@ Stbox_tile(PG_FUNCTION_ARGS)
   ensure_non_empty(point);
   ensure_point_type(point);
   TimestampTz t = 0; /* make compiler quiet */
-  double size;
+  double xsize, ysize, zsize;
   int64 tunits = 0; /* make compiler quiet */
   GSERIALIZED *sorigin;
   TimestampTz torigin = 0; /* make compiler quiet */
   bool hast = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() == 5)
   {
-    size = PG_GETARG_FLOAT8(1);
-    sorigin = PG_GETARG_GSERIALIZED_P(2);
+    xsize = PG_GETARG_FLOAT8(1);
+    ysize = PG_GETARG_FLOAT8(2);
+    zsize = PG_GETARG_FLOAT8(3);
+    sorigin = PG_GETARG_GSERIALIZED_P(4);
   }
-  else /* PG_NARGS() == 6 */
+  else /* PG_NARGS() == 8 */
   {
     /* If time arguments are given */
     t = PG_GETARG_TIMESTAMPTZ(1);
-    size = PG_GETARG_FLOAT8(2);
-    Interval *duration = PG_GETARG_INTERVAL_P(3);
+    xsize = PG_GETARG_FLOAT8(2);
+    ysize = PG_GETARG_FLOAT8(3);
+    zsize = PG_GETARG_FLOAT8(4);
+    Interval *duration = PG_GETARG_INTERVAL_P(5);
     ensure_valid_duration(duration);
     tunits = interval_units(duration);
-    sorigin = PG_GETARG_GSERIALIZED_P(4);
-    torigin = PG_GETARG_TIMESTAMPTZ(5);
+    sorigin = PG_GETARG_GSERIALIZED_P(6);
+    torigin = PG_GETARG_TIMESTAMPTZ(7);
     hast = true;
   }
   /* Ensure parameter validity */
-  ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
   ensure_non_empty(sorigin);
   ensure_point_type(sorigin);
   int32 srid = gserialized_get_srid(point);
@@ -224,15 +234,15 @@ Stbox_tile(PG_FUNCTION_ARGS)
     ptorig.x = p2->x;
     ptorig.y = p2->y;
   }
-  double xmin = float_bucket(pt.x, size, ptorig.x);
-  double ymin = float_bucket(pt.y, size, ptorig.y);
-  double zmin = float_bucket(pt.z, size, ptorig.z);
+  double xmin = float_bucket(pt.x, xsize, ptorig.x);
+  double ymin = float_bucket(pt.y, ysize, ptorig.y);
+  double zmin = float_bucket(pt.z, zsize, ptorig.z);
   TimestampTz tmin = 0; /* make compiler quiet */
   if (hast)
     tmin = timestamptz_bucket1(t, tunits, torigin);
   STBox *result = palloc0(sizeof(STBox));
-  stbox_tile_set(xmin, ymin, zmin, tmin, size, tunits, hasz, hast, srid,
-    result);
+  stbox_tile_set(xmin, ymin, zmin, tmin, xsize, ysize, zsize, tunits, hasz,
+    hast, srid, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -266,11 +276,13 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-    double size = PG_GETARG_FLOAT8(1);
+    double xsize = PG_GETARG_FLOAT8(1);
+    double ysize = PG_GETARG_FLOAT8(2);
+    double zsize = PG_GETARG_FLOAT8(3);
     Interval *duration = NULL;
     TimestampTz torigin = 0;
     int64 tunits = 0;
-    int i = 2;
+    int i = 4;
     if (timesplit)
     {
       duration = PG_GETARG_INTERVAL_P(i++);
@@ -290,7 +302,9 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       MEOS_FLAGS_SET_T(bounds.flags, false);
 
     /* Ensure parameter validity */
-    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
+    ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+    ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
+    ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
     ensure_same_geodetic(temp->flags, sorigin->gflags);
@@ -315,7 +329,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     }
 
     /* Create function state */
-    state = stbox_tile_state_make(temp, &bounds, size, tunits, pt, torigin);
+    state = stbox_tile_state_make(temp, &bounds, xsize, ysize, zsize, tunits,
+      pt, torigin);
     /* If a bit matrix is used to speed up the process */
     if (bitmatrix)
     {
@@ -324,10 +339,11 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       memset(&count, 0, sizeof(count));
       int numdims = 2;
       /* We need to add 1 to take into account the last bucket for each dimension */
-      count[0] = (int) ((state->box.xmax - state->box.xmin) / state->size) + 1;
-      count[1] = (int) ((state->box.ymax - state->box.ymin) / state->size) + 1;
+      count[0] = (int) ((state->box.xmax - state->box.xmin) / state->xsize) + 1;
+      count[1] = (int) ((state->box.ymax - state->box.ymin) / state->ysize) + 1;
       if (MEOS_FLAGS_GET_Z(state->box.flags))
-        count[numdims++] = (int) ((state->box.zmax - state->box.zmin) / state->size) + 1;
+        count[numdims++] = (int) ((state->box.zmax - state->box.zmin) /
+          state->zsize) + 1;
       if (state->tunits)
         count[numdims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
           DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
