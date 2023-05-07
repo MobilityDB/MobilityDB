@@ -781,6 +781,16 @@ SELECT asText(atGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@200
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring empty'));
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring empty'));
 
+SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000-01-02]', geometry 'Linestring(0 0,0 2,2 2)'));
+
+-- Period
+SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0, 2 2)', NULL, tstzspan '[2000-01-01, 2000-01-02]'));
+SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02, Point(2 2)@2000-01-03]', geometry 'Linestring(0 0, 2 2)', NULL, tstzspan '[2000-01-01, 2000-01-02]'));
+
+--3D Zspan
+SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0, 2 2)', floatspan '[0, 2]'));
+
+
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0,1 1)'));
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02]','Point(2 2)'));
 SELECT asText(atGeometry(tgeompoint '[Point(0 1)@2000-01-01,Point(5 1)@2000-01-05]', geometry 'Linestring(0 0,2 2,3 1,4 1,5 0)'));
@@ -874,6 +884,15 @@ SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-
 SELECT asText(minusStbox(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
 SELECT asText(minusStbox(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
 SELECT asText(minusStbox(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
+
+-- Instantaneous sequence
+SELECT asText(atStbox(tgeompoint '{Point(1 1)@2000-01-01}', stbox 'STBOX X((1 1),(3 3))'));
+SELECT asText(atStbox(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01]', stbox 'STBOX X((1 1),(3 3))'));
+SELECT asText(atStbox(tgeompoint '[Point(1 1)@2000-01-01]', stbox 'STBOX X((1 1),(3 3))'));
+
+-- 3D
+SELECT asText(atStbox(tgeompoint '[Point(2 0 2)@2000-01-01, Point(2 4 2)@2000-01-02]', stbox 'STBOX Z((1 1 1),(3
+3 3))'));
 
 -- Mix 2D/3D
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
