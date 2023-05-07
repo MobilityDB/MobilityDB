@@ -326,13 +326,14 @@ SELECT periodBucket('2000-01-04', interval '1 week', '2000-01-07');
 				<listitem id="tileList">
 					<indexterm><primary><varname>tileList</varname></primary></indexterm>
 					<para>Obtener un conjunto de parejas <varname>(index, tile)</varname> que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración &Z_support; &SRF;</para>
-					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point (0 0 0)'</varname> para la dimensión de valores (según el tipo de cuadro delimitador) y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
 					<para><varname>tileList(bounds tbox,size float,duration interval,vorigin float=0,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03') → {(index,box)}</varname></para>
-					<para><varname>tileList(bounds stbox,size float,sorigin geometry='Point(0 0 0)') → {(index,box)}</varname></para>
-					<para><varname>tileList(bounds stbox,size float,duration interval,sorigin geometry='Point(0 0 0)',</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03') → {(index,box)}</varname></para>
-					<para>En el caso de una malla espacio-temporal, el SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y el tamaño se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
+					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,] </varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)') → {(index,box)}</varname></para>
+					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → {(index,box)}</varname></para>
+					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point (0 0 0)'</varname> para la dimensión de valores (según el tipo de cuadro delimitador) y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
+					<para>En el caso de una malla espacio-temporal, <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. El SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y el tamaño se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (gr).index, (gr).tile
 FROM (SELECT tileList(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days')
@@ -382,13 +383,14 @@ SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15,
 				<listitem id="tile">
 					<indexterm><primary><varname>tile</varname></primary></indexterm>
 					<para>Obtener el mosaico de la malla multidimensional que contiene el valor y la marca de tiempo. &Z_support;</para>
-					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point(0 0 0)'</varname> para la dimensión de valores y en el lunes 3 de enero de 2000 para la dimensión de tiempo, respectivamente.</para>
 					<para><varname>tile(value float,time timestamptz,size float,duration interval,</varname></para>
 					<para><varname>  vorigin float=0.0,torigin timestamptz='2000-01-03') → tbox</varname></para>
-					<para><varname>tile(point geometry,size float,sorigin geometry='Point(0 0 0)') → stbox</varname></para>
-					<para><varname>tile(point geometry,time timestamptz,size float,duration interval,sorigin</varname></para>
-					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03') → stbox</varname></para>
-					<para>En el caso de una malla espacio-temporal, el SRID de las coordenadas de los mosaicos está determinado por el punto de entrada y la amplitud espacial se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
+					<para><varname>tile(point geometry,xsize float,[ysize float,zsize float],</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)') → stbox</varname></para>
+					<para><varname>tile(point geometry,time timestamptz,xsize float,[ysize float,zsize float,]duration</varname></para>
+					<para><varname>  interval,sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → stbox</varname></para>
+					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point(0 0 0)'</varname> para la dimensión de valores y en el lunes 3 de enero de 2000 para la dimensión de tiempo, respectivamente.</para>
+					<para>En el caso de una malla espacio-temporal, <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. El SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y el tamaño se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tile(15, '2000-01-15', 2, interval '2 days');
 -- TBOX XT([14,16),[2000-01-15,2000-01-17))
@@ -506,9 +508,9 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 5.0, '5 days
 				<listitem id="spaceSplit">
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial &SRF;</para>
-					<para><varname>spaceSplit(value tgeompoint,width float,origin geometry='Point(0 0 0)',</varname></para>
-					<para><varname>  bitmatrix=true) → {(point,tpoint)}</varname></para>
-					<para>Si el origen del espacio no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
+					<para><varname>spaceSplit(value tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
+					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix=true) → {(point,tpoint)}</varname></para>
+					<para>Si el origen del espacio no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname>. Los argumentos <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
@@ -529,10 +531,10 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 				<listitem id="spaceTimeSplit">
 					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal &SRF;</para>
-					<para><varname>spaceTimeSplit(value tgeompoint,size float,duration interval,sorigin </varname></para>
-					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03', bitmatrix=true) → </varname></para>
-					<para><varname>  {(point,time,tpoint)}</varname></para>
-					<para>Si el origen del espacio y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
+					<para><varname>spaceTimeSplit(value tgeompoint,xsize float,[ysize float,ysize float,]</varname></para>
+					<para><varname>  duration interval,sorigin geompoint='Point(0 0 0)',</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix=true) → {(point,time,tpoint)}</varname></para>
+					<para>Si el origen del espacio y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. Los argumentos <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
