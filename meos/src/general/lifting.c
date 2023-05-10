@@ -1367,11 +1367,6 @@ tfunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
       (cmp == 0 && (! seq->period.upper_inc || seq1->period.upper_inc)))
       break;
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
   /* We need to normalize when discont is true */
   return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1430,11 +1425,6 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
       i++;
     else
       j++;
-  }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
   }
   /* We need to normalize if the function has instantaneous discontinuities */
   return tsequenceset_make_free(sequences, k, NORMALIZE);

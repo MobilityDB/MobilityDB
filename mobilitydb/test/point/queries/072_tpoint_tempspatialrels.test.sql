@@ -31,6 +31,10 @@
 -- tcontains
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tcontains(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
+SELECT tcontains(geometry 'Point(1 1)', NULL::tgeompoint);
+
 SELECT tcontains(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tcontains(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT tcontains(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -64,6 +68,10 @@ SELECT tcontains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 -- tdisjoint
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdisjoint(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
+SELECT tdisjoint(geometry 'Point(1 1)', NULL::tgeompoint);
+
 SELECT tdisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tdisjoint(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT tdisjoint(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -73,6 +81,10 @@ SELECT tdisjoint(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tdisjoint(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT tdisjoint(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
 SELECT tdisjoint(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdisjoint(NULL::tgeompoint, geometry 'Point(1 1)');
+SELECT tdisjoint(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry);
 
 SELECT tdisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)');
 SELECT tdisjoint(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)');
@@ -129,6 +141,10 @@ SELECT tdisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 -- tintersects
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tintersects(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
+SELECT tintersects(geometry 'Point(1 1)', NULL::tgeompoint);
+
 SELECT tintersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tintersects(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT tintersects(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -138,6 +154,10 @@ SELECT tintersects(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tintersects(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT tintersects(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
 SELECT tintersects(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tintersects(NULL::tgeompoint, geometry 'Point(1 1)');
+SELECT tintersects(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry);
 
 SELECT tintersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)');
 SELECT tintersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)');
@@ -201,6 +221,10 @@ SELECT tintersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 -- ttouches
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT ttouches(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
+SELECT ttouches(geometry 'Point(1 1)', NULL::tgeompoint);
+
 SELECT ttouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT ttouches(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT ttouches(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -210,6 +234,10 @@ SELECT ttouches(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT ttouches(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT ttouches(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
 SELECT ttouches(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT ttouches(NULL::tgeompoint, geometry 'Point(1 1)');
+SELECT ttouches(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry);
 
 SELECT ttouches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)');
 SELECT ttouches(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)');
@@ -254,6 +282,11 @@ SELECT ttouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 -- tdwithin
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdwithin(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01', 2);
+SELECT tdwithin(geometry 'Point(1 1)', NULL::tgeompoint, 2);
+SELECT tdwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', NULL);
+
 SELECT tdwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
 SELECT tdwithin(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
 SELECT tdwithin(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
@@ -263,6 +296,11 @@ SELECT tdwithin(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01', 2);
 SELECT tdwithin(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
 SELECT tdwithin(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
 SELECT tdwithin(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdwithin(NULL::tgeompoint, geometry 'Point(1 1)', 2);
+SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry, 2);
+SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', NULL);
 
 SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', 2);
 SELECT tdwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', 2);
@@ -294,6 +332,11 @@ SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point Z empty', 
 SELECT tdwithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Point Z empty', 2);
 SELECT tdwithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Point Z empty', 2);
 SELECT tdwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Point Z empty', 2);
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdwithin(NULL::tgeompoint, tgeompoint 'Point(1 1)@2000-01-01', 2);
+SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', NULL::tgeompoint, 2);
+SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', NULL);
 
 -- Coverage
 SELECT tdwithin(tgeompoint '(Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', geometry 'Point(0 1)', 1);

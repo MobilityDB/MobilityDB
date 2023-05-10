@@ -850,19 +850,10 @@ void
 pfree_array(void **array, int count)
 {
   for (int i = 0; i < count; i++)
-    pfree(array[i]);
-  pfree(array);
-  return;
-}
-
-/**
- * @brief Free a C array of Datum pointers
- */
-void
-pfree_datumarr(Datum *array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(DatumGetPointer(array[i]));
+  {
+    if (array[i])
+      pfree(array[i]);
+  }
   pfree(array);
   return;
 }

@@ -1,3 +1,15 @@
+SELECT tcontains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ tcontains 
+-----------
+ 
+(1 row)
+
+SELECT tcontains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+ tcontains 
+-----------
+ 
+(1 row)
+
 SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
         tcontains         
 --------------------------
@@ -94,6 +106,18 @@ SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000
  {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT tdisjoint(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+ tdisjoint 
+-----------
+ 
+(1 row)
+
 SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
         tdisjoint         
 --------------------------
@@ -142,6 +166,18 @@ SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@200
  
 (1 row)
 
+SELECT tdisjoint(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tdisjoint(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
+ tdisjoint 
+-----------
+ 
+(1 row)
+
 SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
         tdisjoint         
 --------------------------
@@ -164,6 +200,18 @@ SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, 
                                                   tdisjoint                                                   
 --------------------------------------------------------------------------------------------------------------
  {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tdisjoint(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
+ tdisjoint 
+-----------
+ 
 (1 row)
 
 SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
@@ -209,6 +257,18 @@ SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
 (1 row)
 
 SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tdisjoint(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
  tdisjoint 
 -----------
  
@@ -448,6 +508,18 @@ SELECT tdisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', tru
  t@2000-01-01 00:00:00+00
 (1 row)
 
+SELECT tintersects(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tintersects(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+ tintersects 
+-------------
+ 
+(1 row)
+
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
        tintersects        
 --------------------------
@@ -496,6 +568,18 @@ SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2
  
 (1 row)
 
+SELECT tintersects(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tintersects(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
+ tintersects 
+-------------
+ 
+(1 row)
+
 SELECT tintersects(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
        tintersects        
 --------------------------
@@ -518,6 +602,18 @@ SELECT tintersects(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01
                                                  tintersects                                                  
 --------------------------------------------------------------------------------------------------------------
  {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tintersects(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
+ tintersects 
+-------------
+ 
 (1 row)
 
 SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
@@ -568,6 +664,18 @@ SELECT tintersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-
  
 (1 row)
 
+SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tintersects(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
+ tintersects 
+-------------
+ 
+(1 row)
+
 SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
        tintersects        
 --------------------------
@@ -607,6 +715,18 @@ SELECT tintersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', f
 SELECT tintersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', true);
  tintersects 
 -------------
+ 
+(1 row)
+
+SELECT ttouches(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT ttouches(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+ ttouches 
+----------
  
 (1 row)
 
@@ -653,6 +773,18 @@ SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-
 (1 row)
 
 SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT ttouches(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT ttouches(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
  ttouches 
 ----------
  
@@ -706,6 +838,18 @@ SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
  {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT ttouches(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
+ ttouches 
+----------
+ 
+(1 row)
+
 SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
  ttouches 
 ----------
@@ -725,6 +869,18 @@ SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, 
 (1 row)
 
 SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT ttouches(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
  ttouches 
 ----------
  
@@ -850,6 +1006,24 @@ SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
  
 (1 row)
 
+SELECT tdwithin(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
+ tdwithin 
+----------
+ 
+(1 row)
+
 SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
          tdwithin         
 --------------------------
@@ -898,6 +1072,24 @@ SELECT tdwithin(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000
  
 (1 row)
 
+SELECT tdwithin(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(npoint 'NPoint(2, 0.3)', NULL::tnpoint, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
+ tdwithin 
+----------
+ 
+(1 row)
+
 SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
          tdwithin         
 --------------------------
@@ -920,6 +1112,24 @@ SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, N
                                                    tdwithin                                                   
 --------------------------------------------------------------------------------------------------------------
  {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', NULL);
+ tdwithin 
+----------
+ 
 (1 row)
 
 SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', 2);
@@ -970,6 +1180,24 @@ SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
  
 (1 row)
 
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(NULL::tnpoint, npoint 'NPoint(2, 0.3)', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', NULL);
+ tdwithin 
+----------
+ 
+(1 row)
+
 SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', 2);
          tdwithin         
 --------------------------
@@ -992,6 +1220,24 @@ SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
                                                    tdwithin                                                   
 --------------------------------------------------------------------------------------------------------------
  {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT tdwithin(NULL::tnpoint, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::tnpoint, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
+ tdwithin 
+----------
+ 
 (1 row)
 
 SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);

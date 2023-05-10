@@ -905,16 +905,13 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
-  /* Boxes are adjacent if they share n dimensions and their intersection is
-   * at most of n-1 dimensions */
-  if (hasx && ! hast)
-    return (adjacent_span_span(&box1->span, &box2->span));
-  if (! hasx && hast)
-    return (adjacent_span_span(&box1->period, &box2->period));
-  /* (hasx && hast) */
-  bool adjx = adjacent_span_span(&box1->span, &box2->span);
-  bool adjt = adjacent_span_span(&box1->period, &box2->period);
-  return ((adjx && ! adjt) || (! adjx && adjt));
+  /* Boxes are adjacent if they are adjacent in at least one dimension */
+  bool adjx = false, adjt = false;
+  if (hasx)
+    adjx = adjacent_span_span(&box1->span, &box2->span);
+  if (hast)
+    adjt = adjacent_span_span(&box1->period, &box2->period);
+  return (adjx || adjt);
 }
 
 /*****************************************************************************

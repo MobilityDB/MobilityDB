@@ -374,9 +374,7 @@ tnumberseqset_abs(const TSequenceSet *ss)
     sequences[i] = MEOS_FLAGS_GET_LINEAR(ss->flags) ?
       tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
-    NORMALIZE);
-  return result;
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
@@ -477,11 +475,6 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
     delta = tnumberseq_delta_value(seq);
     if (delta)
       sequences[k++] = delta;
-  }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
   }
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -724,11 +717,6 @@ tfloatseqset_derivative(const TSequenceSet *ss)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (seq->count > 1)
       sequences[k++] = tfloatseq_derivative(seq);
-  }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
   }
   /* The resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);

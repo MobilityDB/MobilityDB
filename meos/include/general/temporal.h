@@ -99,8 +99,8 @@ extern char *text_to_cstring(const text *t);
 #define REST_MINUS      false
 
 /** Symbolic constants for the restriction functions with boxes */
-#define UPPER_INC       true
-#define UPPER_EXC       false
+#define BORDER_INC       true
+#define BORDER_EXC       false
 
 /** Symbolic constants for the ever/always functions */
 #define EVER            true
@@ -137,9 +137,9 @@ extern char *text_to_cstring(const text *t);
 #define VALUE_SEL       true
 #define TIME_SEL        false
 
-/* Determine whether reduce the roundoff errors with the span operations
- * by taking the bounds instead of the projected value at the timestamp */
-#define SPAN_ROUNDOFF  false
+/** Symbolic constants for the restriction functions */
+#define UPPER_EXC       true
+#define TIME_SEL        false
 
 /** Enumeration for the intersection/synchronization functions */
 typedef enum

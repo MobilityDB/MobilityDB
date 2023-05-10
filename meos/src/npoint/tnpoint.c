@@ -213,8 +213,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
     }
     sequences[i] = seq1;
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count, true);
-  return result;
+  return tsequenceset_make_free(sequences, ss->count, true);
 }
 
 /**

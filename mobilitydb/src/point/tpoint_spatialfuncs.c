@@ -1177,20 +1177,27 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Restrict a temporal point to (the complement of) a geometry
- * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations
+ * @brief Restrict a temporal point to (the complement of) a geometry and
+ * possibly a period.
+ * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations.
+ * However the geometry must be in 2D.
  */
 static Datum
-tpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
+tpoint_restrict_geom_time_ext(FunctionCallInfo fcinfo, bool atfunc,
+  bool resttime)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1)|| (resttime && PG_ARGISNULL(3)))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
   Span *zspan = NULL;
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
     zspan = PG_GETARG_SPAN_P(2);
-  Temporal *result = tpoint_restrict_geometry(temp, geo, zspan, atfunc);
+  Span *period = NULL;
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
+    period = PG_GETARG_SPAN_P(3);
+  Temporal *result = tpoint_restrict_geom_time(temp, geo, zspan, period,
+    atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
   if (! result)
@@ -1198,30 +1205,57 @@ tpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tpoint_at_geometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_at_geometry);
+PGDLLEXPORT Datum Tpoint_at_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_at_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal point to a geometry
  * @sqlfunc atGeometry()
  */
 Datum
-Tpoint_at_geometry(PG_FUNCTION_ARGS)
+Tpoint_at_geom(PG_FUNCTION_ARGS)
 {
-  return tpoint_restrict_geometry_ext(fcinfo, REST_AT);
+  return tpoint_restrict_geom_time_ext(fcinfo, REST_AT, REST_TIME_NO);
 }
 
-PGDLLEXPORT Datum Tpoint_minus_geometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_minus_geometry);
+PGDLLEXPORT Datum Tpoint_at_geom_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_at_geom_time);
+/**
+ * @ingroup mobilitydb_temporal_restrict
+ * @brief Restrict a temporal point to a geometry
+ * @sqlfunc atGeometry()
+ */
+Datum
+Tpoint_at_geom_time(PG_FUNCTION_ARGS)
+{
+  return tpoint_restrict_geom_time_ext(fcinfo, REST_AT, REST_TIME);
+}
+
+PGDLLEXPORT Datum Tpoint_minus_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_minus_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal point to the complement of a geometry
  * @sqlfunc minusGeometry()
  */
 Datum
-Tpoint_minus_geometry(PG_FUNCTION_ARGS)
+Tpoint_minus_geom(PG_FUNCTION_ARGS)
 {
-  return tpoint_restrict_geometry_ext(fcinfo, REST_MINUS);
+  return tpoint_restrict_geom_time_ext(fcinfo, REST_MINUS, REST_TIME_NO);
+}
+
+PGDLLEXPORT Datum Tpoint_minus_geom_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_minus_geom_time);
+/**
+ * @ingroup mobilitydb_temporal_restrict
+ * @brief Restrict a temporal point to the complement of a geometry and a
+ * period
+ * @sqlfunc minusGeometryTime()
+ */
+Datum
+Tpoint_minus_geom_time(PG_FUNCTION_ARGS)
+{
+  return tpoint_restrict_geom_time_ext(fcinfo, REST_MINUS, REST_TIME);
 }
 
 /*****************************************************************************/
@@ -1238,7 +1272,7 @@ Tpoint_at_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  Temporal *result = tpoint_restrict_stbox(temp, box, REST_AT);
+  Temporal *result = tpoint_restrict_stbox(temp, box, BORDER_INC, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -1257,7 +1291,7 @@ Tpoint_minus_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  Temporal *result = tpoint_restrict_stbox(temp, box, REST_MINUS);
+  Temporal *result = tpoint_restrict_stbox(temp, box, BORDER_INC, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();

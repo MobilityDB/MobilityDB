@@ -835,7 +835,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringir a (al complemento de) una geometría</para>
+					<para><link linkend="atGeometry"><varname>atGeometry</varname>,<varname>minusGeometry</varname>, <varname>atGeometryTime</varname>, <varname>minusGeometryTime</varname></link>: Restringir a (al complemento de) una geometría</para>
 				</listitem>
 
 				<listitem>

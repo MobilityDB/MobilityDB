@@ -1579,13 +1579,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     lower += tunits;
     upper += tunits;
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
-  return result;
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /**
@@ -1716,13 +1710,7 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
     if (sample)
       sequences[k++] = sample;
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
-  return result;
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /**
@@ -3472,16 +3460,7 @@ temporal_restrict_period(const Temporal *temp, const Span *p, bool atfunc)
     result = (Temporal *) tinstant_restrict_period(
       (TInstant *) temp, p, atfunc);
   else if (temp->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
-      result = atfunc ?
-        (Temporal *) tdiscseq_at_period((TSequence *) temp, p) :
-        (Temporal *) tdiscseq_minus_period((TSequence *) temp, p);
-    else
-      result = atfunc ?
-        (Temporal *) tcontseq_at_period((TSequence *) temp, p) :
-        (Temporal *) tcontseq_minus_period((TSequence *) temp, p);
-  }
+    result = tsequence_restrict_period((TSequence *) temp, p, atfunc);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_period(
       (TSequenceSet *) temp, p, atfunc);
@@ -3731,7 +3710,8 @@ temporal_delete_period(const Temporal *temp, const Span *p, bool connect)
   else if (temp->subtype == TSEQUENCE)
   {
     if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
-      result = (Temporal *) tdiscseq_minus_period((TSequence *) temp, p);
+      result = (Temporal *) tdiscseq_restrict_period((TSequence *) temp, p,
+        REST_MINUS);
     else
       result = connect ?
         (Temporal *) tcontseq_delete_period((TSequence *) temp, p) :
@@ -4079,11 +4059,6 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   int k = tsequence_stops1(seq, maxdist, mintunits, sequences);
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
@@ -4102,11 +4077,6 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tsequence_stops1(seq, maxdist, mintunits, &sequences[k]);
-  }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

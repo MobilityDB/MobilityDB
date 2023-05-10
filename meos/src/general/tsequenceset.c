@@ -296,7 +296,6 @@ tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal sequence set from an array of temporal sequences.
- *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized.
@@ -314,7 +313,6 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence set from an array of temporal
  * sequences and free the array and the sequences after the creation.
- *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized.
@@ -323,7 +321,11 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 TSequenceSet *
 tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
 {
-  assert(count > 0);
+  if (count == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
     count, normalize);
   pfree_array((void **) sequences, count);
@@ -350,7 +352,6 @@ tsequenceset_make_valid_gaps(const TInstant **instants, int count,
  * @brief Construct a temporal sequence set from an array of temporal instants
  * introducing a gap when two consecutive instants are separated from each
  * other by at least the given distance or the given time interval.
- *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
  * @param[in] interp Interpolation
@@ -429,6 +430,40 @@ tsequenceset_copy(const TSequenceSet *ss)
 {
   TSequenceSet *result = palloc0(VARSIZE(ss));
   memcpy(result, ss, VARSIZE(ss));
+  return result;
+}
+
+/**
+ * @brief Convert an array of temporal sequence sets into an array of
+ * temporal sequences.
+ *
+ * This function is called by all the functions in which the number of output
+ * sequences cannot be determined in advance, typically when each segment
+ * of the input sequence can produce an arbitrary number of output sequences,
+ * as in the case of atGeometries.
+ *
+ * @param[in] seqsets Array of array of temporal sequence sets
+ * @param[in] count Number of elements in the input array
+ * @param[in] totalseqs Number of elements in the output array
+ * @pre count and totalseqs are greater than 0
+ */
+TSequenceSet *
+tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * totalseqs);
+  int k = 0;
+  for (int i = 0; i < count; i++)
+  {
+    TSequenceSet *ss1 = seqsets[i];
+    if (ss1)
+    {
+      for (int j = 0; j < ss1->count; j++)
+        sequences[k++] = (TSequence *) TSEQUENCESET_SEQ_N(ss1, j);
+    }
+  }
+  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences, k,
+    NORMALIZE);
+  pfree(sequences);
   return result;
 }
 
@@ -533,7 +568,6 @@ tgeogpointseqset_from_base_temp(const GSERIALIZED *gs, const TSequenceSet *ss)
 /**
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence set from a base value and a period set.
- *
  * @param[in] value Base value
  * @param[in] temptype Temporal type
  * @param[in] ps Period set
@@ -923,7 +957,7 @@ tsequenceset_segments(const TSequenceSet *ss, int *count)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tsequence_segments1(seq, &result[k]);
+    k += tsequence_segments_iter(seq, &result[k]);
   }
   *count = k;
   return result;
@@ -1129,7 +1163,7 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tsequence_timestamps1(seq, &result[k]);
+    k += tsequence_timestamps_iter(seq, &result[k]);
   }
   if (k > 1)
   {
@@ -1143,7 +1177,6 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Compute the base value of a temporal sequence set at a timestamp.
- *
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
  * @param[in] strict True if exclusive bounds are taken into account
@@ -1457,9 +1490,9 @@ tsequenceset_to_linear(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tstepseq_to_linear1(seq, &sequences[k]);
+    k += tstepseq_to_linear_iter(seq, &sequences[k]);
   }
-  /* We are sure that k > 0 */
+  assert(k > 0);
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
@@ -1509,7 +1542,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
     /* Shift and/or scale the bounding period of the sequence */
     period_delta_scale(&seq->period, origin, delta, scale);
     /* Shift and/or scale each instant of the composing sequence */
-    tsequence_shift_tscale1(seq, delta, scale);
+    tsequence_shift_tscale_iter(seq, delta, scale);
   }
   return result;
 }
@@ -1681,12 +1714,7 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tcontseq_restrict_value1(seq, value, atfunc, &sequences[k]);
-  }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
+    k += tcontseq_restrict_value_iter(seq, value, atfunc, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1695,7 +1723,6 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) an array of
  * base values.
- *
  * @param[in] ss Temporal sequence set
  * @param[in] set Set of base values
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -1718,11 +1745,9 @@ tsequenceset_restrict_values(const TSequenceSet *ss, const Set *set,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tsequence_at_values1(seq, set, &sequences[k]);
+    k += tsequence_at_values_iter(seq, set, &sequences[k]);
   }
-  TSequenceSet *atresult = NULL;
-  if (k > 0)
-    atresult = tsequenceset_make_free(sequences, k, NORMALIZE);
+  TSequenceSet *atresult = tsequenceset_make_free(sequences, k, NORMALIZE);
   if (atfunc)
     return atresult;
 
@@ -1749,7 +1774,6 @@ tsequenceset_restrict_values(const TSequenceSet *ss, const Set *set,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal number to a span of base values.
- *
  * @note It is supposed that a bounding box test has been done in the dispatch
  * function.
  * @sqlfunc atSpan(), minusSpan()
@@ -1772,12 +1796,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tnumbercontseq_restrict_span2(seq, span, atfunc, &sequences[k]);
-  }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
+    k += tnumbercontseq_restrict_span_iter(seq, span, atfunc, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1786,7 +1805,6 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal number to (the complement of) an array of
  * spans of base values
- *
  * @param[in] ss Temporal number
  * @param[in] spanset Span set
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -1812,13 +1830,8 @@ tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *spanset,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tnumbercontseq_restrict_spanset1(seq, spanset, atfunc,
+    k += tnumbercontseq_restrict_spanset_iter(seq, spanset, atfunc,
       &sequences[k]);
-  }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1827,7 +1840,6 @@ tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *spanset,
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) its
  * minimum/maximum base value
- *
  * @param[in] ss Temporal sequence set
  * @param[in] min True if restricted to the minumum value, false for the
  * maximum value
@@ -1879,7 +1891,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
     for (i = 0; i < ss->count; i++)
     {
       seq = TSEQUENCESET_SEQ_N(ss, i);
-      k += tcontseq_minus_timestamp1(seq, t, &sequences[k]);
+      k += tcontseq_minus_timestamp_iter(seq, t, &sequences[k]);
       if (t < DatumGetTimestampTz(seq->period.upper))
       {
         i++;
@@ -1891,6 +1903,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
       sequences[k++] = tsequence_copy(TSEQUENCESET_SEQ_N(ss, j));
     /* k is never equal to 0 since in that case it is a singleton sequence set
        and it has been dealt by tcontseq_minus_timestamp above */
+    assert(k > 0);
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE_NO);
   }
 }
@@ -1973,13 +1986,8 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss, const Set *ts,
     for (int i = 0; i < ss->count; i++)
     {
       seq = TSEQUENCESET_SEQ_N(ss, i);
-      k += tcontseq_minus_timestampset1(seq, ts, &sequences[k]);
+      k += tcontseq_minus_timestampset_iter(seq, ts, &sequences[k]);
 
-    }
-    if (k == 0)
-    {
-      pfree(sequences);
-      return NULL;
     }
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
   }
@@ -2140,8 +2148,8 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const SpanSet *ps,
         /* Compute the difference of the sequence and the FULL periodset.
          * Notice that we cannot compute the difference with the
          * current period without replicating the functionality in
-         * tcontseq_minus_periodset1 */
-        k += tcontseq_minus_periodset1(seq, ps, j, &sequences[k]);
+         * #tcontseq_minus_periodset_iter */
+        k += tcontseq_minus_periodset_iter(seq, ps, &sequences[k]);
         i++;
       }
     }
@@ -2153,11 +2161,6 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const SpanSet *ps,
     /* For minus copy the sequences after the period set */
     while (i < ss->count)
       sequences[k++] = tsequence_copy(TSEQUENCESET_SEQ_N(ss, i++));
-  }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
   }
   /* It is necessary to normalize despite the fact that both the tsequenceset
   * and the periodset are normalized */
@@ -2475,20 +2478,13 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
       (cmp == 0 && (! seq->period.upper_inc || seq1->period.upper_inc)))
       break;
   }
-  if (k == 0)
-  {
-    pfree(sequences1); pfree(sequences2);
-    return false;
-  }
-
   *inter1 = tsequenceset_make_free(sequences1, k, NORMALIZE_NO);
   *inter2 = tsequenceset_make_free(sequences2, k, NORMALIZE_NO);
-  return true;
+  return k > 0;
 }
 
 /**
  * @brief Temporally intersect or synchronize two temporal sequence sets
- *
  * @param[in] ss1,ss2 Input values
  * @param[in] mode Intersection or synchronization (with or without adding crossings)
  * @param[out] inter1, inter2 Output values
@@ -2533,15 +2529,9 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ss1,
     else
       j++;
   }
-  if (k == 0)
-  {
-    pfree(sequences1); pfree(sequences2);
-    return false;
-  }
-
   *inter1 = tsequenceset_make_free(sequences1, k, NORMALIZE_NO);
   *inter2 = tsequenceset_make_free(sequences2, k, NORMALIZE_NO);
-  return true;
+  return k > 0;
 }
 
 /*****************************************************************************
@@ -2550,7 +2540,6 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ss1,
 
 /**
  * @brief Temporally intersect two temporal values
- *
  * @param[in] ss,inst Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
@@ -2571,7 +2560,6 @@ intersection_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
 
 /**
  * @brief Temporally intersect two temporal values
- *
  * @param[in] inst,ss Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
@@ -2585,7 +2573,6 @@ intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
 
 /**
  * @brief Temporally intersect two temporal values
- *
  * @param[in] ss,seq Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
@@ -2637,7 +2624,6 @@ intersection_tsequenceset_tdiscseq(const TSequenceSet *ss,
 
 /**
  * @brief Temporally intersect two temporal values
- *
  * @param[in] seq,ss Input values
  * @param[out] inter1,inter2 Output values
  * @result Return false if the input values do not overlap on time
@@ -2651,7 +2637,6 @@ intersection_tdiscseq_tsequenceset(const TSequence *seq,
 
 /**
  * @brief Temporally intersect or synchronize two temporal values
- *
  * @param[in] seq,ss Input values
  * @param[in] mode Enumeration for either intersect or synchronize
  * @param[out] inter1, inter2 Output values
@@ -2672,7 +2657,6 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss
 /**
  * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence set from its Well-Known Text (WKT) representation.
- *
  * @param[in] str String
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
@@ -2760,7 +2744,6 @@ tgeogpointseqset_in(const char *str)
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
- *
  * @param[in] ss Temporal sequence set
  * @param[in] maxdd Maximum number of decimal digits to output for floating point
  * values
@@ -2963,7 +2946,6 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
 /**
  * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a timestamp from a temporal sequence set.
- *
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
  * @sqlfunc atTime(), minusTime()
@@ -3000,11 +2982,7 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
     if (seq1)
       sequences[k++] = seq1;
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  assert(k > 0);
   return tsequenceset_make_free(sequences, k, NORMALIZE_NO);
 }
 
@@ -3051,11 +3029,6 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss, const Set *ts)
     seq1 = tcontseq_delete_timestampset(seq, ts);
     if (seq1)
       sequences[k++] = seq1;
-  }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -3216,7 +3189,6 @@ tnumberseqset_twavg(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_internal_temporal_comp
  * @brief Return true if two temporal sequence sets are equal.
- *
  * @pre The arguments are of the same base type
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -3247,9 +3219,8 @@ tsequenceset_eq(const TSequenceSet *ss1, const TSequenceSet *ss2)
 
 /**
  * @ingroup libmeos_internal_temporal_comp
- * @brief Return -1, 0, or 1 depending on whether the first Temporal sequence set
- * is less than, equal, or greater than the second one.
- *
+ * @brief Return -1, 0, or 1 depending on whether the first Temporal sequence
+ * set is less than, equal, or greater than the second one.
  * @pre The arguments are of the same base type
  * @note Period and bounding box comparison have been done by the calling
  * function @ref temporal_cmp

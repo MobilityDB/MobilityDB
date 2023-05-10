@@ -739,7 +739,7 @@ SELECT asText(makeSimple(tgeompoint
 
 --------------------------------------------------------
 
--- Take care of NULL inputs since the funtion is not STRICT
+-- Test for NULL inputs since the function is not STRICT
 SELECT asText(atGeometry(NULL::tgeompoint, geometry 'Linestring(0 0,3 3)'));
 SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry));
 
@@ -755,6 +755,8 @@ SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(0 3)@2000-01-01, Point(1 1)@2000-01-02, Point(3 2)@2000-01-03, Point(0 3)@2000-01-04]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
 
+SELECT asText(atGeometry(tgeompoint 'Interp=Step;(Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(2 2)@2000-01-03)', geometry 'Linestring(1 1,2 2)'));
+SELECT asText(atGeometry(tgeompoint 'Interp=Step;(Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(2 2)@2000-01-03)', geometry 'Point(2 2)'));
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(4 4)@2000-01-01, Point(3 3)@2000-01-02]', geometry 'Polygon((0 0,0 3,3 3,3 0,0 0))'));
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(4 4)@2000-01-01, Point(5 5)@2000-01-02, Point(3 3)@2000-01-03]', geometry 'Polygon((00 0,0 3,3 3,3 0,0 0))'));
 
@@ -778,6 +780,16 @@ SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000
 SELECT asText(atGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring Z empty'));
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring empty'));
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring empty'));
+
+SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000-01-02]', geometry 'Linestring(0 0,0 2,2 2)'));
+
+-- Period
+SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0, 2 2)', NULL, tstzspan '[2000-01-01, 2000-01-02]'));
+SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02, Point(2 2)@2000-01-03]', geometry 'Linestring(0 0, 2 2)', NULL, tstzspan '[2000-01-01, 2000-01-02]'));
+
+--3D Zspan
+SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0, 2 2)', floatspan '[0, 2]'));
+
 
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0,1 1)'));
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02]','Point(2 2)'));
@@ -835,9 +847,23 @@ SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 
 -- Equivalences
 WITH temp(trip, geo, zspan) AS (
   SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03,
-    Point(3 1 3)@2000-01-05]', geometry 'Polygon((2 0,2 2,2 4,4 0,2 0))', floatspan '[0,2]' )
+    Point(3 1 3)@2000-01-05]', geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', floatspan '[0,2]' )
 SELECT trip = merge(atGeometry(trip, geo, zspan), minusGeometry(trip, geo, zspan))
 FROM temp;
+
+WITH temp(trip, geo, period) AS (
+  SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(5 1)@2000-01-05, Point(1 1)@2000-01-09]',
+    geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', tstzspan '[2000-01-03, 2000-01-05]' )
+SELECT trip = merge(atGeometryTime(trip, geo, NULL::floatspan, period),
+  minusGeometryTime(trip, geo, NULL::floatspan, period)) FROM temp;
+
+WITH temp(trip, geo, zspan, period) AS (
+  SELECT tgeompoint '[Point(1 1 1)@2000-01-01,
+    Point(5 1 5)@2000-01-05, Point(1 1 9)@2000-01-09]',
+    geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', floatspan '[0,5]',
+    tstzspan '[2000-01-03, 2000-01-05]' )
+SELECT trip = merge(atGeometryTime(trip, geo, zspan, period),
+  minusGeometryTime(trip, geo, zspan, period)) FROM temp;
 
 --------------------------------------------------------
 
@@ -859,10 +885,21 @@ SELECT asText(minusStbox(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01
 SELECT asText(minusStbox(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
 SELECT asText(minusStbox(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
 
+-- Instantaneous sequence
+SELECT asText(atStbox(tgeompoint '{Point(1 1)@2000-01-01}', stbox 'STBOX X((1 1),(3 3))'));
+SELECT asText(atStbox(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01]', stbox 'STBOX X((1 1),(3 3))'));
+SELECT asText(atStbox(tgeompoint '[Point(1 1)@2000-01-01]', stbox 'STBOX X((1 1),(3 3))'));
+
+-- 3D
+SELECT asText(atStbox(tgeompoint '[Point(2 0 2)@2000-01-01, Point(2 4 2)@2000-01-02]', stbox 'STBOX Z((1 1 1),(3
+3 3))'));
+
+-- Mix 2D/3D
+SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
+
 /* Errors */
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
 SELECT asText(atStbox(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
 
 -------------------------------------------------------------------------------
 

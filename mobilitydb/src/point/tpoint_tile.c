@@ -76,22 +76,26 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     STBox *bounds = PG_GETARG_STBOX_P(0);
     ensure_has_X_stbox(bounds);
     ensure_not_geodetic(bounds->flags);
-    double size = PG_GETARG_FLOAT8(1);
-    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
+    double xsize = PG_GETARG_FLOAT8(1);
+    double ysize = PG_GETARG_FLOAT8(2);
+    double zsize = PG_GETARG_FLOAT8(3);
+    ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+    ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
+    ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
     GSERIALIZED *sorigin;
     int64 tunits = 0; /* make compiler quiet */
     TimestampTz torigin = 0; /* make compiler quiet */
-    if (PG_NARGS() == 3)
-      sorigin = PG_GETARG_GSERIALIZED_P(2);
-    else /* PG_NARGS() == 5 */
+    if (PG_NARGS() == 5)
+      sorigin = PG_GETARG_GSERIALIZED_P(4);
+    else /* PG_NARGS() == 7 */
     {
       /* If time arguments are given */
       ensure_has_T_stbox(bounds);
-      Interval *duration = PG_GETARG_INTERVAL_P(2);
+      Interval *duration = PG_GETARG_INTERVAL_P(4);
       ensure_valid_duration(duration);
       tunits = interval_units(duration);
-      sorigin = PG_GETARG_GSERIALIZED_P(3);
-      torigin = PG_GETARG_TIMESTAMPTZ(4);
+      sorigin = PG_GETARG_GSERIALIZED_P(5);
+      torigin = PG_GETARG_TIMESTAMPTZ(6);
     }
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
@@ -121,8 +125,8 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, size, tunits, pt,
-      torigin);
+    funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, xsize, ysize,
+      zsize, tunits, pt, torigin);
     /* Build a tuple description for a multidim_grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -174,30 +178,36 @@ Stbox_tile(PG_FUNCTION_ARGS)
   ensure_non_empty(point);
   ensure_point_type(point);
   TimestampTz t = 0; /* make compiler quiet */
-  double size;
+  double xsize, ysize, zsize;
   int64 tunits = 0; /* make compiler quiet */
   GSERIALIZED *sorigin;
   TimestampTz torigin = 0; /* make compiler quiet */
   bool hast = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() == 5)
   {
-    size = PG_GETARG_FLOAT8(1);
-    sorigin = PG_GETARG_GSERIALIZED_P(2);
+    xsize = PG_GETARG_FLOAT8(1);
+    ysize = PG_GETARG_FLOAT8(2);
+    zsize = PG_GETARG_FLOAT8(3);
+    sorigin = PG_GETARG_GSERIALIZED_P(4);
   }
-  else /* PG_NARGS() == 6 */
+  else /* PG_NARGS() == 8 */
   {
     /* If time arguments are given */
     t = PG_GETARG_TIMESTAMPTZ(1);
-    size = PG_GETARG_FLOAT8(2);
-    Interval *duration = PG_GETARG_INTERVAL_P(3);
+    xsize = PG_GETARG_FLOAT8(2);
+    ysize = PG_GETARG_FLOAT8(3);
+    zsize = PG_GETARG_FLOAT8(4);
+    Interval *duration = PG_GETARG_INTERVAL_P(5);
     ensure_valid_duration(duration);
     tunits = interval_units(duration);
-    sorigin = PG_GETARG_GSERIALIZED_P(4);
-    torigin = PG_GETARG_TIMESTAMPTZ(5);
+    sorigin = PG_GETARG_GSERIALIZED_P(6);
+    torigin = PG_GETARG_TIMESTAMPTZ(7);
     hast = true;
   }
   /* Ensure parameter validity */
-  ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
   ensure_non_empty(sorigin);
   ensure_point_type(sorigin);
   int32 srid = gserialized_get_srid(point);
@@ -224,59 +234,21 @@ Stbox_tile(PG_FUNCTION_ARGS)
     ptorig.x = p2->x;
     ptorig.y = p2->y;
   }
-  double xmin = float_bucket(pt.x, size, ptorig.x);
-  double ymin = float_bucket(pt.y, size, ptorig.y);
-  double zmin = float_bucket(pt.z, size, ptorig.z);
+  double xmin = float_bucket(pt.x, xsize, ptorig.x);
+  double ymin = float_bucket(pt.y, ysize, ptorig.y);
+  double zmin = float_bucket(pt.z, zsize, ptorig.z);
   TimestampTz tmin = 0; /* make compiler quiet */
   if (hast)
     tmin = timestamptz_bucket1(t, tunits, torigin);
   STBox *result = palloc0(sizeof(STBox));
-  stbox_tile_set(xmin, ymin, zmin, tmin, size, tunits, hasz, hast, srid,
-    result);
+  stbox_tile_set(xmin, ymin, zmin, tmin, xsize, ysize, zsize, tunits, hasz,
+    hast, srid, result);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
  * Split functions
  *****************************************************************************/
-
-/**
- * @brief Get the tile border that must be removed from a spatiotemporal box
- * during the tiling process as a PostGIS geometry
- *
- * The following figure shows the borders that are removed (represented by x)
- * @code
- * xxxxxxxxxxxxxxxxx
- * |               x
- * |               x
- * |---------------x
- * @endcode
- */
-static GSERIALIZED *
-stbox_to_tile_border(const STBox *box)
-{
-  ensure_has_X_stbox(box);
-  assert(! MEOS_FLAGS_GET_Z(box->flags));
-  assert(! MEOS_FLAGS_GET_GEODETIC(box->flags));
-  /* Since there is no M value a 0 value is passed */
-  POINTARRAY *pa = ptarray_construct_empty(false, 0, 3);
-  /* Initialize the 3 vertices of the line */
-  POINT4D pt;
-  pt = (POINT4D) { box->xmin, box->ymax, 0.0, 0.0 };
-  ptarray_append_point(pa, &pt, LW_TRUE);
-  pt = (POINT4D) { box->xmax, box->ymax, 0.0, 0.0 };
-  ptarray_append_point(pa, &pt, LW_TRUE);
-  pt = (POINT4D) { box->xmax, box->ymin, 0.0, 0.0 };
-  ptarray_append_point(pa, &pt, LW_TRUE);
-  /* No bbox is passed as second argument */
-  LWLINE *line = lwline_construct(box->srid, NULL, pa);
-  FLAGS_SET_Z(line->flags, false);
-  FLAGS_SET_GEODETIC(line->flags, false);
-  LWGEOM *geo = lwline_as_lwgeom(line);
-  GSERIALIZED *result = geo_serialize(geo);
-  lwgeom_free(geo);
-  return result;
-}
 
 /**
  * @brief Split a temporal point with respect to a spatial and possibly a
@@ -304,11 +276,13 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-    double size = PG_GETARG_FLOAT8(1);
+    double xsize = PG_GETARG_FLOAT8(1);
+    double ysize = PG_GETARG_FLOAT8(2);
+    double zsize = PG_GETARG_FLOAT8(3);
     Interval *duration = NULL;
     TimestampTz torigin = 0;
     int64 tunits = 0;
-    int i = 2;
+    int i = 4;
     if (timesplit)
     {
       duration = PG_GETARG_INTERVAL_P(i++);
@@ -328,7 +302,9 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       MEOS_FLAGS_SET_T(bounds.flags, false);
 
     /* Ensure parameter validity */
-    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
+    ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+    ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
+    ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
     ensure_same_geodetic(temp->flags, sorigin->gflags);
@@ -337,7 +313,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-    hasz = (bool) MEOS_FLAGS_GET_Z(temp->flags);
+    hasz = MEOS_FLAGS_GET_Z(temp->flags);
     if (hasz)
     {
       ensure_has_Z_gs(sorigin);
@@ -353,7 +329,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     }
 
     /* Create function state */
-    state = stbox_tile_state_make(temp, &bounds, size, tunits, pt, torigin);
+    state = stbox_tile_state_make(temp, &bounds, xsize, ysize, zsize, tunits,
+      pt, torigin);
     /* If a bit matrix is used to speed up the process */
     if (bitmatrix)
     {
@@ -362,10 +339,11 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       memset(&count, 0, sizeof(count));
       int numdims = 2;
       /* We need to add 1 to take into account the last bucket for each dimension */
-      count[0] = (int) ((state->box.xmax - state->box.xmin) / state->size) + 1;
-      count[1] = (int) ((state->box.ymax - state->box.ymin) / state->size) + 1;
+      count[0] = (int) ((state->box.xmax - state->box.xmin) / state->xsize) + 1;
+      count[1] = (int) ((state->box.ymax - state->box.ymin) / state->ysize) + 1;
       if (MEOS_FLAGS_GET_Z(state->box.flags))
-        count[numdims++] = (int) ((state->box.zmax - state->box.zmin) / state->size) + 1;
+        count[numdims++] = (int) ((state->box.zmax - state->box.zmin) /
+          state->zsize) + 1;
       if (state->tunits)
         count[numdims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
           DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
@@ -416,49 +394,16 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       SRF_RETURN_DONE(funcctx);
     }
     stbox_tile_state_next(state);
+
     /* Restrict the temporal point to the box */
-    Temporal *atstbox = tpoint_at_stbox1(state->temp, &box);
+    Temporal *atstbox = tpoint_restrict_stbox(state->temp, &box, BORDER_EXC,
+      REST_AT);
     if (atstbox == NULL)
       continue;
-    /* Remove the right and lower bound of the tile */
-    STBox box2d;
-    memcpy(&box2d, &box, sizeof(STBox));
-    MEOS_FLAGS_SET_Z(box2d.flags, false);
-    GSERIALIZED *geo = stbox_to_tile_border(&box2d);
-    Temporal *atstbox1 = tpoint_restrict_geometry(atstbox, geo, NULL,
-      REST_MINUS);
-    pfree(geo); pfree(atstbox);
-    atstbox = atstbox1;
-    if (! atstbox)
-      continue;
-    /* Remove the face of the max Z dimension (if any) */
-    hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
-    if (hasz)
-    {
-      Temporal *atstbox_z = tpoint_get_coord(atstbox, 2);
-      Span zmax;
-      span_set(Float8GetDatum(box.zmax), Float8GetDatum(box.zmax), true, true,
-        T_FLOAT8, &zmax);
-      Temporal *atstbox_zmax = tnumber_restrict_span(atstbox_z, &zmax, REST_AT);
-      pfree(atstbox_z);
-      if (atstbox_zmax)
-      {
-        SpanSet *ss1 = temporal_time(atstbox);
-        SpanSet *ss2 = temporal_time(atstbox_zmax);
-        SpanSet *ss = minus_spanset_spanset(ss1, ss2);
-        pfree(atstbox_zmax); pfree(ss1); pfree(ss2);
-        if (! ss)
-        {
-          pfree(atstbox);
-          continue;
-        }
-        atstbox1 = temporal_restrict_periodset(atstbox, ss, REST_AT);
-        pfree(atstbox); pfree(ss);
-        atstbox = atstbox1;
-     }
-    }
+
     /* Form tuple and return */
     int i = 0;
+    hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
     tuple_arr[i++] = PointerGetDatum(gspoint_make(box.xmin, box.ymin, box.zmin,
       hasz, false, box.srid));
     if (timesplit)

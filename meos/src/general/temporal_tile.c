@@ -1188,13 +1188,12 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
         datum_lt(bucket_upper, max_value, basetype))
       {
         TimestampTz t;
-        /* To reduce the roundoff errors we may take the bound instead of
-         * projecting the value to the timestamp */
         Datum projvalue;
         tlinearsegm_intersection_value(inst1, inst2, bucket_upper, basetype,
           &projvalue, &t);
-        tofree[l++] = bounds[last] =  SPAN_ROUNDOFF ?
-          tinstant_make(bucket_upper, seq->temptype, t) :
+        /* To reduce the roundoff errors we take the value projected to the
+         * timestamp instead of the bound value */
+        tofree[l++] = bounds[last] =
           tinstant_make(projvalue, seq->temptype, t);
       }
       else

@@ -23,7 +23,7 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  *****************************************************************************/
 
@@ -1004,7 +1004,7 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
   if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags))
   {
     ensure_same_geodetic(box1->flags, box2->flags);
-    ensure_same_srid_stbox(box1, box2);
+    ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
   }
   stbox_stbox_flags(box1, box2, hasx, hasz, hast, geodetic);
   return;
@@ -1138,7 +1138,7 @@ static void
 pos_stbox_stbox_test(const STBox *box1, const STBox *box2)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
   return;
 }
 
@@ -1393,7 +1393,7 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
   /* If the strict parameter is true, we need to ensure that the boxes
    * intersect, otherwise their union cannot be represented by a box */
   if (strict && ! overlaps_stbox_stbox(box1, box2))
@@ -1414,9 +1414,6 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
 bool
 inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
-
   bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
   bool hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
@@ -1430,6 +1427,11 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
     (hast && ! overlaps_span_span(&box1->period, &box2->period)))
     return false;
 
+  if (hasx)
+  {
+    ensure_same_geodetic(box1->flags, box2->flags);
+    ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
+  }
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
   Span period;
   if (hasx)
@@ -1463,7 +1465,7 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
   // ensure_same_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
   STBox *result = palloc(sizeof(STBox));
   if (! inter_stbox_stbox(box1, box2, result))
   {

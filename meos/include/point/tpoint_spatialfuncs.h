@@ -46,6 +46,10 @@
 #define GEOM_TO_GEOG        true
 #define GEOG_TO_GEOM        false
 
+/** Symbolic constants for distinguishing between atGeometry and atGeometryTime */
+#define REST_TIME           true
+#define REST_TIME_NO        false
+
 /*****************************************************************************
  * Direct access to a single point in the GSERIALIZED struct
  *****************************************************************************/
@@ -92,6 +96,7 @@
 
 extern POINT2D datum_point2d(Datum value);
 extern POINT3DZ datum_point3dz(Datum value);
+extern void gs_point4d(const GSERIALIZED *gs, POINT4D *p);
 extern void datum_point4d(Datum value, POINT4D *p);
 
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
@@ -119,9 +124,6 @@ extern void ensure_spatial_validity(const Temporal *temp1,
 extern void ensure_not_geodetic(int16 flags);
 extern void ensure_same_geodetic(int16 flags1, int16 flags2);
 extern void ensure_same_srid(int32_t srid1, int32_t srid2);
-extern void ensure_same_srid_stbox(const STBox *box1, const STBox *box2);
-extern void ensure_same_srid_tpoint_stbox(const Temporal *temp,
-  const STBox *box);
 extern void ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs);
 extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
@@ -203,10 +205,8 @@ extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
 /* Restriction functions */
 
-extern TSequence **tpointseq_at_geometry(const TSequence *seq,
+extern TSequence **tpointseq_at_geom(const TSequence *seq,
   const GSERIALIZED *gs, int *count);
-extern Temporal *tpoint_at_stbox1(const Temporal *temp, const STBox *box);
-extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBox *box);
 extern Span *tpointseq_interperiods(const TSequence *seq,
   GSERIALIZED *gsinter, int *count);
 
