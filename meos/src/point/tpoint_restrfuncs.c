@@ -1652,12 +1652,38 @@ computeMaxBorderCode(double x, double y, double z, bool hasz, const STBox *box)
 }
 
 /**
- * @brief Clipping a line from p1 = (x1, y1, z1) to p2 = (x2, y2, z2)
- * @param[in] p1,p2 Input points
+ * @brief Maximum value of the array, needed for the Liang-Barsky algorithm
+ */
+double maxi(double arr[], int n) {
+  double m = 0;
+  for (int i = 0; i < n; ++i)
+    if (m < arr[i])
+      m = arr[i];
+  return m;
+}
+
+/**
+ * @brief Minimum value of the array, needed for the Liang-Barsky algorithm
+ */
+double mini(double arr[], int n) {
+  double m = 1;
+  for (int i = 0; i < n; ++i)
+    if (m > arr[i])
+      m = arr[i];
+  return m;
+}
+
+/**
+ * @brief Clip a segment define by p1 = (x1, y1, z1) and p2 = (x2, y2, z2)
+ * using the Liang-Barsky
+ * https://en.wikipedia.org/wiki/Liang%E2%80%93Barsky_algorithm
+ * or using the Cohen-Sutherland
+ * https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
+ * @param[in] point1,point2 Input points
  * @param[in] box Bounding box
  * @param[in] hasz Has Z dimension?
  * @param[in] border_inc True when the box contains the upper border
- * @param[out] p3,p4 Output points
+ * @param[out] point3,point4 Output points
  * @param[out] p3_inc,p4_inc Are the points included or not in the box?
  * @result True if the line segment defined by p1,p2 intersects the bounding
  * box, false otherwise
@@ -1821,6 +1847,198 @@ cohenSutherlandClip(Datum p1, Datum p2, const STBox *box, bool hasz,
     *p4 = PointerGetDatum(gspoint_make(x2, y2, z2, hasz, false, srid));
   }
   return found;
+}
+
+bool
+liangBarksyClip(Datum point1, Datum point2, const STBox *box, bool hasz,
+  bool border_inc, Datum *point3, Datum *point4, bool *p3_inc, bool *p4_inc)
+{
+  assert(MEOS_FLAGS_GET_X(box->flags));
+  assert(! datum2_point_eq(point1, point2));
+  const GSERIALIZED *gs1 = DatumGetGserializedP(point1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(point2);
+  if (hasz)
+    assert(MEOS_FLAGS_GET_Z(box->flags) && (bool) FLAGS_GET_Z(gs1->gflags) &&
+      (bool) FLAGS_GET_Z(gs2->gflags));
+
+  int srid = gserialized_get_srid(gs1);
+  assert(srid == gserialized_get_srid(gs2));
+
+  /* Get the input points */
+  double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0;
+  if (hasz)
+  {
+    const POINT3DZ *pt1 = GSERIALIZED_POINT3DZ_P(gs1);
+    const POINT3DZ *pt2 = GSERIALIZED_POINT3DZ_P(gs2);
+    x1 = pt1->x; x2 = pt2->x;
+    y1 = pt1->y; y2 = pt2->y;
+    z1 = pt1->z; z2 = pt2->z;
+  }
+  else
+  {
+    const POINT2D *pt1 = GSERIALIZED_POINT2D_P(gs1);
+    const POINT2D *pt2 = GSERIALIZED_POINT2D_P(gs2);
+    x1 = pt1->x; x2 = pt2->x;
+    y1 = pt1->y; y2 = pt2->y;
+  }
+
+  /* Define pi and qi */
+  double p[6] = {0}, q[6] = {0};
+  p[0] = -(x2 - x1);
+  p[1] = -p[0];
+  p[2] = -(y2 - y1);
+  p[3] = -p[2];
+
+  q[0] = x1 - box->xmin;
+  q[1] = box->xmax - x1;
+  q[2] = y1 - box->ymin;
+  q[3] = box->ymax - y1;
+
+  int maxidx;
+  if (hasz)
+  {
+    maxidx = 6;
+    p[4] = -(z2 - z1);
+    p[5] = -p[4];
+    q[4] = z1 - box->zmin;
+    q[5] = box->zmax - z1;
+  }
+  else
+    maxidx = 4;
+
+  /* Exit if line is out of the visible region */
+  for (int i = 0; i < maxidx; i++)
+    if (p[i] == 0 && q[i] <= 0)
+      return 0;
+
+  /* Compute the output values */
+  double x3, y3, z3 = 0.0, x4, y4, z4 = 0.0;
+  double t_min = 0, t_max = 1;
+  if (p[0] == 0 && p[1] == 0)
+  {
+    // Line parallel to left & right & in visible region (x2 == x1)
+    x3 = x4 = x1;
+    /* We know point1 != point2: Find one pi that is not zero */
+    if (p[3] != 0)
+    {
+      y3 = Max(y1, box->ymin);
+      y4 = Min(y2, box->ymax);
+      t_min = (y3 - y1) / p[3];
+      t_max = (y4 - y1) / p[3];
+      if (hasz)
+      {
+        z3 = z1 + p[5] * t_min;
+        z4 = z1 + p[5] * t_max;
+      }
+    }
+    else /* p[5] != 0 */
+    {
+      z3 = Max(z1, box->zmin);
+      z4 = Min(z2, box->zmax);
+      t_min = (z3 - z1) / p[5];
+      t_max = (z4 - z1) / p[5];
+      y3 = y1 + p[3] * t_min;
+      y4 = y1 + p[3] * t_max;
+    }
+  }
+  else if(p[2] == 0 && p[3] == 0)
+  {
+    // Line parallel to top & bottom & in visible region (y2 == y1)
+    y3 = y4 = y1;
+    /* We know point1 != point2: Find one pi that is not zero */
+    if (p[1] != 0)
+    {
+      x3 = Max(x1, box->xmin);
+      x4 = Min(x2, box->xmax);
+      t_min = (x3 - x1) / p[1];
+      t_max = (x4 - x1) / p[1];
+      if (hasz)
+      {
+        z3 = z1 + p[5] * t_min;
+        z4 = z1 + p[5] * t_max;
+      }
+    }
+    else /* p[5] != 0 */
+    {
+      z3 = Max(z1, box->zmin);
+      z4 = Min(z2, box->zmax);
+      t_min = (z3 - z1) / p[5];
+      t_max = (z4 - z1) / p[5];
+      x3 = x1 + p[1] * t_min;
+      x4 = x1 + p[1] * t_max;
+    }
+  }
+  else if(hasz && p[4] == 0 && p[5] == 0)
+  {
+    // Line parallel to top & bottom & in visible region (z2 == z1)
+    z3 = z4 = z1;
+    /* We know point1 != point2: Find one pi that is not zero */
+    if (p[1] != 0)
+    {
+      x3 = Max(x1, box->xmin);
+      x4 = Min(x2, box->xmax);
+      t_min = (x3 - x1) / p[1];
+      t_max = (x4 - x1) / p[1];
+      y3 = y1 + p[3] * t_min;
+      y4 = y1 + p[3] * t_max;
+    }
+    else /* p[3] != 0 */
+    {
+      y3 = Max(y1, box->ymin);
+      y4 = Min(y2, box->ymax);
+      t_min = (y3 - y1) / p[3];
+      t_max = (y4 - y1) / p[3];
+      x3 = x1 + p[1] * t_min;
+      x4 = x1 + p[1] * t_max;
+    }
+  }
+  else
+  {
+    for (int i = 0; i < maxidx; i++)
+    {
+      if (p[i] != 0)
+      {
+        double r = q[i] / p[i];
+        if (p[i] < 0)
+          t_min = Max(t_min, r);
+        else /* p[i] > 0 */
+          t_max = Min(t_max, r);
+      }
+     }
+
+    /* Exit if line is outside the visible region */
+    if (t_min > t_max)
+      return false;
+
+    /* Clip the segment */
+    x3 = x1 + p[1] * t_min;
+    x4 = x1 + p[1] * t_max;
+    y3 = y1 + p[3] * t_min;
+    y4 = y1 + p[3] * t_max;
+    if (hasz)
+    {
+      z3 = z1 + p[5] * t_min;
+      z4 = z1 + p[5] * t_max;
+    }
+  }
+
+  /* Remove the max border */
+  if (! border_inc)
+  {
+    /* Compute max border codes for the input points */
+    int max_code1 = computeMaxBorderCode(x3, y3, z3, hasz, box);
+    int max_code2 = computeMaxBorderCode(x4, y4, z4, hasz, box);
+    /* If the whole segment is on a max border, remove it */
+    if (max_code1 & max_code2)
+      return false;
+    /* Point is included if its max_code is 0 */
+    *p3_inc = ! max_code1;
+    *p4_inc = ! max_code2;
+  }
+  *point3 = PointerGetDatum(gspoint_make(x3, y3, z3, hasz, false, srid));
+  *point4 = PointerGetDatum(gspoint_make(x4, y4, z4, hasz, false, srid));
+
+  return true;
 }
 
 /*****************************************************************************/
@@ -2162,7 +2380,9 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     else
     {
       bool p3_inc, p4_inc;
-      bool found = cohenSutherlandClip(p1, p2, box, hasz, border_inc, &p3, &p4,
+      // bool found = cohenSutherlandClip(p1, p2, box, hasz, border_inc, &p3, &p4,
+        // &p3_inc, &p4_inc);
+      bool found = liangBarksyClip(p1, p2, box, hasz, border_inc, &p3, &p4,
         &p3_inc, &p4_inc);
       if (found)
       {
@@ -2184,12 +2404,15 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         else
         {
           tpointsegm_timestamp_at_value1(inst1, inst2, p3, &t1);
-          tpointsegm_timestamp_at_value1(inst1, inst2, p4, &t2);
+          if (datum2_point_eq(p3, p4))
+            t2 = t1;
+          else
+            tpointsegm_timestamp_at_value1(inst1, inst2, p4, &t2);
         }
         pfree(DatumGetPointer(p3)); pfree(DatumGetPointer(p4));
         /* To reduce roundoff errors we project the temporal points to the
          * timestamps instead of taking the intersection values returned by
-         * the function #cohenSutherlandClip */
+         * the function #liangBarksyClip */
         Datum inter1, inter2;
         if (t1 != inst1->t)
           inter1 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t1);
@@ -2223,6 +2446,11 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     inst1 = inst2;
     p1 = p2;
     lower_inc = true;
+  }
+  if (k == 0)
+  {
+    pfree(result);
+    return NULL;
   }
   *count = k;
   return result;
