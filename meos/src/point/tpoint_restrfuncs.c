@@ -1588,11 +1588,9 @@ tpoint_minus_geom_time(const Temporal *temp, const GSERIALIZED *gs,
  *****************************************************************************/
 
 /*
- * Cohen Sutherland algorithm for line clipping extended for 3D.
- * https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
+ * Region codes for the Cohen-Sutherland algorithm for 3D line clipping
  */
 
-/* Region codes */
 const int INSIDE  = 0;  /* 000000 */
 const int LEFT    = 1;  /* 000001 */
 const int RIGHT   = 2;  /* 000010 */
@@ -1601,7 +1599,9 @@ const int TOP     = 8;  /* 001000 */
 const int FRONT   = 16; /* 010000 */
 const int BACK    = 32; /* 100000 */
 
-/* Border codes */
+/*
+ * Border codes for the excluding the top border of a spatiotemporal box
+ */
 const int XMAX    = 1;  /* 001 */
 const int YMAX    = 2;  /* 010 */
 const int ZMAX    = 4;  /* 100 */
@@ -1652,10 +1652,8 @@ computeMaxBorderCode(double x, double y, double z, bool hasz, const STBox *box)
 }
 
 /**
- * @brief Clip a segment define by p1 = (x1, y1, z1) and p2 = (x2, y2, z2)
- * using the Liang-Barsky
- * https://en.wikipedia.org/wiki/Liang%E2%80%93Barsky_algorithm
- * or using the Cohen-Sutherland
+ * @brief Clip a segment defined by p1 = (x1, y1, z1) and p2 = (x2, y2, z2)
+ * using the Cohen-Sutherland algorithm
  * https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
  * @param[in] point1,point2 Input points
  * @param[in] box Bounding box
@@ -1827,7 +1825,9 @@ cohenSutherlandClip(Datum p1, Datum p2, const STBox *box, bool hasz,
   return found;
 }
 
-
+/**
+ * @brief Clip the paramaters t0 and t1 for the Liang-Barsky clipping algorithm
+ */
 bool
 clipt(double p, double q, double *t0, double *t1)
 {
@@ -1869,89 +1869,23 @@ clipt(double p, double q, double *t0, double *t1)
   return true;
 }
 
-bool
-clip2d(double x0, double y0, double x1, double y1,
-  double xmin, double xmax, double ymin, double ymax)
-{
-  if ((x0 < xmin && x1 < xmin) || (x0 > xmax && x1 > xmax) ||
-      (y0 < ymin && y1 < ymin) || (y0 > ymax && y1 > ymax))
-    /* trivial reject */
-    return false;
-
-  /* not trivial reject */
-  double t0 = 0, t1 = 1;
-  double dx = x1 - x0;
-  if (clipt(-dx, x0 - xmin, &t0, &t1) && /* left */
-      clipt(dx, xmax - x0, &t0, &t1)) /* right */
-  {
-    double dy = y1 - y0;
-    if (clipt(- dy, y0 - ymin, &t0, &t1) && /* bottom */
-       clipt(dy, ymax - y0, &t0, &t1)) /* top */
-    {
-      /* compute coordinates */
-      if (t1 < 1)
-      {
-        /* compute V1’ */
-        x1 = x0 + t1 * dx;
-        y1 = y0 + t1 * dy;
-      }
-      if (t0 > 0)
-      {
-        /* compute V0’ */
-        x0 = x0 + t0 * dx;
-        y0 = y0 + t0 * dy;
-      }
-      return true;
-    }
-  }
-  return false;
-}
-
-bool
-clip3d(double x0, double y0, double z0, double x1, double y1, double z1,
-  double xmin, double ymin, double zmin, double xmax, double ymax, double zmax)
-{
-  if ((x0 < xmin && x1 < xmin) || (x0 > xmax && x1 > xmax) ||
-      (y0 < ymin && y1 < ymin) || (y0 > ymax && y1 > ymax) ||
-      (z0 < zmin && z1 < zmin) || (z0 > zmax && z1 > zmax))
-    /* trivial reject */
-    return false;
-
-  /* not trivial reject */
-  double t0 = 0, t1 = 1;
-  double dx = x1 - x0;
-  if (clipt(-dx, x0 - xmin, &t0, &t1) && /* left */
-      clipt(dx, xmax - x0, &t0, &t1)) /* right */
-  {
-    double dy = y1 - y0;
-    if (clipt(-dy, y0 - ymin, &t0, &t1) && /* bottom */
-        clipt(dy, ymax - y0, &t0, &t1)) /* top */
-    {
-      double dz = z1 - z0;
-      if (clipt(-dz, z0 - zmin, &t0, &t1) && /* bottom */
-          clipt(dz, zmax - z0, &t0, &t1)) /* top */
-      {
-        /* compute coordinates */
-        if (t1 < 1)
-        {
-          /* compute V1’ */
-          x1 = x0 + t1 * dx;
-          y1 = y0 + t1 * dy;
-          z1 = z0 + t1 * dz;
-        }
-        if (t0 > 0)
-        {
-          /* compute V0’ */
-          x0 = x0 + t0 * dx;
-          y0 = y0 + t0 * dy;
-          z0 = z0 + t0 * dz;
-        }
-        return true;
-      }
-    }
-  }
-  return false;
-}
+/**
+ * @brief Clip a segment define by p1 = (x1, y1, z1) and p2 = (x2, y2, z2)
+ * using the Liang-Barsky algorithm
+ * https://www.researchgate.net/publication/255657434_Some_Improvements_to_a_Parametric_Line_Clipping_Algorithm
+ * @param[in] point1,point2 Input points
+ * @param[in] box Bounding box
+ * @param[in] hasz Has Z dimension?
+ * @param[in] border_inc True when the box contains the upper border
+ * @param[out] point3,point4 Output points
+ * @param[out] p3_inc,p4_inc Are the points included or not in the box?
+ * @result True if the line segment defined by p1,p2 intersects the bounding
+ * box, false otherwise
+ * @note When border_inc is false, the max border is counted as outside of the box
+ * @note p3_inc and p4_inc are only written/returned when border_inc is true
+ * @note It is possible to mix 2D/3D geometries, the Z dimension is only
+ * considered if both the temporal point and the box have Z dimension
+ */
 
 bool
 liangBarksyClip(Datum point1, Datum point2, const STBox *box, bool hasz,
@@ -2132,6 +2066,7 @@ tpointinst_restrict_stbox(const TInstant *inst, const STBox *box,
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
  * @param[in] atfunc True if the restriction is at, false for minus
+ * @pre Instantaneous sequences have been managed in the calling function
  * @sqlfunc atStbox(), minusStbox()
  */
 TSequence *
@@ -2139,123 +2074,21 @@ tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
   bool border_inc, bool atfunc)
 {
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-    if (tpointinst_restrict_stbox_iter(inst, box, border_inc, atfunc))
-      return tsequence_copy(seq);
-    return NULL;
-  }
+  assert (seq->count > 0);
 
-  /* General case */
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  int k = 0;
+  int ninsts = 0;
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     if (tpointinst_restrict_stbox_iter(inst, box, border_inc, atfunc))
-      instants[k++] = inst;
+      instants[ninsts++] = inst;
   }
   TSequence *result = NULL;
-  if (k > 0)
-    result = tsequence_make(instants, k, true, true, DISCRETE, NORMALIZE_NO);
+  if (ninsts > 0)
+    result = tsequence_make(instants, ninsts, true, true, DISCRETE,
+      NORMALIZE_NO);
   pfree(instants);
-  return result;
-}
-
-/**
- * @brief Restrict a temporal sequence point with step interpolation to a
- * spatiotemporal box (iteration function).
- */
-static TSequence **
-tpointseq_step_at_stbox_iter(const TSequence *seq, const STBox *box,
-  bool border_inc, int *count)
-{
-  /* Compute the time span of the result if the box has T dimension */
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
-  bool found;
-  Span timespan;
-  if (hast)
-  {
-    found = inter_span_span(&seq->period, &box->period, &timespan);
-    if (! found)
-    {
-      *count = 0;
-      return NULL;
-    }
-  }
-
-  bool lower_inc;
-  TSequence **result = palloc(sizeof(TSequence *) * seq->count);
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  TimestampTz start = DatumGetTimestampTz(seq->period.lower);
-  int k = 0, l = 0; /* k: number of instants, l: number of sequences */
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    if (tpointinst_restrict_stbox_iter(inst, box, border_inc, REST_AT))
-      instants[k++] = (TInstant *) inst;
-    else
-    {
-      if (k > 0)
-      {
-        /* Continue the last instant of the sequence until the time of inst2
-         * projected to the T dimension (if any) */
-        Datum value = tinstant_value(instants[k - 1]);
-        bool tofree = false;
-        bool upper_inc = false;
-        if (hast)
-        {
-          Span extend, inter;
-          span_set(TimestampTzGetDatum(instants[k - 1]->t),
-            TimestampTzGetDatum(inst->t), true, false, T_TIMESTAMPTZ, &extend);
-          found = inter_span_span(&timespan, &extend, &inter);
-          if (found)
-          {
-            if (! datum_eq(inter.lower, inter.upper, T_TIMESTAMPTZ))
-            {
-              instants[k++] = tinstant_make(value, seq->temptype,
-                DatumGetTimestampTz(inter.upper));
-              tofree = true;
-            }
-            else
-              upper_inc = true;
-          }
-        }
-        else
-        {
-          /* Continue the last instant of the sequence until the time of inst2 */
-          instants[k++] = tinstant_make(value, seq->temptype, inst->t);
-          tofree = true;
-        }
-        lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
-        result[l++] = tsequence_make((const TInstant **) instants, k,
-          lower_inc, upper_inc, STEP, NORMALIZE_NO);
-        if (tofree)
-          pfree(instants[k - 1]);
-        k = 0;
-      }
-    }
-  }
-  /* Add a last sequence with the remaining instants */
-  if (k > 0)
-  {
-    lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
-    TimestampTz end = DatumGetTimestampTz(seq->period.upper);
-    bool upper_inc = (instants[k - 1]->t == end) ?
-      seq->period.upper_inc : false;
-    result[l++] = tsequence_make((const TInstant **) instants, k, lower_inc,
-      upper_inc, STEP, NORMALIZE_NO);
-  }
-  /* Clean up and return */
-  pfree(instants);
-  *count = l;
-  if (l == 0)
-  {
-    pfree(result);
-    return NULL;
-  }
   return result;
 }
 
@@ -2267,6 +2100,7 @@ tpointseq_step_at_stbox_iter(const TSequence *seq, const STBox *box,
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
  * @param[in] atfunc True if the restriction is at, false for minus
+ * @pre Instantaneous sequences have been managed in the calling function
  * @note The function computes the "at" restriction on all dimensions and if
  * the requested restriction is "minus", then it computes the complement of the
  * "at" restriction with respect to the time dimension.
@@ -2277,25 +2111,92 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
   bool border_inc, bool atfunc)
 {
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
-  /* Instantaneous sequence */
-  if (seq->count == 1)
+  assert(seq->count > 0);
+
+  /* Compute the time span of the result if the box has T dimension */
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  bool found;
+  Span timespan;
+  if (hast)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-    if (tpointinst_restrict_stbox_iter(inst, box, border_inc, atfunc))
-      return tsequence_to_tsequenceset(seq);
-    return NULL;
+    if (! inter_span_span(&seq->period, &box->period, &timespan))
+      return atfunc ? NULL : tsequence_to_tsequenceset(seq);
   }
 
-  /* General case */
-  int count;
-  TSequence **sequences = tpointseq_step_at_stbox_iter(seq, box, border_inc,
-    &count);
-  /* Return if the computation of "at" is empty */
-  if (count == 0)
+  /* Compute the composing sequences with "at" */
+  bool lower_inc;
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TimestampTz start = DatumGetTimestampTz(seq->period.lower);
+  int ninsts = 0, nseqs = 0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    if (tpointinst_restrict_stbox_iter(inst, box, border_inc, REST_AT))
+      instants[ninsts++] = (TInstant *) inst;
+    else
+    {
+      if (ninsts > 0)
+      {
+        /* Continue the last instant of the sequence until the time of inst2
+         * projected to the T dimension (if any) */
+        Datum value = tinstant_value(instants[ninsts - 1]);
+        bool tofree = false;
+        bool upper_inc = false;
+        if (hast)
+        {
+          Span extend, inter;
+          span_set(TimestampTzGetDatum(instants[ninsts - 1]->t),
+            TimestampTzGetDatum(inst->t), true, false, T_TIMESTAMPTZ, &extend);
+          found = inter_span_span(&timespan, &extend, &inter);
+          if (found)
+          {
+            if (! datum_eq(inter.lower, inter.upper, T_TIMESTAMPTZ))
+            {
+              instants[ninsts++] = tinstant_make(value, seq->temptype,
+                DatumGetTimestampTz(inter.upper));
+              tofree = true;
+            }
+            else
+              upper_inc = true;
+          }
+        }
+        else
+        {
+          /* Continue the last instant of the sequence until the time of inst2 */
+          instants[ninsts++] = tinstant_make(value, seq->temptype, inst->t);
+          tofree = true;
+        }
+        lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
+        sequences[nseqs++] = tsequence_make((const TInstant **) instants,
+          ninsts, lower_inc, upper_inc, STEP, NORMALIZE_NO);
+        if (tofree)
+          pfree(instants[ninsts - 1]);
+        ninsts = 0;
+      }
+    }
+  }
+  /* Add a last sequence with the remaining instants */
+  if (ninsts > 0)
+  {
+    lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
+    TimestampTz end = DatumGetTimestampTz(seq->period.upper);
+    bool upper_inc = (instants[ninsts - 1]->t == end) ?
+      seq->period.upper_inc : false;
+    sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+      lower_inc, upper_inc, STEP, NORMALIZE_NO);
+  }
+  pfree(instants);
+
+  /* Clean up and return if no sequences have been found with "at" */
+  if (nseqs == 0)
+  {
+    pfree(sequences);
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
+  }
 
   /* Construct the result for "at" restriction */
-  TSequenceSet *result_at = tsequenceset_make_free(sequences, count,
+  TSequenceSet *result_at = tsequenceset_make_free(sequences, nseqs,
     NORMALIZE_NO);
   /* If "at" restriction, return */
   if (atfunc)
@@ -2321,7 +2222,7 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
  * @pre The sequence is simple in order to recover the time dimension from
  * the result of the Cohen-Sutherland line clipping algorithm
  * @note Since this function is called AFTER the restriction to the time
- * dimension it is necessary to test for instantaneous sequence
+ * dimension it is necessary to test for instantaneous sequences
  */
 TSequence **
 tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
@@ -2352,7 +2253,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum p1 = tinstant_value(inst1);
   bool lower_inc = seq->period.lower_inc;
-  int k = 0;
+  int nseqs = 0;
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
@@ -2363,40 +2264,21 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     if (datum2_point_eq(p1, p2))
     {
       /* Constant segment */
-      double x, y, z = 0.0;
-      if (hasz)
-      {
-        const POINT3DZ *pt = DATUM_POINT3DZ_P(p1);
-        x = pt->x;
-        y = pt->y;
-        z = pt->z;
-      }
-      else
-      {
-        const POINT2D *pt = DATUM_POINT2D_P(p1);
-        x = pt->x;
-        y = pt->y;
-      }
-      /* Compute region code for the input point */
-      int code = computeCode(x, y, z, hasz, box);
-      int max_code = 0;
-      if (! border_inc)
-        max_code = computeMaxBorderCode(x, y, z, hasz, box);
-      if ((code | max_code) == 0)
+      if (tpointinst_restrict_stbox_iter(inst1, box, border_inc, REST_AT))
       {
         instants[0] = (TInstant *) inst1;
         instants[1] = (TInstant *) inst2;
-        result[k++] = tsequence_make((const TInstant **) instants, 2,
+        result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
           lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
       }
     }
     else
     {
       bool p3_inc, p4_inc;
-      // bool found = cohenSutherlandClip(p1, p2, box, hasz, border_inc, &p3, &p4,
-        // &p3_inc, &p4_inc);
-      bool found = liangBarksyClip(p1, p2, box, hasz, border_inc, &p3, &p4,
+      bool found = cohenSutherlandClip(p1, p2, box, hasz, border_inc, &p3, &p4,
         &p3_inc, &p4_inc);
+      // bool found = liangBarksyClip(p1, p2, box, hasz, border_inc, &p3, &p4,
+        // &p3_inc, &p4_inc);
       if (found)
       {
         if (! border_inc)
@@ -2453,7 +2335,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
              (! free1 || ! free2 || ! datum_point_eq(inter1, inter2)))
             instants[j++] = free2 ?
               tinstant_make(inter2, inst1->temptype, t2) : (TInstant *) inst2;
-          result[k++] = tsequence_make((const TInstant **) instants, j,
+          result[nseqs++] = tsequence_make((const TInstant **) instants, j,
             (j == 1) ? true : lower_inc, (j == 1) ? true : upper_inc, LINEAR,
             NORMALIZE_NO);
           /* Clean up */
@@ -2474,12 +2356,12 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     p1 = p2;
     lower_inc = true;
   }
-  if (k == 0)
+  if (nseqs == 0)
   {
     pfree(result);
     return NULL;
   }
-  *count = k;
+  *count = nseqs;
   return result;
 }
 
@@ -2533,9 +2415,9 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
   /* Restrict to the spatial dimension */
   if (seq_t)
   {
-    int newcount;
-    result = tpointseq_linear_at_stbox_xyz(seq_t, box, border_inc, &newcount);
-    *count = newcount;
+    int nseqs;
+    result = tpointseq_linear_at_stbox_xyz(seq_t, box, border_inc, &nseqs);
+    *count = nseqs;
     if (hast)
       pfree(seq_t);
   }
@@ -2556,13 +2438,13 @@ TSequenceSet *
 tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
   bool border_inc, bool atfunc)
 {
-  int count;
+  int nseqs;
   TSequence **sequences = tpointseq_linear_at_stbox_iter(seq, box, border_inc,
-    &count);
+    &nseqs);
   if (sequences == NULL)
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
 
-  TSequenceSet *result_at = tsequenceset_make_free(sequences, count,
+  TSequenceSet *result_at = tsequenceset_make_free(sequences, nseqs,
     NORMALIZE);
   /* If "at" restriction, return */
   if (atfunc)
@@ -2595,8 +2477,16 @@ Temporal *
 tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border_inc,
   bool atfunc)
 {
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    if (tpointinst_restrict_stbox_iter(inst, box, border_inc, atfunc))
+      return (Temporal *) tsequence_copy(seq);
+  }
+
+  /* General case */
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  /* Discrete sequences can cope with "at" and "minus" in a single pass */
   if (interp == DISCRETE)
     return (Temporal *) tpointseq_disc_restrict_stbox((TSequence *) seq, box,
       border_inc, atfunc);
