@@ -1593,18 +1593,18 @@ tpoint_minus_geom_time(const Temporal *temp, const GSERIALIZED *gs,
  */
 
 /* Region codes */
-const int INSIDE  = 0;  // 000000
-const int LEFT    = 1;  // 000001
-const int RIGHT   = 2;  // 000010
-const int BOTTOM  = 4;  // 000100
-const int TOP     = 8;  // 001000
-const int FRONT   = 16; // 010000
-const int BACK    = 32; // 100000
+const int INSIDE  = 0;  /* 000000 */
+const int LEFT    = 1;  /* 000001 */
+const int RIGHT   = 2;  /* 000010 */
+const int BOTTOM  = 4;  /* 000100 */
+const int TOP     = 8;  /* 001000 */
+const int FRONT   = 16; /* 010000 */
+const int BACK    = 32; /* 100000 */
 
 /* Border codes */
-const int XMAX    = 1;  // 001
-const int YMAX    = 2;  // 010
-const int ZMAX    = 4;  // 100
+const int XMAX    = 1;  /* 001 */
+const int YMAX    = 2;  /* 010 */
+const int ZMAX    = 4;  /* 100 */
 
 /**
  * @brief Compute region code for a point(x, y, z)
@@ -1649,28 +1649,6 @@ computeMaxBorderCode(double x, double y, double z, bool hasz, const STBox *box)
   if (hasz && box->zmax - z < MEOS_EPSILON) /* on zmax border */
     code |= ZMAX;
   return code;
-}
-
-/**
- * @brief Maximum value of the array, needed for the Liang-Barsky algorithm
- */
-double maxi(double arr[], int n) {
-  double m = 0;
-  for (int i = 0; i < n; ++i)
-    if (m < arr[i])
-      m = arr[i];
-  return m;
-}
-
-/**
- * @brief Minimum value of the array, needed for the Liang-Barsky algorithm
- */
-double mini(double arr[], int n) {
-  double m = 1;
-  for (int i = 0; i < n; ++i)
-    if (m > arr[i])
-      m = arr[i];
-  return m;
 }
 
 /**
@@ -1849,6 +1827,132 @@ cohenSutherlandClip(Datum p1, Datum p2, const STBox *box, bool hasz,
   return found;
 }
 
+
+bool
+clipt(double p, double q, double *t0, double *t1)
+{
+  double r;
+  if (p < 0)
+  {
+    /* entering visible region, so compute t0 */
+    if (q < 0)
+    {
+      /* t0 will be nonnegative, so continue */
+      r = q / p;
+      if (r > *t1)
+        /* t0 will exceed t1, so reject */
+        return false;
+      if (r > *t0)
+        *t0 = r; /* t0 is max of r’s */
+    }
+  }
+  else if (p > 0)
+  {
+    /* exiting visible region, so compute t1 */
+    if (q < p)
+    {
+      /* t1 will be <= 1, so continue */
+      r = q / p;
+      if (r < *t0)
+        /* t1 will be <= t0, so reject */
+        return false;
+      if (r < *t1)
+        *t1 = r; /* t1 is min of r’s */
+    }
+  }
+  else /* p == 0 */
+  {
+    if (q < 0)
+      /* line parallel and outside */
+      return false;
+  }
+  return true;
+}
+
+bool
+clip2d(double x0, double y0, double x1, double y1,
+  double xmin, double xmax, double ymin, double ymax)
+{
+  if ((x0 < xmin && x1 < xmin) || (x0 > xmax && x1 > xmax) ||
+      (y0 < ymin && y1 < ymin) || (y0 > ymax && y1 > ymax))
+    /* trivial reject */
+    return false;
+
+  /* not trivial reject */
+  double t0 = 0, t1 = 1;
+  double dx = x1 - x0;
+  if (clipt(-dx, x0 - xmin, &t0, &t1) && /* left */
+      clipt(dx, xmax - x0, &t0, &t1)) /* right */
+  {
+    double dy = y1 - y0;
+    if (clipt(- dy, y0 - ymin, &t0, &t1) && /* bottom */
+       clipt(dy, ymax - y0, &t0, &t1)) /* top */
+    {
+      /* compute coordinates */
+      if (t1 < 1)
+      {
+        /* compute V1’ */
+        x1 = x0 + t1 * dx;
+        y1 = y0 + t1 * dy;
+      }
+      if (t0 > 0)
+      {
+        /* compute V0’ */
+        x0 = x0 + t0 * dx;
+        y0 = y0 + t0 * dy;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+bool
+clip3d(double x0, double y0, double z0, double x1, double y1, double z1,
+  double xmin, double ymin, double zmin, double xmax, double ymax, double zmax)
+{
+  if ((x0 < xmin && x1 < xmin) || (x0 > xmax && x1 > xmax) ||
+      (y0 < ymin && y1 < ymin) || (y0 > ymax && y1 > ymax) ||
+      (z0 < zmin && z1 < zmin) || (z0 > zmax && z1 > zmax))
+    /* trivial reject */
+    return false;
+
+  /* not trivial reject */
+  double t0 = 0, t1 = 1;
+  double dx = x1 - x0;
+  if (clipt(-dx, x0 - xmin, &t0, &t1) && /* left */
+      clipt(dx, xmax - x0, &t0, &t1)) /* right */
+  {
+    double dy = y1 - y0;
+    if (clipt(-dy, y0 - ymin, &t0, &t1) && /* bottom */
+        clipt(dy, ymax - y0, &t0, &t1)) /* top */
+    {
+      double dz = z1 - z0;
+      if (clipt(-dz, z0 - zmin, &t0, &t1) && /* bottom */
+          clipt(dz, zmax - z0, &t0, &t1)) /* top */
+      {
+        /* compute coordinates */
+        if (t1 < 1)
+        {
+          /* compute V1’ */
+          x1 = x0 + t1 * dx;
+          y1 = y0 + t1 * dy;
+          z1 = z0 + t1 * dz;
+        }
+        if (t0 > 0)
+        {
+          /* compute V0’ */
+          x0 = x0 + t0 * dx;
+          y0 = y0 + t0 * dy;
+          z0 = z0 + t0 * dz;
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 bool
 liangBarksyClip(Datum point1, Datum point2, const STBox *box, bool hasz,
   bool border_inc, Datum *point3, Datum *point4, bool *p3_inc, bool *p4_inc)
@@ -1882,163 +1986,72 @@ liangBarksyClip(Datum point1, Datum point2, const STBox *box, bool hasz,
     y1 = pt1->y; y2 = pt2->y;
   }
 
-  /* Define pi and qi */
-  double p[6] = {0}, q[6] = {0};
-  p[0] = -(x2 - x1);
-  p[1] = -p[0];
-  p[2] = -(y2 - y1);
-  p[3] = -p[2];
+  if ((x1 < box->xmin && x2 < box->xmin) || (x1 > box->xmax && x2 > box->xmax) ||
+      (y1 < box->ymin && y2 < box->ymin) || (y1 > box->ymax && y2 > box->ymax) ||
+      (hasz && z1 < box->zmin && z2 < box->zmin) ||
+      (hasz && z1 > box->zmax && z2 > box->zmax))
+    /* trivial reject */
+    return false;
 
-  q[0] = x1 - box->xmin;
-  q[1] = box->xmax - x1;
-  q[2] = y1 - box->ymin;
-  q[3] = box->ymax - y1;
-
-  int maxidx;
-  if (hasz)
+  /* not trivial reject */
+  double t0 = 0, t1 = 1;
+  double dx = x2 - x1;
+  if (clipt(-dx, x1 - box->xmin, &t0, &t1) && /* left */
+      clipt(dx, box->xmax - x1, &t0, &t1)) /* right */
   {
-    maxidx = 6;
-    p[4] = -(z2 - z1);
-    p[5] = -p[4];
-    q[4] = z1 - box->zmin;
-    q[5] = box->zmax - z1;
-  }
-  else
-    maxidx = 4;
-
-  /* Exit if line is out of the visible region */
-  for (int i = 0; i < maxidx; i++)
-    if (p[i] == 0 && q[i] <= 0)
-      return 0;
-
-  /* Compute the output values */
-  double x3, y3, z3 = 0.0, x4, y4, z4 = 0.0;
-  double t_min = 0, t_max = 1;
-  if (p[0] == 0 && p[1] == 0)
-  {
-    // Line parallel to left & right & in visible region (x2 == x1)
-    x3 = x4 = x1;
-    /* We know point1 != point2: Find one pi that is not zero */
-    if (p[3] != 0)
+    double dy = y2 - y1;
+    if (clipt(-dy, y1 - box->ymin, &t0, &t1) && /* bottom */
+        clipt(dy, box->ymax - y1, &t0, &t1)) /* top */
     {
-      y3 = Max(y1, box->ymin);
-      y4 = Min(y2, box->ymax);
-      t_min = (y3 - y1) / p[3];
-      t_max = (y4 - y1) / p[3];
+      bool found = true;
+      double dz = 0;
       if (hasz)
       {
-        z3 = z1 + p[5] * t_min;
-        z4 = z1 + p[5] * t_max;
+        dz = z2 - z1;
+        if (! clipt(-dz, z1 - box->zmin, &t0, &t1) || /* front */
+            ! clipt(dz, box->zmax - z1, &t0, &t1)) /* back */
+          found = false;
       }
-    }
-    else /* p[5] != 0 */
-    {
-      z3 = Max(z1, box->zmin);
-      z4 = Min(z2, box->zmax);
-      t_min = (z3 - z1) / p[5];
-      t_max = (z4 - z1) / p[5];
-      y3 = y1 + p[3] * t_min;
-      y4 = y1 + p[3] * t_max;
-    }
-  }
-  else if(p[2] == 0 && p[3] == 0)
-  {
-    // Line parallel to top & bottom & in visible region (y2 == y1)
-    y3 = y4 = y1;
-    /* We know point1 != point2: Find one pi that is not zero */
-    if (p[1] != 0)
-    {
-      x3 = Max(x1, box->xmin);
-      x4 = Min(x2, box->xmax);
-      t_min = (x3 - x1) / p[1];
-      t_max = (x4 - x1) / p[1];
-      if (hasz)
+      if (found)
       {
-        z3 = z1 + p[5] * t_min;
-        z4 = z1 + p[5] * t_max;
+        /* compute coordinates */
+        if (t1 < 1)
+        {
+          /* compute V1’ */
+          x2 = x1 + t1 * dx;
+          y2 = y1 + t1 * dy;
+          if (hasz)
+            z2 = z1 + t1 * dz;
+        }
+        if (t0 > 0)
+        {
+          /* compute V0’ */
+          x1 = x1 + t0 * dx;
+          y1 = y1 + t0 * dy;
+          if (hasz)
+            z1 = z1 + t0 * dz;
+        }
+        /* Remove the max border */
+        if (! border_inc)
+        {
+          /* Compute max border codes for the input points */
+          int max_code1 = computeMaxBorderCode(x1, y1, z1, hasz, box);
+          int max_code2 = computeMaxBorderCode(x2, y2, z2, hasz, box);
+          /* If the whole segment is on a max border, remove it */
+          if (max_code1 & max_code2)
+            return false;
+          /* Point is included if its max_code is 0 */
+          *p3_inc = ! max_code1;
+          *p4_inc = ! max_code2;
+        }
+        *point3 = PointerGetDatum(gspoint_make(x1, y1, z1, hasz, false, srid));
+        *point4 = PointerGetDatum(gspoint_make(x2, y2, z2, hasz, false, srid));
+
+        return true;
       }
     }
-    else /* p[5] != 0 */
-    {
-      z3 = Max(z1, box->zmin);
-      z4 = Min(z2, box->zmax);
-      t_min = (z3 - z1) / p[5];
-      t_max = (z4 - z1) / p[5];
-      x3 = x1 + p[1] * t_min;
-      x4 = x1 + p[1] * t_max;
-    }
   }
-  else if(hasz && p[4] == 0 && p[5] == 0)
-  {
-    // Line parallel to top & bottom & in visible region (z2 == z1)
-    z3 = z4 = z1;
-    /* We know point1 != point2: Find one pi that is not zero */
-    if (p[1] != 0)
-    {
-      x3 = Max(x1, box->xmin);
-      x4 = Min(x2, box->xmax);
-      t_min = (x3 - x1) / p[1];
-      t_max = (x4 - x1) / p[1];
-      y3 = y1 + p[3] * t_min;
-      y4 = y1 + p[3] * t_max;
-    }
-    else /* p[3] != 0 */
-    {
-      y3 = Max(y1, box->ymin);
-      y4 = Min(y2, box->ymax);
-      t_min = (y3 - y1) / p[3];
-      t_max = (y4 - y1) / p[3];
-      x3 = x1 + p[1] * t_min;
-      x4 = x1 + p[1] * t_max;
-    }
-  }
-  else
-  {
-    for (int i = 0; i < maxidx; i++)
-    {
-      if (p[i] != 0)
-      {
-        double r = q[i] / p[i];
-        if (p[i] < 0)
-          t_min = Max(t_min, r);
-        else /* p[i] > 0 */
-          t_max = Min(t_max, r);
-      }
-     }
-
-    /* Exit if line is outside the visible region */
-    if (t_min > t_max)
-      return false;
-
-    /* Clip the segment */
-    x3 = x1 + p[1] * t_min;
-    x4 = x1 + p[1] * t_max;
-    y3 = y1 + p[3] * t_min;
-    y4 = y1 + p[3] * t_max;
-    if (hasz)
-    {
-      z3 = z1 + p[5] * t_min;
-      z4 = z1 + p[5] * t_max;
-    }
-  }
-
-  /* Remove the max border */
-  if (! border_inc)
-  {
-    /* Compute max border codes for the input points */
-    int max_code1 = computeMaxBorderCode(x3, y3, z3, hasz, box);
-    int max_code2 = computeMaxBorderCode(x4, y4, z4, hasz, box);
-    /* If the whole segment is on a max border, remove it */
-    if (max_code1 & max_code2)
-      return false;
-    /* Point is included if its max_code is 0 */
-    *p3_inc = ! max_code1;
-    *p4_inc = ! max_code2;
-  }
-  *point3 = PointerGetDatum(gspoint_make(x3, y3, z3, hasz, false, srid));
-  *point4 = PointerGetDatum(gspoint_make(x4, y4, z4, hasz, false, srid));
-
-  return true;
+  return false;
 }
 
 /*****************************************************************************/
@@ -2397,8 +2410,11 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           /* Force the computation at 2D */
           TInstant *inst1_2d = (TInstant *) tpoint_force2d((Temporal *) inst1);
           TInstant *inst2_2d = (TInstant *) tpoint_force2d((Temporal *) inst2);
-          tpointsegm_timestamp_at_value1(inst1_2d, inst2, p3, &t1);
-          tpointsegm_timestamp_at_value1(inst1_2d, inst2, p4, &t2);
+          tpointsegm_timestamp_at_value1(inst1_2d, inst2_2d, p3, &t1);
+          if (datum2_point_eq(p3, p4))
+            t2 = t1;
+          else
+            tpointsegm_timestamp_at_value1(inst1_2d, inst2_2d, p4, &t2);
           pfree(inst1_2d); pfree(inst2_2d);
         }
         else
@@ -2410,37 +2426,48 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
             tpointsegm_timestamp_at_value1(inst1, inst2, p4, &t2);
         }
         pfree(DatumGetPointer(p3)); pfree(DatumGetPointer(p4));
-        /* To reduce roundoff errors we project the temporal points to the
-         * timestamps instead of taking the intersection values returned by
-         * the function #liangBarksyClip */
-        Datum inter1, inter2;
-        if (t1 != inst1->t)
-          inter1 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t1);
-        else
-          inter1 = p1;
-        if (t2 != inst2->t)
-          inter2 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t2);
-        else
-          inter2 = p2;
         /* We cannot add the end point of the segment as a singleton sequence
          * if it is at an exclusive upper bound */
         if (t1 != t2 || t1 != inst2->t || upper_inc)
         {
+          /* To reduce roundoff errors we project the temporal points to the
+           * timestamps instead of taking the intersection values returned by
+           * the function #liangBarksyClip */
+          Datum inter1, inter2;
+          bool free1 = false, free2 = false;
+          if (t1 != inst1->t)
+          {
+            free1 = true;
+            inter1 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t1);
+          }
+          if (t1 != t2 && t2 != inst2->t)
+          {
+            free2 = true;
+            inter2 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t2);
+          }
+          /* Create the sequence */
           int j = 0;
-          instants[j++] = tinstant_make(inter1, inst1->temptype, t1);
-          if (! datum_point_eq(inter1, inter2))
-            instants[j++] = tinstant_make(inter2, inst1->temptype, t2);
+          instants[j++] = free1 ?
+            tinstant_make(inter1, inst1->temptype, t1) : (TInstant *) inst1;
+          if (t1 != t2 &&
+             (! free1 || ! free2 || ! datum_point_eq(inter1, inter2)))
+            instants[j++] = free2 ?
+              tinstant_make(inter2, inst1->temptype, t2) : (TInstant *) inst2;
           result[k++] = tsequence_make((const TInstant **) instants, j,
             (j == 1) ? true : lower_inc, (j == 1) ? true : upper_inc, LINEAR,
             NORMALIZE_NO);
-          pfree(instants[0]);
-          if (j > 1)
+          /* Clean up */
+          if (free1)
+          {
+            pfree(DatumGetPointer(inter1));
+            pfree(instants[0]);
+          }
+          if (free2)
+          {
+            pfree(DatumGetPointer(inter2));
             pfree(instants[1]);
+          }
         }
-        if (t1 != inst1->t)
-          pfree(DatumGetPointer(inter1));
-        if (t2 != inst2->t)
-          pfree(DatumGetPointer(inter2));
       }
     }
     inst1 = inst2;
