@@ -1276,7 +1276,7 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
   assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   assert(seq->count > 0);
 
-  /* Compute the composing sequences with "at" */
+  /* Compute the "at" restriction */
   TSequence *at_t = NULL;
   TSequenceSet *at_xt = NULL;
   TSequenceSet *result_at = NULL;
@@ -2161,38 +2161,31 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
  * @param[in] seq Temporal point sequence
  * @param[in] box Bounding box
  * @param[in] border_inc True when the box contains the upper border
- * @param[out] count Number of elements in the resulting array
  * @pre The sequence is simple in order to recover the time dimension from
  * the result of the Cohen-Sutherland line clipping algorithm
  * @note Since this function is called AFTER the restriction to the time
  * dimension it is necessary to test for instantaneous sequences
  */
-TSequence **
+TSequenceSet *
 tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
-  bool border_inc, int *count)
+  bool border_inc)
 {
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
-  TSequence **result = NULL;
-  *count = 0;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
     if (tpointinst_restrict_stbox_iter(inst, box, border_inc, REST_AT))
-    {
-      result = palloc(sizeof(TSequence *));
-      result[0] = tsequence_copy(seq);
-      *count = 1;
-    }
-    return result;
+      return tsequence_to_tsequenceset(seq);
+    return NULL;
   }
 
   /* General case */
   bool hasz_seq = MEOS_FLAGS_GET_Z(seq->flags);
   bool hasz_box = MEOS_FLAGS_GET_Z(box->flags);
   bool hasz = hasz_seq && hasz_box;
-  result = palloc(sizeof(TSequence *) * seq->count);
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum p1 = tinstant_value(inst1);
   bool lower_inc = seq->period.lower_inc;
@@ -2211,7 +2204,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
       {
         instants[0] = (TInstant *) inst1;
         instants[1] = (TInstant *) inst2;
-        result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
+        sequences[nseqs++] = tsequence_make((const TInstant **) instants, 2,
           lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
       }
     }
@@ -2278,7 +2271,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
              (! free1 || ! free2 || ! datum_point_eq(inter1, inter2)))
             instants[j++] = free2 ?
               tinstant_make(inter2, inst1->temptype, t2) : (TInstant *) inst2;
-          result[nseqs++] = tsequence_make((const TInstant **) instants, j,
+          sequences[nseqs++] = tsequence_make((const TInstant **) instants, j,
             (j == 1) ? true : lower_inc, (j == 1) ? true : upper_inc, LINEAR,
             NORMALIZE_NO);
           /* Clean up */
@@ -2301,70 +2294,10 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   }
   if (nseqs == 0)
   {
-    pfree(result);
+    pfree(sequences);
     return NULL;
   }
-  *count = nseqs;
-  return result;
-}
-
-/**
- * @brief Restrict a temporal sequence point with linear interpolation to a
- * spatiotemporal box.
- * @param[in] seq Temporal point sequence
- * @param[in] box Spatiotemporal box
- * @param[in] border_inc True when the box contains the upper border
- * @param[out] count Number of elements in the resulting array
- * @pre The box has X dimension and the arguments have the same SRID.
- * This is verified in #tpoint_restrict_stbox
- * @pre This function is called for each sequence of a sequence set and thus,
- * cannot compute the complement for the "minus" function.
- * @note The function first filters the temporal point wrt the time dimension
- * to reduce the number of instants before computing the restriction to the
- * spatial dimension.
- */
-static TSequence **
-tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
-  bool border_inc, int *count)
-{
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
-  TSequence **result = NULL;
-  *count = 0;
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-    if (tpointinst_restrict_stbox_iter(inst, box, border_inc, REST_AT))
-    {
-      result = palloc(sizeof(TSequence *));
-      result[0] = tsequence_copy(seq);
-      *count = 1;
-    }
-    return result;
-  }
-
-  /* Restrict to the temporal dimension */
-  TSequence *seq_t;
-  if (hast)
-  {
-    /* Restrict to the period */
-    seq_t = tcontseq_at_period(seq, &box->period);
-  }
-  else
-    seq_t = (TSequence *) seq;
-
-  /* Restrict to the spatial dimension */
-  if (seq_t)
-  {
-    int nseqs;
-    result = tpointseq_linear_at_stbox_xyz(seq_t, box, border_inc, &nseqs);
-    *count = nseqs;
-    if (hast)
-      pfree(seq_t);
-  }
-  return result;
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**
@@ -2375,25 +2308,53 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
  * @param[in] atfunc True if the restriction is at, false for minus
- * @sqlfunc atStbox()
+ * @pre The box has X dimension and the arguments have the same SRID.
+ * This is verified in #tpoint_restrict_stbox
+ * @note The function computes the "at" restriction on all dimensions and if
+ * the requested restriction is "minus", then it computes the complement of the
+ * "at" restriction with respect to the time dimension.
+ * @note The function first filters the temporal point wrt the time dimension
+ * to reduce the number of instants before computing the restriction to the
+ * spatial dimension.
+ * @sqlfunc atStbox(), minusStbox()
  */
 TSequenceSet *
 tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
   bool border_inc, bool atfunc)
 {
-  int nseqs;
-  TSequence **sequences = tpointseq_linear_at_stbox_iter(seq, box, border_inc,
-    &nseqs);
-  if (sequences == NULL)
-    return atfunc ? NULL : tsequence_to_tsequenceset(seq);
+  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(seq->count > 0);
 
-  TSequenceSet *result_at = tsequenceset_make_free(sequences, nseqs,
-    NORMALIZE);
+  /* Compute the "at" restriction */
+  TSequence *at_t = NULL;
+  TSequenceSet *result_at = NULL;
+
+  /* Restrict to the temporal dimension */
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  if (hast)
+  {
+    /* Restrict to the period */
+    at_t = tcontseq_at_period(seq, &box->period);
+  }
+  else
+    at_t = (TSequence *) seq;
+
+  /* Restrict to the spatial dimension */
+  if (at_t)
+  {
+    result_at = tpointseq_linear_at_stbox_xyz(at_t, box, border_inc);
+    if (hast)
+      pfree(at_t);
+  }
+
   /* If "at" restriction, return */
   if (atfunc)
     return result_at;
 
   /* If "minus" restriction, compute the complement wrt time */
+  if (! result_at)
+    return tsequence_to_tsequenceset(seq);
+
   SpanSet *ps = tsequenceset_time(result_at);
   TSequenceSet *result = tcontseq_restrict_periodset(seq, ps, atfunc);
   pfree(ps);
@@ -2411,9 +2372,6 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
- * @note For linear interpolation the function computes the "at" restriction on
- * all dimensions and if the requested restriction is "minus", then it computes
- * the complement of the "at" restriction with respect to the time dimension.
  * @sqlfunc atStbox(), minusStbox()
  */
 Temporal *
