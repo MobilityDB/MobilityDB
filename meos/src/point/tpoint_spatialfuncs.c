@@ -1226,6 +1226,10 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
     x2 = p2->x; y2 = p2->y; z2 = p2->z;
     x3 = p3->x; y3 = p3->y; z3 = p3->z;
     x4 = p4->x; y4 = p4->y; z4 = p4->z;
+    /* Segments intersecting in the boundaries */
+    if ((float8_eq(x1, x3) && float8_eq(y1, y3) && float8_eq(z1, z3)) ||
+        (float8_eq(x2, x4) && float8_eq(y2, y4) && float8_eq(z2, z4)))
+      return false;
   }
   else
   {
@@ -1237,7 +1241,12 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
     x2 = p2->x; y2 = p2->y;
     x3 = p3->x; y3 = p3->y;
     x4 = p4->x; y4 = p4->y;
+    /* Segments intersecting in the boundaries */
+    if ((float8_eq(x1, x3) && float8_eq(y1, y3)) ||
+        (float8_eq(x2, x4) && float8_eq(y2, y4)))
+      return false;
   }
+
   xdenom = x2 - x1 - x4 + x3;
   ydenom = y2 - y1 - y4 + y3;
   if (hasz)
@@ -1274,10 +1283,10 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   if (hasz && zdenom != 0)
   {
     znum = z3 - z1;
-    zfraction = znum / zdenom;
     if ((zdenom > 0 && (znum < 0 || znum > zdenom)) ||
         (zdenom < 0 && (znum > 0 || znum < zdenom)))
       return false;
+    zfraction = znum / zdenom;
     if (zfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < zfraction)
       /* Intersection occurs out of the period */
       return false;
