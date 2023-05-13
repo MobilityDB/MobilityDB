@@ -1212,91 +1212,103 @@ bool
 tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-  long double fraction, xfraction = 0, yfraction = 0, xdenum, ydenum;
-  if (MEOS_FLAGS_GET_Z(start1->flags)) /* 3D */
+  long double xnum, xdenom, ynum, ydenom, znum = 0.0, zdenom = 0.0,
+    fraction, xfraction = 0, yfraction = 0, zfraction = 0;
+  double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0, x3, y3, z3 = 0.0, x4, y4, z4 = 0.0;
+  bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
+  if (hasz)
   {
-    long double zfraction = 0, zdenum;
     const POINT3DZ *p1 = DATUM_POINT3DZ_P(&start1->value);
     const POINT3DZ *p2 = DATUM_POINT3DZ_P(&end1->value);
     const POINT3DZ *p3 = DATUM_POINT3DZ_P(&start2->value);
     const POINT3DZ *p4 = DATUM_POINT3DZ_P(&end2->value);
-    xdenum = p2->x - p1->x - p4->x + p3->x;
-    ydenum = p2->y - p1->y - p4->y + p3->y;
-    zdenum = p2->z - p1->z - p4->z + p3->z;
-    if (xdenum == 0 && ydenum == 0 && zdenum == 0)
-      /* Parallel segments */
-      return false;
+    x1 = p1->x; y1 = p1->y; z1 = p1->z;
+    x2 = p2->x; y2 = p2->y; z2 = p2->z;
+    x3 = p3->x; y3 = p3->y; z3 = p3->z;
+    x4 = p4->x; y4 = p4->y; z4 = p4->z;
+  }
+  else
+  {
+    const POINT2D *p1 = DATUM_POINT2D_P(&start1->value);
+    const POINT2D *p2 = DATUM_POINT2D_P(&end1->value);
+    const POINT2D *p3 = DATUM_POINT2D_P(&start2->value);
+    const POINT2D *p4 = DATUM_POINT2D_P(&end2->value);
+    x1 = p1->x; y1 = p1->y;
+    x2 = p2->x; y2 = p2->y;
+    x3 = p3->x; y3 = p3->y;
+    x4 = p4->x; y4 = p4->y;
+  }
+  xdenom = x2 - x1 - x4 + x3;
+  ydenom = y2 - y1 - y4 + y3;
+  if (hasz)
+    zdenom = z2 - z1 - z4 + z3;
+  if (xdenom == 0 && ydenom == 0 && zdenom == 0)
+    /* Parallel segments */
+    return false;
 
-    if (xdenum != 0)
-    {
-      xfraction = (p3->x - p1->x) / xdenum;
-      if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
-        /* Intersection occurs out of the period */
-        return false;
-    }
-    if (ydenum != 0)
-    {
-      yfraction = (p3->y - p1->y) / ydenum;
-      if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
-        /* Intersection occurs out of the period */
-        return false;
-    }
-    if (zdenum != 0)
-    {
-      zfraction = (p3->z - p1->z) / zdenum;
-      if (zfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < zfraction)
-        /* Intersection occurs out of the period */
-        return false;
-    }
+  /* Potentially avoid the division based on
+   * Franklin Antonio, Faster Line Segment Intersection, Graphic Gems III
+   * https://github.com/erich666/GraphicsGems/blob/master/gemsiii/insectc.c */
+  if (xdenom != 0)
+  {
+    xnum = x3 - x1;
+    if ((xdenom > 0 && (xnum < 0 || xnum > xdenom)) ||
+        (xdenom < 0 && (xnum > 0 || xnum < xdenom)))
+      return false;
+    xfraction = xnum / xdenom;
+    if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
+      /* Intersection occurs out of the period */
+      return false;
+  }
+  if (ydenom != 0)
+  {
+    ynum = y3 - y1;
+    if ((ydenom > 0 && (ynum < 0 || ynum > ydenom)) ||
+        (ydenom < 0 && (ynum > 0 || ynum < ydenom)))
+      return false;
+    yfraction = ynum / ydenom;
+    if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
+      /* Intersection occurs out of the period */
+      return false;
+  }
+  if (hasz && zdenom != 0)
+  {
+    znum = z3 - z1;
+    zfraction = znum / zdenom;
+    if ((zdenom > 0 && (znum < 0 || znum > zdenom)) ||
+        (zdenom < 0 && (znum > 0 || znum < zdenom)))
+      return false;
+    if (zfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < zfraction)
+      /* Intersection occurs out of the period */
+      return false;
+  }
+  if (hasz)
+  {
     /* If intersection occurs at different timestamps on each dimension */
-    if ((xdenum != 0 && ydenum != 0 && zdenum != 0 &&
+    if ((xdenom != 0 && ydenom != 0 && zdenom != 0 &&
         fabsl(xfraction - yfraction) > MEOS_EPSILON &&
         fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
+      (xdenom == 0 && ydenom != 0 && zdenom != 0 &&
         fabsl(yfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
+      (xdenom != 0 && ydenom == 0 && zdenom != 0 &&
         fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
+      (xdenom != 0 && ydenom != 0 && zdenom == 0 &&
         fabsl(xfraction - yfraction) > MEOS_EPSILON))
       return false;
-    if (xdenum != 0)
+    if (xdenom != 0)
       fraction = xfraction;
-    else if (ydenum != 0)
+    else if (ydenom != 0)
       fraction = yfraction;
     else
       fraction = zfraction;
   }
   else /* 2D */
   {
-    const POINT2D *p1 = DATUM_POINT2D_P(&start1->value);
-    const POINT2D *p2 = DATUM_POINT2D_P(&end1->value);
-    const POINT2D *p3 = DATUM_POINT2D_P(&start2->value);
-    const POINT2D *p4 = DATUM_POINT2D_P(&end2->value);
-    xdenum = p2->x - p1->x - p4->x + p3->x;
-    ydenum = p2->y - p1->y - p4->y + p3->y;
-    if (xdenum == 0 && ydenum == 0)
-      /* Parallel segments */
-      return false;
-
-    if (xdenum != 0)
-    {
-      xfraction = (p3->x - p1->x) / xdenum;
-      if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
-        /* Intersection occurs out of the period */
-        return false;
-    }
-    if (ydenum != 0)
-    {
-      yfraction = (p3->y - p1->y) / ydenum;
-      if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
-        /* Intersection occurs out of the period */
-        return false;
-    }
     /* If intersection occurs at different timestamps on each dimension */
-    if (xdenum != 0 && ydenum != 0 &&
+    if (xdenom != 0 && ydenom != 0 &&
         fabsl(xfraction - yfraction) > MEOS_EPSILON)
       return false;
-    fraction = xdenum != 0 ? xfraction : yfraction;
+    fraction = xdenom != 0 ? xfraction : yfraction;
   }
   double duration = (double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);

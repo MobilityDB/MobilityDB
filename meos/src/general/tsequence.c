@@ -40,6 +40,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/float.h>
 #include <utils/timestamp.h>
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
@@ -3013,6 +3014,7 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  * @param[out] t Timestamp
  * @pre The instants are synchronized, i.e., start1->t = start2->t and
  * end1->t = end2->t
+ * @note Only the intersection inside the segments is considered
  */
 static bool
 tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
@@ -3022,16 +3024,39 @@ tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
   double x2 = tnumberinst_double(end1);
   double x3 = tnumberinst_double(start2);
   double x4 = tnumberinst_double(end2);
-  /* Compute the instant t at which the linear functions of the two segments
-     are equal: at + b = ct + d that is t = (d - b) / (a - c).
-     To reduce problems related to floating point precision, t1 and t2
-     are shifted, respectively, to 0 and 1 before the computation */
-  long double denum = x2 - x1 - x4 + x3;
-  if (denum == 0)
+
+  /* Segments intersecting in the boundaries */
+  if (float8_eq(x1, x3) || float8_eq(x2, x4))
+    return false;
+
+  /*
+   * Using the parametric form of the segments, compute the instant t at which
+   * the two segments are equal: x1 + (x2 - x1) t = x3 + (x4 -x3) t
+   * that is t = (x3 - x1) / (x2 - x1 - x4 + x3).
+   */
+  long double denom = x2 - x1 - x4 + x3;
+  if (denom == 0)
     /* Parallel segments */
     return false;
 
-  long double fraction = ((long double) (x3 - x1)) / denum;
+  /*
+   * Potentially avoid the division based on
+   * Franklin Antonio, Faster Line Segment Intersection, Graphic Gems III
+   * https://github.com/erich666/GraphicsGems/blob/master/gemsiii/insectc.c
+   */
+  long double num = x3 - x1;
+  if (denom > 0)
+  {
+    if (num < 0 || num > denom)
+      return false;
+  }
+  else
+  {
+    if (num > 0 || num < denom)
+      return false;
+  }
+
+  long double fraction = num / denom;
   if (fraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < fraction )
     /* Intersection occurs out of the period */
     return false;
