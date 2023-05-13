@@ -678,17 +678,17 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 
   /* General case */
   TSequence ***sequences = palloc0(sizeof(TSequence **) * ss->count);
-  int *countseqs = palloc0(sizeof(int) * ss->count);
-  int totalcount = 0;
+  int *nseqs = palloc0(sizeof(int) * ss->count);
+  int totalseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = tpointseq_make_simple(seq, &countseqs[i]);
-    totalcount += countseqs[i];
+    sequences[i] = tpointseq_make_simple(seq, &nseqs[i]);
+    totalseqs += nseqs[i];
   }
-  assert(totalcount > 0);
-  *count = totalcount;
-  return tseqarr2_to_tseqarr(sequences, countseqs, ss->count, totalcount);
+  assert(totalseqs > 0);
+  *count = totalseqs;
+  return tseqarr2_to_tseqarr(sequences, nseqs, ss->count, totalseqs);
 }
 
 /**
@@ -1195,7 +1195,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   int countsimple;
   TSequence **simpleseqs = tpointseq_make_simple(seq2d, &countsimple);
   Span *allperiods = NULL; /* make compiler quiet */
-  int totalcount = 0;
+  int totalpers = 0;
   GSERIALIZED *traj, *gsinter;
   Datum inter;
 
@@ -1207,10 +1207,10 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
     gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
-      allperiods = tpointseq_interperiods(seq2d, gsinter, &totalcount);
+      allperiods = tpointseq_interperiods(seq2d, gsinter, &totalpers);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
     pfree(DatumGetPointer(inter)); pfree(traj);
-    if (totalcount == 0)
+    if (totalpers == 0)
     {
       if (hasz)
         pfree(seq2d);
@@ -1223,7 +1223,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     if (hasz)
       pfree(seq2d);
     Span **periods = palloc(sizeof(Span *) * countsimple);
-    int *countpers = palloc0(sizeof(int) * countsimple);
+    int *npers = palloc0(sizeof(int) * countsimple);
     /* Loop for every simple fragment of the sequence */
     for (int i = 0; i < countsimple; i++)
     {
@@ -1233,31 +1233,36 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
       if (! gserialized_is_empty(gsinter))
       {
         periods[i] = tpointseq_interperiods(simpleseqs[i], gsinter,
-          &countpers[i]);
-        totalcount += countpers[i];
+          &npers[i]);
+        totalpers += npers[i];
       }
       PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
       pfree(DatumGetPointer(inter)); pfree(traj);
     }
     pfree_array((void **) simpleseqs, countsimple);
-    if (totalcount == 0)
+    if (totalpers == 0)
+    {
+      pfree(periods); pfree(npers);
       return NULL;
+    }
+
     /* Assemble the periods into a single array */
-    allperiods = palloc(sizeof(Span) * totalcount);
-    int npers = 0;
+    allperiods = palloc(sizeof(Span) * totalpers);
+    int k = 0;
     for (int i = 0; i < countsimple; i++)
     {
-      for (int j = 0; j < countpers[i]; j++)
-        allperiods[npers++] = periods[i][j];
-      if (countpers[i] != 0)
+      for (int j = 0; j < npers[i]; j++)
+        allperiods[k++] = periods[i][j];
+      if (npers[i] != 0)
         pfree(periods[i]);
     }
+    pfree(periods); pfree(npers);
     /* It is necessary to sort the periods */
-    spanarr_sort(allperiods, totalcount);
+    spanarr_sort(allperiods, totalpers);
   }
   /* Compute the periodset */
-  assert(totalcount > 0);
-  SpanSet *ps = spanset_make_free(allperiods, totalcount, NORMALIZE);
+  assert(totalpers > 0);
+  SpanSet *ps = spanset_make_free(allperiods, totalpers, NORMALIZE);
   /* Recover the Z values from the original sequence */
   result = tcontseq_restrict_periodset(seq, ps, REST_AT);
   pfree(ps);
@@ -1274,6 +1279,9 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
  * @param[in] period Period to restrict the T dimension
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre Instantaneous sequences have been managed in the calling function
+ * @note The function computes the "at" restriction on all dimensions. Then,
+ * for the "minus" restriction, it computes the complement of the "at"
+ * restriction with respect to the time dimension.
  * @note The function first filters the temporal point wrt the time dimension
  * to reduce the number of instants before computing the restriction to the
  * geometry, which is an expensive operation. Notice that we need to filter wrt
@@ -1288,60 +1296,50 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
   assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   assert(seq->count > 1);
 
-  /* Compute the "at" restriction */
-  TSequence *at_t = NULL;
-  TSequenceSet *at_xt = NULL;
-  TSequenceSet *result_at = NULL;
+  /* Restrict to the temporal dimension */
+  TSequence *at_t = period ?
+    tcontseq_at_period(seq, period) : (TSequence *) seq;
 
-  /* Restrict the temporal point to the T dimension */
-  if (period)
-  {
-    /* Bounding box test for the T dimension */
-    if (overlaps_span_span(&seq->period, period))
-      /* Restrict to the period */
-      at_t = tcontseq_at_period(seq, period);
-  }
-  else
-    at_t = (TSequence *) seq;
-
-  /* Compute atGeometry for the sequence restricted to the T dimension */
+  /* Compute atGeometry for the sequence restricted to the time dimension */
+  TSequenceSet *at_xyt = NULL;
   if (at_t)
   {
-    at_xt = tpointseq_linear_at_geom(at_t, gs);
+    at_xyt = tpointseq_linear_at_geom(at_t, gs);
     if (period)
       pfree(at_t);
   }
 
   /* Restrict to the Z dimension */
-  if (at_xt)
+  TSequenceSet *result_at = NULL;
+  if (at_xyt)
   {
     if (zspan)
     {
       /* Bounding box test for the Z dimension */
       STBox box1;
-      tsequenceset_set_bbox(at_xt, &box1);
+      tsequenceset_set_bbox(at_xyt, &box1);
       Span zspan1;
       span_set(Float8GetDatum(box1.zmin), Float8GetDatum(box1.zmax), true, true,
         T_FLOAT8, &zspan1);
       if (overlaps_span_span(&zspan1, zspan))
       {
         /* Get the Z coordinate values as a temporal float */
-        Temporal *tfloat_z = tpoint_get_coord((Temporal *) at_xt, 2);
+        Temporal *tfloat_z = tpoint_get_coord((Temporal *) at_xyt, 2);
         /* Restrict to the zspan */
         Temporal *tfloat_zspan = tnumber_restrict_span(tfloat_z, zspan, REST_AT);
         pfree(tfloat_z);
         if (tfloat_zspan)
         {
           SpanSet *ss = temporal_time(tfloat_zspan);
-          result_at = tsequenceset_restrict_periodset(at_xt, ss, REST_AT);
+          result_at = tsequenceset_restrict_periodset(at_xyt, ss, REST_AT);
           pfree(tfloat_zspan);
           pfree(ss);
         }
       }
-      pfree(at_xt);
+      pfree(at_xyt);
     }
     else
-      result_at = at_xt;
+      result_at = at_xyt;
   }
 
   /* If "at" restriction, return */
@@ -2221,10 +2219,10 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     else
     {
       bool p3_inc, p4_inc;
-      bool found = cohenSutherlandClip(p1, p2, box, hasz, border_inc, &p3, &p4,
-        &p3_inc, &p4_inc);
-      // bool found = liangBarskyClip(p1, p2, box, hasz, border_inc, &p3, &p4,
+      // bool found = cohenSutherlandClip(p1, p2, box, hasz, border_inc, &p3, &p4,
         // &p3_inc, &p4_inc);
+      bool found = liangBarskyClip(p1, p2, box, hasz, border_inc, &p3, &p4,
+        &p3_inc, &p4_inc);
       if (found)
       {
         if (! border_inc)
@@ -2336,21 +2334,13 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
   assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   assert(seq->count > 1);
 
-  /* Compute the "at" restriction */
-  TSequence *at_t = NULL;
-  TSequenceSet *result_at = NULL;
-
   /* Restrict to the temporal dimension */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
-  if (hast)
-  {
-    /* Restrict to the period */
-    at_t = tcontseq_at_period(seq, &box->period);
-  }
-  else
-    at_t = (TSequence *) seq;
+  TSequence *at_t = hast ?
+    tcontseq_at_period(seq, &box->period) : (TSequence *) seq;
 
   /* Restrict to the spatial dimension */
+  TSequenceSet *result_at = NULL;
   if (at_t)
   {
     result_at = tpointseq_linear_at_stbox_xyz(at_t, box, border_inc);
