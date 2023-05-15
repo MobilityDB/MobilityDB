@@ -869,7 +869,8 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
             TimestampTzGetDatum(inst->t), true, false, T_TIMESTAMPTZ, &extend);
           if (inter_span_span(&timespan, &extend, &inter))
           {
-            if (! datum_eq(inter.lower, inter.upper, T_TIMESTAMPTZ))
+            if (TimestampTzGetDatum(inter.lower) !=
+                TimestampTzGetDatum(inter.upper))
             {
               instants[ninsts++] = tinstant_make(value, seq->temptype,
                 DatumGetTimestampTz(inter.upper));
@@ -1667,35 +1668,34 @@ clipt(double p, double q, double *t0, double *t1)
  * @note It is possible to mix 2D/3D geometries, the Z dimension is only
  * considered if both the temporal point and the box have Z dimension
  */
-bool
-liangBarskyClip(Datum point1, Datum point2, const STBox *box, bool hasz,
-  bool border_inc, Datum *point3, Datum *point4, bool *p3_inc, bool *p4_inc)
+static bool
+liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
+  bool hasz, bool border_inc, GSERIALIZED **point3, GSERIALIZED **point4,
+  bool *p3_inc, bool *p4_inc)
 {
   assert(MEOS_FLAGS_GET_X(box->flags));
-  assert(! datum2_point_eq(point1, point2));
-  const GSERIALIZED *gs1 = DatumGetGserializedP(point1);
-  const GSERIALIZED *gs2 = DatumGetGserializedP(point2);
-  if (hasz)
-    assert(MEOS_FLAGS_GET_Z(box->flags) && (bool) FLAGS_GET_Z(gs1->gflags) &&
-      (bool) FLAGS_GET_Z(gs2->gflags));
+  assert(! datum_point_eq(point1, point2));
+  assert(! hasz || (MEOS_FLAGS_GET_Z(box->flags) &&
+    (bool) FLAGS_GET_Z(point1->gflags) && (bool) FLAGS_GET_Z(point2->gflags)));
 
-  int srid = gserialized_get_srid(gs1);
-  assert(srid == gserialized_get_srid(gs2));
+  int srid = box->srid;
+  assert(srid == gserialized_get_srid(point1) &&
+    srid == gserialized_get_srid(point2));
 
   /* Get the input points */
   double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0;
   if (hasz)
   {
-    const POINT3DZ *pt1 = GSERIALIZED_POINT3DZ_P(gs1);
-    const POINT3DZ *pt2 = GSERIALIZED_POINT3DZ_P(gs2);
+    const POINT3DZ *pt1 = GSERIALIZED_POINT3DZ_P(point1);
+    const POINT3DZ *pt2 = GSERIALIZED_POINT3DZ_P(point2);
     x1 = pt1->x; x2 = pt2->x;
     y1 = pt1->y; y2 = pt2->y;
     z1 = pt1->z; z2 = pt2->z;
   }
   else
   {
-    const POINT2D *pt1 = GSERIALIZED_POINT2D_P(gs1);
-    const POINT2D *pt2 = GSERIALIZED_POINT2D_P(gs2);
+    const POINT2D *pt1 = GSERIALIZED_POINT2D_P(point1);
+    const POINT2D *pt2 = GSERIALIZED_POINT2D_P(point2);
     x1 = pt1->x; x2 = pt2->x;
     y1 = pt1->y; y2 = pt2->y;
   }
@@ -1758,8 +1758,8 @@ liangBarskyClip(Datum point1, Datum point2, const STBox *box, bool hasz,
           *p3_inc = ! max_code1;
           *p4_inc = ! max_code2;
         }
-        *point3 = PointerGetDatum(gspoint_make(x1, y1, z1, hasz, false, srid));
-        *point4 = PointerGetDatum(gspoint_make(x2, y2, z2, hasz, false, srid));
+        *point3 = gspoint_make(x1, y1, z1, hasz, false, srid);
+        *point4 = gspoint_make(x2, y2, z2, hasz, false, srid);
 
         return true;
       }
@@ -1929,7 +1929,8 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
             TimestampTzGetDatum(inst->t), true, false, T_TIMESTAMPTZ, &extend);
           if (inter_span_span(&timespan, &extend, &inter))
           {
-            if (! datum_eq(inter.lower, inter.upper, T_TIMESTAMPTZ))
+            if (TimestampTzGetDatum(inter.lower) !=
+                TimestampTzGetDatum(inter.upper))
             {
               instants[ninsts++] = tinstant_make(value, seq->temptype,
                 DatumGetTimestampTz(inter.upper));
@@ -2020,17 +2021,17 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   bool hasz = hasz_seq && hasz_box;
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum p1 = tinstant_value(inst1);
+  GSERIALIZED *p1 = DatumGetGserializedP(&inst1->value);
   bool lower_inc = seq->period.lower_inc;
   int nseqs = 0;
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    Datum p2 = tinstant_value(inst2);
-    Datum p3, p4;
+    GSERIALIZED *p2 = DatumGetGserializedP(&inst2->value);
+    GSERIALIZED *p3, *p4;
     TInstant *instants[2];
-    if (datum2_point_eq(p1, p2))
+    if (gspoint_eq(p1, p2))
     {
       /* Constant segment */
       if (tpointinst_restrict_stbox_iter(inst1, box, border_inc, REST_AT))
@@ -2054,27 +2055,29 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           upper_inc &= p4_inc;
         }
         TimestampTz t1, t2;
+        Datum d3 = PointerGetDatum(p3);
+        Datum d4 = PointerGetDatum(p4);
         if (hasz_seq && ! hasz)
         {
           /* Force the computation at 2D */
           TInstant *inst1_2d = (TInstant *) tpoint_force2d((Temporal *) inst1);
           TInstant *inst2_2d = (TInstant *) tpoint_force2d((Temporal *) inst2);
-          tpointsegm_timestamp_at_value1(inst1_2d, inst2_2d, p3, &t1);
-          if (datum2_point_eq(p3, p4))
+          tpointsegm_timestamp_at_value1(inst1_2d, inst2_2d, d3, &t1);
+          if (gspoint_eq(p3, p4))
             t2 = t1;
           else
-            tpointsegm_timestamp_at_value1(inst1_2d, inst2_2d, p4, &t2);
+            tpointsegm_timestamp_at_value1(inst1_2d, inst2_2d, d4, &t2);
           pfree(inst1_2d); pfree(inst2_2d);
         }
         else
         {
-          tpointsegm_timestamp_at_value1(inst1, inst2, p3, &t1);
-          if (datum2_point_eq(p3, p4))
+          tpointsegm_timestamp_at_value1(inst1, inst2, d3, &t1);
+          if (gspoint_eq(p3, p4))
             t2 = t1;
           else
-            tpointsegm_timestamp_at_value1(inst1, inst2, p4, &t2);
+            tpointsegm_timestamp_at_value1(inst1, inst2, d4, &t2);
         }
-        pfree(DatumGetPointer(p3)); pfree(DatumGetPointer(p4));
+        pfree(p3); pfree(p4);
         /* We cannot add the end point of the segment as a singleton sequence
          * if it is at an exclusive upper bound */
         if (t1 != t2 || t1 != inst2->t || upper_inc)
@@ -2099,7 +2102,8 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           instants[j++] = free1 ?
             tinstant_make(inter1, inst1->temptype, t1) : (TInstant *) inst1;
           if (t1 != t2 &&
-             (! free1 || ! free2 || ! datum_point_eq(inter1, inter2)))
+             (! free1 || ! free2 || ! gspoint_eq(DatumGetGserializedP(inter1),
+               DatumGetGserializedP(inter2))))
             instants[j++] = free2 ?
               tinstant_make(inter2, inst1->temptype, t2) : (TInstant *) inst2;
           sequences[nseqs++] = tsequence_make((const TInstant **) instants, j,

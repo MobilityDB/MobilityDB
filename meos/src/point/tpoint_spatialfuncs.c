@@ -118,16 +118,12 @@ datum_point4d(Datum value, POINT4D *p)
 
 /**
  * @brief Return true if the points are equal
+ * @note This function is called in the iterations over sequencs where we
+ * are sure that their SRID, Z, and GEODETIC are equal
  */
 bool
-datum_point_eq(Datum geopoint1, Datum geopoint2)
+gspoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  const GSERIALIZED *gs1 = DatumGetGserializedP(geopoint1);
-  const GSERIALIZED *gs2 = DatumGetGserializedP(geopoint2);
-  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
-    FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags) ||
-    FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
-    return false;
   if (FLAGS_GET_Z(gs1->gflags))
   {
     const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
@@ -144,6 +140,21 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
     // return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y);
     return float8_eq(point1->x, point2->x) && float8_eq(point1->y, point2->y);
   }
+}
+
+/**
+ * @brief Return true if the points are equal
+ */
+bool
+datum_point_eq(Datum geopoint1, Datum geopoint2)
+{
+  const GSERIALIZED *gs1 = DatumGetGserializedP(geopoint1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(geopoint2);
+  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
+      FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags) ||
+      FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
+    return false;
+  return gspoint_eq(gs1, gs2);
 }
 
 /**
