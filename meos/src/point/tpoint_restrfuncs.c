@@ -1607,180 +1607,6 @@ computeMaxBorderCode(double x, double y, double z, bool hasz, const STBox *box)
 }
 
 /**
- * @brief Clip a segment defined by p1 = (x1, y1, z1) and p2 = (x2, y2, z2)
- * using the Cohen-Sutherland algorithm
- * https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
- * @param[in] point1,point2 Input points
- * @param[in] box Bounding box
- * @param[in] hasz Has Z dimension?
- * @param[in] border_inc True when the box contains the upper border
- * @param[out] point3,point4 Output points
- * @param[out] p3_inc,p4_inc Are the points included or not in the box?
- * @result True if the line segment defined by p1,p2 intersects the bounding
- * box, false otherwise
- * @note When border_inc is false, the max border is counted as outside of the box
- * @note p3_inc and p4_inc are only written/returned when border_inc is true
- * @note It is possible to mix 2D/3D geometries, the Z dimension is only
- * considered if both the temporal point and the box have Z dimension
- */
-bool
-cohenSutherlandClip(Datum p1, Datum p2, const STBox *box, bool hasz,
-  bool border_inc, Datum *p3, Datum *p4, bool *p3_inc, bool *p4_inc)
-{
-  assert(MEOS_FLAGS_GET_X(box->flags));
-  const GSERIALIZED *gs1 = DatumGetGserializedP(p1);
-  const GSERIALIZED *gs2 = DatumGetGserializedP(p2);
-  if (hasz)
-    assert(MEOS_FLAGS_GET_Z(box->flags) && (bool) FLAGS_GET_Z(gs1->gflags) &&
-      (bool) FLAGS_GET_Z(gs2->gflags));
-
-  int srid = gserialized_get_srid(gs1);
-  assert(srid == gserialized_get_srid(gs2));
-
-  /* Get the input points */
-  double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0;
-  if (hasz)
-  {
-    const POINT3DZ *pt1 = GSERIALIZED_POINT3DZ_P(gs1);
-    const POINT3DZ *pt2 = GSERIALIZED_POINT3DZ_P(gs2);
-    x1 = pt1->x; x2 = pt2->x;
-    y1 = pt1->y; y2 = pt2->y;
-    z1 = pt1->z; z2 = pt2->z;
-  }
-  else
-  {
-    const POINT2D *pt1 = GSERIALIZED_POINT2D_P(gs1);
-    const POINT2D *pt2 = GSERIALIZED_POINT2D_P(gs2);
-    x1 = pt1->x; x2 = pt2->x;
-    y1 = pt1->y; y2 = pt2->y;
-  }
-
-  /* Compute region codes for the input points */
-  int code1 = computeRegionCode(x1, y1, z1, hasz, box);
-  int code2 = computeRegionCode(x2, y2, z2, hasz, box);
-
-  /* Initialize line as outside the rectangular window */
-  bool found = false;
-  while (true)
-  {
-    if (!(code1 | code2))
-    {
-      /* If both endpoints lie within rectangle */
-      found = true;
-      break;
-    }
-    else if (code1 & code2)
-    {
-      /* If both endpoints are outside rectangle, in same region */
-      break;
-    }
-    else
-    {
-      /* Some segment of line lies within the rectangle */
-      int code_out;
-      double x, y, z = 0.0;
-      /* At least one endpoint is outside the rectangle, pick it. */
-      if (code1 != 0)
-        code_out = code1;
-      else
-        code_out = code2;
-
-      /*
-       * Find intersection point using the following formulas
-       * y = y1 + slope * (x - x1),
-       * x = x1 + (1 / slope) * (y - y1)
-       */
-      if (code_out & LEFT)
-      {
-        /* point is to the left of rectangle */
-        x = box->xmin;
-        y = y1 + (y2 - y1) * (box->xmin - x1) / (x2 - x1);
-        if (hasz)
-          z = z1 + (z2 - z1) * (box->xmin - x1) / (x2 - x1);
-      }
-      else if (code_out & RIGHT)
-      {
-        /* point is to the right of rectangle */
-        x = box->xmax;
-        y = y1 + (y2 - y1) * (box->xmax - x1) / (x2 - x1);
-        if (hasz)
-          z = z1 + (z2 - z1) * (box->xmax - x1) / (x2 - x1);
-      }
-      else if (code_out & BOTTOM)
-      {
-        /* point is below the rectangle */
-        y = box->ymin;
-        x = x1 + (x2 - x1) * (box->ymin - y1) / (y2 - y1);
-        if (hasz)
-          z = z1 + (z2 - z1) * (box->ymin - y1) / (y2 - y1);
-      }
-      else if (code_out & TOP)
-      {
-        /* point is above the clip rectangle */
-        y = box->ymax;
-        x = x1 + (x2 - x1) * (box->ymax - y1) / (y2 - y1);
-        if (hasz)
-          z = z1 + (z2 - z1) * (box->ymax - y1) / (y2 - y1);
-      }
-      else if (hasz && code_out & FRONT)
-      {
-        /* point is in front of the rectangle */
-        z = box->zmin;
-        x = x1 + (x2 - x1) * (box->zmin - z1) / (z2 - z1);
-        y = y1 + (y2 - y1) * (box->zmin - z1) / (z2 - z1);
-      }
-      else if (hasz && code_out & BACK)
-      {
-        /* point is behind the rectangle */
-        z = box->zmax;
-        x = x1 + (x2 - x1) * (box->zmax - z1) / (z2 - z1);
-        y = y1 + (y2 - y1) * (box->zmax - z1) / (z2 - z1);
-      }
-
-      /*
-       * Now intersection point x, y, z is found.
-       * We replace point outside rectangle by intersection point
-       */
-      if (code_out == code1)
-      {
-        x1 = x;
-        y1 = y;
-        if (hasz)
-          z1 = z;
-        code1 = computeRegionCode(x1, y1, z1, hasz, box);
-      }
-      else
-      {
-        x2 = x;
-        y2 = y;
-        if (hasz)
-          z2 = z;
-        code2 = computeRegionCode(x2, y2, z2, hasz, box);
-      }
-    }
-  }
-  if (found)
-  {
-    /* We need to remove the max border */
-    if (! border_inc)
-    {
-      /* Compute max border codes for the input points */
-      int max_code1 = computeMaxBorderCode(x1, y1, z1, hasz, box);
-      int max_code2 = computeMaxBorderCode(x2, y2, z2, hasz, box);
-      /* If the whole segment is on a max border, remove it */
-      if (max_code1 & max_code2)
-        return false;
-      /* Point is included if its max_code is 0 */
-      *p3_inc = ! max_code1;
-      *p4_inc = ! max_code2;
-    }
-    *p3 = PointerGetDatum(gspoint_make(x1, y1, z1, hasz, false, srid));
-    *p4 = PointerGetDatum(gspoint_make(x2, y2, z2, hasz, false, srid));
-  }
-  return found;
-}
-
-/**
  * @brief Clip the paramaters t0 and t1 for the Liang-Barsky clipping algorithm
  */
 bool
@@ -1841,7 +1667,6 @@ clipt(double p, double q, double *t0, double *t1)
  * @note It is possible to mix 2D/3D geometries, the Z dimension is only
  * considered if both the temporal point and the box have Z dimension
  */
-
 bool
 liangBarskyClip(Datum point1, Datum point2, const STBox *box, bool hasz,
   bool border_inc, Datum *point3, Datum *point4, bool *p3_inc, bool *p4_inc)
@@ -2219,8 +2044,6 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     else
     {
       bool p3_inc, p4_inc;
-      // bool found = cohenSutherlandClip(p1, p2, box, hasz, border_inc, &p3, &p4,
-        // &p3_inc, &p4_inc);
       bool found = liangBarskyClip(p1, p2, box, hasz, border_inc, &p3, &p4,
         &p3_inc, &p4_inc);
       if (found)

@@ -436,7 +436,9 @@ tnpointdiscseq_routes(const TSequence *seq)
   }
   datumarr_sort(values, seq->count, T_INT8);
   int count = datumarr_remove_duplicates(values, seq->count, T_INT8);
-  return set_make(values, count, T_INT8, ORDERED);
+  Set *result = set_make(values, count, T_INT8, ORDERED);
+  pfree(values);
+  return result;
 }
 
 /**
@@ -467,7 +469,9 @@ tnpointseqset_routes(const TSequenceSet *ss)
   }
   datumarr_sort(values, ss->count, T_INT8);
   int count = datumarr_remove_duplicates(values, ss->count, T_INT8);
-  return set_make(values, count, T_INT8, ORDERED);
+  Set *result = set_make(values, count, T_INT8, ORDERED);
+  pfree(values);
+  return result;
 }
 
 /**
