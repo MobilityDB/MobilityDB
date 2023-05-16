@@ -893,6 +893,7 @@ SELECT asText(atStbox(tgeompoint '[Point(1 1)@2000-01-01]', stbox 'STBOX X((1 1)
 -- 3D
 SELECT asText(atStbox(tgeompoint '[Point(2 0 2)@2000-01-01, Point(2 4 2)@2000-01-02]', stbox 'STBOX Z((1 1 1),(3
 3 3))'));
+SELECT atStbox (tgeompoint '{Point(1 2 1)@2000-01-01, Point(1 1 3)@2000-01-02}', stbox 'STBOX Z((0 0 0),(1 1 1))');
 
 -- Mix 2D/3D
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
