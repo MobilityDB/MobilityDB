@@ -47,7 +47,6 @@
 #include "point/tpoint_boxops.h"
 #include "npoint/tnpoint.h"
 #include "npoint/tnpoint_static.h"
-#include "npoint/tnpoint_distance.h"
 #include "npoint/tnpoint_tempspatialrels.h"
 
 /*****************************************************************************
@@ -78,21 +77,6 @@ ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
   if (tnpointinst_route(inst1) != tnpointinst_route(inst2))
     elog(ERROR, "All network points composing a temporal sequence must have same route identifier");
   return;
-}
-
-/*****************************************************************************
- * Distance function
- *****************************************************************************/
-
-/**
- * @brief Return the distance between the two network points
- */
-Datum
-npoint_distance(Datum np1, Datum np2)
-{
-  Datum geom1 = PointerGetDatum(npoint_geom(DatumGetNpointP(np1)));
-  Datum geom2 = PointerGetDatum(npoint_geom(DatumGetNpointP(np2)));
-  return pt_distance2d(geom1, geom2);
 }
 
 /*****************************************************************************

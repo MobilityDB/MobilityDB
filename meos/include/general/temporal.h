@@ -361,7 +361,6 @@ extern bool temptype_subtype(int16 subtype);
 extern bool temptype_subtype_all(int16 subtype);
 extern void ensure_valid_interpolation(meosType temptype, interpType interp);
 extern void ensure_continuous(const Temporal *temp);
-extern void ensure_tinstarr(const TInstant **instants, int count);
 extern void ensure_continuous_interpolation(int16 flags);
 extern void ensure_discrete_interpolation(int16 flags);
 extern void ensure_nonlinear_interpolation(int16 flags);
@@ -370,14 +369,6 @@ extern void ensure_same_temptype(const Temporal *temp1,
   const Temporal *temp2);
 extern void ensure_same_continuous_interpolation(const Temporal *temp1,
   const Temporal *temp2);
-extern void ensure_increasing_timestamps(const TInstant *inst1,
-  const TInstant *inst2, bool strict);
-extern void ensure_valid_tinstarr(const TInstant **instants, int count,
-  bool merge, interpType interp);
-extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
-  bool merge, interpType interp, double maxdist, Interval *maxt, int *countsplits);
-extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
-
 extern void ensure_positive_datum(Datum size, meosType basetype);
 extern void ensure_valid_duration(const Interval *duration);
 

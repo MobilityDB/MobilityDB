@@ -42,6 +42,7 @@
 
 /*****************************************************************************/
 
+extern Datum npoint_distance(Datum np1, Datum np2);
 extern Temporal *distance_tnpoint_geo(const Temporal *temp,
   const GSERIALIZED *geo);
 extern Temporal *distance_tnpoint_npoint(const Temporal *temp,

@@ -64,6 +64,7 @@
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
+  #include "npoint/tnpoint_distance.h"
 #endif
 
 /*****************************************************************************
@@ -541,6 +542,20 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs, int count,
   return result;
 }
 
+/**
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Compute the bounding box of a temporal sequence
+ * @sqlfunc period(), tbox(), stbox()
+ * @sqlop @p ::
+ */
+void
+tsequence_set_bbox(const TSequence *seq, void *box)
+{
+  memset(box, 0, seq->bboxsize);
+  memcpy(box, TSEQUENCE_BBOX_PTR(seq), seq->bboxsize);
+  return;
+}
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
@@ -708,6 +723,63 @@ tsequence_out(const TSequence *seq, int maxdd)
  *****************************************************************************/
 
 /**
+ * @brief Ensure that the timestamp of the first temporal instant is smaller
+ * (or equal if the merge parameter is true) than the one of the second
+ * temporal instant. Moreover, ensures that the values are the same
+ * if the timestamps are equal
+ */
+void
+ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
+  bool merge)
+{
+  if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
+  {
+    char *t1 = pg_timestamptz_out(inst1->t);
+    char *t2 = pg_timestamptz_out(inst2->t);
+    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
+  }
+  if (merge && inst1->t == inst2->t &&
+    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
+        temptype_basetype(inst1->temptype)))
+  {
+    char *t1 = pg_timestamptz_out(inst1->t);
+    elog(ERROR, "The temporal values have different value at their overlapping instant %s", t1);
+  }
+  return;
+}
+
+/**
+ * @brief Ensure that all temporal instants of the array have increasing
+ * timestamp (or may be equal if the merge parameter is true), and if they
+ * are temporal points, have the same srid and the same dimensionality.
+ *
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the input array
+ * @param[in] merge True if a merge operation, which implies that the two
+ *   consecutive instants may be equal
+ * @param[in] interp Interpolation
+ */
+void
+ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
+  interpType interp)
+{
+  for (int i = 0; i < count; i++)
+  {
+    if (instants[i]->subtype != TINSTANT)
+      elog(ERROR, "Input values must be temporal instants");
+    if (i > 0)
+    {
+      ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
+      ensure_spatial_validity((Temporal *) instants[i - 1],
+        (Temporal *) instants[i]);
+      if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT)
+        ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
+    }
+  }
+  return;
+}
+
+/**
  * @brief Ensure the validity of the arguments when creating a temporal sequence
  */
 void
@@ -716,8 +788,7 @@ tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
 {
   /* Test the validity of the instants */
   assert(count > 0);
-  ensure_tinstarr(instants, count);
-  if (count == 1 && (!lower_inc || !upper_inc))
+  if (count == 1 && (! lower_inc || ! upper_inc))
     elog(ERROR, "Instant sequence must have inclusive bounds");
   meosType basetype = temptype_basetype(instants[0]->temptype);
   if (interp == STEP && count > 1 && ! upper_inc &&
@@ -737,20 +808,6 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
   ensure_valid_interpolation(instants[0]->temptype, interp);
   tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
   ensure_valid_tinstarr(instants, count, MERGE_NO, interp);
-  return;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding box of a temporal sequence
- * @sqlfunc period(), tbox(), stbox()
- * @sqlop @p ::
- */
-void
-tsequence_set_bbox(const TSequence *seq, void *box)
-{
-  memset(box, 0, seq->bboxsize);
-  memcpy(box, TSEQUENCE_BBOX_PTR(seq), seq->bboxsize);
   return;
 }
 
@@ -1308,6 +1365,29 @@ tgeogpointseq_from_base_period(const GSERIALIZED *gs, const Span *p,
  *****************************************************************************/
 
 /**
+ * @brief Return the distance between two datums.
+ */
+double
+datum_distance(Datum value1, Datum value2, meosType basetype, int16 flags)
+{
+  datum_func2 point_distance = NULL;
+  if (geo_basetype(basetype))
+    point_distance = pt_distance_fn(flags);
+  double result = -1.0; /* make compiler quiet */
+  if (tnumber_basetype(basetype))
+    result = (basetype == T_INT4) ?
+      (double) DatumGetInt32(number_distance(value1, value2, basetype, basetype)) :
+      DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
+  else if (geo_basetype(basetype))
+    result = DatumGetFloat8(point_distance(value1, value2));
+#if NPOINT
+  else if (basetype == T_NPOINT)
+    result = DatumGetFloat8(npoint_distance(value1, value2));
+#endif
+  return result;
+}
+
+/**
  * @ingroup libmeos_internal_temporal_modif
  * @brief Append an instant to a temporal sequence accounting for potential gaps.
  * @param[in,out] seq Temporal sequence
@@ -1328,10 +1408,8 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
   assert(seq->temptype == inst->temptype);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   meosType basetype = temptype_basetype(seq->temptype);
-  datum_func2 point_distance = NULL;
-  if (geo_basetype(basetype))
-    point_distance = pt_distance_fn(inst->flags);
   TInstant *last = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
+  int16 flags = seq->flags;
 #if NPOINT
   if (last->temptype == T_TNPOINT && interp != DISCRETE)
     ensure_same_rid_tnpointinst(inst, last);
@@ -1382,17 +1460,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
     bool split = false;
     if (maxdist > 0.0 && ! datum_eq(value1, value, basetype))
     {
-      double dist = -1.0;
-      if (tnumber_basetype(basetype))
-        dist = (basetype == T_INT4) ?
-          (double) DatumGetInt32(number_distance(value1, value, basetype, basetype)) :
-          DatumGetFloat8(number_distance(value1, value, basetype, basetype));
-      else if (geo_basetype(basetype))
-        dist = DatumGetFloat8(point_distance(value1, value));
-#if NPOINT
-      else if (basetype == T_NPOINT)
-        dist = DatumGetFloat8(npoint_distance(value1, value));
-#endif
+      double dist = datum_distance(value1, value, basetype, flags);
       if (dist > maxdist)
         split = true;
     }

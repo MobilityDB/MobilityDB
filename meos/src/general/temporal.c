@@ -88,19 +88,6 @@ temptype_subtype_all(int16 subtype)
   return false;
 }
 
-/**
- * @brief Ensure that the elements of an array are of instant subtype
- */
-void
-ensure_tinstarr(const TInstant **instants, int count)
-{
-  for (int i = 0; i < count; i++)
-  {
-    if (instants[i]->subtype != TINSTANT)
-      elog(ERROR, "Input values must be temporal instants");
-  }
-  return;
-}
 
 #if 0 /* not used */
 /**
@@ -196,174 +183,6 @@ ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 {
   if (temp1->temptype != temp2->temptype)
     elog(ERROR, "The temporal values must be of the same temporal type");
-  return;
-}
-
-/**
- * @brief Ensure that the timestamp of the first temporal instant is smaller
- * (or equal if the merge parameter is true) than the one of the second
- * temporal instant. Moreover, ensures that the values are the same
- * if the timestamps are equal
- */
-void
-ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
-  bool merge)
-{
-  if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
-  {
-    char *t1 = pg_timestamptz_out(inst1->t);
-    char *t2 = pg_timestamptz_out(inst2->t);
-    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
-  }
-  if (merge && inst1->t == inst2->t &&
-    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
-        temptype_basetype(inst1->temptype)))
-  {
-    char *t1 = pg_timestamptz_out(inst1->t);
-    elog(ERROR, "The temporal values have different value at their overlapping instant %s", t1);
-  }
-  return;
-}
-
-/**
- * @brief Ensure that two temporal instants have increasing timestamp
- * (or may be equal if the merge parameter is true), and if they
- * are temporal points, have the same srid and the same dimensionality.
- *
- * @param[in] inst1,inst2 Temporal instants
- * @param[in] merge True if a merge operation, which implies that the two
- *   consecutive instants may be equal
- * @param[in] interp Interpolation
- */
-void
-ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
-#if NPOINT
-  bool merge, interpType interp)
-#else
-  bool merge, interpType interp __attribute__((unused)))
-#endif
-{
-  ensure_increasing_timestamps(inst1, inst2, merge);
-  ensure_spatial_validity((Temporal *) inst1, (Temporal *) inst2);
-#if NPOINT
-  if (interp != DISCRETE && inst1->temptype == T_TNPOINT)
-    ensure_same_rid_tnpointinst(inst1, inst2);
-#endif
-  return;
-}
-
-/**
- * @brief Ensure that all temporal instants of the array have increasing
- * timestamp (or may be equal if the merge parameter is true), and if they
- * are temporal points, have the same srid and the same dimensionality.
- *
- * @param[in] instants Array of temporal instants
- * @param[in] count Number of elements in the input array
- * @param[in] merge True if a merge operation, which implies that the two
- *   consecutive instants may be equal
- * @param[in] interp Interpolation
- */
-void
-ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
-  interpType interp)
-{
-  for (int i = 1; i < count; i++)
-    ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, interp);
-  return;
-}
-
-/**
- * @brief Ensure that all temporal instants of the array have increasing
- * timestamp (or may be equal if the merge parameter is true), and if they
- * are temporal points, have the same srid and the same dimensionality.
- *
- * This function extends function ensure_valid_tinstarr by determining
- * the splits that must be made according the maximum distance or interval
- * between consecutive instants.
- *
- * @param[in] instants Array of temporal instants
- * @param[in] count Number of elements in the input array
- * @param[in] merge True if a merge operation, which implies that the two
- *   consecutive instants may be equal
- * @param[in] interp Interpolation
- * @param[in] maxdist Maximum distance to split the temporal sequence
- * @param[in] maxt Maximum time interval to split the temporal sequence
- * @param[out] countsplits Number of splits
- * @result Array of indices at which the temporal sequence is split
- */
-int *
-ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
-  interpType interp, double maxdist, Interval *maxt, int *countsplits)
-{
-  meosType basetype = temptype_basetype(instants[0]->temptype);
-  /* Ensure that zero-fill is done */
-  int *result = palloc0(sizeof(int) * count);
-  Datum value1 = tinstant_value(instants[0]);
-  datum_func2 point_distance = NULL;
-  if (geo_basetype(basetype))
-    point_distance = pt_distance_fn(instants[0]->flags);
-  int k = 0;
-  for (int i = 1; i < count; i++)
-  {
-    ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, interp);
-    bool split = false;
-    Datum value2 = tinstant_value(instants[i]);
-    if (maxdist > 0.0 && ! datum_eq(value1, value2, basetype))
-    {
-      double dist = -1.0;
-      if (tnumber_basetype(basetype))
-        dist = (basetype == T_INT4) ?
-          (double) DatumGetInt32(number_distance(value1, value2, basetype, basetype)) :
-          DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
-      else if (geo_basetype(basetype))
-        dist = DatumGetFloat8(point_distance(value1, value2));
-#if NPOINT
-      else if (basetype == T_NPOINT)
-        dist = DatumGetFloat8(npoint_distance(value1, value2));
-#endif
-      if (dist > maxdist)
-        split = true;
-    }
-    /* If there is not already a split by distance */
-    if (maxt != NULL && ! split)
-    {
-      Interval *duration = pg_timestamp_mi(instants[i]->t, instants[i - 1]->t);
-      if (pg_interval_cmp(duration, maxt) > 0)
-        split = true;
-      // CANNOT pfree(duration);
-    }
-    if (split)
-      result[k++] = i;
-    value1 = value2;
-  }
-  *countsplits = k;
-  return result;
-}
-
-/**
- * @brief Ensure that all temporal sequences of the array have increasing
- * timestamp, and if they are temporal points, have the same srid and the
- * same dimensionality
- */
-void
-ensure_valid_tseqarr(const TSequence **sequences, int count)
-{
-  for (int i = 1; i < count; i++)
-  {
-    ensure_same_interpolation((Temporal *) sequences[i - 1],
-      (Temporal *) sequences[i]);
-    TimestampTz upper1 = DatumGetTimestampTz(sequences[i - 1]->period.upper);
-    TimestampTz lower2 = DatumGetTimestampTz(sequences[i]->period.lower);
-    if ( upper1 > lower2 ||
-         ( upper1 == lower2 && sequences[i - 1]->period.upper_inc &&
-           sequences[i]->period.lower_inc ) )
-    {
-      char *t1 = pg_timestamptz_out(upper1);
-      char *t2 = pg_timestamptz_out(lower2);
-      elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
-    }
-    ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
-  }
   return;
 }
 
@@ -563,7 +382,6 @@ mobilitydb_full_version(void)
   result[len] = '\0';
   return result;
 }
-
 
 /*****************************************************************************
  * Input/output functions

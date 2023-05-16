@@ -55,6 +55,8 @@ extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences,
 
 /* Append and merge functions */
 
+extern double datum_distance(Datum value1, Datum value2, meosType basetype,
+  int16 flags);
 extern bool tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool *removelast, bool *removefirst);
 extern TSequence *tsequence_join(const TSequence *seq1, const TSequence *seq2,
@@ -98,6 +100,13 @@ extern bool intersection_tinstant_tsequence(const TInstant *inst,
 
 extern char *tsequence_to_string(const TSequence *seq, int maxdd,
   bool component, outfunc value_out);
+
+/* Constructor functions */
+
+extern void ensure_increasing_timestamps(const TInstant *inst1,
+  const TInstant *inst2, bool strict);
+extern void ensure_valid_tinstarr(const TInstant **instants, int count,
+  bool merge, interpType interp);
 
 /* Transformation functions */
 
