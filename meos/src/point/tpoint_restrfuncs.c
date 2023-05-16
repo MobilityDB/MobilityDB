@@ -1674,7 +1674,7 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
   bool *p3_inc, bool *p4_inc)
 {
   assert(MEOS_FLAGS_GET_X(box->flags));
-  assert(! datum_point_eq(point1, point2));
+  assert(! gspoint_eq(point1, point2));
   assert(! hasz || (MEOS_FLAGS_GET_Z(box->flags) &&
     (bool) FLAGS_GET_Z(point1->gflags) && (bool) FLAGS_GET_Z(point2->gflags)));
 
@@ -2020,30 +2020,36 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   bool hasz_box = MEOS_FLAGS_GET_Z(box->flags);
   bool hasz = hasz_seq && hasz_box;
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **tofree = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   GSERIALIZED *p1 = DatumGetGserializedP(&inst1->value);
   bool lower_inc = seq->period.lower_inc;
-  int nseqs = 0;
+  bool upper_inc;
+  int ninsts = 0, nseqs = 0, nfree = 0;
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+    upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     GSERIALIZED *p2 = DatumGetGserializedP(&inst2->value);
     GSERIALIZED *p3, *p4;
-    TInstant *instants[2];
+    bool makeseq = false;
     if (gspoint_eq(p1, p2))
     {
       /* Constant segment */
       if (tpointinst_restrict_stbox_iter(inst1, box, border_inc, REST_AT))
       {
-        instants[0] = (TInstant *) inst1;
-        instants[1] = (TInstant *) inst2;
-        sequences[nseqs++] = tsequence_make((const TInstant **) instants, 2,
-          lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
+        /* If ninsts > 0 the instant was added in the previous iteration */
+        if (ninsts == 0)
+          instants[ninsts++] = (TInstant *) inst1;
+        instants[ninsts++] = (TInstant *) inst2;
       }
+      else
+        makeseq = true;
     }
     else
     {
+      /* Clip the segment */
       bool p3_inc, p4_inc;
       bool found = liangBarskyClip(p1, p2, box, hasz, border_inc, &p3, &p4,
         &p3_inc, &p4_inc);
@@ -2051,9 +2057,25 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
       {
         if (! border_inc)
         {
-          lower_inc &= p3_inc;
+          /* Restart a sequence when p3 is not inclusive and it is not the
+           * first instant */
+          if (! p3_inc)
+          {
+            if (ninsts > 0)
+            {
+              sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+                (ninsts == 1) ? true : lower_inc, (ninsts == 1) ? true : false,
+                LINEAR, NORMALIZE_NO);
+              ninsts = 0;
+            }
+            lower_inc = false;
+          }
+          /* Update the upper_inc flag of the current instant */
           upper_inc &= p4_inc;
         }
+        /* To reduce roundoff errors, (1) find the timestamps at which the
+         * segment take the points returned by the clipping function and
+         * (2) project the temporal points to the timestamps instead  */
         TimestampTz t1, t2;
         Datum d3 = PointerGetDatum(p3);
         Datum d4 = PointerGetDatum(p4);
@@ -2078,55 +2100,70 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
             tpointsegm_timestamp_at_value1(inst1, inst2, d4, &t2);
         }
         pfree(p3); pfree(p4);
-        /* We cannot add the end point of the segment as a singleton sequence
-         * if it is at an exclusive upper bound */
-        if (t1 != t2 || t1 != inst2->t || upper_inc)
+        /* Project the segment to the timestamps if necessary and add the
+         * instants */
+        Datum inter1 = 0, inter2; /* make compiler quiet */
+        bool free1 = false, free2 = false;
+        /* If ninsts > 0 the instant was added in the previous iteration */
+        if (ninsts == 0)
         {
-          /* To reduce roundoff errors we project the temporal points to the
-           * timestamps instead of taking the intersection values returned by
-           * the function #liangBarskyClip */
-          Datum inter1, inter2;
-          bool free1 = false, free2 = false;
           if (t1 != inst1->t)
           {
-            free1 = true;
             inter1 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t1);
+            instants[ninsts] = tinstant_make(inter1, inst1->temptype, t1);
+            tofree[nfree++] = instants[ninsts++];
+            free1 = true;
           }
-          if (t1 != t2 && t2 != inst2->t)
-          {
-            free2 = true;
-            inter2 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t2);
-          }
-          /* Create the sequence */
-          int j = 0;
-          instants[j++] = free1 ?
-            tinstant_make(inter1, inst1->temptype, t1) : (TInstant *) inst1;
-          if (t1 != t2 &&
-             (! free1 || ! free2 || ! gspoint_eq(DatumGetGserializedP(inter1),
-               DatumGetGserializedP(inter2))))
-            instants[j++] = free2 ?
-              tinstant_make(inter2, inst1->temptype, t2) : (TInstant *) inst2;
-          sequences[nseqs++] = tsequence_make((const TInstant **) instants, j,
-            (j == 1) ? true : lower_inc, (j == 1) ? true : upper_inc, LINEAR,
-            NORMALIZE_NO);
-          /* Clean up */
-          if (free1)
-          {
-            pfree(DatumGetPointer(inter1));
-            pfree(instants[0]);
-          }
-          if (free2)
-          {
-            pfree(DatumGetPointer(inter2));
-            pfree(instants[1]);
-          }
+          else
+            instants[ninsts++] = (TInstant *) inst1;
         }
+        if (t1 != t2)
+        {
+          if (t2 != inst2->t)
+          {
+            inter2 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t2);
+            if (! free1 || ! gspoint_eq(DatumGetGserializedP(inter1),
+                  DatumGetGserializedP(inter2)))
+            {
+              instants[ninsts] = tinstant_make(inter2, inst1->temptype, t2);
+              tofree[nfree++] = instants[ninsts++];
+            }
+            else
+              instants[ninsts++] = (TInstant *) inst2;
+            free2 = true;
+          }
+          else
+            instants[ninsts++] = (TInstant *) inst2;
+        }
+        if (free1)
+          pfree(DatumGetPointer(inter1));
+        if (free2)
+          pfree(DatumGetPointer(inter2));
       }
+      else
+        makeseq = true;
+    }
+    if (makeseq)
+    {
+      upper_inc = false;
+      if (ninsts > 0)
+      {
+        sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+          (ninsts == 1) ? true : lower_inc, (ninsts == 1) ? true : upper_inc,
+          LINEAR, NORMALIZE_NO);
+        ninsts = 0;
+      }
+      lower_inc = true;
     }
     inst1 = inst2;
     p1 = p2;
-    lower_inc = true;
   }
+  if (ninsts > 0)
+    sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+      (ninsts == 1) ? true : lower_inc, (ninsts == 1) ? true : upper_inc,
+      LINEAR, NORMALIZE_NO);
+  pfree_array((void **) tofree, nfree);
+  pfree(instants);
   if (nseqs == 0)
   {
     pfree(sequences);
