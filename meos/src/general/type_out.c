@@ -1926,8 +1926,8 @@ tbox_to_wkb_buf(const TBox *box, uint8_t *buf, uint8_t variant)
 /**
  * @brief Write into the buffer the flag of a spatiotemporal box represented in
  * Well-Known Binary (WKB) format. It is a byte as follows
- * xxGZxxTX
- * G = Geodetic, Z = has Z, T = has T, X = has X, x = unused bit
+ * xSGZxxTX
+ * S = SID, G = Geodetic, Z = has Z, T = has T, X = has X, x = unused bit
  */
 static uint8_t *
 stbox_flags_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)

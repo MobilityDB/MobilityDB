@@ -415,7 +415,8 @@ Datum
 Stbox_as_wkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  bytea *result = datum_as_wkb_ext(fcinfo, box, T_STBOX, false);
+  /* A spatiotemporal box always outputs the SRID */
+  bytea *result = datum_as_wkb_ext(fcinfo, box, T_STBOX, true);
   PG_RETURN_BYTEA_P(result);
 }
 

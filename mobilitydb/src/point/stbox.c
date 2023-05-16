@@ -113,7 +113,8 @@ Datum
 Stbox_send(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  uint8_t variant = 0;
+  /* A spatiotemporal box always outputs the SRID */
+  uint8_t variant = WKB_EXTENDED;
   size_t wkb_size = VARSIZE_ANY_EXHDR(box);
   uint8_t *wkb = stbox_as_wkb(box, variant, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
