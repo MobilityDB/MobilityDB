@@ -3602,15 +3602,7 @@ mrr_distance_scalar(const TSequence *seq, int start, int end)
 static double
 geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 {
-  // GSERIALIZED *gs1 = GEOS2POSTGIS((GEOSGeometry *) pt1, false);
-  // GSERIALIZED *gs2 = GEOS2POSTGIS((GEOSGeometry *) pt2, false);
-  // double dist = gserialized_geog_distance(gs1, gs2);
-  // pfree(gs1);
-  // pfree(gs2);
-  // return dist;
-
-  /* Skip postgis function calls */
-
+  /* Skip PostGIS function calls */
   double x1, y1, x2, y2;
   GEOSGeomGetX(pt1, &x1);
   GEOSGeomGetY(pt1, &y1);
@@ -3641,8 +3633,7 @@ geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 /**
  * @brief Calculate the length of the diagonal of the minimum rotated rectangle
  * of the input GEOS geometry.
- *
- * Note: The computation is always done in 2D
+ * @note The computation is always done in 2D
  */
 static double
 mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
@@ -3668,7 +3659,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
       case GEOS_POINT:
         result = 0;
         break;
-      case GEOS_LINESTRING: // compute length of linestring
+      case GEOS_LINESTRING: /* compute length of linestring */
         if (geodetic)
         {
           pt1 = GEOSGeomGetStartPoint(mrr_geom);
@@ -3680,7 +3671,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
         else
           GEOSGeomGetLength(mrr_geom, &result);
         break;
-      case GEOS_POLYGON: // compute length of diagonal
+      case GEOS_POLYGON: /* compute length of diagonal */
         pt1 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 0);
         pt2 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 2);
         if (geodetic)
@@ -3698,8 +3689,8 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
 }
 
 /**
- * @brief Create a GEOS Multipoint geometry from
- * a part (defined by start and end) of a temporal point sequence
+ * @brief Create a GEOS Multipoint geometry from a part (defined by start and
+ * end) of a temporal point sequence
  */
 static GEOSGeometry *
 multipoint_make(const TSequence *seq, int start, int end)
@@ -3718,8 +3709,6 @@ multipoint_make(const TSequence *seq, int start, int end)
 #endif
     else
       elog(ERROR, "Sequence must have a spatial base type");
-    // geoms[i] = POSTGIS2GEOS(gs);
-    // Skip postgis function calls
     const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
     geoms[i] = GEOSGeom_createPointFromXY(pt->x, pt->y);
   }
@@ -3743,8 +3732,6 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 #endif
   else
     elog(ERROR, "Instant must have a spatial base type");
-  // GEOSGeometry *geom1 = POSTGIS2GEOS(gs);
-  // Skip postgis function calls
   const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
   GEOSGeometry *geom1 = GEOSGeom_createPointFromXY(pt->x, pt->y);
   GEOSGeometry *result = GEOSUnion(geom, geom1);
@@ -3789,7 +3776,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
     inst1 = TSEQUENCE_INST_N(seq, start);
     inst2 = TSEQUENCE_INST_N(seq, end);
 
-    while (!is_stopped && end - start > 1
+    while (! is_stopped && end - start > 1
       && (int64)(inst2->t - inst1->t) >= mintunits)
     {
       inst1 = TSEQUENCE_INST_N(seq, ++start);
@@ -3814,7 +3801,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
       is_stopped = mrr_distance_scalar(seq, start, end) <= maxdist;
 
     inst2 = TSEQUENCE_INST_N(seq, end - 1);
-    if (!is_stopped && previously_stopped
+    if (! is_stopped && previously_stopped
       && (int64)(inst2->t - inst1->t) >= mintunits) // Found a stop
     {
       const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
@@ -3880,7 +3867,7 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    /* Instantaneous sequence */
+    /* Instantaneous sequences do not have stops */
     if (seq->count == 1)
       continue;
     k += tsequence_stops1(seq, maxdist, mintunits, &sequences[k]);
@@ -3902,11 +3889,7 @@ temporal_stops(const Temporal *temp, double maxdist,
 {
   if (maxdist < 0)
     elog(ERROR, "The maximum distance must be positive: %f", maxdist);
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = pg_interval_cmp(minduration, &intervalzero);
-  if (cmp < 0)
-    elog(ERROR, "The duration must be positive");
+  ensure_valid_duration(minduration);
   int64 mintunits = interval_units(minduration);
 
   TSequenceSet *result = NULL;

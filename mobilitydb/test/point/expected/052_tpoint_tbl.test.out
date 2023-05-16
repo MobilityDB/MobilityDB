@@ -1325,6 +1325,18 @@ SELECT MAX(numInstants(stops(seq, 50.0, '1 min'))) FROM tbl_tgeogpoint_seq;
     
 (1 row)
 
+SELECT MAX(numInstants(stops(ss, 10.0, '1 min'))) FROM tbl_tgeompoint_seqset;
+ max 
+-----
+   8
+(1 row)
+
+SELECT MAX(numInstants(stops(ss, 10.0, '1 min'))) FROM tbl_tgeogpoint_seqset;
+ max 
+-----
+    
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= startValue(temp);
  count 
 -------

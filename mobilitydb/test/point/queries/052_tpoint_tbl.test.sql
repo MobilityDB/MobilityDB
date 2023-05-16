@@ -346,6 +346,9 @@ SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tgeogpoint_seq;
 SELECT MAX(numInstants(stops(seq, 50.0, '1 min'))) FROM tbl_tgeompoint_seq;
 SELECT MAX(numInstants(stops(seq, 50.0, '1 min'))) FROM tbl_tgeogpoint_seq;
 
+SELECT MAX(numInstants(stops(ss, 10.0, '1 min'))) FROM tbl_tgeompoint_seqset;
+SELECT MAX(numInstants(stops(ss, 10.0, '1 min'))) FROM tbl_tgeogpoint_seqset;
+
 -------------------------------------------------------------------------------
 -- Ever/always comparison functions
 -------------------------------------------------------------------------------

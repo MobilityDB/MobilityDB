@@ -352,9 +352,8 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
  */
 static int *
 ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
-  interpType interp, double maxdist, Interval *maxt, int *nsplits)
+  double maxdist, Interval *maxt, int *nsplits)
 {
-  assert(interp != DISCRETE);
   meosType basetype = temptype_basetype(instants[0]->temptype);
   /* Ensure that zero-fill is done */
   int *result = palloc0(sizeof(int) * count);
@@ -405,9 +404,10 @@ tsequenceset_make_valid_gaps(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, double maxdist,
   Interval *maxt, int *nsplits)
 {
+  assert(interp != DISCRETE);
   tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
-  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO, interp, maxdist,
-    maxt, nsplits);
+  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO, maxdist, maxt,
+    nsplits);
 }
 
 /**
