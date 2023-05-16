@@ -63,6 +63,7 @@
  * Parameter tests
  *****************************************************************************/
 
+#if DEBUG_BUILD
 /**
  * @brief Ensure that the subtype of a temporal value is valid
  * @note Used for the dispatch functions
@@ -87,7 +88,7 @@ temptype_subtype_all(int16 subtype)
     return true;
   return false;
 }
-
+#endif /* DEBUG_BUILD */
 
 #if 0 /* not used */
 /**
@@ -172,17 +173,6 @@ ensure_common_dimension(int16 flags1, int16 flags2)
   if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) &&
     MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
     elog(ERROR, "The temporal values must have at least one common dimension");
-  return;
-}
-
-/**
- * @brief Ensure that two temporal values have the same base type
- */
-void
-ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
-{
-  if (temp1->temptype != temp2->temptype)
-    elog(ERROR, "The temporal values must be of the same temporal type");
   return;
 }
 
@@ -663,9 +653,9 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
   double maxdist, Interval *maxt, bool expand)
 {
   /* Validity tests */
+  assert(temp->temptype == inst->temptype);
   if (inst->subtype != TINSTANT)
     elog(ERROR, "The second argument must be of instant subtype");
-  ensure_same_temptype(temp, (Temporal *) inst);
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
@@ -696,9 +686,9 @@ Temporal *
 temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 {
   /* Validity tests */
+  assert(temp->temptype == seq->temptype);
   if (seq->subtype != TSEQUENCE)
     elog(ERROR, "The second argument must be of sequence subtype");
-  ensure_same_temptype(temp, (Temporal *) seq);
   ensure_same_interpolation(temp, (Temporal *) seq);
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
@@ -815,10 +805,8 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
   if (! temp2)
     return temporal_copy(temp1);
 
-  /* Both arguments are temporal */
-  ensure_same_temptype(temp1, temp2);
-
   /* Convert to the same subtype */
+  assert(temp1->temptype == temp2->temptype);
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -3392,9 +3380,8 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
-  ensure_same_temptype(temp1, temp2);
-
   /* Convert to the same subtype */
+  assert(temp1->temptype == temp2->temptype);
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -3776,9 +3763,8 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   TSequence **result)
 {
   assert(seq->count > 1);
-  assert(seq->temptype == T_TFLOAT
-    || tgeo_type(seq->temptype)
-    || seq->temptype == T_TNPOINT);
+  assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype) ||
+    seq->temptype == T_TNPOINT);
 
   /* Use GEOS only for non-scalar input */
   bool use_geos_dist = seq->temptype != T_TFLOAT;
@@ -3894,6 +3880,9 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    /* Instantaneous sequence */
+    if (seq->count == 1)
+      continue;
     k += tsequence_stops1(seq, maxdist, mintunits, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);

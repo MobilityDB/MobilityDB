@@ -420,6 +420,9 @@ test2(k, temp) AS (
   GROUP BY k )
 SELECT COUNT(*) FROM tbl_ttext t1, test2 t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
 
+-- Errors
+SELECT COUNT(*) FROM (SELECT k, unnest(temp) AS rec FROM tbl_tfloat) AS T;
+
 -------------------------------------------------------------------------------
 -- Shift and tscale functions
 -------------------------------------------------------------------------------
