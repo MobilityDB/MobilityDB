@@ -86,6 +86,11 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
 # PostgreSQL
 include_directories("postgres")
 add_subdirectory("postgres")
+# Disable all warnings on embeded code from PostgreSQL
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+  target_compile_options(timezone PRIVATE "-w")
+  target_compile_options(utils PRIVATE "-w")
+endif()
 
 # MEOS
 include_directories("include")

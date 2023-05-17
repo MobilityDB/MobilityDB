@@ -309,7 +309,7 @@ Set_as_wkb(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(s), settype,
-    false);
+    true);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BYTEA_P(result);
 }

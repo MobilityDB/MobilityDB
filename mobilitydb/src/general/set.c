@@ -120,7 +120,7 @@ Datum
 Set_send(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  uint8_t variant = 0;
+  uint8_t variant = WKB_EXTENDED;
   size_t wkb_size = VARSIZE_ANY_EXHDR(s);
   uint8_t *wkb = set_as_wkb(s, variant, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);

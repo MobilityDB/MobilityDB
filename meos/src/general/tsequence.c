@@ -408,8 +408,14 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
     instants[k++] = TSEQUENCE_INST_N(seq1, i);
   for (i = start2; i < seq2->count; i++)
     instants[k++] = TSEQUENCE_INST_N(seq2, i);
-  TSequence *result = tsequence_make1(instants, count, seq1->period.lower_inc,
-    seq2->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO);
+  /* Get the bounding box size */
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq1->temptype));
+  bboxunion bbox;
+  memcpy(&bbox, TSEQUENCE_BBOX_PTR(seq1), bboxsize);
+  bbox_expand(TSEQUENCE_BBOX_PTR(seq2), &bbox, seq1->temptype);
+  TSequence *result = tsequence_make1_exp(instants, count, count,
+    seq1->period.lower_inc, seq2->period.upper_inc,
+    MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO, &bbox);
   pfree(instants);
   return result;
 }
@@ -720,98 +726,35 @@ tsequence_out(const TSequence *seq, int maxdd)
 
 /*****************************************************************************
  * Constructor functions
+ * ---------------------
+ * The basic constructor functions for temporal sequences is the function
+ * #tsequence_make1_exp. This funtion is called in several contexts by the
+ * following functions
+ * - #tsequence_make_exp: Construct a sequence from an array of instants
+ * - #tsequence_append_tinstant: Append an instant to an existing sequence
+ * - #tsequence_join: Merge two consecutive sequences during the normalization
+ *   of sequence sets
+ * - #tsequenceset_make_gaps (in file tsequenceset.c): Construct a sequence
+ *   set from an array of instants where the composing sequences are determined
+ *   by space or time gaps between consecutive instants
+ * In all these cases, it is necessary to verify the validity of the array of
+ * instants and to compute the bounding box of the resulting sequence. As much
+ * as possible, the computation of the bounding box should be done while
+ * verifying the validity of the instants to avoid an additional iteration.
+ * If this is not possible, a NULL bounding box is passed to the function
+ * #tsequence_make1_exp so that it does an iteration for computing it.
+ * - #tsequence_make_exp: The bounding box is computed while validating the
+ *   instants excepted for temporal network points with linear interpolation
+ *   since the road connecting two subsequent instants may go outside the
+ *   bounding box defined by the location of the two instants.
+ * - #tsequence_append_tinstant: The bounding box is computed by expanding the
+ *   bounding box of the sequence with the instant
+ * - #tsequence_join: The bounding box is computed frome the ones of the two
+ *   sequences
+ * - #tsequenceset_make_gaps (in file tsequence_set): The splits of instants
+ *   into sequences is done during the validation. Currently, the bounding box
+ *   of the composing sequences is not done in the validation process.
  *****************************************************************************/
-
-/**
- * @brief Ensure that the timestamp of the first temporal instant is smaller
- * (or equal if the merge parameter is true) than the one of the second
- * temporal instant. Moreover, ensures that the values are the same
- * if the timestamps are equal
- */
-void
-ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
-  bool merge)
-{
-  if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
-  {
-    char *t1 = pg_timestamptz_out(inst1->t);
-    char *t2 = pg_timestamptz_out(inst2->t);
-    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
-  }
-  if (merge && inst1->t == inst2->t &&
-    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
-        temptype_basetype(inst1->temptype)))
-  {
-    char *t1 = pg_timestamptz_out(inst1->t);
-    elog(ERROR, "The temporal values have different value at their overlapping instant %s", t1);
-  }
-  return;
-}
-
-/**
- * @brief Ensure that all temporal instants of the array have increasing
- * timestamp (or may be equal if the merge parameter is true), and if they
- * are temporal points, have the same srid and the same dimensionality.
- *
- * @param[in] instants Array of temporal instants
- * @param[in] count Number of elements in the input array
- * @param[in] merge True if a merge operation, which implies that the two
- *   consecutive instants may be equal
- * @param[in] interp Interpolation
- */
-void
-ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
-  interpType interp __attribute__((unused)))
-{
-  for (int i = 0; i < count; i++)
-  {
-    if (instants[i]->subtype != TINSTANT)
-      elog(ERROR, "Input values must be temporal instants");
-    if (i > 0)
-    {
-      ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
-      ensure_spatial_validity((Temporal *) instants[i - 1],
-        (Temporal *) instants[i]);
-#if NPOINT
-      if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT)
-        ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
-#endif /* NPOINT */
-    }
-  }
-  return;
-}
-
-/**
- * @brief Ensure the validity of the arguments when creating a temporal sequence
- */
-void
-tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
-  bool upper_inc, interpType interp)
-{
-  /* Test the validity of the instants */
-  assert(count > 0);
-  if (count == 1 && (! lower_inc || ! upper_inc))
-    elog(ERROR, "Instant sequence must have inclusive bounds");
-  meosType basetype = temptype_basetype(instants[0]->temptype);
-  if (interp == STEP && count > 1 && ! upper_inc &&
-    datum_ne(tinstant_value(instants[count - 1]),
-      tinstant_value(instants[count - 2]), basetype))
-    elog(ERROR, "Invalid end value for temporal sequence with step interpolation");
-  return;
-}
-
-/**
- * @brief Ensure the validity of the arguments when creating a temporal sequence
- */
-static void
-tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
-  bool upper_inc, interpType interp)
-{
-  ensure_valid_interpolation(instants[0]->temptype, interp);
-  tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
-  ensure_valid_tinstarr(instants, count, MERGE_NO, interp);
-  return;
-}
 
 #ifdef DEBUG_BUILD
 /**
@@ -860,7 +803,8 @@ TSEQUENCE_INST_N(const TSequence *seq, int index)
  */
 TSequence *
 tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
-  bool lower_inc, bool upper_inc, interpType interp, bool normalize)
+  bool lower_inc, bool upper_inc, interpType interp, bool normalize,
+  void *bbox)
 {
   assert(maxcount >= count);
 
@@ -913,9 +857,12 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
       MEOS_FLAGS_GET_GEODETIC(instants[0]->flags));
   }
   /* Initialization of the variable-length part */
-  /* Compute the bounding box */
-  tinstarr_compute_bbox((const TInstant **) norminsts, newcount, lower_inc,
-    upper_inc, interp, TSEQUENCE_BBOX_PTR(result));
+  /* Store the bounding box passed as parameter or compute it if not given */
+  if (bbox)
+    memcpy(TSEQUENCE_BBOX_PTR(result), bbox, bboxsize);
+  else
+    tinstarr_compute_bbox((const TInstant **) norminsts, newcount, lower_inc,
+      upper_inc, interp, TSEQUENCE_BBOX_PTR(result));
   /* Store the composing instants */
   size_t pdata = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
     sizeof(size_t) * maxcount;
@@ -933,15 +880,123 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
 }
 
 /**
- * @brief Construct a temporal sequence from an array of temporal instants
- * @pre The validity of the arguments has been tested before
+ * @brief Ensure that the timestamp of the first temporal instant is smaller
+ * (or equal if the merge parameter is true) than the one of the second
+ * temporal instant. Moreover, ensures that the values are the same
+ * if the timestamps are equal
  */
-TSequence *
-tsequence_make1(const TInstant **instants, int count, bool lower_inc,
-  bool upper_inc, interpType interp, bool normalize)
+void
+ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
+  bool merge)
 {
-  return tsequence_make1_exp(instants, count, count, lower_inc, upper_inc,
-    interp, normalize);
+  if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
+  {
+    char *t1 = pg_timestamptz_out(inst1->t);
+    char *t2 = pg_timestamptz_out(inst2->t);
+    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
+  }
+  if (merge && inst1->t == inst2->t &&
+    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
+        temptype_basetype(inst1->temptype)))
+  {
+    char *t1 = pg_timestamptz_out(inst1->t);
+    elog(ERROR, "The temporal values have different value at their overlapping instant %s", t1);
+  }
+  return;
+}
+
+/**
+ * @brief Expand the second bounding box with the first one
+ */
+void
+bbox_expand(const void *box1, void *box2, meosType temptype)
+{
+  assert(temptype);
+  if (talpha_type(temptype))
+    span_expand((Span *) box1, (Span *) box2);
+  else if (tnumber_type(temptype))
+    tbox_expand((TBox *) box1, (TBox *) box2);
+  else if (tspatial_type(temptype))
+    stbox_expand((STBox *) box1, (STBox *) box2);
+  else
+    elog(ERROR, "Undefined temporal type for bounding box operation");
+  return;
+}
+
+/**
+ * @brief Ensure that all temporal instants of the array have increasing
+ * timestamp (or may be equal if the merge parameter is true), and if they
+ * are temporal points, have the same srid and the same dimensionality.
+ * If the bounding box output argument is not NULL, the bounding box of the
+ * resulting sequence is computed
+ *
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the input array
+ * @param[in] merge True if a merge operation, which implies that two
+ * consecutive instants may be equal
+ * @param[in] interp Interpolation
+ * @param[out] bbox Bounding box of the resulting sequence
+ */
+void
+ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
+  interpType interp, void *bbox)
+{
+  for (int i = 0; i < count; i++)
+  {
+    if (instants[i]->subtype != TINSTANT)
+      elog(ERROR, "Input values must be temporal instants");
+    if (bbox && i == 0)
+      /* Set the output parameter with the bounding box of the first instant */
+      tinstant_set_bbox(instants[i], bbox);
+    if (i > 0)
+    {
+      ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
+      ensure_spatial_validity((Temporal *) instants[i - 1],
+        (Temporal *) instants[i]);
+      if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT)
+        ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
+      /* Extend the output bounding box with of the one of the instant */
+      if (bbox)
+      {
+        bboxunion bbox1;
+        tinstant_set_bbox(instants[i], &bbox1);
+        bbox_expand(&bbox1, bbox, instants[0]->temptype);
+      }
+    }
+  }
+  return;
+}
+
+/**
+ * @brief Ensure the validity of the arguments when creating a temporal sequence
+ */
+void
+tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, interpType interp)
+{
+  assert(count > 0);
+  /* Test the validity of the instants */
+  ensure_valid_interpolation(instants[0]->temptype, interp);
+  if (count == 1 && (! lower_inc || ! upper_inc))
+    elog(ERROR, "Instant sequence must have inclusive bounds");
+  meosType basetype = temptype_basetype(instants[0]->temptype);
+  if (interp == STEP && count > 1 && ! upper_inc &&
+    datum_ne(tinstant_value(instants[count - 1]),
+      tinstant_value(instants[count - 2]), basetype))
+    elog(ERROR, "Invalid end value for temporal sequence with step interpolation");
+  return;
+}
+
+/**
+ * @brief Ensure the validity of the arguments when creating a temporal sequence
+ */
+static void
+tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, interpType interp, void *bbox)
+{
+  tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
+  ensure_valid_tinstarr(instants, count, MERGE_NO, interp, bbox);
+  return;
 }
 
 /**
@@ -959,9 +1014,23 @@ TSequence *
 tsequence_make_exp(const TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
-  tsequence_make_valid(instants, count, lower_inc, upper_inc, interp);
+  /* Compute the bounding box of the resulting sequence while validating the
+   * array of instants. This is not done for temporal network points with
+   * linear interpolation, since the underlying road connecting the two
+   * instants may go beyond the bouding box defined by their location */
+  bboxunion bbox;
+  bool getbbox = (interp == LINEAR && instants[0]->temptype == T_TNPOINT) ?
+    false : true;
+  tsequence_make_valid(instants, count, lower_inc, upper_inc, interp,
+    getbbox ? &bbox : NULL);
+  if (getbbox)
+  {
+    /* Set the bounds of the precomputed bounding box from the parameters */
+    ((Span *) &bbox)->lower_inc = lower_inc;
+    ((Span *) &bbox)->upper_inc = upper_inc;
+  }
   return tsequence_make1_exp(instants, count, maxcount, lower_inc, upper_inc,
-    interp, normalize);
+    interp, normalize, getbbox ? &bbox : NULL);
 }
 
 /**
@@ -1549,8 +1618,14 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
     printf(" seq -> %d\n", maxcount);
 #endif /* DEBUG_BUILD */
   }
+  /* Get the bounding box size */
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temptype));
+  bboxunion bbox, bbox1;
+  memcpy(&bbox, TSEQUENCE_BBOX_PTR(seq), bboxsize);
+  tinstant_set_bbox(inst, &bbox1);
+  bbox_expand(&bbox1, &bbox, seq->temptype);
   TSequence *result = tsequence_make1_exp(instants, count, maxcount,
-    seq->period.lower_inc, true, interp, NORMALIZE_NO);
+    seq->period.lower_inc, true, interp, NORMALIZE_NO, &bbox);
   pfree(instants);
   return (Temporal *) result;
 }

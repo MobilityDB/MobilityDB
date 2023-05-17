@@ -1213,8 +1213,6 @@ set_from_wkb_state(wkb_parse_state *s)
   /* Read the SRID, if necessary */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
-  else if (wkb_flags & MEOS_WKB_GEODETICFLAG)
-    s->srid = SRID_DEFAULT;
 
   /* Read the number of values and allocate space for them */
   int count = int32_from_wkb_state(s);

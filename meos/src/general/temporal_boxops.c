@@ -447,7 +447,7 @@ tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
       sequences[0]->temptype);
   return;
 }
-#endif MEOS
+#endif /* MEOS */
 
 /*****************************************************************************/
 
