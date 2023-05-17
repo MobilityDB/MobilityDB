@@ -761,7 +761,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
  */
 void
 ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
-  interpType interp)
+  interpType interp __attribute__((unused)))
 {
   for (int i = 0; i < count; i++)
   {
@@ -772,8 +772,10 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
       ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
       ensure_spatial_validity((Temporal *) instants[i - 1],
         (Temporal *) instants[i]);
+#if NPOINT
       if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT)
         ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
+#endif /* NPOINT */
     }
   }
   return;

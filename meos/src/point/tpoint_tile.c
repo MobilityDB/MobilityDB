@@ -557,13 +557,16 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
  * @sqlfunc multidimGrid()
  */
 STBox *
-stbox_tile_list(const STBox *bounds, double size, const Interval *duration,
-  GSERIALIZED *sorigin, TimestampTz torigin, int **no_cells)
+stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
+  const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
+  int **no_cells)
 {
   /* Get input parameters */
   ensure_has_X_stbox(bounds);
   ensure_not_geodetic(bounds->flags);
-  ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
   int64 tunits = 0; /* make compiler quiet */
   /* If time arguments are given */
   if (duration)
@@ -594,8 +597,8 @@ stbox_tile_list(const STBox *bounds, double size, const Interval *duration,
     pt.y = p2d->y;
   }
 
-  STboxGridState *state = stbox_tile_state_make(NULL, bounds, size, tunits, pt,
-    torigin);
+  STboxGridState *state = stbox_tile_state_make(NULL, bounds, xsize, ysize,
+    zsize, tunits, pt, torigin);
   bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
   bool hast = MEOS_FLAGS_GET_T(state->box.flags);
   int *cellcount = palloc0(sizeof(int) * MAXDIMS);

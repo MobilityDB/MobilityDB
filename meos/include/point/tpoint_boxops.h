@@ -52,8 +52,6 @@ extern void tgeompointinstarr_set_stbox(const TInstant **inst, int count,
   STBox *box);
 extern void tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
   interpType interp, STBox *box);
-extern void tpointseqarr_set_stbox(const TSequence **seq, int count,
-  STBox *box);
 extern void tgeompointseq_expand_stbox(TSequence *seq, const TInstant *inst);
 extern void tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst);
 // extern void tgeogpointseqset_expand_stbox(TSequenceSet *ss, const TSequence *seq);
