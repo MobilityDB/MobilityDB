@@ -1223,8 +1223,6 @@ bool
 tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-  long double xnum, xdenom, ynum, ydenom, znum = 0.0, zdenom = 0.0,
-    fraction, xfraction = 0, yfraction = 0, zfraction = 0;
   double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0, x3, y3, z3 = 0.0, x4, y4, z4 = 0.0;
   bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
   if (hasz)
@@ -1258,8 +1256,9 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
       return false;
   }
 
-  xdenom = x2 - x1 - x4 + x3;
-  ydenom = y2 - y1 - y4 + y3;
+  long double xdenom = x2 - x1 - x4 + x3;
+  long double ydenom = y2 - y1 - y4 + y3;
+  long double zdenom = 0.0;
   if (hasz)
     zdenom = z2 - z1 - z4 + z3;
   if (xdenom == 0 && ydenom == 0 && zdenom == 0)
@@ -1269,9 +1268,10 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   /* Potentially avoid the division based on
    * Franklin Antonio, Faster Line Segment Intersection, Graphic Gems III
    * https://github.com/erich666/GraphicsGems/blob/master/gemsiii/insectc.c */
+  long double fraction, xfraction = 0, yfraction = 0, zfraction = 0;
   if (xdenom != 0)
   {
-    xnum = x3 - x1;
+    long double xnum = x3 - x1;
     if ((xdenom > 0 && (xnum < 0 || xnum > xdenom)) ||
         (xdenom < 0 && (xnum > 0 || xnum < xdenom)))
       return false;
@@ -1282,7 +1282,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   }
   if (ydenom != 0)
   {
-    ynum = y3 - y1;
+    long double ynum = y3 - y1;
     if ((ydenom > 0 && (ynum < 0 || ynum > ydenom)) ||
         (ydenom < 0 && (ynum > 0 || ynum < ydenom)))
       return false;
@@ -1293,7 +1293,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   }
   if (hasz && zdenom != 0)
   {
-    znum = z3 - z1;
+    long double znum = z3 - z1;
     if ((zdenom > 0 && (znum < 0 || znum > zdenom)) ||
         (zdenom < 0 && (znum > 0 || znum < zdenom)))
       return false;

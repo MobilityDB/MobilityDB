@@ -284,24 +284,6 @@ tgeogpointseq_set_stbox(const TSequence *seq, STBox *box)
 }
 #endif /* MEOS */
 
-/**
- * @brief Set the spatiotemporal box from an array of temporal sequence points
- * @param[in] sequences Temporal instant values
- * @param[in] count Number of elements in the array
- * @param[out] box Spatiotemporal box
- */
-void
-tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
-{
-  memcpy(box, TSEQUENCE_BBOX_PTR(sequences[0]), sizeof(STBox));
-  for (int i = 1; i < count; i++)
-  {
-    const STBox *box1 = TSEQUENCE_BBOX_PTR(sequences[i]);
-    stbox_expand(box1, box);
-  }
-  return;
-}
-
 /*****************************************************************************
  * Boxes functions
  * These functions can be used for defining VODKA indexes

@@ -1220,7 +1220,7 @@ static bool
 stbox_wkb_needs_srid(const STBox *box, uint8_t variant)
 {
   /* Add an SRID if the WKB form is extended and if the temporal point has one */
-  if ((variant & WKB_EXTENDED) && stbox_srid(box) != SRID_UNKNOWN)
+  if ((variant & WKB_EXTENDED) && box->srid != SRID_UNKNOWN)
     return true;
 
   /* Everything else doesn't get an SRID */

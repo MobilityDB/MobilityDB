@@ -123,6 +123,20 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
 
 /*****************************************************************************
  * Constructor functions
+ * ---------------------
+ * There are two main constructor functions for temporal sequence sets
+ * - #tsequenceset_make_exp: Constructs a sequence set from an array of
+ *   sequences
+ * - #tsequenceset_make_gaps: Constructs a sequence set from an array of
+ *   instants where the composing sequences are determined by space or time
+ *   gaps between consecutive instants
+ * In the two cases, it is necessary to verify the validity of the argument
+ * array and compute the bounding box of the resulting sequence set. The
+ * first constructor above uses the loop for verifying the validity of the
+ * array of sequences for constructing the bounding box of the result. This is
+ * not possible for the second constructor, since the loop for verifying the
+ * validity of the instants is used for determining the splits for constructing
+ * the composing sequences.
  *****************************************************************************/
 
 /**
@@ -131,7 +145,7 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
 void
 bbox_expand(const void *box1, void *box2, meosType temptype)
 {
-  assert(temptype);
+  assert(temporal_type(temptype));
   if (talpha_type(temptype))
     span_expand((Span *) box1, (Span *) box2);
   else if (tnumber_type(temptype))
