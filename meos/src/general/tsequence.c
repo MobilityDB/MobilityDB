@@ -738,22 +738,15 @@ tsequence_out(const TSequence *seq, int maxdd)
  *   set from an array of instants where the composing sequences are determined
  *   by space or time gaps between consecutive instants
  * In all these cases, it is necessary to verify the validity of the array of
- * instants and to compute the bounding box of the resulting sequence. As much
- * as possible, the computation of the bounding box should be done while
- * verifying the validity of the instants to avoid an additional iteration.
- * If this is not possible, a NULL bounding box is passed to the function
- * #tsequence_make1_exp so that it does an iteration for computing it.
- * - #tsequence_make_exp: The bounding box is computed while validating the
- *   instants excepted for temporal network points with linear interpolation
- *   since the road connecting two subsequent instants may go outside the
- *   bounding box defined by the location of the two instants.
+ * instants and to compute the bounding box of the resulting sequence. In some
+ * cases, the computation of the bounding box does not need an iteration and
+ * the bounding box is passed as an additional argument to #tsequence_make1_exp.
  * - #tsequence_append_tinstant: The bounding box is computed by expanding the
  *   bounding box of the sequence with the instant
- * - #tsequence_join: The bounding box is computed frome the ones of the two
+ * - #tsequence_join: The bounding box is computed from the ones of the two
  *   sequences
- * - #tsequenceset_make_gaps (in file tsequence_set): The splits of instants
- *   into sequences is done during the validation. Currently, the bounding box
- *   of the composing sequences is not done in the validation process.
+ * Otherwise, a NULL bounding box is passed to the function so that it does
+ * an iteration for computing it.
  *****************************************************************************/
 
 #ifdef DEBUG_BUILD
@@ -939,15 +932,12 @@ bbox_expand(const void *box1, void *box2, meosType temptype)
  */
 void
 ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
-  interpType interp, void *bbox)
+  interpType interp)
 {
   for (int i = 0; i < count; i++)
   {
     if (instants[i]->subtype != TINSTANT)
       elog(ERROR, "Input values must be temporal instants");
-    if (bbox && i == 0)
-      /* Set the output parameter with the bounding box of the first instant */
-      tinstant_set_bbox(instants[i], bbox);
     if (i > 0)
     {
       ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
@@ -955,13 +945,6 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
         (Temporal *) instants[i]);
       if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT)
         ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
-      /* Extend the output bounding box with of the one of the instant */
-      if (bbox)
-      {
-        bboxunion bbox1;
-        tinstant_set_bbox(instants[i], &bbox1);
-        bbox_expand(&bbox1, bbox, instants[0]->temptype);
-      }
     }
   }
   return;
@@ -992,10 +975,10 @@ tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
  */
 static void
 tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
-  bool upper_inc, interpType interp, void *bbox)
+  bool upper_inc, interpType interp)
 {
   tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
-  ensure_valid_tinstarr(instants, count, MERGE_NO, interp, bbox);
+  ensure_valid_tinstarr(instants, count, MERGE_NO, interp);
   return;
 }
 
@@ -1014,23 +997,9 @@ TSequence *
 tsequence_make_exp(const TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
-  /* Compute the bounding box of the resulting sequence while validating the
-   * array of instants. This is not done for temporal network points with
-   * linear interpolation, since the underlying road connecting the two
-   * instants may go beyond the bouding box defined by their location */
-  bboxunion bbox;
-  bool getbbox = (interp == LINEAR && instants[0]->temptype == T_TNPOINT) ?
-    false : true;
-  tsequence_make_valid(instants, count, lower_inc, upper_inc, interp,
-    getbbox ? &bbox : NULL);
-  if (getbbox)
-  {
-    /* Set the bounds of the precomputed bounding box from the parameters */
-    ((Span *) &bbox)->lower_inc = lower_inc;
-    ((Span *) &bbox)->upper_inc = upper_inc;
-  }
+  tsequence_make_valid(instants, count, lower_inc, upper_inc, interp);
   return tsequence_make1_exp(instants, count, maxcount, lower_inc, upper_inc,
-    interp, normalize, getbbox ? &bbox : NULL);
+    interp, normalize, NULL);
 }
 
 /**

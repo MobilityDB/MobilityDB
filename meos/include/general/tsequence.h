@@ -108,7 +108,7 @@ extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
 extern void bbox_expand(const void *box1, void *box2, meosType temptype);
 extern void ensure_valid_tinstarr(const TInstant **instants, int count,
-  bool merge, interpType interp, void *bbox);
+  bool merge, interpType interp);
 
 /* Transformation functions */
 
