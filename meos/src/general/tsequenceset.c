@@ -145,8 +145,7 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
  * same dimensionality
  */
 static void
-ensure_valid_tseqarr(const TSequence **sequences, int count, void *bbox,
-  size_t bboxsize)
+ensure_valid_tseqarr(const TSequence **sequences, int count)
 {
   interpType interp = MEOS_FLAGS_GET_INTERP(sequences[0]->flags);
   if (interp == DISCRETE)
@@ -155,10 +154,7 @@ ensure_valid_tseqarr(const TSequence **sequences, int count, void *bbox,
   {
     if (sequences[i]->subtype != TSEQUENCE)
       elog(ERROR, "Input values must be temporal sequences");
-    if (i == 0)
-      /* Copy the bounding box of the first sequence in the output parameter */
-      memcpy(bbox, TSEQUENCE_BBOX_PTR(sequences[i]), bboxsize);
-    else
+    if (i > 0)
     {
       if (MEOS_FLAGS_GET_INTERP(sequences[i]->flags) != interp)
         elog(ERROR, "The temporal values must have the same interpolation");
@@ -174,8 +170,6 @@ ensure_valid_tseqarr(const TSequence **sequences, int count, void *bbox,
       }
       ensure_spatial_validity((Temporal *) sequences[i - 1],
         (Temporal *) sequences[i]);
-      /* Extend the output bounding box with of the one of the sequence */
-      bbox_expand(TSEQUENCE_BBOX_PTR(sequences[i]), bbox, sequences[0]->temptype);
     }
   }
   return;
@@ -238,17 +232,16 @@ tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
   assert(count > 0);
   assert(maxcount >= count);
 
-  /* Get the bounding box size */
-  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(sequences[0]->temptype));
-  bboxunion bbox;
   /* Test the validity of the sequences and compute the bounding box */
-  ensure_valid_tseqarr(sequences, count, &bbox, bboxsize);
+  ensure_valid_tseqarr(sequences, count);
   /* Normalize the array of sequences */
   TSequence **normseqs = (TSequence **) sequences;
   int newcount = count;
   if (normalize && count > 1)
     normseqs = tseqarr_normalize(sequences, count, &newcount);
 
+  /* Get the bounding box size */
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(sequences[0]->temptype));
   /* The period component of the bbox is already declared in the struct */
   size_t bboxsize_extra = bboxsize - sizeof(Span);
 
@@ -295,8 +288,9 @@ tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
       MEOS_FLAGS_GET_GEODETIC(sequences[0]->flags));
   }
   /* Initialization of the variable-length part */
-  /* Copy the bounding box */
-  memcpy(TSEQUENCESET_BBOX_PTR(result), &bbox, bboxsize);
+  /* Compute the bounding box */
+  tseqarr_compute_bbox((const TSequence **) normseqs, newcount,
+    TSEQUENCESET_BBOX_PTR(result));
   /* Store the composing sequences */
   size_t pdata = DOUBLE_PAD(sizeof(TSequenceSet)) + bboxsize_extra +
     sizeof(size_t) * maxcount;
@@ -365,7 +359,6 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
  * @param[in] count Number of elements in the input array
  * @param[in] merge True if a merge operation, which implies that the two
  *   consecutive instants may be equal
- * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance to split the temporal sequence
  * @param[in] maxt Maximum time interval to split the temporal sequence
  * @param[out] nsplits Number of splits

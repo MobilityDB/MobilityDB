@@ -282,6 +282,7 @@ tgeogpointseq_set_stbox(const TSequence *seq, STBox *box)
     gbox.ymax, gbox.zmin, gbox.zmax, &period, box);
   return;
 }
+#endif /* MEOS */
 
 /**
  * @brief Set the spatiotemporal box from an array of temporal sequence points
@@ -300,7 +301,6 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
   }
   return;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Boxes functions

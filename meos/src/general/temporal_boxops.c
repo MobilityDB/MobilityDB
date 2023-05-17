@@ -394,7 +394,6 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
   return;
 }
 
-#if MEOS
 /**
  * @brief Set the period from the array of temporal sequence values
  * @param[in] period Period
@@ -447,7 +446,6 @@ tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
       sequences[0]->temptype);
   return;
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 

@@ -928,7 +928,6 @@ bbox_expand(const void *box1, void *box2, meosType temptype)
  * @param[in] merge True if a merge operation, which implies that two
  * consecutive instants may be equal
  * @param[in] interp Interpolation
- * @param[out] bbox Bounding box of the resulting sequence
  */
 void
 ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
