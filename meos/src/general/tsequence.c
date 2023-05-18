@@ -2634,7 +2634,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   /* Constant segment or t is equal to lower bound or step interpolation */
-  if (datum_eq(value1, value2,  temptype_basetype(inst1->temptype)) ||
+  if (datum_eq(value1, value2, temptype_basetype(inst1->temptype)) ||
     inst1->t == t || (! linear && t < inst2->t))
     return tinstant_value_copy(inst1);
 
@@ -4976,8 +4976,8 @@ tcontseq_minus_timestampset_iter(const TSequence *seq, const Set *ts,
 
   /* General case */
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
-  TInstant **tofree = palloc0(sizeof(TInstant *) * Min(ts->count, seq->count));
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **tofree = palloc(sizeof(TInstant *) * Min(ts->count, seq->count));
   bool lower_inc = seq->period.lower_inc;
   int i = 0,    /* current instant of the argument sequence */
     j = 0,      /* current timestamp of the argument timestamp set */
@@ -4986,57 +4986,57 @@ tcontseq_minus_timestampset_iter(const TSequence *seq, const Set *ts,
     nfree = 0;  /* number of instants to free */
   while (i < seq->count && j < ts->count)
   {
-    const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     TimestampTz t = DatumGetTimestampTz(SET_VAL_N(ts, j));
     Datum value;
-    if (inst1->t < t)
+    if (inst->t < t)
     {
-      instants[ninsts++] = (TInstant *) inst1;
+      instants[ninsts++] = (TInstant *) inst;
       i++; /* advance instants */
     }
-    else if (inst1->t == t)
+    else if (inst->t == t)
     {
       /* Close the current sequence */
       if (ninsts > 0)
       {
         if (interp == LINEAR)
-          instants[ninsts++] = (TInstant *) inst1;
+          instants[ninsts++] = (TInstant *) inst;
         else /* interp == STEP */
         {
           /* Take the value of the previous instant */
           value = tinstant_value(instants[ninsts - 1]);
-          instants[ninsts] = tinstant_make(value, inst1->temptype, inst1->t);
+          instants[ninsts] = tinstant_make(value, inst->temptype, inst->t);
           tofree[nfree++] = instants[ninsts++];
         }
-        result[nseqs++] = tsequence_make((const TInstant **) instants,
-          ninsts, lower_inc, false, interp, NORMALIZE_NO);
+        result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+          lower_inc, false, interp, NORMALIZE_NO);
         ninsts = 0;
       }
-      /* Start a new sequence with the current instant */
+      /* If it is not the last instant start a new sequence */
       if (i < seq->count - 1)
       {
-        instants[ninsts++] = (TInstant *) inst1;
+        instants[ninsts++] = (TInstant *) inst;
         lower_inc = false;
       }
       i++; /* advance instants */
       j++; /* advance timestamps */
     }
-    else /* inst1->t > t */
+    else /* inst->t > t */
     {
       if (ninsts > 0)
       {
         /* Close the current sequence */
         if (interp == LINEAR)
           /* Interpolate */
-          value = tsegment_value_at_timestamp(instants[ninsts - 1], inst1,
+          value = tsegment_value_at_timestamp(instants[ninsts - 1], inst,
             LINEAR, t);
         else
           /* Take the value of the previous instant */
           value = tinstant_value(instants[ninsts - 1]);
-        instants[ninsts] = tinstant_make(value, inst1->temptype, t);
+        instants[ninsts] = tinstant_make(value, inst->temptype, t);
         tofree[nfree] = instants[ninsts++];
-        result[nseqs++] = tsequence_make((const TInstant **) instants,
-          ninsts, lower_inc, false, interp, NORMALIZE_NO);
+        result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+          lower_inc, false, interp, NORMALIZE_NO);
         /* Restart a new sequence */
         instants[0] = tofree[nfree++];
         ninsts = 1;
