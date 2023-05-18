@@ -48,13 +48,16 @@ extern int tcontseq_find_timestamp(const TSequence *seq, TimestampTz t);
 extern int tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t);
 extern void tsequence_make_valid1(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp);
-extern TSequence *tsequence_make1(const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, interpType interp, bool normalize);
-extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences,
-  int *countseqs, int count, int totalseqs);
+extern TSequence *tsequence_make1_exp(const TInstant **instants, int count,
+  int maxcount, bool lower_inc, bool upper_inc, interpType interp,
+  bool normalize, void *bbox);
+extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
+  int count, int totalseqs);
 
 /* Append and merge functions */
 
+extern double datum_distance(Datum value1, Datum value2, meosType basetype,
+  int16 flags);
 extern bool tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool *removelast, bool *removefirst);
 extern TSequence *tsequence_join(const TSequence *seq1, const TSequence *seq2,
@@ -98,6 +101,14 @@ extern bool intersection_tinstant_tsequence(const TInstant *inst,
 
 extern char *tsequence_to_string(const TSequence *seq, int maxdd,
   bool component, outfunc value_out);
+
+/* Constructor functions */
+
+extern void ensure_increasing_timestamps(const TInstant *inst1,
+  const TInstant *inst2, bool strict);
+extern void bbox_expand(const void *box1, void *box2, meosType temptype);
+extern void ensure_valid_tinstarr(const TInstant **instants, int count,
+  bool merge, interpType interp);
 
 /* Transformation functions */
 

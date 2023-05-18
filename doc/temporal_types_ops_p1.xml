@@ -1185,8 +1185,7 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-
 				<indexterm><primary><varname>stops</varname></primary></indexterm>
 				<para>Extract from a temporal sequence (set) with linear interpolation the subsequences where the objects stays within an area with a specified maximum size (<varname>maxDist</varname>) for at least the given duration (<varname>minDuration</varname>). For spatial types, the size of the area is computed as the diagonal of the minimum rotated rectangle of the points in the subsequence. For scalar types, the size is computed as the width of the enclosing interval. &Z_support; &geography_support;</para>
 				<para><varname>stops({tcont_seq,ttype_seqset},maxDist=0.0,minDuration='0 minutes') → ttype_seqset</varname></para>
-				<para>If <varname>maxDist</varname> is not given it is assumed 0.0 and thus, the function extracts the constant segments of the given temporal value. For temporal points, the distance is computed in the units of the coordinate system.</para>
-        <para>Note that even though the function accepts 3D geometries, the computation is always performed in 2D.</para>
+				<para>If <varname>maxDist</varname> is not given it is assumed 0.0 and thus, the function extracts the constant segments of the given temporal value. For temporal points, the distance is computed in the units of the coordinate system. Note that even though the function accepts 3D geometries, the computation is always performed in 2D.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stops(tfloat '[1@2000-01-01, 1@2000-01-02, 2@2000-01-03]');
 -- {[1@2000-01-01, 1@2000-01-02)}

@@ -118,16 +118,12 @@ datum_point4d(Datum value, POINT4D *p)
 
 /**
  * @brief Return true if the points are equal
+ * @note This function is called in the iterations over sequencs where we
+ * are sure that their SRID, Z, and GEODETIC are equal
  */
 bool
-datum_point_eq(Datum geopoint1, Datum geopoint2)
+gspoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  const GSERIALIZED *gs1 = DatumGetGserializedP(geopoint1);
-  const GSERIALIZED *gs2 = DatumGetGserializedP(geopoint2);
-  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
-    FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags) ||
-    FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
-    return false;
   if (FLAGS_GET_Z(gs1->gflags))
   {
     const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
@@ -144,6 +140,21 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
     // return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y);
     return float8_eq(point1->x, point2->x) && float8_eq(point1->y, point2->y);
   }
+}
+
+/**
+ * @brief Return true if the points are equal
+ */
+bool
+datum_point_eq(Datum geopoint1, Datum geopoint2)
+{
+  const GSERIALIZED *gs1 = DatumGetGserializedP(geopoint1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(geopoint2);
+  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
+      FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags) ||
+      FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
+    return false;
+  return gspoint_eq(gs1, gs2);
 }
 
 /**
@@ -1212,91 +1223,112 @@ bool
 tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-  long double fraction, xfraction = 0, yfraction = 0, xdenum, ydenum;
-  if (MEOS_FLAGS_GET_Z(start1->flags)) /* 3D */
+  double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0, x3, y3, z3 = 0.0, x4, y4, z4 = 0.0;
+  bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
+  if (hasz)
   {
-    long double zfraction = 0, zdenum;
     const POINT3DZ *p1 = DATUM_POINT3DZ_P(&start1->value);
     const POINT3DZ *p2 = DATUM_POINT3DZ_P(&end1->value);
     const POINT3DZ *p3 = DATUM_POINT3DZ_P(&start2->value);
     const POINT3DZ *p4 = DATUM_POINT3DZ_P(&end2->value);
-    xdenum = p2->x - p1->x - p4->x + p3->x;
-    ydenum = p2->y - p1->y - p4->y + p3->y;
-    zdenum = p2->z - p1->z - p4->z + p3->z;
-    if (xdenum == 0 && ydenum == 0 && zdenum == 0)
-      /* Parallel segments */
+    x1 = p1->x; y1 = p1->y; z1 = p1->z;
+    x2 = p2->x; y2 = p2->y; z2 = p2->z;
+    x3 = p3->x; y3 = p3->y; z3 = p3->z;
+    x4 = p4->x; y4 = p4->y; z4 = p4->z;
+    /* Segments intersecting in the boundaries */
+    if ((float8_eq(x1, x3) && float8_eq(y1, y3) && float8_eq(z1, z3)) ||
+        (float8_eq(x2, x4) && float8_eq(y2, y4) && float8_eq(z2, z4)))
       return false;
+  }
+  else
+  {
+    const POINT2D *p1 = DATUM_POINT2D_P(&start1->value);
+    const POINT2D *p2 = DATUM_POINT2D_P(&end1->value);
+    const POINT2D *p3 = DATUM_POINT2D_P(&start2->value);
+    const POINT2D *p4 = DATUM_POINT2D_P(&end2->value);
+    x1 = p1->x; y1 = p1->y;
+    x2 = p2->x; y2 = p2->y;
+    x3 = p3->x; y3 = p3->y;
+    x4 = p4->x; y4 = p4->y;
+    /* Segments intersecting in the boundaries */
+    if ((float8_eq(x1, x3) && float8_eq(y1, y3)) ||
+        (float8_eq(x2, x4) && float8_eq(y2, y4)))
+      return false;
+  }
 
-    if (xdenum != 0)
-    {
-      xfraction = (p3->x - p1->x) / xdenum;
-      if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
-        /* Intersection occurs out of the period */
-        return false;
-    }
-    if (ydenum != 0)
-    {
-      yfraction = (p3->y - p1->y) / ydenum;
-      if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
-        /* Intersection occurs out of the period */
-        return false;
-    }
-    if (zdenum != 0)
-    {
-      zfraction = (p3->z - p1->z) / zdenum;
-      if (zfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < zfraction)
-        /* Intersection occurs out of the period */
-        return false;
-    }
+  long double xdenom = x2 - x1 - x4 + x3;
+  long double ydenom = y2 - y1 - y4 + y3;
+  long double zdenom = 0.0;
+  if (hasz)
+    zdenom = z2 - z1 - z4 + z3;
+  if (xdenom == 0 && ydenom == 0 && zdenom == 0)
+    /* Parallel segments */
+    return false;
+
+  /* Potentially avoid the division based on
+   * Franklin Antonio, Faster Line Segment Intersection, Graphic Gems III
+   * https://github.com/erich666/GraphicsGems/blob/master/gemsiii/insectc.c */
+  long double fraction, xfraction = 0, yfraction = 0, zfraction = 0;
+  if (xdenom != 0)
+  {
+    long double xnum = x3 - x1;
+    if ((xdenom > 0 && (xnum < 0 || xnum > xdenom)) ||
+        (xdenom < 0 && (xnum > 0 || xnum < xdenom)))
+      return false;
+    xfraction = xnum / xdenom;
+    if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
+      /* Intersection occurs out of the period */
+      return false;
+  }
+  if (ydenom != 0)
+  {
+    long double ynum = y3 - y1;
+    if ((ydenom > 0 && (ynum < 0 || ynum > ydenom)) ||
+        (ydenom < 0 && (ynum > 0 || ynum < ydenom)))
+      return false;
+    yfraction = ynum / ydenom;
+    if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
+      /* Intersection occurs out of the period */
+      return false;
+  }
+  if (hasz && zdenom != 0)
+  {
+    long double znum = z3 - z1;
+    if ((zdenom > 0 && (znum < 0 || znum > zdenom)) ||
+        (zdenom < 0 && (znum > 0 || znum < zdenom)))
+      return false;
+    zfraction = znum / zdenom;
+    if (zfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < zfraction)
+      /* Intersection occurs out of the period */
+      return false;
+  }
+  if (hasz)
+  {
     /* If intersection occurs at different timestamps on each dimension */
-    if ((xdenum != 0 && ydenum != 0 && zdenum != 0 &&
+    if ((xdenom != 0 && ydenom != 0 && zdenom != 0 &&
         fabsl(xfraction - yfraction) > MEOS_EPSILON &&
         fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
+      (xdenom == 0 && ydenom != 0 && zdenom != 0 &&
         fabsl(yfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
+      (xdenom != 0 && ydenom == 0 && zdenom != 0 &&
         fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
+      (xdenom != 0 && ydenom != 0 && zdenom == 0 &&
         fabsl(xfraction - yfraction) > MEOS_EPSILON))
       return false;
-    if (xdenum != 0)
+    if (xdenom != 0)
       fraction = xfraction;
-    else if (ydenum != 0)
+    else if (ydenom != 0)
       fraction = yfraction;
     else
       fraction = zfraction;
   }
   else /* 2D */
   {
-    const POINT2D *p1 = DATUM_POINT2D_P(&start1->value);
-    const POINT2D *p2 = DATUM_POINT2D_P(&end1->value);
-    const POINT2D *p3 = DATUM_POINT2D_P(&start2->value);
-    const POINT2D *p4 = DATUM_POINT2D_P(&end2->value);
-    xdenum = p2->x - p1->x - p4->x + p3->x;
-    ydenum = p2->y - p1->y - p4->y + p3->y;
-    if (xdenum == 0 && ydenum == 0)
-      /* Parallel segments */
-      return false;
-
-    if (xdenum != 0)
-    {
-      xfraction = (p3->x - p1->x) / xdenum;
-      if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
-        /* Intersection occurs out of the period */
-        return false;
-    }
-    if (ydenum != 0)
-    {
-      yfraction = (p3->y - p1->y) / ydenum;
-      if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
-        /* Intersection occurs out of the period */
-        return false;
-    }
     /* If intersection occurs at different timestamps on each dimension */
-    if (xdenum != 0 && ydenum != 0 &&
+    if (xdenom != 0 && ydenom != 0 &&
         fabsl(xfraction - yfraction) > MEOS_EPSILON)
       return false;
-    fraction = xdenum != 0 ? xfraction : yfraction;
+    fraction = xdenom != 0 ? xfraction : yfraction;
   }
   double duration = (double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);

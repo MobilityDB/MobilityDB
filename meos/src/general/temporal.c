@@ -63,6 +63,7 @@
  * Parameter tests
  *****************************************************************************/
 
+#if DEBUG_BUILD
 /**
  * @brief Ensure that the subtype of a temporal value is valid
  * @note Used for the dispatch functions
@@ -87,20 +88,7 @@ temptype_subtype_all(int16 subtype)
     return true;
   return false;
 }
-
-/**
- * @brief Ensure that the elements of an array are of instant subtype
- */
-void
-ensure_tinstarr(const TInstant **instants, int count)
-{
-  for (int i = 0; i < count; i++)
-  {
-    if (instants[i]->subtype != TINSTANT)
-      elog(ERROR, "Input values must be temporal instants");
-  }
-  return;
-}
+#endif /* DEBUG_BUILD */
 
 #if 0 /* not used */
 /**
@@ -185,185 +173,6 @@ ensure_common_dimension(int16 flags1, int16 flags2)
   if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) &&
     MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
     elog(ERROR, "The temporal values must have at least one common dimension");
-  return;
-}
-
-/**
- * @brief Ensure that two temporal values have the same base type
- */
-void
-ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
-{
-  if (temp1->temptype != temp2->temptype)
-    elog(ERROR, "The temporal values must be of the same temporal type");
-  return;
-}
-
-/**
- * @brief Ensure that the timestamp of the first temporal instant is smaller
- * (or equal if the merge parameter is true) than the one of the second
- * temporal instant. Moreover, ensures that the values are the same
- * if the timestamps are equal
- */
-void
-ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
-  bool merge)
-{
-  if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
-  {
-    char *t1 = pg_timestamptz_out(inst1->t);
-    char *t2 = pg_timestamptz_out(inst2->t);
-    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
-  }
-  if (merge && inst1->t == inst2->t &&
-    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
-        temptype_basetype(inst1->temptype)))
-  {
-    char *t1 = pg_timestamptz_out(inst1->t);
-    elog(ERROR, "The temporal values have different value at their overlapping instant %s", t1);
-  }
-  return;
-}
-
-/**
- * @brief Ensure that two temporal instants have increasing timestamp
- * (or may be equal if the merge parameter is true), and if they
- * are temporal points, have the same srid and the same dimensionality.
- *
- * @param[in] inst1,inst2 Temporal instants
- * @param[in] merge True if a merge operation, which implies that the two
- *   consecutive instants may be equal
- * @param[in] interp Interpolation
- */
-void
-ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
-#if NPOINT
-  bool merge, interpType interp)
-#else
-  bool merge, interpType interp __attribute__((unused)))
-#endif
-{
-  ensure_increasing_timestamps(inst1, inst2, merge);
-  ensure_spatial_validity((Temporal *) inst1, (Temporal *) inst2);
-#if NPOINT
-  if (interp != DISCRETE && inst1->temptype == T_TNPOINT)
-    ensure_same_rid_tnpointinst(inst1, inst2);
-#endif
-  return;
-}
-
-/**
- * @brief Ensure that all temporal instants of the array have increasing
- * timestamp (or may be equal if the merge parameter is true), and if they
- * are temporal points, have the same srid and the same dimensionality.
- *
- * @param[in] instants Array of temporal instants
- * @param[in] count Number of elements in the input array
- * @param[in] merge True if a merge operation, which implies that the two
- *   consecutive instants may be equal
- * @param[in] interp Interpolation
- */
-void
-ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
-  interpType interp)
-{
-  for (int i = 1; i < count; i++)
-    ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, interp);
-  return;
-}
-
-/**
- * @brief Ensure that all temporal instants of the array have increasing
- * timestamp (or may be equal if the merge parameter is true), and if they
- * are temporal points, have the same srid and the same dimensionality.
- *
- * This function extends function ensure_valid_tinstarr by determining
- * the splits that must be made according the maximum distance or interval
- * between consecutive instants.
- *
- * @param[in] instants Array of temporal instants
- * @param[in] count Number of elements in the input array
- * @param[in] merge True if a merge operation, which implies that the two
- *   consecutive instants may be equal
- * @param[in] interp Interpolation
- * @param[in] maxdist Maximum distance to split the temporal sequence
- * @param[in] maxt Maximum time interval to split the temporal sequence
- * @param[out] countsplits Number of splits
- * @result Array of indices at which the temporal sequence is split
- */
-int *
-ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
-  interpType interp, double maxdist, Interval *maxt, int *countsplits)
-{
-  meosType basetype = temptype_basetype(instants[0]->temptype);
-  /* Ensure that zero-fill is done */
-  int *result = palloc0(sizeof(int) * count);
-  Datum value1 = tinstant_value(instants[0]);
-  datum_func2 point_distance = NULL;
-  if (geo_basetype(basetype))
-    point_distance = pt_distance_fn(instants[0]->flags);
-  int k = 0;
-  for (int i = 1; i < count; i++)
-  {
-    ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, interp);
-    bool split = false;
-    Datum value2 = tinstant_value(instants[i]);
-    if (maxdist > 0.0 && ! datum_eq(value1, value2, basetype))
-    {
-      double dist = -1.0;
-      if (tnumber_basetype(basetype))
-        dist = (basetype == T_INT4) ?
-          (double) DatumGetInt32(number_distance(value1, value2, basetype, basetype)) :
-          DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
-      else if (geo_basetype(basetype))
-        dist = DatumGetFloat8(point_distance(value1, value2));
-#if NPOINT
-      else if (basetype == T_NPOINT)
-        dist = DatumGetFloat8(npoint_distance(value1, value2));
-#endif
-      if (dist > maxdist)
-        split = true;
-    }
-    /* If there is not already a split by distance */
-    if (maxt != NULL && ! split)
-    {
-      Interval *duration = pg_timestamp_mi(instants[i]->t, instants[i - 1]->t);
-      if (pg_interval_cmp(duration, maxt) > 0)
-        split = true;
-      // CANNOT pfree(duration);
-    }
-    if (split)
-      result[k++] = i;
-    value1 = value2;
-  }
-  *countsplits = k;
-  return result;
-}
-
-/**
- * @brief Ensure that all temporal sequences of the array have increasing
- * timestamp, and if they are temporal points, have the same srid and the
- * same dimensionality
- */
-void
-ensure_valid_tseqarr(const TSequence **sequences, int count)
-{
-  for (int i = 1; i < count; i++)
-  {
-    ensure_same_interpolation((Temporal *) sequences[i - 1],
-      (Temporal *) sequences[i]);
-    TimestampTz upper1 = DatumGetTimestampTz(sequences[i - 1]->period.upper);
-    TimestampTz lower2 = DatumGetTimestampTz(sequences[i]->period.lower);
-    if ( upper1 > lower2 ||
-         ( upper1 == lower2 && sequences[i - 1]->period.upper_inc &&
-           sequences[i]->period.lower_inc ) )
-    {
-      char *t1 = pg_timestamptz_out(upper1);
-      char *t2 = pg_timestamptz_out(lower2);
-      elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
-    }
-    ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
-  }
   return;
 }
 
@@ -563,7 +372,6 @@ mobilitydb_full_version(void)
   result[len] = '\0';
   return result;
 }
-
 
 /*****************************************************************************
  * Input/output functions
@@ -845,9 +653,9 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
   double maxdist, Interval *maxt, bool expand)
 {
   /* Validity tests */
+  assert(temp->temptype == inst->temptype);
   if (inst->subtype != TINSTANT)
     elog(ERROR, "The second argument must be of instant subtype");
-  ensure_same_temptype(temp, (Temporal *) inst);
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
@@ -878,9 +686,9 @@ Temporal *
 temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 {
   /* Validity tests */
+  assert(temp->temptype == seq->temptype);
   if (seq->subtype != TSEQUENCE)
     elog(ERROR, "The second argument must be of sequence subtype");
-  ensure_same_temptype(temp, (Temporal *) seq);
   ensure_same_interpolation(temp, (Temporal *) seq);
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
@@ -997,10 +805,8 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
   if (! temp2)
     return temporal_copy(temp1);
 
-  /* Both arguments are temporal */
-  ensure_same_temptype(temp1, temp2);
-
   /* Convert to the same subtype */
+  assert(temp1->temptype == temp2->temptype);
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -3574,9 +3380,8 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
-  ensure_same_temptype(temp1, temp2);
-
   /* Convert to the same subtype */
+  assert(temp1->temptype == temp2->temptype);
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -3797,15 +3602,7 @@ mrr_distance_scalar(const TSequence *seq, int start, int end)
 static double
 geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 {
-  // GSERIALIZED *gs1 = GEOS2POSTGIS((GEOSGeometry *) pt1, false);
-  // GSERIALIZED *gs2 = GEOS2POSTGIS((GEOSGeometry *) pt2, false);
-  // double dist = gserialized_geog_distance(gs1, gs2);
-  // pfree(gs1);
-  // pfree(gs2);
-  // return dist;
-
-  /* Skip postgis function calls */
-
+  /* Skip PostGIS function calls */
   double x1, y1, x2, y2;
   GEOSGeomGetX(pt1, &x1);
   GEOSGeomGetY(pt1, &y1);
@@ -3836,8 +3633,7 @@ geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 /**
  * @brief Calculate the length of the diagonal of the minimum rotated rectangle
  * of the input GEOS geometry.
- *
- * Note: The computation is always done in 2D
+ * @note The computation is always done in 2D
  */
 static double
 mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
@@ -3863,7 +3659,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
       case GEOS_POINT:
         result = 0;
         break;
-      case GEOS_LINESTRING: // compute length of linestring
+      case GEOS_LINESTRING: /* compute length of linestring */
         if (geodetic)
         {
           pt1 = GEOSGeomGetStartPoint(mrr_geom);
@@ -3875,7 +3671,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
         else
           GEOSGeomGetLength(mrr_geom, &result);
         break;
-      case GEOS_POLYGON: // compute length of diagonal
+      case GEOS_POLYGON: /* compute length of diagonal */
         pt1 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 0);
         pt2 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 2);
         if (geodetic)
@@ -3893,8 +3689,8 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
 }
 
 /**
- * @brief Create a GEOS Multipoint geometry from
- * a part (defined by start and end) of a temporal point sequence
+ * @brief Create a GEOS Multipoint geometry from a part (defined by start and
+ * end) of a temporal point sequence
  */
 static GEOSGeometry *
 multipoint_make(const TSequence *seq, int start, int end)
@@ -3913,8 +3709,6 @@ multipoint_make(const TSequence *seq, int start, int end)
 #endif
     else
       elog(ERROR, "Sequence must have a spatial base type");
-    // geoms[i] = POSTGIS2GEOS(gs);
-    // Skip postgis function calls
     const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
     geoms[i] = GEOSGeom_createPointFromXY(pt->x, pt->y);
   }
@@ -3938,8 +3732,6 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 #endif
   else
     elog(ERROR, "Instant must have a spatial base type");
-  // GEOSGeometry *geom1 = POSTGIS2GEOS(gs);
-  // Skip postgis function calls
   const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
   GEOSGeometry *geom1 = GEOSGeom_createPointFromXY(pt->x, pt->y);
   GEOSGeometry *result = GEOSUnion(geom, geom1);
@@ -3958,9 +3750,8 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   TSequence **result)
 {
   assert(seq->count > 1);
-  assert(seq->temptype == T_TFLOAT
-    || tgeo_type(seq->temptype)
-    || seq->temptype == T_TNPOINT);
+  assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype) ||
+    seq->temptype == T_TNPOINT);
 
   /* Use GEOS only for non-scalar input */
   bool use_geos_dist = seq->temptype != T_TFLOAT;
@@ -3985,7 +3776,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
     inst1 = TSEQUENCE_INST_N(seq, start);
     inst2 = TSEQUENCE_INST_N(seq, end);
 
-    while (!is_stopped && end - start > 1
+    while (! is_stopped && end - start > 1
       && (int64)(inst2->t - inst1->t) >= mintunits)
     {
       inst1 = TSEQUENCE_INST_N(seq, ++start);
@@ -4010,7 +3801,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
       is_stopped = mrr_distance_scalar(seq, start, end) <= maxdist;
 
     inst2 = TSEQUENCE_INST_N(seq, end - 1);
-    if (!is_stopped && previously_stopped
+    if (! is_stopped && previously_stopped
       && (int64)(inst2->t - inst1->t) >= mintunits) // Found a stop
     {
       const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
@@ -4076,6 +3867,9 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    /* Instantaneous sequences do not have stops */
+    if (seq->count == 1)
+      continue;
     k += tsequence_stops1(seq, maxdist, mintunits, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);

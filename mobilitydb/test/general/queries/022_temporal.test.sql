@@ -408,6 +408,7 @@ SELECT tbool_seqset('{}'::tbool[]);
 SELECT tint_seqset('{}'::tint[]);
 SELECT tfloat_seqset('{}'::tfloat[]);
 SELECT ttext_seqset('{}'::ttext[]);
+SELECT tfloat_seqset(ARRAY[tfloat '{1@2000-01-01, 2@2000-01-02}', '{3@2000-01-03, 4@2000-01-04}']);
 SELECT tbool_seqset(ARRAY[tbool '[true@2000-01-01, true@2000-01-03]', '[false@2000-01-02, false@2000-01-04]']);
 SELECT tint_seqset(ARRAY[tint '[1@2000-01-01, 1@2000-01-03]', '[2@2000-01-02, 2@2000-01-04]']);
 SELECT tfloat_seqset(ARRAY[tfloat '[1@2000-01-01, 2@2000-01-03]', '[2@2000-01-02, 1@2000-01-04]']);

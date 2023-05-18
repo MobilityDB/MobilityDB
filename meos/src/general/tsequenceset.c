@@ -50,6 +50,8 @@
 #include "general/type_parser.h"
 #include "general/type_util.h"
 #include "point/tpoint_parser.h"
+#include "point/tpoint_spatialfuncs.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * General functions
@@ -105,28 +107,6 @@ tsequenceset_find_timestamp(const TSequenceSet *ss, TimestampTz t, int *loc)
   return false;
 }
 
-/*****************************************************************************
- * Constructor functions
- *****************************************************************************/
-
-/**
- * @brief Ensure the validity of the arguments when creating a temporal sequence set
- */
-static void
-tsequenceset_make_valid(const TSequence **sequences, int count)
-{
-  bool linear = MEOS_FLAGS_GET_LINEAR(sequences[0]->flags);
-  /* Ensure that all values are of sequence subtype and of the same interpolation */
-  for (int i = 0; i < count; i++)
-  {
-    if (sequences[i]->subtype != TSEQUENCE)
-      elog(ERROR, "Input values must be temporal sequences");
-    if (MEOS_FLAGS_GET_LINEAR(sequences[i]->flags) != linear)
-      elog(ERROR, "Input sequences must have the same interpolation");
-  }
-  return;
-}
-
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Compute the bounding box of a temporal sequence set
@@ -138,6 +118,60 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
 {
   memset(box, 0, ss->bboxsize);
   memcpy(box, TSEQUENCESET_BBOX_PTR(ss), ss->bboxsize);
+  return;
+}
+
+/*****************************************************************************
+ * Constructor functions
+ * ---------------------
+ * There are two main constructor functions for temporal sequence sets
+ * - #tsequenceset_make_exp: Constructs a sequence set from an array of
+ *   sequences
+ * - #tsequenceset_make_gaps: Constructs a sequence set from an array of
+ *   instants where the composing sequences are determined by space or time
+ *   gaps between consecutive instants
+ * In the two cases, it is necessary to verify the validity of the argument
+ * array and compute the bounding box of the resulting sequence set. In the
+ * first constructor above, the computation of the bounding box is done while
+ * verifying the validity of the instants to avoid an additional iteration over
+ * the instants. This is not possible for the second constructor, since the
+ * loop for verifying the validity of the instants is used for determining the
+ * splits for constructing the composing sequences.
+ *****************************************************************************/
+
+/**
+ * @brief Ensure that all temporal sequences of the array have increasing
+ * timestamp, and if they are temporal points, have the same srid and the
+ * same dimensionality
+ */
+static void
+ensure_valid_tseqarr(const TSequence **sequences, int count)
+{
+  interpType interp = MEOS_FLAGS_GET_INTERP(sequences[0]->flags);
+  if (interp == DISCRETE)
+    elog(ERROR, "Input sequences must be continuous");
+  for (int i = 0; i < count; i++)
+  {
+    if (sequences[i]->subtype != TSEQUENCE)
+      elog(ERROR, "Input values must be temporal sequences");
+    if (i > 0)
+    {
+      if (MEOS_FLAGS_GET_INTERP(sequences[i]->flags) != interp)
+        elog(ERROR, "The temporal values must have the same interpolation");
+      TimestampTz upper1 = DatumGetTimestampTz(sequences[i - 1]->period.upper);
+      TimestampTz lower2 = DatumGetTimestampTz(sequences[i]->period.lower);
+      if ( upper1 > lower2 ||
+           ( upper1 == lower2 && sequences[i - 1]->period.upper_inc &&
+             sequences[i]->period.lower_inc ) )
+      {
+        char *t1 = pg_timestamptz_out(upper1);
+        char *t2 = pg_timestamptz_out(lower2);
+        elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
+      }
+      ensure_spatial_validity((Temporal *) sequences[i - 1],
+        (Temporal *) sequences[i]);
+    }
+  }
   return;
 }
 
@@ -191,14 +225,14 @@ TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index)
  * In particular, normalize is false when synchronizing two temporal sequence
  * sets before applying an operation to them.
  */
-static TSequenceSet *
-tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
+TSequenceSet *
+tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
   bool normalize)
 {
+  assert(count > 0);
   assert(maxcount >= count);
 
-  /* Test the validity of the sequences */
-  assert(count > 0);
+  /* Test the validity of the sequences and compute the bounding box */
   ensure_valid_tseqarr(sequences, count);
   /* Normalize the array of sequences */
   TSequence **normseqs = (TSequence **) sequences;
@@ -275,26 +309,6 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal sequence set from an array of temporal sequences
- * enabling the data structure to expand.
- * @param[in] sequences Array of sequences
- * @param[in] count Number of elements in the array
- * @param[in] maxcount Maximum number of elements in the array
- * @param[in] normalize True if the resulting value should be normalized.
- * In particular, normalize is false when synchronizing two
- * temporal sequence sets before applying an operation to them.
- * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
- */
-TSequenceSet *
-tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
-  bool normalize)
-{
-  tsequenceset_make_valid(sequences, count);
-  return tsequenceset_make1_exp(sequences, count, maxcount, normalize);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal sequence set from an array of temporal sequences.
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
@@ -333,18 +347,81 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
 }
 
 /**
+ * @brief Ensure that all temporal instants of the array have increasing
+ * timestamp (or may be equal if the merge parameter is true), and if they
+ * are temporal points, have the same srid and the same dimensionality.
+ *
+ * This function extends function #ensure_valid_tinstarr by determining
+ * the splits that must be made according the maximum distance or interval
+ * between consecutive instants.
+ *
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the input array
+ * @param[in] merge True if a merge operation, which implies that the two
+ *   consecutive instants may be equal
+ * @param[in] maxdist Maximum distance to split the temporal sequence
+ * @param[in] maxt Maximum time interval to split the temporal sequence
+ * @param[out] nsplits Number of splits
+ * @result Array of indices at which the temporal sequence is split
+ */
+static int *
+ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
+  double maxdist, Interval *maxt, int *nsplits)
+{
+  meosType basetype = temptype_basetype(instants[0]->temptype);
+  /* Ensure that zero-fill is done */
+  int *result = palloc0(sizeof(int) * count);
+  Datum value1 = tinstant_value(instants[0]);
+  int16 flags = instants[0]->flags;
+  int k = 0;
+  for (int i = 1; i < count; i++)
+  {
+    ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
+    ensure_spatial_validity((Temporal *) instants[i - 1],
+      (Temporal *) instants[i]);
+#if NPOINT
+  if (instants[i]->temptype == T_TNPOINT)
+    ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
+#endif
+    /* Determine if there should be a split */
+    bool split = false;
+    Datum value2 = tinstant_value(instants[i]);
+    if (maxdist > 0.0 && ! datum_eq(value1, value2, basetype))
+    {
+      double dist = datum_distance(value1, value2, basetype, flags);
+      if (dist > maxdist)
+        split = true;
+    }
+    /* If there is not already a split by distance */
+    if (maxt != NULL && ! split)
+    {
+      Interval *duration = pg_timestamp_mi(instants[i]->t, instants[i - 1]->t);
+      if (pg_interval_cmp(duration, maxt) > 0)
+        split = true;
+      // CANNOT pfree(duration);
+    }
+    if (split)
+      result[k++] = i;
+    value1 = value2;
+  }
+  *nsplits = k;
+  return result;
+}
+
+/**
  * @brief Ensure the validity of the arguments when creating a temporal value
- * This function extends function tsequence_make_valid by spliting the
+ * This function extends function #tsequence_make_valid by spliting the
  * sequences according the maximum distance or interval between instants.
  */
 static int *
-tsequenceset_make_valid_gaps(const TInstant **instants, int count,
+tsequenceset_make_gaps_valid(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, double maxdist,
-  Interval *maxt, int *countsplits)
+  Interval *maxt, int *nsplits)
 {
+  assert(interp != DISCRETE);
   tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
-  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO, interp, maxdist,
-    maxt, countsplits);
+  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO, maxdist, maxt,
+    nsplits);
 }
 
 /**
@@ -367,54 +444,55 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
   TSequence *seq;
   TSequenceSet *result;
 
-  /* If no gaps are given construt call the standard sequence constructor */
+  /* If no gaps are given call the standard sequence constructor */
   if (maxt == NULL && maxdist <= 0.0)
   {
-    seq = tsequence_make((const TInstant **) instants, count, true, true,
-      interp, NORMALIZE);
-    result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+    seq = tsequence_make_exp((const TInstant **) instants, count, count, true,
+      true, interp, NORMALIZE);
+    result = tsequenceset_make_exp((const TSequence **) &seq, 1, 1,
+      NORMALIZE_NO);
     pfree(seq);
     return result;
   }
 
   /* Ensure that the array of instants is valid and determine the splits */
-  int countsplits;
-  int *splits = tsequenceset_make_valid_gaps((const TInstant **) instants,
-    count, true, true, interp, maxdist, maxt, &countsplits);
-  if (countsplits == 0)
+  int nsplits;
+  int *splits = tsequenceset_make_gaps_valid((const TInstant **) instants,
+    count, true, true, interp, maxdist, maxt, &nsplits);
+  if (nsplits == 0)
   {
     /* There are no gaps  */
     pfree(splits);
-    seq = tsequence_make1((const TInstant **) instants, count, true, true,
-      interp, NORMALIZE);
+    seq = tsequence_make1_exp((const TInstant **) instants, count, count, true,
+      true, interp, NORMALIZE, NULL);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
     pfree(seq);
   }
   else
   {
-    int newcount = 0;
+    int nseqs = 0;
     /* Split according to gaps  */
     const TInstant **newinsts = palloc(sizeof(TInstant *) * count);
-    TSequence **sequences = palloc(sizeof(TSequence *) * (countsplits + 1));
-    int j = 0, k = 0;
+    TSequence **sequences = palloc(sizeof(TSequence *) * (nsplits + 1));
+    int j = 0, ninsts = 0;
     for (int i = 0; i < count; i++)
     {
-      if (j < countsplits && splits[j] == i)
+      if (j < nsplits && splits[j] == i)
       {
         /* Finalize the current sequence and start a new one */
-        assert(k > 0);
-        sequences[newcount++] = tsequence_make1((const TInstant **) newinsts,
-          k, true, true, interp, NORMALIZE);
-        j++; k = 0;
+        assert(ninsts > 0);
+        sequences[nseqs++] = tsequence_make1_exp((const TInstant **) newinsts,
+          ninsts, ninsts, true, true, interp, NORMALIZE, NULL);
+        j++; ninsts = 0;
       }
       /* Continue with the current sequence */
-      newinsts[k++] = instants[i];
+      newinsts[ninsts++] = instants[i];
     }
     /* Construct the last sequence */
-    if (k > 0)
-      sequences[newcount++] = tsequence_make1((const TInstant **) newinsts,
-        k, true, true, interp, NORMALIZE);
-    result = tsequenceset_make((const TSequence **) sequences, newcount,
+    if (ninsts > 0)
+      sequences[nseqs++] = tsequence_make1_exp((const TInstant **) newinsts,
+        ninsts, ninsts, true, true, interp, NORMALIZE, NULL);
+    result = tsequenceset_make((const TSequence **) sequences, nseqs,
       NORMALIZE);
     pfree(newinsts); pfree(sequences);
   }
@@ -2380,7 +2458,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
     printf(" seqset -> %d\n", maxcount);
 #endif /* DEBUG_BUILD */
   }
-  TSequenceSet *result = tsequenceset_make1_exp(sequences, count, maxcount,
+  TSequenceSet *result = tsequenceset_make_exp(sequences, count, maxcount,
     NORMALIZE_NO);
   pfree(sequences);
   return result;
