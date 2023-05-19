@@ -1497,7 +1497,7 @@ tfunc_tcontseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
  * @param[in] ss1,ss2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
-static TSequenceSet *
+TSequenceSet *
 tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
   const TSequenceSet *ss2, LiftedFunctionInfo *lfinfo)
 {

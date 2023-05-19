@@ -1217,9 +1217,9 @@ SELECT tdwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02)', geo
 (1 row)
 
 SELECT tdwithin(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)', geometry 'Point(2 3)', 1);
-                        tdwithin                        
---------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00)}
+                       tdwithin                       
+------------------------------------------------------
+ [f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00)
 (1 row)
 
 SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);

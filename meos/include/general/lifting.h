@@ -96,6 +96,8 @@ extern TSequence *tfunc_tdiscseq_tdiscseq(const TSequence *seq1,
   const TSequence *seq2, LiftedFunctionInfo *lfinfo);
 extern Temporal *tfunc_tcontseq_tcontseq(const TSequence *seq1,
   const TSequence *seq2, LiftedFunctionInfo *lfinfo);
+extern TSequenceSet *tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
+  const TSequenceSet *ss2, LiftedFunctionInfo *lfinfo);
 extern Temporal *tfunc_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, LiftedFunctionInfo *lfinfo);
 
