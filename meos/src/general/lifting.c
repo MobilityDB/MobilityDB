@@ -1332,7 +1332,6 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
       for (int j = 0; j < ninsts; j++)
         pfree(instants[j]);
       ninsts = 0;
-      makeseq = false;
       DATUM_FREE(closeresult, resbasetype);
     }
     DATUM_FREE(startresult, resbasetype);
