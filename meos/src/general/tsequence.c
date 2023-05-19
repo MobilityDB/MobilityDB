@@ -2634,7 +2634,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   /* Constant segment or t is equal to lower bound or step interpolation */
-  if (datum_eq(value1, value2,  temptype_basetype(inst1->temptype)) ||
+  if (datum_eq(value1, value2, temptype_basetype(inst1->temptype)) ||
     inst1->t == t || (! linear && t < inst2->t))
     return tinstant_value_copy(inst1);
 
@@ -4963,14 +4963,11 @@ tcontseq_minus_timestampset_iter(const TSequence *seq, const Set *ts,
     return 1;
   }
 
-  const TInstant *inst;
-  TInstant *tofree = NULL;
-
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst = TSEQUENCE_INST_N(seq, 0);
-    if (contains_set_value(ts, TimestampTzGetDatum(inst->t),
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+    if (contains_set_value(ts, TimestampTzGetDatum(inst1->t),
         T_TIMESTAMPTZ))
       return 0;
     result[0] = tsequence_copy(seq);
@@ -4979,67 +4976,72 @@ tcontseq_minus_timestampset_iter(const TSequence *seq, const Set *ts,
 
   /* General case */
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
-  instants[0] = (TInstant *) TSEQUENCE_INST_N(seq, 0);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **tofree = palloc(sizeof(TInstant *) * Min(ts->count, seq->count));
   bool lower_inc = seq->period.lower_inc;
-  int i = 1,  /* current instant of the argument sequence */
-    j = 0,     /* current timestamp of the argument timestamp set */
-    k = 0,     /* current number of new sequences */
-    l = 1;     /* number of instants in the currently constructed sequence */
+  int i = 0,    /* current instant of the argument sequence */
+    j = 0,      /* current timestamp of the argument timestamp set */
+    nseqs = 0,  /* current number of new sequences */
+    ninsts = 0, /* number of instants in the currently constructed sequence */
+    nfree = 0;  /* number of instants to free */
   while (i < seq->count && j < ts->count)
   {
-    inst = TSEQUENCE_INST_N(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     TimestampTz t = DatumGetTimestampTz(SET_VAL_N(ts, j));
+    Datum value;
     if (inst->t < t)
     {
-      instants[l++] = (TInstant *) inst;
+      instants[ninsts++] = (TInstant *) inst;
       i++; /* advance instants */
     }
     else if (inst->t == t)
     {
-      if (interp == LINEAR)
+      /* Close the current sequence */
+      if (ninsts > 0)
       {
-        instants[l] = (TInstant *) inst;
-        result[k++] = tsequence_make((const TInstant **) instants, l + 1,
-          lower_inc, false, interp, NORMALIZE_NO);
-        instants[0] = (TInstant *) inst;
-      }
-      else
-      {
-        instants[l] = tinstant_make(tinstant_value(instants[l - 1]),
-          inst->temptype, t);
-        result[k++] = tsequence_make((const TInstant **) instants, l + 1,
-          lower_inc, false, interp, NORMALIZE_NO);
-        pfree(instants[l]);
-        if (tofree)
+        if (interp == LINEAR)
+          instants[ninsts++] = (TInstant *) inst;
+        else /* interp == STEP */
         {
-          pfree(tofree);
-          tofree = NULL;
+          /* Take the value of the previous instant */
+          value = tinstant_value(instants[ninsts - 1]);
+          instants[ninsts] = tinstant_make(value, inst->temptype, inst->t);
+          tofree[nfree++] = instants[ninsts++];
         }
-        instants[0] = (TInstant *) inst;
+        result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+          lower_inc, false, interp, NORMALIZE_NO);
+        ninsts = 0;
       }
-      l = 1;
-      lower_inc = false;
+      /* If it is not the last instant start a new sequence */
+      if (i < seq->count - 1)
+      {
+        instants[ninsts++] = (TInstant *) inst;
+        lower_inc = false;
+      }
       i++; /* advance instants */
       j++; /* advance timestamps */
     }
-    else
+    else /* inst->t > t */
     {
-      /* inst->t > t */
-      if (instants[l - 1]->t < t)
+      if (ninsts > 0)
       {
-        /* The instant to remove is not the first one of the sequence */
-        instants[l] = (interp == LINEAR) ?
-          tsegment_at_timestamp(instants[l - 1], inst, (interp == LINEAR), t) :
-          tinstant_make(tinstant_value(instants[l - 1]), inst->temptype, t);
-        result[k++] = tsequence_make((const TInstant **) instants, l + 1,
+        /* Close the current sequence */
+        if (interp == LINEAR)
+          /* Interpolate */
+          value = tsegment_value_at_timestamp(instants[ninsts - 1], inst,
+            LINEAR, t);
+        else
+          /* Take the value of the previous instant */
+          value = tinstant_value(instants[ninsts - 1]);
+        instants[ninsts] = tinstant_make(value, inst->temptype, t);
+        tofree[nfree] = instants[ninsts++];
+        result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
           lower_inc, false, interp, NORMALIZE_NO);
-        if (tofree)
-          pfree(tofree);
-        instants[0] = tofree = instants[l];
-        l = 1;
+        /* Restart a new sequence */
+        instants[0] = tofree[nfree++];
+        ninsts = 1;
+        lower_inc = false;
       }
-      lower_inc = false;
       j++; /* advance timestamps */
     }
   }
@@ -5047,14 +5049,16 @@ tcontseq_minus_timestampset_iter(const TSequence *seq, const Set *ts,
   if (i < seq->count)
   {
     for (j = i; j < seq->count; j++)
-      instants[l++] = (TInstant *) TSEQUENCE_INST_N(seq, j);
-    result[k++] = tsequence_make((const TInstant **) instants, l,
-      false, seq->period.upper_inc, interp, NORMALIZE_NO);
+      instants[ninsts++] = (TInstant *) TSEQUENCE_INST_N(seq, j);
   }
-  if (tofree)
-    pfree(tofree);
+  if (ninsts > 0)
+  {
+    result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+      lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO);
+  }
+  pfree_array((void **) tofree, nfree);
   pfree(instants);
-  return k;
+  return nseqs;
 }
 
 /**
