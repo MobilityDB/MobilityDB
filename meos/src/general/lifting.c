@@ -426,8 +426,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
     bool lower_eq, upper_eq;
     TimestampTz inttime;
 
-    /* If the segment is constant compute the function at the start and end
-     * instants and continue the sequence */
+    /* If the segment is constant continue the current sequence */
     if (datum_eq(startvalue, endvalue, basetype))
     {
       instants[ninsts++] = tinstant_make(startresult, restype, start->t);
@@ -435,17 +434,14 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
         instants[ninsts++] = tinstant_make(startresult, restype, end->t);
     }
     /* If either the start or the end value is equal to the value compute the
-     * function at the start, at the middle, and at the end instants */
+     * function at the middle time between the start and end instants */
     else if (datum_eq2(startvalue, value, basetype, lfinfo->argtype[1]) ||
          datum_eq2(endvalue, value, basetype, lfinfo->argtype[1]))
     {
-      /* Compute the function at the middle time between the start and end
-       * instants */
       inttime = start->t + ((end->t - start->t) / 2);
       intvalue = tsegment_value_at_timestamp(start, end, LINEAR, inttime);
       intresult = tfunc_base_base(intvalue, value, lfinfo);
       lower_eq = datum_eq(startresult, intresult, resbasetype);
-      upper_eq = datum_eq(endresult, intresult, resbasetype);
       if (lower_eq)
       {
         /* Continue the current sequence */
@@ -453,29 +449,18 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
         if (i == seq->count - 1)
           instants[ninsts++] = tinstant_make(endresult, restype, end->t);
       }
-      else /* ! lower_eq */
+      else /* upper_eq */
       {
-        /* Close the current sequence at the start or end instant. Note that
-         * when lower_eq we add an instant and close the sequence only when
-         * there is already one. When upper_eq we always do this. */
-        if (upper_eq || ninsts > 0)
-        {
-          TimestampTz t = lower_eq ? end->t : start->t;
-          instants[ninsts++] = tinstant_make(startresult, restype, t);
-          /* The upper_bound of the sequence to be closed is false if lower_eq,
-           * true otherwise */
-          result[nseqs++] = tsequence_make((const TInstant **) instants,
-            ninsts, lower_inc, ! lower_eq, STEP, NORMALIZE);
-          for (int j = 0; j < ninsts; j++)
-            pfree(instants[j]);
-          ninsts = 0;
-          /* The lower_bound of the new sequence is true if lower_eq,
-           * false otherwise */
-          lower_inc = lower_eq;
-        }
+        /* Close the current sequence at the start */
+        instants[ninsts++] = tinstant_make(startresult, restype, start->t);
+        result[nseqs++] = tsequence_make((const TInstant **) instants,
+          ninsts, lower_inc, true, STEP, NORMALIZE);
+        for (int j = 0; j < ninsts; j++)
+          pfree(instants[j]);
+        ninsts = 0;
+        lower_inc = false;
         /* Start a new sequence */
-        if (upper_eq)
-          instants[ninsts++] = tinstant_make(intresult, restype, start->t);
+        instants[ninsts++] = tinstant_make(intresult, restype, start->t);
         if (i == seq->count - 1)
           instants[ninsts++] = tinstant_make(endresult, restype, end->t);
       }
@@ -490,6 +475,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
         lfinfo->argtype[1], &intvalue, &inttime);
       if (! hascross)
       {
+        /* Continue the current sequence */
         instants[ninsts++] = tinstant_make(startresult, restype, start->t);
         if (i == seq->count - 1)
           instants[ninsts++] = tinstant_make(endresult, restype, end->t);
