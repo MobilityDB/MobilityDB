@@ -1398,7 +1398,7 @@ tfunc_tcontseq_tcontseq_dispatch(const TSequence *seq1, const TSequence *seq2,
 /**
  * @brief Synchronize the temporal values and apply to them the function
  */
-static Temporal *
+Temporal *
 tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
   LiftedFunctionInfo *lfinfo)
 {

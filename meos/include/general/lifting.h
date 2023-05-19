@@ -92,8 +92,10 @@ extern Temporal *tfunc_temporal_base(const Temporal *temp, Datum value,
 
 extern TInstant *tfunc_tinstant_tinstant(const TInstant *inst1,
   const TInstant *inst2, LiftedFunctionInfo *lfinfo);
-extern TSequence *tfunc_tdiscseq_tdiscseq(const TSequence *is1,
-  const TSequence *is2, LiftedFunctionInfo *lfinfo);
+extern TSequence *tfunc_tdiscseq_tdiscseq(const TSequence *seq1,
+  const TSequence *seq2, LiftedFunctionInfo *lfinfo);
+extern Temporal *tfunc_tcontseq_tcontseq(const TSequence *seq1,
+  const TSequence *seq2, LiftedFunctionInfo *lfinfo);
 extern Temporal *tfunc_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, LiftedFunctionInfo *lfinfo);
 

@@ -3161,10 +3161,10 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const SpanSet *ps)
   const TInstant *instants[2] = {0};
   sequences[0] = seq = (TSequence *) TSEQUENCESET_SEQ_N(minus, 0);
   const Span *p = spanset_sp_n(ps, 0);
-  int i = 1, /* current composing sequence */
-    j = 0,   /* current composing period */
-    k = 1,   /* number of sequences in the currently constructed sequence */
-    l = 0;   /* number of sequences to be freed */  /* Fill the gaps */
+  int i = 1,    /* current composing sequence */
+    j = 0,      /* current composing period */
+    nseqs = 1,  /* number of sequences in the currently constructed sequence */
+    nfree = 0;  /* number of sequences to be freed */
   /* Skip all composing periods that are before or adjacent to seq */
   while (j < ps->count)
   {
@@ -3179,29 +3179,29 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const SpanSet *ps)
     if (timestamptz_cmp_internal(DatumGetTimestampTz(p->upper),
           DatumGetTimestampTz(seq->period.lower) <= 0))
     {
-      instants[0] = TSEQUENCE_INST_N(sequences[k - 1],
-        sequences[k - 1]->count - 1);
+      instants[0] = TSEQUENCE_INST_N(sequences[nseqs - 1],
+        sequences[nseqs - 1]->count - 1);
       instants[1] = TSEQUENCE_INST_N(seq, 0);
-      int count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
-        1 : 2;
+      int count = (timestamptz_cmp_internal(instants[0]->t,
+        instants[1]->t) == 0) ? 1 : 2;
       /* We put true so that it works with step interpolation */
-      tofree[l] = tsequence_make(instants, count, true, true, interp,
+      tofree[nfree] = tsequence_make(instants, count, true, true, interp,
         NORMALIZE_NO);
-      sequences[k++] = tofree[l++];
+      sequences[nseqs++] = tofree[nfree++];
     }
-    sequences[k++] = seq;
+    sequences[nseqs++] = seq;
     seq = (TSequence *) TSEQUENCESET_SEQ_N(minus, ++i);
     p = spanset_sp_n(ps, ++j);
   }
   /* Add remaining sequences to the result */
   while (i < ss->count)
-    sequences[k++] = (TSequence *) TSEQUENCESET_SEQ_N(minus, i++);
+    sequences[nseqs++] = (TSequence *) TSEQUENCESET_SEQ_N(minus, i++);
   /* Construct the result */
   int newcount;
-  TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences, k,
-    &newcount);
+  TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences,
+    nseqs, &newcount);
   result = tsequenceset_make_free(normseqs, newcount, NORMALIZE_NO);
-  pfree_array((void **) tofree, l);
+  pfree_array((void **) tofree, nfree);
   return result;
 }
 

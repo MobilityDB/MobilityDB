@@ -85,8 +85,8 @@ extern bool tsegment_intersection(const TInstant *start1,
   const TInstant *end2, bool linear2, Datum *inter1, Datum *inter2,
   TimestampTz *t);
 
-extern bool intersection_tdiscseq_tdiscseq(const TSequence *is1,
-  const TSequence *is2, TSequence **inter1, TSequence **inter2);
+extern bool intersection_tdiscseq_tdiscseq(const TSequence *seq1,
+  const TSequence *seq2, TSequence **inter1, TSequence **inter2);
 extern bool intersection_tcontseq_tdiscseq(const TSequence *seq1,
   const TSequence *seq2, TSequence **inter1, TSequence **inter2);
 extern bool intersection_tdiscseq_tcontseq(const TSequence *is,

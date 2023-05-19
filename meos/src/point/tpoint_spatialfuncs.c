@@ -2923,7 +2923,7 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
   const TInstant *end1, const TInstant *start2,
   const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  assert(!MEOS_FLAGS_GET_GEODETIC(start1->flags));
+  assert(! MEOS_FLAGS_GET_GEODETIC(start1->flags));
   const POINT2D *sp1 = DATUM_POINT2D_P(&start1->value);
   const POINT2D *ep1 = DATUM_POINT2D_P(&end1->value);
   const POINT2D *sp2 = DATUM_POINT2D_P(&start2->value);
@@ -2942,7 +2942,7 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
    * To reduce problems related to floating point arithmetic, t1 and t2
    * are shifted, respectively, to 0 and 1 before the computation
    * N.B. The code that follows is adapted from the function
-   * tnumber_arithop_tp_at_timestamp1 in file tnumber_mathfuncs.c
+   * #tnumber_arithop_tp_at_timestamp1 in file tnumber_mathfuncs.c
    */
   if ((ep1->x - sp1->x) == 0.0 || (ep2->x - sp2->x) == 0.0)
     return false;

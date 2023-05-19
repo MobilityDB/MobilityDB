@@ -1193,17 +1193,17 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   /* Split the temporal point in an array of non self-intersecting fragments
    * to be able to recover the time dimension after obtaining the spatial
    * intersection */
-  int countsimple;
-  TSequence **simpleseqs = tpointseq_make_simple(seq2d, &countsimple);
+  int nsimple;
+  TSequence **simpleseqs = tpointseq_make_simple(seq2d, &nsimple);
   Span *allperiods = NULL; /* make compiler quiet */
   int totalpers = 0;
   GSERIALIZED *traj, *gsinter;
   Datum inter;
 
-  if (countsimple == 1)
+  if (nsimple == 1)
   {
     /* Particular case when the input sequence is simple */
-    pfree_array((void **) simpleseqs, countsimple);
+    pfree_array((void **) simpleseqs, nsimple);
     traj = tpointseq_cont_trajectory(seq2d);
     inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
     gsinter = DatumGetGserializedP(inter);
@@ -1223,10 +1223,10 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     /* General case */
     if (hasz)
       pfree(seq2d);
-    Span **periods = palloc(sizeof(Span *) * countsimple);
-    int *npers = palloc0(sizeof(int) * countsimple);
+    Span **periods = palloc(sizeof(Span *) * nsimple);
+    int *npers = palloc0(sizeof(int) * nsimple);
     /* Loop for every simple fragment of the sequence */
-    for (int i = 0; i < countsimple; i++)
+    for (int i = 0; i < nsimple; i++)
     {
       traj = tpointseq_cont_trajectory(simpleseqs[i]);
       inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
@@ -1240,7 +1240,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
       PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
       pfree(DatumGetPointer(inter)); pfree(traj);
     }
-    pfree_array((void **) simpleseqs, countsimple);
+    pfree_array((void **) simpleseqs, nsimple);
     if (totalpers == 0)
     {
       pfree(periods); pfree(npers);
@@ -1250,7 +1250,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     /* Assemble the periods into a single array */
     allperiods = palloc(sizeof(Span) * totalpers);
     int k = 0;
-    for (int i = 0; i < countsimple; i++)
+    for (int i = 0; i < nsimple; i++)
     {
       for (int j = 0; j < npers[i]; j++)
         allperiods[k++] = periods[i][j];
