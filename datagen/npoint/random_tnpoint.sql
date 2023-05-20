@@ -138,9 +138,6 @@ $$ LANGUAGE PLPGSQL STRICT;
 /*
 SELECT k, random_npoint_array(1, 100, 5, 10) AS g
 FROM generate_series(1, 15) AS k;
-
-SELECT k, asewkt(random_npoint_array(1, 100, 5, 10, 3812)) AS g
-FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -189,7 +186,8 @@ CREATE FUNCTION random_tnpoint_inst(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz)
   RETURNS tnpoint AS $$
 BEGIN
-  RETURN tnpoint(random_npoint(lown, highn), random_timestamptz(lowtime, hightime));
+  RETURN tnpoint_inst(random_npoint(lown, highn),
+    random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -223,10 +221,10 @@ BEGIN
   t = random_timestamptz(lowtime, hightime);
   FOR i IN 1..card
   LOOP
-    result[i] = tnpoint(random_npoint(lown, highn), t);
+    result[i] = tnpoint_inst(random_npoint(lown, highn), t);
     t = t + random_minutes(1, maxminutes);
   END LOOP;
-  RETURN tnpoint_discseq(result);
+  RETURN tnpoint_seq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -251,9 +249,8 @@ FROM generate_series(1,10) k;
  */
 DROP FUNCTION IF EXISTS random_tnpoint_contseq;
 CREATE FUNCTION random_tnpoint_contseq(lown integer, highn integer,
-  lowtime timestamptz, hightime timestamptz, maxminutes int,
-  mincard int, maxcard int,
-  linear bool DEFAULT true, fixstart bool DEFAULT false)
+  lowtime timestamptz, hightime timestamptz, maxminutes int, mincard int,
+  maxcard int, linear bool DEFAULT true, fixstart bool DEFAULT false)
   RETURNS tnpoint AS $$
 DECLARE
   tsarr timestamptz[];
@@ -261,6 +258,7 @@ DECLARE
   card int;
   rid int;
   t1 timestamptz;
+  interp text;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
@@ -277,21 +275,29 @@ BEGIN
   rid = random_int(lown, highn);
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tnpoint(npoint(rid, random()), tsarr[i]);
+    result[i] = tnpoint_inst(npoint(rid, random()), tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tnpoint(getValue(result[card - 1]), tsarr[card]);
+    result[card] = tnpoint_inst(getValue(result[card - 1]), tsarr[card]);
   ELSE
-    result[card] = tnpoint(npoint(rid, random()), tsarr[card]);
+    result[card] = tnpoint_inst(npoint(rid, random()), tsarr[card]);
   END IF;
-  RETURN tnpoint_contseq(result, lower_inc, upper_inc, linear);
+  IF linear THEN
+    interp = 'Linear';
+  ELSE
+    interp = 'Step';
+  END IF;
+  RETURN tnpoint_seq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tnpoint_contseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)
+FROM generate_series (1, 15) AS k;
+
+SELECT k, random_tnpoint_contseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10, false)
 FROM generate_series (1, 15) AS k;
 */
 
@@ -317,37 +323,26 @@ CREATE FUNCTION random_tnpoint_seqset(lown integer, highn integer,
   RETURNS tnpoint AS $$
 DECLARE
   result tnpoint[];
-  instants tnpoint[];
-  cardseq int;
   card int;
-  rid int;
+  seq tnpoint;
   t1 timestamptz;
-  lower_inc boolean;
-  upper_inc boolean;
+  t2 timestamptz;
 BEGIN
   PERFORM tsequenceset_valid_duration(lowtime, hightime, maxminutes, mincardseq,
     maxcardseq, mincard, maxcard);
-  card = random_int(1, maxcard);
-  t1 = random_timestamptz(lowtime, hightime);
+  card = random_int(mincard, maxcard);
+  t1 = lowtime;
+  t2 = hightime - interval '1 minute' *
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) +
+    ((maxcard - mincard) * maxminutes) );
   FOR i IN 1..card
   LOOP
-    cardseq = random_int(1, maxcardseq);
-    IF cardseq = 1 THEN
-      lower_inc = true;
-      upper_inc = true;
-    ELSE
-      lower_inc = random() > 0.5;
-      upper_inc = random() > 0.5;
-    END IF;
-    rid = random_int(lown, highn);
-    FOR j IN 1..cardseq
-    LOOP
-      t1 = t1 + random_minutes(1, maxminutes);
-      instants[j] = tnpoint(npoint(rid, random()), t1);
-    END LOOP;
-    result[i] = tnpoint_contseq(instants, lower_inc, upper_inc);
-    instants = NULL;
-    t1 = t1 + random_minutes(1, maxminutes);
+    -- the last parameter (fixstart) is set to true for all i except 1
+    SELECT random_tnpoint_contseq(lown, highn, t1, t2, maxminutes, mincardseq,
+      maxcardseq, linear, i > 1) INTO seq;
+    result[i] = seq;
+    t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tnpoint_seqset(result);
 END;
@@ -355,6 +350,9 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tnpoint_seqset(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10) AS ts
+FROM generate_series (1, 15) AS k;
+
+SELECT k, random_tnpoint_seqset(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10, false) AS ts
 FROM generate_series (1, 15) AS k;
 */
 
