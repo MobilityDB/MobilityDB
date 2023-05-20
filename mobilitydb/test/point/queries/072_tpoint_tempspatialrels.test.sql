@@ -397,6 +397,9 @@ SELECT tdwithin(tgeompoint '[Point(0 0)@2000-01-01, Point(2 2)@2000-01-05]',
 SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
   tgeompoint 'Interp=Step;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
 
+-- Step interpolation
+SELECT tdwithin(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+
 -- Mixed 2D/3D
 SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
 

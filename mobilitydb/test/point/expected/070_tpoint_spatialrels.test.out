@@ -314,8 +314,10 @@ SELECT edisjoint(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000
 /* Errors */
 SELECT edisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
+CONTEXT:  SQL function "edisjoint" statement 1
 SELECT edisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
+CONTEXT:  SQL function "edisjoint" statement 1
 SELECT eintersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  eintersects 
 -------------
@@ -1960,6 +1962,12 @@ SELECT edwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}', t
  edwithin 
 ----------
  f
+(1 row)
+
+SELECT edwithin(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+ edwithin 
+----------
+ t
 (1 row)
 
 SELECT edwithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);

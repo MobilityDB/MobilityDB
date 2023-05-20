@@ -586,16 +586,11 @@ edwithin_tpointseq_tpointseq_cont(const TSequence *seq1, const TSequence *seq2,
     TimestampTz upper = end1->t;
     bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 
-    /* Both segments are constant or have step interpolation */
-    if ((datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2)) ||
-      (! linear1 && ! linear2))
-    {
-      if (DatumGetBool(func(sv1, sv2, Float8GetDatum(dist))))
+    /* Both segments are constant */
+    if (datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2) &&
+        DatumGetBool(func(sv1, sv2, Float8GetDatum(dist))))
         return true;
-      if (! linear1 && ! linear2 && upper_inc &&
-          DatumGetBool(func(ev1, ev2, Float8GetDatum(dist))))
-        return true;
-    }
+
     /* General case */
     else
     {

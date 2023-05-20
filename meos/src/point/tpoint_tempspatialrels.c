@@ -171,8 +171,8 @@ tinterrel_tpointseq_discstep_geom(const TSequence *seq, Datum geom,
       result = ! result;
     instants[i] = tinstant_make(BoolGetDatum(result), T_TBOOL, inst->t);
   }
-  TSequence *result = tsequence_make_free(instants, seq->count, true, true,
-    interp, NORMALIZE_NO);
+  TSequence *result = tsequence_make_free(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO);
   return result;
 }
 
@@ -822,19 +822,12 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
     TimestampTz upper = end1->t;
     bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 
-    /* Both segments are constant or have step interpolation */
-    if ((datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2)) ||
-      (! linear1 && ! linear2))
+    /* Both segments are constant */
+    if (datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2))
     {
       Datum value = func(sv1, sv2, dist);
       tinstant_set(instants[0], value, lower);
-      if (! linear1 && ! linear2 && upper_inc)
-      {
-        Datum value1 = func(ev1, ev2, dist);
-        tinstant_set(instants[1], value1, upper);
-      }
-      else
-        tinstant_set(instants[1], value, upper);
+      tinstant_set(instants[1], value, upper);
       result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, STEP, NORMALIZE_NO);
     }

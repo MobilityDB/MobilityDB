@@ -490,6 +490,9 @@ SELECT edwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@
 
 SELECT edwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}', tgeompoint '{[Point(1 2)@2000-01-01, Point(2 3)@2000-01-02]}', 0.5);
 
+-- Step interpolation
+SELECT edwithin(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+
 -- Mixed 2D/3D
 SELECT edwithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
 SELECT edwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 2);
