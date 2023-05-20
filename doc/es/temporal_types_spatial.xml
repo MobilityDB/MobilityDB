@@ -772,10 +772,20 @@ WHERE eintersects(T.Trip, R.Geom)
 			<listitem id="econtains">
 				<indexterm><primary><varname>econtains</varname></primary></indexterm>
 				<para>Contiene alguna vez</para>
-				<para><varname>econtains({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
+				<para><varname>econtains(geo,tgeompoint) → boolean</varname></para>
+				<para>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> en PostGIS.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT econtains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)');
+SELECT econtains(geometry 'Linestring(1 1,3 3)',
+  tgeompoint '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
+-- false
+SELECT econtains(geometry 'Linestring(1 1,3 3,1 1)',
+  tgeompoint '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
+-- true
+SELECT econtains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+ tgeompoint '[Point(0 1)@2000-01-01, Point(4 1)@2000-01-02]');
+-- false
+SELECT econtains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(1 4)@2000-01-01, Point(4 1)@2000-01-02]');
 -- true
 </programlisting>
 			</listitem>

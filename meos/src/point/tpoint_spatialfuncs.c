@@ -2381,7 +2381,7 @@ tpoint_speed(const Temporal *temp)
  * each of its coordinates
  */
 void
-tpointseq_twcentroid1(const TSequence *seq, bool hasz, interpType interp,
+tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
   TSequence **seqx, TSequence **seqy, TSequence **seqz)
 {
   TInstant **instantsx = palloc(sizeof(TInstant *) * seq->count);
@@ -2421,7 +2421,7 @@ tpointseq_twcentroid(const TSequence *seq)
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *seqx, *seqy, *seqz;
-  tpointseq_twcentroid1(seq, hasz, interp, &seqx, &seqy, &seqz);
+  tpointseq_twcentroid_iter(seq, hasz, interp, &seqx, &seqy, &seqz);
   double twavgx = tnumberseq_twavg(seqx);
   double twavgy = tnumberseq_twavg(seqy);
   double twavgz = (hasz) ? tnumberseq_twavg(seqz) : 0.0;
@@ -2450,7 +2450,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    tpointseq_twcentroid1(seq, hasz, interp, &sequencesx[i], &sequencesy[i],
+    tpointseq_twcentroid_iter(seq, hasz, interp, &sequencesx[i], &sequencesy[i],
       &sequencesz[i]);
   }
   TSequenceSet *ssx = tsequenceset_make_free(sequencesx, ss->count, NORMALIZE);
@@ -2619,7 +2619,7 @@ tpoint_direction(const Temporal *temp, double *result)
  * sequences are stored
  */
 static int
-tpointseq_azimuth1(const TSequence *seq, TSequence **result)
+tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -2686,7 +2686,7 @@ TSequenceSet *
 tpointseq_azimuth(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
-  int count = tpointseq_azimuth1(seq, sequences);
+  int count = tpointseq_azimuth_iter(seq, sequences);
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -2707,7 +2707,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tpointseq_azimuth1(seq, &sequences[k]);
+    k += tpointseq_azimuth_iter(seq, &sequences[k]);
   }
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);

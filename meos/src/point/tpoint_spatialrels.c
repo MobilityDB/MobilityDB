@@ -307,30 +307,19 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 
 /*****************************************************************************
  * Ever contains
- * The function does not accept 3D or geography since it is based on the
- * PostGIS ST_Relate function
  *****************************************************************************/
-
-/**
- * @brief Call the PostGIS function ST_Relate twice to compute the ever contains
- * relationship between the trajectory of a temporal point and a geometry
- * @param[in] geom1 Trajectory of the temporal point
- * @param[in] geom2 Geometry
- * @note The order of the parameters CANNOT be inverted
- */
-static Datum
-econtains_geo_geo(Datum geom1, Datum geom2)
-{
-  return BoolGetDatum(gserialized_relate_pattern(DatumGetGserializedP(geom1),
-      DatumGetGserializedP(geom2), "T********")) ||
-    BoolGetDatum(gserialized_relate_pattern(DatumGetGserializedP(geom1),
-      DatumGetGserializedP(geom2), "***T*****"));
-}
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a geometry ever contains a temporal point,
  * 0 if not, and -1 if the geometry is empty.
+ *
+ * The function does not accept 3D or geography since it is based on the
+ * PostGIS functions that call GEOS. The computation is done by
+ * (1) computing ST_Intersection of the trajectory and the geometry
+ * (2) computing ST_Contains of the geometry and the intersection
+ * Please refer to the PostGIS documentation to understand the subtleties
+ * of the ST_Contains function https://postgis.net/docs/ST_Contains.html
  * @sqlfunc contains()
  */
 int
@@ -340,8 +329,14 @@ econtains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp)
     return -1;
   ensure_has_not_Z_gs(geo);
   ensure_has_not_Z(temp->flags);
-  bool result = espatialrel_tpoint_geo(temp, geo, (Datum) NULL,
-    (varfunc) &econtains_geo_geo, 2, INVERT_NO);
+  Datum dgeo = PointerGetDatum(geo);
+  Datum traj = PointerGetDatum(tpoint_trajectory(temp));
+  Datum inter = geom_intersection2d(dgeo, traj);
+  GSERIALIZED *gsinter = DatumGetGserializedP(inter);
+  if (gserialized_is_empty(gsinter))
+    return 0;
+
+  bool result = geom_contains(dgeo, inter);
   return result ? 1 : 0;
 }
 
