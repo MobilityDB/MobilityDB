@@ -1634,7 +1634,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * @param[in] inst1,inst2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @note This function is called by other functions besides the dispatch
- * function efunc_temporal_temporal and thus the overlapping test is
+ * function #efunc_temporal_temporal and thus the overlapping test is
  * repeated
  */
 static int

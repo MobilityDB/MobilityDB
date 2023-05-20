@@ -630,11 +630,16 @@ static bool
 edwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
   const TSequenceSet *ss2, double dist, datum_func3 func)
 {
+  bool linear = MEOS_FLAGS_GET_LINEAR(ss1->flags) ||
+    MEOS_FLAGS_GET_LINEAR(ss2->flags);
   for (int i = 0; i < ss1->count; i++)
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
     const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, i);
-    if (edwithin_tpointseq_tpointseq_cont(seq1, seq2, dist, func))
+    bool found = linear ?
+      edwithin_tpointseq_tpointseq_cont(seq1, seq2, dist, func) :
+      edwithin_tpointseq_tpointseq_discstep(seq1, seq2, dist, func);
+    if (found)
       return true;
   }
   return false;
@@ -658,10 +663,11 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
     result = edwithin_tpointinst_tpointinst((TInstant *) sync1,
       (TInstant *) sync2, dist, func);
   else if (sync1->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_LINEAR(sync1->flags) ?
-      edwithin_tpointseq_tpointseq_discstep((TSequence *) sync1,
-        (TSequence *) sync2, dist, func) :
+    result = MEOS_FLAGS_GET_LINEAR(sync1->flags) ||
+        MEOS_FLAGS_GET_LINEAR(sync2->flags) ?
       edwithin_tpointseq_tpointseq_cont((TSequence *) sync1,
+        (TSequence *) sync2, dist, func) :
+      edwithin_tpointseq_tpointseq_discstep((TSequence *) sync1,
         (TSequence *) sync2, dist, func);
   else /* sync1->subtype == TSEQUENCESET */
     result = edwithin_tpointseqset_tpointseqset((TSequenceSet *) sync1,
