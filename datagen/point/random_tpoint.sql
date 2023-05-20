@@ -1906,6 +1906,10 @@ $$ LANGUAGE PLPGSQL STRICT;
 SELECT k, asewkt(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
+-- Step interpolation
+SELECT k, asewkt(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
+FROM generate_series(1, 15) AS k;
+
 SELECT k, asewkt(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=3812))
 FROM generate_series(1, 15) AS k;
 
@@ -1982,6 +1986,10 @@ $$ LANGUAGE PLPGSQL STRICT;
 SELECT k, asewkt(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
+-- Step interpolation
+SELECT k, asewkt(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
+FROM generate_series(1, 15) AS k;
+
 SELECT k, asewkt(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=3812))
 FROM generate_series(1, 15) AS k;
 
@@ -2055,6 +2063,10 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, asEwkt(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
 FROM generate_series(1, 15) AS k;
 
 SELECT k, asEwkt(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=7844))
@@ -2133,6 +2145,10 @@ $$ LANGUAGE PLPGSQL STRICT;
 SELECT k, asEwkt(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
+-- Step interpolation
+SELECT k, asEwkt(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
+FROM generate_series(1, 15) AS k;
+
 SELECT k, asEwkt(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=7844))
 FROM generate_series(1, 15) AS k;
 
@@ -2192,6 +2208,10 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, asewkt(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
 FROM generate_series(1, 15) AS k;
 
 SELECT k, asewkt(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=3812)) AS ts
