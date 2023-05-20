@@ -8,7 +8,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
 WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND econtains(g, temp);
  count 
 -------
-   582
+   911
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE edisjoint(g, temp);
