@@ -3130,6 +3130,12 @@ SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestr
  POINT Z (1 1 1)@2000-01-01 00:00:00+00
 (1 row)
 
+select asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(1 1 3)@2000-01-02]', geometry 'Point(1 1)', floatspan '[1, 2]'));
+                                             astext                                             
+------------------------------------------------------------------------------------------------
+ Interp=Step;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00)}
+(1 row)
+
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0,1 1)'));
                 astext                 
 ---------------------------------------
@@ -3513,6 +3519,13 @@ SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,
               astext               
 -----------------------------------
  POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(atStbox(tgeompoint '[Point(1 3 2)@2000-01-01, Point(3 1 2)@2000-01-03]', stbox 'STBOX X((0 0),(2 2)
+)'));
+                   astext                   
+--------------------------------------------
+ {[POINT Z (2 2 2)@2000-01-02 00:00:00+00]}
 (1 row)
 
 /* Errors */

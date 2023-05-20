@@ -1625,7 +1625,7 @@ clipt(double p, double q, double *t0, double *t1)
         /* t0 will exceed t1, so reject */
         return false;
       if (r > *t0)
-        *t0 = r; /* t0 is max of r’s */
+        *t0 = r; /* t0 is max of r's */
     }
   }
   else if (p > 0)
@@ -1639,7 +1639,7 @@ clipt(double p, double q, double *t0, double *t1)
         /* t1 will be <= t0, so reject */
         return false;
       if (r < *t1)
-        *t1 = r; /* t1 is min of r’s */
+        *t1 = r; /* t1 is min of r's */
     }
   }
   else /* p == 0 */
@@ -1731,7 +1731,7 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
         /* compute coordinates */
         if (t1 < 1)
         {
-          /* compute V1’ */
+          /* compute V1' */
           x2 = x1 + t1 * dx;
           y2 = y1 + t1 * dy;
           if (hasz)
@@ -1739,7 +1739,7 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
         }
         if (t0 > 0)
         {
-          /* compute V0’ */
+          /* compute V0' */
           x1 = x1 + t0 * dx;
           y1 = y1 + t0 * dy;
           if (hasz)
