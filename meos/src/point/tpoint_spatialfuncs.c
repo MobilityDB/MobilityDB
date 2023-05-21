@@ -128,8 +128,8 @@ gspoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   {
     const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
     const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
-    return float8_eq(point1->x, point2->x) && float8_eq(point1->y, point2->y) &&
-      float8_eq(point1->z, point2->z);
+    return float8_eq(point1->x, point2->x) &&
+      float8_eq(point1->y, point2->y) && float8_eq(point1->z, point2->z);
   }
   else
   {
@@ -151,14 +151,15 @@ gspoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   {
     const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
     const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
-    return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y) &&
-      FP_EQUALS(point1->z, point2->z);
+    return MEOS_FP_EQ(point1->x, point2->x) &&
+      MEOS_FP_EQ(point1->y, point2->y) && MEOS_FP_EQ(point1->z, point2->z);
   }
   else
   {
     const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
     const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
-    return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y);
+    return MEOS_FP_EQ(point1->x, point2->x) &&
+      MEOS_FP_EQ(point1->y, point2->y);
   }
 }
 
