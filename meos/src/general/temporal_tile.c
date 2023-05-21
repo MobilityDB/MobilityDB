@@ -1534,7 +1534,6 @@ Temporal **
 tint_value_split(Temporal *temp, int size, int origin, int *newcount)
 {
   Datum *value_buckets;
-  // int *int_buckets;
   return temporal_value_time_split1(temp, Int32GetDatum(size), NULL,
     Int32GetDatum(origin), 0, true, false, &value_buckets, NULL, newcount);
 }
@@ -1552,7 +1551,6 @@ Temporal **
 tfloat_value_split(Temporal *temp, double size, double origin, int *newcount)
 {
   Datum *value_buckets;
-  // double *float_buckets;
   return temporal_value_time_split1(temp, Float8GetDatum(size), NULL,
     Float8GetDatum(origin), 0, true, false, &value_buckets, NULL, newcount);
 }

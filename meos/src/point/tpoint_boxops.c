@@ -316,7 +316,7 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
  * @return Number of elements in the array
  */
 static int
-tpointseq_stboxes1(const TSequence *seq, STBox *result)
+tpointseq_stboxes_iter(const TSequence *seq, STBox *result)
 {
   assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   const TInstant *inst1;
@@ -356,7 +356,7 @@ tpointseq_stboxes(const TSequence *seq, int *count)
   assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   int newcount = seq->count == 1 ? 1 : seq->count - 1;
   STBox *result = palloc(sizeof(STBox) * newcount);
-  tpointseq_stboxes1(seq, result);
+  tpointseq_stboxes_iter(seq, result);
   *count = newcount;
   return result;
 }
@@ -377,7 +377,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tpointseq_stboxes1(seq, &result[k]);
+    k += tpointseq_stboxes_iter(seq, &result[k]);
   }
   *count = k;
   return result;

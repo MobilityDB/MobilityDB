@@ -315,11 +315,11 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  * 0 if not, and -1 if the geometry is empty.
  *
  * The function does not accept 3D or geography since it is based on the
- * PostGIS functions that call GEOS. The computation is done by
- * (1) computing ST_Intersection of the trajectory and the geometry
- * (2) computing ST_Contains of the geometry and the intersection
- * Please refer to the PostGIS documentation to understand the subtleties
- * of the ST_Contains function https://postgis.net/docs/ST_Contains.html
+ * PostGIS ST_Relate function. The function tests whether the trajectory
+ * intersects the interior of the geometry. Please refer to the documentation
+ * of the ST_Contains and ST_Relate functions
+ * https://postgis.net/docs/ST_Relate.html
+ * https://postgis.net/docs/ST_Contains.html
  * @sqlfunc contains()
  */
 int
@@ -329,14 +329,8 @@ econtains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp)
     return -1;
   ensure_has_not_Z_gs(geo);
   ensure_has_not_Z(temp->flags);
-  Datum dgeo = PointerGetDatum(geo);
-  Datum traj = PointerGetDatum(tpoint_trajectory(temp));
-  Datum inter = geom_intersection2d(dgeo, traj);
-  GSERIALIZED *gsinter = DatumGetGserializedP(inter);
-  if (gserialized_is_empty(gsinter))
-    return 0;
-
-  bool result = geom_contains(dgeo, inter);
+  GSERIALIZED *traj = tpoint_trajectory(temp);
+  bool result = gserialized_relate_pattern(geo, traj, "T********");
   return result ? 1 : 0;
 }
 

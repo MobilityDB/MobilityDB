@@ -1776,7 +1776,8 @@ tseqarr_normalize(const TSequence **sequences, int count, int *newcount)
  * @result Array of merged sequences
  */
 TSequence **
-tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
+tsequence_merge_array1(const TSequence **sequences, int count,
+  int *totalcount)
 {
   if (count > 1)
     tseqarr_sort((TSequence **) sequences, count);
@@ -5398,8 +5399,8 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
     if (seq1->period.upper_inc && seq2->period.lower_inc)
     {
       /* We put true so that it works with step interpolation */
-      int count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
-        1 : 2;
+      int count =
+        (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ? 1 : 2;
       tofree = tsequence_make(instants, count, true, true, interp,
         NORMALIZE_NO);
       sequences[k++] = (const TSequence *) tofree;

@@ -499,7 +499,7 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @result Minimum distance
  */
 static double
-NAI_tpointseq_discstep_geo1(const TSequence *seq, const LWGEOM *geo,
+NAI_tpointseq_discstep_geo_iter(const TSequence *seq, const LWGEOM *geo,
   double mindist, const TInstant **result)
 {
   for (int i = 0; i < seq->count; i++)
@@ -529,7 +529,7 @@ static TInstant *
 NAI_tpointseq_discstep_geo(const TSequence *seq, const LWGEOM *geo)
 {
   const TInstant *inst = NULL; /* make compiler quiet */
-  NAI_tpointseq_discstep_geo1(seq, geo, DBL_MAX, &inst);
+  NAI_tpointseq_discstep_geo_iter(seq, geo, DBL_MAX, &inst);
   return tinstant_copy(inst);
 }
 
@@ -547,7 +547,7 @@ NAI_tpointseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    mindist = NAI_tpointseq_discstep_geo1(seq, geo, mindist, &inst);
+    mindist = NAI_tpointseq_discstep_geo_iter(seq, geo, mindist, &inst);
   }
   assert(inst != NULL);
   return tinstant_copy(inst);
