@@ -69,8 +69,8 @@
 Datum
 geom_contains(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(gserialized_inter_contains(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2), false));
+  return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), CONTAINS));
 }
 
 /**
@@ -108,8 +108,8 @@ geog_disjoint(Datum geog1, Datum geog2)
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(gserialized_inter_contains(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2), true));
+  return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), INTERSECTS));
 }
 
 /**
@@ -138,8 +138,8 @@ geog_intersects(Datum geog1, Datum geog2)
 Datum
 geom_touches(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(gserialized_touches(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2)));
+  return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), TOUCHES));
 }
 
 /**
@@ -421,6 +421,23 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   return result ? 1 : 0;
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return 1 if the temporal points are ever disjoint, 0 if not, and
+ * -1 if the temporal points do not intersect in time
+ * @sqlfunc disjoint()
+ */
+int
+edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
+    return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_nsame);
+  else
+    return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_ne);
+}
+#endif /* MEOS */
+
 /*****************************************************************************
  * Ever intersects (for both geometry and geography)
  *****************************************************************************/
@@ -441,6 +458,23 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     2, INVERT_NO);
   return result ? 1 : 0;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return 1 if the temporal points ever intersect, 0 if not, and
+ * -1 if the temporal points do not intersect in time
+ * @sqlfunc intersects()
+ */
+int
+eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
+    return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_same);
+  else
+    return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_eq);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Ever touches

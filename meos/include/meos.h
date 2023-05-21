@@ -150,6 +150,17 @@ typedef enum
 } interpType;
 
 /**
+ * @brief Enumeration that defines the spatial relationships for which a call
+ * to GEOS is made.
+ */
+typedef enum
+{
+  INTERSECTS =     0,
+  CONTAINS =       1,
+  TOUCHES =        2,
+} spatialRel;
+
+/**
  * Structure to represent the common structure of temporal values of
  * any temporal subtype
  */
