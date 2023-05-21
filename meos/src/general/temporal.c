@@ -3746,7 +3746,7 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
  * duration (minunits).
  */
 static int
-tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
+tsequence_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   TSequence **result)
 {
   assert(seq->count > 1);
@@ -3766,7 +3766,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
     geom = GEOSGeom_createEmptyCollection(GEOS_MULTIPOINT);
   }
 
-  int end, start = 0, k = 0;
+  int end, start = 0, nseqs = 0;
   bool  is_stopped = false,
         previously_stopped = false,
         rebuild_geom = false;
@@ -3807,7 +3807,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
       const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
       for (int i = 0; i < end - start; ++i)
           insts[i] = TSEQUENCE_INST_N(seq, start + i);
-      result[k++] = tsequence_make(insts, end - start,
+      result[nseqs++] = tsequence_make(insts, end - start,
         true, true, LINEAR, NORMALIZE_NO);
       start = end;
 
@@ -3827,11 +3827,11 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
     const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
     for (int i = 0; i < end - start; ++i)
         insts[i] = TSEQUENCE_INST_N(seq, start + i);
-    result[k++] = tsequence_make(insts, end - start,
+    result[nseqs++] = tsequence_make(insts, end - start,
       true, true, LINEAR, NORMALIZE_NO);
   }
 
-  return k;
+  return nseqs;
 }
 
 /**
@@ -3849,7 +3849,7 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
-  int k = tsequence_stops1(seq, maxdist, mintunits, sequences);
+  int k = tsequence_stops_iter(seq, maxdist, mintunits, sequences);
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
@@ -3870,7 +3870,7 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
     /* Instantaneous sequences do not have stops */
     if (seq->count == 1)
       continue;
-    k += tsequence_stops1(seq, maxdist, mintunits, &sequences[k]);
+    k += tsequence_stops_iter(seq, maxdist, mintunits, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

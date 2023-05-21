@@ -3375,7 +3375,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
  * @param[in] value Base value
  */
 static bool
-tlinearseq_ever_le1(Datum value1, Datum value2, meosType basetype,
+tlinearseq_ever_le_iter(Datum value1, Datum value2, meosType basetype,
   bool lower_inc, bool upper_inc, Datum value)
 {
   /* Constant segment */
@@ -3399,7 +3399,7 @@ tlinearseq_ever_le1(Datum value1, Datum value2, meosType basetype,
  * @param[in] value Base value
  */
 static bool
-tlinearseq_always_lt1(Datum value1, Datum value2, meosType basetype,
+tlinearseq_always_lt_iter(Datum value1, Datum value2, meosType basetype,
   bool lower_inc, bool upper_inc, Datum value)
 {
   /* Constant segment */
@@ -3474,8 +3474,8 @@ tsequence_ever_le(const TSequence *seq, Datum value)
   {
     Datum value2 = tinstant_value(TSEQUENCE_INST_N(seq, i));
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (tlinearseq_ever_le1(value1, value2, basetype,
-      lower_inc, upper_inc, value))
+    if (tlinearseq_ever_le_iter(value1, value2, basetype, lower_inc, upper_inc,
+        value))
       return true;
     value1 = value2;
     lower_inc = true;
@@ -3518,8 +3518,8 @@ tsequence_always_lt(const TSequence *seq, Datum value)
   {
     Datum value2 = tinstant_value(TSEQUENCE_INST_N(seq, i));
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (! tlinearseq_always_lt1(value1, value2, basetype,
-      lower_inc, upper_inc, value))
+    if (! tlinearseq_always_lt_iter(value1, value2, basetype, lower_inc,
+        upper_inc, value))
       return false;
     value1 = value2;
     lower_inc = true;

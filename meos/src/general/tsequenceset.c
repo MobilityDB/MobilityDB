@@ -2503,7 +2503,8 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
   /* We cannot call directly tsequence_merge_array since the result must always
    * be of subtype TSEQUENCESET */
   int newcount;
-  TSequence **newseqs = tsequence_merge_array1(sequences, totalcount, &newcount);
+  TSequence **newseqs = tsequence_merge_array1(sequences, totalcount,
+    &newcount);
   return tsequenceset_make_free(newseqs, newcount, NORMALIZE);
 }
 

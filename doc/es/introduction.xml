@@ -454,4 +454,35 @@ SET client_min_messages TO notice;
 			</para>
 		</sect2>
 	</sect1>
-</chapter>
+
+	<sect1 id="migrating">
+		<title>Migración de la versión 1.0 a la versión 1.1</title>
+		<para>
+			MobilityDB 1.1 es una revisión importante con respecto a la versión inicial 1.0. El cambio más significativo en la version 1.1 fue extraer la funcionalidad central para la gestión de datos temporales y espaciotemporales de MobilityDB en la bibilioteca C Mobility Engine Open Source (<ulink url="http://libmeos.org">MEOS</ulink>). De esta forma, la misma funcionalidad que proporciona MobilityDB en un entorno de base de datos está disponible en un programa C para ser utilizada, por ejemplo, en un entorno de streaming. La biblioteca MEOS para la gestión de la movilidad proporciona una funcionalidad similar a la biblioteca C/C++ Geometry Engine Open Source (<ulink url="http://libgeos.org">GEOS</ulink>) para geometría computacional. Además, están disponibles contenedores para la biblioteca MEOS en otros lenguajes de programación, en particular para Python con <ulink url="https://github.com/MobilityDB/PyMEOS">PyMEOS</ulink>. Además, contenedores para C#, Java y Javascript, están en desarrollando.
+		</para>
+		<para>
+			Fueron necesarios varios cambios con respecto a la versión 1.0 de MobilityDB para habilitar lo anterior. Uno importante fue la definición de nuevos tipos de datos <varname>span</varname> y <varname>spanset</varname>, que brindan una funcionalidad similar a los tipos de datos de PostgreSQL <varname>range</varname> y <varname>multirange</varname> pero también se puede usar en C. También se agregó un nuevo tipo de datos <varname>set</varname>. Finalmente, se simplificó la API de MEOS y MobilityDB para mejorar la usabilidad. Detallamos a continuación los cambios más importantes en la API.
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>Las funciones <varname>atTimestamp</varname>, <varname>atTimestampSet</varname>, <varname>atPeriod</varname>, and <varname>atPeriodSet</varname> fueron renombradas a <varname>atTime</varname>.
+				</para>
+			</listitem>
+			<listitem>
+				<para>Las funciones <varname>minusTimestamp</varname>, <varname>minusTimestampSet</varname>, <varname>minusPeriod</varname> y <varname>minusPeriodSet</varname> fueron renombradas a <varname>minusTime</varname>.
+				</para>
+			</listitem>
+			<listitem>
+				<para>Las funciones <varname>atValue</varname>, <varname>atValues</varname>, <varname>atRange</varname> y <varname>atRanges</varname> fueron renombradas a <varname>atValues</varname>.
+				</para>
+			</listitem>
+			<listitem>
+				<para>Las funciones <varname>minusValue</varname>, <varname>minusValues</varname>, <varname>minusRange</varname> y <varname>minusRanges</varname> fueron renombradas a <varname>minusValues</varname>.
+				</para>
+			</listitem>
+			<listitem>
+				<para>Las funciones <varname>contains</varname>, <varname>disjoint</varname>, <varname>dwithin</varname>, <varname>intersects</varname> y <varname>touches</varname> fueron renombradas, respectivamente, a <varname>econtains</varname>, <varname>edisjoint</varname>, <varname>edwithin</varname>, <varname>eintersects</varname> y <varname>etouches</varname>.
+			</para>
+			</listitem>
+		</itemizedlist>
+	</sect1></chapter>
