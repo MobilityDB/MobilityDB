@@ -39,8 +39,9 @@ set force_parallel_mode=regress;
 -- econtains
 -------------------------------------------------------------------------------
 
+-- In some GEOS versions, GEOSRelatePattern does not accept GEOMETRYCOLLECTION
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
-WHERE econtains(g, temp);
+WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND econtains(g, temp);
 
 -------------------------------------------------------------------------------
 -- edisjoint
