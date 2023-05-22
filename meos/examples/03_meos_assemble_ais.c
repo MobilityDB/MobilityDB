@@ -83,29 +83,6 @@ typedef struct
   Temporal *SOG;   /* SOG constructed from the input instants */
 } trip_record;
 
-int windowManager(int size, trip_record *trips, int ship ,FILE *fileOut, int *count)
-{
-  if (trips[ship].trip && trips[ship].trip->count == NO_INSTANTS_BATCH)
-  {
-
-    char *temp_out = tsequence_out(trips[ship].trip, 15);
-    //printf("%d\n",trips[ship].trip->count);
-    fprintf(fileOut, "%ld, %s\n",trips[ship].MMSI, temp_out);
-    /* Free memory */
-    free(temp_out);
-    *count+=1;
-    printf("*");
-    fflush(stdout);
-    /* Restart the sequence by only keeping the last instants */
-    tsequence_restart(trips[ship].trip, NO_INSTANTS_KEEP);
-    printf("New size of count %d \n",trips[ship].trip->count);
-
-  }
-  return 1;
-}
-
-
-
 /* Main program */
 int main(void)
 {

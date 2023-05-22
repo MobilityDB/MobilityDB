@@ -406,7 +406,11 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
   double ysize, double zsize, int64 tunits, POINT3DZ sorigin,
   TimestampTz torigin)
 {
-  assert(xsize > 0 && ysize > 0 && zsize > 0);
+  assert(MEOS_FLAGS_GET_X(box->flags) && xsize > 0 && ysize > 0);
+  /* When zsize and/or tunits are greater than 0, verify that the box has the
+   * corresponding dimensions */
+  assert(zsize <= 0 || MEOS_FLAGS_GET_Z(box->flags));
+  assert(tunits <= 0 || MEOS_FLAGS_GET_T(box->flags));
   /* palloc0 to initialize the missing dimensions to 0 */
   STboxGridState *state = palloc0(sizeof(STboxGridState));
   /* Fill in state */
@@ -420,8 +424,11 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
   state->box.xmax = float_bucket(box->xmax, xsize, sorigin.x);
   state->box.ymin = float_bucket(box->ymin, ysize, sorigin.y);
   state->box.ymax = float_bucket(box->ymax, ysize, sorigin.y);
-  state->box.zmin = float_bucket(box->zmin, zsize, sorigin.z);
-  state->box.zmax = float_bucket(box->zmax, zsize, sorigin.z);
+  if (zsize)
+  {
+    state->box.zmin = float_bucket(box->zmin, zsize, sorigin.z);
+    state->box.zmax = float_bucket(box->zmax, zsize, sorigin.z);
+  }
   if (tunits)
   {
     state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket1(
@@ -435,8 +442,10 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
     MEOS_FLAGS_GET_T(box->flags) && tunits > 0);
   state->x = state->box.xmin;
   state->y = state->box.ymin;
-  state->z = state->box.zmin;
-  state->t = DatumGetTimestampTz(state->box.period.lower);
+  if (zsize)
+    state->z = state->box.zmin;
+  if (tunits)
+    state->t = DatumGetTimestampTz(state->box.period.lower);
   state->temp = temp;
   return state;
 }
@@ -463,7 +472,7 @@ stbox_tile_state_next(STboxGridState *state)
     state->coords[1]++;
     if (state->y > state->box.ymax)
     {
-      if (MEOS_FLAGS_GET_Z(state->box.flags))
+      if (state->zsize)
       {
         /* has Z */
         state->y = state->box.ymin;
@@ -472,7 +481,7 @@ stbox_tile_state_next(STboxGridState *state)
         state->coords[2]++;
         if (state->z > state->box.zmax)
         {
-          if (MEOS_FLAGS_GET_T(state->box.flags))
+          if (state->tunits)
           {
             /* has Z and has T */
             state->z = state->box.zmin;
@@ -495,7 +504,7 @@ stbox_tile_state_next(STboxGridState *state)
       }
       else
       {
-        if (MEOS_FLAGS_GET_T(state->box.flags))
+        if (state->tunits)
         {
           /* does not have Z and has T */
           state->y = state->box.ymin;
@@ -566,7 +575,8 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   ensure_not_geodetic(bounds->flags);
   ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
   ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
-  ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
+  if (MEOS_FLAGS_GET_Z(bounds->flags))
+    ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
   int64 tunits = 0; /* make compiler quiet */
   /* If time arguments are given */
   if (duration)

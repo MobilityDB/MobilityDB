@@ -931,7 +931,7 @@ bbox_expand(const void *box1, void *box2, meosType temptype)
  */
 void
 ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
-  interpType interp)
+  interpType interp __attribute__((unused)))
 {
   for (int i = 0; i < count; i++)
   {
@@ -942,8 +942,10 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
       ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
       ensure_spatial_validity((Temporal *) instants[i - 1],
         (Temporal *) instants[i]);
+#if NPOINT
       if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT)
         ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
+#endif /* NPOINT */
     }
   }
   return;
@@ -1440,8 +1442,8 @@ datum_distance(Datum value1, Datum value2, meosType basetype, int16 flags)
  * result is a sequence set.
  */
 Temporal *
-tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
-  double maxdist, const Interval *maxt, bool expand)
+tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
+  const Interval *maxt, bool expand)
 {
   /* Ensure validity of the arguments */
   assert(seq->temptype == inst->temptype);

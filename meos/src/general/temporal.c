@@ -649,8 +649,8 @@ tgeogpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
  * @sqlfunc appendInstantGaps
  */
 Temporal *
-temporal_append_tinstant(Temporal *temp, const TInstant *inst,
-  double maxdist, Interval *maxt, bool expand)
+temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
+  Interval *maxt, bool expand)
 {
   /* Validity tests */
   assert(temp->temptype == inst->temptype);
