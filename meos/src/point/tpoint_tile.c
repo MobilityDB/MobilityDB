@@ -407,14 +407,14 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
   TimestampTz torigin)
 {
   assert(MEOS_FLAGS_GET_X(box->flags) && xsize > 0 && ysize > 0);
-  /* When zsize and/or tunits are greater than 0, verify that the box has the
-   * corresponding dimensions */
-  assert(zsize <= 0 || MEOS_FLAGS_GET_Z(box->flags));
+  /* When tunits is greater than 0, verify that the box has T dimension */
   assert(tunits <= 0 || MEOS_FLAGS_GET_T(box->flags));
   /* palloc0 to initialize the missing dimensions to 0 */
   STboxGridState *state = palloc0(sizeof(STboxGridState));
   /* Fill in state */
   state->done = false;
+  state->hasz = zsize && MEOS_FLAGS_GET_Z(box->flags);
+  state->hast = tunits && MEOS_FLAGS_GET_T(box->flags);
   state->i = 1;
   state->xsize = xsize;
   state->ysize = ysize;
@@ -424,12 +424,12 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
   state->box.xmax = float_bucket(box->xmax, xsize, sorigin.x);
   state->box.ymin = float_bucket(box->ymin, ysize, sorigin.y);
   state->box.ymax = float_bucket(box->ymax, ysize, sorigin.y);
-  if (zsize)
+  if (state->hasz)
   {
     state->box.zmin = float_bucket(box->zmin, zsize, sorigin.z);
     state->box.zmax = float_bucket(box->zmax, zsize, sorigin.z);
   }
-  if (tunits)
+  if (state->hast)
   {
     state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket1(
       DatumGetTimestampTz(box->period.lower), tunits, torigin));
@@ -442,9 +442,9 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
     MEOS_FLAGS_GET_T(box->flags) && tunits > 0);
   state->x = state->box.xmin;
   state->y = state->box.ymin;
-  if (zsize)
+  if (state->hasz)
     state->z = state->box.zmin;
-  if (tunits)
+  if (state->hast)
     state->t = DatumGetTimestampTz(state->box.period.lower);
   state->temp = temp;
   return state;
@@ -472,7 +472,7 @@ stbox_tile_state_next(STboxGridState *state)
     state->coords[1]++;
     if (state->y > state->box.ymax)
     {
-      if (state->zsize)
+      if (state->hasz)
       {
         /* has Z */
         state->y = state->box.ymin;
@@ -481,7 +481,7 @@ stbox_tile_state_next(STboxGridState *state)
         state->coords[2]++;
         if (state->z > state->box.zmax)
         {
-          if (state->tunits)
+          if (state->hast)
           {
             /* has Z and has T */
             state->z = state->box.zmin;
@@ -504,7 +504,7 @@ stbox_tile_state_next(STboxGridState *state)
       }
       else
       {
-        if (state->tunits)
+        if (state->hast)
         {
           /* does not have Z and has T */
           state->y = state->box.ymin;
