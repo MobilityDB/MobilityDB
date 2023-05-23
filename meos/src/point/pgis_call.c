@@ -294,13 +294,13 @@ box3d_to_lwgeom(BOX3D *box)
  *****************************************************************************/
 
 /* The boundary function has changed its implementation in version 3.2.
- * This is the version in 3.2.1 */
+ * This is the version in 3.2.3 */
 LWGEOM *
-pgis_lwgeom_boundary(LWGEOM *lwgeom)
+lwgeom_boundary(LWGEOM *lwgeom)
 {
   int32_t srid = lwgeom_get_srid(lwgeom);
-  uint8_t hasz = (uint8_t) lwgeom_has_z(lwgeom);
-  uint8_t hasm = (uint8_t) lwgeom_has_m(lwgeom);
+  uint8_t hasz = lwgeom_has_z(lwgeom);
+  uint8_t hasm = lwgeom_has_m(lwgeom);
 
   switch (lwgeom->type)
   {
@@ -311,10 +311,10 @@ pgis_lwgeom_boundary(LWGEOM *lwgeom)
   case LINETYPE:
   case CIRCSTRINGTYPE: {
     if (lwgeom_is_closed(lwgeom) || lwgeom_is_empty(lwgeom))
-      return (LWGEOM *) lwmpoint_construct_empty(srid, hasz, hasm);
+      return (LWGEOM *)lwmpoint_construct_empty(srid, hasz, hasm);
     else
     {
-      LWLINE *lwline = (LWLINE *) lwgeom;
+      LWLINE *lwline = (LWLINE *)lwgeom;
       LWMPOINT *lwmpoint = lwmpoint_construct_empty(srid, hasz, hasm);
       POINT4D pt;
       getPoint4d_p(lwline->points, 0, &pt);
@@ -333,8 +333,7 @@ pgis_lwgeom_boundary(LWGEOM *lwgeom)
 
     for (uint32_t i = 0; i < lwmline->ngeoms; i++)
     {
-      LWMPOINT *points = lwgeom_as_lwmpoint(pgis_lwgeom_boundary(
-        (LWGEOM *) lwmline->geoms[i]));
+      LWMPOINT *points = lwgeom_as_lwmpoint(lwgeom_boundary((LWGEOM *)lwmline->geoms[i]));
       if (!points)
         continue;
 
@@ -404,8 +403,7 @@ pgis_lwgeom_boundary(LWGEOM *lwgeom)
     LWCOLLECTION *lwcol_boundary = lwcollection_construct_empty(COLLECTIONTYPE, srid, hasz, hasm);
 
     for (uint32_t i = 0; i < lwcol->ngeoms; i++)
-      lwcollection_add_lwgeom(lwcol_boundary,
-        pgis_lwgeom_boundary(lwcol->geoms[i]));
+      lwcollection_add_lwgeom(lwcol_boundary, lwgeom_boundary(lwcol->geoms[i]));
 
     LWGEOM *lwout = lwgeom_homogenize((LWGEOM *)lwcol_boundary);
     lwgeom_free((LWGEOM *)lwcol_boundary);
@@ -413,7 +411,7 @@ pgis_lwgeom_boundary(LWGEOM *lwgeom)
     return lwout;
   }
   default:
-    elog(ERROR, "unsupported geometry type: %s", lwtype_name(lwgeom->type));
+    lwerror("%s: unsupported geometry type: %s", __func__, lwtype_name(lwgeom->type));
     return NULL;
   }
 }
@@ -428,8 +426,8 @@ gserialized_boundary(const GSERIALIZED *geom1)
   /* Empty.Boundary() == Empty, but of other dimension, so can't shortcut */
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(geom1);
-  LWGEOM *lwresult = pgis_lwgeom_boundary(lwgeom);
-  if (!lwresult)
+  LWGEOM *lwresult = lwgeom_boundary(lwgeom);
+  if (! lwresult)
   {
     lwgeom_free(lwgeom);
     return NULL;
@@ -807,26 +805,25 @@ meos_call_geos2(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
  * @brief Return true if the geometries intersect or the first contains
  * the other, where the function called depend on the third argument
  * @param[in] geom1,geom2 Geometries
- * @param[in] inter: True when performing intersects, false for contains
- * @note PostGIS functions: Datum ST_Intersects(PG_FUNCTION_ARGS) and
- * Datum contains(PG_FUNCTION_ARGS)
+ * @param[in] rel Spatial relationship
+ * @note PostGIS functions: ST_Intersects(PG_FUNCTION_ARGS),
+ * contains(PG_FUNCTION_ARGS), touches(PG_FUNCTION_ARGS)
  */
 bool
-gserialized_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
-  bool inter)
+gserialized_spatialrel(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+  spatialRel rel)
 {
-  GBOX box1, box2;
-
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
 
   /* A.Intersects(Empty) == FALSE */
   if ( gserialized_is_empty(geom1) || gserialized_is_empty(geom2) )
-      return false;
+    return false;
 
   /*
    * short-circuit 1: if geom2 bounding box does not overlap
    * geom1 bounding box we can return FALSE.
    */
+  GBOX box1, box2;
   if (gserialized_get_gbox_p(geom1, &box1) &&
       gserialized_get_gbox_p(geom2, &box2))
   {
@@ -838,54 +835,30 @@ gserialized_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
    * short-circuit 2: if the geoms are a point and a polygon,
    * call the point_outside_polygon function.
    */
-  if ((gserialized_is_point(geom1) && gserialized_is_poly(geom2)) ||
-      (gserialized_is_poly(geom1) && gserialized_is_point(geom2)))
+  if ((rel == INTERSECTS || rel == CONTAINS) && (
+      (gserialized_is_point(geom1) && gserialized_is_poly(geom2)) ||
+      (gserialized_is_poly(geom1) && gserialized_is_point(geom2))))
   {
-    int pip_result = meos_point_in_polygon(geom1, geom2, inter);
-    return inter ?
+    int pip_result = meos_point_in_polygon(geom1, geom2, rel == INTERSECTS);
+    return (rel == INTERSECTS) ?
       (pip_result != -1) : /* not outside */
       (pip_result == 1); /* inside */
   }
 
   /* Call GEOS function */
-  bool result = inter ?
-    (bool) meos_call_geos2(geom1, geom2, &GEOSIntersects) :
-    (bool) meos_call_geos2(geom1, geom2, &GEOSContains);
-
-  return result;
-}
-
-/**
- * @brief Return true if the geometries touch
- * @note PostGIS function: touches(PG_FUNCTION_ARGS)
-  */
-bool
-gserialized_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
-{
-  ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
-
-  /* A.Touches(Empty) == FALSE */
-  if ( gserialized_is_empty(geom1) || gserialized_is_empty(geom2) )
-    return false;
-
-  /*
-   * short-circuit 1: if geom2 bounding box does not overlap
-   * geom1 bounding box we can return FALSE.
-   */
-  GBOX box1, box2;
-  if ( gserialized_get_gbox_p(geom1, &box1) &&
-      gserialized_get_gbox_p(geom2, &box2) )
+  assert(rel == INTERSECTS || rel == CONTAINS || rel == TOUCHES);
+  switch (rel)
   {
-    if ( gbox_overlaps_2d(&box1, &box2) == LW_FALSE )
-    {
+    case INTERSECTS:
+      return (bool) meos_call_geos2(geom1, geom2, &GEOSIntersects);
+    case CONTAINS:
+      return (bool) meos_call_geos2(geom1, geom2, &GEOSContains);
+    case TOUCHES:
+      return (bool) meos_call_geos2(geom1, geom2, &GEOSTouches);
+    default:
+      /* keep compiler quiet */
       return false;
-    }
   }
-
-  /* Call GEOS function */
-  bool result = (bool) meos_call_geos2(geom1, geom2, &GEOSTouches);
-
-  return result;
 }
 
 /**

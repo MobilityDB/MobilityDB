@@ -1112,7 +1112,7 @@ bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
  * in a span set (which does not repeat the spantype for every component
  */
 static void
-span_from_wkb_state1(wkb_parse_state *s, Span *result)
+span_from_wkb_state_iter(wkb_parse_state *s, Span *result)
 {
   /* Read the span bounds */
   uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
@@ -1141,7 +1141,7 @@ span_from_wkb_state(wkb_parse_state *s)
   s->spantype = (uint8_t) wkb_spantype;
   s->basetype = spantype_basetype(wkb_spantype);
   Span result;
-  span_from_wkb_state1(s, &result);
+  span_from_wkb_state_iter(s, &result);
   return result;
 }
 
@@ -1166,7 +1166,7 @@ spanset_from_wkb_state(wkb_parse_state *s)
 
   /* Read and create the span set */
   for (int i = 0; i < count; i++)
-    span_from_wkb_state1(s, &spans[i]);
+    span_from_wkb_state_iter(s, &spans[i]);
   return spanset_make_free(spans, count, NORMALIZE);
 }
 

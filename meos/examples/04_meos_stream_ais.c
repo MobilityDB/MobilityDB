@@ -130,8 +130,9 @@ exec_sql(PGconn *conn, const char *sql, ExecStatusType status)
   PQclear(res);
 }
 
-//verifies if the size if greater than the max size, of so, it sends the data to the database
-int windowManager(int size, trip_record *trips, int ship ,PGconn *conn)
+/* Send the trip to the database when its size is greater than the max size */
+int
+windowManager(trip_record *trips, int ship, int size, PGconn *conn)
 {
   if (trips[ship].trip && trips[ship].trip->count == NO_INSTANTS_BATCH)
   {
@@ -141,7 +142,9 @@ int windowManager(int size, trip_record *trips, int ship ,PGconn *conn)
 
     char *query_buffer = malloc(sizeof(char) * (strlen(temp_out) + 256));
     /* Send to the database the trip if reached the maximum number of instants */
-    sprintf(query_buffer, "INSERT INTO public.AISTrips(MMSI, trip) VALUES (%ld, '%s') ON CONFLICT (MMSI) DO UPDATE SET trip = public.update(AISTrips.trip, EXCLUDED.trip, true);",
+    sprintf(query_buffer, "INSERT INTO public.AISTrips(MMSI, trip) "
+      "VALUES (%ld, '%s') ON CONFLICT (MMSI) DO "
+      "UPDATE SET trip = public.update(AISTrips.trip, EXCLUDED.trip, true);",
         trips[ship].MMSI, temp_out);
 
     PGresult *res = PQexec(conn, query_buffer);
@@ -164,7 +167,6 @@ int windowManager(int size, trip_record *trips, int ship ,PGconn *conn)
   }
   return 1;
 }
-
 
 int
 main(int argc, char **argv)
@@ -197,7 +199,7 @@ main(int argc, char **argv)
   if (argc > 1)
     conninfo = argv[1];
   else
-    conninfo = "user=mariana dbname=test";
+    conninfo = "host=localhost user=esteban dbname=test";
 
   /* Make a connection to the database */
   conn = PQconnectdb(conninfo);
@@ -304,8 +306,8 @@ main(int argc, char **argv)
     sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
       rec.Latitude, t_out);
 
-    windowManager(NO_INSTANTS_BATCH,trips, ship,conn);
-
+    /* Send the trip to the database when its size reaches the maximum size */
+    windowManager(trips, ship, NO_INSTANTS_BATCH, conn);
 
     /* Append the last observation */
     TInstant *inst = (TInstant *) tgeogpoint_in(point_buffer);
@@ -313,7 +315,7 @@ main(int argc, char **argv)
       trips[ship].trip = tsequence_make_exp((const TInstant **) &inst, 1,
         NO_INSTANTS_BATCH, true, true, LINEAR, false);
     else
-      tsequence_append_tinstant(trips[ship].trip, inst, true);
+      tsequence_append_tinstant(trips[ship].trip, inst, 0.0, NULL, true);
   } while (!feof(file));
 
   printf("\n%d records read.\n%d incomplete records ignored. %d writes to the database\n",

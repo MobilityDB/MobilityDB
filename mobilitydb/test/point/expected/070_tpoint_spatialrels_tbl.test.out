@@ -80,7 +80,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE edisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE edisjoint(t1.temp, t2.temp);
  count 
 -------
-  9878
+  9876
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE eintersects(g, temp);
@@ -140,7 +140,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE eintersects(temp, g
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eintersects(t1.temp, t2.temp);
  count 
 -------
-   116
+   118
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE etouches(g, temp);

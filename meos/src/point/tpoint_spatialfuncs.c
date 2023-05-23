@@ -118,7 +118,7 @@ datum_point4d(Datum value, POINT4D *p)
 
 /**
  * @brief Return true if the points are equal
- * @note This function is called in the iterations over sequencs where we
+ * @note This function is called in the iterations over sequences where we
  * are sure that their SRID, Z, and GEODETIC are equal
  */
 bool
@@ -128,17 +128,38 @@ gspoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   {
     const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
     const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
-    // return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y) &&
-      // FP_EQUALS(point1->z, point2->z);
-    return float8_eq(point1->x, point2->x) && float8_eq(point1->y, point2->y) &&
-      float8_eq(point1->z, point2->z);
+    return float8_eq(point1->x, point2->x) &&
+      float8_eq(point1->y, point2->y) && float8_eq(point1->z, point2->z);
   }
   else
   {
     const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
     const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
-    // return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y);
     return float8_eq(point1->x, point2->x) && float8_eq(point1->y, point2->y);
+  }
+}
+
+/**
+ * @brief Return true if the points are equal up to the floating point tolerance
+ * @note This function is called in the iterations over sequences where we
+ * are sure that their SRID, Z, and GEODETIC are equal
+ */
+bool
+gspoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (FLAGS_GET_Z(gs1->gflags))
+  {
+    const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
+    const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
+    return MEOS_FP_EQ(point1->x, point2->x) &&
+      MEOS_FP_EQ(point1->y, point2->y) && MEOS_FP_EQ(point1->z, point2->z);
+  }
+  else
+  {
+    const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
+    const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
+    return MEOS_FP_EQ(point1->x, point2->x) &&
+      MEOS_FP_EQ(point1->y, point2->y);
   }
 }
 
@@ -160,6 +181,21 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 /**
  * @brief Return true if the points are equal
  */
+bool
+datum_point_same(Datum geopoint1, Datum geopoint2)
+{
+  const GSERIALIZED *gs1 = DatumGetGserializedP(geopoint1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(geopoint2);
+  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
+      FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags) ||
+      FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
+    return false;
+  return gspoint_same(gs1, gs2);
+}
+
+/**
+ * @brief Return true if the points are equal
+ */
 Datum
 datum2_point_eq(Datum geopoint1, Datum geopoint2)
 {
@@ -173,6 +209,24 @@ Datum
 datum2_point_ne(Datum geopoint1, Datum geopoint2)
 {
   return BoolGetDatum(! datum_point_eq(geopoint1, geopoint2));
+}
+
+/**
+ * @brief Return true if the points are equal
+ */
+Datum
+datum2_point_same(Datum geopoint1, Datum geopoint2)
+{
+  return BoolGetDatum(datum_point_same(geopoint1, geopoint2));
+}
+
+/**
+ * @brief Return true if the points are equal
+ */
+Datum
+datum2_point_nsame(Datum geopoint1, Datum geopoint2)
+{
+  return BoolGetDatum(! datum_point_same(geopoint1, geopoint2));
 }
 
 /**
@@ -2381,7 +2435,7 @@ tpoint_speed(const Temporal *temp)
  * each of its coordinates
  */
 void
-tpointseq_twcentroid1(const TSequence *seq, bool hasz, interpType interp,
+tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
   TSequence **seqx, TSequence **seqy, TSequence **seqz)
 {
   TInstant **instantsx = palloc(sizeof(TInstant *) * seq->count);
@@ -2421,7 +2475,7 @@ tpointseq_twcentroid(const TSequence *seq)
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *seqx, *seqy, *seqz;
-  tpointseq_twcentroid1(seq, hasz, interp, &seqx, &seqy, &seqz);
+  tpointseq_twcentroid_iter(seq, hasz, interp, &seqx, &seqy, &seqz);
   double twavgx = tnumberseq_twavg(seqx);
   double twavgy = tnumberseq_twavg(seqy);
   double twavgz = (hasz) ? tnumberseq_twavg(seqz) : 0.0;
@@ -2450,7 +2504,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    tpointseq_twcentroid1(seq, hasz, interp, &sequencesx[i], &sequencesy[i],
+    tpointseq_twcentroid_iter(seq, hasz, interp, &sequencesx[i], &sequencesy[i],
       &sequencesz[i]);
   }
   TSequenceSet *ssx = tsequenceset_make_free(sequencesx, ss->count, NORMALIZE);
@@ -2619,7 +2673,7 @@ tpoint_direction(const Temporal *temp, double *result)
  * sequences are stored
  */
 static int
-tpointseq_azimuth1(const TSequence *seq, TSequence **result)
+tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -2686,7 +2740,7 @@ TSequenceSet *
 tpointseq_azimuth(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
-  int count = tpointseq_azimuth1(seq, sequences);
+  int count = tpointseq_azimuth_iter(seq, sequences);
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -2707,7 +2761,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tpointseq_azimuth1(seq, &sequences[k]);
+    k += tpointseq_azimuth_iter(seq, &sequences[k]);
   }
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);

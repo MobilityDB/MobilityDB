@@ -238,9 +238,9 @@ enum MEOS_WKB_TSUBTYPE
  */
 typedef union bboxunion
 {
-  Span      p;      /**< Span */
-  TBox      b;      /**< Temporal box */
-  STBox     g;      /**< Spatiotemporal box */
+  Span p;      /**< Span */
+  TBox b;      /**< Temporal box */
+  STBox g;     /**< Spatiotemporal box */
 } bboxunion;
 
 /**
@@ -249,8 +249,8 @@ typedef union bboxunion
  */
 typedef struct
 {
-  double    a;
-  double    b;
+  double a;
+  double b;
 } double2;
 
 /**
@@ -259,9 +259,9 @@ typedef struct
  */
 typedef struct
 {
-  double    a;
-  double    b;
-  double    c;
+  double a;
+  double b;
+  double c;
 } double3;
 
 /**
@@ -270,10 +270,10 @@ typedef struct
  */
 typedef struct
 {
-  double    a;
-  double    b;
-  double    c;
-  double    d;
+  double a;
+  double b;
+  double c;
+  double d;
 } double4;
 
 /*****************************************************************************

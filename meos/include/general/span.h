@@ -97,8 +97,9 @@ extern void period_shift_tscale1(Span *p, const Interval *shift,
 extern size_t span_to_wkb_size(const Span *s);
 extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
 
-extern int minus_span_span1(const Span *s1, const Span *s2, Span *result);
-extern int minus_span_value1(const Span *s, Datum d, meosType basetype, Span *result);
+extern int minus_span_span_iter(const Span *s1, const Span *s2, Span *result);
+extern int minus_span_value_iter(const Span *s, Datum d, meosType basetype,
+  Span *result);
 
 /*****************************************************************************/
 

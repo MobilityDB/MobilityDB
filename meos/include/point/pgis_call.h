@@ -49,6 +49,7 @@
 #include "general/span.h"
 #include "general/temporal.h"
 
+
 /* Functions adapted from lwgeom_box.c */
 
 extern LWGEOM *box2d_to_lwgeom(GBOX *box, int srid);
@@ -86,10 +87,8 @@ extern bool gserialized_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2,
 extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
 extern GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
 
-extern bool gserialized_inter_contains(const GSERIALIZED *geom1,
-  const GSERIALIZED *geom2, bool inter);
-extern bool gserialized_touches(const GSERIALIZED *geom1,
-  const GSERIALIZED *geom2);
+extern bool gserialized_spatialrel(const GSERIALIZED *geom1,
+  const GSERIALIZED *geom2, spatialRel rel);
 extern GSERIALIZED *gserialized_intersection(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
 extern GSERIALIZED *gserialized_array_union(GSERIALIZED **gsarr, int nelems);

@@ -947,7 +947,7 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
  * @note The resulting timestamp may be at an exclusive bound
  */
 static bool
-tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
+tpointsegm_timestamp_at_value1_iter(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
   Datum value1 = tinstant_value(inst1);
@@ -1004,7 +1004,7 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     /* We are sure that the segment is not constant since the
      * sequence is simple */
-    if (tpointsegm_timestamp_at_value1(inst1, inst2, value, t))
+    if (tpointsegm_timestamp_at_value1_iter(inst1, inst2, value, t))
       return true;
     inst1 = inst2;
   }
@@ -2084,20 +2084,20 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           /* Force the computation at 2D */
           TInstant *inst1_2d = (TInstant *) tpoint_force2d((Temporal *) inst1);
           TInstant *inst2_2d = (TInstant *) tpoint_force2d((Temporal *) inst2);
-          tpointsegm_timestamp_at_value1(inst1_2d, inst2_2d, d3, &t1);
+          tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d3, &t1);
           if (gspoint_eq(p3, p4))
             t2 = t1;
           else
-            tpointsegm_timestamp_at_value1(inst1_2d, inst2_2d, d4, &t2);
+            tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d4, &t2);
           pfree(inst1_2d); pfree(inst2_2d);
         }
         else
         {
-          tpointsegm_timestamp_at_value1(inst1, inst2, d3, &t1);
+          tpointsegm_timestamp_at_value1_iter(inst1, inst2, d3, &t1);
           if (gspoint_eq(p3, p4))
             t2 = t1;
           else
-            tpointsegm_timestamp_at_value1(inst1, inst2, d4, &t2);
+            tpointsegm_timestamp_at_value1_iter(inst1, inst2, d4, &t2);
         }
         pfree(p3); pfree(p4);
         /* Project the segment to the timestamps if necessary and add the

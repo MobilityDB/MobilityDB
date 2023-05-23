@@ -1188,7 +1188,7 @@ minus_timestamp_period(TimestampTz t, const Span *p, TimestampTz *result)
  * @brief Compute the difference of a span and a value
  */
 int
-minus_span_value1(const Span *s, Datum d, meosType basetype, Span *result)
+minus_span_value_iter(const Span *s, Datum d, meosType basetype, Span *result)
 {
   if (! contains_span_value(s, d, basetype))
   {
@@ -1238,7 +1238,7 @@ SpanSet *
 minus_span_value(const Span *s, Datum d, meosType basetype)
 {
   Span spans[2];
-  int count = minus_span_value1(s, d, basetype, spans);
+  int count = minus_span_value_iter(s, d, basetype, spans);
   if (count == 0)
     return NULL;
   return spanset_make(spans, count, NORMALIZE_NO);
@@ -1294,7 +1294,7 @@ minus_period_timestamp(const Span *p, TimestampTz t)
  * @brief Compute the difference of two spans
  */
 int
-minus_span_span1(const Span *s1, const Span *s2, Span *result)
+minus_span_span_iter(const Span *s1, const Span *s2, Span *result)
 {
   SpanBound lower1, lower2, upper1, upper2;
   span_deserialize((const Span *) s1, &lower1, &upper1);
@@ -1364,7 +1364,7 @@ SpanSet *
 minus_span_span(const Span *s1, const Span *s2)
 {
   Span spans[2];
-  int count = minus_span_span1(s1, s2, spans);
+  int count = minus_span_span_iter(s1, s2, spans);
   if (count == 0)
     return NULL;
   return spanset_make(spans, count, NORMALIZE_NO);

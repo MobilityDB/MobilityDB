@@ -352,7 +352,7 @@ int main(void)
     for (i = 0; i < NO_COMMUNES; i ++)
     {
       Temporal *atgeom = tpoint_at_geom_time(trip_rec.trip,
-        communes[i].geom, NULL);
+        communes[i].geom, NULL, NULL);
       if (atgeom)
       {
         /* Compute the length of the trip projected to the commune */
@@ -367,8 +367,8 @@ int main(void)
       }
     }
     /* Compute the distance outside Brussels Region */
-    Temporal *minusgeom = tpoint_minus_geom(trip_rec.trip,
-      brussels_region.geom, NULL);
+    Temporal *minusgeom = tpoint_minus_geom_time(trip_rec.trip,
+      brussels_region.geom, NULL, NULL);
     if (minusgeom)
     {
       d = tpoint_length(minusgeom) / 1000;

@@ -50,6 +50,7 @@
 #include <assert.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
@@ -67,16 +68,19 @@
  * @brief Return true if the temporal points ever satisfy the spatial
  * relationship
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Spatial relationship
+ * @param[in] func1, func2 Spatial relationship for geometric/geographic points
  */
 static Datum
-espatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
+espatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
+  Datum (*func1)(Datum, Datum), Datum (*func2)(Datum, Datum))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = espatialrel_tpoint_tpoint(temp1, temp2, func);
+  int result = MEOS_FLAGS_GET_GEODETIC(temp1->flags) ?
+    espatialrel_tpoint_tpoint(temp1, temp2, func2) :
+    espatialrel_tpoint_tpoint(temp1, temp2, func1);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result < 0)
@@ -168,7 +172,8 @@ PG_FUNCTION_INFO_V1(Edisjoint_tpoint_tpoint);
 Datum
 Edisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_ne);
+  return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_ne,
+    &datum2_point_nsame);
 }
 
 /*****************************************************************************
@@ -229,7 +234,8 @@ PG_FUNCTION_INFO_V1(Eintersects_tpoint_tpoint);
 Datum
 Eintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_eq);
+  return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_eq,
+    &datum2_point_same);
 }
 
 /*****************************************************************************

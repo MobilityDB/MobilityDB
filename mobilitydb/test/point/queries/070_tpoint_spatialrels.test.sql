@@ -36,6 +36,11 @@ SELECT econtains(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Poin
 SELECT econtains(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
 SELECT econtains(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 
+SELECT econtains(geometry 'Linestring(1 1,3 3)', tgeompoint '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
+SELECT econtains(geometry 'Linestring(1 1,3 3,1 1)', tgeompoint '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
+SELECT econtains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeompoint '[Point(0 1)@2000-01-01, Point(4 1)@2000-01-02]');
+SELECT econtains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeompoint '[Point(1 4)@2000-01-01, Point(4 1)@2000-01-02]');
+
 SELECT econtains(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT econtains(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT econtains(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
