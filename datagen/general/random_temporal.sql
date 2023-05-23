@@ -1096,7 +1096,7 @@ BEGIN
   END IF;
   xmin = random_float(lowvalue, highvalue - maxdelta);
   tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
-  RETURN tbox(floatspan(xmin, xmin + random_float(1, maxdelta)),
+  RETURN tbox(span(xmin, xmin + random_float(1, maxdelta)),
     span(tmin, tmin + random_minutes(1, maxminutes)));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1123,7 +1123,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tbool(random_bool(), random_timestamptz(lowtime, hightime));
+  RETURN tbool_inst(random_bool(), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1153,7 +1153,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tint(random_int(lowvalue, highvalue),
+  RETURN tint_inst(random_int(lowvalue, highvalue),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1184,7 +1184,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tfloat(random_float(lowvalue, highvalue),
+  RETURN tfloat_inst(random_float(lowvalue, highvalue),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1211,7 +1211,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN ttext(random_text(maxlength), random_timestamptz(lowtime, hightime));
+  RETURN ttext_inst(random_text(maxlength), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1221,15 +1221,15 @@ FROM generate_series(1,10) k;
 */
 
 -------------------------------------------------------------------------------
--- Temporal Instant Set
+-- Temporal Discrete Sequence
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tbool instant set
+ * Generate a random tbool discrete sequence
  *
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
  */
 DROP FUNCTION IF EXISTS random_tbool_discseq;
 CREATE FUNCTION random_tbool_discseq(lowtime timestamptz, hightime timestamptz,
@@ -1245,9 +1245,9 @@ BEGIN
   card = array_length(tsarr, 1);
   FOR i IN 1..card
   LOOP
-    result[i] = tbool(random_bool(), tsarr[i]);
+    result[i] = tbool_inst(random_bool(), tsarr[i]);
   END LOOP;
-  RETURN tbool_discseq(result);
+  RETURN tbool_seq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1259,13 +1259,13 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tint instant set
+ * Generate a random tint discrete sequence
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
  */
 DROP FUNCTION IF EXISTS random_tint_discseq;
 CREATE FUNCTION random_tint_discseq(lowvalue int, highvalue int, lowtime timestamptz,
@@ -1283,9 +1283,9 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tint(intarr[i], tsarr[i]);
+    result[i] = tint_inst(intarr[i], tsarr[i]);
   END LOOP;
-  RETURN tint_discseq(result);
+  RETURN tint_seq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1297,13 +1297,13 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tfloat instant set
+ * Generate a random tfloat discrete sequence
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
  */
 DROP FUNCTION IF EXISTS random_tfloat_discseq;
 CREATE FUNCTION random_tfloat_discseq(lowvalue float, highvalue float,
@@ -1323,9 +1323,9 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tfloat(floatarr[i], tsarr[i]);
+    result[i] = tfloat_inst(floatarr[i], tsarr[i]);
   END LOOP;
-  RETURN tfloat_discseq(result);
+  RETURN tfloat_seq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1337,12 +1337,12 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random ttext instant set
+ * Generate a random ttext discrete sequence
  *
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxlength Maximum length of the text value
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
  */
 DROP FUNCTION IF EXISTS random_ttext_discseq;
 CREATE FUNCTION random_ttext_discseq(lowtime timestamptz, hightime timestamptz,
@@ -1358,9 +1358,9 @@ BEGIN
   card = array_length(tsarr, 1);
   FOR i IN 1..card
   LOOP
-    result[i] = ttext(random_text(maxlength), tsarr[i]);
+    result[i] = ttext_inst(random_text(maxlength), tsarr[i]);
   END LOOP;
-  RETURN ttext_discseq(result);
+  RETURN ttext_seq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1370,7 +1370,7 @@ FROM generate_series(1,10) k;
 */
 
 -------------------------------------------------------------------------------
--- Temporal Sequence
+-- Temporal Continuous Sequence
 -------------------------------------------------------------------------------
 
 /**
@@ -1391,6 +1391,7 @@ DECLARE
   result tbool[];
   card int;
   v bool;
+  interp text;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
@@ -1407,7 +1408,7 @@ BEGIN
   v = random_bool();
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tbool(v, tsarr[i]);
+    result[i] = tbool_inst(v, tsarr[i]);
     v = NOT v;
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
@@ -1415,8 +1416,8 @@ BEGIN
   IF card <> 1 AND NOT upper_inc THEN
     v = NOT v;
   END IF;
-  result[card] = tbool(v, tsarr[card]);
-  RETURN tbool_contseq(result, lower_inc, upper_inc);
+  result[card] = tbool_inst(v, tsarr[card]);
+  RETURN tbool_seq(result, 'step', lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1465,16 +1466,16 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tint(intarr[i], tsarr[i]);
+    result[i] = tint_inst(intarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc THEN
-    result[card] = tint(intarr[card - 1], tsarr[card]);
+    result[card] = tint_inst(intarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tint(intarr[card], tsarr[card]);
+    result[card] = tint_inst(intarr[card], tsarr[card]);
   END IF;
-  RETURN tint_contseq(result, lower_inc, upper_inc);
+  RETURN tint_seq(result, 'step', lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1493,6 +1494,7 @@ FROM generate_series(1, 15) AS k;
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ * @parap[in] linear True for linear sequence, false for step sequence
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
  */
@@ -1506,6 +1508,7 @@ DECLARE
   tsarr timestamptz[];
   result tfloat[];
   card int;
+  interp text;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
@@ -1523,21 +1526,30 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tfloat(floatarr[i], tsarr[i]);
+    result[i] = tfloat_inst(floatarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tfloat(floatarr[card - 1], tsarr[card]);
+    result[card] = tfloat_inst(floatarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tfloat(floatarr[card], tsarr[card]);
+    result[card] = tfloat_inst(floatarr[card], tsarr[card]);
   END IF;
-  RETURN tfloat_contseq(result, lower_inc, upper_inc, linear);
+  IF linear THEN
+    interp = 'Linear';
+  ELSE
+    interp = 'Step';
+  END IF;
+  RETURN tfloat_seq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tfloat_seq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, random_tfloat_seq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false) AS seq
 FROM generate_series(1, 15) AS k;
 */
 
@@ -1579,15 +1591,15 @@ BEGIN
   FOR i IN 1..card - 1
   LOOP
     v = random_text(maxlength);
-    result[i] = ttext(v, tsarr[i]);
+    result[i] = ttext_inst(v, tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card = 1 OR upper_inc THEN
     v = random_text(maxlength);
   END IF;
-  result[card] = ttext(v, tsarr[card]);
-  RETURN ttext_contseq(result, lower_inc, upper_inc);
+  result[card] = ttext_inst(v, tsarr[card]);
+  RETURN ttext_seq(result, 'step', lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1787,6 +1799,10 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tfloat_seqset(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, random_tfloat_seqset(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false) AS ts
 FROM generate_series(1, 15) AS k;
 */
 

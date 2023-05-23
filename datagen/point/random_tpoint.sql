@@ -145,16 +145,16 @@ BEGIN
     IF geodZ THEN
       RETURN geodstbox_zt(xmin, xmin + random_float(1, maxdelta), ymin,
         ymin + random_float(1, maxdelta), zmin, zmin + random_float(1, maxdelta),
-        tstzspan(tmin, tmin + random_minutes(1, maxminutes)), srid);
+        span(tmin, tmin + random_minutes(1, maxminutes)), srid);
     ELSE
       RETURN geodstbox_zt(xmin, xmin + random_float(1, maxdelta),ymin, zmin,
         ymin + random_float(1, maxdelta), zmin + random_float(1, maxdelta),
-         tstzspan(tmin, tmin + random_minutes(1, maxminutes)), srid);
+        span(tmin, tmin + random_minutes(1, maxminutes)), srid);
     END IF;
   ELSE
     RETURN stbox_zt(xmin, xmin + random_float(1, maxdelta), ymin,
       ymin + random_float(1, maxdelta), zmin, zmin + random_float(1, maxdelta),
-      tstzspan(tmin + random_minutes(1, maxminutes)), srid);
+      span(tmin + random_minutes(1, maxminutes)), srid);
   END IF;
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1521,7 +1521,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeompoint(random_geom_point(lowx, highx, lowy, highy, srid),
+  RETURN tgeompoint_inst(random_geom_point(lowx, highx, lowy, highy, srid),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1555,7 +1555,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeompoint(random_geom_point3D(lowx, highx, lowy, highy, lowz,
+  RETURN tgeompoint_inst(random_geom_point3D(lowx, highx, lowy, highy, lowz,
     highz, srid), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1587,7 +1587,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeogpoint(random_geog_point(lowx, highx, lowy, highy, srid),
+  RETURN tgeogpoint_inst(random_geog_point(lowx, highx, lowy, highy, srid),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1621,7 +1621,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeogpoint(random_geog_point3D(lowx, highx, lowy, highy, lowz,
+  RETURN tgeogpoint_inst(random_geog_point3D(lowx, highx, lowy, highy, lowz,
     highz, srid), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1639,14 +1639,14 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D tgeompoint instant set
+ * Generate a random 2D tgeompoint discrete sequence
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality sequence
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeompoint_discseq;
@@ -1668,9 +1668,9 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeompoint(pointarr[i], tsarr[i]);
+    result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeompoint_discseq(result);
+  RETURN tgeompoint_seq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1688,7 +1688,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D tgeompoint instant set
+ * Generate a random 3D tgeompoint discrete sequence
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
@@ -1696,7 +1696,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality sequence
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeompoint3D_discseq;
@@ -1719,9 +1719,9 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeompoint(pointarr[i], tsarr[i]);
+    result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeompoint_discseq(result);
+  RETURN tgeompoint_seq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1739,14 +1739,14 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D tgeogpoint instant set
+ * Generate a random 2D tgeogpoint discrete sequence
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality sequence
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeogpoint_discseq;
@@ -1768,9 +1768,9 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeogpoint(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpoint_discseq(result);
+  RETURN tgeogpoint_seq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1788,7 +1788,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D tgeogpoint instant set
+ * Generate a random 3D tgeogpoint discrete sequence
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
@@ -1796,7 +1796,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality sequence
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeogpoint3D_discseq;
@@ -1819,9 +1819,9 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeogpoint(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpoint_discseq(result);
+  RETURN tgeogpoint_seq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1865,6 +1865,7 @@ DECLARE
   tsarr timestamptz[];
   result tgeompoint[];
   card int;
+  interp text;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
@@ -1883,21 +1884,30 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tgeompoint(pointarr[i], tsarr[i]);
+    result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tgeompoint(pointarr[card - 1], tsarr[card]);
+    result[card] = tgeompoint_inst(pointarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tgeompoint(pointarr[card], tsarr[card]);
+    result[card] = tgeompoint_inst(pointarr[card], tsarr[card]);
   END IF;
-  RETURN tgeompoint_contseq(result, lower_inc, upper_inc, linear);
+  IF linear THEN
+    interp = 'Linear';
+  ELSE
+    interp = 'Step';
+  END IF;
+  RETURN tgeompoint_seq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, asewkt(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
 FROM generate_series(1, 15) AS k;
 
 SELECT k, asewkt(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=3812))
@@ -1935,6 +1945,7 @@ DECLARE
   tsarr timestamptz[];
   result tgeompoint[];
   card int;
+  interp text;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
@@ -1953,21 +1964,30 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tgeompoint(pointarr[i], tsarr[i]);
+    result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tgeompoint(pointarr[card - 1], tsarr[card]);
+    result[card] = tgeompoint_inst(pointarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tgeompoint(pointarr[card], tsarr[card]);
+    result[card] = tgeompoint_inst(pointarr[card], tsarr[card]);
   END IF;
-  RETURN tgeompoint_contseq(result, lower_inc, upper_inc, linear);
+  IF linear THEN
+    interp = 'Linear';
+  ELSE
+    interp = 'Step';
+  END IF;
+  RETURN tgeompoint_seq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, asewkt(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
 FROM generate_series(1, 15) AS k;
 
 SELECT k, asewkt(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=3812))
@@ -2004,6 +2024,7 @@ DECLARE
   tsarr timestamptz[];
   result tgeogpoint[];
   card int;
+  interp text;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
@@ -2022,21 +2043,30 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tgeogpoint(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tgeogpoint(pointarr[card - 1], tsarr[card]);
+    result[card] = tgeogpoint_inst(pointarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tgeogpoint(pointarr[card], tsarr[card]);
+    result[card] = tgeogpoint_inst(pointarr[card], tsarr[card]);
   END IF;
-  RETURN tgeogpoint_contseq(result, lower_inc, upper_inc, linear);
+  IF linear THEN
+    interp = 'Linear';
+  ELSE
+    interp = 'Step';
+  END IF;
+  RETURN tgeogpoint_seq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, asEwkt(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
 FROM generate_series(1, 15) AS k;
 
 SELECT k, asEwkt(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=7844))
@@ -2075,6 +2105,7 @@ DECLARE
   tsarr timestamptz[];
   result tgeogpoint[];
   card int;
+  interp text;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
@@ -2092,21 +2123,30 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tgeogpoint(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tgeogpoint(pointarr[card - 1], tsarr[card]);
+    result[card] = tgeogpoint_inst(pointarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tgeogpoint(pointarr[card], tsarr[card]);
+    result[card] = tgeogpoint_inst(pointarr[card], tsarr[card]);
   END IF;
-  RETURN tgeogpoint_contseq(result, lower_inc, upper_inc);
+  IF linear THEN
+    interp = 'Linear';
+  ELSE
+    interp = 'Step';
+  END IF;
+  RETURN tgeogpoint_seq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, asEwkt(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
 FROM generate_series(1, 15) AS k;
 
 SELECT k, asEwkt(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=7844))
@@ -2156,7 +2196,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
-    SELECT random_tgeompoint_seq(lowx, highx, lowy, highy, t1, t2, maxdelta,
+    SELECT random_tgeompoint_contseq(lowx, highx, lowy, highy, t1, t2, maxdelta,
       maxminutes, mincardseq, maxcardseq, linear, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
@@ -2168,6 +2208,10 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, asewkt(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
 FROM generate_series(1, 15) AS k;
 
 SELECT k, asewkt(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=3812)) AS ts
@@ -2217,7 +2261,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
-    SELECT random_tgeompoint3D_seq(lowx, highx, lowy, highy, lowz, highz,
+    SELECT random_tgeompoint3D_contseq(lowx, highx, lowy, highy, lowz, highz,
       t1, t2, maxdelta, maxminutes, mincardseq, maxcardseq, linear, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
@@ -2229,6 +2273,10 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, asewkt(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
 FROM generate_series(1, 15) AS k;
 
 SELECT k, asewkt(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=3812)) AS ts
@@ -2282,7 +2330,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
-    SELECT random_tgeogpoint_seq(lowx, highx, lowy, highy, t1, t2, maxdelta,
+    SELECT random_tgeogpoint_contseq(lowx, highx, lowy, highy, t1, t2, maxdelta,
       maxminutes, mincardseq, maxcardseq, linear, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
@@ -2294,6 +2342,10 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, asEwkt(random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
 FROM generate_series(1, 15) AS k;
 
 SELECT k, asEwkt(random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=7844)) AS ts
@@ -2343,7 +2395,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
-    SELECT random_tgeogpoint3D_seq(lowx, highx, lowy, highy, lowz, highz,
+    SELECT random_tgeogpoint3D_contseq(lowx, highx, lowy, highy, lowz, highz,
       t1, t2, maxdelta, maxminutes, mincardseq, maxcardseq, linear, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
@@ -2355,6 +2407,10 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+FROM generate_series(1, 15) AS k;
+
+-- Step interpolation
+SELECT k, asEwkt(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
 FROM generate_series(1, 15) AS k;
 
 SELECT k, asEwkt(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=7844)) AS ts
