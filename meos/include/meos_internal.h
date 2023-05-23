@@ -606,7 +606,7 @@ extern Temporal *tdiscseq_set_interp(const TSequence *seq, interpType interp);
 extern TSequence *tcontseq_to_discrete(const TSequence *seq);
 extern Temporal *tcontseq_to_linear(const TSequence *seq);
 extern TSequence *tcontseq_to_step(const TSequence *seq);
-extern Temporal *tdiscseq_merge(const TSequence *is1, const TSequence *is2);
+extern Temporal *tdiscseq_merge(const TSequence *seq1, const TSequence *seq2);
 extern Temporal *tdiscseq_merge_array(const TSequence **sequences, int count);
 extern TSequence *tdiscseq_to_tsequence(const TSequence *seq, interpType interp);
 extern TSequenceSet *tdiscseq_to_tsequenceset(const TSequence *seq, interpType interp);

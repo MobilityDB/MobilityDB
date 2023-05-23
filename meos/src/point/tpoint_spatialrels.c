@@ -69,8 +69,8 @@
 Datum
 geom_contains(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(gserialized_inter_contains(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2), false));
+  return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), CONTAINS));
 }
 
 /**
@@ -108,8 +108,8 @@ geog_disjoint(Datum geog1, Datum geog2)
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(gserialized_inter_contains(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2), true));
+  return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), INTERSECTS));
 }
 
 /**
@@ -138,8 +138,8 @@ geog_intersects(Datum geog1, Datum geog2)
 Datum
 geom_touches(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(gserialized_touches(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2)));
+  return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), TOUCHES));
 }
 
 /**
@@ -307,30 +307,19 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 
 /*****************************************************************************
  * Ever contains
- * The function does not accept 3D or geography since it is based on the
- * PostGIS ST_Relate function
  *****************************************************************************/
-
-/**
- * @brief Call the PostGIS function ST_Relate twice to compute the ever contains
- * relationship between the trajectory of a temporal point and a geometry
- * @param[in] geom1 Trajectory of the temporal point
- * @param[in] geom2 Geometry
- * @note The order of the parameters CANNOT be inverted
- */
-static Datum
-econtains_geo_geo(Datum geom1, Datum geom2)
-{
-  return BoolGetDatum(gserialized_relate_pattern(DatumGetGserializedP(geom1),
-      DatumGetGserializedP(geom2), "T********")) ||
-    BoolGetDatum(gserialized_relate_pattern(DatumGetGserializedP(geom1),
-      DatumGetGserializedP(geom2), "***T*****"));
-}
 
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a geometry ever contains a temporal point,
  * 0 if not, and -1 if the geometry is empty.
+ *
+ * The function does not accept 3D or geography since it is based on the
+ * PostGIS ST_Relate function. The function tests whether the trajectory
+ * intersects the interior of the geometry. Please refer to the documentation
+ * of the ST_Contains and ST_Relate functions
+ * https://postgis.net/docs/ST_Relate.html
+ * https://postgis.net/docs/ST_Contains.html
  * @sqlfunc contains()
  */
 int
@@ -340,8 +329,8 @@ econtains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp)
     return -1;
   ensure_has_not_Z_gs(geo);
   ensure_has_not_Z(temp->flags);
-  bool result = espatialrel_tpoint_geo(temp, geo, (Datum) NULL,
-    (varfunc) &econtains_geo_geo, 2, INVERT_NO);
+  GSERIALIZED *traj = tpoint_trajectory(temp);
+  bool result = gserialized_relate_pattern(geo, traj, "T********");
   return result ? 1 : 0;
 }
 
@@ -432,6 +421,23 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   return result ? 1 : 0;
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return 1 if the temporal points are ever disjoint, 0 if not, and
+ * -1 if the temporal points do not intersect in time
+ * @sqlfunc disjoint()
+ */
+int
+edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
+    return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_nsame);
+  else
+    return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_ne);
+}
+#endif /* MEOS */
+
 /*****************************************************************************
  * Ever intersects (for both geometry and geography)
  *****************************************************************************/
@@ -452,6 +458,23 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     2, INVERT_NO);
   return result ? 1 : 0;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return 1 if the temporal points ever intersect, 0 if not, and
+ * -1 if the temporal points do not intersect in time
+ * @sqlfunc intersects()
+ */
+int
+eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
+    return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_same);
+  else
+    return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_eq);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Ever touches
@@ -535,7 +558,7 @@ edwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
  * @pre The temporal points are synchronized
  */
 static bool
-edwithin_tpointseq_tpointseq_disc(const TSequence *seq1,
+edwithin_tpointseq_tpointseq_discstep(const TSequence *seq1,
   const TSequence *seq2, double dist, datum_func3 func)
 {
   for (int i = 0; i < seq1->count; i++)
@@ -586,16 +609,11 @@ edwithin_tpointseq_tpointseq_cont(const TSequence *seq1, const TSequence *seq2,
     TimestampTz upper = end1->t;
     bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 
-    /* Both segments are constant or have step interpolation */
-    if ((datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2)) ||
-      (! linear1 && ! linear2))
-    {
-      if (DatumGetBool(func(sv1, sv2, Float8GetDatum(dist))))
+    /* Both segments are constant */
+    if (datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2) &&
+        DatumGetBool(func(sv1, sv2, Float8GetDatum(dist))))
         return true;
-      if (! linear1 && ! linear2 && upper_inc &&
-          DatumGetBool(func(ev1, ev2, Float8GetDatum(dist))))
-        return true;
-    }
+
     /* General case */
     else
     {
@@ -630,11 +648,16 @@ static bool
 edwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
   const TSequenceSet *ss2, double dist, datum_func3 func)
 {
+  bool linear = MEOS_FLAGS_GET_LINEAR(ss1->flags) ||
+    MEOS_FLAGS_GET_LINEAR(ss2->flags);
   for (int i = 0; i < ss1->count; i++)
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
     const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, i);
-    if (edwithin_tpointseq_tpointseq_cont(seq1, seq2, dist, func))
+    bool found = linear ?
+      edwithin_tpointseq_tpointseq_cont(seq1, seq2, dist, func) :
+      edwithin_tpointseq_tpointseq_discstep(seq1, seq2, dist, func);
+    if (found)
       return true;
   }
   return false;
@@ -658,11 +681,12 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
     result = edwithin_tpointinst_tpointinst((TInstant *) sync1,
       (TInstant *) sync2, dist, func);
   else if (sync1->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(sync1->flags) ?
-      edwithin_tpointseq_tpointseq_disc((TSequence *) sync1,
+    result = MEOS_FLAGS_GET_LINEAR(sync1->flags) ||
+        MEOS_FLAGS_GET_LINEAR(sync2->flags) ?
+      edwithin_tpointseq_tpointseq_cont((TSequence *) sync1,
         (TSequence *) sync2, dist, func) :
-      edwithin_tpointseq_tpointseq_cont((TSequence *) sync1, (TSequence *) sync2,
-        dist, func);
+      edwithin_tpointseq_tpointseq_discstep((TSequence *) sync1,
+        (TSequence *) sync2, dist, func);
   else /* sync1->subtype == TSEQUENCESET */
     result = edwithin_tpointseqset_tpointseqset((TSequenceSet *) sync1,
       (TSequenceSet *) sync2, dist, func);

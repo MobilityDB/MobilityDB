@@ -216,7 +216,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
  * @note Return new sequences that must be freed by the calling function
  */
 static int
-tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
+tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   datum_func2 func, bool crossings, TSequence **result)
 {
   Span inter;
@@ -376,7 +376,8 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
   TSequence *seq2 = sequences2[j];
   while (i < count1 && j < count2)
   {
-    int countstep = tsequence_tagg1(seq1, seq2, func, crossings, &sequences[k]);
+    int countstep = tsequence_tagg_iter(seq1, seq2, func, crossings,
+      &sequences[k]);
     k += countstep - 1;
     /* If both upper bounds are equal */
     int cmp = timestamptz_cmp_internal(seq1->period.upper, seq2->period.upper);

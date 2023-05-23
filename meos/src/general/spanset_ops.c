@@ -1573,7 +1573,7 @@ minus_timestamp_periodset(TimestampTz t, const SpanSet *ps,
  * @brief Compute the difference of a span and a span set
  */
 static int
-minus_span_spanset1(const Span *s, const SpanSet *ss, int from, int to,
+minus_span_spanset_iter(const Span *s, const SpanSet *ss, int from, int to,
   Span *result)
 {
   /* The span can be split at most into (to - from + 1) spans
@@ -1593,7 +1593,7 @@ minus_span_spanset1(const Span *s, const SpanSet *ss, int from, int to,
       break;
     }
     Span minus[2];
-    int countminus = minus_span_span1(&curr, s1, minus);
+    int countminus = minus_span_span_iter(&curr, s1, minus);
     /* minus can have from 0 to 2 spans */
     if (countminus == 0)
       break;
@@ -1624,7 +1624,7 @@ minus_span_spanset(const Span *s, const SpanSet *ss)
     return spanset_make((Span *) s, 1, false);
 
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
-  int count = minus_span_spanset1(s, ss, 0, ss->count, spans);
+  int count = minus_span_spanset_iter(s, ss, 0, ss->count, spans);
   if (count == 0)
   {
     pfree(spans);
@@ -1650,7 +1650,7 @@ minus_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
   for (int i = 0; i < ss->count; i++)
   {
     const Span *p = spanset_sp_n(ss, i);
-    k += minus_span_value1(p, d, basetype, &spans[k]);
+    k += minus_span_value_iter(p, d, basetype, &spans[k]);
   }
   if (k == 0)
   {
@@ -1724,7 +1724,7 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
   for (int i = 0; i < ss->count; i++)
   {
     const Span *s1 = spanset_sp_n(ss, i);
-    k += minus_span_span1(s1, s, &spans[k]);
+    k += minus_span_span_iter(s1, s, &spans[k]);
   }
   if (k == 0)
   {
@@ -1775,7 +1775,7 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
       }
       int to = Min(l, ss2->count);
       /* Compute the difference of the overlapping spans */
-      k += minus_span_spanset1(s1, ss2, j, to, &spans[k]);
+      k += minus_span_spanset_iter(s1, ss2, j, to, &spans[k]);
       i++;
       j = l;
     }

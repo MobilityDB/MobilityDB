@@ -251,7 +251,7 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
  * the time interval
  */
 static TSequence *
-tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
+tinstant_transform_wcount_iter(TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc, const Interval *interval)
 {
   TInstant *instants[2];
@@ -275,7 +275,7 @@ static int
 tinstant_transform_wcount(const TInstant *inst, const Interval *interval,
   TSequence **result)
 {
-  result[0] = tinstant_transform_wcount1(inst->t, inst->t, true, true,
+  result[0] = tinstant_transform_wcount_iter(inst->t, inst->t, true, true,
     interval);
   return 1;
 }
@@ -321,7 +321,7 @@ tcontseq_transform_wcount(const TSequence *seq, const Interval *interval,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
-    result[i] = tinstant_transform_wcount1(inst1->t, inst2->t, lower_inc,
+    result[i] = tinstant_transform_wcount_iter(inst1->t, inst2->t, lower_inc,
       upper_inc, interval);
     inst1 = inst2;
     lower_inc = true;
@@ -438,8 +438,8 @@ tnumberdiscseq_transform_wavg(const TSequence *seq, const Interval *interval,
 }
 
 /**
-* Transform the temporal integer sequence value into a temporal double and extend
- * it by a time interval
+ * @brief Transform the temporal integer sequence value into a temporal double
+ * and extend it by a time interval
  *
  * @param[in] seq Temporal value
  * @param[in] interval Interval

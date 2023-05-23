@@ -789,7 +789,7 @@ SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Poi
 
 --3D Zspan
 SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0, 2 2)', floatspan '[0, 2]'));
-
+select asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(1 1 3)@2000-01-02]', geometry 'Point(1 1)', floatspan '[1, 2]'));
 
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0,1 1)'));
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02]','Point(2 2)'));
@@ -897,6 +897,8 @@ SELECT atStbox (tgeompoint '{Point(1 2 1)@2000-01-01, Point(1 1 3)@2000-01-02}',
 
 -- Mix 2D/3D
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
+SELECT asText(atStbox(tgeompoint '[Point(1 3 2)@2000-01-01, Point(3 1 2)@2000-01-03]', stbox 'STBOX X((0 0),(2 2)
+)'));
 
 /* Errors */
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));

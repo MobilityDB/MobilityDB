@@ -947,7 +947,7 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
  * @note The resulting timestamp may be at an exclusive bound
  */
 static bool
-tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
+tpointsegm_timestamp_at_value1_iter(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
   Datum value1 = tinstant_value(inst1);
@@ -1004,7 +1004,7 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     /* We are sure that the segment is not constant since the
      * sequence is simple */
-    if (tpointsegm_timestamp_at_value1(inst1, inst2, value, t))
+    if (tpointsegm_timestamp_at_value1_iter(inst1, inst2, value, t))
       return true;
     inst1 = inst2;
   }
@@ -1193,17 +1193,17 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   /* Split the temporal point in an array of non self-intersecting fragments
    * to be able to recover the time dimension after obtaining the spatial
    * intersection */
-  int countsimple;
-  TSequence **simpleseqs = tpointseq_make_simple(seq2d, &countsimple);
+  int nsimple;
+  TSequence **simpleseqs = tpointseq_make_simple(seq2d, &nsimple);
   Span *allperiods = NULL; /* make compiler quiet */
   int totalpers = 0;
   GSERIALIZED *traj, *gsinter;
   Datum inter;
 
-  if (countsimple == 1)
+  if (nsimple == 1)
   {
     /* Particular case when the input sequence is simple */
-    pfree_array((void **) simpleseqs, countsimple);
+    pfree_array((void **) simpleseqs, nsimple);
     traj = tpointseq_cont_trajectory(seq2d);
     inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
     gsinter = DatumGetGserializedP(inter);
@@ -1223,10 +1223,10 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     /* General case */
     if (hasz)
       pfree(seq2d);
-    Span **periods = palloc(sizeof(Span *) * countsimple);
-    int *npers = palloc0(sizeof(int) * countsimple);
+    Span **periods = palloc(sizeof(Span *) * nsimple);
+    int *npers = palloc0(sizeof(int) * nsimple);
     /* Loop for every simple fragment of the sequence */
-    for (int i = 0; i < countsimple; i++)
+    for (int i = 0; i < nsimple; i++)
     {
       traj = tpointseq_cont_trajectory(simpleseqs[i]);
       inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
@@ -1240,7 +1240,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
       PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
       pfree(DatumGetPointer(inter)); pfree(traj);
     }
-    pfree_array((void **) simpleseqs, countsimple);
+    pfree_array((void **) simpleseqs, nsimple);
     if (totalpers == 0)
     {
       pfree(periods); pfree(npers);
@@ -1250,7 +1250,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     /* Assemble the periods into a single array */
     allperiods = palloc(sizeof(Span) * totalpers);
     int k = 0;
-    for (int i = 0; i < countsimple; i++)
+    for (int i = 0; i < nsimple; i++)
     {
       for (int j = 0; j < npers[i]; j++)
         allperiods[k++] = periods[i][j];
@@ -1625,7 +1625,7 @@ clipt(double p, double q, double *t0, double *t1)
         /* t0 will exceed t1, so reject */
         return false;
       if (r > *t0)
-        *t0 = r; /* t0 is max of r’s */
+        *t0 = r; /* t0 is max of r's */
     }
   }
   else if (p > 0)
@@ -1639,7 +1639,7 @@ clipt(double p, double q, double *t0, double *t1)
         /* t1 will be <= t0, so reject */
         return false;
       if (r < *t1)
-        *t1 = r; /* t1 is min of r’s */
+        *t1 = r; /* t1 is min of r's */
     }
   }
   else /* p == 0 */
@@ -1731,7 +1731,7 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
         /* compute coordinates */
         if (t1 < 1)
         {
-          /* compute V1’ */
+          /* compute V1' */
           x2 = x1 + t1 * dx;
           y2 = y1 + t1 * dy;
           if (hasz)
@@ -1739,7 +1739,7 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
         }
         if (t0 > 0)
         {
-          /* compute V0’ */
+          /* compute V0' */
           x1 = x1 + t0 * dx;
           y1 = y1 + t0 * dy;
           if (hasz)
@@ -2084,20 +2084,20 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           /* Force the computation at 2D */
           TInstant *inst1_2d = (TInstant *) tpoint_force2d((Temporal *) inst1);
           TInstant *inst2_2d = (TInstant *) tpoint_force2d((Temporal *) inst2);
-          tpointsegm_timestamp_at_value1(inst1_2d, inst2_2d, d3, &t1);
+          tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d3, &t1);
           if (gspoint_eq(p3, p4))
             t2 = t1;
           else
-            tpointsegm_timestamp_at_value1(inst1_2d, inst2_2d, d4, &t2);
+            tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d4, &t2);
           pfree(inst1_2d); pfree(inst2_2d);
         }
         else
         {
-          tpointsegm_timestamp_at_value1(inst1, inst2, d3, &t1);
+          tpointsegm_timestamp_at_value1_iter(inst1, inst2, d3, &t1);
           if (gspoint_eq(p3, p4))
             t2 = t1;
           else
-            tpointsegm_timestamp_at_value1(inst1, inst2, d4, &t2);
+            tpointsegm_timestamp_at_value1_iter(inst1, inst2, d4, &t2);
         }
         pfree(p3); pfree(p4);
         /* Project the segment to the timestamps if necessary and add the

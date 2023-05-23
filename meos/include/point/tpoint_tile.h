@@ -58,19 +58,21 @@ typedef struct
 typedef struct STboxGridState
 {
   bool done;             /**< True when all tiles have been processed */
+  bool hasz;             /**< True when tiles have Z dimension */
+  bool hast;             /**< True when tiles have T dimension */
   int i;                 /**< Number of current tile */
   double xsize;          /**< Size of the x dimension */
   double ysize;          /**< Size of the y dimension */
-  double zsize;          /**< Size of the z dimension */
-  int64 tunits;          /**< Size of the time dimension */
+  double zsize;          /**< Size of the z dimension, may be 0 for 2D */
+  int64 tunits;          /**< Size of the time dimension, may be 0 for spatial only */
   STBox box;             /**< Bounding box of the grid */
   const Temporal *temp;  /**< Optional temporal point to be split */
-  BitMatrix *bm;         /**< Optional bit matrix for speeding up
-                              the computation of the split functions */
+  BitMatrix *bm;         /**< Optional bit matrix for speeding up the
+                              computation of the split functions */
   double x;              /**< Minimum x value of the current tile */
   double y;              /**< Minimum y value of the current tile */
-  double z;              /**< Minimum z value of the current tile */
-  TimestampTz t;         /**< Minimum t value of the current tile */
+  double z;              /**< Minimum z value of the current tile, if any */
+  TimestampTz t;         /**< Minimum t value of the current tile, if any */
   int coords[MAXDIMS];   /**< Coordinates of the current tile */
 } STboxGridState;
 

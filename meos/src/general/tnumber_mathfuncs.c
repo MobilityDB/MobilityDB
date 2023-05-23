@@ -121,7 +121,7 @@ tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
   long double d2 = (-1 * x3) / (x4 - x3);
   long double min = Min(d1, d2);
   long double max = Max(d1, d2);
-  long double fraction = min + (max - min)/2;
+  long double fraction = min + (max - min) / 2;
   long double duration = (long double) (end1->t - start1->t);
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     /* Minimum/maximum occurs out of the period */

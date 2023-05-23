@@ -931,7 +931,7 @@ bbox_expand(const void *box1, void *box2, meosType temptype)
  */
 void
 ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
-  interpType interp)
+  interpType interp __attribute__((unused)))
 {
   for (int i = 0; i < count; i++)
   {
@@ -942,8 +942,10 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
       ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
       ensure_spatial_validity((Temporal *) instants[i - 1],
         (Temporal *) instants[i]);
+#if NPOINT
       if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT)
         ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
+#endif /* NPOINT */
     }
   }
   return;
@@ -1440,8 +1442,8 @@ datum_distance(Datum value1, Datum value2, meosType basetype, int16 flags)
  * result is a sequence set.
  */
 Temporal *
-tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
-  double maxdist, const Interval *maxt, bool expand)
+tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
+  const Interval *maxt, bool expand)
 {
   /* Ensure validity of the arguments */
   assert(seq->temptype == inst->temptype);
@@ -1776,7 +1778,8 @@ tseqarr_normalize(const TSequence **sequences, int count, int *newcount)
  * @result Array of merged sequences
  */
 TSequence **
-tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
+tsequence_merge_array1(const TSequence **sequences, int count,
+  int *totalcount)
 {
   if (count > 1)
     tseqarr_sort((TSequence **) sequences, count);
@@ -3375,7 +3378,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
  * @param[in] value Base value
  */
 static bool
-tlinearseq_ever_le1(Datum value1, Datum value2, meosType basetype,
+tlinearseq_ever_le_iter(Datum value1, Datum value2, meosType basetype,
   bool lower_inc, bool upper_inc, Datum value)
 {
   /* Constant segment */
@@ -3399,7 +3402,7 @@ tlinearseq_ever_le1(Datum value1, Datum value2, meosType basetype,
  * @param[in] value Base value
  */
 static bool
-tlinearseq_always_lt1(Datum value1, Datum value2, meosType basetype,
+tlinearseq_always_lt_iter(Datum value1, Datum value2, meosType basetype,
   bool lower_inc, bool upper_inc, Datum value)
 {
   /* Constant segment */
@@ -3474,8 +3477,8 @@ tsequence_ever_le(const TSequence *seq, Datum value)
   {
     Datum value2 = tinstant_value(TSEQUENCE_INST_N(seq, i));
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (tlinearseq_ever_le1(value1, value2, basetype,
-      lower_inc, upper_inc, value))
+    if (tlinearseq_ever_le_iter(value1, value2, basetype, lower_inc, upper_inc,
+        value))
       return true;
     value1 = value2;
     lower_inc = true;
@@ -3518,8 +3521,8 @@ tsequence_always_lt(const TSequence *seq, Datum value)
   {
     Datum value2 = tinstant_value(TSEQUENCE_INST_N(seq, i));
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (! tlinearseq_always_lt1(value1, value2, basetype,
-      lower_inc, upper_inc, value))
+    if (! tlinearseq_always_lt_iter(value1, value2, basetype, lower_inc,
+        upper_inc, value))
       return false;
     value1 = value2;
     lower_inc = true;
@@ -5398,8 +5401,8 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
     if (seq1->period.upper_inc && seq2->period.lower_inc)
     {
       /* We put true so that it works with step interpolation */
-      int count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
-        1 : 2;
+      int count =
+        (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ? 1 : 2;
       tofree = tsequence_make(instants, count, true, true, interp,
         NORMALIZE_NO);
       sequences[k++] = (const TSequence *) tofree;
