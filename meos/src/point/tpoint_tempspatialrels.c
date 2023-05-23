@@ -23,7 +23,7 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  *****************************************************************************/
 
@@ -470,6 +470,34 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   }
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal intersects relationship between a temporal point
+ * and a geometry
+ * @sqlfunc tdisjoint()
+ */
+Temporal *
+tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tpoint_geo(temp, geo, TDISJOINT, restr, atvalue);
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal intersects relationship between a temporal point
+ * and a geometry
+ * @sqlfunc tintersects()
+ */
+Temporal *
+tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tpoint_geo(temp, geo, TINTERSECTS, restr, atvalue);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions to compute the tdwithin relationship between temporal sequences.
