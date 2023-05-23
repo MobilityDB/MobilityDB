@@ -23,6 +23,12 @@ set(TEST_DIR_LOCK "${TEST_DIR}/lock")
 set(TEST_DIR_LOG "${TEST_DIR}/log")
 set(TEST_DIR_OUT "${TEST_DIR}/out")
 
+message(STATUS "TEST_DIR: ${CMAKE_BINARY_DIR}/tmptest")
+message(STATUS "TEST_DIR_DB: ${TEST_DIR}/db")
+message(STATUS "TEST_DIR_LOCK: ${TEST_DIR}/lock")
+message(STATUS "TEST_DIR_LOG: ${TEST_DIR}/log")
+message(STATUS "TEST_DIR_OUT: ${TEST_DIR}/out")
+
 #-------------------------------------------------------------------------------
 # Test setup
 #-------------------------------------------------------------------------------
@@ -34,7 +40,7 @@ if(TEST_OPER MATCHES "test_setup")
   #-------------------------
 
   if (NOT EXISTS "${TEST_DIR}")
-    message(STATUS "Test directory '${TEST_DIR}' does not exits, nothing done")
+    message(STATUS "Test directory '${TEST_DIR}' does not exits")
   else()
     message(STATUS "Removing test directory: '${TEST_DIR}'")
     execute_process(

@@ -67,8 +67,8 @@ typedef struct STboxGridState
   int64 tunits;          /**< Size of the time dimension, may be 0 for spatial only */
   STBox box;             /**< Bounding box of the grid */
   const Temporal *temp;  /**< Optional temporal point to be split */
-  BitMatrix *bm;         /**< Optional bit matrix for speeding up
-                              the computation of the split functions */
+  BitMatrix *bm;         /**< Optional bit matrix for speeding up the
+                              computation of the split functions */
   double x;              /**< Minimum x value of the current tile */
   double y;              /**< Minimum y value of the current tile */
   double z;              /**< Minimum z value of the current tile, if any */

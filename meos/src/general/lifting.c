@@ -1060,7 +1060,6 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
- * @param[in] discont The function to lift has instantaneous discontinuities
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  */

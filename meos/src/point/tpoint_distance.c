@@ -611,7 +611,7 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
  * @param[out] t Timestamp
  */
 static double
-NAI_tpointseq_linear_geo2(const TSequence *seq, const LWGEOM *geo,
+NAI_tpointseq_linear_geo_iter(const TSequence *seq, const LWGEOM *geo,
   double mindist, TimestampTz *t)
 {
   double dist;
@@ -660,7 +660,7 @@ static TInstant *
 NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
 {
   TimestampTz t;
-  NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, &t);
+  NAI_tpointseq_linear_geo_iter(seq, geo, DBL_MAX, &t);
   /* The closest point may be at an exclusive bound */
   Datum value;
   tsequence_value_at_timestamp(seq, t, false, &value);
@@ -682,7 +682,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     TimestampTz t1;
-    double dist = NAI_tpointseq_linear_geo2(seq, geo, mindist, &t1);
+    double dist = NAI_tpointseq_linear_geo_iter(seq, geo, mindist, &t1);
     if (dist < mindist)
     {
       mindist = dist;
