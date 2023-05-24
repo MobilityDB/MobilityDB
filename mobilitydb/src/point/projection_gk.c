@@ -44,6 +44,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/meos_catalog.h"
 #include "general/temporaltypes.h"
 #include "general/lifting.h"

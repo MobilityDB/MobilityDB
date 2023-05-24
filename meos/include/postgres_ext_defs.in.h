@@ -1,6 +1,9 @@
 #ifndef POSTGRES_H
 #define POSTGRES_H
 
+#define DatumGetPointer(X) ((Pointer) (X))
+
+typedef char *Pointer;
 typedef uintptr_t Datum;
 
 typedef signed char int8;
