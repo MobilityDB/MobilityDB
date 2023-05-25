@@ -1,5 +1,3 @@
-set force_parallel_mode=regress;
-SET
 SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint;
                  st_extent                 
 -------------------------------------------
@@ -248,5 +246,3 @@ FROM (SELECT asMVTGeom(temp, stbox 'STBOX X((0,0),(50,50))') AS mvt
  67571.620989 |  43
 (1 row)
 
-set force_parallel_mode=off;
-SET

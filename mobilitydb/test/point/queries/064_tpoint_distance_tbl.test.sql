@@ -31,7 +31,6 @@
 
 -- set parallel_tuple_cost=0;
 -- set parallel_setup_cost=0;
-set force_parallel_mode=regress;
 
 -------------------------------------------------------------------------------
 
@@ -171,6 +170,5 @@ WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
 
 -- set parallel_tuple_cost=100;
 -- set parallel_setup_cost=100;
-set force_parallel_mode=off;
 
 -------------------------------------------------------------------------------

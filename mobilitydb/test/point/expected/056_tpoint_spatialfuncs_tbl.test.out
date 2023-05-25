@@ -1,5 +1,3 @@
-set force_parallel_mode=regress;
-SET
 SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint;
  srid 
 ------
@@ -606,5 +604,3 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_geodstbox3d t2 WHERE temp != merge
      0
 (1 row)
 
-set force_parallel_mode=off;
-SET

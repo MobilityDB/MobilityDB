@@ -31,7 +31,6 @@
 
 -- set parallel_tuple_cost=0;
 -- set parallel_setup_cost=0;
-set force_parallel_mode=regress;
 
 -------------------------------------------------------------------------------
 
@@ -185,6 +184,5 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_geodstbox3d t2 WHERE temp != merge
 
 -- set parallel_tuple_cost=100;
 -- set parallel_setup_cost=100;
-set force_parallel_mode=off;
 
 -------------------------------------------------------------------------------
