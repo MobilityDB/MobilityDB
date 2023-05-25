@@ -719,7 +719,7 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    Span *s = &sorted[i].s;
+    Span *s = span_copy(&sorted[i].s);
     int n = sorted[i].i;
     out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
     out->leafTupleDatums[n] = SpanPGetDatum(s);

@@ -90,12 +90,11 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
   /* Initialize the bounding box with the first instant */
   tpointinst_set_stbox(instants[0], box);
   /* Prepare for the iteration */
-  GSERIALIZED *point = DatumGetGserializedP(tinstant_value(instants[0]));
   bool hasz = MEOS_FLAGS_GET_Z(instants[0]->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(instants[0]->flags);
   for (int i = 1; i < count; i++)
   {
-    point = DatumGetGserializedP(tinstant_value(instants[i]));
+    GSERIALIZED *point = DatumGetGserializedP(tinstant_value(instants[i]));
     double x, y, z;
     point_get_coords(point, hasz, geodetic, &x, &y, &z);
     box->xmin = Min(box->xmin, x);
