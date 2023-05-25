@@ -3428,7 +3428,7 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
   SpanSet *ps = temporal_time(temp2);
   Temporal *rest = temporal_restrict_periodset(temp1, ps, REST_MINUS);
   if (! rest)
-    return (Temporal *) temp2;
+    return temporal_copy((Temporal *) temp2);
   Temporal *result = temporal_insert(rest, temp2, connect);
   pfree(rest); pfree(ps);
   return (Temporal *) result;

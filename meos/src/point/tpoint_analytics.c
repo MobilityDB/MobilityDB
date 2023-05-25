@@ -206,14 +206,19 @@ tpointseq_cont_to_geo_measure1(const TSequence *seq, const TSequence *measure)
   }
   else
   {
-    result = MEOS_FLAGS_GET_LINEAR(seq->flags) ?
-      (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, (uint32_t) k,
-        (LWGEOM **) points) :
-      (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid, NULL,
+    if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+    {
+      result = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
         (uint32_t) k, (LWGEOM **) points);
-    for (int i = 0; i < k; i++)
-      lwpoint_free(points[i]);
-    pfree(points);
+      for (int i = 0; i < k; i++)
+        lwpoint_free(points[i]);
+      pfree(points);
+    }
+    else
+    {
+      result = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+        points[0]->srid, NULL, (uint32_t) k, (LWGEOM **) points);
+    }
   }
   return result;
 }
@@ -247,9 +252,7 @@ tpointseq_to_geo1(const TSequence *seq)
       result = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
         points[0]->srid, NULL, (uint32_t) seq->count, points);
     FLAGS_SET_GEODETIC(result->flags, MEOS_FLAGS_GET_GEODETIC(seq->flags));
-    for (int i = 0; i < seq->count; i++)
-      lwpoint_free((LWPOINT *) points[i]);
-    pfree(points);
+    /* We cannot pfree neither points[i] nor points */
   }
   return result;
 }
@@ -1911,11 +1914,14 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
     points[i] = lwgeom_from_gserialized(gs);
     times[i] = (inst->t / 1000000) + DELTA_UNIX_POSTGRES_EPOCH;
   }
-  LWGEOM *result = lwpointarr_make_trajectory(points, seq->count,
-    MEOS_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEP);
-  for (int i = 0; i < seq->count; i++)
-    lwpoint_free((LWPOINT *) points[i]);
-  pfree(points);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  LWGEOM *result = lwpointarr_make_trajectory(points, seq->count, interp);
+  if (interp == LINEAR)
+  {
+    for (int i = 0; i < seq->count; i++)
+      lwpoint_free((LWPOINT *) points[i]);
+    pfree(points);
+  }
   return result;
 }
 

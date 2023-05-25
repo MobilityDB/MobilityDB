@@ -1149,8 +1149,9 @@ Datum
 Tpoint_is_simple(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  bool result = tpoint_is_simple(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_BOOL(tpoint_is_simple(temp));
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Tpoint_make_simple(PG_FUNCTION_ARGS);
