@@ -51,6 +51,10 @@
 #else
   #include <access/hash.h>
 #endif
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
+
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -232,9 +236,17 @@ pg_date_in(const char *str)
   dterr = ParseDateTime(str, workbuf, sizeof(workbuf),
               field, ftype, MAXDATEFIELDS, &nf);
   if (dterr == 0)
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+    dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tzp, NULL);
+#else
     dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tzp);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
   if (dterr != 0)
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+    DateTimeParseError(dterr, NULL, str, "date", NULL);
+#else
     DateTimeParseError(dterr, str, "date");
+#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
 
   switch (dtype)
   {
@@ -254,7 +266,11 @@ pg_date_in(const char *str)
       PG_RETURN_DATEADT(date);
 
     default:
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+      DateTimeParseError(DTERR_BAD_FORMAT, NULL, str, "date", NULL);
+#else
       DateTimeParseError(DTERR_BAD_FORMAT, str, "date");
+#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
       break;
   }
 
@@ -305,15 +321,15 @@ pg_date_out(DateADT date)
  *****************************************************************************/
 
 #if MEOS
-/* AdjustTimeForTypmod()
+/* MEOSAdjustTimeForTypmod()
  * Force the precision of the time value to a specified value.
- * Uses *exactly* the same code as in AdjustTimestampForTypmod()
+ * Uses *exactly* the same code as in MEOSAdjustTimestampForTypmod()
  * but we make a separate copy because those types do not
  * have a fundamental tie together but rather a coincidence of
  * implementation. - thomas
  */
 void
-AdjustTimeForTypmod(TimeADT *time, int32 typmod)
+MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
 {
   static const int64 TimeScales[MAX_TIME_PRECISION + 1] = {
     INT64CONST(1000000),
@@ -370,7 +386,11 @@ pg_time_in(const char *str, int32 typmod)
   if (dterr == 0)
     dterr = DecodeTimeOnly(field, ftype, nf, &dtype, tm, &fsec, &tz);
   if (dterr != 0)
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+    DateTimeParseError(dterr, NULL, str, "time", NULL);
+#else
     DateTimeParseError(dterr, str, "time");
+#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
 
   tm2time(tm, fsec, &result);
   AdjustTimeForTypmod(&result, typmod);
@@ -404,11 +424,11 @@ pg_time_out(TimeADT time)
  *****************************************************************************/
 
 /*
- * AdjustTimestampForTypmodError --- round off a timestamp to suit given typmod
+ * MEOSAdjustTimestampForTypmodError --- round off a timestamp to suit given typmod
  * Works for either timestamp or timestamptz.
  */
 bool
-AdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
+MEOSAdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
 {
   static const int64 TimestampScales[MAX_TIMESTAMP_PRECISION + 1] = {
     INT64CONST(1000000),
@@ -461,9 +481,9 @@ AdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
 }
 
 void
-AdjustTimestampForTypmod(Timestamp *time, int32 typmod)
+MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 {
-  (void) AdjustTimestampForTypmodError(time, typmod, NULL);
+  (void) MEOSAdjustTimestampForTypmodError(time, typmod, NULL);
 }
 
 /**
@@ -489,13 +509,25 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
   dterr = ParseDateTime(str, workbuf, sizeof(workbuf),
               field, ftype, MAXDATEFIELDS, &nf);
   if (dterr == 0)
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+    dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz, NULL);
+#else
     dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
   if (dterr != 0)
   {
     if (withtz)
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+      DateTimeParseError(dterr, NULL, str, "timestamp with time zone", NULL);
+#else
       DateTimeParseError(dterr, str, "timestamp with time zone");
+#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
     else
-      DateTimeParseError(dterr, str, "timestamp");
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+    DateTimeParseError(dterr, NULL, str, "time", NULL);
+#else
+    DateTimeParseError(dterr, str, "time");
+#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
   }
 
   switch (dtype)
@@ -527,7 +559,7 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
       TIMESTAMP_NOEND(result);
   }
 
-  AdjustTimestampForTypmod(&result, typmod);
+  MEOSAdjustTimestampForTypmod(&result, typmod);
 
   return result;
 }
@@ -821,7 +853,11 @@ pg_interval_in(const char *str, int32 typmod)
   {
     if (dterr == DTERR_FIELD_OVERFLOW)
       dterr = DTERR_INTERVAL_OVERFLOW;
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+    DateTimeParseError(dterr, NULL, str, "interval", NULL);
+#else
     DateTimeParseError(dterr, str, "interval");
+#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
   }
 
   result = (Interval *) palloc(sizeof(Interval));

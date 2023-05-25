@@ -42,6 +42,9 @@
 /* GEOS */
 #include <geos_c.h>
 /* PostgreSQL */
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeom_log.h>

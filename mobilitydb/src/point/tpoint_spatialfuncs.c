@@ -776,7 +776,7 @@ Geo_round(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(datum_round_geo(PointerGetDatum(gs), size));
+  PG_RETURN_DATUM(datum_round_geo(PointerGetDatum(gs), size));
 }
 
 PGDLLEXPORT Datum Geoset_round(PG_FUNCTION_ARGS);
@@ -967,7 +967,7 @@ Tpoint_direction(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************

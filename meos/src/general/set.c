@@ -40,6 +40,9 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>

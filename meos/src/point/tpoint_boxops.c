@@ -47,6 +47,7 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
+#include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
@@ -69,7 +70,7 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
 void
 tpointinst_set_stbox(const TInstant *inst, STBox *box)
 {
-  GSERIALIZED *point = DatumGetGserializedP(&inst->value);
+  GSERIALIZED *point = DatumGetGserializedP(tinstant_value(inst));
   geo_set_stbox(point, box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, &box->period);
@@ -89,12 +90,12 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
   /* Initialize the bounding box with the first instant */
   tpointinst_set_stbox(instants[0], box);
   /* Prepare for the iteration */
-  GSERIALIZED *point = DatumGetGserializedP(&instants[0]->value);
+  GSERIALIZED *point = DatumGetGserializedP(tinstant_value(instants[0]));
   bool hasz = MEOS_FLAGS_GET_Z(instants[0]->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(instants[0]->flags);
   for (int i = 1; i < count; i++)
   {
-    point = DatumGetGserializedP(&instants[i]->value);
+    point = DatumGetGserializedP(tinstant_value(instants[i]));
     double x, y, z;
     point_get_coords(point, hasz, geodetic, &x, &y, &z);
     box->xmin = Min(box->xmin, x);
@@ -146,8 +147,8 @@ tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
   FLAGS_SET_M(edge_gbox.flags, 0);
   FLAGS_SET_GEODETIC(edge_gbox.flags, 1);
   const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
-  const POINT2D *p1 = DATUM_POINT2D_P(&last->value);
-  const POINT2D *p2 = DATUM_POINT2D_P(&inst->value);
+  const POINT2D *p1 = DATUM_POINT2D_P(tinstant_value(last));
+  const POINT2D *p2 = DATUM_POINT2D_P(tinstant_value(inst));
   ll2cart(p1, &A1);
   ll2cart(p2, &A2);
   edge_calculate_gbox(&A1, &A2, &edge_gbox);
@@ -179,7 +180,7 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count,
   LWPOINT **points = palloc(sizeof(LWPOINT *) * count);
   for (int i = 0; i < count; i++)
   {
-    GSERIALIZED *gs = DatumGetGserializedP(&instants[i]->value);
+    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(instants[i]));
     points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
   LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, count,
@@ -205,7 +206,7 @@ tgeogpointseq_set_gbox(const TSequence *seq, GBOX *box)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
+    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
     points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
   LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, seq->count,

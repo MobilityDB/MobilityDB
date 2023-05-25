@@ -47,6 +47,8 @@
 
 /* C */
 #include <assert.h>
+/* PostgreSQL */
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>

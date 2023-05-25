@@ -357,7 +357,11 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   upper.infinite = false;
   upper.inclusive = upper_inc;
   upper.lower = false;
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  return make_range(typcache, &lower, &upper, false, NULL);
+#else
   return make_range(typcache, &lower, &upper, false);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 }
 
 #if POSTGRESQL_VERSION_NUMBER >= 140000
@@ -395,7 +399,11 @@ multirange_make(const SpanSet *ss)
     upper.infinite = false;
     upper.inclusive = s->upper_inc;
     upper.lower = false;
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+    ranges[i] = make_range(typcache, &lower, &upper, false, NULL);
+#else
     ranges[i] = make_range(typcache, &lower, &upper, false);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
   }
   MultirangeType *result = make_multirange(mrangetypid, typcache, ss->count,
     ranges);
