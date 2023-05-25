@@ -3,6 +3,37 @@
 
 /******************************************************************/
 
+/**
+* Macros for manipulating the 'flags' byte. A uint8_t used as follows:
+* VVSRGBMZ
+* Version bit, followed by
+* Validty, Solid, ReadOnly, Geodetic, HasBBox, HasM and HasZ flags.
+*/
+#define LWFLAG_Z        0x01
+#define LWFLAG_M        0x02
+#define LWFLAG_BBOX     0x04
+#define LWFLAG_GEODETIC 0x08
+#define LWFLAG_READONLY 0x10
+#define LWFLAG_SOLID    0x20
+
+#define FLAGS_GET_Z(flags)         ((flags) & LWFLAG_Z)
+#define FLAGS_GET_M(flags)        (((flags) & LWFLAG_M)>>1)
+#define FLAGS_GET_BBOX(flags)     (((flags) & LWFLAG_BBOX)>>2)
+#define FLAGS_GET_GEODETIC(flags) (((flags) & LWFLAG_GEODETIC)>>3)
+#define FLAGS_GET_READONLY(flags) (((flags) & LWFLAG_READONLY)>>4)
+#define FLAGS_GET_SOLID(flags)    (((flags) & LWFLAG_SOLID)>>5)
+
+#define FLAGS_SET_Z(flags, value) ((flags) = (value) ? ((flags) | LWFLAG_Z) : ((flags) & ~LWFLAG_Z))
+#define FLAGS_SET_M(flags, value) ((flags) = (value) ? ((flags) | LWFLAG_M) : ((flags) & ~LWFLAG_M))
+#define FLAGS_SET_BBOX(flags, value) ((flags) = (value) ? ((flags) | LWFLAG_BBOX) : ((flags) & ~LWFLAG_BBOX))
+#define FLAGS_SET_GEODETIC(flags, value) ((flags) = (value) ? ((flags) | LWFLAG_GEODETIC) : ((flags) & ~LWFLAG_GEODETIC))
+#define FLAGS_SET_READONLY(flags, value) ((flags) = (value) ? ((flags) | LWFLAG_READONLY) : ((flags) & ~LWFLAG_READONLY))
+#define FLAGS_SET_SOLID(flags, value) ((flags) = (value) ? ((flags) | LWFLAG_SOLID) : ((flags) & ~LWFLAG_SOLID))
+
+#define FLAGS_NDIMS(flags) (2 + FLAGS_GET_Z(flags) + FLAGS_GET_M(flags))
+#define FLAGS_GET_ZM(flags) (FLAGS_GET_M(flags) + FLAGS_GET_Z(flags) * 2)
+#define FLAGS_NDIMS_BOX(flags) (FLAGS_GET_GEODETIC(flags) ? 3 : FLAGS_NDIMS(flags))
+
 /*
 ** Variants available for WKB and WKT output types
 */

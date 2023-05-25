@@ -347,12 +347,6 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
   (VARATT_IS_EXTENDED((datum)) || VARATT_IS_EXTERNAL((datum)) || \
    VARATT_IS_COMPRESSED((datum)))
 
-/**
- * @brief Macro for accessing the GSERIALIZED value of a temporal point.
- * @pre It is assumed that the geometry/geography IS NOT TOASTED
- */
-#define DatumGetGserializedP(X)      ((GSERIALIZED *) DatumGetPointer(X))
-
 /*****************************************************************************/
 
 /* Parameter tests */
