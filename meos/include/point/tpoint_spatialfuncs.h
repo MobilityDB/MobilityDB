@@ -84,8 +84,8 @@
 /**
  * @brief Return a pointer to a 2D/3DZ point from the datum/GSERIALIZED
  */
-#define DATUM_POINT2D_P(gs)  ( (POINT2D *) GS_POINT_PTR(DatumGetGserializedP(gs)) )
-#define DATUM_POINT3DZ_P(gs) ( (POINT3DZ *) GS_POINT_PTR(DatumGetGserializedP(gs)) )
+#define DATUM_POINT2D_P(d)  ( (POINT2D *) GS_POINT_PTR(DatumGetGserializedP(d)) )
+#define DATUM_POINT3DZ_P(d) ( (POINT3DZ *) GS_POINT_PTR(DatumGetGserializedP(d)) )
 
 #define GSERIALIZED_POINT2D_P(gs)  ( (POINT2D *) GS_POINT_PTR((gs)) )
 #define GSERIALIZED_POINT3DZ_P(gs) ( (POINT3DZ *) GS_POINT_PTR((gs)) )

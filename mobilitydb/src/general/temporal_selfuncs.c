@@ -147,7 +147,7 @@ tpoint_const_to_stbox(Node *other, STBox *box)
   Datum constvalue = ((Const *) other)->constvalue;
   meosType type = oid_type(consttype);
   if (geo_basetype(type))
-    geo_set_stbox((GSERIALIZED *) PointerGetDatum(constvalue), box);
+    geo_set_stbox(DatumGetGserializedP(constvalue), box);
   else if (type == T_TSTZSPAN)
     period_set_stbox(DatumGetSpanP(constvalue), box);
   else if (type == T_STBOX)

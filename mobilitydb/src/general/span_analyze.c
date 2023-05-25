@@ -51,6 +51,9 @@
 #include <fmgr.h>
 #include <catalog/pg_operator.h>
 #include <utils/typcache.h>
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>

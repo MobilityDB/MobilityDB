@@ -38,6 +38,9 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <utils/float.h>
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
@@ -1281,10 +1284,10 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
   if (hasz)
   {
-    const POINT3DZ *p1 = DATUM_POINT3DZ_P(&start1->value);
-    const POINT3DZ *p2 = DATUM_POINT3DZ_P(&end1->value);
-    const POINT3DZ *p3 = DATUM_POINT3DZ_P(&start2->value);
-    const POINT3DZ *p4 = DATUM_POINT3DZ_P(&end2->value);
+    const POINT3DZ *p1 = DATUM_POINT3DZ_P(tinstant_value(start1));
+    const POINT3DZ *p2 = DATUM_POINT3DZ_P(tinstant_value(end1));
+    const POINT3DZ *p3 = DATUM_POINT3DZ_P(tinstant_value(start2));
+    const POINT3DZ *p4 = DATUM_POINT3DZ_P(tinstant_value(end2));
     x1 = p1->x; y1 = p1->y; z1 = p1->z;
     x2 = p2->x; y2 = p2->y; z2 = p2->z;
     x3 = p3->x; y3 = p3->y; z3 = p3->z;
@@ -1296,10 +1299,10 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   }
   else
   {
-    const POINT2D *p1 = DATUM_POINT2D_P(&start1->value);
-    const POINT2D *p2 = DATUM_POINT2D_P(&end1->value);
-    const POINT2D *p3 = DATUM_POINT2D_P(&start2->value);
-    const POINT2D *p4 = DATUM_POINT2D_P(&end2->value);
+    const POINT2D *p1 = DATUM_POINT2D_P(tinstant_value(start1));
+    const POINT2D *p2 = DATUM_POINT2D_P(tinstant_value(end1));
+    const POINT2D *p3 = DATUM_POINT2D_P(tinstant_value(start2));
+    const POINT2D *p4 = DATUM_POINT2D_P(tinstant_value(end2));
     x1 = p1->x; y1 = p1->y;
     x2 = p2->x; y2 = p2->y;
     x3 = p3->x; y3 = p3->y;
@@ -1793,7 +1796,7 @@ tpoint_trajectory(const Temporal *temp)
 int
 tpointinst_srid(const TInstant *inst)
 {
-  GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
   return gserialized_get_srid(gs);
 }
 
@@ -1851,7 +1854,7 @@ TInstant *
 tpointinst_set_srid(const TInstant *inst, int32 srid)
 {
   TInstant *result = tinstant_copy(inst);
-  GSERIALIZED *gs = DatumGetGserializedP(&result->value);
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(result));
   gserialized_set_srid(gs, srid);
   return result;
 }
@@ -1869,7 +1872,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(result, i);
-    GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
+    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
     gserialized_set_srid(gs, srid);
   }
   /* Set the SRID of the bounding box */
@@ -1896,7 +1899,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
     {
       /* Set the SRID of the composing points */
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
+      GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
       gserialized_set_srid(gs, srid);
     }
     /* Set the SRID of the bounding box */
@@ -1969,7 +1972,7 @@ pt_force_geodetic(LWPOINT *point)
 TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
-  GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   /* Short circuit functions gserialized_geog_from_geom and
      gserialized_geom_from_geog since we know it is a point */
@@ -2978,10 +2981,10 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
   const TInstant *end2, Datum *value, TimestampTz *t)
 {
   assert(! MEOS_FLAGS_GET_GEODETIC(start1->flags));
-  const POINT2D *sp1 = DATUM_POINT2D_P(&start1->value);
-  const POINT2D *ep1 = DATUM_POINT2D_P(&end1->value);
-  const POINT2D *sp2 = DATUM_POINT2D_P(&start2->value);
-  const POINT2D *ep2 = DATUM_POINT2D_P(&end2->value);
+  const POINT2D *sp1 = DATUM_POINT2D_P(tinstant_value(start1));
+  const POINT2D *ep1 = DATUM_POINT2D_P(tinstant_value(end1));
+  const POINT2D *sp2 = DATUM_POINT2D_P(tinstant_value(start2));
+  const POINT2D *ep2 = DATUM_POINT2D_P(tinstant_value(end2));
   /* It there is a North passage we call the function
     tgeompoint_min_dist_at_timestamp */
   bool ds = (sp1->x - sp2->x) > 0;

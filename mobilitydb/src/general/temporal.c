@@ -1396,7 +1396,7 @@ Temporal_num_timestamps(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int result = temporal_num_timestamps(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_INT32(result);
 }
 
 PGDLLEXPORT Datum Temporal_start_timestamp(PG_FUNCTION_ARGS);

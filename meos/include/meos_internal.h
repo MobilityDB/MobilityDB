@@ -123,8 +123,10 @@
  * Miscellaneous functions
  *****************************************************************************/
 
+#if MEOS
 #define TimestampTzGetDatum(X) Int64GetDatum(X)
 #define DatumGetTimestampTz(X)((TimestampTz) DatumGetInt64(X))
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions for set and span types

@@ -1027,7 +1027,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
     for (i = 0; i < commonEntriesCount; i++)
     {
       box = DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
-      commonEntries[i].delta = Abs(bbox_penalty(leftBox, box) -
+      commonEntries[i].delta = fabs(bbox_penalty(leftBox, box) -
         bbox_penalty(rightBox, box));
     }
 

@@ -37,6 +37,9 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 /* PostGIS */
 #include <liblwgeom_internal.h>
 /* MEOS */
@@ -182,7 +185,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   ptr += sprintf(ptr, "[");
   if (MEOS_FLAGS_GET_Z(inst->flags))
   {
-    const POINT3DZ *pt = DATUM_POINT3DZ_P(&inst->value);
+    const POINT3DZ *pt = DATUM_POINT3DZ_P(tinstant_value(inst));
     ptr += lwprint_double(pt->x, precision, ptr);
     ptr += sprintf(ptr, ",");
     ptr += lwprint_double(pt->y, precision, ptr);
@@ -191,7 +194,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   }
   else
   {
-    const POINT2D *pt = DATUM_POINT2D_P(&inst->value);
+    const POINT2D *pt = DATUM_POINT2D_P(tinstant_value(inst));
     ptr += lwprint_double(pt->x, precision, ptr);
     ptr += sprintf(ptr, ",");
     ptr += lwprint_double(pt->y, precision, ptr);

@@ -35,6 +35,9 @@
 #include "general/ttext_textfuncs.h"
 
 /* PostgreSQL */
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 #include "utils/formatting.h"
 /* MEOS */
 #include "general/lifting.h"
@@ -197,7 +200,7 @@ pg_lower(text *txt)
 Datum
 datum_lower(Datum value)
 {
-  return PointerGetDatum(pg_lower(DatumGetTextP(value)));
+  return pg_lower(DatumGetTextP(value));
 }
 
 /**
@@ -229,7 +232,7 @@ pg_upper(text *txt)
 Datum
 datum_upper(Datum value)
 {
-  return PointerGetDatum(pg_upper(DatumGetTextP(value)));
+  return pg_upper(DatumGetTextP(value));
 }
 
 /*****************************************************************************

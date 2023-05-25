@@ -423,27 +423,27 @@ SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint3D;
 (1 row)
 
 SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint;
-  round   
-----------
- 0.000000
+   round    
+------------
+ 170.328089
 (1 row)
 
 SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint;
-  round   
-----------
- 0.000000
+   round    
+------------
+ 169.178471
 (1 row)
 
 SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
-  round   
-----------
- 0.000000
+   round    
+------------
+ 180.963911
 (1 row)
 
 SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
-  round   
-----------
- 0.000000
+   round    
+------------
+ 193.561739
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL;

@@ -1463,13 +1463,13 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   instants[0] = TSEQUENCE_INST_N(seq, 0);
-  const POINT2D *last = DATUM_POINT2D_P(&instants[0]->value);
+  const POINT2D *last = DATUM_POINT2D_P(tinstant_value(instants[0]));
   int k = 1;
   for (int i = 1; i < seq->count; i++)
   {
     bool last_point = (i == seq->count - 1);
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    const POINT2D *pt = DATUM_POINT2D_P(&inst->value);
+    const POINT2D *pt = DATUM_POINT2D_P(tinstant_value(inst));
 
     /* Don't drop points if we are running short of points */
     if (seq->count - i > min_points - k)
