@@ -1,5 +1,3 @@
-set force_parallel_mode=regress;
-SET
 SELECT round(MAX(maxValue(g <-> temp))::numeric, 6) FROM tbl_geom_point t1, tbl_tgeompoint t2
 WHERE g <-> temp IS NOT NULL;
    round    
@@ -328,5 +326,3 @@ WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
     18
 (1 row)
 
-set force_parallel_mode=off;
-SET

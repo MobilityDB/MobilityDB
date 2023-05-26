@@ -1,5 +1,3 @@
-set force_parallel_mode=regress;
-SET
 SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint;
  srid 
 ------
@@ -423,27 +421,27 @@ SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint3D;
 (1 row)
 
 SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint;
-  round   
-----------
- 0.000000
+   round    
+------------
+ 170.328089
 (1 row)
 
 SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint;
-  round   
-----------
- 0.000000
+   round    
+------------
+ 169.178471
 (1 row)
 
 SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
-  round   
-----------
- 0.000000
+   round    
+------------
+ 180.963911
 (1 row)
 
 SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
-  round   
-----------
- 0.000000
+   round    
+------------
+ 193.561739
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL;
@@ -606,5 +604,3 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_geodstbox3d t2 WHERE temp != merge
      0
 (1 row)
 
-set force_parallel_mode=off;
-SET

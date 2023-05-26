@@ -47,6 +47,9 @@
 #else
   #include <access/hash.h>
 #endif
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -1584,9 +1587,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   if (expand && count > seq->maxcount)
   {
     maxcount = seq->maxcount * 2;
-#ifdef DEBUG_BUILD
-    printf(" seq -> %d\n", maxcount);
-#endif /* DEBUG_BUILD */
+    // printf(" seq -> %d\n", maxcount);
   }
   /* Get the bounding box size */
   size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temptype));

@@ -2,8 +2,6 @@ SET parallel_tuple_cost=0;
 SET
 SET parallel_setup_cost=0;
 SET
-SET force_parallel_mode=regress;
-SET
 SELECT round(extent(inst), 6) FROM tbl_tgeompoint_inst;
                                                  round                                                  
 --------------------------------------------------------------------------------------------------------
@@ -547,6 +545,4 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeogpoint_seqset GROUP BY k%10 O
 SET parallel_tuple_cost=100;
 SET
 SET parallel_setup_cost=100;
-SET
-SET force_parallel_mode=off;
 SET

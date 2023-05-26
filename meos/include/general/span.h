@@ -61,7 +61,7 @@ typedef struct
 
 #define DatumGetSpanP(X)           ((Span *) DatumGetPointer(X))
 #define SpanPGetDatum(X)           PointerGetDatum(X)
-#define PG_GETARG_SPAN_P(X)        DatumGetSpanP(PG_GETARG_POINTER(X))
+#define PG_GETARG_SPAN_P(X)        DatumGetSpanP(PG_GETARG_DATUM(X))
 #define PG_RETURN_SPAN_P(X)        PG_RETURN_POINTER(X)
 
 #if MEOS

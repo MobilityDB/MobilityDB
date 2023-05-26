@@ -309,20 +309,20 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
   if (hasz) /* 3D */
   {
-    const POINT3DZ *p1 = DATUM_POINT3DZ_P(&start1->value);
-    const POINT3DZ *p2 = DATUM_POINT3DZ_P(&end1->value);
-    const POINT3DZ *p3 = DATUM_POINT3DZ_P(&start2->value);
-    const POINT3DZ *p4 = DATUM_POINT3DZ_P(&end2->value);
+    const POINT3DZ *p1 = DATUM_POINT3DZ_P(tinstant_value(start1));
+    const POINT3DZ *p2 = DATUM_POINT3DZ_P(tinstant_value(end1));
+    const POINT3DZ *p3 = DATUM_POINT3DZ_P(tinstant_value(start2));
+    const POINT3DZ *p4 = DATUM_POINT3DZ_P(tinstant_value(end2));
     bool found = point3d_min_dist(p1, p2, p3, p4, &fraction);
     if (!found)
       return false;
   }
   else /* 2D */
   {
-    const POINT2D *p1 = DATUM_POINT2D_P(&start1->value);
-    const POINT2D *p2 = DATUM_POINT2D_P(&end1->value);
-    const POINT2D *p3 = DATUM_POINT2D_P(&start2->value);
-    const POINT2D *p4 = DATUM_POINT2D_P(&end2->value);
+    const POINT2D *p1 = DATUM_POINT2D_P(tinstant_value(start1));
+    const POINT2D *p2 = DATUM_POINT2D_P(tinstant_value(end1));
+    const POINT2D *p3 = DATUM_POINT2D_P(tinstant_value(start2));
+    const POINT2D *p4 = DATUM_POINT2D_P(tinstant_value(end2));
     bool found = point2d_min_dist(p1, p2, p3, p4, &fraction);
     if (!found)
       return false;
@@ -353,10 +353,10 @@ static bool
 tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *mindist, TimestampTz *t)
 {
-  const POINT2D *p1 = DATUM_POINT2D_P(&start1->value);
-  const POINT2D *p2 = DATUM_POINT2D_P(&end1->value);
-  const POINT2D *p3 = DATUM_POINT2D_P(&start2->value);
-  const POINT2D *p4 = DATUM_POINT2D_P(&end2->value);
+  const POINT2D *p1 = DATUM_POINT2D_P(tinstant_value(start1));
+  const POINT2D *p2 = DATUM_POINT2D_P(tinstant_value(end1));
+  const POINT2D *p3 = DATUM_POINT2D_P(tinstant_value(start2));
+  const POINT2D *p4 = DATUM_POINT2D_P(tinstant_value(end2));
   GEOGRAPHIC_EDGE e1, e2;
   GEOGRAPHIC_POINT close1, close2;
   POINT3D A1, A2, B1, B2;
@@ -927,7 +927,7 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
       gserialized_shortestline3d(traj, gs) :
       gserialized_shortestline2d(traj, gs);
   }
-  pfree(DatumGetPointer(traj));
+  pfree(traj);
   return true;
 }
 

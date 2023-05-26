@@ -33,7 +33,6 @@
 
 set parallel_tuple_cost=0;
 set parallel_setup_cost=0;
-set force_parallel_mode=regress;
 
 -------------------------------------------------------------------------------
 -- econtains
@@ -124,7 +123,6 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE edwithin(t1.
 -------------------------------------------------------------------------------
 set parallel_tuple_cost=100;
 set parallel_setup_cost=100;
-set force_parallel_mode=off;
 -------------------------------------------------------------------------------
 
 -- Test index support function for ever spatial relationships

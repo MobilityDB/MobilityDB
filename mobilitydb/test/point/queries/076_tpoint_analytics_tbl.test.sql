@@ -31,7 +31,6 @@
 
 -- set parallel_tuple_cost=0;
 -- set parallel_setup_cost=0;
-set force_parallel_mode=regress;
 
 --------------------------------------------------------
 
@@ -113,6 +112,5 @@ FROM (SELECT asMVTGeom(temp, stbox 'STBOX X((0,0),(50,50))') AS mvt
 
 -- set parallel_tuple_cost=100;
 -- set parallel_setup_cost=100;
-set force_parallel_mode=off;
 
 -------------------------------------------------------------------------------

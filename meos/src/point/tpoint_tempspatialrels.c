@@ -247,7 +247,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     result = palloc(sizeof(TSequence *));
     result[0] = tsequence_from_base_period(datum_no, T_TBOOL, &seq->period,
       STEP);
-    pfree(DatumGetPointer(gsinter));
+    pfree(gsinter);
     *count = 1;
     return result;
   }

@@ -2,8 +2,6 @@ SET parallel_tuple_cost=0;
 SET
 SET parallel_setup_cost=0;
 SET
-SET force_parallel_mode=regress;
-SET
 SELECT extent(inst) FROM tbl_tbool_inst;
                       extent                      
 --------------------------------------------------
@@ -1481,6 +1479,4 @@ SELECT numInstants(appendInstant(inst)) FROM temp;
 SET parallel_tuple_cost=100;
 SET
 SET parallel_setup_cost=100;
-SET
-SET force_parallel_mode=off;
 SET

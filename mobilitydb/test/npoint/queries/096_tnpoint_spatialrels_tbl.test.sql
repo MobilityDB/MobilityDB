@@ -30,7 +30,6 @@
 -------------------------------------------------------------------------------
 set parallel_tuple_cost=0;
 set parallel_setup_cost=0;
-set force_parallel_mode=regress;
 -------------------------------------------------------------------------------
 -- Geometry rel tnpoint
  -------------------------------------------------------------------------------
@@ -71,7 +70,6 @@ SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE edwithin(t1.temp, t2.t
 -------------------------------------------------------------------------------
 set parallel_tuple_cost=100;
 set parallel_setup_cost=100;
-set force_parallel_mode=off;
 -------------------------------------------------------------------------------
 -- Test index support function for ever spatial relationships
 

@@ -1396,7 +1396,7 @@ Temporal_num_timestamps(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int result = temporal_num_timestamps(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_INT32(result);
 }
 
 PGDLLEXPORT Datum Temporal_start_timestamp(PG_FUNCTION_ARGS);
@@ -1594,10 +1594,11 @@ temporal_ev_al_comp_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, Datum))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  meosType basetype = temptype_basetype(temp->temptype);
   Datum value = PG_GETARG_ANYDATUM(1);
   bool result = func(temp, value);
   PG_FREE_IF_COPY(temp, 0);
-  DATUM_FREE_IF_COPY(value, temptype_basetype(temp->temptype), 1);
+  DATUM_FREE_IF_COPY(value, basetype, 1);
   PG_RETURN_BOOL(result);
 }
 

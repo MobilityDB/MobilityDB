@@ -38,6 +38,10 @@
 #include <assert.h>
 /* GEOS */
 #include <geos_c.h>
+/* POSTGRESQL */
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 /* POSTGIS */
 #include <lwgeodetic.h>
 #include <lwgeom_log.h>
@@ -3424,7 +3428,7 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
   SpanSet *ps = temporal_time(temp2);
   Temporal *rest = temporal_restrict_periodset(temp1, ps, REST_MINUS);
   if (! rest)
-    return (Temporal *) temp2;
+    return temporal_copy((Temporal *) temp2);
   Temporal *result = temporal_insert(rest, temp2, connect);
   pfree(rest); pfree(ps);
   return (Temporal *) result;
@@ -4125,8 +4129,8 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
     return 1;
 
   /* Compare memory size */
-  size_t size1 = VARSIZE(DatumGetPointer(temp1));
-  size_t size2 = VARSIZE(DatumGetPointer(temp2));
+  size_t size1 = VARSIZE(temp1);
+  size_t size2 = VARSIZE(temp2);
   if (size1 < size2)
     return -1;
   else if (size1 > size2)

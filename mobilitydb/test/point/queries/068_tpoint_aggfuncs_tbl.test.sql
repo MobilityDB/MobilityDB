@@ -30,7 +30,6 @@
 -------------------------------------------------------------------------------
 SET parallel_tuple_cost=0;
 SET parallel_setup_cost=0;
-SET force_parallel_mode=regress;
 
 -------------------------------------------------------------------------------
 -- Extent aggregate function
@@ -118,6 +117,5 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeogpoint_seqset GROUP BY k%10 O
 
 SET parallel_tuple_cost=100;
 SET parallel_setup_cost=100;
-SET force_parallel_mode=off;
 
 -------------------------------------------------------------------------------

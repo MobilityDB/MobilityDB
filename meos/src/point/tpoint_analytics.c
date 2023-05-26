@@ -206,14 +206,19 @@ tpointseq_cont_to_geo_measure1(const TSequence *seq, const TSequence *measure)
   }
   else
   {
-    result = MEOS_FLAGS_GET_LINEAR(seq->flags) ?
-      (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, (uint32_t) k,
-        (LWGEOM **) points) :
-      (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid, NULL,
+    if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+    {
+      result = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
         (uint32_t) k, (LWGEOM **) points);
-    for (int i = 0; i < k; i++)
-      lwpoint_free(points[i]);
-    pfree(points);
+      for (int i = 0; i < k; i++)
+        lwpoint_free(points[i]);
+      pfree(points);
+    }
+    else
+    {
+      result = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+        points[0]->srid, NULL, (uint32_t) k, (LWGEOM **) points);
+    }
   }
   return result;
 }
@@ -247,9 +252,7 @@ tpointseq_to_geo1(const TSequence *seq)
       result = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
         points[0]->srid, NULL, (uint32_t) seq->count, points);
     FLAGS_SET_GEODETIC(result->flags, MEOS_FLAGS_GET_GEODETIC(seq->flags));
-    for (int i = 0; i < seq->count; i++)
-      lwpoint_free((LWPOINT *) points[i]);
-    pfree(points);
+    /* We cannot pfree neither points[i] nor points */
   }
   return result;
 }
@@ -1463,13 +1466,13 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   instants[0] = TSEQUENCE_INST_N(seq, 0);
-  const POINT2D *last = DATUM_POINT2D_P(&instants[0]->value);
+  const POINT2D *last = DATUM_POINT2D_P(tinstant_value(instants[0]));
   int k = 1;
   for (int i = 1; i < seq->count; i++)
   {
     bool last_point = (i == seq->count - 1);
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    const POINT2D *pt = DATUM_POINT2D_P(&inst->value);
+    const POINT2D *pt = DATUM_POINT2D_P(tinstant_value(inst));
 
     /* Don't drop points if we are running short of points */
     if (seq->count - i > min_points - k)
@@ -1911,11 +1914,14 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
     points[i] = lwgeom_from_gserialized(gs);
     times[i] = (inst->t / 1000000) + DELTA_UNIX_POSTGRES_EPOCH;
   }
-  LWGEOM *result = lwpointarr_make_trajectory(points, seq->count,
-    MEOS_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEP);
-  for (int i = 0; i < seq->count; i++)
-    lwpoint_free((LWPOINT *) points[i]);
-  pfree(points);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  LWGEOM *result = lwpointarr_make_trajectory(points, seq->count, interp);
+  if (interp == LINEAR)
+  {
+    for (int i = 0; i < seq->count; i++)
+      lwpoint_free((LWPOINT *) points[i]);
+    pfree(points);
+  }
   return result;
 }
 

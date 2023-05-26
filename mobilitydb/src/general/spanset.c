@@ -276,7 +276,7 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
   }
   SpanSet *ss = spanset_make(spans, mrange->rangeCount, NORMALIZE);
   pfree(spans);
-  PG_FREE_IF_COPY(ss, 0);
+  PG_FREE_IF_COPY(mrange, 0);
   PG_RETURN_POINTER(ss);
 }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */

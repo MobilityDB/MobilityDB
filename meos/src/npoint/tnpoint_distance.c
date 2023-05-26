@@ -94,7 +94,7 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   GSERIALIZED *geom = npoint_geom(np);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo(tempgeom, geom);
-  pfree(DatumGetPointer(geom));
+  pfree(geom);
   return result;
 }
 

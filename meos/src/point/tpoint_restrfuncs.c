@@ -2023,7 +2023,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TInstant **tofree = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  GSERIALIZED *p1 = DatumGetGserializedP(&inst1->value);
+  GSERIALIZED *p1 = DatumGetGserializedP(tinstant_value(inst1));
   bool lower_inc = seq->period.lower_inc;
   bool upper_inc;
   int ninsts = 0, nseqs = 0, nfree = 0;
@@ -2031,7 +2031,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    GSERIALIZED *p2 = DatumGetGserializedP(&inst2->value);
+    GSERIALIZED *p2 = DatumGetGserializedP(tinstant_value(inst2));
     GSERIALIZED *p3, *p4;
     bool makeseq = false;
     if (gspoint_eq(p1, p2))
