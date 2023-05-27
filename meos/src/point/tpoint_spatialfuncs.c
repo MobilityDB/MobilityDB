@@ -200,8 +200,7 @@ datum2_point_nsame(Datum geopoint1, Datum geopoint2)
 
 /**
  * @brief Serialize a geometry/geography
- *
- *@pre It is supposed that the flags such as Z and geodetic have been
+ * @pre It is supposed that the flags such as Z and geodetic have been
  * set up before by the calling function
  */
 GSERIALIZED *
@@ -553,8 +552,8 @@ ensure_non_empty(const GSERIALIZED *gs)
  * than the square of the distance between A and B.
  * https://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment
  *****************************************************************************/
-/*
- * Return true if point p is in the segment defined by A and B (2D)
+/**
+ * @brief Return true if point p is in the segment defined by A and B (2D)
  * @note The test of p = A or p = B MUST BE done in the calling function
  *   to take care of the inclusive/exclusive bounds for temporal sequences
  */
@@ -570,8 +569,8 @@ point2d_on_segment(const POINT2D *p, const POINT2D *A, const POINT2D *B)
   return (dotproduct >= 0);
 }
 
-/*
- * Return true if point p is in the segment defined by A and B (3D)
+/**
+ * @brief Return true if point p is in the segment defined by A and B (3D)
  * @note The test of p = A or p = B MUST BE done in the calling function
  *   to take care of the inclusive/exclusive bounds for temporal sequences
  */
@@ -1459,8 +1458,7 @@ geopoint_collinear(Datum value1, Datum value2, Datum value3,
 /**
  * @brief Return -1, 0, or 1 depending on whether the first LWPOINT
  * is less than, equal, or greater than the second one.
- * @pre There is no empty point in the array, the points are of the same
- * dimensionality
+ * @pre The points are not empty and are of the same dimensionality
  */
 static int
 lwpoint_cmp(const LWPOINT *p, const LWPOINT *q)
@@ -1517,7 +1515,6 @@ LWGEOM **
 lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
 {
   assert (count > 0);
-  /* We bypass the call to function lwgeom_as_lwpoint through memcpy */
   LWGEOM **newpoints = palloc(sizeof(LWGEOM *) * count);
   memcpy(newpoints, points, sizeof(LWGEOM *) * count);
   lwpointarr_sort((LWPOINT **) newpoints, count);
@@ -1536,7 +1533,6 @@ lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
  * @note The function does not remove duplicate points, that is, repeated
  * points in a multipoint or consecutive equal points in a line string. This
  * should be done in the calling function.
- *
  * @param[in] lwpoints Array of points
  * @param[in] count Number of elements in the input array
  * @param[in] interp Interpolation
@@ -1607,10 +1603,7 @@ tpointseq_disc_trajectory(const TSequence *seq)
   }
   LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count, STEP);
   GSERIALIZED *result = geo_serialize(lwgeom);
-  pfree(lwgeom);
-  for (int i = 0; i < seq->count; i++)
-    lwpoint_free((LWPOINT *) points[i]);
-  pfree(points);
+  lwgeom_free(lwgeom);
   return result;
 }
 
@@ -1635,22 +1628,26 @@ tpointseq_cont_trajectory(const TSequence *seq)
   Datum value = tinstant_value(TSEQUENCE_INST_N(seq, 0));
   GSERIALIZED *gs = DatumGetGserializedP(value);
   points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-  int k = 1;
+  int npoints = 1;
   for (int i = 1; i < seq->count; i++)
   {
     value = tinstant_value(TSEQUENCE_INST_N(seq, i));
     gs = DatumGetGserializedP(value);
     LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-    if (! lwpoint_same(lwpoint, points[k - 1]))
-      points[k++] = lwpoint;
+    if (! lwpoint_same(lwpoint, points[npoints - 1]))
+      points[npoints++] = lwpoint;
   }
-  LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, k,
-    MEOS_FLAGS_GET_INTERP(seq->flags));
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, npoints,
+    interp);
   GSERIALIZED *result = geo_serialize(lwgeom);
-  pfree(lwgeom);
-  for (int i = 0; i < k; i++)
-    lwpoint_free(points[i]);
-  pfree(points);
+  lwgeom_free(lwgeom);
+  if (interp == LINEAR)
+  {
+    for (int i = 0; i < npoints; i++)
+      lwpoint_free(points[i]);
+    pfree(points);
+  }
   return result;
 }
 

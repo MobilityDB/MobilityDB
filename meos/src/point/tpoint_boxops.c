@@ -185,9 +185,13 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count,
   LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, count,
     interp);
   lwgeom_calculate_gbox_geodetic(lwgeom, box);
-
   lwgeom_free(lwgeom);
-  /* We cannot pfree(points); */
+  if (interp == LINEAR)
+  {
+    for (int i = 0; i < count; i++)
+      lwpoint_free((LWPOINT *) points[i]);
+    pfree(points);
+  }
   return;
 }
 
@@ -211,9 +215,13 @@ tgeogpointseq_set_gbox(const TSequence *seq, GBOX *box)
   LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, seq->count,
     interp);
   lwgeom_calculate_gbox_geodetic(lwgeom, box);
-
   lwgeom_free(lwgeom);
-  /* We cannot pfree(points); */
+  if (interp == LINEAR)
+  {
+    for (int i = 0; i < count; i++)
+      lwpoint_free((LWPOINT *) points[i]);
+    pfree(points);
+  }
   return;
 }
 #endif /* MEOS */

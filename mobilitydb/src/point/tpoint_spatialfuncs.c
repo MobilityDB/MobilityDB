@@ -291,7 +291,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   /* Last parameter set to STEP to force the function to return multipoint */
   LWGEOM *lwgeom = lwpointarr_make_trajectory(points, ss->totalcount, STEP);
   Datum multipoint = PointerGetDatum(geo_serialize(lwgeom));
-  pfree(lwgeom);
+  lwgeom_free(lwgeom);
   Datum transf = datum_transform(multipoint, srid);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
@@ -316,9 +316,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   }
   TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
     NORMALIZE_NO);
-  for (int i = 0; i < ss->totalcount; i++)
-    lwpoint_free((LWPOINT *) points[i]);
-  pfree(points); pfree(instants);
+  pfree(instants);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(transf));
   pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
   lwmpoint_free(lwmpoint);
