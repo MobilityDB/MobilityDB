@@ -1125,8 +1125,8 @@ static void
 tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   int *split, double *dist)
 {
-  POINT2D p2k, p2_sync, p2a, p2b;
-  POINT3DZ p3k, p3_sync, p3a = { 0 }, p3b = { 0 }; /* make compiler quiet */
+  POINT2D *p2k, *p2_sync, *p2a, *p2b;
+  POINT3DZ *p3k, *p3_sync, *p3a, *p3b;
   Datum value;
   bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
@@ -1141,13 +1141,13 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   const TInstant *end = TSEQUENCE_INST_N(seq, i2);
   if (hasz)
   {
-    p3a = datum_point3dz(tinstant_value(start));
-    p3b = datum_point3dz(tinstant_value(end));
+    p3a = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value(start));
+    p3b = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value(end));
   }
   else
   {
-    p2a = datum_point2d(tinstant_value(start));
-    p2b = datum_point2d(tinstant_value(end));
+    p2a = (POINT2D *) DATUM_POINT2D_P(tinstant_value(start));
+    p2b = (POINT2D *) DATUM_POINT2D_P(tinstant_value(end));
   }
 
   /* Loop for every instant between i1 and i2 */
@@ -1157,29 +1157,29 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
     const TInstant *inst = TSEQUENCE_INST_N(seq, k);
     if (hasz)
     {
-      p3k = datum_point3dz(tinstant_value(inst));
+      p3k = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value(inst));
       if (syncdist)
       {
         value = tsegment_value_at_timestamp(start, end, linear, inst->t);
-        p3_sync = datum_point3dz(value);
-        d_tmp = dist3d_pt_pt(&p3k, &p3_sync);
+        p3_sync = (POINT3DZ *) DATUM_POINT3DZ_P(value);
+        d_tmp = dist3d_pt_pt(p3k, p3_sync);
         pfree(DatumGetPointer(value));
       }
       else
-        d_tmp = dist3d_pt_seg(&p3k, &p3a, &p3b);
+        d_tmp = dist3d_pt_seg(p3k, p3a, p3b);
     }
     else
     {
-      p2k = datum_point2d(tinstant_value(inst));
+      p2k = (POINT2D *) DATUM_POINT2D_P(tinstant_value(inst));
       if (syncdist)
       {
         value = tsegment_value_at_timestamp(start, end, linear, inst->t);
-        p2_sync = datum_point2d(value);
-        d_tmp = dist2d_pt_pt(&p2k, &p2_sync);
+        p2_sync = (POINT2D *) DATUM_POINT2D_P(value);
+        d_tmp = dist2d_pt_pt(p2k, p2_sync);
         pfree(DatumGetPointer(value));
       }
       else
-        d_tmp = dist2d_pt_seg(&p2k, &p2a, &p2b);
+        d_tmp = dist2d_pt_seg(p2k, p2a, p2b);
     }
     if (d_tmp > d)
     {
@@ -1596,10 +1596,11 @@ tpointinst_affine1(const TInstant *inst, const AFFINE *a, int srid,
   LWPOINT *lwpoint;
   if (hasz)
   {
-    POINT3DZ p3d = datum_point3dz(value);
-    x = p3d.x;
-    y = p3d.y;
-    double z = p3d.z;
+    const POINT3DZ *pt = DATUM_POINT3DZ_P(value);
+    POINT3DZ p3d;
+    x = pt->x;
+    y = pt->y;
+    double z = pt->z;
     p3d.x = a->afac * x + a->bfac * y + a->cfac * z + a->xoff;
     p3d.y = a->dfac * x + a->efac * y + a->ffac * z + a->yoff;
     p3d.z = a->gfac * x + a->hfac * y + a->ifac * z + a->zoff;
@@ -1607,9 +1608,10 @@ tpointinst_affine1(const TInstant *inst, const AFFINE *a, int srid,
   }
   else
   {
-    POINT2D p2d = datum_point2d(value);
-    x = p2d.x;
-    y = p2d.y;
+    const POINT2D *pt = DATUM_POINT2D_P(value);
+    POINT2D p2d;
+    x = pt->x;
+    y = pt->y;
     p2d.x = a->afac * x + a->bfac * y + a->xoff;
     p2d.y = a->dfac * x + a->efac * y + a->yoff;
     lwpoint = lwpoint_make2d(srid, p2d.x, p2d.y);

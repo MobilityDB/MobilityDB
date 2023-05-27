@@ -340,16 +340,16 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
 {
   assert(seq->count >= 2);
  /* points is an array of points in the sequence */
-  POINT2D *points = palloc0(sizeof(POINT2D) * seq->count);
+  const POINT2D **points = palloc0(sizeof(POINT2D *) * seq->count);
   /* bitarr is an array of bool for collecting the splits */
   bool *bitarr = palloc0(sizeof(bool) * seq->count);
-  points[0] = datum_point2d(tinstant_value(TSEQUENCE_INST_N(seq, 0)));
+  points[0] = DATUM_POINT2D_P(tinstant_value(TSEQUENCE_INST_N(seq, 0)));
   int numsplits = 0;
   for (int i = 1; i < seq->count; i++)
   {
-    points[i] = datum_point2d(tinstant_value(TSEQUENCE_INST_N(seq, i)));
+    points[i] = DATUM_POINT2D_P(tinstant_value(TSEQUENCE_INST_N(seq, i)));
     /* If stationary segment we need to split the sequence */
-    if (points[i - 1].x == points[i].x && points[i - 1].y == points[i].y)
+    if (points[i - 1]->x == points[i]->x && points[i - 1]->y == points[i]->y)
     {
       if (i > 1 && ! bitarr[i - 1])
       {
@@ -383,18 +383,18 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
     while (j < end)
     {
       /* If the bounding boxes of the segments intersect */
-      if (lw_seg_interact(&points[i], &points[i + 1], &points[j],
-        &points[j + 1]))
+      if (lw_seg_interact(points[i], points[i + 1], points[j],
+        points[j + 1]))
       {
         /* Candidate for intersection */
         POINT2D p = { 0 }; /* make compiler quiet */
-        int intertype = seg2d_intersection(&points[i], &points[i + 1],
-          &points[j], &points[j + 1], &p);
+        int intertype = seg2d_intersection(points[i], points[i + 1],
+          points[j], points[j + 1], &p);
         if (intertype > 0 &&
           /* Exclude the case when two consecutive segments that
            * necessarily touch each other in their common point */
           (intertype != MEOS_SEG_TOUCH_END || j != i + 1 ||
-           p.x != points[j].x || p.y != points[j].y))
+           p.x != points[j]->x || p.y != points[j]->y))
         {
           /* Set the new end */
           end = j;
@@ -935,10 +935,8 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
  * @brief Return the timestamp at which a segment of a temporal point takes a
  * base value
  *
- * This function must take into account the roundoff errors and thus it uses
- * the datum_point_eq_eps for comparing two values so the coordinates of the
- * values may differ by MEOS_EPSILON.
- *
+ * To take into account roundoff errors, the function considers that two
+ * two values are equal even if their coordinates may differ by MEOS_EPSILON.
  * @param[in] inst1,inst2 Temporal values
  * @param[in] value Base value
  * @param[out] t Timestamp
@@ -947,8 +945,8 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
  * @note The resulting timestamp may be at an exclusive bound
  */
 static bool
-tpointsegm_timestamp_at_value1_iter(const TInstant *inst1, const TInstant *inst2,
-  Datum value, TimestampTz *t)
+tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
+  const TInstant *inst2, Datum value, TimestampTz *t)
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);

@@ -56,38 +56,16 @@
 
 /*****************************************************************************
  * Utility functions
- * N.B. See the corresponding MACRO definitions in tpoint_spatialfuncs.h
  *****************************************************************************/
 
 /**
- * @brief Return a 2D point from the datum
- */
-POINT2D
-datum_point2d(Datum geom)
-{
-  const GSERIALIZED *gs = DatumGetGserializedP(geom);
-  POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
-  return *point;
-}
-
-/**
- * @brief Return a 3DZ point from the datum
- */
-POINT3DZ
-datum_point3dz(Datum geom)
-{
-  const GSERIALIZED *gs = DatumGetGserializedP(geom);
-  POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
-  return *point;
-}
-
-/**
- * @brief Return a 4D point from the GSERIALIZED
+ * @brief Return a 4D point from the datum
  * @note The M dimension is ignored
  */
 void
-gs_point4d(const GSERIALIZED *gs, POINT4D *p)
+datum_point4d(Datum value, POINT4D *p)
 {
+  const GSERIALIZED *gs = DatumGetGserializedP(value);
   memset(p, 0, sizeof(POINT4D));
   if (FLAGS_GET_Z(gs->gflags))
   {
@@ -102,18 +80,6 @@ gs_point4d(const GSERIALIZED *gs, POINT4D *p)
     p->x = point->x;
     p->y = point->y;
   }
-  return;
-}
-
-/**
- * @brief Return a 4D point from the datum
- * @note The M dimension is ignored
- */
-void
-datum_point4d(Datum value, POINT4D *p)
-{
-  const GSERIALIZED *gs = DatumGetGserializedP(value);
-  gs_point4d(gs, p);
   return;
 }
 

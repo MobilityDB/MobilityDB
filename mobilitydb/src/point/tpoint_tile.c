@@ -108,8 +108,14 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
+    memset(&pt, 0, sizeof(POINT3DZ));
     if (FLAGS_GET_Z(sorigin->gflags))
-      pt = datum_point3dz(PointerGetDatum(sorigin));
+    {
+      const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
+      pt.x = p3d->x;
+      pt.y = p3d->y;
+      pt.z = p3d->z;
+    }
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
@@ -215,21 +221,26 @@ Stbox_tile(PG_FUNCTION_ARGS)
   if (gs_srid != SRID_UNKNOWN)
     ensure_same_srid(srid, gs_srid);
   POINT3DZ pt, ptorig;
+  memset(&pt, 0, sizeof(POINT3DZ));
+  memset(&ptorig, 0, sizeof(POINT3DZ));
   bool hasz = (bool) FLAGS_GET_Z(point->gflags);
   if (hasz)
   {
     ensure_has_Z_gs(sorigin);
-    pt = datum_point3dz(PointerGetDatum(point));
-    ptorig = datum_point3dz(PointerGetDatum(sorigin));
+    const POINT3DZ *p1 = GSERIALIZED_POINT3DZ_P(point);
+    pt.x = p1->x;
+    pt.y = p1->y;
+    pt.z = p1->z;
+    const POINT3DZ *p2 = GSERIALIZED_POINT3DZ_P(sorigin);
+    ptorig.x = p2->x;
+    ptorig.y = p2->y;
+    ptorig.z = p2->z;
   }
   else
   {
-    /* Initialize to 0 the Z dimension if it is missing */
-    memset(&pt, 0, sizeof(POINT3DZ));
-    const POINT2D *p1 = GSERIALIZED_POINT2D_P(sorigin);
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(point);
     pt.x = p1->x;
     pt.y = p1->y;
-    memset(&ptorig, 0, sizeof(POINT3DZ));
     const POINT2D *p2 = GSERIALIZED_POINT2D_P(sorigin);
     ptorig.x = p2->x;
     ptorig.y = p2->y;
@@ -313,16 +324,18 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
+    memset(&pt, 0, sizeof(POINT3DZ));
     hasz = MEOS_FLAGS_GET_Z(temp->flags);
     if (hasz)
     {
       ensure_has_Z_gs(sorigin);
-      pt = datum_point3dz(PointerGetDatum(sorigin));
+      const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
+      pt.x = p3d->x;
+      pt.y = p3d->y;
+      pt.z = p3d->z;
     }
     else
     {
-      /* Initialize to 0 the Z dimension if it is missing */
-      memset(&pt, 0, sizeof(POINT3DZ));
       const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
       pt.x = p2d->x;
       pt.y = p2d->y;

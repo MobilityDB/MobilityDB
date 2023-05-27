@@ -596,12 +596,17 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   if (gs_srid != SRID_UNKNOWN)
     ensure_same_srid(srid, gs_srid);
   POINT3DZ pt;
+  memset(&pt, 0, sizeof(POINT3DZ));
   if (FLAGS_GET_Z(sorigin->gflags))
-    pt = datum_point3dz(PointerGetDatum(sorigin));
+  {
+    const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
+    pt.x = p2d->x;
+    pt.y = p2d->y;
+    pt.z = p2d->z;
+  }
   else
   {
     /* Initialize to 0 the Z dimension if it is missing */
-    memset(&pt, 0, sizeof(POINT3DZ));
     const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
     pt.x = p2d->x;
     pt.y = p2d->y;
