@@ -1701,65 +1701,105 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   if (ss->count == 1)
     return tpointseq_cont_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
 
+  int32 srid = tpointseqset_srid(ss);
+  bool linear = MEOS_FLAGS_GET_LINEAR(ss->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
-  LWPOINT **points = palloc(sizeof(LWPOINT *) * ss->totalcount);
-  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ss->count);
-  int k = 0, l = 0;
+  LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
+  LWGEOM **lines = palloc(sizeof(LWGEOM *) * ss->count);
+  int npoints = 0, nlines = 0;
+  /* We repeat processing as #tpointseq_cont_trajectory to avoid useless
+   * palloc/pfree */
   for (int i = 0; i < ss->count; i++)
   {
-    GSERIALIZED *traj = tpointseq_cont_trajectory(TSEQUENCESET_SEQ_N(ss, i));
-    int geotype = gserialized_get_type(traj);
-    if (geotype == POINTTYPE)
-      points[l++] = lwgeom_as_lwpoint(lwgeom_from_gserialized(traj));
-    else if (geotype == MULTIPOINTTYPE)
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    Datum value = tinstant_value(TSEQUENCE_INST_N(seq, 0));
+    GSERIALIZED *gs = DatumGetGserializedP(value);
+    /* npoints is the current number of points so far, k is the number of
+     * additional points from the current sequence */
+    points[npoints] = lwgeom_from_gserialized(gs);
+    int k = 1;
+    for (int j = 1; j < seq->count; j++)
     {
-      LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(traj));
-      int count = lwmpoint->ngeoms;
-      for (int m = 0; m < count; m++)
-        points[l++] = lwmpoint->geoms[m];
+      value = tinstant_value(TSEQUENCE_INST_N(seq, j));
+      gs = DatumGetGserializedP(value);
+      /* Remove two consecutive points if they are equal */
+      LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+      if (! lwpoint_same(lwpoint, (LWPOINT *) points[npoints + k - 1]))
+      {
+        int j1 = npoints + k++;
+        points[j1] = (LWGEOM *) lwpoint;
+        FLAGS_SET_Z(points[j1]->flags, hasz);
+        FLAGS_SET_GEODETIC(points[j1]->flags, geodetic);
+      }
     }
-    /* gserialized_get_type(traj) == LINETYPE */
+    if (linear && k > 1)
+    {
+      lines[nlines] = (LWGEOM *) lwline_from_lwgeom_array(srid,
+        (uint32_t) k, &points[npoints]);
+      FLAGS_SET_Z(lines[nlines]->flags, hasz);
+      FLAGS_SET_GEODETIC(lines[nlines]->flags, geodetic);
+      nlines++;
+      for (int j = 0; j < k; j++)
+        lwgeom_free(points[npoints + j]);
+    }
     else
-      geoms[k++] = lwgeom_from_gserialized(traj);
+      npoints += k;
   }
   GSERIALIZED *result;
-  if (k == 0)
+  LWGEOM *lwresult, *lwrespoints = NULL, *lwreslines = NULL;
+  if (npoints > 0)
   {
-    /* Only points */
-    LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, l, STEP);
-    result = geo_serialize(lwgeom);
-    pfree(lwgeom);
-  }
-  else if (l == 0)
-  {
-    /* Only lines */
-    /* k > 1 since otherwise it is a singleton sequence set and this case
-     * was taken care at the begining of the function */
-    // TODO add the bounding box instead of ask PostGIS to compute it again
-    LWGEOM *coll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
-      geoms[0]->srid, NULL, (uint32_t) k, geoms);
-    FLAGS_SET_GEODETIC(coll->flags, geodetic);
-    result = geo_serialize(coll);
-    /* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
-  }
-  else
-  {
-    /* Both points and lines */
-    if (l == 1)
-      geoms[k++] = (LWGEOM *) points[0];
+    if (npoints == 1)
+      lwrespoints = points[0];
     else
     {
-      geoms[k++] = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-        points[0]->srid, NULL, (uint32_t) l, (LWGEOM **) points);
-      /* We cannot lwpoint_free(points[i]); */
+      LWGEOM **points1 = palloc(sizeof(LWGEOM *) * npoints);
+      memcpy(points1, points, sizeof(LWGEOM *) * npoints);
+      // TODO add the bounding box instead of ask PostGIS to compute it again
+      lwrespoints = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, srid,
+        NULL, (uint32_t) npoints, points1);
+      FLAGS_SET_Z(lwrespoints->flags, hasz);
+      FLAGS_SET_GEODETIC(lwrespoints->flags, geodetic);
     }
-    // TODO add the bounding box instead of ask PostGIS to compute it again
-    LWGEOM *coll = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE,
-      geoms[0]->srid, NULL, (uint32_t) k, geoms);
-    FLAGS_SET_GEODETIC(coll->flags, geodetic);
-    result = geo_serialize(coll);
+    pfree(points);
   }
-  pfree(points); pfree(geoms);
+  if (nlines > 0)
+  {
+    if (nlines == 1)
+      lwreslines = (LWGEOM *) lines[0];
+    else
+    {
+      LWGEOM **lines1 = palloc(sizeof(LWGEOM *) * nlines);
+      memcpy(lines1, lines, sizeof(LWGEOM *) * nlines);
+      // TODO add the bounding box instead of ask PostGIS to compute it again
+      lwreslines = (LWGEOM *) lwcollection_construct(MULTILINETYPE, srid, NULL,
+        (uint32_t) nlines, lines1);
+      FLAGS_SET_Z(lwreslines->flags, hasz);
+      FLAGS_SET_GEODETIC(lwreslines->flags, geodetic);
+    }
+    pfree(lines);
+  }
+  /* If both points and lines */
+  if (npoints > 0 && nlines > 0)
+  {
+    LWGEOM **geoms = palloc(sizeof(LWGEOM *) * 2);
+    geoms[0] = lwrespoints;
+    geoms[1] = lwreslines;
+    // TODO add the bounding box instead of ask PostGIS to compute it again
+    lwresult = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE, srid, NULL,
+      (uint32_t) 2, geoms);
+    FLAGS_SET_Z(lwresult->flags, hasz);
+    FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
+  }
+  /* If only points */
+  else if (nlines == 0)
+    lwresult = lwrespoints;
+  /* If only lines */
+  else /* npoints == 0 */
+    lwresult = lwreslines;
+  result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
   return result;
 }
 

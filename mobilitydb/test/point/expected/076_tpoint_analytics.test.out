@@ -520,9 +520,9 @@ SELECT ST_AsText(trajectory(DouglasPeuckerSimplify(tgeompoint '{[Point(0 4)@2000
 SELECT ST_AsText(trajectory(DouglasPeuckerSimplify(tgeompoint '{[Point(0 4)@2000-01-01,
   Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04],
   [Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07],[Point(7 4)@2000-01-08]}', 4)));
-                               st_astext                                
-------------------------------------------------------------------------
- GEOMETRYCOLLECTION(LINESTRING(0 4,3 1),LINESTRING(4 3,6 4),POINT(7 4))
+                              st_astext                              
+---------------------------------------------------------------------
+ GEOMETRYCOLLECTION(POINT(7 4),MULTILINESTRING((0 4,3 1),(4 3,6 4)))
 (1 row)
 
 SELECT ST_AsText(trajectory(DouglasPeuckerSimplify(tgeompoint '[Point(0 4 0)@2000-01-01,
