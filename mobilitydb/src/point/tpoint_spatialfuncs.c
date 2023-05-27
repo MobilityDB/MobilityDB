@@ -32,11 +32,10 @@
  * @brief Spatial functions for temporal points.
  */
 
-#include "point/tpoint_spatialfuncs.h"
-
 /* C */
 #include <assert.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/float.h>
 /* PostGIS */
 #include <liblwgeom.h>
@@ -49,6 +48,8 @@
 #include "general/set.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
+#include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_restrfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_general/tnumber_mathfuncs.h"

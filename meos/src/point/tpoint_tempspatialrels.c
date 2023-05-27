@@ -86,6 +86,7 @@
 #include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_restrfuncs.h"
 #include "point/tpoint_spatialrels.h"
 
 /*****************************************************************************

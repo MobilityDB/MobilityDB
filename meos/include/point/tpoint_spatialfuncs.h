@@ -46,14 +46,12 @@
 #define GEOM_TO_GEOG        true
 #define GEOG_TO_GEOM        false
 
-/** Symbolic constants for distinguishing between atGeometry and atGeometryTime */
-#define REST_TIME           true
-#define REST_TIME_NO        false
-
 /*****************************************************************************/
 
 /* Utility functions */
 
+extern POINT2D datum_point2d(Datum value);
+extern POINT3DZ datum_point3dz(Datum value);
 extern void gs_point4d(const GSERIALIZED *gs, POINT4D *p);
 extern void datum_point4d(Datum value, POINT4D *p);
 
@@ -161,17 +159,6 @@ extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 
 extern Datum datum_round_geo(Datum value, Datum size);
 extern Temporal *tpoint_round(const Temporal *temp, Datum size);
-
-/* Functions for extracting coordinates */
-
-extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
-
-/* Restriction functions */
-
-extern TSequence **tpointseq_at_geom(const TSequence *seq,
-  const GSERIALIZED *gs, int *count);
-extern Span *tpointseq_interperiods(const TSequence *seq,
-  GSERIALIZED *gsinter, int *count);
 
 /*****************************************************************************/
 
