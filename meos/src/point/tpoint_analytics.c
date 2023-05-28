@@ -76,20 +76,23 @@ point_meas_to_lwpoint(Datum point, Datum measure)
 {
   GSERIALIZED *gs = DatumGetGserializedP(point);
   int32 srid = gserialized_get_srid(gs);
+  int hasz = FLAGS_GET_Z(gs->gflags);
+  int geodetic = FLAGS_GET_GEODETIC(gs->gflags);
   double d = DatumGetFloat8(measure);
-  LWPOINT *result;
-  if (FLAGS_GET_Z(gs->gflags))
+  LWPOINT *lwresult;
+  if (hasz)
   {
     const POINT3DZ *pt = GSERIALIZED_POINT3DZ_P(gs);
-    result = lwpoint_make4d(srid, pt->x, pt->y, pt->z, d);
+    lwresult = lwpoint_make4d(srid, pt->x, pt->y, pt->z, d);
   }
   else
   {
     const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
-    result = lwpoint_make3dm(srid, pt->x, pt->y, d);
+    lwresult = lwpoint_make3dm(srid, pt->x, pt->y, d);
   }
-  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
-  return (LWGEOM *) result;
+  FLAGS_SET_Z(lwresult->flags, hasz);
+  FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
+  return (LWGEOM *) lwresult;
 }
 
 /**
@@ -123,9 +126,9 @@ tpointinst_to_geo_meas_iter(const TInstant *inst, const TInstant *measure)
 static GSERIALIZED *
 tpointinst_to_geo_meas(const TInstant *inst, const TInstant *measure)
 {
-  LWGEOM *point = tpointinst_to_geo_meas_iter(inst, measure);
-  GSERIALIZED *result = geo_serialize(point);
-  lwgeom_free(point);
+  LWGEOM *lwresult = tpointinst_to_geo_meas_iter(inst, measure);
+  GSERIALIZED *result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
   return result;
 }
 
@@ -140,6 +143,8 @@ tpointinst_to_geo_meas(const TInstant *inst, const TInstant *measure)
 static GSERIALIZED *
 tpointseq_disc_to_geo_meas(const TSequence *seq, const TSequence *measure)
 {
+  int32 srid = tpointseq_srid(seq);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -156,11 +161,12 @@ tpointseq_disc_to_geo_meas(const TSequence *seq, const TSequence *measure)
   }
   else
   {
-    LWGEOM *mpoint = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-      points[0]->srid, NULL, (uint32_t) seq->count, points);
-    FLAGS_SET_GEODETIC(mpoint->flags, geodetic);
-    result = geo_serialize(mpoint);
-    lwgeom_free(mpoint);
+    LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, srid,
+      NULL, (uint32_t) seq->count, points);
+    FLAGS_SET_Z(lwresult->flags, hasz);
+    FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
+    result = geo_serialize(lwresult);
+    lwgeom_free(lwresult);
   }
   return result;
 }
@@ -178,6 +184,10 @@ tpointseq_disc_to_geo_meas(const TSequence *seq, const TSequence *measure)
 static GSERIALIZED *
 tpointseq_cont_to_geo_meas(const TSequence *seq, const TSequence *measure)
 {
+  int32 srid = tpointseq_srid(seq);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
+  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
   LWGEOM **points = palloc(sizeof(LWPOINT *) * seq->count);
   /* Keep the first point */
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
@@ -199,30 +209,32 @@ tpointseq_cont_to_geo_meas(const TSequence *seq, const TSequence *measure)
     else
       lwgeom_free(value2);
   }
-  LWGEOM *lwgeom;
+  LWGEOM *lwresult;
   if (npoints == 1)
   {
-    lwgeom = points[0];
+    lwresult = points[0];
     pfree(points);
   }
   else
   {
-    if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+    if (linear)
     {
-      lwgeom = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
-        (uint32_t) npoints, points);
+      lwresult = (LWGEOM *) lwline_from_lwgeom_array(srid, (uint32_t) npoints,
+        points);
       for (int i = 0; i < npoints; i++)
         lwgeom_free(points[i]);
       pfree(points);
     }
     else
     {
-      lwgeom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-        points[0]->srid, NULL, (uint32_t) npoints, points);
+      lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, srid, NULL,
+        (uint32_t) npoints, points);
     }
   }
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  lwgeom_free(lwgeom);
+  FLAGS_SET_Z(lwresult->flags, hasz);
+  FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
+  GSERIALIZED *result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
   return result;
 }
 
@@ -249,9 +261,9 @@ tpointseqset_to_geo_meas(const TSequenceSet *ss, const TSequenceSet *measure)
   }
 
   int32 srid = tpointseqset_srid(ss);
-  bool linear = MEOS_FLAGS_GET_LINEAR(ss->flags);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
+  bool linear = MEOS_FLAGS_GET_LINEAR(ss->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
   LWGEOM **lines = palloc(sizeof(LWGEOM *) * ss->count);
   int npoints = 0, nlines = 0;
@@ -325,16 +337,20 @@ tpointseq_cont_to_geo_meas_segm(const TSequence *seq, const TSequence *measure)
     return tpointinst_to_geo_meas(inst, meas);
 
   /* General case */
+  int32 srid = tpointseq_srid(seq);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   LWGEOM **lines = palloc(sizeof(LWGEOM *) * (seq->count - 1));
   LWGEOM *points[2];
   points[0] = tpointinst_to_geo_meas_iter(inst, meas);
-  for (int i = 1; i < seq->count; i++)
+  for (int i = 0; i < seq->count - 1; i++)
   {
-    inst = TSEQUENCE_INST_N(seq, i);
-    meas = measure ? TSEQUENCE_INST_N(measure, i) : NULL;
+    inst = TSEQUENCE_INST_N(seq, i + 1);
+    meas = measure ? TSEQUENCE_INST_N(measure, i + 1) : NULL;
     points[1] = tpointinst_to_geo_meas_iter(inst, meas);
-    lines[i - 1] = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, 2,
-      points);
+    lines[i] = (LWGEOM *) lwline_from_lwgeom_array(srid, 2, points);
+    FLAGS_SET_Z(lines[i]->flags, hasz);
+    FLAGS_SET_GEODETIC(lines[i]->flags, geodetic);
     lwgeom_free(points[0]);
     points[0] = points[1];
   }
@@ -349,8 +365,10 @@ tpointseq_cont_to_geo_meas_segm(const TSequence *seq, const TSequence *measure)
   else
   {
     /* Result is a multilinestring */
-    lwresult = (LWGEOM *) lwcollection_construct(MULTILINETYPE, lines[0]->srid,
-      NULL, (uint32_t) seq->count - 1, lines);
+    lwresult = (LWGEOM *) lwcollection_construct(MULTILINETYPE, srid, NULL,
+      (uint32_t) seq->count - 1, lines);
+    FLAGS_SET_Z(lwresult->flags, hasz);
+    FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
   }
   GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(lwresult);
@@ -412,15 +430,15 @@ tpointseqset_to_geo_meas_segm(const TSequenceSet *ss,
       FLAGS_SET_Z(lines[nlines]->flags, hasz);
       FLAGS_SET_GEODETIC(lines[nlines]->flags, geodetic);
       nlines++;
-      // lwgeom_free(points[npoints]);
+      lwgeom_free(points[npoints]);
       points[npoints] = points[npoints + 1];
     }
-    // lwgeom_free(points[npoints]);
+    lwgeom_free(points[npoints]);
   }
   LWGEOM *lwresult = lwcoll_from_points_lines(points, lines, npoints, nlines);
   GSERIALIZED *result = geo_serialize(lwresult);
-  // lwgeom_free(lwresult);
-  // pfree(points); pfree(lines);
+  lwgeom_free(lwresult);
+  pfree(points); pfree(lines);
   return result;
 }
 

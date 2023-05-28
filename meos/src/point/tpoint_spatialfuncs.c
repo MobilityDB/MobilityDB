@@ -1564,7 +1564,7 @@ lwline_make(Datum value1, Datum value2)
   GSERIALIZED *gs = DatumGetGserializedP(value1);
   int srid = gserialized_get_srid(gs);
   int hasz = FLAGS_GET_Z(gs->gflags);
-  int isgeodetic = FLAGS_GET_GEODETIC(gs->gflags);
+  int geodetic = FLAGS_GET_GEODETIC(gs->gflags);
   /* Since there is no M value a 0 value is passed */
   POINTARRAY *pa = ptarray_construct_empty((char) hasz, 0, 2);
   POINT4D pt;
@@ -1574,7 +1574,7 @@ lwline_make(Datum value1, Datum value2)
   ptarray_append_point(pa, &pt, LW_TRUE);
   LWLINE *result = lwline_construct(srid, NULL, pa);
   FLAGS_SET_Z(result->flags, hasz);
-  FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+  FLAGS_SET_GEODETIC(result->flags, geodetic);
   return result;
 }
 
@@ -1601,9 +1601,9 @@ tpointseq_disc_trajectory(const TSequence *seq)
     GSERIALIZED *gsvalue = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gsvalue);
   }
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count, STEP);
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  lwgeom_free(lwgeom);
+  LWGEOM *lwresult = lwpointarr_make_trajectory(points, seq->count, STEP);
+  GSERIALIZED *result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
   return result;
 }
 
@@ -1639,9 +1639,9 @@ tpointseq_cont_trajectory(const TSequence *seq)
       points[npoints++] = (LWGEOM *) lwpoint;
   }
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, npoints, interp);
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  lwgeom_free(lwgeom);
+  LWGEOM *lwresult = lwpointarr_make_trajectory(points, npoints, interp);
+  GSERIALIZED *result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
   if (interp == LINEAR)
   {
     for (int i = 0; i < npoints; i++)
@@ -1754,8 +1754,6 @@ tpointseqset_trajectory(const TSequenceSet *ss)
       if (! lwpoint_same((LWPOINT *) lwpoint1, (LWPOINT *) lwpoint2))
       {
         points[npoints + k++] = lwpoint2;
-        // FLAGS_SET_Z(points[j1]->flags, hasz);
-        // FLAGS_SET_GEODETIC(points[j1]->flags, geodetic);
         lwpoint1 = lwpoint2;
       }
       else
@@ -1775,6 +1773,8 @@ tpointseqset_trajectory(const TSequenceSet *ss)
       npoints += k;
   }
   LWGEOM *lwresult = lwcoll_from_points_lines(points, lines, npoints, nlines);
+  FLAGS_SET_Z(lwresult->flags, hasz);
+  FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
   GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(lwresult);
   pfree(points); pfree(lines);
