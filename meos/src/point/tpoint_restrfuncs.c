@@ -537,7 +537,7 @@ tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TSequence **result = palloc(sizeof(TSequence *) * count);
   /* Create the splits */
-  int start = 0, k = 0;
+  int start = 0, nseqs = 0;
   while (start < seq->count)
   {
     int end = start + 1;
@@ -546,7 +546,7 @@ tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
     /* Construct piece from start to end */
     for (int j = 0; j < end - start; j++)
       instants[j] = TSEQUENCE_INST_N(seq, j + start);
-    result[k++] = tsequence_make(instants, end - start, true, true,
+    result[nseqs++] = tsequence_make(instants, end - start, true, true,
       DISCRETE, NORMALIZE_NO);
     /* Continue with the next split */
     start = end;
@@ -716,6 +716,74 @@ tpoint_make_simple(const Temporal *temp, int *count)
     result = (Temporal **) tpointseq_make_simple((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal **) tpointseqset_make_simple((TSequenceSet *) temp, count);
+  return result;
+}
+
+/*****************************************************************************
+ * Functions for extracting coordinates
+ *****************************************************************************/
+
+/**
+ * @brief Get the X coordinates of a temporal point
+ */
+static Datum
+point_get_x(Datum point)
+{
+  POINT4D p;
+  datum_point4d(point, &p);
+  return Float8GetDatum(p.x);
+}
+
+/**
+ * @brief Get the Y coordinates of a temporal point
+ */
+static Datum
+point_get_y(Datum point)
+{
+  POINT4D p;
+  datum_point4d(point, &p);
+  return Float8GetDatum(p.y);
+}
+
+/**
+ * @brief Get the Z coordinates of a temporal point
+ */
+static Datum
+point_get_z(Datum point)
+{
+  POINT4D p;
+  datum_point4d(point, &p);
+  return Float8GetDatum(p.z);
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Get one of the coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
+ * @sqlfunc getX(), getY(), getZ()
+ */
+Temporal *
+tpoint_get_coord(const Temporal *temp, int coord)
+{
+  assert(tgeo_type(temp->temptype));
+  if (coord == 2)
+    ensure_has_Z(temp->flags);
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  assert(coord >= 0 && coord <= 2);
+  if (coord == 0)
+    lfinfo.func = (varfunc) &point_get_x;
+  else if (coord == 1)
+    lfinfo.func = (varfunc) &point_get_y;
+  else /* coord == 2 */
+    lfinfo.func = (varfunc) &point_get_z;
+  lfinfo.numparam = 0;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }
 

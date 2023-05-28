@@ -468,7 +468,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
 
   uint8_t colltype = 0;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ss->totalcount);
-  int k = 0;
+  int ngeoms = 0;
   for (int i = 0; i < ss->count; i++)
   {
 
@@ -476,25 +476,26 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
     if (measure)
     {
       m = TSEQUENCESET_SEQ_N(measure, i);
-      k += tpointseq_cont_to_geo_measure_segmentize1(seq, m, &geoms[k]);
+      ngeoms += tpointseq_cont_to_geo_measure_segmentize1(seq, m,
+        &geoms[ngeoms]);
     }
     else
-      k += tpointseq_to_geo_segmentize1(seq, &geoms[k]);
+      ngeoms += tpointseq_to_geo_segmentize1(seq, &geoms[ngeoms]);
     /* Output type not initialized */
     if (! colltype)
-      colltype = (uint8_t) lwtype_get_collectiontype(geoms[k - 1]->type);
+      colltype = (uint8_t) lwtype_get_collectiontype(geoms[ngeoms - 1]->type);
       /* Input type not compatible with output */
       /* make output type a collection */
     else if (colltype != COLLECTIONTYPE &&
-         lwtype_get_collectiontype(geoms[k - 1]->type) != colltype)
+         lwtype_get_collectiontype(geoms[ngeoms - 1]->type) != colltype)
       colltype = COLLECTIONTYPE;
   }
   GSERIALIZED *result;
   // TODO add the bounding box instead of ask PostGIS to compute it again
-  LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
-    geoms[0]->srid, NULL, (uint32_t) k, geoms);
+  LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype, geoms[0]->srid,
+    NULL, (uint32_t) ngeoms, geoms);
   result = geo_serialize(coll);
-  for (int i = 0; i < k; i++)
+  for (int i = 0; i < ngeoms; i++)
     lwgeom_free(geoms[i]);
   pfree(geoms);
   return result;

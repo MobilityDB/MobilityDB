@@ -1369,7 +1369,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   lower = lower_bucket;
   upper = lower_bucket + tunits;
   bool linear = MEOS_FLAGS_GET_LINEAR(ss->flags);
-  int k = 0;
+  int nseqs = 0;
   /* Loop for each bucket */
   for (int i = 0; i < count; i++)
   {
@@ -1382,14 +1382,14 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     if (proj)
     {
       Datum value = temporal_tprecision_agg_values((Temporal *) proj);
-      sequences[k++] = tsequence_from_base_period(value, ss->temptype, &p,
+      sequences[nseqs++] = tsequence_from_base_period(value, ss->temptype, &p,
         linear ? LINEAR : STEP);
       pfree(proj);
     }
     lower += tunits;
     upper += tunits;
   }
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**
@@ -1464,7 +1464,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
   /* Loop for each segment */
   bool lower_inc = seq->period.lower_inc;
   int i = 1; /* Current segment of the sequence */
-  int k = 0; /* Number of instants of the result */
+  int ninsts = 0; /* Number of instants of the result */
   while (i < seq->count && lower < upper_bucket)
   {
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
@@ -1475,7 +1475,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
         (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
     {
       Datum value = tsegment_value_at_timestamp(start, end, linear, lower);
-      instants[k++] = tinstant_make(value, seq->temptype, lower);
+      instants[ninsts++] = tinstant_make(value, seq->temptype, lower);
       /* Advance the bucket */
       lower += tunits;
     }
@@ -1492,12 +1492,12 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
       end = TSEQUENCE_INST_N(seq, ++i);
     }
   }
-  if (k == 0)
+  if (ninsts == 0)
   {
     pfree(instants);
     return NULL;
   }
-  return tsequence_make_free(instants, k, true, true, interp, NORMALIZE);
+  return tsequence_make_free(instants, ninsts, true, true, interp, NORMALIZE);
 }
 
 /**
@@ -1512,15 +1512,15 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   /* Loop for each segment */
-  int k = 0;
+  int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     TSequence *sample = tsequence_tsample(seq, duration, torigin);
     if (sample)
-      sequences[k++] = sample;
+      sequences[nseqs++] = sample;
   }
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**
@@ -3853,8 +3853,8 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
-  int k = tsequence_stops_iter(seq, maxdist, mintunits, sequences);
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  int nseqs = tsequence_stops_iter(seq, maxdist, mintunits, sequences);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**
@@ -3867,16 +3867,16 @@ TSequenceSet *
 tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
-  int k = 0;
+  int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     /* Instantaneous sequences do not have stops */
     if (seq->count == 1)
       continue;
-    k += tsequence_stops_iter(seq, maxdist, mintunits, &sequences[k]);
+    nseqs += tsequence_stops_iter(seq, maxdist, mintunits, &sequences[nseqs]);
   }
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /*****************************************************************************/

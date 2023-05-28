@@ -381,13 +381,13 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 {
   assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
   STBox *result = palloc(sizeof(STBox) * ss->totalcount);
-  int k = 0;
+  int nboxes = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tpointseq_stboxes_iter(seq, &result[k]);
+    nboxes += tpointseq_stboxes_iter(seq, &result[nboxes]);
   }
-  *count = k;
+  *count = nboxes;
   return result;
 }
 

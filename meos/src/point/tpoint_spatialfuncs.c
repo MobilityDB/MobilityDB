@@ -1623,29 +1623,29 @@ tpointseq_cont_trajectory(const TSequence *seq)
   if (seq->count == 1)
     return DatumGetGserializedP(tinstant_value_copy(TSEQUENCE_INST_N(seq, 0)));
 
-  LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
+  LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   /* Remove two consecutive points if they are equal */
   Datum value = tinstant_value(TSEQUENCE_INST_N(seq, 0));
   GSERIALIZED *gs = DatumGetGserializedP(value);
-  points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  points[0] = lwgeom_from_gserialized(gs);
   int npoints = 1;
   for (int i = 1; i < seq->count; i++)
   {
     value = tinstant_value(TSEQUENCE_INST_N(seq, i));
     gs = DatumGetGserializedP(value);
     LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-    if (! lwpoint_same(lwpoint, points[npoints - 1]))
-      points[npoints++] = lwpoint;
+    /* Remove two consecutive points if they are equal */
+    if (! lwpoint_same(lwpoint, (LWPOINT *) points[npoints - 1]))
+      points[npoints++] = (LWGEOM *) lwpoint;
   }
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, npoints,
-    interp);
+  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, npoints, interp);
   GSERIALIZED *result = geo_serialize(lwgeom);
   lwgeom_free(lwgeom);
   if (interp == LINEAR)
   {
     for (int i = 0; i < npoints; i++)
-      lwpoint_free(points[i]);
+      lwgeom_free(points[i]);
     pfree(points);
   }
   return result;
@@ -2070,74 +2070,6 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
 }
 
 /*****************************************************************************
- * Functions for extracting coordinates
- *****************************************************************************/
-
-/**
- * @brief Get the X coordinates of a temporal point
- */
-static Datum
-point_get_x(Datum point)
-{
-  POINT4D p;
-  datum_point4d(point, &p);
-  return Float8GetDatum(p.x);
-}
-
-/**
- * @brief Get the Y coordinates of a temporal point
- */
-static Datum
-point_get_y(Datum point)
-{
-  POINT4D p;
-  datum_point4d(point, &p);
-  return Float8GetDatum(p.y);
-}
-
-/**
- * @brief Get the Z coordinates of a temporal point
- */
-static Datum
-point_get_z(Datum point)
-{
-  POINT4D p;
-  datum_point4d(point, &p);
-  return Float8GetDatum(p.z);
-}
-
-/**
- * @ingroup libmeos_temporal_spatial_accessor
- * @brief Get one of the coordinates of a temporal point as a temporal float.
- * @param[in] temp Temporal point
- * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
- * @sqlfunc getX(), getY(), getZ()
- */
-Temporal *
-tpoint_get_coord(const Temporal *temp, int coord)
-{
-  assert(tgeo_type(temp->temptype));
-  if (coord == 2)
-    ensure_has_Z(temp->flags);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  assert(coord >= 0 && coord <= 2);
-  if (coord == 0)
-    lfinfo.func = (varfunc) &point_get_x;
-  else if (coord == 1)
-    lfinfo.func = (varfunc) &point_get_y;
-  else /* coord == 2 */
-    lfinfo.func = (varfunc) &point_get_z;
-  lfinfo.numparam = 0;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
-
-/*****************************************************************************
  * Length functions
  *****************************************************************************/
 
@@ -2402,15 +2334,15 @@ TSequenceSet *
 tpointseqset_speed(const TSequenceSet *ss)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  int k = 0;
+  int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (seq->count > 1)
-      sequences[k++] = tpointseq_speed(seq);
+      sequences[nseqs++] = tpointseq_speed(seq);
   }
   /* The resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**
@@ -2693,7 +2625,7 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value(inst1);
-  int k = 0, l = 0;
+  int ninsts = 0, nseqs = 0;
   Datum azimuth = 0; /* Make the compiler quiet */
   bool lower_inc = seq->period.lower_inc;
   bool upper_inc = false; /* make compiler quiet */
@@ -2705,36 +2637,36 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
     if (! datum_point_eq(value1, value2))
     {
       azimuth = func(value1, value2);
-      instants[k++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
+      instants[ninsts++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
     }
     else
     {
-      if (k != 0)
+      if (ninsts != 0)
       {
-        instants[k++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
+        instants[ninsts++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
         upper_inc = true;
         /* Resulting sequence has step interpolation */
-        result[l++] = tsequence_make((const TInstant **) instants, k,
+        result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
           lower_inc, upper_inc, STEP, NORMALIZE);
-        for (int j = 0; j < k; j++)
+        for (int j = 0; j < ninsts; j++)
           pfree(instants[j]);
-        k = 0;
+        ninsts = 0;
       }
       lower_inc = true;
     }
     inst1 = inst2;
     value1 = value2;
   }
-  if (k != 0)
+  if (ninsts != 0)
   {
-    instants[k++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
+    instants[ninsts++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
     /* Resulting sequence has step interpolation */
-    result[l++] = tsequence_make((const TInstant **) instants, k,
+    result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
       lower_inc, upper_inc, STEP, NORMALIZE);
   }
 
   pfree(instants);
-  return l;
+  return nseqs;
 }
 
 /**
@@ -2763,14 +2695,14 @@ tpointseqset_azimuth(const TSequenceSet *ss)
     return tpointseq_azimuth(TSEQUENCESET_SEQ_N(ss, 0));
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
-  int k = 0;
+  int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tpointseq_azimuth_iter(seq, &sequences[k]);
+    nseqs += tpointseq_azimuth_iter(seq, &sequences[nseqs]);
   }
   /* Resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**

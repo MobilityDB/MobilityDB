@@ -273,7 +273,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   }
 
   /* General case */
-  int k = 0;
+  int npoints = 0;
   const TSequence *seq;
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
   int maxcount = -1; /* number of instants of the longest sequence */
@@ -285,7 +285,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
     {
       Datum value = tinstant_value(TSEQUENCE_INST_N(seq, j));
       GSERIALIZED *gsvalue = DatumGetGserializedP(value);
-      points[k++] = lwgeom_from_gserialized(gsvalue);
+      points[npoints++] = lwgeom_from_gserialized(gsvalue);
     }
   }
   /* Last parameter set to STEP to force the function to return multipoint */
@@ -298,16 +298,18 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   TInstant **instants = palloc(sizeof(TInstant *) * maxcount);
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
-  k = 0;
+  npoints = 0;
   for (int i = 0; i < ss->count; i++)
   {
     seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
     {
-      Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[k++])));
+      GSERIALIZED *point = geo_serialize((LWGEOM *)
+        (lwmpoint->geoms[npoints++]));
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      instants[j] = tinstant_make(point, inst->temptype, inst->t);
-      pfree(DatumGetPointer(point));
+      instants[j] = tinstant_make(PointerGetDatum(point), inst->temptype,
+        inst->t);
+      pfree(point);
     }
     sequences[i] = tsequence_make((const TInstant **) instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO);
