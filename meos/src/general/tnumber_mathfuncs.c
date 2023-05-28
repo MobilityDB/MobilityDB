@@ -338,7 +338,7 @@ tnumberseq_linear_abs(const TSequence *seq)
   instants[0] = tnumberinst_abs(inst1);
   Datum value1 = tinstant_value(inst1);
   double dvalue1 = datum_double(value1, basetype);
-  int k = 1;
+  int ninsts = 1;
   Datum dzero = (basetype == T_INT4) ? Int32GetDatum(0) : Float8GetDatum(0);
   for (int i = 1; i < seq->count; i++)
   {
@@ -352,15 +352,15 @@ tnumberseq_linear_abs(const TSequence *seq)
       double duration = (double) (inst2->t - inst1->t);
       TimestampTz t = inst1->t + (TimestampTz) (duration * ratio);
       if (t != inst1->t && t != inst2->t)
-        instants[k++] = tinstant_make(dzero, seq->temptype, t);
+        instants[ninsts++] = tinstant_make(dzero, seq->temptype, t);
     }
-    instants[k++] = tnumberinst_abs(inst2);
+    instants[ninsts++] = tnumberinst_abs(inst2);
     inst1 = inst2;
     value1 = value2;
     dvalue1 = dvalue2;
   }
-  /* We are sure that k > 0 */
-  return tsequence_make_free(instants, k, seq->period.lower_inc,
+  /* We are sure that ninsts > 0 */
+  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
     seq->period.upper_inc, LINEAR, NORMALIZE);
 }
 

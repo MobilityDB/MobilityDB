@@ -583,7 +583,7 @@ point3dz_on_segment(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
   double j = (p->z - A->z) * (B->x - A->x) - (p->x - A->x) * (B->z - A->z);
   double k = (p->x - A->x) * (B->y - A->y) - (p->y - A->y) * (B->x - A->x);
   if (fabs(i) >= MEOS_EPSILON || fabs(j) >= MEOS_EPSILON ||
-    fabs(k) >= MEOS_EPSILON)
+      fabs(k) >= MEOS_EPSILON)
     return false;
   double dotproduct = (p->x - A->x) * (B->x - A->x) +
     (p->y - A->y) * (B->y - A->y) + (p->z - A->z) * (B->z - A->z);
@@ -1652,6 +1652,69 @@ tpointseq_cont_trajectory(const TSequence *seq)
 }
 
 /**
+ * @brief Construct a geometry from an array of points and lines
+ * @pre There is at least one geometry in both arrays
+ */
+LWGEOM *
+lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines, int npoints,
+  int nlines)
+{
+  assert(npoints > 0 || nlines > 0);
+  LWGEOM *result, *respoints = NULL, *reslines = NULL;
+  if (npoints > 0)
+  {
+    if (npoints == 1)
+      respoints = points[0];
+    else
+    {
+      /* There may be less points than the size of the array */
+      LWGEOM **points1 = palloc(sizeof(LWGEOM *) * npoints);
+      memcpy(points1, points, sizeof(LWGEOM *) * npoints);
+      // TODO add the bounding box instead of ask PostGIS to compute it again
+      respoints = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+        points[0]->srid, NULL, (uint32_t) npoints, points1);
+      FLAGS_SET_Z(respoints->flags, FLAGS_GET_Z(points[0]->flags));
+      FLAGS_SET_GEODETIC(respoints->flags, FLAGS_GET_GEODETIC(points[0]->flags));
+    }
+  }
+  if (nlines > 0)
+  {
+    if (nlines == 1)
+      reslines = (LWGEOM *) lines[0];
+    else
+    {
+      /* There may be less lines than the size of the array */
+      LWGEOM **lines1 = palloc(sizeof(LWGEOM *) * nlines);
+      memcpy(lines1, lines, sizeof(LWGEOM *) * nlines);
+      // TODO add the bounding box instead of ask PostGIS to compute it again
+      reslines = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
+        lines[0]->srid, NULL, (uint32_t) nlines, lines1);
+      FLAGS_SET_Z(reslines->flags, FLAGS_GET_Z(lines[0]->flags));
+      FLAGS_SET_GEODETIC(reslines->flags, FLAGS_GET_GEODETIC(lines[0]->flags));
+    }
+  }
+  /* If both points and lines */
+  if (npoints > 0 && nlines > 0)
+  {
+    LWGEOM **geoms = palloc(sizeof(LWGEOM *) * 2);
+    geoms[0] = respoints;
+    geoms[1] = reslines;
+    // TODO add the bounding box instead of ask PostGIS to compute it again
+    result = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE, respoints->srid,
+      NULL, (uint32_t) 2, geoms);
+    FLAGS_SET_Z(result->flags, FLAGS_GET_Z(respoints->flags));
+    FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(respoints->flags));
+  }
+  /* If only points */
+  else if (nlines == 0)
+    result = respoints;
+  /* If only lines */
+  else /* npoints == 0 */
+    result = reslines;
+  return result;
+}
+
+/**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point with sequence set type
  * @note The function does not remove duplicates point/linestring components.
@@ -1671,8 +1734,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
   LWGEOM **lines = palloc(sizeof(LWGEOM *) * ss->count);
   int npoints = 0, nlines = 0;
-  /* We repeat processing as #tpointseq_cont_trajectory to avoid useless
-   * palloc/pfree */
+  /* Iterate as in #tpointseq_cont_trajectory accumulating the results */
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
@@ -1680,26 +1742,29 @@ tpointseqset_trajectory(const TSequenceSet *ss)
     GSERIALIZED *gs = DatumGetGserializedP(value);
     /* npoints is the current number of points so far, k is the number of
      * additional points from the current sequence */
-    points[npoints] = lwgeom_from_gserialized(gs);
+    LWGEOM *lwpoint1 = lwgeom_from_gserialized(gs);
+    points[npoints] = lwpoint1;
     int k = 1;
     for (int j = 1; j < seq->count; j++)
     {
       value = tinstant_value(TSEQUENCE_INST_N(seq, j));
       gs = DatumGetGserializedP(value);
-      /* Remove two consecutive points if they are equal */
-      LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-      if (! lwpoint_same(lwpoint, (LWPOINT *) points[npoints + k - 1]))
+      /* Do not add the point if it is equal to the previous ones */
+      LWGEOM *lwpoint2 = lwgeom_from_gserialized(gs);
+      if (! lwpoint_same((LWPOINT *) lwpoint1, (LWPOINT *) lwpoint2))
       {
-        int j1 = npoints + k++;
-        points[j1] = (LWGEOM *) lwpoint;
-        FLAGS_SET_Z(points[j1]->flags, hasz);
-        FLAGS_SET_GEODETIC(points[j1]->flags, geodetic);
+        points[npoints + k++] = lwpoint2;
+        // FLAGS_SET_Z(points[j1]->flags, hasz);
+        // FLAGS_SET_GEODETIC(points[j1]->flags, geodetic);
+        lwpoint1 = lwpoint2;
       }
+      else
+        lwgeom_free(lwpoint2);
     }
     if (linear && k > 1)
     {
-      lines[nlines] = (LWGEOM *) lwline_from_lwgeom_array(srid,
-        (uint32_t) k, &points[npoints]);
+      lines[nlines] = (LWGEOM *) lwline_from_lwgeom_array(srid, (uint32_t) k,
+        &points[npoints]);
       FLAGS_SET_Z(lines[nlines]->flags, hasz);
       FLAGS_SET_GEODETIC(lines[nlines]->flags, geodetic);
       nlines++;
@@ -1709,60 +1774,10 @@ tpointseqset_trajectory(const TSequenceSet *ss)
     else
       npoints += k;
   }
-  GSERIALIZED *result;
-  LWGEOM *lwresult, *lwrespoints = NULL, *lwreslines = NULL;
-  if (npoints > 0)
-  {
-    if (npoints == 1)
-      lwrespoints = points[0];
-    else
-    {
-      LWGEOM **points1 = palloc(sizeof(LWGEOM *) * npoints);
-      memcpy(points1, points, sizeof(LWGEOM *) * npoints);
-      // TODO add the bounding box instead of ask PostGIS to compute it again
-      lwrespoints = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, srid,
-        NULL, (uint32_t) npoints, points1);
-      FLAGS_SET_Z(lwrespoints->flags, hasz);
-      FLAGS_SET_GEODETIC(lwrespoints->flags, geodetic);
-    }
-    pfree(points);
-  }
-  if (nlines > 0)
-  {
-    if (nlines == 1)
-      lwreslines = (LWGEOM *) lines[0];
-    else
-    {
-      LWGEOM **lines1 = palloc(sizeof(LWGEOM *) * nlines);
-      memcpy(lines1, lines, sizeof(LWGEOM *) * nlines);
-      // TODO add the bounding box instead of ask PostGIS to compute it again
-      lwreslines = (LWGEOM *) lwcollection_construct(MULTILINETYPE, srid, NULL,
-        (uint32_t) nlines, lines1);
-      FLAGS_SET_Z(lwreslines->flags, hasz);
-      FLAGS_SET_GEODETIC(lwreslines->flags, geodetic);
-    }
-    pfree(lines);
-  }
-  /* If both points and lines */
-  if (npoints > 0 && nlines > 0)
-  {
-    LWGEOM **geoms = palloc(sizeof(LWGEOM *) * 2);
-    geoms[0] = lwrespoints;
-    geoms[1] = lwreslines;
-    // TODO add the bounding box instead of ask PostGIS to compute it again
-    lwresult = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE, srid, NULL,
-      (uint32_t) 2, geoms);
-    FLAGS_SET_Z(lwresult->flags, hasz);
-    FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
-  }
-  /* If only points */
-  else if (nlines == 0)
-    lwresult = lwrespoints;
-  /* If only lines */
-  else /* npoints == 0 */
-    lwresult = lwreslines;
-  result = geo_serialize(lwresult);
+  LWGEOM *lwresult = lwcoll_from_points_lines(points, lines, npoints, nlines);
+  GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(lwresult);
+  pfree(points); pfree(lines);
   return result;
 }
 

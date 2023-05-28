@@ -2939,14 +2939,14 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
   sequences[0] = TSEQUENCESET_SEQ_N(ss1, 0);
   int i = 1, /* counter for the first sequence */
     j = 0,   /* counter for the second sequence */
-    k = 1,   /* counter for the sequences in the result */
-    l = 0;   /* counter for the new sequences to be freed */
+    nseqs = 1,   /* counter for the sequences in the result */
+    nfree = 0;   /* counter for the new sequences to be freed */
   while (i < ss1->count && j < ss2->count)
   {
     seq1 = TSEQUENCESET_SEQ_N(ss1, i);
     seq2 = TSEQUENCESET_SEQ_N(ss2, j);
     int cmp1 = timestamptz_cmp_internal(
-      DatumGetTimestampTz(sequences[k - 1]->period.upper),
+      DatumGetTimestampTz(sequences[nseqs - 1]->period.upper),
       DatumGetTimestampTz(seq2->period.lower));
     int cmp2 = timestamptz_cmp_internal(DatumGetTimestampTz(seq2->period.upper),
       DatumGetTimestampTz(seq1->period.lower));
@@ -2955,10 +2955,11 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
     {
       /* Verify that the two sequences have the same value at common instants */
       const TInstant *inst1, *inst2;
-      if (cmp1 == 0 && sequences[k - 1]->period.upper_inc &&
+      if (cmp1 == 0 && sequences[nseqs - 1]->period.upper_inc &&
           seq2->period.lower_inc)
       {
-        inst1 = TSEQUENCE_INST_N(sequences[k - 1], sequences[k - 1]->count - 1);
+        inst1 = TSEQUENCE_INST_N(sequences[nseqs - 1],
+          sequences[nseqs - 1]->count - 1);
         inst2 = TSEQUENCE_INST_N(seq2, 0);
         if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
         {
@@ -2977,20 +2978,20 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         }
       }
       /* Fill the gap between the last sequence added and seq2 */
-      if (sequences[k - 1]->period.upper_inc && seq2->period.lower_inc)
+      if (sequences[nseqs - 1]->period.upper_inc && seq2->period.lower_inc)
       {
-        instants[0] = TSEQUENCE_INST_N(sequences[k - 1],
-          sequences[k - 1]->count - 1);
+        instants[0] = TSEQUENCE_INST_N(sequences[nseqs - 1],
+          sequences[nseqs - 1]->count - 1);
         instants[1] = TSEQUENCE_INST_N(seq2, 0);
         count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
           1 : 2;
         /* We put true so that it works with step interpolation */
-        tofree[l] = tsequence_make(instants, count, true, true, interp,
+        tofree[nfree] = tsequence_make(instants, count, true, true, interp,
           NORMALIZE_NO);
-        sequences[k++] = (const TSequence *) tofree[l++];
+        sequences[nseqs++] = (const TSequence *) tofree[nfree++];
       }
       /* Add seq2 */
-      sequences[k++] = seq2;
+      sequences[nseqs++] = seq2;
       /* Fill the gap between the seq2 and seq1 */
       if (seq2->period.upper_inc && seq1->period.lower_inc)
       {
@@ -2999,29 +3000,29 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
           1 : 2;
         /* We put true so that it works with step interpolation */
-        tofree[l] = tsequence_make(instants, count, true, true, interp,
+        tofree[nfree] = tsequence_make(instants, count, true, true, interp,
           NORMALIZE_NO);
-        sequences[k++] = (const TSequence *) tofree[l++];
+        sequences[nseqs++] = (const TSequence *) tofree[nfree++];
       }
       i++;
       j++;
     }
     else /* consume seq1 and advance i */
     {
-      sequences[k++] = seq1;
+      sequences[nseqs++] = seq1;
       i++;
     }
   }
   /* Add the remaining sequences */
   while (i < ss1->count)
-    sequences[k++] = TSEQUENCESET_SEQ_N(ss1, i++);
+    sequences[nseqs++] = TSEQUENCESET_SEQ_N(ss1, i++);
   while (j < ss2->count)
-    sequences[k++] = TSEQUENCESET_SEQ_N(ss2, j++);
+    sequences[nseqs++] = TSEQUENCESET_SEQ_N(ss2, j++);
   /* Construct the result */
   int newcount;
-  TSequence **normseqs = tseqarr_normalize(sequences, k, &newcount);
+  TSequence **normseqs = tseqarr_normalize(sequences, nseqs, &newcount);
   result = tsequenceset_make_free(normseqs, newcount, NORMALIZE_NO);
-  pfree_array((void **) tofree, l);
+  pfree_array((void **) tofree, nfree);
   return result;
 }
 

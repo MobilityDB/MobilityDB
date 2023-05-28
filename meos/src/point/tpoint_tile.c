@@ -660,13 +660,13 @@ tile_get_coords(double x, double y, double z, TimestampTz t,
   const STboxGridState *state, int *coords)
 {
   /* Transform the minimum values of the tile into matrix coordinates */
-  int k = 0;
-  coords[k++] = (int) ((x - state->box.xmin) / state->xsize);
-  coords[k++] = (int) ((y - state->box.ymin) / state->ysize);
+  int ncoords = 0;
+  coords[ncoords++] = (int) ((x - state->box.xmin) / state->xsize);
+  coords[ncoords++] = (int) ((y - state->box.ymin) / state->ysize);
   if (MEOS_FLAGS_GET_Z(state->box.flags))
-    coords[k++] = (int) ((z - state->box.zmin) / state->zsize);
+    coords[ncoords++] = (int) ((z - state->box.zmin) / state->zsize);
   if (MEOS_FLAGS_GET_T(state->box.flags))
-    coords[k++] = (int) ((t - DatumGetTimestampTz(state->box.period.lower)) /
+    coords[ncoords++] = (int) ((t - DatumGetTimestampTz(state->box.period.lower)) /
       state->tunits);
   return;
 }
@@ -675,7 +675,8 @@ tile_get_coords(double x, double y, double z, TimestampTz t,
  * @brief Transform the values in a tile into relative positions in matrix cells
  * @param[in] dx,dy,dz,dt Values in a tile
  * @param[in] state Grid information
- * @param[out] eps Relative position of values in their matrix cells (between 0 and 1)
+ * @param[out] eps Relative position of values in their matrix cells (between
+ * 0 and 1)
  */
 static void
 tile_get_eps(double dx, double dy, double dz, TimestampTz dt,

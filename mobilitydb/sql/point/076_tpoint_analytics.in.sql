@@ -76,12 +76,12 @@ CREATE CAST (geography AS tgeogpoint) WITH FUNCTION tgeogpoint(geography);
 
 CREATE FUNCTION geoMeasure(tgeompoint, tfloat, boolean DEFAULT FALSE)
 RETURNS geometry
-AS 'MODULE_PATHNAME', 'Tpoint_to_geo_measure'
+AS 'MODULE_PATHNAME', 'Tpoint_to_geo_meas'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geoMeasure(tgeogpoint, tfloat, boolean DEFAULT FALSE)
 RETURNS geography
-AS 'MODULE_PATHNAME', 'Tpoint_to_geo_measure'
+AS 'MODULE_PATHNAME', 'Tpoint_to_geo_meas'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

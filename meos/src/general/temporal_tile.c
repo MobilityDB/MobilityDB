@@ -601,9 +601,9 @@ tnumberseq_disc_time_split(const TSequence *seq, TimestampTz start,
   TSequence **result = palloc(sizeof(TSequence *) * count);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  int i = 0,  /* counter for instants of temporal value */
-      k = 0,  /* counter for instants of next split */
-      l = 0;  /* counter for resulting fragments */
+  int i = 0,       /* counter for instants of temporal value */
+      ninsts = 0,  /* counter for instants of next split */
+      nfrags = 0;  /* counter for resulting fragments */
   TimestampTz lower = start;
   TimestampTz upper = start + tunits;
   while (i < seq->count)
@@ -611,31 +611,31 @@ tnumberseq_disc_time_split(const TSequence *seq, TimestampTz start,
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     if (lower <= inst->t && inst->t < upper)
     {
-      instants[k++] = inst;
+      instants[ninsts++] = inst;
       i++;
     }
     else
     {
-      if (k > 0)
+      if (ninsts > 0)
       {
-        times[l] = lower;
-        result[l++] = tsequence_make(instants, k, true, true, DISCRETE,
-          NORMALIZE_NO);
-        k = 0;
+        times[nfrags] = lower;
+        result[nfrags++] = tsequence_make(instants, ninsts, true, true,
+          DISCRETE, NORMALIZE_NO);
+        ninsts = 0;
       }
       lower = upper;
       upper += tunits;
     }
   }
-  if (k > 0)
+  if (ninsts > 0)
   {
-    times[l] = lower;
-    result[l++] = tsequence_make(instants, k, true, true, DISCRETE,
+    times[nfrags] = lower;
+    result[nfrags++] = tsequence_make(instants, ninsts, true, true, DISCRETE,
       NORMALIZE_NO);
   }
   pfree(instants);
   *buckets = times;
-  *newcount = l;
+  *newcount = nfrags;
   return result;
 }
 
@@ -673,10 +673,10 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * count);
   bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
-  int i = 0,  /* counter for instants of temporal value */
-      k = 0,  /* counter for instants of next split */
-      l = 0,  /* counter for instants to free */
-      m = 0;  /* counter for resulting fragments */
+  int i = 0,      /* counter for instants of temporal value */
+      ninsts = 0, /* counter for instants of next split */
+      nfree = 0,  /* counter for instants to free */
+      nfrags = 0;  /* counter for resulting fragments */
   bool lower_inc1;
   while (i < seq->count)
   {
@@ -684,32 +684,32 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
     if ((lower <= inst->t && inst->t < upper) ||
       (inst->t == upper && (linear || i == seq->count - 1)))
     {
-      instants[k++] = inst;
+      instants[ninsts++] = inst;
       i++;
     }
     else
     {
-      assert(k > 0);
+      assert(ninsts > 0);
       /* Compute the value at the end of the bucket */
-      if (instants[k - 1]->t < upper)
+      if (instants[ninsts - 1]->t < upper)
       {
         if (linear)
-          tofree[l] = tsegment_at_timestamp(instants[k - 1], inst, linear,
-            upper);
+          tofree[nfree] = tsegment_at_timestamp(instants[ninsts - 1], inst,
+            linear, upper);
         else
         {
           /* The last two values of sequences with step interpolation and
            * exclusive upper bound must be equal */
-          Datum value = tinstant_value(instants[k - 1]);
-          tofree[l] = tinstant_make(value, seq->temptype, upper);
+          Datum value = tinstant_value(instants[ninsts - 1]);
+          tofree[nfree] = tinstant_make(value, seq->temptype, upper);
         }
-        instants[k++] = tofree[l++];
+        instants[ninsts++] = tofree[nfree++];
       }
-      lower_inc1 = (m == 0) ? seq->period.lower_inc : true;
-      times[m] = lower;
-      result[m++] = tsequence_make(instants, k, lower_inc1,
-         (k > 1) ? false : true, linear ? LINEAR : STEP, NORMALIZE);
-      k = 0;
+      lower_inc1 = (nfrags == 0) ? seq->period.lower_inc : true;
+      times[nfrags] = lower;
+      result[nfrags++] = tsequence_make(instants, ninsts, lower_inc1,
+         (ninsts > 1) ? false : true, linear ? LINEAR : STEP, NORMALIZE);
+      ninsts = 0;
       lower = upper;
       upper += tunits;
       /* The second condition is needed for filtering unnecesary buckets for the
@@ -718,19 +718,20 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
         break;
       /* Reuse the end value of the previous bucket for the beginning of the bucket */
       if (lower < inst->t)
-        instants[k++] = TSEQUENCE_INST_N(result[m - 1], result[m - 1]->count - 1);
+        instants[ninsts++] = TSEQUENCE_INST_N(result[nfrags - 1],
+          result[nfrags - 1]->count - 1);
      }
   }
-  if (k > 0)
+  if (ninsts > 0)
   {
-    lower_inc1 = (m == 0) ? seq->period.lower_inc : true;
-    times[m] = lower;
-    result[m++] = tsequence_make(instants, k, lower_inc1,
+    lower_inc1 = (nfrags == 0) ? seq->period.lower_inc : true;
+    times[nfrags] = lower;
+    result[nfrags++] = tsequence_make(instants, ninsts, lower_inc1,
       seq->period.upper_inc, linear ? LINEAR : STEP, NORMALIZE);
   }
-  pfree_array((void **) tofree, l);
+  pfree_array((void **) tofree, nfree);
   pfree(instants);
-  return m;
+  return nfrags;
 }
 
 /**
@@ -794,67 +795,67 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
   /* Variable used to adjust the start timestamp passed to the
    * tsequence_time_split1 function in the loop */
   TimestampTz lower = start;
-  int k = 0, /* Number of accumulated fragments of the current time bucket */
-      m = 0; /* Number of time buckets already processed */
+  int nfrags = 0, /* Number of accumulated fragments of the current time bucket */
+      nbucks = 0; /* Number of time buckets already processed */
   for (int i = 0; i < ss->count; i++)
   {
     TimestampTz upper = lower + tunits;
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     /* Output the accumulated fragments of the current time bucket (if any)
      * if the current sequence starts on the next time bucket */
-    if (k > 0 && DatumGetTimestampTz(seq->period.lower) >= upper)
+    if (nfrags > 0 && DatumGetTimestampTz(seq->period.lower) >= upper)
     {
-      result[m++] = tsequenceset_make((const TSequence **) fragments, k,
+      result[nbucks++] = tsequenceset_make((const TSequence **) fragments, nfrags,
         NORMALIZE);
-      for (int j = 0; j < k; j++)
+      for (int j = 0; j < nfrags; j++)
         pfree(fragments[j]);
-      k = 0;
+      nfrags = 0;
       lower += tunits;
       upper += tunits;
     }
     /* Number of time buckets of the current sequence */
     int l = tsequence_time_split1(seq, lower, end, tunits, count,
-      sequences, &times[m]);
+      sequences, &times[nbucks]);
     /* If the current sequence has produced more than two time buckets */
     if (l > 1)
     {
       /* Assemble the accumulated fragments of the first time bucket (if any)  */
-      if (k > 0)
+      if (nfrags > 0)
       {
-        fragments[k++] = sequences[0];
-        result[m++] = tsequenceset_make((const TSequence **) fragments, k,
-          NORMALIZE);
-        for (int j = 0; j < k; j++)
+        fragments[nfrags++] = sequences[0];
+        result[nbucks++] = tsequenceset_make((const TSequence **) fragments,
+          nfrags, NORMALIZE);
+        for (int j = 0; j < nfrags; j++)
           pfree(fragments[j]);
-        k = 0;
+        nfrags = 0;
       }
       else
       {
-        result[m++] = tsequence_to_tsequenceset(sequences[0]);
+        result[nbucks++] = tsequence_to_tsequenceset(sequences[0]);
         pfree(sequences[0]);
       }
       for (int j = 1; j < l - 1; j++)
       {
-        result[m++] = tsequence_to_tsequenceset(sequences[j]);
+        result[nbucks++] = tsequence_to_tsequenceset(sequences[j]);
         pfree(sequences[j]);
       }
     }
     /* Save the last fragment in case it is necessary to assemble with the
      * first one of the next sequence */
-    fragments[k++] = sequences[l - 1];
-    lower = times[m];
+    fragments[nfrags++] = sequences[l - 1];
+    lower = times[nbucks];
   }
   /* Process the accumulated fragments of the last time bucket */
-  if (k > 0)
+  if (nfrags > 0)
   {
-    result[m++] = tsequenceset_make((const TSequence **) fragments, k,
+    result[nbucks++] = tsequenceset_make((const TSequence **) fragments, nfrags,
       NORMALIZE);
-    for (int j = 0; j < k; j++)
+    for (int j = 0; j < nfrags; j++)
       pfree(fragments[j]);
   }
   pfree(sequences); pfree(fragments);
   *buckets = times;
-  *newcount = m;
+  *newcount = nbucks;
   return result;
 }
 
@@ -996,22 +997,22 @@ tnumberseq_disc_value_split(const TSequence *seq, Datum start_bucket,
   /* Assemble the result for each value bucket */
   result = palloc(sizeof(TSequence *) * count);
   values = palloc(sizeof(Datum) * count);
-  int k = 0;
+  int nfrags = 0;
   bucket_value = start_bucket;
   for (int i = 0; i < count; i++)
   {
     if (numinsts[i] > 0)
     {
-      result[k] = tsequence_make(&instants[i * seq->count], numinsts[i],
+      result[nfrags] = tsequence_make(&instants[i * seq->count], numinsts[i],
         true, true, DISCRETE, NORMALIZE_NO);
-      values[k++] = bucket_value;
+      values[nfrags++] = bucket_value;
     }
     bucket_value = datum_add(bucket_value, size, basetype, basetype);
   }
   pfree(instants);
   pfree(numinsts);
   *buckets = values;
-  *newcount = k;
+  *newcount = nfrags;
   return result;
 }
 
@@ -1051,7 +1052,7 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
 
   /* General case */
   TInstant **tofree = palloc(sizeof(TInstant *) * count * seq->count);
-  int l = 0;   /* counter for the instants to free */
+  int nfree = 0;   /* counter for the instants to free */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
 for (int i = 1; i < seq->count; i++)
   {
@@ -1063,14 +1064,14 @@ for (int i = 1; i < seq->count; i++)
     bool lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
     TInstant *bounds[2];
     bounds[0] = (TInstant *) inst1;
-    int k = 1;
+    int nfrags = 1;
     if (i < seq->count)
     {
-      tofree[l++] = bounds[1] = tinstant_make(value, seq->temptype, inst2->t);
-      k++;
+      tofree[nfree++] = bounds[1] = tinstant_make(value, seq->temptype, inst2->t);
+      nfrags++;
     }
     result[bucket_no * numcols + seq_no] = tsequence_make(
-      (const TInstant **) bounds, k, lower_inc1, false, STEP, NORMALIZE);
+      (const TInstant **) bounds, nfrags, lower_inc1, false, STEP, NORMALIZE);
     bounds[0] = bounds[1];
     inst1 = inst2;
     lower_inc1 = true;
@@ -1085,7 +1086,7 @@ for (int i = 1; i < seq->count; i++)
     seq_no = numseqs[bucket_no]++;
     result[bucket_no * numcols + seq_no] = tinstant_to_tsequence(inst1, STEP);
   }
-  pfree_array((void **) tofree, l);
+  pfree_array((void **) tofree, nfree);
   return;
 }
 
@@ -1126,7 +1127,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
 
   /* General case */
   TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * count);
-  int l = 0;   /* counter for the instants to free */
+  int nfree = 0;   /* counter for the instants to free */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   value1 = tinstant_value(inst1);
   bucket_value1 = datum_bucket(value1, size, start_bucket, basetype);
@@ -1193,7 +1194,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
           &projvalue, &t);
         /* To reduce the roundoff errors we take the value projected to the
          * timestamp instead of the bound value */
-        tofree[l++] = bounds[last] =
+        tofree[nfree++] = bounds[last] =
           tinstant_make(projvalue, seq->temptype, t);
       }
       else
@@ -1232,13 +1233,13 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
         upper_inc1 = upper_inc_def;
       }
       /* If last bucket contains a single instant */
-      int k = (bounds[0]->t == bounds[1]->t) ? 1 : 2;
+      int nfrags = (bounds[0]->t == bounds[1]->t) ? 1 : 2;
       /* We cannot add to last bucket if last instant has exclusive bound */
-      if (k == 1 && ! upper_inc1)
+      if (nfrags == 1 && ! upper_inc1)
         break;
       seq_no = numseqs[j]++;
       result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-        k, (k > 1) ? lower_inc1 : true, (k > 1) ? upper_inc1 : true,
+        nfrags, (nfrags > 1) ? lower_inc1 : true, (nfrags > 1) ? upper_inc1 : true,
         LINEAR, NORMALIZE_NO);
       bounds[first] = bounds[last];
       bucket_lower = bucket_upper;
@@ -1249,7 +1250,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
     bucket_value1 = bucket_value2;
     bucket_no1 = bucket_no2;
   }
-  pfree_array((void **) tofree, l);
+  pfree_array((void **) tofree, nfree);
   return;
 }
 
@@ -1298,21 +1299,21 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
   Datum *values = palloc(sizeof(Datum) * count);
   Datum bucket_value = start_bucket;
-  int k = 0;
+  int nfrags = 0;
   for (int i = 0; i < count; i++)
   {
     if (numseqs[i] > 0)
     {
-      result[k] = tsequenceset_make((const TSequence **)(&sequences[seq->count * i]),
+      result[nfrags] = tsequenceset_make((const TSequence **)(&sequences[seq->count * i]),
         numseqs[i], NORMALIZE);
-      values[k++] = bucket_value;
+      values[nfrags++] = bucket_value;
     }
     bucket_value = datum_add(bucket_value, size, basetype, basetype);
   }
   pfree(sequences);
   pfree(numseqs);
   *buckets = values;
-  *newcount = k;
+  *newcount = nfrags;
   return result;}
 
 /*****************************************************************************/
@@ -1355,21 +1356,21 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
   Datum *values = palloc(sizeof(Datum) * count);
   Datum bucket_value = start_bucket;
-  int k = 0;
+  int nfrags = 0;
   for (int i = 0; i < count; i++)
   {
     if (numseqs[i] > 0)
     {
-      result[k] = tsequenceset_make((const TSequence **)(&bucketseqs[i * ss->totalcount]),
+      result[nfrags] = tsequenceset_make((const TSequence **)(&bucketseqs[i * ss->totalcount]),
         numseqs[i], NORMALIZE);
-      values[k++] = bucket_value;
+      values[nfrags++] = bucket_value;
     }
     bucket_value = datum_add(bucket_value, size, basetype, basetype);
   }
   pfree(bucketseqs);
   pfree(numseqs);
   *buckets = values;
-  *newcount = k;
+  *newcount = nfrags;
   return result;
 }
 
@@ -1482,7 +1483,7 @@ temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
     v_buckets = palloc(sizeof(Datum) * tilecount);
     t_buckets = palloc(sizeof(TimestampTz) * tilecount);
     fragments = palloc(sizeof(Temporal *) * tilecount);
-    int k = 0;
+    int nfrags = 0;
     Datum lower_value = start_bucket;
     while (datum_lt(lower_value, end_bucket, basetype))
     {
@@ -1499,18 +1500,18 @@ temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
           &times, &num_time_splits);
         for (int i = 0; i < num_time_splits; i++)
         {
-          v_buckets[i + k] = lower_value;
-          t_buckets[i + k] = times[i];
-          fragments[i + k] = time_splits[i];
+          v_buckets[i + nfrags] = lower_value;
+          t_buckets[i + nfrags] = times[i];
+          fragments[i + nfrags] = time_splits[i];
         }
-        k += num_time_splits;
+        nfrags += num_time_splits;
         pfree(time_splits);
         pfree(times);
         pfree(atspan);
       }
       lower_value = upper_value;
     }
-    count = k;
+    count = nfrags;
   }
   *newcount = count;
   if (value_buckets)

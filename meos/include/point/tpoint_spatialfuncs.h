@@ -146,6 +146,8 @@ extern LWGEOM **lwpointarr_remove_duplicates(LWGEOM **points, int count,
 extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
   interpType interp);
 extern LWLINE *lwline_make(Datum value1, Datum value2);
+extern LWGEOM *lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines,
+  int npoints, int nlines);
 
 /* Functions for spatial reference systems */
 

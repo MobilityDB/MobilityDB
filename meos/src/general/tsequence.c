@@ -5533,10 +5533,10 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
 
   /* General case */
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
-  int i = 0,  /* current instant of the argument sequence */
-    j = 0,     /* current timestamp of the argument timestamp set */
-    k = 0,     /* number of instants in the currently constructed sequence */
-    l = 0;     /* number of instants removed */
+  int i = 0,    /* current instant of the argument sequence */
+    j = 0,      /* current timestamp of the argument timestamp set */
+    ninsts = 0, /* number of instants in the currently constructed sequence */
+    nfree = 0;  /* number of instants removed */
   bool lower_inc1 = seq->period.lower_inc;
   bool upper_inc1 = seq->period.upper_inc;
   while (i < seq->count && j < ts->count)
@@ -5545,7 +5545,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
     TimestampTz t = DatumGetTimestampTz(SET_VAL_N(ts, j));
     if (inst->t < t)
     {
-      instants[k++] = (TInstant *) inst;
+      instants[ninsts++] = (TInstant *) inst;
       i++; /* advance instants */
     }
     else if (inst->t == t)
@@ -5556,7 +5556,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
         upper_inc1 = true;
       i++; /* advance instants */
       j++; /* advance timestamps */
-      l++; /* advance number of instants removed */
+      nfree++; /* advance number of instants removed */
       }
     else
     {
@@ -5568,14 +5568,14 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
   if (i < seq->count)
   {
     for (j = i; j < seq->count; j++)
-      instants[k++] = (TInstant *) TSEQUENCE_INST_N(seq, j);
+      instants[ninsts++] = (TInstant *) TSEQUENCE_INST_N(seq, j);
   }
-  if (k == 0)
+  if (ninsts == 0)
     return NULL;
-  else if (k == 1)
+  else if (ninsts == 1)
     lower_inc1 = upper_inc1 = true;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  TSequence *result = tsequence_make((const TInstant **) instants, k,
+  TSequence *result = tsequence_make((const TInstant **) instants, ninsts,
     lower_inc1, upper_inc1, interp, NORMALIZE_NO);
   pfree(instants);
   return result;
