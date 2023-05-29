@@ -23,7 +23,30 @@
 #include "utils/timestamp_def.h"
 #include "pgtz.h"
 
-// #include <lib/simplehash.h> /* MobilityDB */
+/**
+ * Structure to represent the timezone cache hash table, which extends
+ * the `ENTRY` used by hsearch
+ * https://man7.org/linux/man-pages/man3/hsearch.3.html
+ * with the additional field `status` required by `simplehash`
+ */
+typedef struct
+{
+  char *key;     /**< timezone name (hashtable key) */
+  void *data;    /**< pointer to the timezone structure */
+  char status;   /**< hash status */
+} _timezone_entry;
+
+#define SH_PREFIX tztable
+#define SH_ELEMENT_TYPE _timezone_entry
+#define SH_KEY_TYPE const char * // char[]
+#define SH_KEY TZname
+#define SH_HASH_KEY(tb, key) string_hash(key, TZ_STRLEN_MAX + 1) // hash_string_pointer(key)
+#define SH_EQUAL(tb, a, b) (strncmp(a, b, TZ_STRLEN_MAX + 1) == 0) // (strcmp(a, b) == 0)
+#define SH_SCOPE static inline
+#define SH_RAW_ALLOCATOR pg_malloc0
+#define SH_DEFINE
+#define SH_DECLARE
+#include <lib/simplehash.h>
 
 /* Function in findtimezone.c */
 extern const char *select_default_timezone(const char *share_path);
