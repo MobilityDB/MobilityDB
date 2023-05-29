@@ -12,7 +12,7 @@
 	<title>Set and Span Types</title>
 
 	<para>
-		MobilityDB provides <emphasis>set</emphasis>, <emphasis>span</emphasis>, and <emphasis>span set</emphasis> types for representing set of values another type, which is called the <emphasis>base type</emphasis>. Set types are akin to <emphasis>array types</emphasis> in PostgreSQL restricted to one dimension, but enforce the constraint that sets do not have duplicates. Span and span set types in MobilityDB correspond to the <emphasis>range and multirange types</emphasis> in PostgreSQL but have additional constraints. In particular, span types in MobilityDB are of fixed length and do not allow empty spans and infinite bounds.
+		MobilityDB provides <emphasis>set</emphasis>, <emphasis>span</emphasis>, and <emphasis>span set</emphasis> types for representing set of values another type, which is called the <emphasis>base type</emphasis>. Set types are akin to <emphasis>array types</emphasis> in PostgreSQL restricted to one dimension, but enforce the constraint that sets do not have duplicates. Span and span set types in MobilityDB correspond to the <emphasis>range and multirange types</emphasis> in PostgreSQL but have additional constraints. In particular, span types in MobilityDB are of fixed length and do not allow empty spans and infinite bounds. While span types provide similar functionality to range types, they enable increasing performance. In particular, the overhead of processing variable-length types is removed and, in addition, pointer arithmetics and binary search can be used.
 	</para>
 
 	<para>
