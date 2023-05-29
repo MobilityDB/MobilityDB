@@ -218,8 +218,8 @@ tgeogpointseq_set_gbox(const TSequence *seq, GBOX *box)
   lwgeom_free(lwgeom);
   if (interp == LINEAR)
   {
-    for (int i = 0; i < count; i++)
-      lwpoint_free((LWPOINT *) points[i]);
+    for (int i = 0; i < seq->count; i++)
+      lwpoint_free(points[i]);
     pfree(points);
   }
   return;
