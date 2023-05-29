@@ -47,23 +47,6 @@
 #define REST_TIME           true
 #define REST_TIME_NO        false
 
-/*****************************************************************************
- * Global structure to hold prepared geometries
- *****************************************************************************/
-
-/**
- * Structure to hold prepared geometries
- */
-typedef struct
-{
-  LWGEOM *lwgeom;                  /**< PostGIS lwgeom */
-  GEOSGeometry *geosgeom;          /**< GEOS geometry */
-  const GEOSPreparedGeometry *prepgeom;  /**< GEOS prepared geometry */
-} prepared_geom_struct;
-
-extern void meos_prepare_geom(const GSERIALIZED *gs);
-extern void meos_free_prepared_geom(void);
-
 /*****************************************************************************/
 
 /* Functions for extracting coordinates */
