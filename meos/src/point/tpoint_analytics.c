@@ -1884,7 +1884,12 @@ tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   return result;
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Decouple the points and the timestamps of a temporal point.
+ * With respect to the trajectory functions, e.g., #tpoint_trajectory,
+ * the resulting geometry is not optimized in order to maintain the
+ * composing points of the geometry and the associated timestamps synchronized
+ *****************************************************************************/
 
 /**
  * @brief Decouple the points and the timestamps of a temporal point.
@@ -1992,8 +1997,8 @@ tpointseqset_decouple(const TSequenceSet *ss, int64 **timesarr, int *count)
   GSERIALIZED *result = geo_serialize(coll);
   *timesarr = times;
   *count = ss->totalcount;
-  /* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
-  pfree(geoms);
+  /* We cannot lwgeom_free(geoms[i]) or pfree(geoms) */
+  lwgeom_free(coll);
   return result;
 }
 
