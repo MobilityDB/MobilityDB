@@ -583,13 +583,58 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
  * coordinates encode the timestamps in Unix epoch into a temporal instant point.
  */
 static TInstant *
-geo_to_tpointinst(const GSERIALIZED *geo)
+geo_to_tpointinst(const LWGEOM *lwgeom)
 {
   /* Geometry is a POINT */
-  LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
-  TInstant *result = trajpoint_to_tpointinst((LWPOINT *) lwgeom);
-  lwgeom_free(lwgeom);
-  return result;
+  return trajpoint_to_tpointinst((LWPOINT *) lwgeom);
+}
+
+/**
+ * @brief Ensure that a PostGIS trajectory has increasing timestamps.
+ * @note The verification is made in this function since calling the PostGIS
+ * function #lwgeom_is_trajectory causes discrepancies with regression tests
+ * due to the error message that varies across PostGIS versions.
+ */
+static void
+ensure_valid_trajectory(const LWGEOM *lwgeom, bool hasz, bool discrete)
+{
+  assert(lwgeom->type != MULTIPOINTTYPE || lwgeom->type != MULTILINETYPE);
+  LWCOLLECTION *lwcoll = NULL;
+  LWLINE *lwline = NULL;
+  uint32_t npoints;
+  if (discrete)
+  {
+    lwcoll = lwgeom_as_lwcollection(lwgeom);
+    npoints = lwcoll->ngeoms;
+  }
+  else
+  {
+    lwline = lwgeom_as_lwline(lwgeom);
+    npoints = lwline->points->npoints;
+  }
+  double m1 = -1 * DBL_MAX, m2;
+  for (uint32_t i = 0; i < npoints; i++)
+  {
+    const POINTARRAY *pa = discrete ?
+      ((LWPOINT *) lwcoll->geoms[i])->point : lwline->points;
+    uint32_t where = discrete ? 0 : i;
+    if (hasz)
+    {
+      POINT4D point = getPoint4d(pa, where);
+      m2 = point.m;
+    }
+    else
+    {
+      POINT3DM point = getPoint3dm(pa, where);
+      m2 = point.m;
+    }
+    if (m1 >= m2)
+    {
+      elog(ERROR, "Trajectory must be valid");
+    }
+    m1 = m2;
+  }
+  return;
 }
 
 /**
@@ -598,94 +643,46 @@ geo_to_tpointinst(const GSERIALIZED *geo)
  * sequence point.
  */
 static TSequence *
-geo_to_tpointseq_disc(const GSERIALIZED *geo)
+geo_to_tpointseq_disc(const LWGEOM *lwgeom, bool hasz)
 {
+  /* Verify that the trajectory is valid */
+  ensure_valid_trajectory(lwgeom, hasz, true);
   /* Geometry is a MULTIPOINT */
-  LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
-  bool hasz = (bool) FLAGS_GET_Z(geo->gflags);
-  /* Verify that is a valid set of trajectory points */
   LWCOLLECTION *lwcoll = lwgeom_as_lwcollection(lwgeom);
-  double m1 = -1 * DBL_MAX, m2;
-  int npoints = lwcoll->ngeoms;
-  for (int i = 0; i < npoints; i++)
-  {
-    LWPOINT *lwpoint = (LWPOINT *) lwcoll->geoms[i];
-    if (hasz)
-    {
-      POINT4D point = getPoint4d(lwpoint->point, 0);
-      m2 = point.m;
-    }
-    else
-    {
-      POINT3DM point = getPoint3dm(lwpoint->point, 0);
-      m2 = point.m;
-    }
-    if (m1 >= m2)
-    {
-      lwgeom_free(lwgeom);
-      elog(ERROR, "Trajectory must be valid");
-    }
-    m1 = m2;
-  }
+  uint32_t npoints = lwcoll->ngeoms;
   TInstant **instants = palloc(sizeof(TInstant *) * npoints);
-  for (int i = 0; i < npoints; i++)
+  for (uint32_t i = 0; i < npoints; i++)
     instants[i] = trajpoint_to_tpointinst((LWPOINT *) lwcoll->geoms[i]);
-  lwgeom_free(lwgeom);
   return tsequence_make_free(instants, npoints, true, true, DISCRETE,
-    NORMALIZE_NO);
+    NORMALIZE);
 }
 
 /**
  * @brief Convert the PostGIS trajectory geometry/geography where the M
- * coordinates encode the timestamps in Unix epoch into a temporal sequence point.
+ * coordinates encode the timestamps in Unix epoch into a temporal sequence
+ * point.
+ * @note Notice that it is not possible to encode step interpolation in
+ * PostGIS and thus sequences obtained will be either discrete or linear.
  */
 static TSequence *
-geo_to_tpointseq(const GSERIALIZED *geo)
+geo_to_tpointseq_linear(const LWGEOM *lwgeom, bool hasz, bool geodetic)
 {
+  /* Verify that the trajectory is valid */
+  ensure_valid_trajectory(lwgeom, hasz, false);
   /* Geometry is a LINESTRING */
-  bool hasz = (bool) FLAGS_GET_Z(geo->gflags);
-  bool geodetic = (bool) FLAGS_GET_GEODETIC(geo->gflags);
-  LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
   LWLINE *lwline = lwgeom_as_lwline(lwgeom);
-  int npoints = lwline->points->npoints;
-  /*
-   * Verify that the trajectory is valid.
-   * Since calling lwgeom_is_trajectory causes discrepancies with regression
-   * tests because of the error message depends on PostGIS version,
-   * the verification is made here.
-   */
-  double m1 = -1 * DBL_MAX, m2;
-  for (int i = 0; i < npoints; i++)
-  {
-    if (hasz)
-    {
-      POINT4D point = getPoint4d(lwline->points, (uint32_t) i);
-      m2 = point.m;
-    }
-    else
-    {
-      POINT3DM point = getPoint3dm(lwline->points, (uint32_t) i);
-      m2 = point.m;
-    }
-    if (m1 >= m2)
-    {
-      lwgeom_free(lwgeom);
-      elog(ERROR, "Trajectory must be valid");
-    }
-    m1 = m2;
-  }
+  uint32_t npoints = lwline->points->npoints;
   TInstant **instants = palloc(sizeof(TInstant *) * npoints);
-  for (int i = 0; i < npoints; i++)
+  for (uint32_t i = 0; i < npoints; i++)
   {
     /* Return freshly allocated LWPOINT */
-    LWPOINT *lwpoint = lwline_get_lwpoint(lwline, (uint32_t) i);
+    LWPOINT *lwpoint = lwline_get_lwpoint(lwline, i);
     /* Function lwline_get_lwpoint lose the geodetic flag if any */
     FLAGS_SET_Z(lwpoint->flags, hasz);
     FLAGS_SET_GEODETIC(lwpoint->flags, geodetic);
     instants[i] = trajpoint_to_tpointinst(lwpoint);
     lwpoint_free(lwpoint);
   }
-  lwgeom_free(lwgeom);
   /* The resulting sequence assumes linear interpolation */
   return tsequence_make_free(instants, npoints, true, true, LINEAR, NORMALIZE);
 }
@@ -694,13 +691,17 @@ geo_to_tpointseq(const GSERIALIZED *geo)
  * @brief Convert the PostGIS trajectory geometry/geography where the M
  * coordinates encode the timestamps in Unix epoch into a temporal sequence
  * set point.
+ * @note With respect to functions #geo_to_tpointseq_disc and
+ * #geo_to_tpointseq_linear there is no validation of the trajectory since
+ * it is more elaborated to be done. Nevertheless, erroneous geometries where
+ * the timestamps are not increasing will be detected by the constructor of
+ * the sequence set.
  */
 static TSequenceSet *
-geo_to_tpointseqset(const GSERIALIZED *geo)
+geo_to_tpointseqset(const LWGEOM *lwgeom, bool hasz, bool geodetic)
 {
   /* Geometry is a MULTILINESTRING or a COLLECTION composed of (MULTI)POINT and
    * (MULTI)LINESTRING */
-  LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
   LWCOLLECTION *lwcoll = lwgeom_as_lwcollection(lwgeom);
   int ngeoms = lwcoll->ngeoms;
   int totalgeoms = 0;
@@ -710,7 +711,6 @@ geo_to_tpointseqset(const GSERIALIZED *geo)
     if (lwgeom1->type != POINTTYPE && lwgeom1->type != MULTIPOINTTYPE &&
         lwgeom1->type != LINETYPE && lwgeom1->type != MULTILINETYPE)
     {
-      lwgeom_free(lwgeom);
       elog(ERROR, "Component geometry/geography must be of type (Multi)Point(Z)M or (Multi)Linestring(Z)M");
     }
     if (lwgeom1->type == POINTTYPE || lwgeom1->type == LINETYPE)
@@ -724,16 +724,15 @@ geo_to_tpointseqset(const GSERIALIZED *geo)
   for (int i = 0; i < ngeoms; i++)
   {
     LWGEOM *lwgeom1 = lwcoll->geoms[i];
-    GSERIALIZED *gs1 = geo_serialize(lwgeom1);
     if (lwgeom1->type == POINTTYPE)
     {
-      TInstant *inst1 = geo_to_tpointinst(gs1);
+      TInstant *inst1 = geo_to_tpointinst(lwgeom1);
       /* The resulting sequence assumes linear interpolation */
       sequences[nseqs++] = tinstant_to_tsequence(inst1, LINEAR);
       pfree(inst1);
     }
     else if (lwgeom1->type == LINETYPE)
-      sequences[nseqs++] = geo_to_tpointseq(gs1);
+      sequences[nseqs++] = geo_to_tpointseq_linear(lwgeom1, hasz, geodetic);
     else /* lwgeom1->type == MULTIPOINTTYPE || lwgeom1->type == MULTILINETYPE */
     {
       LWCOLLECTION *lwcoll1 = lwgeom_as_lwcollection(lwgeom1);
@@ -741,22 +740,18 @@ geo_to_tpointseqset(const GSERIALIZED *geo)
       for (int j = 0; j < ngeoms1; j++)
       {
         LWGEOM *lwgeom2 = lwcoll1->geoms[j];
-        GSERIALIZED *gs2 = geo_serialize(lwgeom2);
         if (lwgeom2->type == POINTTYPE)
         {
-          TInstant *inst2 = geo_to_tpointinst(gs2);
+          TInstant *inst2 = geo_to_tpointinst(lwgeom2);
           /* The resulting sequence assumes linear interpolation */
           sequences[nseqs++] = tinstant_to_tsequence(inst2, LINEAR);
           pfree(inst2);
         }
         else /* lwgeom2->type == LINETYPE */
-          sequences[nseqs++] = geo_to_tpointseq(gs2);
-        pfree(gs2);
+          sequences[nseqs++] = geo_to_tpointseq_linear(lwgeom2, hasz, geodetic);
       }
     }
-    pfree(gs1);
   }
-  lwgeom_free(lwgeom);
   /* It is necessary to sort the sequences */
   tseqarr_sort(sequences, nseqs);
   /* The resulting sequence set assumes linear interpolation */
@@ -775,18 +770,21 @@ geo_to_tpoint(const GSERIALIZED *geo)
 {
   ensure_non_empty(geo);
   ensure_has_M_gs(geo);
+  bool hasz = (bool) FLAGS_GET_Z(geo->gflags);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(geo->gflags);
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
   Temporal *result = NULL; /* Make compiler quiet */
-  int geomtype = gserialized_get_type(geo);
-  if (geomtype == POINTTYPE)
-    result = (Temporal *) geo_to_tpointinst(geo);
-  else if (geomtype == MULTIPOINTTYPE)
-    result = (Temporal *) geo_to_tpointseq_disc(geo);
-  else if (geomtype == LINETYPE)
-    result = (Temporal *) geo_to_tpointseq(geo);
-  else if (geomtype == MULTILINETYPE || geomtype == COLLECTIONTYPE)
-    result = (Temporal *) geo_to_tpointseqset(geo);
+  if (lwgeom->type == POINTTYPE)
+    result = (Temporal *) geo_to_tpointinst(lwgeom);
+  else if (lwgeom->type == MULTIPOINTTYPE)
+    result = (Temporal *) geo_to_tpointseq_disc(lwgeom, hasz);
+  else if (lwgeom->type == LINETYPE)
+    result = (Temporal *) geo_to_tpointseq_linear(lwgeom, hasz, geodetic);
+  else if (lwgeom->type == MULTILINETYPE || lwgeom->type == COLLECTIONTYPE)
+    result = (Temporal *) geo_to_tpointseqset(lwgeom, hasz, geodetic);
   else
     elog(ERROR, "Invalid geometry type for trajectory");
+  lwgeom_free(lwgeom);
   return result;
 }
 
