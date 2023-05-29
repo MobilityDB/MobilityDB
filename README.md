@@ -49,6 +49,8 @@ Benefits
 
 *   [Plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
 
+*   An extensive [workshop](https://github.com/MobilityDB/MobilityDB-workshop) illustrating various usage scenarios of MobilityDB
+
 Experimental Projects
 -----------------------------
 
@@ -78,7 +80,7 @@ Branches
 Status
 ------
 
-The current version is 1.0. We are planning to release version 1.1 in the beginning of 2023.
+The current version is 1.0. We are planning to release version 1.1 in the summer of 2023.
 
 Requirements
 ------------

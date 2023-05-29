@@ -1,12 +1,11 @@
 /**
  * @brief A program that shows the connection of MEOS and GEOS. It computes the
- * the intersection of the observations of a MEOS temporal point and a prepared
- * GEOS polygon
+ * the intersection of a MEOS temporal point and a prepared GEOS polygon
  * @note This program is based on the GEOS C API example 2
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_geos_intersection meos_geos_intersection.c -L/usr/local/lib -lmeos -lgeos_c
+ * gcc -Wall -g -I/usr/local/include -o meos_geos_clip meos_geos_clip.c -L/usr/local/lib -lmeos -lgeos_c
  * @endcode
 */
 
@@ -89,28 +88,32 @@ int main()
   * Test all the points in the temporal point
   * and only keep those that intersect the polygon
   */
+  const TInstant *inst1 = TSEQUENCE_INST_N(tpoint, 0);
+  const POINT2D *pt1 = DATUM_POINT2D_P(&inst1->value);
   int i;
-  for (i = 0; i < tpoint->count; i++)
+  for (i = 1; i < tpoint->count; i++)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(tpoint, i);
-    const POINT2D *pt1 = DATUM_POINT2D_P(&inst->value);
+    const TInstant *inst2 = TSEQUENCE_INST_N(tpoint, i);
+    const POINT2D *pt2 = DATUM_POINT2D_P(&inst2->value);
     /* Make a GEOS point */
-    GEOSGeometry *pt = GEOSGeom_createPointFromXY(pt1->x, pt1->y);
+    GEOSCoordSequence *seq = GEOSCoordSeq_create(2, 2);
+    GEOSCoordSeq_setXY(seq, 0, pt1->x, pt1->y);
+    GEOSCoordSeq_setXY(seq, 1, pt2->x, pt2->y);
+    GEOSGeometry *line = GEOSGeom_createLineString(seq);
     /* Check if the point and polygon intersect */
-    if (GEOSPreparedIntersects(prep_poly, pt))
+    if (GEOSPreparedIntersects(prep_poly, line))
     {
       /* Save the ones that do */
-      geoms[ngeoms++] = pt;
+      GEOSGeometry *clip = GEOSIntersection(poly, line);
+      geoms[ngeoms++] = clip;
     }
-    else
-    {
-      /* Clean up the ones that don't */
-      GEOSGeom_destroy(pt);
-    }
+    /* Clean up the ones that don't */
+    GEOSGeom_destroy(line);
   }
 
   /* Put the successful geoms inside a geometry for WKT output */
-  GEOSGeometry *result = GEOSGeom_createCollection(GEOS_MULTIPOINT, geoms, ngeoms);
+  GEOSGeometry *result = GEOSGeom_createCollection(GEOS_GEOMETRYCOLLECTION,
+    geoms, ngeoms);
 
   /*
   * The GEOSGeom_createCollection() only takes ownership of the
@@ -132,7 +135,7 @@ int main()
   printf("%s\n\n", tpoint_wkt);
   printf("Input Polygon:\n");
   printf("%s\n\n", poly_wkt);
-  printf("Output Points:\n");
+  printf("Segments clipped:\n");
   printf("%s\n\n", wkt_result);
 
   /* Clean up everything we allocated */
