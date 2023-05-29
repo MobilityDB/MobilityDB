@@ -268,7 +268,7 @@ ERROR:  Trajectory must be valid
 SELECT geometry 'LINESTRING M (1 1 946767600,1 1 946681200)'::tgeompoint;
 ERROR:  Trajectory must be valid
 SELECT geometry 'GEOMETRYCOLLECTION M (LINESTRING M (1 1 946681200,2 2 946767600), POLYGON M((1 1 946681200,1 2 946681200,2 2 946681200,2 1 946681200,1 1 946681200)))'::tgeompoint;
-ERROR:  Component geometry/geography must be of type Point(Z)M or Linestring(Z)M
+ERROR:  Component geometry/geography must be of type (Multi)Point(Z)M or (Multi)Linestring(Z)M
 SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1)@2000-01-01', '5@2000-01-01'));
     st_astext    
 -----------------
@@ -327,6 +327,12 @@ SELECT ST_AsText(geoMeasure(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2
                                              st_astext                                             
 ---------------------------------------------------------------------------------------------------
  MULTILINESTRING M ((1.5 1.5 5.5,2.5 2.5 7.5),(2.5 2.5 7.5,1.5 1.5 5.5),(3.5 3.5 5.5,3.5 3.5 5.5))
+(1 row)
+
+SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]', tfloat '[1@2000-01-01, 1@2000-01-02, 2@2000-01-03]'));
+         st_astext          
+----------------------------
+ LINESTRING M (1 1 1,2 2 2)
 (1 row)
 
 SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1 1)@2000-01-01', '5@2000-01-01'));
