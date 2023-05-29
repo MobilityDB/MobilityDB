@@ -122,12 +122,10 @@ tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 }
 
 /*****************************************************************************
- * Functions for spatial reference systems
+ * Functions for spatial reference systems of temporal network points
+ * For temporal points of duration distinct from TInstant the Spatial
+ * reference system identifier (SRID) is obtained from the bounding box.
  *****************************************************************************/
-
-/* Spatial reference system identifier (SRID) of a temporal network point.
- * For temporal points of duration distinct from TINSTANT the SRID is
- * obtained from the bounding box. */
 
 /**
  * @brief Return the SRID of a temporal network point of subtype instant.
@@ -165,8 +163,7 @@ tnpoint_srid(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * Return the network points covered by a temporal network point
- *
+ * @brief Return the network points covered by a temporal network point
  * @param[in] seq Temporal network point
  * @param[out] count Number of elements of the output array
  * @note Only the particular cases returning points are covered
@@ -185,8 +182,7 @@ tnpointseq_discstep_npoints(const TSequence *seq, int *count)
 }
 
 /**
- * Return the network points covered by a temporal network point
- *
+ * @brief Return the network points covered by a temporal network point
  * @param[in] ss Temporal network point
  * @param[out] count Number of elements of the output array
  * @note Only the particular cases returning points are covered
@@ -195,17 +191,17 @@ static Npoint **
 tnpointseqset_step_npoints(const TSequenceSet *ss, int *count)
 {
   Npoint **result = palloc(sizeof(Npoint *) * ss->totalcount);
-  int k = 0;
+  int npoints = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      result[k++] = DatumGetNpointP(tinstant_value(inst));
+      result[npoints++] = DatumGetNpointP(tinstant_value(inst));
     }
   }
-  *count = k;
+  *count = npoints;
   return result;
 }
 
@@ -216,7 +212,6 @@ tnpointseqset_step_npoints(const TSequenceSet *ss, int *count)
 
 /**
  * @brief Return the geometry covered by a temporal network point.
- *
  * @param[in] inst Temporal network point
  */
 GSERIALIZED *
@@ -228,7 +223,6 @@ tnpointinst_geom(const TInstant *inst)
 
 /**
  * @brief Return the geometry covered by a temporal network point.
- *
  * @param[in] seq Temporal network point
  */
 GSERIALIZED *
@@ -258,7 +252,6 @@ tnpointseq_geom(const TSequence *seq)
 
 /**
  * @brief Return the geometry covered by a temporal network point.
- *
  * @param[in] ss Temporal network point
  */
 GSERIALIZED *
@@ -287,7 +280,6 @@ tnpointseqset_geom(const TSequenceSet *ss)
 
 /**
  * @brief Return the geometry covered by a temporal network point.
- *
  * @param[in] temp Temporal network point
  */
 GSERIALIZED *
@@ -305,8 +297,7 @@ tnpoint_geom(const Temporal *temp)
 }
 
 /**
- * Compute the trajectory of two instants.
- *
+ * @brief Compute the trajectory of two instants.
  * @param[in] np1, np2 Network points
  */
 static Datum
@@ -335,7 +326,7 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
  *****************************************************************************/
 
 /**
- * Determines the spatial equality for network points.
+ * @brief Determines the spatial equality for network points.
  * Two network points may be have different rid but represent the same
  * spatial point at the intersection of the two rids
  */
@@ -357,7 +348,7 @@ npoint_same(const Npoint *np1, const Npoint *np2)
  *****************************************************************************/
 
 /**
- * Length traversed by a temporal network point
+ * @brief Length traversed by a temporal network point
  */
 double
 tnpointseq_length(const TSequence *seq)
@@ -381,7 +372,7 @@ tnpointseq_length(const TSequence *seq)
 }
 
 /**
- * Length traversed by a temporal network point
+ * @brief Length traversed by a temporal network point
  */
 double
 tnpointseqset_length(const TSequenceSet *ss)
@@ -396,7 +387,7 @@ tnpointseqset_length(const TSequenceSet *ss)
 }
 
 /**
- * Length traversed by a temporal network point
+ * @brief Length traversed by a temporal network point
  */
 double
 tnpoint_length(const Temporal *temp)
@@ -457,7 +448,7 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 }
 
 /**
- * Cumulative length traversed by a temporal network point
+ * @brief Cumulative length traversed by a temporal network point
  */
 static TSequenceSet *
 tnpointseqset_cumulative_length(const TSequenceSet *ss)
@@ -475,7 +466,7 @@ tnpointseqset_cumulative_length(const TSequenceSet *ss)
 }
 
 /**
- * Cumulative length traversed by a temporal network point
+ * @brief Cumulative length traversed by a temporal network point
  */
 Temporal *
 tnpoint_cumulative_length(const Temporal *temp)
@@ -496,7 +487,7 @@ tnpoint_cumulative_length(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * Speed of a temporal network point
+ * @brief Speed of a temporal network point
  */
 static TSequence *
 tnpointseq_speed(const TSequence *seq)
@@ -544,26 +535,26 @@ tnpointseq_speed(const TSequence *seq)
 }
 
 /**
- * Speed of a temporal network point
+ * @brief Speed of a temporal network point
  */
 static TSequenceSet *
 tnpointseqset_speed(const TSequenceSet *ss)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  int k = 0;
+  int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     TSequence *seq1 = tnpointseq_speed(seq);
     if (seq1 != NULL)
-      sequences[k++] = seq1;
+      sequences[nseqs++] = seq1;
   }
   /* The resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, k, STEP);
+  return tsequenceset_make_free(sequences, nseqs, STEP);
 }
 
 /**
- * Speed of a temporal network point
+ * @brief Speed of a temporal network point
  */
 Temporal *
 tnpoint_speed(const Temporal *temp)
@@ -584,7 +575,7 @@ tnpoint_speed(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * Return the time-weighed centroid of a temporal network point
+ * @brief Return the time-weighed centroid of a temporal network point
  */
 Datum
 tnpoint_twcentroid(const Temporal *temp)
@@ -600,7 +591,8 @@ tnpoint_twcentroid(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * Temporal azimuth of two temporal network point instants
+ * @brief Temporal azimuth of two temporal network point instants (iteration
+ * function)
  */
 static TInstant **
 tnpointsegm_azimuth_iter(const TInstant *inst1, const TInstant *inst2,
@@ -642,30 +634,31 @@ tnpointsegm_azimuth_iter(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Helper function to make a sequence from the set of instants computed so far
+ * @brief Helper function to make a sequence from a set of instants
  */
 static TSequence *
 tsequence_assemble_instants(TInstant ***instants, int *countinsts,
   int totalinsts, int from, int to, bool lower_inc, TimestampTz last_time)
 {
   TInstant **allinstants = palloc(sizeof(TInstant *) * (totalinsts + 1));
-  int n = 0;
-  for (int j = from; j < to; j++)
+  int ninsts = 0;
+  for (int i = from; i < to; i++)
   {
-    for (int k = 0; k < countinsts[j]; k++)
-      allinstants[n++] = instants[j][k];
-    if (instants[j] != NULL)
-      pfree(instants[j]);
+    for (int j = 0; j < countinsts[i]; j++)
+      allinstants[ninsts++] = instants[i][j];
+    if (instants[i] != NULL)
+      pfree(instants[i]);
   }
   /* Add closing instant */
-  Datum last_value = tinstant_value(allinstants[n - 1]);
-  allinstants[n++] = tinstant_make(last_value, T_TFLOAT, last_time);
+  Datum last_value = tinstant_value(allinstants[ninsts - 1]);
+  allinstants[ninsts++] = tinstant_make(last_value, T_TFLOAT, last_time);
   /* Resulting sequence has step interpolation */
-  return tsequence_make_free(allinstants, n, lower_inc, true, STEP, true);
+  return tsequence_make_free(allinstants, ninsts, lower_inc, true, STEP, true);
 }
 
 /**
- * Temporal azimuth of a temporal network point of sequence subtype
+ * @brief Temporal azimuth of a temporal network point of sequence subtype
+ * (iterator function)
  */
 static int
 tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
@@ -674,10 +667,11 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   if (seq->count == 1)
     return 0;
 
+  /* General case */
   TInstant ***instants = palloc(sizeof(TInstant *) * (seq->count - 1));
   int *countinsts = palloc0(sizeof(int) * (seq->count - 1));
   int totalinsts = 0; /* number of created instants so far */
-  int l = 0; /* number of created sequences */
+  int nseqs = 0; /* number of created sequences */
   int m = 0; /* index of the segment from which to assemble instants */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
@@ -691,7 +685,7 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
       if (totalinsts != 0)
       {
         /* Assemble all instants created so far */
-        result[l++] = tsequence_assemble_instants(instants, countinsts,
+        result[nseqs++] = tsequence_assemble_instants(instants, countinsts,
           totalinsts, m, i, lower_inc, inst1->t);
         /* Indicate that we have consommed all instants created so far */
         m = i;
@@ -708,16 +702,16 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   if (totalinsts != 0)
   {
     /* Assemble all instants created so far */
-    result[l++] = tsequence_assemble_instants(instants, countinsts,
+    result[nseqs++] = tsequence_assemble_instants(instants, countinsts,
       totalinsts, m, seq->count - 1, lower_inc, inst1->t);
   }
   pfree(instants);
   pfree(countinsts);
-  return l;
+  return nseqs;
 }
 
 /**
- * Temporal azimuth of a temporal network point of sequence subtype
+ * @brief Temporal azimuth of a temporal network point of sequence subtype
  */
 static TSequenceSet *
 tnpointseq_azimuth(const TSequence *seq)
@@ -728,6 +722,9 @@ tnpointseq_azimuth(const TSequence *seq)
   return tsequenceset_make_free(sequences, count, true);
 }
 
+/**
+ * @brief Temporal azimuth of a temporal network point of sequence set subtype
+ */
 static TSequenceSet *
 tnpointseqset_azimuth(const TSequenceSet *ss)
 {
@@ -735,19 +732,19 @@ tnpointseqset_azimuth(const TSequenceSet *ss)
     return tnpointseq_azimuth(TSEQUENCESET_SEQ_N(ss, 0));
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
-  int k = 0;
+  int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    int countstep = tnpointseq_azimuth_iter(seq, &sequences[k]);
-    k += countstep;
+    int countstep = tnpointseq_azimuth_iter(seq, &sequences[nseqs]);
+    nseqs += countstep;
   }
   /* Resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, k, STEP);
+  return tsequenceset_make_free(sequences, nseqs, STEP);
 }
 
 /**
- * Temporal azimuth of a temporal network point
+ * @brief Temporal azimuth of a temporal network point
  */
 Temporal *
 tnpoint_azimuth(const Temporal *temp)
@@ -768,7 +765,7 @@ tnpoint_azimuth(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * Restrict a temporal network point to (the complement of) a geometry
+ * @brief Restrict a temporal network point to (the complement of) a geometry
  */
 Temporal *
 tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *geo,

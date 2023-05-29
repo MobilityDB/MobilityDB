@@ -596,12 +596,17 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   if (gs_srid != SRID_UNKNOWN)
     ensure_same_srid(srid, gs_srid);
   POINT3DZ pt;
+  memset(&pt, 0, sizeof(POINT3DZ));
   if (FLAGS_GET_Z(sorigin->gflags))
-    pt = datum_point3dz(PointerGetDatum(sorigin));
+  {
+    const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
+    pt.x = p3d->x;
+    pt.y = p3d->y;
+    pt.z = p3d->z;
+  }
   else
   {
     /* Initialize to 0 the Z dimension if it is missing */
-    memset(&pt, 0, sizeof(POINT3DZ));
     const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
     pt.x = p2d->x;
     pt.y = p2d->y;
@@ -655,13 +660,13 @@ tile_get_coords(double x, double y, double z, TimestampTz t,
   const STboxGridState *state, int *coords)
 {
   /* Transform the minimum values of the tile into matrix coordinates */
-  int k = 0;
-  coords[k++] = (int) ((x - state->box.xmin) / state->xsize);
-  coords[k++] = (int) ((y - state->box.ymin) / state->ysize);
+  int ncoords = 0;
+  coords[ncoords++] = (int) ((x - state->box.xmin) / state->xsize);
+  coords[ncoords++] = (int) ((y - state->box.ymin) / state->ysize);
   if (MEOS_FLAGS_GET_Z(state->box.flags))
-    coords[k++] = (int) ((z - state->box.zmin) / state->zsize);
+    coords[ncoords++] = (int) ((z - state->box.zmin) / state->zsize);
   if (MEOS_FLAGS_GET_T(state->box.flags))
-    coords[k++] = (int) ((t - DatumGetTimestampTz(state->box.period.lower)) /
+    coords[ncoords++] = (int) ((t - DatumGetTimestampTz(state->box.period.lower)) /
       state->tunits);
   return;
 }
@@ -670,7 +675,8 @@ tile_get_coords(double x, double y, double z, TimestampTz t,
  * @brief Transform the values in a tile into relative positions in matrix cells
  * @param[in] dx,dy,dz,dt Values in a tile
  * @param[in] state Grid information
- * @param[out] eps Relative position of values in their matrix cells (between 0 and 1)
+ * @param[out] eps Relative position of values in their matrix cells (between
+ * 0 and 1)
  */
 static void
 tile_get_eps(double dx, double dy, double dz, TimestampTz dt,

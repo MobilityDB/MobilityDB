@@ -208,6 +208,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
 
 /**
  * @brief Generic aggregate function for temporal sequences
+ * (iterator function).
  * @param[in] seq1,seq2 Temporal sequence values to be aggregated
  * @param[in] func Function
  * @param[in] crossings True if turning points are added in the segments
@@ -272,7 +273,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   bool lower_inc = inter.lower_inc;
   bool upper_inc = inter.upper_inc;
   TSequence *sequences[3];
-  int k = 0;
+  int nseqs = 0;
 
   /* Compute the aggregation on the period before the intersection of the
    * intervals */
@@ -282,13 +283,13 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   {
     span_set(TimestampTzGetDatum(lower1), TimestampTzGetDatum(lower),
       lower1_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tcontseq_at_period(seq1, &period);
+    sequences[nseqs++] = tcontseq_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (lower2_inc && !lower_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(lower2), TimestampTzGetDatum(lower),
       lower2_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tcontseq_at_period(seq2, &period);
+    sequences[nseqs++] = tcontseq_at_period(seq2, &period);
   }
 
   /*
@@ -313,7 +314,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
         elog(ERROR, "Unable to merge values");
     }
   }
-  sequences[k++] = tsequence_make_free(instants, syncseq1->count,
+  sequences[nseqs++] = tsequence_make_free(instants, syncseq1->count,
     lower_inc, upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
   pfree(syncseq1); pfree(syncseq2);
 
@@ -325,23 +326,23 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper1),
       ! upper_inc, upper1_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tcontseq_at_period(seq1, &period);
+    sequences[nseqs++] = tcontseq_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (! upper_inc && upper2_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper2),
       ! upper_inc, upper2_inc, T_TIMESTAMPTZ, &period);
-    sequences[k++] = tcontseq_at_period(seq2, &period);
+    sequences[nseqs++] = tcontseq_at_period(seq2, &period);
   }
 
   /* Normalization */
-  if (k == 1)
+  if (nseqs == 1)
   {
     result[0] = sequences[0];
     return 1;
   }
   int count;
-  TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences, k,
+  TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences, nseqs,
     &count);
   for (int i = 0; i < count; i++)
     result[i] = normseqs[i];

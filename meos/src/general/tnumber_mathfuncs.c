@@ -338,7 +338,7 @@ tnumberseq_linear_abs(const TSequence *seq)
   instants[0] = tnumberinst_abs(inst1);
   Datum value1 = tinstant_value(inst1);
   double dvalue1 = datum_double(value1, basetype);
-  int k = 1;
+  int ninsts = 1;
   Datum dzero = (basetype == T_INT4) ? Int32GetDatum(0) : Float8GetDatum(0);
   for (int i = 1; i < seq->count; i++)
   {
@@ -352,15 +352,15 @@ tnumberseq_linear_abs(const TSequence *seq)
       double duration = (double) (inst2->t - inst1->t);
       TimestampTz t = inst1->t + (TimestampTz) (duration * ratio);
       if (t != inst1->t && t != inst2->t)
-        instants[k++] = tinstant_make(dzero, seq->temptype, t);
+        instants[ninsts++] = tinstant_make(dzero, seq->temptype, t);
     }
-    instants[k++] = tnumberinst_abs(inst2);
+    instants[ninsts++] = tnumberinst_abs(inst2);
     inst1 = inst2;
     value1 = value2;
     dvalue1 = dvalue2;
   }
-  /* We are sure that k > 0 */
-  return tsequence_make_free(instants, k, seq->period.lower_inc,
+  /* We are sure that ninsts > 0 */
+  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
     seq->period.upper_inc, LINEAR, NORMALIZE);
 }
 
@@ -468,16 +468,16 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
 
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  int k = 0;
+  int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     delta = tnumberseq_delta_value(seq);
     if (delta)
-      sequences[k++] = delta;
+      sequences[nseqs++] = delta;
   }
   /* Resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**
@@ -531,20 +531,20 @@ tnumberseq_angular_difference1(const TSequence *seq, TInstant **result)
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value(inst1);
   Datum angdiff = Float8GetDatum(0);
-  int k = 0;
+  int ninsts = 0;
   if (seq->period.lower_inc)
-    result[k++] = tinstant_make(angdiff, seq->temptype, inst1->t);
+    result[ninsts++] = tinstant_make(angdiff, seq->temptype, inst1->t);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Datum value2 = tinstant_value(inst2);
     angdiff = angular_difference(value1, value2);
     if (i != seq->count - 1 || seq->period.upper_inc)
-      result[k++] = tinstant_make(angdiff, seq->temptype, inst2->t);
+      result[ninsts++] = tinstant_make(angdiff, seq->temptype, inst2->t);
     inst1 = inst2;
     value1 = value2;
   }
-  return k;
+  return ninsts;
 }
 
 static TSequence *
@@ -557,11 +557,11 @@ tnumberseq_angular_difference(const TSequence *seq)
   /* General case */
   /* We are sure that there are at least 2 instants */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  int k = tnumberseq_angular_difference1(seq, instants);
-  if (k == 0)
+  int ninsts = tnumberseq_angular_difference1(seq, instants);
+  if (ninsts == 0)
     return NULL;
   /* Resulting sequence has discrete interpolation */
-  return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE);
+  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE);
 }
 
 /**
@@ -576,16 +576,17 @@ tnumberseqset_angular_difference(const TSequenceSet *ss)
 
   /* General case */
   TInstant **instants = palloc(sizeof(TSequence *) * ss->totalcount);
-  int k = 0;
+  int ninsts = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tnumberseq_angular_difference1(seq, &instants[k]);
+    ninsts += tnumberseq_angular_difference1(seq, &instants[ninsts]);
   }
-  if (k == 0)
+  if (ninsts == 0)
     return NULL;
   /* Resulting sequence has discrete interpolation */
-  return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE);
+  return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
+    NORMALIZE);
 }
 
 /**
@@ -711,15 +712,15 @@ TSequenceSet *
 tfloatseqset_derivative(const TSequenceSet *ss)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  int k = 0;
+  int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (seq->count > 1)
-      sequences[k++] = tfloatseq_derivative(seq);
+      sequences[nseqs++] = tfloatseq_derivative(seq);
   }
   /* The resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**

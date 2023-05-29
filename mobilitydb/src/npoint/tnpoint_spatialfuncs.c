@@ -32,13 +32,15 @@
  * @brief Spatial functions for temporal network points.
  */
 
-#include "npoint/tnpoint_spatialfuncs.h"
-
 /* C */
 #include <math.h>
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
 #include <meos.h>
 #include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_restrfuncs.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_general/type_util.h"

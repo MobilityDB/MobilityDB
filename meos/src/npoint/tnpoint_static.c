@@ -616,13 +616,13 @@ geom_nsegment(const GSERIALIZED *gs)
 
   Npoint **points;
   Npoint *np;
-  int k = 0;
+  int npoints = 0;
   if (geomtype == POINTTYPE)
   {
     points = palloc0(sizeof(Npoint *));
     np = geom_npoint(gs);
     if (np != NULL)
-      points[k++] = np;
+      points[npoints++] = np;
   }
   else /* geomtype == LINETYPE */
   {
@@ -634,30 +634,30 @@ geom_nsegment(const GSERIALIZED *gs)
       GSERIALIZED *point = gserialized_pointn_linestring(gs, i + 1);
       np = geom_npoint(point);
       if (np != NULL)
-        points[k++] = np;
+        points[npoints++] = np;
       /* Cannot pfree(point); */
     }
   }
 
-  if (k == 0)
+  if (npoints == 0)
   {
     pfree(points);
     return NULL;
   }
   int64 rid = points[0]->rid;
   double minPos = points[0]->pos, maxPos = points[0]->pos;
-  for (int i = 1; i < k; i++)
+  for (int i = 1; i < npoints; i++)
   {
     if (points[i]->rid != rid)
     {
-      pfree_array((void **) points, k);
+      pfree_array((void **) points, npoints);
       return NULL;
     }
     minPos = Min(minPos, points[i]->pos);
     maxPos = Max(maxPos, points[i]->pos);
   }
   Nsegment *result = nsegment_make(rid, minPos, maxPos);
-  pfree_array((void **) points, k);
+  pfree_array((void **) points, npoints);
   return result;
 }
 

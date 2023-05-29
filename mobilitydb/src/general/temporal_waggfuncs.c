@@ -248,7 +248,7 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 
 /**
  * @brief Construct a sequence with a value 1 by extending the two bounds by
- * the time interval
+ * the time interval (iterator function)
  */
 static TSequence *
 tinstant_transform_wcount_iter(TimestampTz lower, TimestampTz upper,

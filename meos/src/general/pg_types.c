@@ -393,7 +393,7 @@ pg_time_in(const char *str, int32 typmod)
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
 
   tm2time(tm, fsec, &result);
-  AdjustTimeForTypmod(&result, typmod);
+  MEOSAdjustTimeForTypmod(&result, typmod);
 
   return result;
 }

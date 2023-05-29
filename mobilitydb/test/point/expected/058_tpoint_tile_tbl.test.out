@@ -24,16 +24,16 @@ SELECT tileList(b, 2.5, interval '1 week', 'Point(10 10)', '2001-06-01'), COUNT(
 
 SELECT extent(tile(g, 2.5)) FROM
 (SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10) t1;
-          extent          
---------------------------
- STBOX X((0,0),(2.5,2.5))
+             extent             
+--------------------------------
+ STBOX X((2.5,2.5),(92.5,92.5))
 (1 row)
 
 SELECT extent(tile(g, 2.5, geometry 'Point(10 10)')) FROM
 (SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10) t1;
-            extent            
-------------------------------
- STBOX X((10,10),(12.5,12.5))
+             extent             
+--------------------------------
+ STBOX X((2.5,2.5),(92.5,92.5))
 (1 row)
 
 SELECT extent(tile(g, 2.5)) FROM
@@ -53,9 +53,9 @@ SELECT extent(tile(g, 2.5, geometry 'Point(10 10 10)')) FROM
 SELECT extent(tile(g, t, 2.5, interval '2 days')) FROM
 (SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
-                                    extent                                    
-------------------------------------------------------------------------------
- STBOX XT(((0,0),(2.5,2.5)),[2001-01-27 00:00:00+00, 2001-12-11 00:00:00+00))
+                                      extent                                      
+----------------------------------------------------------------------------------
+ STBOX XT(((17.5,5),(100,97.5)),[2001-01-27 00:00:00+00, 2001-12-11 00:00:00+00))
 (1 row)
 
 SELECT extent(tile(g, t, 2.5, interval '2 days', geometry 'Point(10 10)', '2001-06-01')) FROM
@@ -63,7 +63,7 @@ SELECT extent(tile(g, t, 2.5, interval '2 days', geometry 'Point(10 10)', '2001-
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
                                       extent                                      
 ----------------------------------------------------------------------------------
- STBOX XT(((10,10),(12.5,12.5)),[2001-01-28 00:00:00+00, 2001-12-10 00:00:00+00))
+ STBOX XT(((17.5,5),(100,97.5)),[2001-01-28 00:00:00+00, 2001-12-10 00:00:00+00))
 (1 row)
 
 SELECT extent(tile(g, t, 2.5, interval '2 days')) FROM

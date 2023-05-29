@@ -46,10 +46,6 @@
 #define GEOM_TO_GEOG        true
 #define GEOG_TO_GEOM        false
 
-/** Symbolic constants for distinguishing between atGeometry and atGeometryTime */
-#define REST_TIME           true
-#define REST_TIME_NO        false
-
 /*****************************************************************************/
 
 /* Utility functions */
@@ -150,6 +146,8 @@ extern LWGEOM **lwpointarr_remove_duplicates(LWGEOM **points, int count,
 extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
   interpType interp);
 extern LWLINE *lwline_make(Datum value1, Datum value2);
+extern LWGEOM *lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines,
+  int npoints, int nlines);
 
 /* Functions for spatial reference systems */
 
@@ -163,17 +161,6 @@ extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 
 extern Datum datum_round_geo(Datum value, Datum size);
 extern Temporal *tpoint_round(const Temporal *temp, Datum size);
-
-/* Functions for extracting coordinates */
-
-extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
-
-/* Restriction functions */
-
-extern TSequence **tpointseq_at_geom(const TSequence *seq,
-  const GSERIALIZED *gs, int *count);
-extern Span *tpointseq_interperiods(const TSequence *seq,
-  GSERIALIZED *gsinter, int *count);
 
 /*****************************************************************************/
 

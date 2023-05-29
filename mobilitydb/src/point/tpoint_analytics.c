@@ -72,7 +72,7 @@ Tpoint_to_geo(PG_FUNCTION_ARGS)
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
   GSERIALIZED *result;
-  tpoint_to_geo_measure(tpoint, NULL, segmentize, &result);
+  tpoint_to_geo_meas(tpoint, NULL, segmentize, &result);
   PG_FREE_IF_COPY(tpoint, 0);
   PG_RETURN_POINTER(result);
 }
@@ -92,20 +92,20 @@ Geo_to_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tpoint_to_geo_measure(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_to_geo_measure);
+PGDLLEXPORT Datum Tpoint_to_geo_meas(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_to_geo_meas);
 /**
  * @brief Construct a geometry/geography with M measure from the temporal point
  * and the temporal float
  */
 Datum
-Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
+Tpoint_to_geo_meas(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   Temporal *measure = PG_GETARG_TEMPORAL_P(1);
   bool segmentize = (PG_NARGS() == 3) ? PG_GETARG_BOOL(2) : false;
   GSERIALIZED *result;
-  bool found = tpoint_to_geo_measure(tpoint, measure, segmentize, &result);
+  bool found = tpoint_to_geo_meas(tpoint, measure, segmentize, &result);
   PG_FREE_IF_COPY(tpoint, 0);
   PG_FREE_IF_COPY(measure, 1);
   if (! found)

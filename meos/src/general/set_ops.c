@@ -117,7 +117,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
   else /* setop == MINUS */
     count = s1->count;
   Datum *values = palloc(sizeof(Datum) * count);
-  int i = 0, j = 0, k = 0;
+  int i = 0, j = 0, nvals = 0;
   Datum d1 = SET_VAL_N(s1, 0);
   Datum d2 = SET_VAL_N(s2, 0);
   meosType basetype = s1->basetype;
@@ -127,7 +127,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
     if (cmp == 0)
     {
       if (setop == UNION || setop == INTER)
-        values[k++] = d1;
+        values[nvals++] = d1;
       i++; j++;
       if (i == s1->count || j == s2->count)
         break;
@@ -137,7 +137,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
     else if (cmp < 0)
     {
       if (setop == UNION || setop == MINUS)
-        values[k++] = d1;
+        values[nvals++] = d1;
       i++;
       if (i == s1->count)
         break;
@@ -147,7 +147,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
     else
     {
       if (setop == UNION)
-        values[k++] = d2;
+        values[nvals++] = d2;
       j++;
       if (j == s2->count)
         break;
@@ -158,14 +158,14 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
   if (setop == UNION || setop == MINUS)
   {
     while (i < s1->count)
-      values[k++] = SET_VAL_N(s1, i++);
+      values[nvals++] = SET_VAL_N(s1, i++);
   }
   if (setop == UNION)
   {
     while (j < s2->count)
-      values[k++] = SET_VAL_N(s2, j++);
+      values[nvals++] = SET_VAL_N(s2, j++);
   }
-  return set_make_free(values, k, basetype, ORDERED);
+  return set_make_free(values, nvals, basetype, ORDERED);
 }
 
 /*****************************************************************************
@@ -1012,7 +1012,7 @@ union_set_value(const Set *s, Datum d, meosType basetype)
 {
   assert(basetype == s->basetype);
   Datum *values = palloc(sizeof(Datum *) * (s->count + 1));
-  int k = 0;
+  int nvals = 0;
   bool found = false;
   for (int i = 0; i < s->count; i++)
   {
@@ -1022,17 +1022,17 @@ union_set_value(const Set *s, Datum d, meosType basetype)
       int cmp = datum_cmp(d, d1, basetype);
       if (cmp < 0)
       {
-        values[k++] = d;
+        values[nvals++] = d;
         found = true;
       }
       else if (cmp == 0)
         found = true;
     }
-    values[k++] = d1;
+    values[nvals++] = d1;
   }
   if (! found)
-    values[k++] = d;
-  return set_make_free(values, k, basetype, ORDERED);
+    values[nvals++] = d;
+  return set_make_free(values, nvals, basetype, ORDERED);
 }
 
 #if MEOS
@@ -1301,15 +1301,15 @@ minus_set_value(const Set *s, Datum d, meosType basetype)
     return set_copy(s);
 
   Datum *values = palloc(sizeof(TimestampTz) * s->count);
-  int k = 0;
+  int nvals = 0;
   Datum v = d;
   for (int i = 0; i < s->count; i++)
   {
     Datum v1 = SET_VAL_N(s, i);
     if (datum_ne(v, v1, basetype))
-      values[k++] = v1;
+      values[nvals++] = v1;
   }
-  return set_make_free(values, k, basetype, ORDERED);
+  return set_make_free(values, nvals, basetype, ORDERED);
 }
 
 #if MEOS
@@ -1372,15 +1372,15 @@ minus_timestampset_timestamp(const Set *ts, TimestampTz t)
     return set_copy(ts);
 
   Datum *values = palloc(sizeof(TimestampTz) * ts->count);
-  int k = 0;
+  int nvals = 0;
   Datum v = TimestampTzGetDatum(t);
   for (int i = 0; i < ts->count; i++)
   {
     Datum v1 = SET_VAL_N(ts, i);
     if (datum_ne(v, v1, T_TIMESTAMPTZ))
-      values[k++] = v1;
+      values[nvals++] = v1;
   }
-  return set_make_free(values, k, T_TIMESTAMPTZ, ORDERED);
+  return set_make_free(values, nvals, T_TIMESTAMPTZ, ORDERED);
 }
 #endif /* MEOS */
 

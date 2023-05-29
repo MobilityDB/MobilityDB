@@ -185,9 +185,13 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count,
   LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, count,
     interp);
   lwgeom_calculate_gbox_geodetic(lwgeom, box);
-
   lwgeom_free(lwgeom);
-  /* We cannot pfree(points); */
+  if (interp == LINEAR)
+  {
+    for (int i = 0; i < count; i++)
+      lwpoint_free((LWPOINT *) points[i]);
+    pfree(points);
+  }
   return;
 }
 
@@ -211,9 +215,13 @@ tgeogpointseq_set_gbox(const TSequence *seq, GBOX *box)
   LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, seq->count,
     interp);
   lwgeom_calculate_gbox_geodetic(lwgeom, box);
-
   lwgeom_free(lwgeom);
-  /* We cannot pfree(points); */
+  if (interp == LINEAR)
+  {
+    for (int i = 0; i < seq->count; i++)
+      lwpoint_free(points[i]);
+    pfree(points);
+  }
   return;
 }
 #endif /* MEOS */
@@ -304,13 +312,14 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
 
 /*****************************************************************************
  * Boxes functions
- * These functions can be used for defining VODKA indexes
+ * These functions can be used for defining MultiEntry (a.k.a.) VODKA indexes
  * https://www.pgcon.org/2014/schedule/events/696.en.html
+ * https://github.com/mschoema/mgist
  *****************************************************************************/
 
 /**
  * @brief Return an array of spatiotemporal boxes from the segments of a
- * temporal sequence point
+ * temporal sequence point (iterator function)
  * @param[in] seq Temporal value
  * @param[out] result Spatiotemporal box
  * @return Number of elements in the array
@@ -373,13 +382,13 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 {
   assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
   STBox *result = palloc(sizeof(STBox) * ss->totalcount);
-  int k = 0;
+  int nboxes = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tpointseq_stboxes_iter(seq, &result[k]);
+    nboxes += tpointseq_stboxes_iter(seq, &result[nboxes]);
   }
-  *count = k;
+  *count = nboxes;
   return result;
 }
 

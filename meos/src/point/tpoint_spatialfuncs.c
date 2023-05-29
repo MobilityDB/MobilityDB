@@ -56,38 +56,16 @@
 
 /*****************************************************************************
  * Utility functions
- * N.B. See the corresponding MACRO definitions in tpoint_spatialfuncs.h
  *****************************************************************************/
 
 /**
- * @brief Return a 2D point from the datum
- */
-POINT2D
-datum_point2d(Datum geom)
-{
-  const GSERIALIZED *gs = DatumGetGserializedP(geom);
-  POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
-  return *point;
-}
-
-/**
- * @brief Return a 3DZ point from the datum
- */
-POINT3DZ
-datum_point3dz(Datum geom)
-{
-  const GSERIALIZED *gs = DatumGetGserializedP(geom);
-  POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
-  return *point;
-}
-
-/**
- * @brief Return a 4D point from the GSERIALIZED
+ * @brief Return a 4D point from the datum
  * @note The M dimension is ignored
  */
 void
-gs_point4d(const GSERIALIZED *gs, POINT4D *p)
+datum_point4d(Datum value, POINT4D *p)
 {
+  const GSERIALIZED *gs = DatumGetGserializedP(value);
   memset(p, 0, sizeof(POINT4D));
   if (FLAGS_GET_Z(gs->gflags))
   {
@@ -102,18 +80,6 @@ gs_point4d(const GSERIALIZED *gs, POINT4D *p)
     p->x = point->x;
     p->y = point->y;
   }
-  return;
-}
-
-/**
- * @brief Return a 4D point from the datum
- * @note The M dimension is ignored
- */
-void
-datum_point4d(Datum value, POINT4D *p)
-{
-  const GSERIALIZED *gs = DatumGetGserializedP(value);
-  gs_point4d(gs, p);
   return;
 }
 
@@ -234,8 +200,7 @@ datum2_point_nsame(Datum geopoint1, Datum geopoint2)
 
 /**
  * @brief Serialize a geometry/geography
- *
- *@pre It is supposed that the flags such as Z and geodetic have been
+ * @pre It is supposed that the flags such as Z and geodetic have been
  * set up before by the calling function
  */
 GSERIALIZED *
@@ -587,8 +552,8 @@ ensure_non_empty(const GSERIALIZED *gs)
  * than the square of the distance between A and B.
  * https://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment
  *****************************************************************************/
-/*
- * Return true if point p is in the segment defined by A and B (2D)
+/**
+ * @brief Return true if point p is in the segment defined by A and B (2D)
  * @note The test of p = A or p = B MUST BE done in the calling function
  *   to take care of the inclusive/exclusive bounds for temporal sequences
  */
@@ -604,8 +569,8 @@ point2d_on_segment(const POINT2D *p, const POINT2D *A, const POINT2D *B)
   return (dotproduct >= 0);
 }
 
-/*
- * Return true if point p is in the segment defined by A and B (3D)
+/**
+ * @brief Return true if point p is in the segment defined by A and B (3D)
  * @note The test of p = A or p = B MUST BE done in the calling function
  *   to take care of the inclusive/exclusive bounds for temporal sequences
  */
@@ -618,7 +583,7 @@ point3dz_on_segment(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
   double j = (p->z - A->z) * (B->x - A->x) - (p->x - A->x) * (B->z - A->z);
   double k = (p->x - A->x) * (B->y - A->y) - (p->y - A->y) * (B->x - A->x);
   if (fabs(i) >= MEOS_EPSILON || fabs(j) >= MEOS_EPSILON ||
-    fabs(k) >= MEOS_EPSILON)
+      fabs(k) >= MEOS_EPSILON)
     return false;
   double dotproduct = (p->x - A->x) * (B->x - A->x) +
     (p->y - A->y) * (B->y - A->y) + (p->z - A->z) * (B->z - A->z);
@@ -1493,8 +1458,7 @@ geopoint_collinear(Datum value1, Datum value2, Datum value3,
 /**
  * @brief Return -1, 0, or 1 depending on whether the first LWPOINT
  * is less than, equal, or greater than the second one.
- * @pre There is no empty point in the array, the points are of the same
- * dimensionality
+ * @pre The points are not empty and are of the same dimensionality
  */
 static int
 lwpoint_cmp(const LWPOINT *p, const LWPOINT *q)
@@ -1551,7 +1515,6 @@ LWGEOM **
 lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
 {
   assert (count > 0);
-  /* We bypass the call to function lwgeom_as_lwpoint through memcpy */
   LWGEOM **newpoints = palloc(sizeof(LWGEOM *) * count);
   memcpy(newpoints, points, sizeof(LWGEOM *) * count);
   lwpointarr_sort((LWPOINT **) newpoints, count);
@@ -1570,7 +1533,6 @@ lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
  * @note The function does not remove duplicate points, that is, repeated
  * points in a multipoint or consecutive equal points in a line string. This
  * should be done in the calling function.
- *
  * @param[in] lwpoints Array of points
  * @param[in] count Number of elements in the input array
  * @param[in] interp Interpolation
@@ -1602,7 +1564,7 @@ lwline_make(Datum value1, Datum value2)
   GSERIALIZED *gs = DatumGetGserializedP(value1);
   int srid = gserialized_get_srid(gs);
   int hasz = FLAGS_GET_Z(gs->gflags);
-  int isgeodetic = FLAGS_GET_GEODETIC(gs->gflags);
+  int geodetic = FLAGS_GET_GEODETIC(gs->gflags);
   /* Since there is no M value a 0 value is passed */
   POINTARRAY *pa = ptarray_construct_empty((char) hasz, 0, 2);
   POINT4D pt;
@@ -1612,7 +1574,7 @@ lwline_make(Datum value1, Datum value2)
   ptarray_append_point(pa, &pt, LW_TRUE);
   LWLINE *result = lwline_construct(srid, NULL, pa);
   FLAGS_SET_Z(result->flags, hasz);
-  FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+  FLAGS_SET_GEODETIC(result->flags, geodetic);
   return result;
 }
 
@@ -1639,12 +1601,9 @@ tpointseq_disc_trajectory(const TSequence *seq)
     GSERIALIZED *gsvalue = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gsvalue);
   }
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count, STEP);
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  pfree(lwgeom);
-  for (int i = 0; i < seq->count; i++)
-    lwpoint_free((LWPOINT *) points[i]);
-  pfree(points);
+  LWGEOM *lwresult = lwpointarr_make_trajectory(points, seq->count, STEP);
+  GSERIALIZED *result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
   return result;
 }
 
@@ -1664,27 +1623,94 @@ tpointseq_cont_trajectory(const TSequence *seq)
   if (seq->count == 1)
     return DatumGetGserializedP(tinstant_value_copy(TSEQUENCE_INST_N(seq, 0)));
 
-  LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
+  LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   /* Remove two consecutive points if they are equal */
   Datum value = tinstant_value(TSEQUENCE_INST_N(seq, 0));
   GSERIALIZED *gs = DatumGetGserializedP(value);
-  points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-  int k = 1;
+  points[0] = lwgeom_from_gserialized(gs);
+  int npoints = 1;
   for (int i = 1; i < seq->count; i++)
   {
     value = tinstant_value(TSEQUENCE_INST_N(seq, i));
     gs = DatumGetGserializedP(value);
     LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-    if (! lwpoint_same(lwpoint, points[k - 1]))
-      points[k++] = lwpoint;
+    /* Remove two consecutive points if they are equal */
+    if (! lwpoint_same(lwpoint, (LWPOINT *) points[npoints - 1]))
+      points[npoints++] = (LWGEOM *) lwpoint;
   }
-  LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, k,
-    MEOS_FLAGS_GET_INTERP(seq->flags));
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  pfree(lwgeom);
-  for (int i = 0; i < k; i++)
-    lwpoint_free(points[i]);
-  pfree(points);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  LWGEOM *lwresult = lwpointarr_make_trajectory(points, npoints, interp);
+  GSERIALIZED *result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
+  if (interp == LINEAR)
+  {
+    for (int i = 0; i < npoints; i++)
+      lwgeom_free(points[i]);
+    pfree(points);
+  }
+  return result;
+}
+
+/**
+ * @brief Construct a geometry from an array of points and lines
+ * @pre There is at least one geometry in both arrays
+ */
+LWGEOM *
+lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines, int npoints,
+  int nlines)
+{
+  assert(npoints > 0 || nlines > 0);
+  LWGEOM *result, *respoints = NULL, *reslines = NULL;
+  if (npoints > 0)
+  {
+    if (npoints == 1)
+      respoints = points[0];
+    else
+    {
+      /* There may be less points than the size of the array */
+      LWGEOM **points1 = palloc(sizeof(LWGEOM *) * npoints);
+      memcpy(points1, points, sizeof(LWGEOM *) * npoints);
+      // TODO add the bounding box instead of ask PostGIS to compute it again
+      respoints = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+        points[0]->srid, NULL, (uint32_t) npoints, points1);
+      FLAGS_SET_Z(respoints->flags, FLAGS_GET_Z(points[0]->flags));
+      FLAGS_SET_GEODETIC(respoints->flags, FLAGS_GET_GEODETIC(points[0]->flags));
+    }
+  }
+  if (nlines > 0)
+  {
+    if (nlines == 1)
+      reslines = (LWGEOM *) lines[0];
+    else
+    {
+      /* There may be less lines than the size of the array */
+      LWGEOM **lines1 = palloc(sizeof(LWGEOM *) * nlines);
+      memcpy(lines1, lines, sizeof(LWGEOM *) * nlines);
+      // TODO add the bounding box instead of ask PostGIS to compute it again
+      reslines = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
+        lines[0]->srid, NULL, (uint32_t) nlines, lines1);
+      FLAGS_SET_Z(reslines->flags, FLAGS_GET_Z(lines[0]->flags));
+      FLAGS_SET_GEODETIC(reslines->flags, FLAGS_GET_GEODETIC(lines[0]->flags));
+    }
+  }
+  /* If both points and lines */
+  if (npoints > 0 && nlines > 0)
+  {
+    LWGEOM **geoms = palloc(sizeof(LWGEOM *) * 2);
+    geoms[0] = respoints;
+    geoms[1] = reslines;
+    // TODO add the bounding box instead of ask PostGIS to compute it again
+    result = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE, respoints->srid,
+      NULL, (uint32_t) 2, geoms);
+    FLAGS_SET_Z(result->flags, FLAGS_GET_Z(respoints->flags));
+    FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(respoints->flags));
+  }
+  /* If only points */
+  else if (nlines == 0)
+    result = respoints;
+  /* If only lines */
+  else /* npoints == 0 */
+    result = reslines;
   return result;
 }
 
@@ -1701,65 +1727,57 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   if (ss->count == 1)
     return tpointseq_cont_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
 
+  int32 srid = tpointseqset_srid(ss);
+  bool linear = MEOS_FLAGS_GET_LINEAR(ss->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
-  LWPOINT **points = palloc(sizeof(LWPOINT *) * ss->totalcount);
-  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ss->count);
-  int k = 0, l = 0;
+  LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
+  LWGEOM **lines = palloc(sizeof(LWGEOM *) * ss->count);
+  int npoints = 0, nlines = 0;
+  /* Iterate as in #tpointseq_cont_trajectory accumulating the results */
   for (int i = 0; i < ss->count; i++)
   {
-    GSERIALIZED *traj = tpointseq_cont_trajectory(TSEQUENCESET_SEQ_N(ss, i));
-    int geotype = gserialized_get_type(traj);
-    if (geotype == POINTTYPE)
-      points[l++] = lwgeom_as_lwpoint(lwgeom_from_gserialized(traj));
-    else if (geotype == MULTIPOINTTYPE)
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    Datum value = tinstant_value(TSEQUENCE_INST_N(seq, 0));
+    GSERIALIZED *gs = DatumGetGserializedP(value);
+    /* npoints is the current number of points so far, k is the number of
+     * additional points from the current sequence */
+    LWGEOM *lwpoint1 = lwgeom_from_gserialized(gs);
+    points[npoints] = lwpoint1;
+    int k = 1;
+    for (int j = 1; j < seq->count; j++)
     {
-      LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(traj));
-      int count = lwmpoint->ngeoms;
-      for (int m = 0; m < count; m++)
-        points[l++] = lwmpoint->geoms[m];
+      value = tinstant_value(TSEQUENCE_INST_N(seq, j));
+      gs = DatumGetGserializedP(value);
+      /* Do not add the point if it is equal to the previous ones */
+      LWGEOM *lwpoint2 = lwgeom_from_gserialized(gs);
+      if (! lwpoint_same((LWPOINT *) lwpoint1, (LWPOINT *) lwpoint2))
+      {
+        points[npoints + k++] = lwpoint2;
+        lwpoint1 = lwpoint2;
+      }
+      else
+        lwgeom_free(lwpoint2);
     }
-    /* gserialized_get_type(traj) == LINETYPE */
-    else
-      geoms[k++] = lwgeom_from_gserialized(traj);
-  }
-  GSERIALIZED *result;
-  if (k == 0)
-  {
-    /* Only points */
-    LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, l, STEP);
-    result = geo_serialize(lwgeom);
-    pfree(lwgeom);
-  }
-  else if (l == 0)
-  {
-    /* Only lines */
-    /* k > 1 since otherwise it is a singleton sequence set and this case
-     * was taken care at the begining of the function */
-    // TODO add the bounding box instead of ask PostGIS to compute it again
-    LWGEOM *coll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
-      geoms[0]->srid, NULL, (uint32_t) k, geoms);
-    FLAGS_SET_GEODETIC(coll->flags, geodetic);
-    result = geo_serialize(coll);
-    /* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
-  }
-  else
-  {
-    /* Both points and lines */
-    if (l == 1)
-      geoms[k++] = (LWGEOM *) points[0];
-    else
+    if (linear && k > 1)
     {
-      geoms[k++] = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-        points[0]->srid, NULL, (uint32_t) l, (LWGEOM **) points);
-      /* We cannot lwpoint_free(points[i]); */
+      lines[nlines] = (LWGEOM *) lwline_from_lwgeom_array(srid, (uint32_t) k,
+        &points[npoints]);
+      FLAGS_SET_Z(lines[nlines]->flags, hasz);
+      FLAGS_SET_GEODETIC(lines[nlines]->flags, geodetic);
+      nlines++;
+      for (int j = 0; j < k; j++)
+        lwgeom_free(points[npoints + j]);
     }
-    // TODO add the bounding box instead of ask PostGIS to compute it again
-    LWGEOM *coll = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE,
-      geoms[0]->srid, NULL, (uint32_t) k, geoms);
-    FLAGS_SET_GEODETIC(coll->flags, geodetic);
-    result = geo_serialize(coll);
+    else
+      npoints += k;
   }
-  pfree(points); pfree(geoms);
+  LWGEOM *lwresult = lwcoll_from_points_lines(points, lines, npoints, nlines);
+  FLAGS_SET_Z(lwresult->flags, hasz);
+  FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
+  GSERIALIZED *result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
+  pfree(points); pfree(lines);
   return result;
 }
 
@@ -2067,74 +2085,6 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
 }
 
 /*****************************************************************************
- * Functions for extracting coordinates
- *****************************************************************************/
-
-/**
- * @brief Get the X coordinates of a temporal point
- */
-static Datum
-point_get_x(Datum point)
-{
-  POINT4D p;
-  datum_point4d(point, &p);
-  return Float8GetDatum(p.x);
-}
-
-/**
- * @brief Get the Y coordinates of a temporal point
- */
-static Datum
-point_get_y(Datum point)
-{
-  POINT4D p;
-  datum_point4d(point, &p);
-  return Float8GetDatum(p.y);
-}
-
-/**
- * @brief Get the Z coordinates of a temporal point
- */
-static Datum
-point_get_z(Datum point)
-{
-  POINT4D p;
-  datum_point4d(point, &p);
-  return Float8GetDatum(p.z);
-}
-
-/**
- * @ingroup libmeos_temporal_spatial_accessor
- * @brief Get one of the coordinates of a temporal point as a temporal float.
- * @param[in] temp Temporal point
- * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
- * @sqlfunc getX(), getY(), getZ()
- */
-Temporal *
-tpoint_get_coord(const Temporal *temp, int coord)
-{
-  assert(tgeo_type(temp->temptype));
-  if (coord == 2)
-    ensure_has_Z(temp->flags);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  assert(coord >= 0 && coord <= 2);
-  if (coord == 0)
-    lfinfo.func = (varfunc) &point_get_x;
-  else if (coord == 1)
-    lfinfo.func = (varfunc) &point_get_y;
-  else /* coord == 2 */
-    lfinfo.func = (varfunc) &point_get_z;
-  lfinfo.numparam = 0;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
-
-/*****************************************************************************
  * Length functions
  *****************************************************************************/
 
@@ -2399,15 +2349,15 @@ TSequenceSet *
 tpointseqset_speed(const TSequenceSet *ss)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  int k = 0;
+  int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (seq->count > 1)
-      sequences[k++] = tpointseq_speed(seq);
+      sequences[nseqs++] = tpointseq_speed(seq);
   }
   /* The resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**
@@ -2435,7 +2385,7 @@ tpoint_speed(const Temporal *temp)
 
 /**
  * @brief Split the temporal point sequence into temporal float sequences for
- * each of its coordinates
+ * each of its coordinates (iterator function).
  */
 void
 tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
@@ -2669,8 +2619,8 @@ tpoint_direction(const Temporal *temp, double *result)
  *****************************************************************************/
 
 /**
- * @brief Return the temporal azimuth of a temporal geometry point.
- *
+ * @brief Return the temporal azimuth of a temporal geometry point
+ * (iterator function).
  * @param[in] seq Temporal value
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -2690,7 +2640,7 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value(inst1);
-  int k = 0, l = 0;
+  int ninsts = 0, nseqs = 0;
   Datum azimuth = 0; /* Make the compiler quiet */
   bool lower_inc = seq->period.lower_inc;
   bool upper_inc = false; /* make compiler quiet */
@@ -2702,36 +2652,36 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
     if (! datum_point_eq(value1, value2))
     {
       azimuth = func(value1, value2);
-      instants[k++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
+      instants[ninsts++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
     }
     else
     {
-      if (k != 0)
+      if (ninsts != 0)
       {
-        instants[k++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
+        instants[ninsts++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
         upper_inc = true;
         /* Resulting sequence has step interpolation */
-        result[l++] = tsequence_make((const TInstant **) instants, k,
+        result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
           lower_inc, upper_inc, STEP, NORMALIZE);
-        for (int j = 0; j < k; j++)
+        for (int j = 0; j < ninsts; j++)
           pfree(instants[j]);
-        k = 0;
+        ninsts = 0;
       }
       lower_inc = true;
     }
     inst1 = inst2;
     value1 = value2;
   }
-  if (k != 0)
+  if (ninsts != 0)
   {
-    instants[k++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
+    instants[ninsts++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
     /* Resulting sequence has step interpolation */
-    result[l++] = tsequence_make((const TInstant **) instants, k,
+    result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
       lower_inc, upper_inc, STEP, NORMALIZE);
   }
 
   pfree(instants);
-  return l;
+  return nseqs;
 }
 
 /**
@@ -2760,14 +2710,14 @@ tpointseqset_azimuth(const TSequenceSet *ss)
     return tpointseq_azimuth(TSEQUENCESET_SEQ_N(ss, 0));
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
-  int k = 0;
+  int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tpointseq_azimuth_iter(seq, &sequences[k]);
+    nseqs += tpointseq_azimuth_iter(seq, &sequences[nseqs]);
   }
   /* Resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**

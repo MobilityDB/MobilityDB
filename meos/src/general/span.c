@@ -214,7 +214,7 @@ spanarr_normalize(Span *spans, int count, bool sort, int *newcount)
   /* Sort the spans before normalization */
   if (sort)
     spanarr_sort(spans, count);
-  int k = 0;
+  int nspans = 0;
   Span *result = palloc(sizeof(Span) * count);
   Span current = spans[0];
   for (int i = 1; i < count; i++)
@@ -226,13 +226,13 @@ spanarr_normalize(Span *spans, int count, bool sort, int *newcount)
       span_expand(&next, &current);
     else
     {
-      result[k++] = current;
+      result[nspans++] = current;
       current = next;
     }
   }
-  result[k++] = current;
+  result[nspans++] = current;
   /* Set the output parameter */
-  *newcount = k;
+  *newcount = nspans;
   return result;
 }
 

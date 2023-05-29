@@ -114,7 +114,7 @@ periodset_tprecision(const SpanSet *ss, const Interval *duration,
   Span *spans = palloc(sizeof(Span) * count);
   lower = lower_bucket;
   upper = lower_bucket + tunits;
-  int k = 0;
+  int nspans = 0;
   /* Loop for each bucket */
   for (int i = 0; i < count; i++)
   {
@@ -122,13 +122,13 @@ periodset_tprecision(const SpanSet *ss, const Interval *duration,
     span_set(TimestampTzGetDatum(lower),TimestampTzGetDatum(upper),
       true, false, T_TIMESTAMPTZ, &s);
     if (overlaps_spanset_span(ss, &s))
-      spans[k++] = s;
+      spans[nspans++] = s;
     lower += tunits;
     upper += tunits;
   }
   SpanSet *result = NULL;
-  if (k > 0)
-    result = spanset_make(spans, k, NORMALIZE);
+  if (nspans > 0)
+    result = spanset_make(spans, nspans, NORMALIZE);
   pfree(spans);
   return result;
 }
@@ -1241,7 +1241,7 @@ SpanSet *
 union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   Span *spans = palloc(sizeof(Span) * (ss1->count + ss2->count));
-  int i = 0, j = 0, k = 0;
+  int i = 0, j = 0, nspans = 0;
   while (i < ss1->count && j < ss2->count)
   {
     const Span *s1 = spanset_sp_n(ss1, i);
@@ -1251,12 +1251,12 @@ union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     {
       if (left_span_span(s1, s2))
       {
-        spans[k++] = *s1;
+        spans[nspans++] = *s1;
         i++;
       }
       else
       {
-        spans[k++] = *s2;
+        spans[nspans++] = *s2;
         j++;
       }
     }
@@ -1313,16 +1313,16 @@ union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
         else
           break;
       }
-      spans[k++] = q;
+      spans[nspans++] = q;
     }
   }
   /* Only one of the following two while will be executed */
   while (i < ss1->count)
-    spans[k++] = *spanset_sp_n(ss1, i++);
+    spans[nspans++] = *spanset_sp_n(ss1, i++);
   while (j < ss2->count)
-    spans[k++] = *spanset_sp_n(ss2, j++);
-  /* k is never equal to 0 since the span sets are not empty */
-  return spanset_make_free(spans, k, NORMALIZE);
+    spans[nspans++] = *spanset_sp_n(ss2, j++);
+  /* nspans is never equal to 0 since the span sets are not empty */
+  return spanset_make_free(spans, nspans, NORMALIZE);
 }
 
 /*****************************************************************************
@@ -1427,19 +1427,19 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
   spanset_find_value(ss, s->lower, &loc);
   int count = ss->count - loc;
   Span *spans = palloc(sizeof(Span) * count);
-  int k = 0;
+  int nspans = 0;
   for (int i = loc; i < ss->count; i++)
   {
     const Span *s1 = spanset_sp_n(ss, i);
     Span s2;
     if (inter_span_span(s1, s, &s2))
-      spans[k++] = s2;
+      spans[nspans++] = s2;
     if (s->upper < s1->upper)
       break;
   }
   SpanSet *result = NULL;
-  if (k > 0)
-    result = spanset_make_free(spans, k, NORMALIZE_NO);
+  if (nspans > 0)
+    result = spanset_make_free(spans, nspans, NORMALIZE_NO);
   return result;
 }
 
@@ -1461,14 +1461,14 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   spanset_find_value(ss2, s.lower, &loc2);
   int count = ss1->count + ss2->count - loc1 - loc2;
   Span *spans = palloc(sizeof(Span) * count);
-  int i = loc1, j = loc2, k = 0;
+  int i = loc1, j = loc2, nspans = 0;
   while (i < ss1->count && j < ss2->count)
   {
     const Span *s1 = spanset_sp_n(ss1, i);
     const Span *s2 = spanset_sp_n(ss2, j);
     Span inter;
     if (inter_span_span(s1, s2, &inter))
-      spans[k++] = inter;
+      spans[nspans++] = inter;
     int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
     if (cmp == 0 && s1->upper_inc == s2->upper_inc)
     {
@@ -1480,8 +1480,8 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
       j++;
   }
   SpanSet *result = NULL;
-  if (k > 0)
-    result = spanset_make(spans, k, NORMALIZE);
+  if (nspans > 0)
+    result = spanset_make(spans, nspans, NORMALIZE);
   pfree(spans);
   return result;
 }
@@ -1570,7 +1570,7 @@ minus_timestamp_periodset(TimestampTz t, const SpanSet *ps,
 #endif /* MEOS */
 
 /**
- * @brief Compute the difference of a span and a span set
+ * @brief Compute the difference of a span and a span set (iterator function).
  */
 static int
 minus_span_spanset_iter(const Span *s, const SpanSet *ss, int from, int to,
@@ -1581,7 +1581,7 @@ minus_span_spanset_iter(const Span *s, const SpanSet *ss, int from, int to,
    *       |---| |---| |---|
    */
   Span curr = *s;
-  int k = 0;
+  int nspans = 0;
   for (int i = from; i < to; i++)
   {
     const Span *s1 = spanset_sp_n(ss, i);
@@ -1589,7 +1589,7 @@ minus_span_spanset_iter(const Span *s, const SpanSet *ss, int from, int to,
     int cmp = datum_cmp(curr.upper, s1->lower, curr.basetype);
     if (cmp < 0 || (cmp == 0 && curr.upper_inc && ! s1->lower_inc))
     {
-      result[k++] = curr;
+      result[nspans++] = curr;
       break;
     }
     Span minus[2];
@@ -1601,14 +1601,14 @@ minus_span_spanset_iter(const Span *s, const SpanSet *ss, int from, int to,
       curr = minus[0];
     else /* countminus == 2 */
     {
-      result[k++] = minus[0];
+      result[nspans++] = minus[0];
       curr = minus[1];
     }
     /* There are no more spans left */
     if (i == to - 1)
-      result[k++] = curr;
+      result[nspans++] = curr;
   }
-  return k;
+  return nspans;
 }
 
 /**
@@ -1646,18 +1646,18 @@ minus_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 
   /* At most one composing span can be split into two */
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
-  int k = 0;
+  int nspans = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const Span *p = spanset_sp_n(ss, i);
-    k += minus_span_value_iter(p, d, basetype, &spans[k]);
+    nspans += minus_span_value_iter(p, d, basetype, &spans[nspans]);
   }
-  if (k == 0)
+  if (nspans == 0)
   {
     pfree(spans);
     return NULL;
   }
-  return spanset_make_free(spans, k, NORMALIZE_NO);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO);
 }
 
 #if MEOS
@@ -1720,18 +1720,18 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
 
   /* At most one composing span can be split into two */
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
-  int k = 0;
+  int nspans = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const Span *s1 = spanset_sp_n(ss, i);
-    k += minus_span_span_iter(s1, s, &spans[k]);
+    nspans += minus_span_span_iter(s1, s, &spans[nspans]);
   }
-  if (k == 0)
+  if (nspans == 0)
   {
     pfree(spans);
     return NULL;
   }
-  return spanset_make_free(spans, k, NORMALIZE_NO);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO);
 }
 
 /**
@@ -1747,7 +1747,7 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     return spanset_copy(ss1);
 
   Span *spans = palloc(sizeof(Span) * (ss1->count + ss2->count));
-  int i = 0, j = 0, k = 0;
+  int i = 0, j = 0, nspans = 0;
   while (i < ss1->count && j < ss2->count)
   {
     const Span *s1 = spanset_sp_n(ss1, i);
@@ -1755,7 +1755,7 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     /* The spans do not overlap, copy the first span */
     if (! overlaps_span_span(s1, s2))
     {
-      spans[k++] = *s1;
+      spans[nspans++] = *s1;
       i++;
     }
     else
@@ -1775,20 +1775,20 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
       }
       int to = Min(l, ss2->count);
       /* Compute the difference of the overlapping spans */
-      k += minus_span_spanset_iter(s1, ss2, j, to, &spans[k]);
+      nspans += minus_span_spanset_iter(s1, ss2, j, to, &spans[nspans]);
       i++;
       j = l;
     }
   }
   /* Copy the sequences after the span set */
   while (i < ss1->count)
-    spans[k++] = *spanset_sp_n(ss1, i++);
-  if (k == 0)
+    spans[nspans++] = *spanset_sp_n(ss1, i++);
+  if (nspans == 0)
   {
     pfree(spans);
     return NULL;
   }
-  return spanset_make_free(spans, k, NORMALIZE_NO);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO);
 }
 
 /******************************************************************************

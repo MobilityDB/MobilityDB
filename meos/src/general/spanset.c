@@ -821,18 +821,18 @@ periodset_timestamps(const SpanSet *ps, int *count)
   TimestampTz *result = palloc(sizeof(TimestampTz) * 2 * ps->count);
   const Span *p = spanset_sp_n(ps, 0);
   result[0] = p->lower;
-  int k = 1;
+  int ntimes = 1;
   if (p->lower != p->upper)
-    result[k++] = p->upper;
+    result[ntimes++] = p->upper;
   for (int i = 1; i < ps->count; i++)
   {
     p = spanset_sp_n(ps, i);
-    if (result[k - 1] != DatumGetTimestampTz(p->lower))
-      result[k++] = p->lower;
-    if (result[k - 1] != DatumGetTimestampTz(p->upper))
-      result[k++] = p->upper;
+    if (result[ntimes - 1] != DatumGetTimestampTz(p->lower))
+      result[ntimes++] = p->lower;
+    if (result[ntimes - 1] != DatumGetTimestampTz(p->upper))
+      result[ntimes++] = p->upper;
   }
-  *count = k;
+  *count = ntimes;
   return result;
 }
 

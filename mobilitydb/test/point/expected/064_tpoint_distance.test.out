@@ -3196,7 +3196,7 @@ SELECT ST_AsTexT(shortestLine(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@200
 SELECT ST_AsTexT(shortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
       st_astext      
 ---------------------
- LINESTRING(2 2,2 2)
+ LINESTRING(3 3,3 3)
 (1 row)
 
 SELECT ST_AsTexT(shortestLine(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring empty'));
@@ -3244,7 +3244,7 @@ SELECT ST_AsTexT(shortestLine(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)
 SELECT ST_AsTexT(shortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0 0,3 3 3)'));
          st_astext          
 ----------------------------
- LINESTRING Z (1 1 1,1 1 1)
+ LINESTRING Z (3 3 3,3 3 3)
 (1 row)
 
 SELECT ST_AsTexT(shortestLine(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring Z empty'));
@@ -3340,7 +3340,7 @@ SELECT ST_AsTexT(shortestLine(geometry 'Linestring(0 0,3 3)', tgeompoint '[Point
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring(0 0,3 3)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
       st_astext      
 ---------------------
- LINESTRING(2 2,2 2)
+ LINESTRING(3 3,3 3)
 (1 row)
 
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring empty', tgeompoint 'Point(1 1)@2000-01-01'));
@@ -3388,7 +3388,7 @@ SELECT ST_AsTexT(shortestLine(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '[P
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
          st_astext          
 ----------------------------
- LINESTRING Z (1 1 1,1 1 1)
+ LINESTRING Z (3 3 3,3 3 3)
 (1 row)
 
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring Z empty', tgeompoint 'Point(1 1 1)@2000-01-01'));
