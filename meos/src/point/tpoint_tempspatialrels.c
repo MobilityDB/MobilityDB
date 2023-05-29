@@ -287,7 +287,8 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
 }
 
 /**
- * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
+ * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry
+ * (iterator function).
  *
  * The function splits the temporal point in an array of fragments that are
  * simple (that is, not self-intersecting) and loops for each fragment.
@@ -314,8 +315,8 @@ tinterrel_tpointseq_cont_geom_iter(const TSequence *seq, Datum geom,
     return result;
   }
 
-  /* Split the temporal point in an array of non self-intersecting
-   * temporal points */
+  /* Split the temporal point in an array of non self-intersecting temporal
+   * points */
   int nsimple;
   TSequence **simpleseqs = tpointseq_make_simple(seq, &nsimple);
   TSequence ***sequences = palloc(sizeof(TSequence *) * nsimple);
@@ -801,7 +802,7 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
 
 /**
  * @brief Return the timestamps at which the segments of two temporal points are
- * within the given distance
+ * within the given distance (iterator function)
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -942,7 +943,7 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
 
 /**
  * @brief Return the timestamps at which a temporal point and a point are
- * within the given distance
+ * within the given distance (iterator function)
  * @param[in] seq Temporal point
  * @param[in] point Point
  * @param[in] dist Distance

@@ -3746,8 +3746,11 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 
 /**
  * @brief Return the subsequences where the temporal value stays within an area
- * with a given maximum size (maxdist) for at least the specified
- * duration (minunits).
+ * with a given maximum size for at least the specified duration
+ * (iterator function)
+ * @param[in] seq Temporal sequence
+ * @param[in] maxdist Maximum distance
+ * @param[in] mintunits Minimum duration
  */
 static int
 tsequence_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
@@ -3841,8 +3844,10 @@ tsequence_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return the subsequences where the temporal value stays within
- * an area with a given maximum size (maxdist) for at least
- * the specified duration (minunits).
+ * an area with a given maximum size for at least the specified duration.
+ * @param[in] seq Temporal sequence
+ * @param[in] maxdist Maximum distance
+ * @param[in] mintunits Minimum duration
  */
 TSequenceSet *
 tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
@@ -3860,8 +3865,10 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return the subsequences where the temporal value stays within
- * an area with a given maximum size (maxdist) for at least
- * the specified duration (minunits).
+ * an area with a given maximum size for at least the specified duration.
+ * @param[in] ss Temporal sequence set
+ * @param[in] maxdist Maximum distance
+ * @param[in] mintunits Minimum duration
  */
 TSequenceSet *
 tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
@@ -3884,8 +3891,10 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the subsequences where the temporal value stays within
- * an area with a given maximum size (maxdist) for at least
- * the specified duration (minduration).
+ * an area with a given maximum size for at least the specified duration.
+ * @param[in] temp Temporal value
+ * @param[in] maxdist Maximum distance
+ * @param[in] mintunits Minimum duration
  */
 TSequenceSet *
 temporal_stops(const Temporal *temp, double maxdist,

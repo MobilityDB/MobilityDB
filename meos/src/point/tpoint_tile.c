@@ -600,9 +600,9 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   if (FLAGS_GET_Z(sorigin->gflags))
   {
     const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
-    pt.x = p2d->x;
-    pt.y = p2d->y;
-    pt.z = p2d->z;
+    pt.x = p3d->x;
+    pt.y = p3d->y;
+    pt.z = p3d->z;
   }
   else
   {

@@ -312,13 +312,14 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
 
 /*****************************************************************************
  * Boxes functions
- * These functions can be used for defining VODKA indexes
+ * These functions can be used for defining MultiEntry (a.k.a.) VODKA indexes
  * https://www.pgcon.org/2014/schedule/events/696.en.html
+ * https://github.com/mschoema/mgist
  *****************************************************************************/
 
 /**
  * @brief Return an array of spatiotemporal boxes from the segments of a
- * temporal sequence point
+ * temporal sequence point (iterator function)
  * @param[in] seq Temporal value
  * @param[out] result Spatiotemporal box
  * @return Number of elements in the array

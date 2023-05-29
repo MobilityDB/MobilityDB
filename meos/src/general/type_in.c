@@ -1108,8 +1108,9 @@ bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
 }
 
 /**
- * @brief Return a span from its WKB representation when reading components spans
- * in a span set (which does not repeat the spantype for every component
+ * @brief Return a span from its WKB representation when reading components
+ * spans in a span set (which does not repeat the spantype for every component
+ * (iterator function).
  */
 static void
 span_from_wkb_state_iter(wkb_parse_state *s, Span *result)

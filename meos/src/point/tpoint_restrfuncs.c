@@ -795,7 +795,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
 
 /**
  * @brief Restrict a temporal point instant to (the complement of) a
- * spatiotemporal box (iteration function).
+ * spatiotemporal box (iterator function).
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geom_time
  */
@@ -1001,7 +1001,7 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
 
 /**
  * @brief Return the timestamp at which a segment of a temporal point takes a
- * base value
+ * base value (iterator function).
  *
  * To take into account roundoff errors, the function considers that two
  * two values are equal even if their coordinates may differ by MEOS_EPSILON.
@@ -1838,7 +1838,7 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
 
 /**
  * @brief Restrict a temporal point instant to (the complement of) a
- * spatiotemporal box (iteration function).
+ * spatiotemporal box (iterator function).
  * @pre The arguments have the same SRID. This is verified in
  * #tpoint_restrict_stbox
  */

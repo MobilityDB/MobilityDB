@@ -2074,7 +2074,7 @@ tcontseq_to_step(const TSequence *seq)
 
 /**
  * @brief Return a temporal sequence with continuous base type transformed from
- * step to linear interpolation
+ * step to linear interpolation (iterator function)
  * @param[in] seq Temporal sequence
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -2179,7 +2179,8 @@ tsequence_set_interp(const TSequence *seq, interpType interp)
 
 
 /**
- * @brief Shift and/or scale the instants of a temporal sequence.
+ * @brief Shift and/or scale the instants of a temporal sequence
+ * (iterator function).
  * @note This function is called for each sequence of a temporal sequence set.
  */
 void
@@ -2473,6 +2474,7 @@ tsequence_sequences(const TSequence *seq, int *count)
 
 /**
  * @brief Return the array of segments of a temporal sequence
+ * (iterator function)
  * @param[in] seq Temporal sequence
  * @param[out] result Array on which the pointers of the newly constructed
  * segments are stored
@@ -2594,6 +2596,7 @@ tsequence_end_timestamp(const TSequence *seq)
 
 /**
  * @brief Return the array of timestamps of a temporal sequence
+ * (iterator function).
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
@@ -3377,6 +3380,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
 /**
  * @brief Return true if the segment of a temporal sequence with linear
  * interpolation is ever less than or equal to a base value
+ * (iterator function)
  * @param[in] value1,value2 Input base values
  * @param[in] basetype Base type
  * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
@@ -3400,7 +3404,7 @@ tlinearseq_ever_le_iter(Datum value1, Datum value2, meosType basetype,
 
 /**
  * @brief Return true if the segment of a temporal sequence with linear
- * interpolation is always less than a base value
+ * interpolation is always less than a base value (iterator function).
  * @param[in] value1,value2 Input base values
  * @param[in] basetype Base type
  * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
@@ -3788,6 +3792,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @brief Restrict a temporal sequence to (the complement of) a base value
+ * (iterator function)
  * @param[in] seq Temporal sequence
  * @param[in] value Base value
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -3874,6 +3879,7 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 
 /**
  * @brief Restrict a temporal sequence to an array of base values
+ * (iterator function)
  * @param[in] seq Temporal sequence
  * @param[in] set Set of base values
  * @param[out] result Array on which the pointers of the newly constructed
@@ -4239,6 +4245,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @brief Restrict a temporal number to (the complement of) a span
+ * (iterator function).
  * @param[in] seq temporal number
  * @param[in] span Span of base values
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -4326,7 +4333,7 @@ tnumbercontseq_restrict_span(const TSequence *seq, const Span *span,
 
 /**
  * @brief Restrict a temporal number to (the complement of) an array of spans
- * of base values
+ * of base values (iterator function).
  * @param[in] seq Temporal number
  * @param[in] ss Span set
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -4777,6 +4784,7 @@ tsequence_at_timestamp(const TSequence *seq, TimestampTz t)
 
 /**
  * @brief Restrict a temporal sequence to the complement of a timestamp
+ * (iterator function)
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
  * @param[out] result Array on which the pointers of the newly constructed
@@ -4945,6 +4953,7 @@ tcontseq_at_timestampset(const TSequence *seq, const Set *ts)
 
 /**
  * @brief Restrict a temporal sequence to the complement of a timestamp set
+ * (iterator function)
  * @param[in] seq Temporal sequence
  * @param[in] ts Tstzset
  * @param[out] result Array on which the pointers of the newly constructed
@@ -5175,6 +5184,7 @@ tsequence_at_period(const TSequence *seq, const Span *p)
 
 /**
  * @brief Restrict a temporal sequence to the complement of a period.
+ * (iterator function).
  * @param[in] seq Temporal sequence
  * @param[in] p Period
  * @param[out] result Array on which the pointers of the newly constructed
@@ -5302,6 +5312,7 @@ tcontseq_at_periodset1(const TSequence *seq, const SpanSet *ps,
 
 /**
  * @brief Restrict a temporal sequence to the complement of a period set
+ * (iterator function).
  * @param[in] seq Temporal sequence
  * @param[in] ps Period set
  * @param[out] result Array on which the pointers of the newly constructed

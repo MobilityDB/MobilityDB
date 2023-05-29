@@ -1570,7 +1570,7 @@ minus_timestamp_periodset(TimestampTz t, const SpanSet *ps,
 #endif /* MEOS */
 
 /**
- * @brief Compute the difference of a span and a span set
+ * @brief Compute the difference of a span and a span set (iterator function).
  */
 static int
 minus_span_spanset_iter(const Span *s, const SpanSet *ss, int from, int to,

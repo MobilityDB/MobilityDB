@@ -1185,7 +1185,7 @@ minus_timestamp_period(TimestampTz t, const Span *p, TimestampTz *result)
 #endif /* MEOS */
 
 /**
- * @brief Compute the difference of a span and a value
+ * @brief Compute the difference of a span and a value (iterator function).
  */
 int
 minus_span_value_iter(const Span *s, Datum d, meosType basetype, Span *result)
@@ -1291,7 +1291,7 @@ minus_period_timestamp(const Span *p, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @brief Compute the difference of two spans
+ * @brief Compute the difference of two spans (iterator function).
  */
 int
 minus_span_span_iter(const Span *s1, const Span *s2, Span *result)

@@ -2385,7 +2385,7 @@ tpoint_speed(const Temporal *temp)
 
 /**
  * @brief Split the temporal point sequence into temporal float sequences for
- * each of its coordinates
+ * each of its coordinates (iterator function).
  */
 void
 tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
@@ -2619,8 +2619,8 @@ tpoint_direction(const Temporal *temp, double *result)
  *****************************************************************************/
 
 /**
- * @brief Return the temporal azimuth of a temporal geometry point.
- *
+ * @brief Return the temporal azimuth of a temporal geometry point
+ * (iterator function).
  * @param[in] seq Temporal value
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored

@@ -208,6 +208,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
 
 /**
  * @brief Generic aggregate function for temporal sequences
+ * (iterator function).
  * @param[in] seq1,seq2 Temporal sequence values to be aggregated
  * @param[in] func Function
  * @param[in] crossings True if turning points are added in the segments

@@ -490,6 +490,7 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 /**
  * @brief Return the new current nearest approach instant between the temporal
  * sequence point with step interpolation and a geometry/geography
+ * (iterator function)
  * @param[in] seq Temporal point
  * @param[in] geo Geometry/geography
  * @param[in] mindist Current minimum distance, it is set at DBL_MAX at the
@@ -604,7 +605,7 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
 /**
  * @brief Return the distance and the timestamp of the nearest approach instant
  * between the temporal sequence point with linear interpolation and the
- * geometry/geography
+ * geometry/geography (iterator function)
  * @param[in] seq Temporal point
  * @param[in] geo Geometry/geography
  * @param[in] mindist Minimum distance found so far, or DBL_MAX at the beginning
@@ -654,7 +655,7 @@ NAI_tpointseq_linear_geo_iter(const TSequence *seq, const LWGEOM *geo,
 
 /**
  * @brief Return the nearest approach instant between the temporal sequence
- * point with linear interpolation and a geometry
+ * point with linear interpolation and a geometry (iterator function)
  */
 static TInstant *
 NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
