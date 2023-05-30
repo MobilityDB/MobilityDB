@@ -21,7 +21,7 @@
  */
 
 #include <limits.h>				/* for CHAR_BIT et al. */
-#include <sys/wait.h>			/* for WIFEXITED and WEXITSTATUS */
+// #include <sys/wait.h>			/* for WIFEXITED and WEXITSTATUS */ /* MEOS */
 #include <unistd.h>				/* for F_OK and R_OK */
 
 #include "pgtime.h"

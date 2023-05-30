@@ -450,5 +450,3 @@ meos_finalize(void)
     tzcache_destroy(timezone_cache);
   return;
 }
-
-
