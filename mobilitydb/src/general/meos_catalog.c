@@ -62,7 +62,6 @@
 #else
   #include <access/hash.h>
 #endif
-#include <lib/simplehash.h>
 #include <utils/rel.h>
 /* MEOS */
 #include <meos.h>

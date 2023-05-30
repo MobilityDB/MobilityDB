@@ -10,16 +10,14 @@
  *
  *-------------------------------------------------------------------------
  */
-#define _GNU_SOURCE
 #include "postgres.h"
 
 #include <ctype.h>
 #include <fcntl.h>
 #include <time.h>
-#include <dirent.h> /* MobilityDB */
-#include <sys/stat.h> /* MobilityDB */
-#include <search.h> /* MobilityDB for POSIX hsearch */
-// #include "datatype/timestamp.h" /* MobilityDB */
+#include <dirent.h> /* MEOS */
+#include <sys/stat.h> /* MEOS */
+// #include "datatype/timestamp.h" /* MEOS */
 #include "utils/timestamp_def.h"
 #include "pgtz.h"
 
@@ -34,25 +32,25 @@ typedef struct
   char *key;     /**< timezone name (hashtable key) */
   void *data;    /**< pointer to the timezone structure */
   char status;   /**< hash status */
-} _timezone_entry;
+} tzentry;
 
-#define SH_PREFIX tztable
-#define SH_ELEMENT_TYPE _timezone_entry
-#define SH_KEY_TYPE const char * // char[]
-#define SH_KEY TZname
-#define SH_HASH_KEY(tb, key) string_hash(key, TZ_STRLEN_MAX + 1) // hash_string_pointer(key)
-#define SH_EQUAL(tb, a, b) (strncmp(a, b, TZ_STRLEN_MAX + 1) == 0) // (strcmp(a, b) == 0)
+#define SH_PREFIX tzcache
+#define SH_ELEMENT_TYPE tzentry
+#define SH_KEY_TYPE const char *
+#define SH_KEY key
+#define SH_HASH_KEY(tb, key) hash_string_pointer(key)
+#define SH_EQUAL(tb, a, b) (strcmp(a, b) == 0)
 #define SH_SCOPE static inline
 #define SH_RAW_ALLOCATOR pg_malloc0
 #define SH_DEFINE
 #define SH_DECLARE
 #include <lib/simplehash.h>
 
+/* Size of the timezone hash table */
+#define TZCACHE_INITIAL_SIZE 32
+
 /* Function in findtimezone.c */
 extern const char *select_default_timezone(const char *share_path);
-
-/* Size of the timezone hash table manipulated by the POSIX hsearch() functions */
-#define TZ_HTABLE_MAXSIZE 32
 
 /* Current session timezone (controlled by TimeZone GUC) */
 pg_tz *session_timezone = NULL;
@@ -109,7 +107,7 @@ pg_open_tzfile(const char *name, char *canonname)
   int      orignamelen;
 
   /* Initialize fullname with base name of tzdata directory */
-  // strlcpy(fullname, pg_TZDIR(), sizeof(fullname)); /* MobilityDB */
+  // strlcpy(fullname, pg_TZDIR(), sizeof(fullname)); /* MEOS */
   strncpy(fullname, pg_TZDIR(), sizeof(fullname));
   orignamelen = fullnamelen = strlen(fullname);
 
@@ -165,7 +163,7 @@ pg_open_tzfile(const char *name, char *canonname)
   }
 
   if (canonname)
-    // strlcpy(canonname, fullname + orignamelen + 1, TZ_STRLEN_MAX + 1); /* MobilityDB */
+    // strlcpy(canonname, fullname + orignamelen + 1, TZ_STRLEN_MAX + 1); /* MEOS */
     strncpy(canonname, fullname + orignamelen + 1, TZ_STRLEN_MAX + 1);
 
   return open(fullname, O_RDONLY | PG_BINARY, 0);
@@ -215,10 +213,10 @@ scan_directory_ci(const char *dirname, const char *fname, int fnamelen,
   DIR *dirdesc;
   struct dirent *direntry;
 
-  // dirdesc = AllocateDir(dirname); /* MobilityDB */
+  // dirdesc = AllocateDir(dirname); /* MEOS */
   dirdesc = opendir(dirname);
 
-  // while ((direntry = ReadDirExtended(dirdesc, dirname, LOG)) != NULL) /* MobilityDB */
+  // while ((direntry = ReadDirExtended(dirdesc, dirname, LOG)) != NULL) /* MEOS */
   while ((direntry = ReadDir(dirdesc, dirname)) != NULL)
   {
     /*
@@ -232,14 +230,14 @@ scan_directory_ci(const char *dirname, const char *fname, int fnamelen,
       pg_strncasecmp(direntry->d_name, fname, fnamelen) == 0)
     {
       /* Found our match */
-      // strlcpy(canonname, direntry->d_name, canonnamelen); /* MobilityDB */
+      // strlcpy(canonname, direntry->d_name, canonnamelen); /* MEOS */
       strncpy(canonname, direntry->d_name, canonnamelen);
       found = true;
       break;
     }
   }
 
-  // FreeDir(dirdesc); /* MobilityDB */
+  // FreeDir(dirdesc); /* MEOS */
   closedir(dirdesc);
 
   return found;
@@ -250,27 +248,29 @@ scan_directory_ci(const char *dirname, const char *fname, int fnamelen,
  * load and parse the TZ definition file every time one is selected.
  * Because we want timezone names to be found case-insensitively,
  * the hash key is the uppercased name of the zone.
- * MobilityDB: We use a fixed size hash table instead of a dynamic hash table
+ * MEOS: We use a fixed size hash table instead of a dynamic hash table
  * as in the original PG code.
  */
+/* MEOS */
+// typedef struct
+// {
+  // /* tznameupper contains the all-upper-case name of the timezone */
+  // char tznameupper[TZ_STRLEN_MAX + 1];
+  // pg_tz tz;
+// } pg_tz_cache;
 
-static struct hsearch_data *timezone_cache = NULL;
+static tzcache_hash *timezone_cache = NULL;
 
 static bool
 init_timezone_hashtable(void)
 {
-  timezone_cache = palloc0(sizeof(struct hsearch_data));
+  /* Create the timezone hash table */
+  timezone_cache = tzcache_create(TZCACHE_INITIAL_SIZE, NULL);
+
   if (!timezone_cache)
     return false;
 
-#ifdef NO_HSEARCH_R
-  if (hcreate(TZ_HTABLE_MAXSIZE))
-#else
-  if (hcreate_r(TZ_HTABLE_MAXSIZE, timezone_cache))
-#endif /* NO_HSEARCH_R */
-    return true;
-
-  return false;
+  return true;
 }
 
 /*
@@ -290,9 +290,7 @@ init_timezone_hashtable(void)
 pg_tz *
 pg_tzset(const char *name)
 {
-  // pg_tz_cache *tzp; /* MobilityDB */
-  ENTRY e;
-  ENTRY *ep = &e;
+  // pg_tz_cache *tzp; /* MEOS */
   struct state tzstate;
   char uppername[TZ_STRLEN_MAX + 1];
   char canonname[TZ_STRLEN_MAX + 1];
@@ -317,14 +315,11 @@ pg_tzset(const char *name)
   *p = '\0';
 
   /* Look for timezone in the cache */
-  e.key = uppername;
-#ifdef NO_HSEARCH_R
-  ep = hsearch(e, FIND);
-  if (ep != NULL)
-#else
-  if (hsearch_r(e, FIND, &ep, timezone_cache))
-#endif /* NO_HSEARCH_R */
-    return (pg_tz *) ep->data;
+  bool found;
+  tzentry *entry = tzcache_lookup(timezone_cache, uppername);
+  if (entry)
+    /* Timezone found in cache, nothing more to do */
+    return (pg_tz *) entry->data;
 
   /*
    * "GMT" is always sent to tzparse(), as per discussion above.
@@ -355,15 +350,15 @@ pg_tzset(const char *name)
   strcpy(tz->TZname, canonname);
   memcpy(&tz->state, &tzstate, sizeof(tzstate));
 
-  e.key = strdup(uppername);
-  e.data = tz;
-#ifdef NO_HSEARCH_R
-  ep = hsearch(e, ENTER);
-  if (ep != NULL)
-#else
-  if (hsearch_r(e, ENTER, &ep, timezone_cache))
-#endif /* NO_HSEARCH_R */
-    return (pg_tz *) ep->data;
+  /* Fill the struct to be added to the hash table */
+  found;
+  entry = opertable_insert(timezone_cache, uppername, &found);
+  if (! found)
+  {
+    entry->key = strdup(uppername);
+    entry->data = tz;
+    return (pg_tz *) entry->data;
+  }
 
   return NULL;
 }
@@ -385,7 +380,7 @@ pg_tzset_offset(long gmtoffset)
 {
   long    absoffset = (gmtoffset < 0) ? -gmtoffset : gmtoffset;
   char    offsetstr[64];
-  // char    tzname[128]; /* MobilityDB */
+  // char    tzname[128]; /* MEOS */
   char    tzname[256];
 
   snprintf(offsetstr, sizeof(offsetstr),
