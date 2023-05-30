@@ -23,7 +23,7 @@
 
 /**
  * Structure to represent the timezone cache hash table, which extends
- * the `ENTRY` used by hsearch
+ * the `ENTRY` structure used by hsearch
  * https://man7.org/linux/man-pages/man3/hsearch.3.html
  * with the additional field `status` required by `simplehash`
  */
@@ -34,6 +34,7 @@ typedef struct
   char status;   /**< hash status */
 } tzentry;
 
+static uint32 hash_string_pointer(const char *s);
 #define SH_PREFIX tzcache
 #define SH_ELEMENT_TYPE tzentry
 #define SH_KEY_TYPE const char *
@@ -41,7 +42,7 @@ typedef struct
 #define SH_HASH_KEY(tb, key) hash_string_pointer(key)
 #define SH_EQUAL(tb, a, b) (strcmp(a, b) == 0)
 #define SH_SCOPE static inline
-#define SH_RAW_ALLOCATOR pg_malloc0
+#define SH_RAW_ALLOCATOR palloc0
 #define SH_DEFINE
 #define SH_DECLARE
 #include <lib/simplehash.h>
@@ -56,11 +57,21 @@ extern const char *select_default_timezone(const char *share_path);
 pg_tz *session_timezone = NULL;
 
 /* Current log timezone (controlled by log_timezone GUC) */
-// pg_tz *log_timezone = NULL;
+// pg_tz *log_timezone = NULL; /* MEOS */
 
 static bool scan_directory_ci(const char *dirname,
                 const char *fname, int fnamelen,
                 char *canonname, int canonnamelen);
+
+/*
+ * Helper function borrowed from PostgreSQL file `filemap.c`.
+ */
+static uint32
+hash_string_pointer(const char *s)
+{
+  unsigned char *ss = (unsigned char *) s;
+  return hash_bytes(ss, strlen(s));
+}
 
 /*
  * Return full pathname of timezone data directory
@@ -86,7 +97,6 @@ pg_TZDIR(void)
   return SYSTEMTZDIR;
 #endif
 }
-
 
 /*
  * Given a timezone name, open() the timezone data file.  Return the
@@ -123,7 +133,7 @@ pg_open_tzfile(const char *name, char *canonname)
    */
   if (canonname == NULL)
   {
-    int      result;
+    int result;
 
     fullname[fullnamelen] = '/';
     /* test above ensured this will fit: */
@@ -143,7 +153,7 @@ pg_open_tzfile(const char *name, char *canonname)
   for (;;)
   {
     const char *slashptr;
-    int      fnamelen;
+    int fnamelen;
 
     slashptr = strchr(fname, '/');
     if (slashptr)
@@ -252,19 +262,14 @@ scan_directory_ci(const char *dirname, const char *fname, int fnamelen,
  * as in the original PG code.
  */
 /* MEOS */
-// typedef struct
-// {
-  // /* tznameupper contains the all-upper-case name of the timezone */
-  // char tznameupper[TZ_STRLEN_MAX + 1];
-  // pg_tz tz;
-// } pg_tz_cache;
+// typedef struct {...} pg_tz_cache;
 
 static tzcache_hash *timezone_cache = NULL;
 
 static bool
 init_timezone_hashtable(void)
 {
-  /* Create the timezone hash table */
+  /* MEOS: Create the timezone hash table */
   timezone_cache = tzcache_create(TZCACHE_INITIAL_SIZE, NULL);
 
   if (!timezone_cache)
@@ -314,7 +319,7 @@ pg_tzset(const char *name)
     *p++ = pg_toupper((unsigned char) *name++);
   *p = '\0';
 
-  /* Look for timezone in the cache */
+  /* MEOS: Look for timezone in the cache */
   bool found;
   tzentry *entry = tzcache_lookup(timezone_cache, uppername);
   if (entry)
@@ -350,9 +355,9 @@ pg_tzset(const char *name)
   strcpy(tz->TZname, canonname);
   memcpy(&tz->state, &tzstate, sizeof(tzstate));
 
-  /* Fill the struct to be added to the hash table */
+  /* MEOS: Fill the struct to be added to the hash table */
   found;
-  entry = opertable_insert(timezone_cache, uppername, &found);
+  entry = tzcache_insert(timezone_cache, uppername, &found);
   if (! found)
   {
     entry->key = strdup(uppername);
@@ -408,7 +413,7 @@ pg_tzset_offset(long gmtoffset)
 }
 
 /*
- * Initialize timezone library
+ * Initialize timezone cache
  */
 void
 meos_timezone_initialize(const char *name)
@@ -436,17 +441,13 @@ meos_initialize(const char *tz_str)
 }
 
 /*
- * Initialize timezone library
+ * Free the timezone cache
  */
 void
 meos_finalize(void)
 {
   if (session_timezone)
-#ifdef NO_HSEARCH_R
-    hdestroy();
-#else
-    hdestroy_r(timezone_cache);
-#endif
+    tzcache_destroy(timezone_cache);
   return;
 }
 
