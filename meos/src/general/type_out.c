@@ -2242,7 +2242,8 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   buf = palloc(buf_size);
   if (buf == NULL)
   {
-    elog(ERROR, "Unable to allocate %lu bytes for WKB output buffer.", buf_size);
+    elog(ERROR, "Unable to allocate " UINT64_FORMAT
+      " bytes for WKB output buffer.", buf_size);
     return NULL;
   }
 

@@ -205,7 +205,7 @@ ensure_positive_datum(Datum size, meosType basetype)
   {
     int64 isize = DatumGetInt64(size);
     if (isize <= 0)
-      elog(ERROR, "The value must be positive: %ld", isize);
+      elog(ERROR, "The value must be positive: " INT64_FORMAT "", isize);
   }
   return;
 }

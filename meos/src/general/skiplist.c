@@ -122,7 +122,7 @@ gsl_random48()
 static int
 random_level()
 {
-  return ffsl(~(gsl_random48() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
+  return ffsl(~(gsl_random48() & ((UINT64CONST(1) << SKIPLIST_MAXLEVEL) - 1)));
 }
 
 /**
