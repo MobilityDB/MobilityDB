@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include <dirent.h> /* MEOS */
+#include <common/hashfn.h> /* MEOS */
 #include <sys/stat.h> /* MEOS */
 // #include "datatype/timestamp.h" /* MEOS */
 #include "utils/timestamp_def.h"
@@ -320,7 +321,6 @@ pg_tzset(const char *name)
   *p = '\0';
 
   /* MEOS: Look for timezone in the cache */
-  bool found;
   tzentry *entry = tzcache_lookup(timezone_cache, uppername);
   if (entry)
     /* Timezone found in cache, nothing more to do */
@@ -356,7 +356,7 @@ pg_tzset(const char *name)
   memcpy(&tz->state, &tzstate, sizeof(tzstate));
 
   /* MEOS: Fill the struct to be added to the hash table */
-  found;
+  bool found;
   entry = tzcache_insert(timezone_cache, uppername, &found);
   if (! found)
   {

@@ -367,7 +367,7 @@ loop:
 	pn = a + n * ST_POINTER_STEP;
 	d1 = Min(pa - a, pb - pa);
 	DO_SWAPN(a, pb - d1, d1);
-	d1 = Min((long unsigned int) (pd - pc), pn - pd - ST_POINTER_STEP); // MobilityDB
+	d1 = Min((long unsigned int) (pd - pc), pn - pd - ST_POINTER_STEP); // MEOS
 	DO_SWAPN(pb, pn - d1, d1);
 	d1 = pb - pa;
 	d2 = pd - pc;

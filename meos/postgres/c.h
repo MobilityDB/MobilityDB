@@ -63,11 +63,11 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-// MobilityDB: commented out for Windows build
+// MEOS: commented out for Windows build
 // #ifdef HAVE_STRINGS_H
 // #include <strings.h>
 // #endif
-// MobilityDB: replaced for Windows build
+// MEOS: replaced for Windows build
 #ifdef HAVE_STRING_H
 #  include <string.h>
 #endif
@@ -82,7 +82,7 @@
 #include <fcntl.h>				/* ensure O_BINARY is available */
 #endif
 #include <locale.h>
-// MobilityDB: commented out for Windows build
+// MEOS: commented out for Windows build
 // #ifdef ENABLE_NLS
 // #include <libintl.h>
 // #endif

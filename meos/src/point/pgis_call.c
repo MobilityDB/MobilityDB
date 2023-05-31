@@ -1270,10 +1270,8 @@ postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
     LWPOINT *empty_point = lwpoint_construct_empty(geom_srid, geom_z, geom_m);
     geom_type = POINTTYPE;
     pfree(gser);
-    if ( gserialized_is_geodetic(gser) )
-      gser = geo_serialize(lwpoint_as_lwgeom(empty_point));
-    else
-      gser = geo_serialize(lwpoint_as_lwgeom(empty_point));
+    /* MEOS: use internal geo_serialize that copes with both geom and geog */
+    gser = geo_serialize(lwpoint_as_lwgeom(empty_point));
   }
 
   /* Typmod has a preference for SRID, but geometry does not? Harmonize the geometry SRID. */

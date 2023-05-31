@@ -16,7 +16,7 @@
 
 #include <limits.h>
 
-// MobilityDB
+// MEOS
 // #include "datatype/timestamp.h"
 #include "utils/timestamp_def.h"
 #include "utils/datetime.h"
@@ -355,7 +355,7 @@ GetCurrentDateTime(struct pg_tm *tm)
 void
 GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
 {
-  // MobilityDB
+  // MEOS
   // TimestampTz cur_ts = GetCurrentTransactionStartTimestamp();
   TimestampTz cur_ts = GetCurrentTimestamp();
 
@@ -482,7 +482,7 @@ AppendTimestampSeconds(char *cp, struct pg_tm *tm, fsec_t fsec)
 
 /*
  * strtoint --- just like strtol, but returns int not long
- * MobilityDB: Function copied from string.c
+ * MEOS: Function copied from string.c
  */
 int
 strtoint(const char *pg_restrict str, char **pg_restrict endptr, int base)
@@ -1672,7 +1672,7 @@ DetermineTimeZoneAbbrevOffsetInternal(pg_time_t t, const char *abbr, pg_tz *tzp,
   long int  gmtoff;
 
   /* We need to force the abbrev to upper case */
-  // strlcpy(upabbr, abbr, sizeof(upabbr)); /* MobilityDB */
+  // strlcpy(upabbr, abbr, sizeof(upabbr)); /* MEOS */
   strncpy(upabbr, abbr, sizeof(upabbr));
   for (p = (unsigned char *) upabbr; *p; p++)
     *p = pg_toupper(*p);

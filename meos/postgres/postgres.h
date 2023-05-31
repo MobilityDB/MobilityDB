@@ -45,15 +45,22 @@
 
 #include "c.h"
 
-/* MobilityDB: redefining elog */
+/*
+ * MEOS: redefining elog
+ * If WIN32 is set ERROR is defined in wingdi.h as #define ERROR 0
+ * and is imported through windows.h. Since in MEOS we do not use ERROR
+ * but keep it so elog(ERROR, "xxx") can be both used in MEOS and in PostgreSQL
+ * as soon as it is defined everything works fine.
+ */
 #define NOTICE    18      /* Helpful messages to users about query
                  * operation; sent to client and not to server
                  * log by default. */
 #define WARNING    19      /* Warnings.  NOTICE is for expected messages
                  * like implicit sequence creation by SERIAL.
                  * WARNING is for unexpected messages. */
-#define ERROR    21  /* user error - abort transaction; return to
-                 * known state */
+#ifndef ERROR
+#define ERROR    21  /* user error - abort transaction; return to known state */
+#endif
 #define EXIT_FAILURE 1
 #define elog(error, ...) \
   do { \
