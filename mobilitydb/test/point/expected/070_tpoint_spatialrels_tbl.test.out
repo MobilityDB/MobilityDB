@@ -66,13 +66,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE edisjoint(t1.tem
 SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE edisjoint(g, temp);
  count 
 -------
-  9233
+  9265
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE edisjoint(temp, g);
  count 
 -------
-  9233
+  9265
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE edisjoint(t1.temp, t2.temp);

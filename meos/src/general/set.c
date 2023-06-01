@@ -489,14 +489,14 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   assert(maxcount >= count);
 
   bool hasz = false;
-  bool isgeodetic = false;
+  bool geodetic = false;
   if (geo_basetype(basetype))
   {
     /* Ensure the spatial validity of the elements */
     GSERIALIZED *gs1 = DatumGetGserializedP(values[0]);
     int srid = gserialized_get_srid(gs1);
     hasz = (bool) FLAGS_GET_Z(gs1->gflags);
-    isgeodetic = FLAGS_GET_GEODETIC(gs1->gflags);
+    geodetic = FLAGS_GET_GEODETIC(gs1->gflags);
     /* Test the validity of the values */
     for (int i = 0; i < count; i++)
     {
@@ -577,7 +577,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   {
     MEOS_FLAGS_SET_X(result->flags, true);
     MEOS_FLAGS_SET_Z(result->flags, hasz);
-    MEOS_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+    MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
   }
   result->count = newcount;
   result->maxcount = maxcount;

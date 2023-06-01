@@ -493,7 +493,7 @@ SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;
  max 
 -----
- 176
+ 146
 (1 row)
 
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint3D;
@@ -505,7 +505,7 @@ SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint3D;
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint3D;
  max 
 -----
- 176
+ 180
 (1 row)
 
 /* There is no st_memSize neither MAX for geography. */

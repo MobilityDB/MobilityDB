@@ -309,10 +309,8 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   else if (tnumber_type(temptype))
     tnumberinstarr_set_tbox(instants, count, lower_inc, upper_inc,
       interp, (TBox *) box);
-  else if (temptype == T_TGEOMPOINT)
-    tgeompointinstarr_set_stbox(instants, count, (STBox *) box);
-  else if (temptype == T_TGEOGPOINT)
-    tgeogpointinstarr_set_stbox(instants, count, interp, (STBox *) box);
+  else if (tgeo_type(temptype))
+    tpointinstarr_set_stbox(instants, count, (STBox *) box);
 #if NPOINT
   else if (temptype == T_TNPOINT)
     tnpointinstarr_set_stbox(instants, count, interp, (STBox *) box);
@@ -357,10 +355,8 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
       (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))
     tnumberseq_expand_tbox(seq, inst);
-  else if (seq->temptype == T_TGEOMPOINT)
-    tgeompointseq_expand_stbox(seq, inst);
-  else if (seq->temptype == T_TGEOGPOINT)
-    tgeogpointseq_expand_stbox(seq, inst);
+  else if (tgeo_type(seq->temptype))
+    tpointseq_expand_stbox(seq, inst);
 #if NPOINT
   else if (seq->temptype == T_TNPOINT)
     tnpointseq_expand_stbox(seq, inst);
