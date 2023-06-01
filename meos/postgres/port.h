@@ -14,6 +14,17 @@
 #define PG_PORT_H
 
 #include <ctype.h>
+// #include <netdb.h>
+// #include <pwd.h>
+
+/*
+ * Windows has enough specialized port stuff that we push most of it off
+ * into another file.
+ * Note: Some CYGWIN includes might #define WIN32.
+ */
+#if defined(WIN32) && !defined(__CYGWIN__)
+#include "port/win32_port.h"
+#endif
 
 /* Portable SQL-like case-independent comparisons and conversions */
 extern int pg_strcasecmp(const char *s1, const char *s2);

@@ -105,7 +105,7 @@ pnstrdup(const char *in, Size size)
 
   if (!in)
   {
-    fprintf(stderr, _("cannot duplicate null pointer (internal error)\n"));
+    fprintf(stderr, "cannot duplicate null pointer (internal error)\n");
     exit(EXIT_FAILURE);
   }
 
@@ -113,7 +113,7 @@ pnstrdup(const char *in, Size size)
   tmp = malloc(len + 1);
   if (tmp == NULL)
   {
-    fprintf(stderr, _("out of memory\n"));
+    fprintf(stderr, "out of memory\n");
     exit(EXIT_FAILURE);
   }
 

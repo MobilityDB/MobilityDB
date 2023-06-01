@@ -10,7 +10,7 @@
  *
  *-------------------------------------------------------------------------
  */
-// MobilityDB
+// MEOS
 // #include "postgres_fe.h"
 #include "postgres.h"
 
@@ -378,7 +378,7 @@ identify_system_timezone(void)
     return resultbuf;
 
   /* No luck, so search for the best-matching timezone file */
-  // strlcpy(tmptzdir, pg_TZDIR(), sizeof(tmptzdir)); /* MobilityDB */
+  // strlcpy(tmptzdir, pg_TZDIR(), sizeof(tmptzdir)); /* MEOS */
   strncpy(tmptzdir, pg_TZDIR(), sizeof(tmptzdir));
   bestscore = -1;
   resultbuf[0] = '\0';
@@ -673,7 +673,7 @@ scan_available_timezones(char *tzdir, char *tzdirsub, struct tztry *tt,
       if (score > *bestscore)
       {
         *bestscore = score;
-        // strlcpy(bestzonename, tzdirsub, TZ_STRLEN_MAX + 1); /* MobilityDB */
+        // strlcpy(bestzonename, tzdirsub, TZ_STRLEN_MAX + 1); /* MEOS */
         strncpy(bestzonename, tzdirsub, TZ_STRLEN_MAX + 1);
       }
       else if (score == *bestscore)
@@ -687,7 +687,7 @@ scan_available_timezones(char *tzdir, char *tzdirsub, struct tztry *tt,
            (strlen(tzdirsub) < strlen(bestzonename) ||
             (strlen(tzdirsub) == strlen(bestzonename) &&
              strcmp(tzdirsub, bestzonename) < 0))))
-          // strlcpy(bestzonename, tzdirsub, TZ_STRLEN_MAX + 1); /* MobilityDB */
+          // strlcpy(bestzonename, tzdirsub, TZ_STRLEN_MAX + 1); /* MEOS */
           strncpy(bestzonename, tzdirsub, TZ_STRLEN_MAX + 1);
       }
     }

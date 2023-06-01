@@ -362,7 +362,7 @@ extern int	DecodeUnits(int field, char *lowtoken, int *val);
 
 extern int	j2day(int jd);
 
-// MobilityDB
+// MEOS
 // extern Node *TemporalSimplify(int32 max_precis, Node *node);
 
 extern bool CheckDateTokenTables(void);

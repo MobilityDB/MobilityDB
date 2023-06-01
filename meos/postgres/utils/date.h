@@ -16,7 +16,7 @@
 
 #include <math.h>
 
-// MobilityDB
+// MEOS
 // #include "datatype/timestamp.h"
 // #include "utils/timestamp_def.h"
 #include "../pgtime.h"

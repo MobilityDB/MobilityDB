@@ -708,7 +708,7 @@ nextch2:
 				break;
 			case 'm':
 				{
-          /* MobilityDB */
+          /* MEOS */
 					// char		errbuf[PG_STRERROR_R_BUFLEN];
 					// const char *errm = strerror_r(save_errno, errbuf, sizeof(errbuf));
 					const char *errm = strerror(save_errno);

@@ -1611,9 +1611,9 @@ tpointseq_disc_trajectory(const TSequence *seq)
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal sequence point
  * @param[in] seq Temporal sequence
- * @note Since the sequence has been already validated there is no
- * verification of the input in this function, in particular for geographies
- * it is supposed that the composing points are geodetic
+ * @note Since the sequence has been already validated there is no verification
+ * of the input in this function, in particular for geographies it is supposed
+ * that the composing points are geodetic
  * @sqlfunc trajectory()
  */
 GSERIALIZED *
@@ -1717,7 +1717,6 @@ lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines, int npoints,
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point with sequence set type
- * @note The function does not remove duplicates point/linestring components.
  * @sqlfunc trajectory()
  */
 GSERIALIZED *

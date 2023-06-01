@@ -13,7 +13,7 @@
 #ifndef TIMESTAMP_H
 #define TIMESTAMP_H
 
-// MobilityDB
+// MEOS
 // #include "datatype/timestamp.h"
 #include "utils/timestamp_def.h"
 #include "pgtime.h"

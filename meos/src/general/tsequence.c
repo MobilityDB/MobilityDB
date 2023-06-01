@@ -5215,8 +5215,9 @@ tcontseq_minus_period_iter(const TSequence *seq, const Span *p,
     const Span *p1 = spanset_sp_n(ps, i);
     result[i] = tcontseq_at_period(seq, p1);
   }
+  int count = ps->count;
   pfree(ps);
-  return ps->count;
+  return count;
 }
 
 /**
