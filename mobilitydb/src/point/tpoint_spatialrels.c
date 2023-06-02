@@ -61,6 +61,20 @@
 #include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
+ * PostGIS functions calls for reusing their cache
+ *****************************************************************************/
+
+/**
+ * @brief Call the PostGIS function ST_Intersects with the 2 arguments
+ */
+Datum
+pgis_intersects2d(Datum geom1, Datum geom2)
+{
+  return CallerFInfoFunctionCall2(ST_Intersects, (fetch_fcinfo())->flinfo,
+    InvalidOid, geom1, geom2);
+}
+
+/*****************************************************************************
  * Generic ever spatial relationship functions
  *****************************************************************************/
 
