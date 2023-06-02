@@ -44,6 +44,7 @@
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_npoint/tnpoint.h"
+#include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Generic functions
@@ -67,6 +68,8 @@ tinterrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Temporal *result = tinterrel_tnpoint_npoint(temp, np, tinter, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
@@ -92,6 +95,8 @@ tinterrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Temporal *result = tinterrel_tnpoint_npoint(temp, np, tinter, restr, atvalue);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -117,6 +122,8 @@ tinterrel_geo_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Temporal *result = tinterrel_tnpoint_geo(temp, geo, tinter, restr, atvalue);
   PG_FREE_IF_COPY(geo, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -143,6 +150,8 @@ tinterrel_tnpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Temporal *result = tinterrel_tnpoint_geo(temp, geo, tinter, restr, atvalue);
   PG_FREE_IF_COPY(geo, 1);
   PG_FREE_IF_COPY(temp, 0);
@@ -177,6 +186,8 @@ Tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Temporal *result = tcontains_geo_tnpoint(geo, temp, restr, atvalue);
   PG_FREE_IF_COPY(geo, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -331,6 +342,8 @@ Ttouches_geo_tnpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Temporal *result = ttouches_geo_tnpoint(geo, temp, restr, atvalue);
   PG_FREE_IF_COPY(geo, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -361,6 +374,8 @@ Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Temporal *result = ttouches_npoint_tnpoint(np, temp, restr, atvalue);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -390,6 +405,8 @@ Ttouches_tnpoint_geo(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Temporal *result = ttouches_tnpoint_geo(temp, geo, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
@@ -420,6 +437,8 @@ Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Temporal *result = ttouches_tnpoint_npoint(temp, np, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)

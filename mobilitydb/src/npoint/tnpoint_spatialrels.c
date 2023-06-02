@@ -53,6 +53,7 @@
 #include "npoint/tnpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_point/postgis.h"
+#include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Generic binary functions for tnpoint <rel> (geo | Npoint)
@@ -67,6 +68,8 @@ espatialrel_geo_tnpoint_ext(FunctionCallInfo fcinfo,
 {
   Datum geom = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Datum result = espatialrel_tnpoint_geo(temp, geom, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
@@ -81,6 +84,8 @@ espatialrel_tnpoint_geo_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum geom = PG_GETARG_DATUM(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Datum result = espatialrel_tnpoint_geo(temp, geom, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
@@ -95,6 +100,8 @@ espatialrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Datum result = espatialrel_tnpoint_npoint(temp, np, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
@@ -109,6 +116,8 @@ espatialrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Datum result = espatialrel_tnpoint_npoint(temp, np, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
