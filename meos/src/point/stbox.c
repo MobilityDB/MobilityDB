@@ -36,6 +36,8 @@
 
 /* C */
 #include <assert.h>
+/* PostGIS */
+#include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -177,7 +179,7 @@ stbox_out(const STBox *box, int maxdd)
     xmax = float8_out(box->xmax, maxdd);
     ymin = float8_out(box->ymin, maxdd);
     ymax = float8_out(box->ymax, maxdd);
-    if (geodetic || hasz)
+    if (hasz)
     {
       zmin = float8_out(box->zmin, maxdd);
       zmax = float8_out(box->zmax, maxdd);
@@ -194,7 +196,7 @@ stbox_out(const STBox *box, int maxdd)
     xmax = float8_out(box->xmax, maxdd);
     ymin = float8_out(box->ymin, maxdd);
     ymax = float8_out(box->ymax, maxdd);
-    if (geodetic || hasz)
+    if (hasz)
     {
       zmin = float8_out(box->zmin, maxdd);
       zmax = float8_out(box->zmax, maxdd);
@@ -275,7 +277,7 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
     /* Process Y min/max */
     box->ymin = Min(ymin, ymax);
     box->ymax = Max(ymin, ymax);
-    if (hasz || geodetic)
+    if (hasz)
     {
       /* Process Z min/max */
       box->zmin = Min(zmin, zmax);
@@ -402,19 +404,48 @@ stbox_to_geo(const STBox *box)
   ensure_has_X_stbox(box);
   LWGEOM *geo;
   GSERIALIZED *result;
-  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
+  BOX3D box3d;
+  STBox box1;
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
+  if (geodetic)
   {
-    BOX3D box3d;
-    stbox_set_box3d(box, &box3d);
+    /* Transform the stbox coordinates, expressed as cartesian coordinates on
+     * unit sphere back to lon/lat coordinates */
+    POINT2D min2d, max2d;
+    POINT3D p1, p2;
+    GEOGRAPHIC_POINT g1, g2;
+    min2d.x = box->xmin;
+    min2d.y = box->ymin;
+    max2d.x = box->xmax;
+    max2d.y = box->ymax;
+    ll2cart(&min2d, &p1);
+    ll2cart(&max2d, &p2);
+    cart2geog(&p1, &g1);
+    cart2geog(&p2, &g2);
+    memset(&box1, 0, sizeof(STBox));
+    box1.xmin = rad2deg(g1.lon);
+    box1.ymin = rad2deg(g1.lat);
+    box1.xmax = rad2deg(g2.lon);
+    box1.ymax = rad2deg(g2.lat);
+    box1.flags = box->flags;
+    box1.srid = box->srid;
+  }
+  else
+    memcpy(&box1, box, sizeof(STBox));
+  if (hasz)
+  {
+    stbox_set_box3d(&box1, &box3d);
     geo = box3d_to_lwgeom(&box3d);
   }
   else
   {
     GBOX box2d;
-    stbox_set_gbox(box, &box2d);
+    stbox_set_gbox(&box1, &box2d);
     geo = box2d_to_lwgeom(&box2d, box->srid);
   }
-  FLAGS_SET_GEODETIC(geo->flags, MEOS_FLAGS_GET_GEODETIC(box->flags));
+  FLAGS_SET_Z(geo->flags, hasz);
+  FLAGS_SET_GEODETIC(geo->flags, geodetic);
   result = geo_serialize(geo);
   lwgeom_free(geo);
   return result;
@@ -444,33 +475,21 @@ stbox_to_period(const STBox *box)
  * @pre The point is not empty
  */
 void
-point_get_coords(const GSERIALIZED *point, bool hasz, bool geodetic,
-  double *x, double *y, double *z)
+point_get_coords(const GSERIALIZED *point, bool hasz, double *x, double *y,
+  double *z)
 {
-  if (geodetic)
+  if (hasz)
   {
-    POINT3D A1;
-    const POINT2D *p = GSERIALIZED_POINT2D_P(point);
-    ll2cart(p, &A1);
-    *x = A1.x;
-    *y = A1.y;
-    *z = A1.z;
+    const POINT3DZ *p = GSERIALIZED_POINT3DZ_P(point);
+    *x = p->x;
+    *y = p->y;
+    *z = p->z;
   }
   else
   {
-    if (hasz)
-    {
-      const POINT3DZ *p = GSERIALIZED_POINT3DZ_P(point);
-      *x = p->x;
-      *y = p->y;
-      *z = p->z;
-    }
-    else
-    {
-      const POINT2D *p = GSERIALIZED_POINT2D_P(point);
-      *x = p->x;
-      *y = p->y;
-    }
+    const POINT2D *p = GSERIALIZED_POINT2D_P(point);
+    *x = p->x;
+    *y = p->y;
   }
   return;
 }
@@ -499,10 +518,10 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
   if (gserialized_get_type(gs) == POINTTYPE)
   {
     double x, y, z;
-    point_get_coords(gs, hasz, geodetic, &x, &y, &z);
+    point_get_coords(gs, hasz, &x, &y, &z);
     box->xmin = box->xmax = x;
     box->ymin = box->ymax = y;
-    if (geodetic || hasz)
+    if (hasz)
       box->zmin = box->zmax = z;
     return true;
   }
@@ -511,14 +530,17 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   GBOX gbox;
   memset(&gbox, 0, sizeof(GBOX));
-  /* We are sure that the geometry/geography is not empty */
-  lwgeom_calculate_gbox(lwgeom, &gbox);
+  /* We are sure that the geometry/geography is not empty
+   * We cannot use `lwgeom_calculate_gbox` since for geography it calculates
+   * a geodetic box where the coordinates are expressed in the unit sphere
+   */
+  lwgeom_calculate_gbox_cartesian(lwgeom, &gbox);
   lwgeom_free(lwgeom);
   box->xmin = gbox.xmin;
   box->xmax = gbox.xmax;
   box->ymin = gbox.ymin;
   box->ymax = gbox.ymax;
-  if (hasz || geodetic)
+  if (hasz)
   {
     box->zmin = gbox.zmin;
     box->zmax = gbox.zmax;
@@ -1023,7 +1045,7 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
   if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
     box2->ymin < box1->ymin || box2->ymax > box1->ymax))
       return false;
-  if ((hasz || geodetic) && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
+  if (hasz && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
       return false;
   if (hast && (
     datum_lt(box2->period.lower, box1->period.lower, T_TIMESTAMPTZ) ||
@@ -1057,7 +1079,7 @@ overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
   if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
     box1->ymax < box2->ymin || box1->ymin > box2->ymax))
     return false;
-  if ((hasz || geodetic) && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
+  if (hasz && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
     return false;
   if (hast && (
     datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
@@ -1080,7 +1102,7 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
   if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
     box1->ymin != box2->ymin || box1->ymax != box2->ymax))
     return false;
-  if ((hasz || geodetic) && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
+  if (hasz && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
     return false;
   if (hast && (box1->period.lower != box2->period.lower ||
                box1->period.upper != box2->period.upper))
@@ -1106,9 +1128,9 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
    * at most of n-1 dimensions */
   if (! hasx && hast)
     return (inter.period.lower == inter.period.upper);
-  if (hasx && !hast)
+  if (hasx && ! hast)
   {
-    if (hasz || geodetic)
+    if (hasz)
       return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
            inter.zmin == inter.zmax);
     else
@@ -1116,7 +1138,7 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
   }
   else
   {
-    if (hasz || geodetic)
+    if (hasz)
       return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
            inter.zmin == inter.zmax ||
            inter.period.lower == inter.period.upper);
@@ -1423,7 +1445,7 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
     /* If they do no intersect in one common dimension */
     (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax ||
       box1->ymin > box2->ymax || box2->ymin > box1->ymax)) ||
-    ((hasz || geodetic) && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
+    (hasz && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
     (hast && ! overlaps_span_span(&box1->period, &box2->period)))
     return false;
 
@@ -1440,11 +1462,11 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
     xmax = Min(box1->xmax, box2->xmax);
     ymin = Max(box1->ymin, box2->ymin);
     ymax = Min(box1->ymax, box2->ymax);
-    if (hasz || geodetic)
-      {
+    if (hasz)
+    {
       zmin = Max(box1->zmin, box2->zmin);
       zmax = Min(box1->zmax, box2->zmax);
-      }
+    }
   }
   /* We are sure that the intersection is not NULL */
   if (hast)

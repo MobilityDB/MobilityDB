@@ -248,8 +248,7 @@ SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 381
 				<para><varname>expandSpace({geo,tpoint},float) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT expandSpace(geography 'Linestring(0 0,1 1)', 2);
--- SRID=4326;GEODSTBOX X((-1.000304586490452,-2,-2),
-  (3,2.0174497483512503,2.0174524064372834))
+-- SRID=4326;GEODSTBOX X((-2,-2),(3,3))
 SELECT expandSpace(tgeompoint 'Point(0 0)@2001-01-01', 2);
 -- STBOX XT(((-2,-2),(2,2)),[2001-01-01,2001-01-01])
 </programlisting>
