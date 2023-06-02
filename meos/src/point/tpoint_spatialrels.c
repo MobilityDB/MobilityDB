@@ -84,11 +84,7 @@ geom_contains(Datum geom1, Datum geom2)
 Datum
 geom_disjoint2d(Datum geom1, Datum geom2)
 {
-#if MEOS
   return BoolGetDatum(! DatumGetBool(geom_intersects2d(geom1, geom2)));
-#else
-  return BoolGetDatum(! DatumGetBool(pgis_intersects2d(geom1, geom2)));
-#endif
 }
 
 /**
@@ -116,8 +112,12 @@ geog_disjoint(Datum geog1, Datum geog2)
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
+#if MEOS
   return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), INTERSECTS));
+#else
+  return pgis_intersects2d(geom1, geom2);
+#endif /* MEOS */
 }
 
 /**
@@ -212,11 +212,7 @@ get_intersects_fn_gs(int16 flags1, uint8_t flags2)
   else
     /* 3D only if both arguments are 3D */
     result = MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
-#if MEOS
       &geom_intersects3d : &geom_intersects2d;
-#else
-      &geom_intersects3d : &pgis_intersects2d;
-#endif
   return result;
 }
 
@@ -514,11 +510,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   {
     varfunc func =
       (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
-#if MEOS
       (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
-#else
-      (varfunc) &geom_intersects3d : (varfunc) &pgis_intersects2d;
-#endif
     result = espatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
       INVERT_NO);
   }
