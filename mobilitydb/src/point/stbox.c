@@ -164,14 +164,14 @@ stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
   int i = 0;
   if (hasx)
   {
-    if (! hasz && ! geodetic)
+    if (! hasz)
     {
       xmin = PG_GETARG_FLOAT8(i++);
       ymin = PG_GETARG_FLOAT8(i++);
       xmax = PG_GETARG_FLOAT8(i++);
       ymax = PG_GETARG_FLOAT8(i++);
     }
-    else /* hasz || geodetic */
+    else /* hasz */
     {
       xmin = PG_GETARG_FLOAT8(i++);
       ymin = PG_GETARG_FLOAT8(i++);

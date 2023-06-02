@@ -143,7 +143,7 @@ stbox_parse(const char **str)
     p_comma(str);
     p_whitespace(str);
     ymin = double_parse(str);
-    if (hasz || geodetic)
+    if (hasz)
     {
       /* zmin */
       p_whitespace(str);
@@ -168,7 +168,7 @@ stbox_parse(const char **str)
     p_comma(str);
     p_whitespace(str);
     ymax = double_parse(str);
-    if (hasz || geodetic)
+    if (hasz)
     {
       /* zmax */
       p_whitespace(str);

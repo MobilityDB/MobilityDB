@@ -60,7 +60,7 @@ extern void ensure_has_T_stbox(const STBox *box);
 /* Set an STBox from a <Type> */
 
 extern void point_get_coords(const GSERIALIZED *point, bool hasz,
-  bool geodetic, double *x, double *y, double *z);
+  double *x, double *y, double *z);
 extern void timestampset_stbox_slice(Datum tsdatum, STBox *box);
 extern void periodset_stbox_slice(Datum psdatum, STBox *box);
 
