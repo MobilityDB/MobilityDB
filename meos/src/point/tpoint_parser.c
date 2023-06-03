@@ -478,4 +478,27 @@ tpoint_parse(const char **str, meosType temptype)
   return result;
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_inout
+ * @brief Return a temporal geometric point from its Well-Known Text (WKT)
+ * representation.
+ */
+Temporal *
+tgeompoint_in(const char *str)
+{
+  return tpoint_parse(&str, T_TGEOMPOINT);
+}
+/**
+ * @ingroup libmeos_temporal_inout
+ * @brief Return a temporal geographic point from its Well-Known Text (WKT)
+ * representation.
+ */
+Temporal *
+tgeogpoint_in(const char *str)
+{
+  return tpoint_parse(&str, T_TGEOGPOINT);
+}
+#endif /* MEOS */
+
 /*****************************************************************************/
