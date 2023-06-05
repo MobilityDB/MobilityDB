@@ -103,6 +103,8 @@ temporalgeom_init()
  * Input/output functions
  *****************************************************************************/
 
+#define TPOINT_MAX_TYPMOD 3
+
 /**
  * @brief Check the consistency of the metadata we want to enforce in the typmod:
  * SRID, type and dimensionality. If things are inconsistent, shut down the query.
@@ -209,6 +211,9 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
    * temporal type in the same column. Similarly for all generic modifiers.
    */
   deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
+  if (n > TPOINT_MAX_TYPMOD)
+    elog(ERROR, "Incorrect number of type modifiers for temporal points");
+
   int16 tempsubtype = ANYTEMPSUBTYPE;
   uint8_t geometry_type = 0;
   int hasZ = 0, hasM = 0, srid = SRID_UNKNOWN;
