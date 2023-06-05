@@ -1198,6 +1198,8 @@ tpoint_restrict_geom_time_ext(FunctionCallInfo fcinfo, bool atfunc,
   Span *period = NULL;
   if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
     period = PG_GETARG_SPAN_P(3);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   Temporal *result = tpoint_restrict_geom_time(temp, geo, zspan, period,
     atfunc);
   PG_FREE_IF_COPY(temp, 0);

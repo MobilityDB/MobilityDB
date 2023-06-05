@@ -72,6 +72,7 @@ extern Datum within(PG_FUNCTION_ARGS);
 extern Datum ST_Equals(PG_FUNCTION_ARGS);
 extern Datum ST_Distance(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum ST_3DDistance(PG_FUNCTION_ARGS); /* For 3D */
+extern Datum ST_Intersects(PG_FUNCTION_ARGS);
 extern Datum ST_Intersection(PG_FUNCTION_ARGS);
 extern Datum ST_Intersects(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum ST_3DIntersects(PG_FUNCTION_ARGS); /* For 2D */

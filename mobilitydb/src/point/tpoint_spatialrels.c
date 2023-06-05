@@ -61,6 +61,20 @@
 #include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
+ * PostGIS functions calls for reusing their cache
+ *****************************************************************************/
+
+/**
+ * @brief Call the PostGIS function ST_Intersects with the 2 arguments
+ */
+Datum
+pgis_intersects2d(Datum geom1, Datum geom2)
+{
+  return CallerFInfoFunctionCall2(ST_Intersects, (fetch_fcinfo())->flinfo,
+    InvalidOid, geom1, geom2);
+}
+
+/*****************************************************************************
  * Generic ever spatial relationship functions
  *****************************************************************************/
 
@@ -106,6 +120,8 @@ Econtains_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   int result = econtains_geo_tpoint(gs, temp);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -256,6 +272,8 @@ Etouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   int result = etouches_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(gs, 0);
@@ -276,6 +294,8 @@ Etouches_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   int result = etouches_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);

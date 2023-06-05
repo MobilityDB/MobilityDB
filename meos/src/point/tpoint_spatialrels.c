@@ -58,6 +58,10 @@
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
 
+/* Function calling PostGIS ST_Intersects to reuse their cache */
+
+extern Datum pgis_intersects2d(Datum geom1, Datum geom2);
+
 /*****************************************************************************
  * Spatial relationship functions
  * disjoint and intersects are inverse to each other
@@ -108,8 +112,12 @@ geog_disjoint(Datum geog1, Datum geog2)
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
+#if MEOS
   return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), INTERSECTS));
+#else
+  return pgis_intersects2d(geom1, geom2);
+#endif /* MEOS */
 }
 
 /**
