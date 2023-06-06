@@ -93,8 +93,8 @@
 		</informaltable>
 	</sect1>
 
-	<sect1 id="installation">
-		<title>Instalación</title>
+	<sect1 id="installation_sources">
+		<title>Instalación a partir de las fuentes</title>
 		<sect2 id="short_version">
 			<title>Versión corta</title>
 			<para>
@@ -151,6 +151,13 @@ $ ls /usr/local/pgsql/data/postgresql.conf
 createdb mobility
 psql mobility -c "CREATE EXTENSION PostGIS"
 psql mobility -c "CREATE EXTENSION MobilityDB"
+</programlisting>
+
+			<para>
+				Las dos extensiones PostGIS y MobilityDB también se pueden crear en un solo comando.
+			</para>
+			<programlisting language="bash" xml:space="preserve">
+psql mobility -c "CREATE EXTENSION MobilityDB cascade"
 </programlisting>
 		</sect2>
 
@@ -225,7 +232,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<listitem><para>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</para></listitem>
 			</itemizedlist>
 			<para>
-				Nótese que PostGIS tiene sus propias dependencias, como Proj4, GEOS, LibXML2 o JSON-C y estas bibliotecas también se utilizan en MobilityDB. Para obtener una matriz de compatibilidad completa de PostgreSQL/PostGIS y una matriz de compatibilidad de PostGIS/GEOS, consulte <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.
+				Nótese que PostGIS tiene sus propias dependencias, como Proj, GEOS, LibXML2 o JSON-C y estas bibliotecas también se utilizan en MobilityDB. Consulte <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink> para obtener una matriz de compatibilidad de PostGIS con PostgreSQL, GEOS y Proj.
 			</para>
 
 			<para>
@@ -279,7 +286,7 @@ cmake -L ..
 		<sect2 id="build_install">
 			<title>Construir e instalar</title>
 			<para>
-				Nótese que la versión actual de MobilityDB solo se ha probado en sistemas Linux y MacOS. Puede funcionar en otros sistemas similares a Unix, pero no se ha probado. Está previsto el soporte para Windows. Buscamos voluntarios que nos ayuden a probar MobilityDB en múltiples plataformas.
+				Nótese que la versión actual de MobilityDB solo se ha probado en sistemas Linux, MacOS y Windows. Puede funcionar en otros sistemas similares a Unix, pero no se ha probado. Buscamos voluntarios que nos ayuden a probar MobilityDB en múltiples plataformas.
 			</para>
 			<para>
 				Las siguientes instrucciones comienzan desde <varname>path/to/MobilityDB</varname> en un sistema Linux
@@ -414,6 +421,23 @@ make doc
 cmake -D DOC_PDF=ON -D ES=ON ..
 make doc
 </programlisting>
+		</sect2>
+	</sect1>
+
+	<sect1 id="installation_binaries">
+		<title>Instalación a partir de binarios</title>
+		<sect2 id="Debian">
+			<title>Distribuciones de Linux basadas en Debian</title>
+			<para>
+					Se está desarrollando soporte para sistemas Linux basados en Debian, como Ubuntu y Arch Linux.
+			</para>
+		</sect2>
+
+		<sect2 id="Windows">
+			<title>Windows</title>
+			<para>
+					Desde la versión 3.3.3 de PostGIS, MobilityDB se distribuye en el PostGIS Bundle para Windows, que está disponible en application stackbuilder y en el sitio web de OSGeo. Para más information refiérase a la <ulink url="https://postgis.net/documentation/getting_started/install_windows/">documentación PostGIS</ulink>.
+			</para>
 		</sect2>
 	</sect1>
 

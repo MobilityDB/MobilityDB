@@ -91,8 +91,8 @@
 		</informaltable>
 	</sect1>
 
-	<sect1 id="installation">
-		<title>Installation</title>
+	<sect1 id="installation_sources">
+		<title>Installation from Sources</title>
 		<sect2 id="short_version">
 			<title>Short Version</title>
 			<para>
@@ -149,6 +149,13 @@ $ ls /usr/local/pgsql/data/postgresql.conf
 createdb mobility
 psql mobility -c "CREATE EXTENSION PostGIS"
 psql mobility -c "CREATE EXTENSION MobilityDB"
+</programlisting>
+
+			<para>
+				The two extensions PostGIS and MobilityDB can also be created using a single command.
+			</para>
+			<programlisting language="bash" xml:space="preserve">
+psql mobility -c "CREATE EXTENSION MobilityDB cascade"
 </programlisting>
 		</sect2>
 
@@ -223,7 +230,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<listitem><para>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL is used for the random number generators.</para></listitem>
 			</itemizedlist>
 			<para>
-				Notice that PostGIS has its own dependencies such as Proj4, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. For a full PostgreSQL/PostGIS support matrix and PostGIS/GEOS support matrix refer to <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.
+				Notice that PostGIS has its own dependencies such as Proj, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. Refer to <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink> for a support matrix of PostGIS with PostgreSQL, GEOS, and Proj.
 			</para>
 
 			<para>
@@ -277,7 +284,7 @@ cmake -L ..
 		<sect2 id="build_install">
 			<title>Build and Install</title>
 			<para>
-				Notice that the current version of MobilityDB has only been tested on Linux and MacOS systems. It may work on other Unix-like systems, but remain untested. Support for Windows is planned. We are looking for volunteers to help us to test MobilityDB on multiple platforms.
+				Notice that the current version of MobilityDB has been tested on Linux, MacOS, and Windows systems. It may work on other Unix-like systems, but remain untested. We are looking for volunteers to help us to test MobilityDB on multiple platforms.
 			</para>
 			<para>
 				The following instructions start from <varname>path/to/MobilityDB</varname> on a Linux system
@@ -412,6 +419,23 @@ make doc
 cmake -D DOC_PDF=ON -D ES=ON ..
 make doc
 </programlisting>
+		</sect2>
+	</sect1>
+
+	<sect1 id="installation_binaries">
+		<title>Installation from Binaries</title>
+		<sect2 id="Debian">
+			<title>Debian-based Linux Distributions</title>
+			<para>
+					Support for Debian-based Linux systems, such as Ubuntu and Arch Linux, is being developed.
+			</para>
+		</sect2>
+
+		<sect2 id="Windows">
+			<title>Windows</title>
+			<para>
+					Since PostGIS version 3.3.3, MobilityDB is distributed in the PostGIS Bundle for Windows, which is available on application stackbuilder and OSGeo website. For more information, refer to the <ulink url="https://postgis.net/documentation/getting_started/install_windows/">PostGIS documentation</ulink>.
+			</para>
 		</sect2>
 	</sect1>
 
