@@ -301,7 +301,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset WHERE ps <<# tstzspanset '{[2001-06-01, 200
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t #>> tstzset '{2001-06-01, 2001-07-07}';
  count 
 -------
-    47
+    46
 (1 row)
 
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t #>> tstzspan '[2001-06-01, 2001-07-01]';
@@ -367,7 +367,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset WHERE ps #>> tstzspanset '{[2001-06-01, 200
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t &<# tstzset '{2001-06-01, 2001-07-07}';
  count 
 -------
-    52
+    53
 (1 row)
 
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t &<# tstzspan '[2001-06-01, 2001-07-01]';
@@ -865,7 +865,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset WHERE ps <<# tstzspanset '{[2001-06-01, 200
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t #>> tstzset '{2001-06-01, 2001-07-07}';
  count 
 -------
-    47
+    46
 (1 row)
 
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t #>> tstzspan '[2001-06-01, 2001-07-01]';
@@ -931,7 +931,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset WHERE ps #>> tstzspanset '{[2001-06-01, 200
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t &<# tstzset '{2001-06-01, 2001-07-07}';
  count 
 -------
-    52
+    53
 (1 row)
 
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t &<# tstzspan '[2001-06-01, 2001-07-01]';

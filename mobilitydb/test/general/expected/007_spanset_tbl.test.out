@@ -127,9 +127,9 @@ SELECT MAX(lower(spanset(f))) FROM tbl_floatspan;
 (1 row)
 
 SELECT MAX(lower(spanset(p))) FROM tbl_tstzspan;
-          max           
-------------------------
- 2001-12-29 20:53:00+00
+             max              
+------------------------------
+ Sat Dec 29 12:53:00 2001 PST
 (1 row)
 
 SELECT MAX(lower(span(i))) FROM tbl_intspanset;
@@ -145,9 +145,9 @@ SELECT MAX(lower(span(f))) FROM tbl_floatspanset;
 (1 row)
 
 SELECT MAX(lower(span(ps))) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:01:00 2001 PST
 (1 row)
 
 SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
@@ -187,9 +187,9 @@ SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspanset;
 (1 row)
 
 SELECT MAX(lower(ps)) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:01:00 2001 PST
 (1 row)
 
 SELECT MAX(upper(i)) FROM tbl_intspanset;
@@ -205,9 +205,9 @@ SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspanset;
 (1 row)
 
 SELECT MAX(upper(ps)) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:25:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:25:00 2001 PST
 (1 row)
 
 SELECT DISTINCT lower_inc(i) FROM tbl_intspanset;
@@ -345,21 +345,21 @@ SELECT MAX(numSpans(ps)) FROM tbl_tstzspanset;
 (1 row)
 
 SELECT MAX(lower(startSpan(ps))) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:01:00 2001 PST
 (1 row)
 
 SELECT MAX(lower(endSpan(ps))) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:18:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:18:00 2001 PST
 (1 row)
 
 SELECT MAX(lower(spanN(ps, 1))) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:01:00 2001 PST
 (1 row)
 
 SELECT MAX(array_length(spans(ps),1)) FROM tbl_tstzspanset;
@@ -375,15 +375,15 @@ SELECT MAX(numTimestamps(ps)) FROM tbl_tstzspanset;
 (1 row)
 
 SELECT MAX(startTimestamp(ps)) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:01:00 2001 PST
 (1 row)
 
 SELECT MAX(endTimestamp(ps)) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:25:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:25:00 2001 PST
 (1 row)
 
 SELECT MAX(timestampN(ps, 0)) FROM tbl_tstzspanset;
@@ -393,15 +393,15 @@ SELECT MAX(timestampN(ps, 0)) FROM tbl_tstzspanset;
 (1 row)
 
 SELECT MAX((timestamps(ps))[1]) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:01:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:01:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(shift(ps, '5 min'))) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:06:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:06:00 2001 PST
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spanset_cmp(t1.i, t2.i) = -1;

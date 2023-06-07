@@ -164,9 +164,9 @@ WITH temp(inst) AS (
   SELECT tnpoint 'Npoint(1, 0.5)@2000-01-05' UNION
   SELECT tnpoint 'Npoint(1, 0.7)@2000-01-07' )
 SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
-                                                                                              appendinstant                                                                                               
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[NPoint(1,0.1)@2000-01-01 00:00:00+00], [NPoint(1,0.2)@2000-01-02 00:00:00+00], [NPoint(1,0.4)@2000-01-04 00:00:00+00], [NPoint(1,0.5)@2000-01-05 00:00:00+00], [NPoint(1,0.7)@2000-01-07 00:00:00+00]}
+                                                                                                             appendinstant                                                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[NPoint(1,0.1)@Sat Jan 01 00:00:00 2000 PST], [NPoint(1,0.2)@Sun Jan 02 00:00:00 2000 PST], [NPoint(1,0.4)@Tue Jan 04 00:00:00 2000 PST], [NPoint(1,0.5)@Wed Jan 05 00:00:00 2000 PST], [NPoint(1,0.7)@Fri Jan 07 00:00:00 2000 PST]}
 (1 row)
 
 SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tnpoint;
@@ -241,9 +241,9 @@ SELECT MAX(duration(getTime(temp))) FROM tbl_tnpoint;
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
-          max           
-------------------------
- 2001-12-30 18:06:00+00
+             max              
+------------------------------
+ Sun Dec 30 10:06:00 2001 PST
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp ?= t2.np;
@@ -271,9 +271,9 @@ SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE always_eq(t1.inst,
 (1 row)
 
 SELECT MAX(startTimestamp(shift(t1.temp, t2.i))) FROM tbl_tnpoint t1, tbl_interval t2;
-          max           
-------------------------
- 2001-12-26 20:38:00+00
+             max              
+------------------------------
+ Wed Dec 26 12:38:00 2001 PST
 (1 row)
 
 SELECT DISTINCT MAX(getPosition(startValue(temp))) FROM tbl_tnpoint;
@@ -331,21 +331,21 @@ SELECT MAX(numTimestamps(temp)) FROM tbl_tnpoint;
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tnpoint;
-          max           
-------------------------
- 2001-12-26 18:59:00+00
+             max              
+------------------------------
+ Wed Dec 26 10:59:00 2001 PST
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tnpoint;
-          max           
-------------------------
- 2001-12-26 22:16:00+00
+             max              
+------------------------------
+ Wed Dec 26 14:16:00 2001 PST
 (1 row)
 
 SELECT MAX(timestampN(temp,1)) FROM tbl_tnpoint;
-          max           
-------------------------
- 2001-12-26 18:59:00+00
+             max              
+------------------------------
+ Wed Dec 26 10:59:00 2001 PST
 (1 row)
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tnpoint;

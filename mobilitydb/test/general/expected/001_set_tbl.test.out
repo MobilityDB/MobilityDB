@@ -174,9 +174,9 @@ SELECT MIN(startValue(shift(f, 5))) FROM tbl_floatset;
 (1 row)
 
 SELECT MIN(startValue(shift(t, '5 min'))) FROM tbl_tstzset;
-          min           
-------------------------
- 2001-01-02 01:53:00+00
+             min              
+------------------------------
+ Mon Jan 01 17:53:00 2001 PST
 (1 row)
 
 SELECT MAX(memSize(t)) FROM tbl_tstzset;
@@ -186,9 +186,9 @@ SELECT MAX(memSize(t)) FROM tbl_tstzset;
 (1 row)
 
 SELECT MIN(lower(span(t))) FROM tbl_tstzset;
-          min           
-------------------------
- 2001-01-02 01:48:00+00
+             min              
+------------------------------
+ Mon Jan 01 17:48:00 2001 PST
 (1 row)
 
 SELECT MIN(numValues(t)) FROM tbl_tstzset;
@@ -198,21 +198,21 @@ SELECT MIN(numValues(t)) FROM tbl_tstzset;
 (1 row)
 
 SELECT MIN(startValue(t)) FROM tbl_tstzset;
-          min           
-------------------------
- 2001-01-02 01:48:00+00
+             min              
+------------------------------
+ Mon Jan 01 17:48:00 2001 PST
 (1 row)
 
 SELECT MIN(endValue(t)) FROM tbl_tstzset;
-          min           
-------------------------
- 2001-01-02 02:09:00+00
+             min              
+------------------------------
+ Mon Jan 01 18:09:00 2001 PST
 (1 row)
 
 SELECT MIN(valueN(t, 1)) FROM tbl_tstzset;
-          min           
-------------------------
- 2001-01-02 01:48:00+00
+             min              
+------------------------------
+ Mon Jan 01 17:48:00 2001 PST
 (1 row)
 
 SELECT MIN(array_length(getValues(t), 1)) FROM tbl_tstzset;
