@@ -65,6 +65,7 @@
 #include <utils/rel.h>
 /* MEOS */
 #include <meos.h>
+#include "general/pg_types.h"
 #include "general/temporaltypes.h"
 #if NPOINT
   #include "npoint/tnpoint_static.h"

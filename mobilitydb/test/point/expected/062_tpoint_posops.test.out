@@ -1,20 +1,20 @@
 /* Errors*/
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' << tstzspan '[2000-01-01,2000-01-02]'::stbox;
-ERROR:  The box must have XY(Z) dimension
+ERROR:  The box must have space dimension
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' &< tstzspan '[2000-01-01,2000-01-02]'::stbox;
-ERROR:  The box must have XY(Z) dimension
+ERROR:  The box must have space dimension
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' >> tstzspan '[2000-01-01,2000-01-02]'::stbox;
-ERROR:  The box must have XY(Z) dimension
+ERROR:  The box must have space dimension
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' &> tstzspan '[2000-01-01,2000-01-02]'::stbox;
-ERROR:  The box must have XY(Z) dimension
+ERROR:  The box must have space dimension
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' <<| tstzspan '[2000-01-01,2000-01-02]'::stbox;
-ERROR:  The box must have XY(Z) dimension
+ERROR:  The box must have space dimension
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' &<| tstzspan '[2000-01-01,2000-01-02]'::stbox;
-ERROR:  The box must have XY(Z) dimension
+ERROR:  The box must have space dimension
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' |>> tstzspan '[2000-01-01,2000-01-02]'::stbox;
-ERROR:  The box must have XY(Z) dimension
+ERROR:  The box must have space dimension
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' |&> tstzspan '[2000-01-01,2000-01-02]'::stbox;
-ERROR:  The box must have XY(Z) dimension
+ERROR:  The box must have space dimension
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' <</ tstzspan '[2000-01-01,2000-01-02]'::stbox;
 ERROR:  The temporal point must have Z dimension
 SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-02,2001-01-02])' &</ tstzspan '[2000-01-01,2000-01-02]'::stbox;
