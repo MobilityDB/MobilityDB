@@ -777,7 +777,9 @@ Geo_round(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_DATUM(datum_round_geo(PointerGetDatum(gs), size));
+  Datum result = datum_round_geo(PointerGetDatum(gs), size);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum Geoset_round(PG_FUNCTION_ARGS);
@@ -792,7 +794,9 @@ Geoset_round(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(geoset_round(s, size));
+  Set *result = geoset_round(s, size);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Tpoint_round(PG_FUNCTION_ARGS);

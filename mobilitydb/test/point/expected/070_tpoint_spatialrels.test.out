@@ -72,7 +72,7 @@ SELECT econtains(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Po
 
 /* Errors */
 SELECT econtains(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  lwgeom_intersection_prec: Operation on mixed SRID geometries (5676 != 0)
+ERROR:  Operation on mixed SRID
 SELECT econtains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT econtains(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -338,8 +338,10 @@ SELECT edisjoint(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000
 /* Errors */
 SELECT edisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
+CONTEXT:  SQL function "edisjoint" statement 1
 SELECT edisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
+CONTEXT:  SQL function "edisjoint" statement 1
 SELECT eintersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  eintersects 
 -------------
@@ -1163,7 +1165,7 @@ SELECT etouches(tgeompoint '[Point(0 0 0)@2000-01-01,Point(1 1 1)@2000-01-02]',
   ((0 0 0, 0 1 0, 1 1 0, 1 0 0, 0 0 0)), ((0 0 0, 1 0 0, 1 0 1, 0 0 1, 0 0 0)),
   ((1 1 0, 1 1 1, 1 0 1, 1 0 0, 1 1 0)),
   ((0 1 0, 0 1 1, 1 1 1, 1 1 0, 0 1 0)), ((0 0 1, 1 0 1, 1 1 1, 0 1 1, 0 0 1)) )');
-ERROR:  unsupported geometry type: PolyhedralSurface
+ERROR:  lwgeom_boundary: unsupported geometry type: PolyhedralSurface
 SELECT edwithin(geometry 'Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01', 2);
  edwithin 
 ----------
