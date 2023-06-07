@@ -327,11 +327,11 @@ SELECT periodBucket('2000-01-04', interval '1 week', '2000-01-07');
 					<indexterm><primary><varname>tileList</varname></primary></indexterm>
 					<para>Obtener un conjunto de parejas <varname>(index, tile)</varname> que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración &Z_support; &SRF;</para>
 					<para><varname>tileList(bounds tbox,size float,duration interval,vorigin float=0,</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03') → {(index,box)}</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
 					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,] </varname></para>
-					<para><varname>  sorigin geompoint='Point(0 0 0)') → {(index,box)}</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)') → {(index,tile)}</varname></para>
 					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
-					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → {(index,box)}</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
 					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point (0 0 0)'</varname> para la dimensión de valores (según el tipo de cuadro delimitador) y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
 					<para>En el caso de una malla espacio-temporal, <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. El SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y el tamaño se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
 					<programlisting language="sql" xml:space="preserve">

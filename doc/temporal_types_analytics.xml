@@ -347,11 +347,11 @@ SELECT periodBucket('2000-01-04', interval '1 week', '2000-01-07');
 					<indexterm><primary><varname>tileList</varname></primary></indexterm>
 					<para>Return a set of couples <varname>(index, tile)</varname> that covers the box with multidimensional tiles of the same size and duration &Z_support; &SRF;</para>
 					<para><varname>tileList(bounds tbox,size float,duration interval,vorigin float=0,</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03') → {(index,box)}</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
 					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,] </varname></para>
-					<para><varname>  sorigin geompoint='Point(0 0 0)') → {(index,box)}</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)') → {(index,tile)}</varname></para>
 					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
-					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → {(index,box)}</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
 					<para>If the origin of the value and/or time dimensions are not specified, they are set by default to 0 or <varname>'Point(0 0 0)'</varname> for the value dimension (depending on the box type) and to Monday, January 3, 2000 for the time dimension.</para>
 					<para>In the case of a spatiotemporal grid, <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. The SRID of the tile coordinates is determined by the input box and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
 					<programlisting language="sql" xml:space="preserve">

@@ -97,6 +97,7 @@ if(TEST_OPER MATCHES "test_setup")
   set(mobilitydb.config "shared_preload_libraries = '${POSTGIS_LIBRARY}'\n")
   string(APPEND mobilitydb.config "max_locks_per_transaction = 128\n")
   string(APPEND mobilitydb.config "timezone = 'UTC'\n")
+  string(APPEND mobilitydb.config "log_error_verbosity = 'TERSE'\n")
   string(APPEND mobilitydb.config "parallel_tuple_cost = 100\n")
   string(APPEND mobilitydb.config "parallel_setup_cost = 100\n")
   string(APPEND mobilitydb.config "min_parallel_table_scan_size = 0\n")
@@ -185,21 +186,15 @@ elseif(TEST_OPER MATCHES "run_compare")
 
   # (1) Text of error messages may change across PostgreSQL/PostGIS/MobilityDB versions.
   #     For this reason we remove the error message and keep the line with only 'ERROR'
-  # (2) Depending on PostgreSQL/PostGIS version, we remove the lines starting with
-  #     the following error messages:
-  #     * "WARNING:  cache reference leak:"
-  #     * "CONTEXT:  SQL function"
   file(READ ${TEST_DIR_OUT}/${TEST_NAME}.out tmpactual)
-  string(REGEX REPLACE "\nERROR:[^\n]*\n" "\nERROR\n" tmpactual "${tmpactual}")
-  string(REGEX REPLACE "\nWARNING:  cache reference leak:[^\n]*\n" "\n" tmpactual "${tmpactual}")
-  string(REGEX REPLACE "\nCONTEXT:  SQL function[^\n]*\n" "\n" tmpactual "${tmpactual}")
+  # string(REGEX REPLACE "\nERROR:[^\n]*\n" "\nERROR\n" tmpactual "${tmpactual}")
   file(WRITE ${TEST_DIR}/test.out "${tmpactual}")
 
   get_filename_component(TEST_FILE_DIR ${TEST_FILE} DIRECTORY)
   string(REPLACE "/queries" "" TEST_FILE_DIR "${TEST_FILE_DIR}")
   get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WE)
   file(READ ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.test.out tmpexpected)
-  string(REGEX REPLACE "\nERROR:[^\n]*\n" "\nERROR\n" tmpexpected "${tmpexpected}")
+  # string(REGEX REPLACE "\nERROR:[^\n]*\n" "\nERROR\n" tmpexpected "${tmpexpected}")
   file(WRITE ${TEST_DIR}/test.expected "${tmpexpected}")
 
   # Compare the files

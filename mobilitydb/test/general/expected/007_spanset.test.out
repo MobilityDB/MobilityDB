@@ -24,11 +24,11 @@ SELECT tstzspanset '{[2000-01-01, 2000-01-02), [2000-01-02, 2000-01-03), [2000-0
 
 /* Errors */
 SELECT tstzspanset '2000-01-01, 2000-01-02';
-ERROR:  Could not parse span set
+ERROR:  Could not parse span set: Missing open brace
 LINE 2: SELECT tstzspanset '2000-01-01, 2000-01-02';
                            ^
 SELECT tstzspanset '{[2000-01-01, 2000-01-02]';
-ERROR:  Could not parse span set
+ERROR:  Could not parse span set: Missing closing brace
 LINE 1: SELECT tstzspanset '{[2000-01-01, 2000-01-02]';
                            ^
 SELECT spanset(ARRAY [intspan '[1,2)','[3,4)','[5,6)']);

@@ -569,7 +569,7 @@ SELECT asEWKT(tgeogpoint(PointZ) 'Point(0 0 0)@2000-01-01');
 
 /* Errors */
 SELECT tgeompoint(Instant,PointZ,5676,1234) 'SRID=5676;Point(0 0 0)@2000-01-01';
-ERROR:  Invalid temporal point type modifier:
+ERROR:  Incorrect number of type modifiers for temporal points
 LINE 2: SELECT tgeompoint(Instant,PointZ,5676,1234) 'SRID=5676;Point...
                ^
 SELECT tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';

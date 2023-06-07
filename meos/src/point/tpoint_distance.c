@@ -112,9 +112,9 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2,
  * @note Function inspired by PostGIS function lw_dist2d_distancepoint
  * from measures.c
  */
-double
+static double
 lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  long double *fraction)
+  double *fraction)
 {
   double result;
   if (FLAGS_GET_GEODETIC(lw1->flags))
@@ -215,7 +215,7 @@ tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
   Datum value1 = tinstant_value(start);
   Datum value2 = tinstant_value(end);
   double dist;
-  long double fraction = geosegm_locate_point(value1, value2, point, &dist);
+  double fraction = geosegm_locate_point(value1, value2, point, &dist);
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return false;
   *value = Float8GetDatum(dist);
@@ -230,7 +230,7 @@ static bool
 point2d_min_dist(const POINT2D *p1, const POINT2D *p2,
   const POINT2D *p3, const POINT2D *p4, double *fraction)
 {
-  long double denum, dx1, dy1, dx2, dy2, f1, f2, f3, f4;
+  double denum, dx1, dy1, dx2, dy2, f1, f2, f3, f4;
 
     dx1 = p2->x - p1->x;
     dy1 = p2->y - p1->y;
@@ -242,11 +242,12 @@ point2d_min_dist(const POINT2D *p1, const POINT2D *p2,
     f3 = p3->y * (dy1 - dy2);
     f4 = p1->y * (dy2 - dy1);
 
-   denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dy2*dy2 + dx2*dx2;
+   denum = dx1 * (dx1 - 2 * dx2) + dy1 * (dy1 - 2 * dy2) + dy2 * dy2 +
+     dx2 * dx2;
   if (denum == 0)
     return false;
 
-  *fraction = (double) ((f1 + f2 + f3 + f4) / denum);
+  *fraction = (f1 + f2 + f3 + f4) / denum;
   return true;
 }
 
@@ -257,7 +258,7 @@ static bool
 point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2,
   const POINT3DZ *p3, const POINT3DZ *p4, double *fraction)
 {
-  long double denum, dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6;
+  double denum, dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6;
 
   dx1 = p2->x - p1->x;
   dy1 = p2->y - p1->y;
@@ -273,12 +274,12 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2,
   f5 = p3->z * (dz1 - dz2);
   f6 = p1->z * (dz2 - dz1);
 
-  denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dz1*(dz1-2*dz2) +
-    dx2*dx2 + dy2*dy2 + dz2*dz2;
+  denum = dx1 * (dx1 - 2 * dx2) + dy1 * (dy1 - 2 * dy2) +
+    dz1 * (dz1 - 2 * dz2) + dx2 * dx2 + dy2 * dy2 + dz2 * dz2;
   if (denum == 0)
     return false;
 
-  *fraction = (double) ((f1 + f2 + f3 + f4 + f5 + f6) / denum);
+  *fraction = (f1 + f2 + f3 + f4 + f5 + f6) / denum;
   return true;
 }
 
@@ -304,8 +305,6 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
   double fraction;
-  long double duration = (long double) (end1->t - start1->t);
-
   bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
   if (hasz) /* 3D */
   {
@@ -329,6 +328,8 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   }
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return false;
+
+  double duration = end1->t - start1->t;
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* We know that this function is called only for linear segments */
   Datum value1 = tsegment_value_at_timestamp(start1, end1, true, *t);
@@ -398,7 +399,7 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return false;
-  long double duration = (long double) (end1->t - start1->t);
+  double duration = (double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
 }
@@ -572,7 +573,7 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   double dist;
-  long double fraction;
+  double fraction;
 
   /* Constant segment */
   if (datum_point_eq(value1, value2))
