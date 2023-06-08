@@ -96,7 +96,6 @@ if(TEST_OPER MATCHES "test_setup")
 
   set(mobilitydb.config "shared_preload_libraries = '${POSTGIS_LIBRARY}'\n")
   string(APPEND mobilitydb.config "max_locks_per_transaction = 128\n")
-  # string(APPEND mobilitydb.config "timezone = 'UTC'\n")
   string(APPEND mobilitydb.config "timezone = 'PST8PDT'\n")
   string(APPEND mobilitydb.config "datestyle = 'Postgres, MDY'\n")
   string(APPEND mobilitydb.config "log_error_verbosity = 'TERSE'\n")
