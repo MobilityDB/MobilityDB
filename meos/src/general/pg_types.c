@@ -60,6 +60,10 @@
 #include <meos_internal.h>
 #include "general/type_util.h"
 
+extern Datum call_function1(PGFunction func, Datum arg1);
+extern Datum timestamptz_out(PG_FUNCTION_ARGS);
+extern Datum timestamp_out(PG_FUNCTION_ARGS);
+
 /*****************************************************************************/
 
 /* Definitions taken from miscadmin.h */
@@ -623,21 +627,8 @@ pg_timestamp_in(const char *str, int32 typmod)
 char *
 pg_timestamptz_out(TimestampTz dt)
 {
-  char *result;
-  int tz;
-  struct pg_tm tt, *tm = &tt;
-  fsec_t fsec;
-  const char *tzn;
-  char buf[MAXDATELEN + 1];
-
-  if (TIMESTAMP_NOT_FINITE(dt))
-    EncodeSpecialTimestamp(dt, buf);
-  else if (timestamp2tm(dt, &tz, tm, &fsec, &tzn, NULL) == 0)
-    EncodeDateTime(tm, fsec, true, tz, tzn, DateStyle, buf);
-  else
-    elog(ERROR, "timestamp out of range");
-
-  result = pstrdup(buf);
+  Datum d = TimestampTzGetDatum(dt);
+  char *result = DatumGetCString(call_function1(timestamptz_out, d));
   return result;
 }
 
@@ -650,19 +641,8 @@ pg_timestamptz_out(TimestampTz dt)
 char *
 pg_timestamp_out(Timestamp timestamp)
 {
-  char *result;
-  struct pg_tm tt, *tm = &tt;
-  fsec_t fsec;
-  char buf[MAXDATELEN + 1];
-
-  if (TIMESTAMP_NOT_FINITE(timestamp))
-    EncodeSpecialTimestamp(timestamp, buf);
-  else if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) == 0)
-    EncodeDateTime(tm, fsec, false, 0, NULL, DateStyle, buf);
-  else
-    elog(ERROR, "timestamp out of range");
-
-  result = pstrdup(buf);
+  Datum d = TimestampGetDatum(dt);
+  char *result = DatumGetCString(call_function1(timestamp_out, d));
   return result;
 }
 #endif /* MEOS */
