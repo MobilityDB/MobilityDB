@@ -591,29 +591,29 @@ pg_timestamp_in(const char *str, int32 typmod)
 /**
  * @brief Convert either a timestamp or a timestamp to a string.
  */
-char *
-timestamp_out_common(TimestampTz dt, bool withtz)
-{
-  char *result;
-  int tz;
-  struct pg_tm tt,
-         *tm = &tt;
-  fsec_t fsec;
-  const char *tzn;
-  char buf[MAXDATELEN + 1];
+// char *
+// timestamp_out_common(TimestampTz dt, bool withtz)
+// {
+  // char *result;
+  // int tz;
+  // struct pg_tm tt,
+         // *tm = &tt;
+  // fsec_t fsec;
+  // const char *tzn;
+  // char buf[MAXDATELEN + 1];
 
-  if (TIMESTAMP_NOT_FINITE(dt))
-    EncodeSpecialTimestamp(dt, buf);
-  else if (withtz && timestamp2tm(dt, &tz, tm, &fsec, &tzn, NULL) == 0)
-    EncodeDateTime(tm, fsec, true, tz, tzn, DateStyle, buf);
-  else if (! withtz && timestamp2tm(dt, NULL, tm, &fsec, NULL, NULL) == 0)
-    EncodeDateTime(tm, fsec, false, 0, NULL, DateStyle, buf);
-  else
-    elog(ERROR, "timestamp out of range");
+  // if (TIMESTAMP_NOT_FINITE(dt))
+    // EncodeSpecialTimestamp(dt, buf);
+  // else if (withtz && timestamp2tm(dt, &tz, tm, &fsec, &tzn, NULL) == 0)
+    // EncodeDateTime(tm, fsec, true, tz, tzn, DateStyle, buf);
+  // else if (! withtz && timestamp2tm(dt, NULL, tm, &fsec, NULL, NULL) == 0)
+    // EncodeDateTime(tm, fsec, false, 0, NULL, DateStyle, buf);
+  // else
+    // elog(ERROR, "timestamp out of range");
 
-  result = pstrdup(buf);
-  return result;
-}
+  // result = pstrdup(buf);
+  // return result;
+// }
 
 /**
  * @ingroup libmeos_pg_types
@@ -623,7 +623,22 @@ timestamp_out_common(TimestampTz dt, bool withtz)
 char *
 pg_timestamptz_out(TimestampTz dt)
 {
-  return timestamp_out_common(dt, true);
+  char *result;
+  int tz;
+  struct pg_tm tt, *tm = &tt;
+  fsec_t fsec;
+  const char *tzn;
+  char buf[MAXDATELEN + 1];
+
+  if (TIMESTAMP_NOT_FINITE(dt))
+    EncodeSpecialTimestamp(dt, buf);
+  else if (timestamp2tm(dt, &tz, tm, &fsec, &tzn, NULL) == 0)
+    EncodeDateTime(tm, fsec, true, tz, tzn, DateStyle, buf);
+  else
+    elog(ERROR, "timestamp out of range");
+
+  result = pstrdup(buf);
+  return result;
 }
 
 #if MEOS
@@ -633,9 +648,22 @@ pg_timestamptz_out(TimestampTz dt)
  * @note PostgreSQL function: Datum timestamp_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_timestamp_out(Timestamp dt)
+pg_timestamp_out(Timestamp timestamp)
 {
-  return timestamp_out_common((Timestamp) dt, false);
+  char *result;
+  struct pg_tm tt, *tm = &tt;
+  fsec_t fsec;
+  char buf[MAXDATELEN + 1];
+
+  if (TIMESTAMP_NOT_FINITE(timestamp))
+    EncodeSpecialTimestamp(timestamp, buf);
+  else if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) == 0)
+    EncodeDateTime(tm, fsec, false, 0, NULL, DateStyle, buf);
+  else
+    elog(ERROR, "timestamp out of range");
+
+  result = pstrdup(buf);
+  return result;
 }
 #endif /* MEOS */
 
