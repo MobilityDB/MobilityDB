@@ -120,9 +120,9 @@ WITH test(ps) AS (
 SELECT spanset(array_agg(ps)) FROM test;
 SELECT 1
 SELECT ps::stbox FROM test;
-                            ps                             
------------------------------------------------------------
- STBOX T([2000-01-01 00:00:00+00, 2000-04-01 01:00:00+00))
+                                  ps                                   
+-----------------------------------------------------------------------
+ STBOX T([Sat Jan 01 00:00:00 2000 PST, Sat Apr 01 01:00:00 2000 PST))
 (1 row)
 
 DROP TABLE test;

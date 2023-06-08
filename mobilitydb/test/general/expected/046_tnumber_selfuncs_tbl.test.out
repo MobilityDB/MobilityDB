@@ -763,7 +763,7 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '{[AAA@2000-01-01, BBB@2000-0
 SELECT COUNT(*) FROM tbl_ttext WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-     4
+     5
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool 'true@2000-01-01';
@@ -1147,7 +1147,7 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '{[AAA@2000-01-01, BBB@2000-0
 SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-     4
+     5
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool 'true@2000-01-01';
@@ -2383,7 +2383,7 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '{[AAA@2000-01-01, BBB@2000-
 SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-    42
+    43
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool 'true@2000-01-01';
@@ -2563,7 +2563,7 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '{[AAA@2000-01-01, BBB@2000-
 SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-    54
+    53
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool 'true@2000-01-01';
@@ -3531,7 +3531,7 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp && ttext '{[AAA@2000-01-01, BBB@2000-0
 SELECT COUNT(*) FROM tbl_ttext WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-     4
+     5
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tbool 'true@2000-01-01';
@@ -3915,7 +3915,7 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ ttext '{[AAA@2000-01-01, BBB@2000-0
 SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-     4
+     5
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tbool 'true@2000-01-01';
@@ -5151,7 +5151,7 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# ttext '{[AAA@2000-01-01, BBB@2000-
 SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-    42
+    43
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tbool 'true@2000-01-01';
@@ -5331,7 +5331,7 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> ttext '{[AAA@2000-01-01, BBB@2000-
 SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-    54
+    53
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tbool 'true@2000-01-01';

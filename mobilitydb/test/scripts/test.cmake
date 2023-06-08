@@ -96,7 +96,8 @@ if(TEST_OPER MATCHES "test_setup")
 
   set(mobilitydb.config "shared_preload_libraries = '${POSTGIS_LIBRARY}'\n")
   string(APPEND mobilitydb.config "max_locks_per_transaction = 128\n")
-  string(APPEND mobilitydb.config "timezone = 'UTC'\n")
+  string(APPEND mobilitydb.config "timezone = 'PST8PDT'\n")
+  string(APPEND mobilitydb.config "datestyle = 'Postgres, MDY'\n")
   string(APPEND mobilitydb.config "log_error_verbosity = 'TERSE'\n")
   string(APPEND mobilitydb.config "parallel_tuple_cost = 100\n")
   string(APPEND mobilitydb.config "parallel_setup_cost = 100\n")
@@ -184,30 +185,21 @@ elseif(TEST_OPER MATCHES "run_compare")
     ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
   )
 
-  # (1) Text of error messages may change across PostgreSQL/PostGIS/MobilityDB versions.
-  #     For this reason we remove the error message and keep the line with only 'ERROR'
-  file(READ ${TEST_DIR_OUT}/${TEST_NAME}.out tmpactual)
-  # string(REGEX REPLACE "\nERROR:[^\n]*\n" "\nERROR\n" tmpactual "${tmpactual}")
-  file(WRITE ${TEST_DIR}/test.out "${tmpactual}")
-
   get_filename_component(TEST_FILE_DIR ${TEST_FILE} DIRECTORY)
   string(REPLACE "/queries" "" TEST_FILE_DIR "${TEST_FILE_DIR}")
   get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WE)
-  file(READ ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.test.out tmpexpected)
-  # string(REGEX REPLACE "\nERROR:[^\n]*\n" "\nERROR\n" tmpexpected "${tmpexpected}")
-  file(WRITE ${TEST_DIR}/test.expected "${tmpexpected}")
 
   # Compare the files
   if(WIN32)
     # The compare files command in cmake does not provide detailed differences
     execute_process(
-      COMMAND ${CMAKE_COMMAND} -E compare_files ${TEST_DIR}/test.out ${TEST_DIR}/test.expected
+      COMMAND ${CMAKE_COMMAND} -E compare_files ${TEST_DIR_OUT}/${TEST_NAME}.out ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.test.out
       OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.diff
       RESULT_VARIABLE TEST_RESULT
       )
   else()
     execute_process(
-      COMMAND diff -urdN ${TEST_DIR}/test.out ${TEST_DIR}/test.expected
+      COMMAND diff -urdN ${TEST_DIR_OUT}/${TEST_NAME}.out ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.test.out
       OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.diff
       RESULT_VARIABLE TEST_RESULT
       )

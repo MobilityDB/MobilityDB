@@ -67,27 +67,27 @@ DROP TABLE
 DROP TABLE tbl_ttext_tmp;
 DROP TABLE
 SELECT extent(temp::tstzspan) FROM tbl_tbool;
-                      extent                      
---------------------------------------------------
- [2001-01-17 16:00:00+00, 2001-12-21 00:03:00+00]
+                            extent                            
+--------------------------------------------------------------
+ [Wed Jan 17 08:00:00 2001 PST, Thu Dec 20 16:03:00 2001 PST]
 (1 row)
 
 SELECT extent(temp::tstzspan) FROM tbl_tint;
-                      extent                      
---------------------------------------------------
- [2001-01-01 08:20:00+00, 2001-12-27 07:03:00+00]
+                            extent                            
+--------------------------------------------------------------
+ [Mon Jan 01 00:20:00 2001 PST, Wed Dec 26 23:03:00 2001 PST]
 (1 row)
 
 SELECT extent(temp::tstzspan) FROM tbl_tfloat;
-                      extent                      
---------------------------------------------------
- (2001-01-02 18:42:00+00, 2001-12-22 08:07:00+00]
+                            extent                            
+--------------------------------------------------------------
+ (Tue Jan 02 10:42:00 2001 PST, Sat Dec 22 00:07:00 2001 PST]
 (1 row)
 
 SELECT extent(temp::tstzspan) FROM tbl_ttext;
-                      extent                      
---------------------------------------------------
- (2001-01-01 13:49:00+00, 2001-12-03 07:20:00+00]
+                            extent                            
+--------------------------------------------------------------
+ (Mon Jan 01 05:49:00 2001 PST, Sun Dec 02 23:20:00 2001 PST]
 (1 row)
 
 SELECT extent(temp::intspan) FROM tbl_tint;
@@ -855,27 +855,27 @@ SELECT MAX(maxValue(temp)) FROM tbl_ttext;
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tbool_inst;
-          max           
-------------------------
- 2001-12-24 13:41:00+00
+             max              
+------------------------------
+ Mon Dec 24 05:41:00 2001 PST
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tint_inst;
-          max           
-------------------------
- 2001-12-27 07:03:00+00
+             max              
+------------------------------
+ Wed Dec 26 23:03:00 2001 PST
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tfloat_inst;
-          max           
-------------------------
- 2001-12-27 08:54:00+00
+             max              
+------------------------------
+ Thu Dec 27 00:54:00 2001 PST
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_ttext_inst;
-          max           
-------------------------
- 2001-12-30 18:54:00+00
+             max              
+------------------------------
+ Sun Dec 30 10:54:00 2001 PST
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tbool;
@@ -1407,75 +1407,75 @@ SELECT MAX(numTimestamps(temp)) FROM tbl_ttext;
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tbool;
-          max           
-------------------------
- 2001-12-20 23:58:00+00
+             max              
+------------------------------
+ Thu Dec 20 15:58:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tint;
-          max           
-------------------------
- 2001-12-27 07:03:00+00
+             max              
+------------------------------
+ Wed Dec 26 23:03:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tfloat;
-          max           
-------------------------
- 2001-12-22 07:32:00+00
+             max              
+------------------------------
+ Fri Dec 21 23:32:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_ttext;
-          max           
-------------------------
- 2001-12-03 06:27:00+00
+             max              
+------------------------------
+ Sun Dec 02 22:27:00 2001 PST
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tbool;
-          max           
-------------------------
- 2001-12-21 00:03:00+00
+             max              
+------------------------------
+ Thu Dec 20 16:03:00 2001 PST
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tint;
-          max           
-------------------------
- 2001-12-27 07:03:00+00
+             max              
+------------------------------
+ Wed Dec 26 23:03:00 2001 PST
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tfloat;
-          max           
-------------------------
- 2001-12-22 08:07:00+00
+             max              
+------------------------------
+ Sat Dec 22 00:07:00 2001 PST
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_ttext;
-          max           
-------------------------
- 2001-12-03 07:20:00+00
+             max              
+------------------------------
+ Sun Dec 02 23:20:00 2001 PST
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tbool;
-          max           
-------------------------
- 2001-12-21 00:03:00+00
+             max              
+------------------------------
+ Thu Dec 20 16:03:00 2001 PST
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tint;
-          max           
-------------------------
- 2001-12-27 07:03:00+00
+             max              
+------------------------------
+ Wed Dec 26 23:03:00 2001 PST
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tfloat;
-          max           
-------------------------
- 2001-12-22 08:07:00+00
+             max              
+------------------------------
+ Sat Dec 22 00:07:00 2001 PST
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_ttext;
-          max           
-------------------------
- 2001-12-03 07:20:00+00
+             max              
+------------------------------
+ Sun Dec 02 23:20:00 2001 PST
 (1 row)
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tbool;
@@ -1613,51 +1613,51 @@ SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_ttext, tbl_interval;
 (1 row)
 
 SELECT MAX(startTimestamp(tprecision(inst, '15 minutes'))) FROM tbl_tint_inst;
-          max           
-------------------------
- 2001-12-27 07:00:00+00
+             max              
+------------------------------
+ Wed Dec 26 23:00:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tprecision(ti, '15 minutes'))) FROM tbl_tint_discseq;
-          max           
-------------------------
- 2001-12-30 14:00:00+00
+             max              
+------------------------------
+ Sun Dec 30 06:00:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tprecision(seq, '15 minutes'))) FROM tbl_tint_seq;
-          max           
-------------------------
- 2001-12-29 19:30:00+00
+             max              
+------------------------------
+ Sat Dec 29 11:30:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tprecision(ss, '15 minutes'))) FROM tbl_tint_seqset;
-          max           
-------------------------
- 2001-12-25 19:45:00+00
+             max              
+------------------------------
+ Tue Dec 25 11:45:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tint_inst;
-          max           
-------------------------
- 2001-12-03 09:30:00+00
+             max              
+------------------------------
+ Mon Dec 03 01:30:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_tint_discseq;
-          max           
-------------------------
- 2001-12-30 14:15:00+00
+             max              
+------------------------------
+ Sun Dec 30 06:15:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tint_seq;
-          max           
-------------------------
- 2001-12-29 19:45:00+00
+             max              
+------------------------------
+ Sat Dec 29 11:45:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tint_seqset;
-          max           
-------------------------
- 2001-12-25 20:00:00+00
+             max              
+------------------------------
+ Tue Dec 25 12:00:00 2001 PST
 (1 row)
 
 SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tfloat_seq;

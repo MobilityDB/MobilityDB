@@ -1,19 +1,19 @@
 SELECT MAX(tprecision(t, '15 minutes')) FROM tbl_timestamptz;
-          max           
-------------------------
- 2001-12-26 07:00:00+00
+             max              
+------------------------------
+ Tue Dec 25 23:00:00 2001 PST
 (1 row)
 
 SELECT MAX(lower(tprecision(p, '15 minutes'))) FROM tbl_tstzspan;
-          max           
-------------------------
- 2001-12-29 20:45:00+00
+             max              
+------------------------------
+ Sat Dec 29 12:45:00 2001 PST
 (1 row)
 
 SELECT MAX(lower(tprecision(ps, '15 minutes'))) FROM tbl_tstzspanset;
-          max           
-------------------------
- 2001-12-30 12:00:00+00
+             max              
+------------------------------
+ Sun Dec 30 04:00:00 2001 PST
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p < t2.p;
@@ -93,13 +93,13 @@ SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '@>(floatspan,float
 SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 'p', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]')::numeric, 6);
   round   
 ----------
- 0.103015
+ 0.103003
 (1 row)
 
 SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 'p', '@>(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01 00:00:00, 2001-06-01:00:00:03]')::numeric, 6);
   round   
 ----------
- 0.000026
+ 0.000031
 (1 row)
 
 SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator)::numeric, 6);

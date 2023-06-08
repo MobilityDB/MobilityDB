@@ -23,31 +23,31 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- timestamptz '2001-01-01';
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# timestamptz '2001-01-01';
  count 
 -------
-   500
+   515
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# timestamptz '2001-01-01';
  count 
 -------
-   500
+   515
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> timestamptz '2001-01-01';
  count 
 -------
- 11880
+ 11865
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> timestamptz '2001-01-01';
  count 
 -------
- 11880
+ 11865
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-  1000
+   998
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspan '[2001-06-01, 2001-07-01]';
@@ -59,7 +59,7 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspan '[2001-06-01, 2001-07-
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
-  1000
+   997
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- tstzspan '[2001-06-01, 2001-07-01]';
@@ -71,31 +71,31 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- tstzspan '[2001-06-01, 2001-07
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
-   500
+   515
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
-  1545
+  1553
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> tstzspan '[2001-11-01, 2001-12-01]';
  count 
 -------
-   946
+   936
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> tstzspan '[2001-11-01, 2001-12-01]';
  count 
 -------
-  1960
+  1954
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspanset '{[2001-01-01, 2001-02-01]}';
  count 
 -------
-  1045
+  1038
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspanset '{[2001-01-01, 2001-02-01]}';
@@ -107,7 +107,7 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspanset '{[2001-01-01, 2001
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <@ tstzspanset '{[2001-01-01, 2001-02-01]}';
  count 
 -------
-  1045
+  1038
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- tstzspanset '{[2001-01-01, 2001-02-01]}';
@@ -119,31 +119,31 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- tstzspanset '{[2001-01-01, 200
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# tstzspanset '{[2001-01-01, 2001-02-01]}';
  count 
 -------
-   500
+   515
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# tstzspanset '{[2001-01-01, 2001-02-01]}';
  count 
 -------
-  1545
+  1553
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> tstzspanset '{[2001-01-01, 2001-02-01]}';
  count 
 -------
- 10835
+ 10827
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> tstzspanset '{[2001-01-01, 2001-02-01]}';
  count 
 -------
- 11880
+ 11865
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
-  1031
+  1026
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspan '[2001-01-01, 2001-02-01]';
@@ -155,7 +155,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspan '[2001-01-01, 2001
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps <@ tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
-  1028
+  1026
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps -|- tstzspan '[2001-01-01, 2001-02-01]';
@@ -167,25 +167,25 @@ SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps -|- tstzspan '[2001-01-01, 200
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps <<# tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
-     1
+    12
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps &<# tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
-  1031
+  1038
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps #>> tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
- 10848
+ 10842
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps #&> tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
- 11877
+ 11868
 (1 row)
 
 DROP INDEX tbl_tstzspan_big_quadtree_idx;

@@ -487,25 +487,25 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
  max 
 -----
- 132
+ 144
 (1 row)
 
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;
  max 
 -----
- 146
+ 158
 (1 row)
 
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint3D;
  max 
 -----
- 166
+ 178
 (1 row)
 
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint3D;
  max 
 -----
- 180
+ 192
 (1 row)
 
 /* There is no st_memSize neither MAX for geography. */
@@ -606,27 +606,27 @@ SELECT MAX(st_memSize(endValue(temp)::geometry)) FROM tbl_tgeogpoint3D;
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tgeompoint_inst;
-          max           
-------------------------
- 2001-12-11 14:43:00+00
+             max              
+------------------------------
+ Tue Dec 11 06:43:00 2001 PST
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tgeogpoint_inst;
-          max           
-------------------------
- 2001-12-30 22:05:00+00
+             max              
+------------------------------
+ Sun Dec 30 14:05:00 2001 PST
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tgeompoint3D_inst;
-          max           
-------------------------
- 2001-12-24 21:44:00+00
+             max              
+------------------------------
+ Mon Dec 24 13:44:00 2001 PST
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tgeogpoint3D_inst;
-          max           
-------------------------
- 2001-12-28 09:03:00+00
+             max              
+------------------------------
+ Fri Dec 28 01:03:00 2001 PST
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tgeompoint;
@@ -1086,75 +1086,75 @@ SELECT MAX(numTimestamps(temp)) FROM tbl_tgeogpoint3D;
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tgeompoint;
-          max           
-------------------------
- 2001-12-30 04:32:00+00
+             max              
+------------------------------
+ Sat Dec 29 20:32:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tgeogpoint;
-          max           
-------------------------
- 2001-12-17 18:54:00+00
+             max              
+------------------------------
+ Mon Dec 17 10:54:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tgeompoint3D;
-          max           
-------------------------
- 2001-12-30 10:15:00+00
+             max              
+------------------------------
+ Sun Dec 30 02:15:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tgeogpoint3D;
-          max           
-------------------------
- 2001-12-23 08:21:00+00
+             max              
+------------------------------
+ Sun Dec 23 00:21:00 2001 PST
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tgeompoint;
-          max           
-------------------------
- 2001-12-30 10:07:00+00
+             max              
+------------------------------
+ Sun Dec 30 02:07:00 2001 PST
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tgeogpoint;
-          max           
-------------------------
- 2001-12-17 18:56:00+00
+             max              
+------------------------------
+ Mon Dec 17 10:56:00 2001 PST
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tgeompoint3D;
-          max           
-------------------------
- 2001-12-30 14:00:00+00
+             max              
+------------------------------
+ Sun Dec 30 06:00:00 2001 PST
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tgeogpoint3D;
-          max           
-------------------------
- 2001-12-23 08:21:00+00
+             max              
+------------------------------
+ Sun Dec 23 00:21:00 2001 PST
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeompoint;
-          max           
-------------------------
- 2001-12-30 10:07:00+00
+             max              
+------------------------------
+ Sun Dec 30 02:07:00 2001 PST
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeogpoint;
-          max           
-------------------------
- 2001-12-17 18:56:00+00
+             max              
+------------------------------
+ Mon Dec 17 10:56:00 2001 PST
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeompoint3D;
-          max           
-------------------------
- 2001-12-30 14:00:00+00
+             max              
+------------------------------
+ Sun Dec 30 06:00:00 2001 PST
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tgeogpoint3D;
-          max           
-------------------------
- 2001-12-23 08:21:00+00
+             max              
+------------------------------
+ Sun Dec 23 00:21:00 2001 PST
 (1 row)
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeompoint;
@@ -1254,51 +1254,51 @@ SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
 (1 row)
 
 SELECT MAX(startTimestamp(tprecision(inst, '15 minutes'))) FROM tbl_tgeompoint_inst;
-          max           
-------------------------
- 2001-12-11 14:30:00+00
+             max              
+------------------------------
+ Tue Dec 11 06:30:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tprecision(ti, '15 minutes'))) FROM tbl_tgeompoint_discseq;
-          max           
-------------------------
- 2001-12-23 15:15:00+00
+             max              
+------------------------------
+ Sun Dec 23 07:15:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tprecision(seq, '15 minutes'))) FROM tbl_tgeompoint_seq;
-          max           
-------------------------
- 2001-12-25 04:15:00+00
+             max              
+------------------------------
+ Mon Dec 24 20:15:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tprecision(ss, '15 minutes'))) FROM tbl_tgeompoint_seqset;
-          max           
-------------------------
- 2001-12-30 04:30:00+00
+             max              
+------------------------------
+ Sat Dec 29 20:30:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tgeompoint_inst;
-          max           
-------------------------
- 2001-07-19 19:45:00+00
+             max              
+------------------------------
+ Thu Jul 19 12:45:00 2001 PDT
 (1 row)
 
 SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_tgeompoint_discseq;
-          max           
-------------------------
- 2001-12-23 15:30:00+00
+             max              
+------------------------------
+ Sun Dec 23 07:30:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tgeompoint_seq;
-          max           
-------------------------
- 2001-12-25 04:30:00+00
+             max              
+------------------------------
+ Mon Dec 24 20:30:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tgeompoint_seqset;
-          max           
-------------------------
- 2001-12-30 04:45:00+00
+             max              
+------------------------------
+ Sat Dec 29 20:45:00 2001 PST
 (1 row)
 
 SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tgeompoint_seq;
