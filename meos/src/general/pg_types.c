@@ -61,6 +61,9 @@
 #include "general/type_util.h"
 
 extern Datum call_function1(PGFunction func, Datum arg1);
+extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3);
+extern Datum timestamptz_in(PG_FUNCTION_ARGS);
+extern Datum timestamp_in(PG_FUNCTION_ARGS);
 extern Datum timestamptz_out(PG_FUNCTION_ARGS);
 extern Datum timestamp_out(PG_FUNCTION_ARGS);
 
@@ -427,6 +430,22 @@ pg_time_out(TimeADT time)
  * Functions adapted from timestamp.c
  *****************************************************************************/
 
+#if ! MEOS
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert a string into a timestamp with timezone.
+ * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
+ */
+TimestampTz
+pg_timestamptz_in(const char *str, int32 typmod)
+{
+  Datum arg1 = CStringGetDatum(str);
+  Datum arg3 = Int32GetDatum(typmod);
+  TimestampTz result = DatumGetTimestampTz(call_function3(timestamptz_in, arg1,
+    (Datum) 0, arg3));
+  return result;
+}
+#else
 /*
  * MEOSAdjustTimestampForTypmodError --- round off a timestamp to suit given typmod
  * Works for either timestamp or timestamptz.
@@ -579,7 +598,6 @@ pg_timestamptz_in(const char *str, int32 typmod)
   return timestamp_in_common(str, typmod, true);
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp without time zone.
@@ -592,33 +610,7 @@ pg_timestamp_in(const char *str, int32 typmod)
 }
 #endif /* MEOS */
 
-/**
- * @brief Convert either a timestamp or a timestamp to a string.
- */
-// char *
-// timestamp_out_common(TimestampTz dt, bool withtz)
-// {
-  // char *result;
-  // int tz;
-  // struct pg_tm tt,
-         // *tm = &tt;
-  // fsec_t fsec;
-  // const char *tzn;
-  // char buf[MAXDATELEN + 1];
-
-  // if (TIMESTAMP_NOT_FINITE(dt))
-    // EncodeSpecialTimestamp(dt, buf);
-  // else if (withtz && timestamp2tm(dt, &tz, tm, &fsec, &tzn, NULL) == 0)
-    // EncodeDateTime(tm, fsec, true, tz, tzn, DateStyle, buf);
-  // else if (! withtz && timestamp2tm(dt, NULL, tm, &fsec, NULL, NULL) == 0)
-    // EncodeDateTime(tm, fsec, false, 0, NULL, DateStyle, buf);
-  // else
-    // elog(ERROR, "timestamp out of range");
-
-  // result = pstrdup(buf);
-  // return result;
-// }
-
+#if ! MEOS
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a timestamp with timezone to a string.
@@ -631,8 +623,45 @@ pg_timestamptz_out(TimestampTz dt)
   char *result = DatumGetCString(call_function1(timestamptz_out, d));
   return result;
 }
+#else
+/**
+ * @brief Convert either a timestamp or a timestamp to a string.
+ */
+char *
+timestamp_out_common(TimestampTz dt, bool withtz)
+{
+  char *result;
+  int tz;
+  struct pg_tm tt,
+         *tm = &tt;
+  fsec_t fsec;
+  const char *tzn;
+  char buf[MAXDATELEN + 1];
 
-#if MEOS
+  if (TIMESTAMP_NOT_FINITE(dt))
+    EncodeSpecialTimestamp(dt, buf);
+  else if (withtz && timestamp2tm(dt, &tz, tm, &fsec, &tzn, NULL) == 0)
+    EncodeDateTime(tm, fsec, true, tz, tzn, DateStyle, buf);
+  else if (! withtz && timestamp2tm(dt, NULL, tm, &fsec, NULL, NULL) == 0)
+    EncodeDateTime(tm, fsec, false, 0, NULL, DateStyle, buf);
+  else
+    elog(ERROR, "timestamp out of range");
+
+  result = pstrdup(buf);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert a timestamp with timezone to a string.
+ * @note PostgreSQL function: Datum timestamptz_out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_timestamptz_out(TimestampTz dt)
+{
+  return timestamp_out_common(dt, true);
+}
+
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a timestamp without timezone to a string.
