@@ -488,14 +488,14 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       exproid = rightoid;
       if (righttype == T_TBOOL || righttype == T_TTEXT)
         exproid = type_oid(T_TSTZSPAN);
-      else if (righttype == T_INT4 || righttype == T_TFLOAT ||
-          righttype == T_TINT || righttype == T_TINT || righttype == T_TBOX)
+      else if (righttype == T_INT4 || righttype == T_FLOAT8 ||
+          righttype == T_TINT || righttype == T_TFLOAT || righttype == T_TBOX)
         exproid = type_oid(T_TBOX);
       else if (righttype == T_GEOMETRY || righttype == T_GEOGRAPHY ||
           righttype == T_TGEOMPOINT || righttype == T_TGEOGPOINT ||
           righttype == T_STBOX
 #if NPOINT
-          || righttype == T_TNPOINT
+          || argtype == T_NPOINT || argtype == T_TNPOINT
 #endif /* NPOINT */
           )
         exproid = type_oid(T_STBOX);
