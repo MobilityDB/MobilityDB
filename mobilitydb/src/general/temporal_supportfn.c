@@ -495,7 +495,7 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
           righttype == T_TGEOMPOINT || righttype == T_TGEOGPOINT ||
           righttype == T_STBOX
 #if NPOINT
-          || argtype == T_NPOINT || argtype == T_TNPOINT
+          || righttype == T_NPOINT || righttype == T_TNPOINT
 #endif /* NPOINT */
           )
         exproid = type_oid(T_STBOX);
