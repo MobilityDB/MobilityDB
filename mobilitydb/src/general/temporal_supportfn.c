@@ -58,6 +58,7 @@
 /* MEOS */
 #include <meos.h>
 #include "general/meos_catalog.h"
+#include "general/temporal_boxops.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
@@ -254,10 +255,50 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
     InvalidOid, InvalidOid, COERCE_EXPLICIT_CALL);
 }
 
+/**
+ * @brief To apply the "bunding box search" pattern we need access to the
+ * corresponding bbox function, so lookup the function Oid using the function
+ * name and type number.
+ */
+static FuncExpr *
+makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)
+{
+  const Oid funcargs[1] = {argoid};
+  const bool noError = true;
+  List *nspfunc;
+  Oid funcoid;
+
+  /* Expand function must be in same namespace as the caller */
+  char *nspname = get_namespace_name(get_func_namespace(callingfunc));
+  char *funcname = NULL; /* make compiler quiet */
+  meosType argtype = oid_type(argoid);
+  if (argtype == T_TBOOL || argtype == T_TTEXT)
+    funcname = "span";
+  else if (argtype == T_INT4 || argtype == T_FLOAT8 ||
+           argtype == T_TINT || argtype == T_TFLOAT)
+    funcname = "tbox";
+  else if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY ||
+      argtype == T_TGEOMPOINT || argtype == T_TGEOGPOINT
+#if NPOINT
+      || argtype == T_NPOINT || argtype == T_TNPOINT
+#endif /* NPOINT */
+      )
+    funcname = "stbox";
+  else
+    elog(ERROR, "Unknown stbox function for type %d", argoid);
+  nspfunc = list_make2(makeString(nspname), makeString(funcname));
+  funcoid = LookupFuncName(nspfunc, 1, funcargs, noError);
+  if (funcoid == InvalidOid)
+    elog(ERROR, "unable to lookup '%s(Oid[%u])'", funcname, argoid);
+
+  return makeFuncExpr(funcoid, retoid, list_make1(arg),
+    InvalidOid, InvalidOid, COERCE_EXPLICIT_CALL);
+}
+
 /*****************************************************************************/
 
 /**
- * @brief Transform the constant into a period
+ * @brief Transform the constant into a bounding box
  */
 static meosType
 type_to_bbox(meosType type)
@@ -443,16 +484,20 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
         PG_RETURN_POINTER((Node *) NULL);
 
       /* Determine type of right argument of the index support expression
-       * depending on whether there is an expand function */
+       * which is a bounding box */
       exproid = rightoid;
-      if (idxfn.expand_arg &&
-          (righttype == T_GEOMETRY || righttype == T_GEOGRAPHY ||
-           righttype == T_STBOX || righttype == T_TGEOMPOINT ||
-           righttype == T_TGEOGPOINT
+      if (righttype == T_TBOOL || righttype == T_TTEXT)
+        exproid = type_oid(T_TSTZSPAN);
+      else if (righttype == T_INT4 || righttype == T_TFLOAT ||
+          righttype == T_TINT || righttype == T_TINT || righttype == T_TBOX)
+        exproid = type_oid(T_TBOX);
+      else if (righttype == T_GEOMETRY || righttype == T_GEOGRAPHY ||
+          righttype == T_TGEOMPOINT || righttype == T_TGEOGPOINT ||
+          righttype == T_STBOX
 #if NPOINT
-           || righttype == T_TNPOINT
+          || righttype == T_TNPOINT
 #endif /* NPOINT */
-           ))
+          )
         exproid = type_oid(T_STBOX);
       else
         PG_RETURN_POINTER((Node *) NULL);
@@ -473,7 +518,6 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       {
         Expr *expr;
         Node *radiusarg = (Node *) list_nth(args, idxfn.expand_arg - 1);
-
         FuncExpr *expandexpr = makeExpandExpr(rightarg, radiusarg, rightoid,
           exproid, funcoid);
 
@@ -482,7 +526,8 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
          * (not volatile or dependent on the target index table)
          */
 #if POSTGRESQL_VERSION_NUMBER >= 140000
-        if (!is_pseudo_constant_for_index(req->root, (Node *)expandexpr, req->index))
+        if (!is_pseudo_constant_for_index(req->root, (Node *) expandexpr,
+          req->index))
 #else
         if (!is_pseudo_constant_for_index((Node *)expandexpr, req->index))
 #endif
@@ -496,25 +541,33 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       }
       /*
        * For the intersects variants we just need to return an index OpExpr
-       * with the original arguments on each side. For example,
-       * intersects(g1, g2) yields: g1 && g2
+       * where the original argument on one side may be replaced by a bounding
+       * box if it is not already one. For example, if g2 is a geometry then
+       * intersects(g1, g2) yields: g1 && stbox(g2)
        */
       else
       {
         Expr *expr;
+        FuncExpr *bboxexpr;
+        if (bbox_type(righttype))
+          bboxexpr = (FuncExpr *) rightarg;
+        else
+          bboxexpr = makeBboxExpr(rightarg, rightoid, exproid, funcoid);
+
         /*
          * The comparison expression has to be a pseudoconstant
          * (not volatile or dependent on the target index's table)
          */
 #if POSTGRESQL_VERSION_NUMBER >= 140000
-        if (!is_pseudo_constant_for_index(req->root, rightarg, req->index))
+        if (!is_pseudo_constant_for_index(req->root, (Node *) bboxexpr,
+          req->index))
 #else
-        if (!is_pseudo_constant_for_index(rightarg, req->index))
+        if (!is_pseudo_constant_for_index((Node *) bboxexpr, req->index))
 #endif
           PG_RETURN_POINTER((Node *) NULL);
 
         expr = make_opclause(idxoperid, BOOLOID, false, (Expr *) leftarg,
-          (Expr *) rightarg, InvalidOid, InvalidOid);
+          (Expr *) bboxexpr, InvalidOid, InvalidOid);
 
         ret = (Node *)(list_make1(expr));
       }
