@@ -487,6 +487,7 @@ tpointseqset_to_geo_meas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
  * @param[in] segmentize When true, in the general case the resulting geometry
  * will be a MultiLineString composed one Linestring per segment of the
  * temporal sequence (set)
+ * @param[out] result Resulting geometry array
  * @sqlfunc geoMeasure() when the second argument is not NULL
  * @sqlop @p :: when the second argument is NULL
  */
@@ -592,7 +593,7 @@ geo_to_tpointinst(const LWGEOM *lwgeom)
 /**
  * @brief Ensure that a PostGIS trajectory has increasing timestamps.
  * @note The verification is made in this function since calling the PostGIS
- * function #lwgeom_is_trajectory causes discrepancies with regression tests
+ * function lwgeom_is_trajectory causes discrepancies with regression tests
  * due to the error message that varies across PostGIS versions.
  */
 static void

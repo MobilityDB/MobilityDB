@@ -227,23 +227,23 @@ tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
  * @brief Compute d/dx (Euclidean distance) = 0 for two 2D segments
  */
 static bool
-point2d_min_dist(const POINT2D *p1, const POINT2D *p2,
-  const POINT2D *p3, const POINT2D *p4, double *fraction)
+point2d_min_dist(const POINT2D *p1, const POINT2D *p2, const POINT2D *p3,
+  const POINT2D *p4, double *fraction)
 {
-  double denum, dx1, dy1, dx2, dy2, f1, f2, f3, f4;
+  long double denum, dx1, dy1, dx2, dy2, f1, f2, f3, f4;
 
-    dx1 = p2->x - p1->x;
-    dy1 = p2->y - p1->y;
-    dx2 = p4->x - p3->x;
-    dy2 = p4->y - p3->y;
+  dx1 = p2->x - p1->x;
+  dy1 = p2->y - p1->y;
+  dx2 = p4->x - p3->x;
+  dy2 = p4->y - p3->y;
 
-    f1 = p3->x * (dx1 - dx2);
-    f2 = p1->x * (dx2 - dx1);
-    f3 = p3->y * (dy1 - dy2);
-    f4 = p1->y * (dy2 - dy1);
+  f1 = p3->x * (dx1 - dx2);
+  f2 = p1->x * (dx2 - dx1);
+  f3 = p3->y * (dy1 - dy2);
+  f4 = p1->y * (dy2 - dy1);
 
-   denum = dx1 * (dx1 - 2 * dx2) + dy1 * (dy1 - 2 * dy2) + dy2 * dy2 +
-     dx2 * dx2;
+  denum = dx1 * (dx1 - 2 * dx2) + dy1 * (dy1 - 2 * dy2) + dy2 * dy2 +
+    dx2 * dx2;
   if (denum == 0)
     return false;
 
@@ -255,10 +255,10 @@ point2d_min_dist(const POINT2D *p1, const POINT2D *p2,
  * @brief Compute d/dx (Euclidean distance) = 0 for two 3D segments
  */
 static bool
-point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2,
-  const POINT3DZ *p3, const POINT3DZ *p4, double *fraction)
+point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
+  const POINT3DZ *p4, double *fraction)
 {
-  double denum, dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6;
+  long double denum, dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6;
 
   dx1 = p2->x - p1->x;
   dy1 = p2->y - p1->y;
