@@ -3730,6 +3730,7 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
  * @param[in] seq Temporal sequence
  * @param[in] maxdist Maximum distance
  * @param[in] mintunits Minimum duration
+ * @param[out] result Resulting sequences
  */
 static int
 tsequence_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
@@ -3873,7 +3874,7 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
  * an area with a given maximum size for at least the specified duration.
  * @param[in] temp Temporal value
  * @param[in] maxdist Maximum distance
- * @param[in] mintunits Minimum duration
+ * @param[in] minduration Minimum duration
  */
 TSequenceSet *
 temporal_stops(const Temporal *temp, double maxdist,

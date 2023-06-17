@@ -595,9 +595,9 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   double za = 0.0, zb = 0.0;
   double distance,
     length,   /* Used for computing lengths */
-    seglength = 0, /* length of the segment where the closest point is located */
-    partlength, /* length from the beginning of the point array to the closest point */
-    totlength;  /* length of the point array */
+    seglength = 0.0,  /* length of the segment where the closest point is located */
+    partlength = 0.0, /* length from the beginning of the point array to the closest point */
+    totlength = 0.0;  /* length of the point array */
 
   /* Initialize our point */
   geographic_point_init(p4d->x, p4d->y, &a);
@@ -676,9 +676,6 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   if ( hasz )
     za = p1.z;
 
-  partlength = 0.0;
-  totlength = 0.0;
-
   /* Loop and sum the length for each segment */
   for ( i = 1; i < pa->npoints; i++ )
   {
@@ -751,8 +748,8 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
 
   /* Location of any point on a zero-length line is 0 */
   /* See http://trac.osgeo.org/postgis/ticket/1772#comment:2 */
-  if ( totlength == 0 )
-    return 0;
+  if ( partlength == 0 || totlength == 0 )
+    return 0.0;
 
   /* For robustness, force 1 when closest point == endpoint */
   p = getPoint2d_cp(pa, pa->npoints - 1);
