@@ -353,7 +353,6 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
       MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
-    pfree(seq);
   }
   TSequenceSet *result = tsequenceset_make_free(newsequences, count, NORMALIZE);
   return result;

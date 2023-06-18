@@ -157,13 +157,13 @@ PG_FUNCTION_INFO_V1(Tpoint_in);
  *
  * Examples of input for the various temporal types:
  * @code
- * // Instant
+ * -- Instant
  * Point(0 0) @ 2012-01-01 08:00:00
- * // Discrete sequence
+ * -- Discrete sequence
  * { Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 }
- * // Continuous sequence
+ * -- Continuous sequence
  * [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 )
- * // Sequence set
+ * -- Sequence set
  * { [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 ) ,
  *   [ Point(1 1) @ 2012-01-01 08:20:00 , Point(0 0) @ 2012-01-01 08:30:00 ] }
  * @endcode
