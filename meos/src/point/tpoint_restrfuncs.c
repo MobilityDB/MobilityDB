@@ -1114,18 +1114,18 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
   /* General case */
   LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
   int type = lwgeom_inter->type;
-  int countinter;
+  int ninter;
   LWPOINT *lwpoint_inter = NULL; /* make compiler quiet */
   LWLINE *lwline_inter = NULL; /* make compiler quiet */
   LWCOLLECTION *coll = NULL; /* make compiler quiet */
   if (type == POINTTYPE)
   {
-    countinter = 1;
+    ninter = 1;
     lwpoint_inter = lwgeom_as_lwpoint(lwgeom_inter);
   }
   else if (type == LINETYPE)
   {
-    countinter = 1;
+    ninter = 1;
     lwline_inter = lwgeom_as_lwline(lwgeom_inter);
   }
   else
@@ -1133,13 +1133,13 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
    * COLLECTIONTYPE */
   {
     coll = lwgeom_as_lwcollection(lwgeom_inter);
-    countinter = coll->ngeoms;
+    ninter = coll->ngeoms;
   }
-  Span *periods = palloc(sizeof(Span) * countinter);
+  Span *periods = palloc(sizeof(Span) * ninter);
   int npers = 0;
-  for (int i = 0; i < countinter; i++)
+  for (int i = 0; i < ninter; i++)
   {
-    if (countinter > 1)
+    if (ninter > 1)
     {
       /* Find the i-th intersection */
       LWGEOM *subgeom = coll->geoms[i];

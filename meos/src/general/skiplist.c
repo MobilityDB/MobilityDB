@@ -606,6 +606,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 
 /**
  * @brief Return the values contained in the skiplist
+ * @note The values are not freed from the skiplist
  */
 void **
 skiplist_values(SkipList *list)
