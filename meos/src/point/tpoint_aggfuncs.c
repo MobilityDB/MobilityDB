@@ -212,8 +212,8 @@ SkipList *
 tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
 {
   geoaggstate_check_temp(state, temp);
-  datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) ?
-    &datum_sum_double4 : &datum_sum_double3;
+  bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
+  datum_func2 func = hasz ? &datum_sum_double4 : &datum_sum_double3;
 
   int count;
   Temporal **temparr = tpoint_transform_tcentroid(temp, &count);
@@ -225,7 +225,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
     struct GeoAggregateState extra =
     {
       .srid = tpoint_srid(temp),
-      .hasz = MEOS_FLAGS_GET_Z(temp->flags) != 0
+      .hasz = hasz
     };
     aggstate_set_extra(state, &extra, sizeof(struct GeoAggregateState));
   }
@@ -323,7 +323,6 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
     Datum value = doublen_to_point(inst, srid);
     newinstants[i] = tinstant_make(value, T_TGEOMPOINT, inst->t);
     pfree(DatumGetPointer(value));
-    pfree(inst);
   }
   return tsequence_make_free(newinstants, count,  true, true, DISCRETE,
     NORMALIZE_NO);
