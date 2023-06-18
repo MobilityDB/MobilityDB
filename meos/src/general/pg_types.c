@@ -60,12 +60,14 @@
 #include <meos_internal.h>
 #include "general/type_util.h"
 
-extern Datum call_function1(PGFunction func, Datum arg1);
-extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3);
-extern Datum timestamptz_in(PG_FUNCTION_ARGS);
-extern Datum timestamp_in(PG_FUNCTION_ARGS);
-extern Datum timestamptz_out(PG_FUNCTION_ARGS);
-extern Datum timestamp_out(PG_FUNCTION_ARGS);
+#if ! MEOS
+  extern Datum call_function1(PGFunction func, Datum arg1);
+  extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3);
+  extern Datum timestamptz_in(PG_FUNCTION_ARGS);
+  extern Datum timestamp_in(PG_FUNCTION_ARGS);
+  extern Datum timestamptz_out(PG_FUNCTION_ARGS);
+  extern Datum timestamp_out(PG_FUNCTION_ARGS);
+#endif /* ! MEOS */
 
 /*****************************************************************************/
 
@@ -668,11 +670,9 @@ pg_timestamptz_out(TimestampTz dt)
  * @note PostgreSQL function: Datum timestamp_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_timestamp_out(Timestamp timestamp)
+pg_timestamp_out(Timestamp dt)
 {
-  Datum d = TimestampGetDatum(dt);
-  char *result = DatumGetCString(call_function1(timestamp_out, d));
-  return result;
+  return timestamp_out_common((Timestamp) dt, false);
 }
 #endif /* MEOS */
 

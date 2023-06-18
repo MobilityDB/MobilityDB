@@ -384,7 +384,7 @@ tpoint_tcentroid_finalfn(SkipList *state)
     result = (Temporal *) tpointseq_tcentroid_finalfn((TSequence **) values,
       state->length, srid);
   pfree(values);
-  // skiplist_free(state);
+  skiplist_free(state);
   return result;
 }
 
