@@ -2482,16 +2482,14 @@ tsequenceset_merge(const TSequenceSet *ss1, const TSequenceSet *ss2)
 /**
  * @ingroup libmeos_internal_temporal_modif
  * @brief Merge an array of temporal sequence sets.
- *
- * The values in the array may overlap in a single instant.
  * @param[in] seqsets Array of sequence sets
  * @param[in] count Number of elements in the array
+ * @note The values in the array may overlap in a single instant.
  * @sqlfunc merge()
  */
 TSequenceSet *
 tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
 {
-  /* Validity test will be done in tsequence_merge_array */
   /* Collect the composing sequences */
   int totalcount = 0;
   for (int i = 0; i < count; i++)
@@ -2503,8 +2501,8 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
     for (int j = 0; j < seqsets[i]->count; j++)
       sequences[nseqs++] = TSEQUENCESET_SEQ_N(seqsets[i], j);
   }
-  /* We cannot call directly tsequence_merge_array since the result must always
-   * be of subtype TSEQUENCESET */
+  /* We cannot call directly #tsequence_merge_array since the result must be of
+   * subtype TSEQUENCESET */
   int newcount;
   TSequence **newseqs = tsequence_merge_array1(sequences, totalcount,
     &newcount);

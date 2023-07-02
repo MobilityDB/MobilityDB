@@ -859,11 +859,13 @@ temporal_merge_array(Temporal **temparr, int count)
     return result;
   }
 
-  /* Ensure all values have the same interpolation and determine subtype of
-   * the result */
+  /* Ensure all values have the same interpolation and, if they are spatial,
+   * have the same SRID and dimensionality, and determine subtype of the
+   * result */
   uint8 subtype, origsubtype;
   subtype = origsubtype = temparr[0]->subtype;
   interpType interp = MEOS_FLAGS_GET_INTERP(temparr[0]->flags);
+  bool spatial = tgeo_type(temparr[0]->temptype);
   bool convert = false;
   for (int i = 1; i < count; i++)
   {
@@ -880,6 +882,8 @@ temporal_merge_array(Temporal **temparr, int count)
       subtype = newsubtype;
       interp |= newinterp;
     }
+    if (spatial)
+      ensure_spatial_validity(temparr[0], temparr[i]);
   }
   /* Convert all temporal values to a single subtype if needed */
   Temporal **newtemps;
