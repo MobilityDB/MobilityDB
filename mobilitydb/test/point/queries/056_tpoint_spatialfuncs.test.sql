@@ -54,8 +54,8 @@ SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX ZT(((1,1,1),(2,2,2))
 SELECT DISTINCT SRID(b) FROM tbl_stbox;
 SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
 
-SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,3812), 5676), 3812)))::numeric, 1) FROM tbl_stbox;
-SELECT MIN(xmin(round(transform(transform(setSRID(b, 3812), 5676), 3812), 1))) FROM tbl_stbox;
+SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,4326), 5676), 4326)))::numeric, 1) FROM tbl_stbox;
+SELECT MIN(xmin(round(transform(transform(setSRID(b, 4326), 5676), 4326), 1))) FROM tbl_stbox;
 
 -------------------------------------------------------------------------------
 -- 2D

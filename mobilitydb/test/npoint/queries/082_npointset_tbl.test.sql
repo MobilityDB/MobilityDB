@@ -53,7 +53,7 @@ SELECT numValues(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE 
 -------------------------------------------------------------------------------
 -- Cast
 
-SELECT npointset '{"Npoint(1,0.5)", "Npoint(2,0.5)", "Npoint(3,0.5)"}'::stbox;
+SELECT round(npointset '{"Npoint(1,0.5)", "Npoint(2,0.5)", "Npoint(3,0.5)"}'::stbox, 6);
 
 SELECT COUNT(*) FROM tbl_npoint WHERE np::npointset IS NOT NULL;
 
