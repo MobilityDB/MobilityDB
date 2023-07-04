@@ -751,6 +751,11 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   if ( partlength == 0 || totlength == 0 )
     return 0.0;
 
+  /* For robustness, force 0 when closest point == startpoint */
+  p = getPoint2d_cp(pa, 0);
+  if ( seg == 0 && p2d_same(&proj, p) )
+    return 0.0;
+
   /* For robustness, force 1 when closest point == endpoint */
   p = getPoint2d_cp(pa, pa->npoints - 1);
   if ( (seg >= (pa->npoints-2)) && p2d_same(&proj, p) )
