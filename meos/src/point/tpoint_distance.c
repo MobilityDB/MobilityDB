@@ -377,7 +377,7 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
       *mindist = Float8GetDatum(0.0);
     bool found = point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
       (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction);
-    if (!found)
+    if (! found)
       return false;
   }
   else

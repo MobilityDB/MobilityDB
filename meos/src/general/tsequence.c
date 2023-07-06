@@ -1700,7 +1700,7 @@ tsequence_merge(const TSequence *seq1, const TSequence *seq2)
 Temporal *
 tdiscseq_merge_array(const TSequence **sequences, int count)
 {
-  /* Validity test will be done in tinstant_merge_array */
+  /* Validity test will be done in #tinstant_merge_array */
   /* Collect the composing instants */
   int totalcount = 0;
   for (int i = 0; i < count; i++)
@@ -1771,12 +1771,11 @@ tseqarr_normalize(const TSequence **sequences, int count, int *newcount)
 
 /**
  * @brief Merge an array of temporal sequences.
- * The values in the array may overlap on a single instant.
- *
  * @param[in] sequences Array of values
  * @param[in] count Number of elements in the array
  * @param[out] totalcount Number of elements in the resulting array
  * @result Array of merged sequences
+ * @note The values in the array may overlap on a single instant.
  */
 TSequence **
 tsequence_merge_array1(const TSequence **sequences, int count,
