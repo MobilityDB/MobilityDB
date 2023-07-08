@@ -2100,7 +2100,8 @@ temporal_duration(const Temporal *temp, bool boundspan)
 {
   Interval *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MEOS_FLAGS_GET_DISCRETE(temp->flags))
+  if (temp->subtype == TINSTANT ||
+      (MEOS_FLAGS_GET_DISCRETE(temp->flags) && ! boundspan))
     result = palloc0(sizeof(Interval));
   else if (temp->subtype == TSEQUENCE)
     result = tsequence_duration((TSequence *) temp);
