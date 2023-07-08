@@ -2151,7 +2151,7 @@ SELECT duration(tgeompoint 'Point(1 1)@2000-01-01', true);
 SELECT duration(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', true);
  duration 
 ----------
- 00:00:00
+ 2 days
 (1 row)
 
 SELECT duration(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', true);
@@ -2175,7 +2175,7 @@ SELECT duration(tgeogpoint 'Point(1.5 1.5)@2000-01-01', true);
 SELECT duration(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', true);
  duration 
 ----------
- 00:00:00
+ 2 days
 (1 row)
 
 SELECT duration(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', true);

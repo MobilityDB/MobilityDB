@@ -3769,7 +3769,7 @@ SELECT duration(tbool 't@2000-01-01', true);
 SELECT duration(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', true);
  duration 
 ----------
- 00:00:00
+ 2 days
 (1 row)
 
 SELECT duration(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', true);
@@ -3793,7 +3793,7 @@ SELECT duration(tint '1@2000-01-01', true);
 SELECT duration(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', true);
  duration 
 ----------
- 00:00:00
+ 2 days
 (1 row)
 
 SELECT duration(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', true);
@@ -3817,7 +3817,7 @@ SELECT duration(tfloat '1.5@2000-01-01', true);
 SELECT duration(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', true);
  duration 
 ----------
- 00:00:00
+ 2 days
 (1 row)
 
 SELECT duration(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', true);
@@ -3853,7 +3853,7 @@ SELECT duration(ttext 'AAA@2000-01-01');
 SELECT duration(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', true);
  duration 
 ----------
- 00:00:00
+ 2 days
 (1 row)
 
 SELECT duration(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', true);
