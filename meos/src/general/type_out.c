@@ -297,7 +297,7 @@ tbox_mfjson_size(int precision)
 {
   /* The maximum size of a timestamptz is 35 characters, e.g.,
    * "2019-08-06 23:18:16.195062-09:30" */
-  size_t size = sizeof("'period':{'begin':,'end':},") +
+  size_t size = sizeof("'period':{'begin':,'end':,'lower_inc':false,'upper_inc':false},") +
     MEOS_WKT_TIMESTAMPTZ_SIZE * 2;
   size += sizeof("'bbox':[,],");
   size +=  2 * (OUT_MAX_DIGS_DOUBLE + precision);
@@ -320,7 +320,9 @@ tbox_mfjson_buf(char *output, const TBox *bbox, int precision)
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
   ptr += sprintf(ptr, ",\"end\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
-  ptr += sprintf(ptr, "},");
+  ptr += sprintf(ptr, ",\"lower_inc\":%s,\"upper_inc\":%s},",
+    bbox->period.lower_inc ? "true" : "false",
+	bbox->period.upper_inc ? "true" : "false");
   return (ptr - output);
 }
 
@@ -333,7 +335,7 @@ stbox_mfjson_size(bool hasz, int precision)
 {
   /* The maximum size of a timestamptz is 35 characters,
    * e.g., "2019-08-06 23:18:16.195062-09:30" */
-  size_t size = sizeof("'period':{'begin':,'end':},") +
+  size_t size = sizeof("'period':{'begin':,'end':,'lower_inc':false,'upper_inc':false},") +
     sizeof("\"2019-08-06T18:35:48.021455+02:30\",") * 2;
   if (! hasz)
   {
@@ -379,7 +381,9 @@ stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
   ptr += sprintf(ptr, ",\"end\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
-  ptr += sprintf(ptr, "},");
+  ptr += sprintf(ptr, ",\"lower_inc\":%s,\"upper_inc\":%s},",
+    bbox->period.lower_inc ? "true" : "false",
+	bbox->period.upper_inc ? "true" : "false");
   return (ptr - output);
 }
 
