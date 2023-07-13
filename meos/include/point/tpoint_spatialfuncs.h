@@ -38,6 +38,7 @@
 #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
+#include <lwgeodetic.h>
 /* MEOS */
 #include "general/temporal.h"
 #include "point/tpoint.h"
@@ -112,8 +113,8 @@ extern long double closest_point3dz_on_segment_ratio(const POINT3DZ *p,
   const POINT3DZ *A, const POINT3DZ *B, POINT3DZ *closest);
 extern long double closest_point_on_segment_sphere(const POINT4D *p,
   const POINT4D *A, const POINT4D *B, POINT4D *closest, double *dist);
-extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
-  const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
+extern void interpolate_point4d_sphere(const GEOGRAPHIC_POINT *g1, const GEOGRAPHIC_POINT *g2,
+  const POINT4D *p1, const POINT4D *p2, double f, POINT4D *p);
 
 /* Functions specializing the PostGIS functions ST_LineInterpolatePoint and
  * ST_LineLocatePoint */

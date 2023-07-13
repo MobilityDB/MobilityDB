@@ -209,7 +209,6 @@ geography_substring(POINTARRAY *ipa, double from, double to,
   POINTARRAY *dpa;
   POINT4D pt;
   POINT4D p1, p2;
-  POINT3D q1, q2;
   GEOGRAPHIC_POINT g1, g2;
   int nsegs, i;
   double length, slength, tlength;
@@ -279,9 +278,7 @@ geography_substring(POINTARRAY *ipa, double from, double to,
          * Our start is between first and second point
          */
         dseg = (from - tlength) / slength;
-        geog2cart(&g1, &q1);
-        geog2cart(&g2, &q2);
-        interpolate_point4d_sphere(&q1, &q2, &p1, &p2, dseg, &pt);
+        interpolate_point4d_sphere(&g1, &g2, &p1, &p2, dseg, &pt);
         ptarray_append_point(dpa, &pt, LW_FALSE);
         /*
          * We're inside now, but will check 'to' point as well
@@ -325,9 +322,7 @@ geography_substring(POINTARRAY *ipa, double from, double to,
       else if (to < tlength + slength )
       {
         dseg = (to - tlength) / slength;
-        geog2cart(&g1, &q1);
-        geog2cart(&g2, &q2);
-        interpolate_point4d_sphere(&q1, &q2, &p1, &p2, dseg, &pt);
+        interpolate_point4d_sphere(&g1, &g2, &p1, &p2, dseg, &pt);
         ptarray_append_point(dpa, &pt, LW_FALSE);
         break;
       }
@@ -431,7 +426,6 @@ geography_interpolate_points(const LWLINE *line, double length_fraction,
   const POINTARRAY* ipa = line->points;
   POINTARRAY* opa;
   POINT4D p1, p2;
-  POINT3D q1, q2;
   GEOGRAPHIC_POINT g1, g2;
 
   /* Empty.InterpolatePoint == Point Empty */
@@ -475,10 +469,8 @@ geography_interpolate_points(const LWLINE *line, double length_fraction,
      */
     while ( length_fraction < length_fraction_consumed + segment_length_frac && points_found < points_to_interpolate )
     {
-      geog2cart(&g1, &q1);
-      geog2cart(&g2, &q2);
       double segment_fraction = (length_fraction - length_fraction_consumed) / segment_length_frac;
-      interpolate_point4d_sphere(&q1, &q2, &p1, &p2, segment_fraction, &pt);
+      interpolate_point4d_sphere(&g1, &g2, &p1, &p2, segment_fraction, &pt);
       ptarray_set_point4d(opa, points_found++, &pt);
       length_fraction += length_fraction_increment;
     }

@@ -1030,33 +1030,35 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
 }
 
 /**
- * @brief Find interpolation point p between geography points p1 and p2
- * so that the len(p1,p) == len(p1,p2)
- * f and p falls on p1,p2 segment
+ * @brief Find interpolation point p between geography points g1 and g2
+ * so that the len(g1,p) == len(g1,g2) * f
+ * and p falls on g1,g2 segment
  *
- * @param[in] p1,p2 3D-space points we are interpolating between
- * @param[in] v1,v2 real values and z/m coordinates
+ * @param[in] g1,g2 geographic points we are interpolating between
+ * @param[in] p1,p2 real values and z/m coordinates
  * @param[in] f Fraction
  * @param[out] p Result
  */
 void
-interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
-  const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p)
+interpolate_point4d_sphere(const GEOGRAPHIC_POINT *g1, const GEOGRAPHIC_POINT *g2,
+  const POINT4D *p1, const POINT4D *p2, double f, POINT4D *p)
 {
-  /* Calculate interpolated point */
-  POINT3D mid;
-  mid.x = p1->x + ((p2->x - p1->x) * f);
-  mid.y = p1->y + ((p2->y - p1->y) * f);
-  mid.z = p1->z + ((p2->z - p1->z) * f);
-  normalize(&mid);
-
-  /* Calculate z/m values */
   GEOGRAPHIC_POINT g;
-  cart2geog(&mid, &g);
-  p->x = rad2deg(g.lon);
-  p->y = rad2deg(g.lat);
-  p->z = v1->z + ((v2->z - v1->z) * f);
-  p->m = v1->m + ((v2->m - v1->m) * f);
+
+  /* Calculate distance and direction between g1 and g2 */
+  double dist = sphere_distance(g1, g2);
+  double dir = sphere_direction(g1, g2, dist);
+
+  /* Compute cartesion interpolation and precompute z/m values */
+  interpolate_point4d(p1, p2, p, f);
+  /* Calculate interpolated point on sphere */
+  if (sphere_project(g1, dist*f, dir, &g) == LW_SUCCESS)
+  {
+    /* If success, use newly computed lat and lon,
+     * otherwise return precomputed cartesian result */
+    p->x = rad2deg(g.lon);
+    p->y = rad2deg(g.lat);
+  }
 }
 
 /*****************************************************************************
@@ -1099,13 +1101,10 @@ geosegm_interpolate_point(Datum start, Datum end, long double ratio)
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   if (geodetic)
   {
-    POINT3D q1, q2;
     GEOGRAPHIC_POINT g1, g2;
     geographic_point_init(p1.x, p1.y, &g1);
     geographic_point_init(p2.x, p2.y, &g2);
-    geog2cart(&g1, &q1);
-    geog2cart(&g2, &q2);
-    interpolate_point4d_sphere(&q1, &q2, &p1, &p2, (double) ratio, &p);
+    interpolate_point4d_sphere(&g1, &g2, &p1, &p2, (double) ratio, &p);
   }
   else
   {
@@ -1433,13 +1432,10 @@ geopoint_collinear(Datum value1, Datum value2, Datum value3,
   datum_point4d(value3, &p3);
   if (geodetic)
   {
-    POINT3D q1, q3;
     GEOGRAPHIC_POINT g1, g3;
     geographic_point_init(p1.x, p1.y, &g1);
     geographic_point_init(p3.x, p3.y, &g3);
-    geog2cart(&g1, &q1);
-    geog2cart(&g3, &q3);
-    interpolate_point4d_sphere(&q1, &q3, &p1, &p3, ratio, &p);
+    interpolate_point4d_sphere(&g1, &g3, &p1, &p3, ratio, &p);
   }
   else
     interpolate_point4d(&p1, &p3, &p, ratio);
