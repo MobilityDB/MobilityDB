@@ -37,7 +37,7 @@ SELECT round(MAX(maxValue(t1.temp <-> t2.temp))::numeric, 6) FROM tbl_tgeogpoint
 WHERE t1.temp <-> t2.temp IS NOT NULL;
      round      
 ----------------
- 3623840.442969
+ 3622735.997944
 (1 row)
 
 SELECT round(MAX(maxValue(g <-> temp))::numeric, 6) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
@@ -79,7 +79,7 @@ SELECT round(MAX(maxValue(t1.temp <-> t2.temp))::numeric, 6) FROM tbl_tgeogpoint
 WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;
      round      
 ----------------
- 3732047.426615
+ 3731547.354944
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint,

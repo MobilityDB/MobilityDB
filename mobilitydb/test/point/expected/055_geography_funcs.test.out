@@ -19,13 +19,13 @@ SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true), 6)::geometry)) AS t(dp);
                                                                                                                                              array_agg                                                                                                                                             
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"POINT(7.222099 51.720243)","POINT(10.232588 52.525434)","POINT(13.373925 53.256689)","POINT(16.634776 53.905679)","POINT(19.999858 54.464967)","POINT(23.45005 54.928333)","POINT(26.962817 55.291077)","POINT(30.512938 55.550263)","POINT(34.073528 55.704869)","POINT(37.617222 55.755833)"}
+ {"POINT(7.266722 51.73296)","POINT(10.294606 52.540923)","POINT(13.430262 53.268833)","POINT(16.668044 53.911747)","POINT(19.999858 54.464967)","POINT(23.415089 54.924178)","POINT(26.900657 55.285588)","POINT(30.441231 55.546074)","POINT(34.019604 55.703303)","POINT(37.617222 55.755833)"}
 (1 row)
 
 SELECT ST_AsText(ST_LineSubstring(geography 'Linestring(1 1,2 2)', 0.1, 0.2));
                                       st_astext                                      
 -------------------------------------------------------------------------------------
- LINESTRING(1.099955219272185 1.100011413809807,1.199922009483065 1.200024352964764)
+ LINESTRING(1.099962525008941 1.100018723297624,1.199931751397292 1.200034098856757)
 (1 row)
 
 SELECT ST_AsText(ST_LineSubstring(geography 'Linestring(1 1,1.000000001 1.000000001)', 0.1, 0.10000001));
@@ -98,7 +98,7 @@ ERROR:  line_locate_point: 2st arg isn't a point
 SELECT round(MAX(ST_Distance(ST_LineInterpolatePoint(g, 0.5), 'Point(50 50 50)'))::numeric, 6) FROM tbl_geog_linestring3D;
      round      
 ----------------
- 4181648.177519
+ 4181096.831669
 (1 row)
 
 SELECT SUM(ST_NumGeometries(ST_LineInterpolatePoints(g, 0.3, repeat:=TRUE)::geometry)) FROM tbl_geog_linestring3D;
@@ -116,7 +116,7 @@ SELECT MAX(ST_LineLocatePoint(g, 'Point(50 50 50)')) FROM tbl_geog_linestring3D;
 SELECT round(MAX(ST_Length(ST_LineSubstring(g, 0.5, 0.7)))::numeric, 6) FROM tbl_geog_linestring3D;
      round      
 ----------------
- 5201710.410899
+ 5204444.170596
 (1 row)
 
 SELECT round(MAX(ST_Distance(ST_ClosestPoint(t1.g, t2.g), 'Point(50 50 50)'))::numeric, 6) FROM tbl_geog_linestring3D t1, tbl_geog_linestring3D t2;
