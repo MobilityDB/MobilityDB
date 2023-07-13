@@ -530,7 +530,8 @@ temporal_copy(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal value from a base value and the time frame of
- * another temporal value.
+ * another temporal value. The interpolation of the result for sequence (sets) 
+ * is step or linear depending on whether the base type is continous or not.
  */
 Temporal *
 temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp)

@@ -1220,7 +1220,8 @@ tgeogpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *ts)
 /**
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence from a base value and the time frame
- * of another temporal sequence.
+ * of another temporal sequence. The interpolation of the result is step or 
+ * linear depending on whether the base type is continous or not.
  * @param[in] value Base value
  * @param[in] temptype Temporal type
  * @param[in] seq Temporal value
