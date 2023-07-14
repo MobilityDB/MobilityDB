@@ -1116,20 +1116,6 @@ tsequence_copy(const TSequence *seq)
 /*****************************************************************************/
 
 /**
- * @brief Construct a temporal discrete sequence from a base value and a
- * timestamp set.
- */
-TSequence *
-tdiscseq_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
-{
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-    instants[i] = tinstant_make(value, temptype, (TSEQUENCE_INST_N(seq, i))->t);
-  return tsequence_make_free(instants, seq->count, true, true, DISCRETE,
-    NORMALIZE_NO);
-}
-
-/**
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal discrete sequence from a base value and a
  * timestamp set.
@@ -1212,97 +1198,6 @@ TSequence *
 tgeogpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *ts)
 {
   return tsequence_from_base_timestampset(PointerGetDatum(gs), T_TGEOGPOINT, ts);
-}
-#endif /* MEOS */
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_constructor
- * @brief Construct a temporal sequence from a base value and the time frame
- * of another temporal sequence. The interpolation of the result is step or 
- * linear depending on whether the base type is continous or not.
- * @param[in] value Base value
- * @param[in] temptype Temporal type
- * @param[in] seq Temporal value
- */
-TSequence *
-tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
-{
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  if (interp == DISCRETE)
-    return tdiscseq_from_base_temp(value, temptype, seq);
-
-  if (interp == LINEAR && ! temptype_continuous(temptype))
-    interp = STEP;
-  return tsequence_from_base_period(value, temptype, &seq->period, interp);
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal boolean sequence from a boolean and the time
- * frame of another temporal sequence.
- */
-TSequence *
-tboolseq_from_base_temp(bool b, const TSequence *seq)
-{
-  return tsequence_from_base_temp(BoolGetDatum(b), T_TBOOL, seq);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal integer sequence from an integer and the time
- * frame of another temporal sequence.
- */
-TSequence *
-tintseq_from_base_temp(int i, const TSequence *seq)
-{
-  return tsequence_from_base_temp(Int32GetDatum(i), T_TINT, seq);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal float sequence from a float and the time frame
- * of another temporal sequence.
- */
-TSequence *
-tfloatseq_from_base_temp(double d, const TSequence *seq)
-{
-  return tsequence_from_base_temp(Float8GetDatum(d), T_TFLOAT, seq);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal text sequence from a text and the time frame
- * of another temporal sequence.
- */
-TSequence *
-ttextseq_from_base_temp(const text *txt, const TSequence *seq)
-{
-  return tsequence_from_base_temp(PointerGetDatum(txt), T_TTEXT, seq);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geometric point sequence from a point and the
- * time frame of another temporal sequence.
- */
-TSequence *
-tgeompointseq_from_base_temp(const GSERIALIZED *gs, const TSequence *seq)
-{
-  return tsequence_from_base_temp(PointerGetDatum(gs), T_TGEOMPOINT, seq);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geographic point sequence from a point and the
- * time frame of another temporal sequence.
- */
-TSequence *
-tgeogpointseq_from_base_temp(const GSERIALIZED *gs, const TSequence *seq)
-{
-  return tsequence_from_base_temp(PointerGetDatum(gs), T_TGEOGPOINT, seq);
 }
 #endif /* MEOS */
 
