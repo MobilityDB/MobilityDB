@@ -553,18 +553,18 @@ tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs)
 /**
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence set from a base value and the time
- * frame of another temporal sequence set.
+ * frame of another temporal sequence set. The interpolation of the result is
+ * step or linear depending on whether the base type is continous or not.
  * @param[in] value Base value
  * @param[in] temptype Temporal type
- * @param[in] ss Period set
+ * @param[in] ss Sequence set
  */
 TSequenceSet *
 tsequenceset_from_base_temp(Datum value, meosType temptype,
   const TSequenceSet *ss)
 {
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
-  bool continuous = temptype_continuous(temptype);
-  if (interp == LINEAR && ! continuous)
+  if (interp == LINEAR && ! temptype_continuous(temptype))
     interp = STEP;
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
@@ -709,7 +709,7 @@ TSequenceSet *
 ttextseqset_from_base_periodset(const text *txt, const SpanSet *ps)
 {
   return tsequenceset_from_base_periodset(PointerGetDatum(txt), T_TTEXT, ps,
-    false);
+    STEP);
 }
 
 /**

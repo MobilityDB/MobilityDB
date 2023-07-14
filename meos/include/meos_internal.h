@@ -541,7 +541,6 @@ extern TSequence *tsequence_compact(const TSequence *seq);
 extern void tsequence_restart(TSequence *seq, int last);
 extern TSequence *tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc, bool upper_inc);
 extern TSequence *tsequence_copy(const TSequence *seq);
-extern TSequence *tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq);
 extern TSequence *tsequence_from_base_period(Datum value, meosType temptype, const Span *p, interpType interp);
 extern TSequence *tsequence_make_free(TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
@@ -549,7 +548,6 @@ extern TSequenceSet *tsequenceset_make_free(TSequence **sequences, int count, bo
 extern void tsequenceset_restart(TSequenceSet *ss, int last);
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ss);
 extern TSequenceSet *tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs);
-extern TSequenceSet *tsequenceset_from_base_temp(Datum value, meosType temptype, const TSequenceSet *ss);
 extern TSequenceSet *tsequenceset_from_base_periodset(Datum value, meosType temptype, const SpanSet *ps, interpType interp);
 
 /*****************************************************************************/

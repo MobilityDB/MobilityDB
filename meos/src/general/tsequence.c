@@ -1233,8 +1233,7 @@ tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
   if (interp == DISCRETE)
     return tdiscseq_from_base_temp(value, temptype, seq);
 
-  bool continuous = temptype_continuous(temptype);
-  if (interp == LINEAR && ! continuous)
+  if (interp == LINEAR && ! temptype_continuous(temptype))
     interp = STEP;
   return tsequence_from_base_period(value, temptype, &seq->period, interp);
 }

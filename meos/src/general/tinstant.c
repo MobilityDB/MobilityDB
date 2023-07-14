@@ -311,8 +311,7 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
   result->t = t;
   SET_VARSIZE(result, size);
   MEOS_FLAGS_SET_BYVAL(result->flags, typbyval);
-  bool continuous = temptype_continuous(temptype);
-  MEOS_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags, temptype_continuous(temptype));
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(temptype))
