@@ -439,6 +439,14 @@
 				<listitem>
 					<para><link linkend="Xmax"><varname>Xmax</varname>, <varname>Ymax</varname>, <varname>Zmax</varname>, <varname>Tmax</varname></link>: Get the maximum X/Y/Z/T value</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="Xmin_inc"><varname>Xmin_inc</varname>, <varname>Tmin_inc</varname></link>: Is the minimum X/T value inclusive?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="Xmax_inc"><varname>Xmax_inc</varname>, <varname>Tmax_inc</varname></link>: Is the maximum X/T value inclusive?</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

@@ -296,10 +296,22 @@ SELECT Xmin(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
     1
 (1 row)
 
+SELECT Xmin_inc(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ xmin_inc 
+----------
+ t
+(1 row)
+
 SELECT Xmax(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
  xmax 
 ------
     2
+(1 row)
+
+SELECT Xmax_inc(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ xmax_inc 
+----------
+ t
 (1 row)
 
 SELECT Tmin(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
@@ -308,10 +320,22 @@ SELECT Tmin(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
  Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
+SELECT Tmin_inc(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ tmin_inc 
+----------
+ t
+(1 row)
+
 SELECT Tmax(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
              tmax             
 ------------------------------
  Sun Jan 02 00:00:00 2000 PST
+(1 row)
+
+SELECT Tmax_inc(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ tmax_inc 
+----------
+ t
 (1 row)
 
 SELECT Xmin(tbox 'TBOX X([1.0, 2.0])');
@@ -332,9 +356,21 @@ SELECT Tmin(tbox 'TBOX X([1.0, 2.0])');
  
 (1 row)
 
+SELECT Tmin_inc(tbox 'TBOX X([1.0, 2.0])');
+ tmin_inc 
+----------
+ 
+(1 row)
+
 SELECT Tmax(tbox 'TBOX X([1.0, 2.0])');
  tmax 
 ------
+ 
+(1 row)
+
+SELECT Tmax_inc(tbox 'TBOX X([1.0, 2.0])');
+ tmax_inc 
+----------
  
 (1 row)
 
@@ -344,10 +380,22 @@ SELECT Xmin(tbox 'TBOX T([2000-01-01,2000-01-02])');
      
 (1 row)
 
+SELECT Xmin_inc(tbox 'TBOX T([2000-01-01,2000-01-02])');
+ xmin_inc 
+----------
+ 
+(1 row)
+
 SELECT Xmax(tbox 'TBOX T([2000-01-01,2000-01-02])');
  xmax 
 ------
      
+(1 row)
+
+SELECT Xmax_inc(tbox 'TBOX T([2000-01-01,2000-01-02])');
+ xmax_inc 
+----------
+ 
 (1 row)
 
 SELECT Tmin(tbox 'TBOX T([2000-01-01,2000-01-02])');

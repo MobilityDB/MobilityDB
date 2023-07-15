@@ -439,6 +439,23 @@ Tbox_xmin(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Tbox_xmin_inc(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_xmin_inc);
+/**
+ * @ingroup mobilitydb_box_accessor
+ * @brief Return true if the minimum X value of a temporal box is inclusive
+ * @sqlfunc Xmin_inc()
+ */
+Datum
+Tbox_xmin_inc(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  bool result;
+  if (! tbox_xmin_inc(box, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
 PGDLLEXPORT Datum Tbox_xmax(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_xmax);
 /**
@@ -454,6 +471,23 @@ Tbox_xmax(PG_FUNCTION_ARGS)
   if (! tbox_xmax(box, &result))
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Tbox_xmax_inc(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_xmax_inc);
+/**
+ * @ingroup mobilitydb_box_accessor
+ * @brief Return true if the maximum X value of a temporal box is inclusive
+ * @sqlfunc Xmin_inc()
+ */
+Datum
+Tbox_xmax_inc(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  bool result;
+  if (! tbox_xmax_inc(box, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Tbox_tmin(PG_FUNCTION_ARGS);
@@ -473,6 +507,24 @@ Tbox_tmin(PG_FUNCTION_ARGS)
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
+PGDLLEXPORT Datum Tbox_tmin_inc(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_tmin_inc);
+/**
+ * @ingroup mobilitydb_box_accessor
+ * @brief Return true if the minimum timestamp value of a temporal box is
+ * inclusive
+ * @sqlfunc Tmin_inc()
+ */
+Datum
+Tbox_tmin_inc(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  bool result;
+  if (! tbox_tmin_inc(box, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
 PGDLLEXPORT Datum Tbox_tmax(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_tmax);
 /**
@@ -488,6 +540,24 @@ Tbox_tmax(PG_FUNCTION_ARGS)
   if (! tbox_tmax(box, &result))
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);
+}
+
+PGDLLEXPORT Datum Tbox_tmax_inc(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_tmax_inc);
+/**
+ * @ingroup mobilitydb_box_accessor
+ * @brief Return true if the maximum timestamp value of a temporal box is
+ * inclusive
+ * @sqlfunc Tmin_inc()
+ */
+Datum
+Tbox_tmax_inc(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  bool result;
+  if (! tbox_tmax_inc(box, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************

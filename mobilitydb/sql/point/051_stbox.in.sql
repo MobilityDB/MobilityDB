@@ -230,19 +230,19 @@ CREATE CAST (stbox AS geography) WITH FUNCTION geography(stbox);
  *****************************************************************************/
 
 CREATE FUNCTION hasX(stbox)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_hasx'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION hasZ(stbox)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_hasz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION hasT(stbox)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_hast'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION isGeodetic(stbox)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_isgeodetic'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -262,6 +262,10 @@ CREATE FUNCTION Tmin(stbox)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Stbox_tmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION Tmin_inc(stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_tmin_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION Xmax(stbox)
   RETURNS float
@@ -278,6 +282,10 @@ CREATE FUNCTION Zmax(stbox)
 CREATE FUNCTION Tmax(stbox)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Stbox_tmax'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION Tmax_inc(stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_tmax_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

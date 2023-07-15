@@ -773,9 +773,13 @@ extern STBox *periodset_to_stbox(const SpanSet *ps);
 extern bool tbox_hasx(const TBox *box);
 extern bool tbox_hast(const TBox *box);
 extern bool tbox_xmin(const TBox *box, double *result);
+extern bool tbox_xmin_inc(const TBox *box, bool *result);
 extern bool tbox_xmax(const TBox *box, double *result);
+extern bool tbox_xmax_inc(const TBox *box, bool *result);
 extern bool tbox_tmin(const TBox *box, TimestampTz *result);
+extern bool tbox_tmin_inc(const TBox *box, bool *result);
 extern bool tbox_tmax(const TBox *box, TimestampTz *result);
+extern bool tbox_tmax_inc(const TBox *box, bool *result);
 extern bool stbox_hasx(const STBox *box);
 extern bool stbox_hasz(const STBox *box);
 extern bool stbox_hast(const STBox *box);
@@ -787,7 +791,9 @@ extern bool stbox_ymax(const STBox *box, double *result);
 extern bool stbox_zmin(const STBox *box, double *result);
 extern bool stbox_zmax(const STBox *box, double *result);
 extern bool stbox_tmin(const STBox *box, TimestampTz *result);
+extern bool stbox_tmin_inc(const STBox *box, bool *result);
 extern bool stbox_tmax(const STBox *box, TimestampTz *result);
+extern bool stbox_tmax_inc(const STBox *box, bool *result);
 extern int32 stbox_srid(const STBox *box);
 
 /*****************************************************************************/
