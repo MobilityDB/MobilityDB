@@ -32,28 +32,28 @@
  * Spatial functions for PostGIS geography.
  */
 
--- Availability: 3.1.0
+-- Availability: 3.4.0
 CREATE FUNCTION ST_LineInterpolatePoint(geography, float,
     use_spheroid boolean DEFAULT true)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'geography_line_interpolate_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Availability: 3.1.0
+-- Availability: 3.4.0
 CREATE FUNCTION ST_LineInterpolatePoints(geography, float,
     use_spheroid boolean DEFAULT true, repeat boolean DEFAULT true)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'geography_line_interpolate_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Availability: 3.1.0
+-- Availability: 3.4.0
 CREATE FUNCTION ST_LineLocatePoint(geography, geography,
     use_spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'geography_line_locate_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Availability: 3.1.0
+-- Availability: 3.4.0
 CREATE FUNCTION ST_LineSubstring(geography, float, float)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'geography_line_substring'
@@ -61,14 +61,14 @@ CREATE FUNCTION ST_LineSubstring(geography, float, float)
 
 -------------------------------------------------------------------------
 
--- Availability: 3.1.0
+-- Availability: 3.4.0
 CREATE FUNCTION ST_ClosestPoint(geography, geography,
     use_spheroid boolean DEFAULT true)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'geography_closestpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Availability: 3.1.0
+-- Availability: 3.4.0
 CREATE FUNCTION ST_ShortestLine(geography, geography,
     use_spheroid boolean DEFAULT true)
   RETURNS geography
