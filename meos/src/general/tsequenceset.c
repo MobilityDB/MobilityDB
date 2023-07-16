@@ -552,102 +552,6 @@ tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs)
 
 /**
  * @ingroup libmeos_internal_temporal_constructor
- * @brief Construct a temporal sequence set from a base value and the time
- * frame of another temporal sequence set.
- * @param[in] value Base value
- * @param[in] temptype Temporal type
- * @param[in] ss Period set
- */
-TSequenceSet *
-tsequenceset_from_base_temp(Datum value, meosType temptype,
-  const TSequenceSet *ss)
-{
-  interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
-  bool continuous = temptype_continuous(temptype);
-  if (interp == LINEAR && ! continuous)
-    interp = STEP;
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = tsequence_from_base_period(value, temptype, &seq->period,
-      interp);
-  }
-  return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal boolean sequence set from a boolean and the
- * time frame of another temporal sequence set
- */
-TSequenceSet *
-tboolseqset_from_base_temp(bool b, const TSequenceSet *ss)
-{
-  return tsequenceset_from_base_temp(BoolGetDatum(b), T_TBOOL, ss);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal integer sequence set from an integer and the
- * time frame of another temporal sequence set
- */
-TSequenceSet *
-tintseqset_from_base_temp(int i, const TSequenceSet *ss)
-{
-  return tsequenceset_from_base_temp(Int32GetDatum(i), T_TINT, ss);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal float sequence set from a float and the time
- * frame of another temporal sequence set.
- */
-TSequenceSet *
-tfloatseqset_from_base_temp(double d, const TSequenceSet *ss)
-{
-  return tsequenceset_from_base_temp(Float8GetDatum(d), T_TFLOAT, ss);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal text sequence set from a text and the time
- * frame of another temporal sequence set.
- */
-TSequenceSet *
-ttextseqset_from_base_temp(const text *txt, const TSequenceSet *ss)
-{
-  return tsequenceset_from_base_temp(PointerGetDatum(txt), T_TTEXT, ss);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geometric point sequence set from a point and
- * the time frame of another temporal sequence set
- */
-TSequenceSet *
-tgeompointseqset_from_base_temp(const GSERIALIZED *gs, const TSequenceSet *ss)
-{
-  return tsequenceset_from_base_temp(PointerGetDatum(gs), T_TGEOMPOINT, ss);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geographic point sequence set from a point and
- * the time frame of another temporal sequence set
- */
-TSequenceSet *
-tgeogpointseqset_from_base_temp(const GSERIALIZED *gs, const TSequenceSet *ss)
-{
-  return tsequenceset_from_base_temp(PointerGetDatum(gs), T_TGEOGPOINT, ss);
-}
-#endif /* MEOS */
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence set from a base value and a period set.
  * @param[in] value Base value
  * @param[in] temptype Temporal type
@@ -709,7 +613,7 @@ TSequenceSet *
 ttextseqset_from_base_periodset(const text *txt, const SpanSet *ps)
 {
   return tsequenceset_from_base_periodset(PointerGetDatum(txt), T_TTEXT, ps,
-    false);
+    STEP);
 }
 
 /**

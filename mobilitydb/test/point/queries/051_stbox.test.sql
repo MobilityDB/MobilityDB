@@ -155,10 +155,12 @@ SELECT xmin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT ymin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT zmin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT tmin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+SELECT tmin_inc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT xmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT ymax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT zmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT tmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+SELECT tmax_inc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 
 SELECT xmin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 SELECT ymin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
@@ -173,10 +175,12 @@ SELECT xmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT ymin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT zmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT tmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT tmin_inc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT xmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT ymax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT zmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT tmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT tmax_inc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 
 SELECT xmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
 SELECT ymin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');

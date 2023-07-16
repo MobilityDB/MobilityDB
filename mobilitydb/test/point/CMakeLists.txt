@@ -33,6 +33,10 @@ foreach(file ${testfiles})
       message("Enabling test ${TESTNAME}")
     endif()
   endif()
+  if(${POSTGIS_VERSION_NUMBER} GREATER_EQUAL 30400 AND ${TESTNAME} EQUAL "055_geography_functions")
+    message("Disabling test ${TESTNAME}")
+    set(DOTEST FALSE)
+  endif()
   if(DOTEST)
     add_test(
       NAME ${TESTNAME}

@@ -682,7 +682,7 @@ tbox_hast(const TBox *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Compute the minimum X value of a temporal box.
+ * @brief Return the minimum X value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmin()
@@ -699,7 +699,24 @@ tbox_xmin(const TBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Compute the maximum X value of a temporal box.
+ * @brief Return true if the minimum X value of a temporal box is inclusive.
+ * @param[in] box Box
+ * @param[out] result Result
+ * @sqlfunc Xmin_inc()
+ * @pymeosfunc xmin_inc()
+ */
+bool
+tbox_xmin_inc(const TBox *box, bool *result)
+{
+  if (! MEOS_FLAGS_GET_X(box->flags))
+    return false;
+  *result = DatumGetBool(box->span.lower_inc);
+  return true;
+}
+
+/**
+ * @ingroup libmeos_box_accessor
+ * @brief Return the maximum X value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmax()
@@ -716,7 +733,24 @@ tbox_xmax(const TBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Compute the minimum T value of a temporal box.
+ * @brief Return true if the maximum X value of a temporal box is inclusive.
+ * @param[in] box Box
+ * @param[out] result Result
+ * @sqlfunc Xmax_inc()
+ * @pymeosfunc xmax_inc()
+ */
+bool
+tbox_xmax_inc(const TBox *box, bool *result)
+{
+  if (! MEOS_FLAGS_GET_X(box->flags))
+    return false;
+  *result = DatumGetBool(box->span.upper_inc);
+  return true;
+}
+
+/**
+ * @ingroup libmeos_box_accessor
+ * @brief Return the minimum T value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin()
@@ -728,6 +762,23 @@ tbox_tmin(const TBox *box, TimestampTz *result)
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.lower);
+  return true;
+}
+
+/**
+ * @ingroup libmeos_box_accessor
+ * @brief Return true if the minimum T value of a temporal box is inclusive.
+ * @param[in] box Box
+ * @param[out] result Result
+ * @sqlfunc Tmin_inc()
+ * @pymeosfunc tmin_inc()
+ */
+bool
+tbox_tmin_inc(const TBox *box, bool *result)
+{
+  if (! MEOS_FLAGS_GET_T(box->flags))
+    return false;
+  *result = DatumGetBool(box->period.lower_inc);
   return true;
 }
 
@@ -745,6 +796,23 @@ tbox_tmax(const TBox *box, TimestampTz *result)
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.upper);
+  return true;
+}
+
+/**
+ * @ingroup libmeos_box_accessor
+ * @brief Return true if the maximum T value of a temporal box is inclusive.
+ * @param[in] box Box
+ * @param[out] result Result
+ * @sqlfunc Tmax_inc()
+ * @pymeosfunc tmax_inc()
+ */
+bool
+tbox_tmax_inc(const TBox *box, bool *result)
+{
+  if (! MEOS_FLAGS_GET_T(box->flags))
+    return false;
+  *result = DatumGetBool(box->period.upper_inc);
   return true;
 }
 

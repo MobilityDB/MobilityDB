@@ -439,6 +439,12 @@ SELECT tmin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
  
 (1 row)
 
+SELECT tmin_inc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+ tmin_inc 
+----------
+ 
+(1 row)
+
 SELECT xmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
  xmax 
 ------
@@ -460,6 +466,12 @@ SELECT zmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT tmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
  tmax 
 ------
+ 
+(1 row)
+
+SELECT tmax_inc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+ tmax_inc 
+----------
  
 (1 row)
 
@@ -535,6 +547,12 @@ SELECT tmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
  Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
+SELECT tmin_inc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+ tmin_inc 
+----------
+ t
+(1 row)
+
 SELECT xmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
  xmax 
 ------
@@ -557,6 +575,12 @@ SELECT tmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
              tmax             
 ------------------------------
  Sun Jan 02 00:00:00 2000 PST
+(1 row)
+
+SELECT tmax_inc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+ tmax_inc 
+----------
+ t
 (1 row)
 
 SELECT xmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');

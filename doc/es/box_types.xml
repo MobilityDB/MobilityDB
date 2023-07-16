@@ -352,6 +352,34 @@ SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-03
 </programlisting>
 			</listitem>
+
+			<listitem id="Xmin_inc">
+				<indexterm><primary><varname>Xmin_inc</varname></primary></indexterm>
+				<indexterm><primary><varname>Tmin_inc</varname></primary></indexterm>
+				<para>Es el mínimo valor X/T inclusivo?</para>
+				<para><varname>Xmin_inc(tbox) → bool</varname></para>
+				<para><varname>Tmin_inc(box) → bool</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT Xmin_inc(tbox 'TBOX XT((1.0,3.0),[2000-01-01,2000-01-03))');
+-- false
+SELECT Tmin_inc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="Xmax_inc">
+				<indexterm><primary><varname>Xmax_inc</varname></primary></indexterm>
+				<indexterm><primary><varname>Tmax_inc</varname></primary></indexterm>
+				<para>Es el máximo valor X/T inclusivo?</para>
+				<para><varname>Xmax_inc(tbox) → bool</varname></para>
+				<para><varname>Tmax_inc(box) → bool</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT Xmax_inc(tbox 'TBOX XT((1.0,3.0),[2000-01-01,2000-01-03))');
+-- false
+SELECT Tmax_inc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
+-- true
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

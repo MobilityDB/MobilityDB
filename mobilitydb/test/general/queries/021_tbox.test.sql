@@ -119,17 +119,25 @@ SELECT hasT(tbox 'TBOX X([1.0, 2.0])');
 SELECT hasT(tbox 'TBOX T([2000-01-01,2000-01-02])');
 
 SELECT Xmin(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT Xmin_inc(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
 SELECT Xmax(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT Xmax_inc(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
 SELECT Tmin(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT Tmin_inc(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
 SELECT Tmax(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT Tmax_inc(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])');
 
 SELECT Xmin(tbox 'TBOX X([1.0, 2.0])');
 SELECT Xmax(tbox 'TBOX X([1.0, 2.0])');
 SELECT Tmin(tbox 'TBOX X([1.0, 2.0])');
+SELECT Tmin_inc(tbox 'TBOX X([1.0, 2.0])');
 SELECT Tmax(tbox 'TBOX X([1.0, 2.0])');
+SELECT Tmax_inc(tbox 'TBOX X([1.0, 2.0])');
 
 SELECT Xmin(tbox 'TBOX T([2000-01-01,2000-01-02])');
+SELECT Xmin_inc(tbox 'TBOX T([2000-01-01,2000-01-02])');
 SELECT Xmax(tbox 'TBOX T([2000-01-01,2000-01-02])');
+SELECT Xmax_inc(tbox 'TBOX T([2000-01-01,2000-01-02])');
 SELECT Tmin(tbox 'TBOX T([2000-01-01,2000-01-02])');
 SELECT Tmax(tbox 'TBOX T([2000-01-01,2000-01-02])');
 

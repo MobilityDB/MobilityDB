@@ -665,7 +665,7 @@ PGDLLEXPORT Datum Stbox_tmin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tmin);
 /**
  * @ingroup mobilitydb_box_accessor
- * @brief Return the minimum T value of a spatiotemporal box, if any.
+ * @brief Return the minimum timestamp value of a spatiotemporal box, if any.
  * @sqlfunc Tmin()
  */
 Datum
@@ -676,6 +676,24 @@ Stbox_tmin(PG_FUNCTION_ARGS)
   if (! stbox_tmin(box, &result))
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);
+}
+
+PGDLLEXPORT Datum Stbox_tmin_inc(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_tmin_inc);
+/**
+ * @ingroup mobilitydb_box_accessor
+ * @brief Return true if the minimum timestamp value of a spatiotemporal box is
+ * inclusive.
+ * @sqlfunc Tmin_inc()
+ */
+Datum
+Stbox_tmin_inc(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  bool result;
+  if (! stbox_tmin_inc(box, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Stbox_tmax(PG_FUNCTION_ARGS);
@@ -693,6 +711,24 @@ Stbox_tmax(PG_FUNCTION_ARGS)
   if (! stbox_tmax(box, &result))
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);
+}
+
+PGDLLEXPORT Datum Stbox_tmax_inc(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_tmax_inc);
+/**
+ * @ingroup mobilitydb_box_accessor
+ * @brief Return true if the maximum timestamp value of a spatiotemporal box is
+ * inclusive.
+ * @sqlfunc Tmax_inc()
+ */
+Datum
+Stbox_tmax_inc(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  bool result;
+  if (! stbox_tmax_inc(box, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************

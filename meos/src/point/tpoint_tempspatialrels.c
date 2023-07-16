@@ -476,7 +476,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
 #if MEOS
 /**
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Return the temporal intersects relationship between a temporal point
+ * @brief Return the temporal disjoint relationship between a temporal point
  * and a geometry
  * @sqlfunc tdisjoint()
  */

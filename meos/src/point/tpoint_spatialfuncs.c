@@ -1049,7 +1049,7 @@ interpolate_point4d_sphere(const GEOGRAPHIC_POINT *g1, const GEOGRAPHIC_POINT *g
   double dist = sphere_distance(g1, g2);
   double dir = sphere_direction(g1, g2, dist);
 
-  /* Compute cartesion interpolation and precompute z/m values */
+  /* Compute Cartesian interpolation and precompute z/m values */
   interpolate_point4d(p1, p2, p, f);
   /* Calculate interpolated point on sphere */
   if (sphere_project(g1, dist*f, dir, &g) == LW_SUCCESS)
