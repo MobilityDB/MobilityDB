@@ -170,40 +170,10 @@ geography_shortestline(PG_FUNCTION_ARGS)
  ***********************************************************************/
 
 /**
- * @brief Returns the lenght of the point array wrt the sphere
- */
-static double
-ptarray_length_sphere(const POINTARRAY *pa)
-{
-  GEOGRAPHIC_POINT a, b;
-  POINT4D p;
-  uint32_t i;
-  double length = 0.0;
-
-  /* Return zero on non-sensical inputs */
-  if ( ! pa || pa->npoints < 2 )
-    return 0.0;
-
-  /* Initialize first point */
-  getPoint4d_p(pa, 0, &p);
-  geographic_point_init(p.x, p.y, &a);
-
-  /* Loop and sum the length for each segment */
-  for ( i = 1; i < pa->npoints; i++ )
-  {
-    getPoint4d_p(pa, i, &p);
-    geographic_point_init(p.x, p.y, &b);
-    /* Add this segment length to the total */
-    length +=  sphere_distance(&a, &b);
-  }
-  return length;
-}
-
-/**
  * @brief Return the part of a line between two fractional locations.
  */
 static POINTARRAY *
-geography_substring(POINTARRAY *ipa, double from, double to,
+geography_substring(POINTARRAY *ipa, const SPHEROID *s, double from, double to,
   double tolerance)
 {
   POINTARRAY *dpa;
@@ -222,7 +192,7 @@ geography_substring(POINTARRAY *ipa, double from, double to,
     (char) FLAGS_GET_M(ipa->flags), ipa->npoints);
 
   /* Compute total line length */
-  length = ptarray_length_sphere(ipa);
+  length = ptarray_length_spheroid(ipa, s);
 
   /* Get 'from' and 'to' lengths */
   from = length * from;
@@ -238,7 +208,12 @@ geography_substring(POINTARRAY *ipa, double from, double to,
     geographic_point_init(p2.x, p2.y, &g2);
 
     /* Find the length of this segment */
-    slength = sphere_distance(&g1, &g2);
+    /* Special sphere case */
+    if ( s->a == s->b )
+      slength = s->radius * sphere_distance(&g1, &g2);
+    /* Spheroid case */
+    else
+      slength = spheroid_distance(&g1, &g2, s);
 
     /*
      * We are before requested start.
@@ -278,7 +253,7 @@ geography_substring(POINTARRAY *ipa, double from, double to,
          * Our start is between first and second point
          */
         dseg = (from - tlength) / slength;
-        interpolate_point4d_sphere(&g1, &g2, &p1, &p2, dseg, &pt);
+        interpolate_point4d_spheroid(&p1, &p2, &pt, s, dseg);
         ptarray_append_point(dpa, &pt, LW_FALSE);
         /*
          * We're inside now, but will check 'to' point as well
@@ -322,7 +297,7 @@ geography_substring(POINTARRAY *ipa, double from, double to,
       else if (to < tlength + slength )
       {
         dseg = (to - tlength) / slength;
-        interpolate_point4d_sphere(&g1, &g2, &p1, &p2, dseg, &pt);
+        interpolate_point4d_spheroid(&p1, &p2, &pt, s, dseg);
         ptarray_append_point(dpa, &pt, LW_FALSE);
         break;
       }
@@ -346,9 +321,14 @@ geography_line_substring(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   double from_fraction = PG_GETARG_FLOAT8(1);
   double to_fraction = PG_GETARG_FLOAT8(2);
+  /* Read calculation type */
+  bool use_spheroid = true;
+  if ( PG_NARGS() > 3 && ! PG_ARGISNULL(3) )
+    use_spheroid = PG_GETARG_BOOL(3);
   LWLINE *lwline;
   LWGEOM *lwresult;
   POINTARRAY* opa;
+  SPHEROID s;
   GSERIALIZED *result;
 
   /* Return NULL on empty argument. */
@@ -382,8 +362,18 @@ geography_line_substring(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
+  /* Initialize spheroid */
+  /* We currently cannot use the following statement since PROJ4 API is not
+   * available directly to MobilityDB. */
+  // spheroid_init_from_srid(fcinfo, srid, &s);
+  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+  /* Set to sphere if requested */
+  if ( ! use_spheroid )
+    s.a = s.b = s.radius;
+
   lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
-  opa = geography_substring(lwline->points, from_fraction, to_fraction,
+  opa = geography_substring(lwline->points, &s, from_fraction, to_fraction,
     FP_TOLERANCE);
 
   lwgeom_free(lwline_as_lwgeom(lwline));
@@ -459,9 +449,16 @@ geography_interpolate_points(const LWLINE *line, double length_fraction,
   geographic_point_init(p1.x, p1.y, &g1);
   for ( i = 0; i < ipa->npoints - 1 && points_found < points_to_interpolate; i++ )
   {
+    double segment_length_frac;
     getPoint4d_p(ipa, i+1, &p2);
     geographic_point_init(p2.x, p2.y, &g2);
-    double segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
+
+    /* Special sphere case */
+    if ( s->a == s->b )
+      segment_length_frac = s->radius * sphere_distance(&g1, &g2) / length;
+    /* Spheroid case */
+    else
+      segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
 
     /* If our target distance is before the total length we've seen
      * so far. create a new point some distance down the current
@@ -470,7 +467,7 @@ geography_interpolate_points(const LWLINE *line, double length_fraction,
     while ( length_fraction < length_fraction_consumed + segment_length_frac && points_found < points_to_interpolate )
     {
       double segment_fraction = (length_fraction - length_fraction_consumed) / segment_length_frac;
-      interpolate_point4d_sphere(&g1, &g2, &p1, &p2, segment_fraction, &pt);
+      interpolate_point4d_spheroid(&p1, &p2, &pt, s, segment_fraction);
       ptarray_set_point4d(opa, points_found++, &pt);
       length_fraction += length_fraction_increment;
     }
@@ -786,11 +783,6 @@ geography_line_locate_point(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  /* Initialize spheroid */
-  /* We currently cannot use the following statement since PROJ4 API is not
-   * available directly to MobilityDB. */
-  // spheroid_init_from_srid(fcinfo, gserialized_get_srid(gs1), &s);
-  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
   if ( gserialized_get_type(gs1) != LINETYPE )
   {
@@ -803,15 +795,15 @@ geography_line_locate_point(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
+  /* Initialize spheroid */
+  /* We currently cannot use the following statement since PROJ4 API is not
+   * available directly to MobilityDB. */
+  // spheroid_init_from_srid(fcinfo, srid, &s);
+  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
   /* Set to sphere if requested */
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
-  else
-    /* Initialize spheroid */
-    /* We cannot use the following statement since PROJ4 API is not
-     * available directly to MobilityDB. */
-    // spheroid_init_from_srid(fcinfo, srid, &s);
-    spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
   ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2));
 
