@@ -1030,34 +1030,54 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
 }
 
 /**
- * @brief Find interpolation point p between geography points g1 and g2
- * so that the len(g1,p) == len(g1,g2) * f
- * and p falls on g1,g2 segment
+ * @brief Find interpolation point p between geography points p1 and p2
+ * so that the len(p1,p) == len(p1,p2) * f
+ * and p falls on p1,p2 segment
  *
- * @param[in] g1,g2 geographic points we are interpolating between
- * @param[in] p1,p2 real values and z/m coordinates
+ * @param[in] p1,p2 geographic points we are interpolating between
+ * @param[in] s Spheroid used for during the intepolation
+ *              Can be NULL when using sphere interpolation
  * @param[in] f Fraction
  * @param[out] p Result
  */
 void
-interpolate_point4d_sphere(const GEOGRAPHIC_POINT *g1, const GEOGRAPHIC_POINT *g2,
-  const POINT4D *p1, const POINT4D *p2, double f, POINT4D *p)
+interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
+  POINT4D *p, const SPHEROID *s, double f)
 {
-  GEOGRAPHIC_POINT g;
+  GEOGRAPHIC_POINT g, g1, g2;
+  geographic_point_init(p1->x, p1->y, &g1);
+  geographic_point_init(p2->x, p2->y, &g2);
+  int success;
+  double dist, dir;
 
-  /* Calculate distance and direction between g1 and g2 */
-  double dist = sphere_distance(g1, g2);
-  double dir = sphere_direction(g1, g2, dist);
+  /* Special sphere case */
+  if ( s == NULL || s->a == s->b )
+  {
+    /* Calculate distance and direction between g1 and g2 */
+    dist = sphere_distance(&g1, &g2);
+    dir = sphere_direction(&g1, &g2, dist);
+    /* Compute interpolation point */
+    success = sphere_project(&g1, dist*f, dir, &g);
+  }
+  /* Spheroid case */
+  else
+  {
+    /* Calculate distance and direction between g1 and g2 */
+    dist = spheroid_distance(&g1, &g2, s);
+    dir = spheroid_direction(&g1, &g2, s);
+    /* Compute interpolation point */
+    success = spheroid_project(&g1, s, dist*f, dir, &g);
+  }
 
   /* Compute Cartesian interpolation and precompute z/m values */
   interpolate_point4d(p1, p2, p, f);
-  /* Calculate interpolated point on sphere */
-  if (sphere_project(g1, dist*f, dir, &g) == LW_SUCCESS)
+
+  /* If success, use newly computed lat and lon,
+   * otherwise return precomputed cartesian result */
+  if (success == LW_SUCCESS)
   {
-    /* If success, use newly computed lat and lon,
-     * otherwise return precomputed cartesian result */
-    p->x = rad2deg(g.lon);
-    p->y = rad2deg(g.lat);
+    p->x = rad2deg(longitude_radians_normalize(g.lon));
+    p->y = rad2deg(latitude_radians_normalize(g.lat));
   }
 }
 
@@ -1100,12 +1120,7 @@ geosegm_interpolate_point(Datum start, Datum end, long double ratio)
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   if (geodetic)
-  {
-    GEOGRAPHIC_POINT g1, g2;
-    geographic_point_init(p1.x, p1.y, &g1);
-    geographic_point_init(p2.x, p2.y, &g2);
-    interpolate_point4d_sphere(&g1, &g2, &p1, &p2, (double) ratio, &p);
-  }
+    interpolate_point4d_spheroid(&p1, &p2, &p, NULL, (double) ratio);
   else
   {
     /* We cannot call the PostGIS function
@@ -1431,12 +1446,7 @@ geopoint_collinear(Datum value1, Datum value2, Datum value3,
   datum_point4d(value2, &p2);
   datum_point4d(value3, &p3);
   if (geodetic)
-  {
-    GEOGRAPHIC_POINT g1, g3;
-    geographic_point_init(p1.x, p1.y, &g1);
-    geographic_point_init(p3.x, p3.y, &g3);
-    interpolate_point4d_sphere(&g1, &g3, &p1, &p3, ratio, &p);
-  }
+    interpolate_point4d_spheroid(&p1, &p3, &p, NULL, ratio);
   else
     interpolate_point4d(&p1, &p3, &p, ratio);
 

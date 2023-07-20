@@ -54,7 +54,8 @@ CREATE FUNCTION ST_LineLocatePoint(geography, geography,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Availability: 3.4.0
-CREATE FUNCTION ST_LineSubstring(geography, float, float)
+CREATE FUNCTION ST_LineSubstring(geography, float, float,
+    use_spheroid boolean DEFAULT true)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'geography_line_substring'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
