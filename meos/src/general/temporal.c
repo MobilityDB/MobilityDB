@@ -3481,8 +3481,8 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
       result = (Temporal *) tdiscseq_minus_timestamp((TSequence *) temp, t);
     else
       result = connect ?
-        (Temporal *) tcontseq_delete_timestamp((TSequence *) temp, t) :
-        (Temporal *) tcontseq_minus_timestamp((TSequence *) temp, t);
+        (Temporal *) tcontseq_minus_timestamp((TSequence *) temp, t) :
+        (Temporal *) tcontseq_delete_timestamp((TSequence *) temp, t);
   }
   else /* temp->subtype == TSEQUENCESET */
   {
