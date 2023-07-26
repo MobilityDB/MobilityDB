@@ -646,7 +646,7 @@ bigintspan_lower(const Span *s)
 double
 floatspan_lower(const Span *s)
 {
-  return Float8GetDatum(s->lower);
+  return DatumGetFloat8(s->lower);
 }
 
 /**
@@ -691,7 +691,7 @@ bigintspan_upper(const Span *s)
 double
 floatspan_upper(const Span *s)
 {
-  return Float8GetDatum(s->upper);
+  return DatumGetFloat8(s->upper);
 }
 
 /**

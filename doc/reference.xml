@@ -1191,7 +1191,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Tranformations</title>
+			<title>Transformations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tpoint_round"><varname>round</varname></link>: Round the coordinate values to a number of decimal places</para>
