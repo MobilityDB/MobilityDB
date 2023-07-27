@@ -129,22 +129,22 @@ pnstrdup(const char *in, Size size)
  * We pass the number of bytes so we can pass varlena and char*
  * to this function.  The result is a palloc'd, null-terminated string.
  */
-char *
-asc_tolower(const char *buff, size_t nbytes)
-{
-  char *result;
-  char *p;
+// char *
+// asc_tolower(const char *buff, size_t nbytes)
+// {
+//   char *result;
+//   char *p;
 
-  if (!buff)
-    return NULL;
+//   if (!buff)
+//     return NULL;
 
-  result = pnstrdup(buff, nbytes);
+//   result = pnstrdup(buff, nbytes);
 
-  for (p = result; *p; p++)
-    *p = pg_ascii_tolower((unsigned char) *p);
+//   for (p = result; *p; p++)
+//     *p = pg_ascii_tolower((unsigned char) *p);
 
-  return result;
-}
+//   return result;
+// }
 
 /*
  * ASCII-only upper function
@@ -152,22 +152,22 @@ asc_tolower(const char *buff, size_t nbytes)
  * We pass the number of bytes so we can pass varlena and char*
  * to this function.  The result is a palloc'd, null-terminated string.
  */
-char *
-asc_toupper(const char *buff, size_t nbytes)
-{
-  char *result;
-  char *p;
+// char *
+// asc_toupper(const char *buff, size_t nbytes)
+// {
+//   char *result;
+//   char *p;
 
-  if (!buff)
-    return NULL;
+//   if (!buff)
+//     return NULL;
 
-  result = pnstrdup(buff, nbytes);
+//   result = pnstrdup(buff, nbytes);
 
-  for (p = result; *p; p++)
-    *p = pg_ascii_toupper((unsigned char) *p);
+//   for (p = result; *p; p++)
+//     *p = pg_ascii_toupper((unsigned char) *p);
 
-  return result;
-}
+//   return result;
+// }
 
 #endif /* MEOS */
 
