@@ -62,7 +62,8 @@
  * @brief Closest point function for PostGIS geography.
  */
 static LWGEOM *
-geography_tree_closestpoint(const GSERIALIZED* g1, const GSERIALIZED* g2, double threshold)
+geography_tree_closestpoint(const GSERIALIZED* g1, const GSERIALIZED* g2,
+  double threshold, const SPHEROID *spheroid)
 {
   CIRC_NODE* circ_tree1 = NULL;
   CIRC_NODE* circ_tree2 = NULL;
@@ -83,7 +84,7 @@ geography_tree_closestpoint(const GSERIALIZED* g1, const GSERIALIZED* g2, double
   /* the actual spheroid distance is larger than the sphere distance */
   /* causing the return value to be larger than the threshold value */
   // double threshold_radians = 0.95 * threshold / spheroid->radius;
-  double threshold_radians = threshold / WGS84_RADIUS;
+  double threshold_radians = threshold / spheroid->radius;
 
   circ_tree_distance_tree_internal(circ_tree1, circ_tree2, threshold_radians,
     &min_dist, &max_dist, &closest1, &closest2);
@@ -112,10 +113,17 @@ geography_closestpoint(PG_FUNCTION_ARGS)
   GSERIALIZED* g2 = NULL;
   LWGEOM *point;
   GSERIALIZED* result;
+  SPHEROID s;
+  bool use_spheroid;
 
   /* Get our geography objects loaded into memory. */
   g1 = PG_GETARG_GSERIALIZED_P(0);
   g2 = PG_GETARG_GSERIALIZED_P(1);
+
+  /* Read calculation type */
+  use_spheroid = true;
+  if ( PG_NARGS() > 2 && ! PG_ARGISNULL(2) )
+    use_spheroid = PG_GETARG_BOOL(2);
 
   /* Return NULL on empty arguments. */
   if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
@@ -127,7 +135,18 @@ geography_closestpoint(PG_FUNCTION_ARGS)
 
   ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
 
-  point = geography_tree_closestpoint(g1, g2, FP_TOLERANCE);
+  /* Initialize spheroid */
+  /* We currently cannot use the following statement since PROJ4 API is not
+   * available directly to MobilityDB. */
+  // spheroid_init_from_srid(fcinfo, srid, &s);
+  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+  /* Set to sphere if requested */
+  if ( ! use_spheroid )
+    s.a = s.b = s.radius;
+
+
+  point = geography_tree_closestpoint(g1, g2, FP_TOLERANCE, &s);
   result = geography_serialize(point);
   lwgeom_free(point);
 
