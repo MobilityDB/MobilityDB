@@ -1,17 +1,9 @@
-if(${POSTGIS_VERSION_NUMBER} LESS 30400)
-  set(055_geography_functions 055_geography_functions)
-else()
-  message(STATUS "Disabling file 055_geography_functions.sql")
-endif()
-
-
 SET(LOCAL_FILES
   050_geoset
   051_stbox
   052_tpoint
   053_tpoint_inout
   054_tpoint_compops
-  ${055_geography_functions}
   056_tpoint_spatialfuncs
   058_tpoint_tile
   060_tpoint_boxops
