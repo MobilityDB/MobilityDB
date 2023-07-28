@@ -92,6 +92,34 @@ datum_radians(Datum value)
   return Float8GetDatum(float8_mul(DatumGetFloat8(value), RADIANS_PER_DEGREE));
 }
 
+#if MEOS
+/**
+ * @brief Round a float number to a given number of decimal places
+ */
+Datum
+datum_round_float(Datum value, Datum size)
+{
+  Datum result = value;
+  double d = DatumGetFloat8(value);
+  int s = DatumGetInt32(size);
+  double inf = get_float8_infinity();
+  if (d != -1 * inf && d != inf)
+  {
+    if (s == 0)
+      result = Float8GetDatum(rint(d));
+    else
+    {
+      double power10 = pow(10.0, s);
+      double res = round(d * power10) / power10;
+      result = Float8GetDatum(res);
+    }
+  }
+  return result;
+}
+#else /* ! MEOS */
+extern Datum datum_round_float(Datum value, Datum size);
+#endif /* MEOS */
+
 /**
  * @brief Find the single timestamptz at which the operation of two temporal
  * number segments is at a local minimum/maximum. The function supposes that
@@ -611,6 +639,28 @@ tnumber_angular_difference(const Temporal *temp)
 /*****************************************************************************
  * Miscellaneous temporal functions
  *****************************************************************************/
+
+/**
+ * @brief Round a temporal number to a given number of decimal places
+ */
+Temporal *
+tfloat_round(const Temporal *temp, int maxdd)
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_round_float;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(maxdd);
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.argtype[1] = T_INT4;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
 
 /**
  * @ingroup libmeos_temporal_math
