@@ -1,8 +1,7 @@
 name: Main Build
 
-# 4 * 1 * 2 + 1 (coverage) = 9 jobs are triggered
-# Test for supported postgres version
-# - except: MobilityDB does not support 9.6
+# Test for supported PosgreSQL/PostGIS versions
+# 3 (PosgreSQL) * 1 (PostGIS) * 2 (Linux) + 1 (coverage) = 7 jobs are triggered
 # Allow manual trigger
 
 on:
@@ -20,26 +19,18 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          psql: [11,12,13]
-          postgis: [2.5]
-          os: [ubuntu-latest, ubuntu-18.04]
+          psql: [12,13,14,15]
+          postgis: [3]
+          os: [ubuntu-latest]
           coverage: [0]
           include:
-            - psql: 12
-              postgis: 3
-              os: ubuntu-latest
-              coverage: 0
-            - psql: 13
-              postgis: 3
-              os: ubuntu-latest
-              coverage: 0
-            - psql: 14
+            - psql: 15
               postgis: 3
               os: ubuntu-latest
               coverage: 1
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: get postgres version
         run: |
@@ -71,11 +62,6 @@ jobs:
           ls /usr/lib/postgresql/${{ matrix.psql }}/lib/
           xzcat --version
 
-      - name: Install liblwgeom for PostGIS 2.5
-        if: matrix.postgis == '2.5'
-        run: |
-          sudo apt-get -y install liblwgeom-dev
-
       - name: Install coverall dependencies
         if: matrix.coverage == '1'
         run: |
@@ -86,7 +72,7 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          cmake -DWITH_COVERAGE=${{ matrix.coverage }} ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} ..
 
       - name: Build
         run: |
@@ -109,11 +95,8 @@ jobs:
         if: matrix.coverage == '1'
         run: |
           cd build
-          # Previous coverage before embeding liblwgeom
-          # lcov --capture --directory . --output-file=lcov.info
-          # Selecting the coverage information from only the /src directory
-          lcov --capture --directory . --output-file=lcov_temp.info
-          lcov --extract lcov_temp.info */MobilityDB/src/* --output-file=lcov.info
+          # Excluding MEOS-specific and other miscellaneous files
+          lcov --capture --directory . --exclude *_meos.c --exclude */geo_constructors.c --exclude */tpoint_datagen.c --include */MobilityDB/meos/src/* --include */MobilityDB/mobilitydb/src/* --output-file=lcov.info
 
       - name: Coveralls
         if: matrix.coverage == '1'

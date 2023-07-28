@@ -1,0 +1,422 @@
+SELECT extent(temp) FROM (VALUES
+(NULL::tstzset),(NULL::tstzset)) t(temp);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
+                            extent                            
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
+                            extent                            
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+(NULL::tstzspan),(NULL::tstzspan)) t(temp);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
+                            extent                            
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
+                            extent                            
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+(NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
+                            extent                            
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
+                            extent                            
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT extent(t) FROM tbl_timestamptz;
+                            extent                            
+--------------------------------------------------------------
+ [Sun Dec 31 18:36:00 2000 PST, Tue Dec 25 23:12:00 2001 PST]
+(1 row)
+
+SELECT extent(t) FROM tbl_tstzset;
+                            extent                            
+--------------------------------------------------------------
+ [Mon Jan 01 17:48:00 2001 PST, Wed Dec 26 10:47:00 2001 PST]
+(1 row)
+
+SELECT extent(p) FROM tbl_tstzspan;
+                            extent                            
+--------------------------------------------------------------
+ (Wed Jan 10 05:55:00 2001 PST, Sat Dec 29 13:00:00 2001 PST]
+(1 row)
+
+SELECT extent(ps) FROM tbl_tstzspanset;
+                            extent                            
+--------------------------------------------------------------
+ [Tue Jan 09 15:14:00 2001 PST, Sun Dec 30 04:25:00 2001 PST]
+(1 row)
+
+SELECT numValues(set_union(t)) from tbl_tstzset_big;
+ numvalues 
+-----------
+     55883
+(1 row)
+
+SELECT extent(temp::tstzspan) FROM tbl_tfloat_big;
+                            extent                            
+--------------------------------------------------------------
+ [Sun Dec 31 15:36:00 2000 PST, Sun Dec 30 18:50:00 2001 PST)
+(1 row)
+
+SELECT numSpans(span_union(temp::tstzspan)) from tbl_tfloat_big;
+ numspans 
+----------
+     3995
+(1 row)
+
+SELECT extent(NULL::int) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::bigint) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::float) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::timestamptz) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::intset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::bigintset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::floatset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::tstzset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::intspan) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::bigintspan) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::floatspan) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::tstzspan) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::intspanset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::bigintspanset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::floatspanset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::tstzspanset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tstzset),(NULL::tstzset)) t(temp);
+ tcount 
+--------
+ 
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
+              tcount              
+----------------------------------
+ {1@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
+              tcount              
+----------------------------------
+ {1@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tstzspan),(NULL::tstzspan)) t(temp);
+ tcount 
+--------
+ 
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
+                               tcount                               
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
+                               tcount                               
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
+ tcount 
+--------
+ 
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
+                               tcount                               
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
+                               tcount                               
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT numInstants(tcount(t)) FROM tbl_timestamptz;
+ numinstants 
+-------------
+          99
+(1 row)
+
+SELECT numInstants(tcount(t)) FROM tbl_tstzset;
+ numinstants 
+-------------
+         497
+(1 row)
+
+SELECT numInstants(tcount(p)) FROM tbl_tstzspan;
+ numinstants 
+-------------
+         189
+(1 row)
+
+SELECT numInstants(tcount(ps)) FROM tbl_tstzspanset;
+ numinstants 
+-------------
+         906
+(1 row)
+
+SELECT set_union(temp) FROM (VALUES
+(NULL::tstzset),(NULL::tstzset)) t(temp);
+ set_union 
+-----------
+ 
+(1 row)
+
+SELECT set_union(temp) FROM (VALUES
+(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
+            set_union             
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT set_union(temp) FROM (VALUES
+('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
+            set_union             
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT span_union(temp) FROM (VALUES
+(NULL::tstzspan),(NULL::tstzspan)) t(temp);
+ span_union 
+------------
+ 
+(1 row)
+
+SELECT span_union(temp) FROM (VALUES
+(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
+                           span_union                           
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT span_union(temp) FROM (VALUES
+('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
+                           span_union                           
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT span_union(temp) FROM (VALUES
+(NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
+ span_union 
+------------
+ 
+(1 row)
+
+SELECT span_union(temp) FROM (VALUES
+(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
+                           span_union                           
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT span_union(temp) FROM (VALUES
+('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
+                           span_union                           
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT set_union(temp) FROM (VALUES
+('{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}'::tstzset),
+('{2000-01-02, 2000-01-06}'::tstzset)) t(temp);
+                                                                                            set_union                                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST", "Sun Jan 02 00:00:00 2000 PST", "Mon Jan 03 00:00:00 2000 PST", "Wed Jan 05 00:00:00 2000 PST", "Thu Jan 06 00:00:00 2000 PST", "Fri Jan 07 00:00:00 2000 PST"}
+(1 row)
+
+SELECT span_union(temp) FROM (VALUES
+('[2000-01-01, 2000-01-03]'::tstzspan),
+('[2000-01-02, 2000-01-06]'::tstzspan)) t(temp);
+                           span_union                           
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Thu Jan 06 00:00:00 2000 PST]}
+(1 row)
+
+SELECT span_union(temp) FROM (VALUES
+('{[2000-01-01, 2000-01-03]}'::tstzspanset),
+('{[2000-01-02, 2000-01-06]}'::tstzspanset)) t(temp);
+                           span_union                           
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Thu Jan 06 00:00:00 2000 PST]}
+(1 row)
+
+WITH Temp(t) AS (
+  SELECT tstzset '{2000-01-01}' UNION
+  SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-04}'
+)
+SELECT set_union(t) FROM Temp;
+                                            set_union                                             
+--------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST", "Sun Jan 02 00:00:00 2000 PST", "Tue Jan 04 00:00:00 2000 PST"}
+(1 row)
+
+WITH Temp(t) AS (
+  SELECT set(array_agg(t))
+  FROM generate_series(timestamp '2000-01-01 00:00', timestamp '2000-01-01 00:30', interval '1 sec') t
+  UNION
+  SELECT set(array_agg(t))
+  FROM generate_series(timestamp '2000-01-01 00:15', timestamp '2000-01-01 00:45', interval '1 sec') t
+)
+SELECT startValue(set_union(t)) FROM Temp;
+          startvalue          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT numValues(set_union(t)) FROM tbl_timestamptz;
+ numvalues 
+-----------
+        99
+(1 row)
+
+SELECT numValues(set_union(t)) FROM tbl_tstzset;
+ numvalues 
+-----------
+       497
+(1 row)
+
+SELECT numSpans(span_union(p)) FROM tbl_tstzspan;
+ numspans 
+----------
+       99
+(1 row)
+
+SELECT numSpans(span_union(ps)) FROM tbl_tstzspanset;
+ numspans 
+----------
+      479
+(1 row)
+

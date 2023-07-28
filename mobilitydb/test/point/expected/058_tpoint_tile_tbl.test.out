@@ -1,0 +1,84 @@
+SELECT tileList(b, 2.5, geometry 'Point(10 10)'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+              tilelist              | count 
+------------------------------------+-------
+ (1,"STBOX X((2.5,15),(5,17.5))")   |     2
+ (1,"STBOX X((30,72.5),(32.5,75))") |     2
+ (1,"STBOX X((40,95),(42.5,97.5))") |     2
+(3 rows)
+
+SELECT tileList(b, 2.5, interval '1 week'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                                              tilelist                                              | count 
+----------------------------------------------------------------------------------------------------+-------
+ (1,"STBOX XT(((10,37.5),(12.5,40)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST))") |     1
+ (1,"STBOX XT(((40,95),(42.5,97.5)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST))") |     1
+ (1,"STBOX XT(((52.5,60),(55,62.5)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST))") |     1
+(3 rows)
+
+SELECT tileList(b, 2.5, interval '1 week', 'Point(10 10)', '2001-06-01'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                                              tilelist                                              | count 
+----------------------------------------------------------------------------------------------------+-------
+ (1,"STBOX XT(((10,37.5),(12.5,40)),[Thu Dec 28 23:00:00 2000 PST, Thu Jan 04 23:00:00 2001 PST))") |     1
+ (1,"STBOX XT(((40,95),(42.5,97.5)),[Thu Dec 28 23:00:00 2000 PST, Thu Jan 04 23:00:00 2001 PST))") |     1
+ (1,"STBOX XT(((52.5,60),(55,62.5)),[Thu Jan 04 23:00:00 2001 PST, Thu Jan 11 23:00:00 2001 PST))") |     1
+(3 rows)
+
+SELECT extent(tile(g, 2.5)) FROM
+(SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10) t1;
+             extent             
+--------------------------------
+ STBOX X((2.5,2.5),(92.5,92.5))
+(1 row)
+
+SELECT extent(tile(g, 2.5, geometry 'Point(10 10)')) FROM
+(SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10) t1;
+             extent             
+--------------------------------
+ STBOX X((2.5,2.5),(92.5,92.5))
+(1 row)
+
+SELECT extent(tile(g, 2.5)) FROM
+(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL LIMIT 10) t1;
+                extent                
+--------------------------------------
+ STBOX Z((2.5,10,0),(72.5,92.5,97.5))
+(1 row)
+
+SELECT extent(tile(g, 2.5, geometry 'Point(10 10 10)')) FROM
+(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL LIMIT 10) t1;
+                extent                
+--------------------------------------
+ STBOX Z((2.5,10,0),(72.5,92.5,97.5))
+(1 row)
+
+SELECT extent(tile(g, t, 2.5, interval '2 days')) FROM
+(SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+                                            extent                                            
+----------------------------------------------------------------------------------------------
+ STBOX XT(((17.5,5),(100,97.5)),[Sat Jan 27 00:00:00 2001 PST, Tue Dec 11 00:00:00 2001 PST))
+(1 row)
+
+SELECT extent(tile(g, t, 2.5, interval '2 days', geometry 'Point(10 10)', '2001-06-01')) FROM
+(SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+                                            extent                                            
+----------------------------------------------------------------------------------------------
+ STBOX XT(((17.5,5),(100,97.5)),[Sat Jan 27 23:00:00 2001 PST, Sun Dec 09 23:00:00 2001 PST))
+(1 row)
+
+SELECT extent(tile(g, t, 2.5, interval '2 days')) FROM
+(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+                                                extent                                                
+------------------------------------------------------------------------------------------------------
+ STBOX ZT(((10,2.5,2.5),(80,97.5,67.5)),[Sat Jan 27 00:00:00 2001 PST, Tue Dec 11 00:00:00 2001 PST))
+(1 row)
+
+SELECT extent(tile(g, t, 2.5, interval '2 days', geometry 'Point(10 10 10)', '2001-06-01')) FROM
+(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+                                                extent                                                
+------------------------------------------------------------------------------------------------------
+ STBOX ZT(((10,2.5,2.5),(80,97.5,67.5)),[Sat Jan 27 23:00:00 2001 PST, Sun Dec 09 23:00:00 2001 PST))
+(1 row)
+

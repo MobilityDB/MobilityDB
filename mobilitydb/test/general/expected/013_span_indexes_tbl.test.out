@@ -1,0 +1,209 @@
+ANALYZE tbl_tstzspan_big;
+ANALYZE
+ANALYZE tbl_tstzspanset_big;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tstzspan_big_rtree_idx;
+NOTICE:  index "tbl_tstzspan_big_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tstzspanset_big_rtree_idx;
+NOTICE:  index "tbl_tstzspanset_big_rtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tstzspan_big_rtree_idx ON tbl_tstzspan_big USING GIST(p);
+CREATE INDEX
+CREATE INDEX tbl_tstzspanset_big_rtree_idx ON tbl_tstzspanset_big USING GIST(ps);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> timestamptz '2001-01-01';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- timestamptz '2001-01-01';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# timestamptz '2001-01-01';
+ count 
+-------
+   515
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# timestamptz '2001-01-01';
+ count 
+-------
+   515
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> timestamptz '2001-01-01';
+ count 
+-------
+ 11865
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> timestamptz '2001-01-01';
+ count 
+-------
+ 11865
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspan '[2001-06-01, 2001-07-01]';
+ count 
+-------
+   998
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspan '[2001-06-01, 2001-07-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <@ tstzspan '[2001-06-01, 2001-07-01]';
+ count 
+-------
+   997
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- tstzspan '[2001-06-01, 2001-07-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   515
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  1553
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> tstzspan '[2001-11-01, 2001-12-01]';
+ count 
+-------
+   936
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> tstzspan '[2001-11-01, 2001-12-01]';
+ count 
+-------
+  1954
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspanset '{[2001-01-01, 2001-02-01]}';
+ count 
+-------
+  1038
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspanset '{[2001-01-01, 2001-02-01]}';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <@ tstzspanset '{[2001-01-01, 2001-02-01]}';
+ count 
+-------
+  1038
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- tstzspanset '{[2001-01-01, 2001-02-01]}';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# tstzspanset '{[2001-01-01, 2001-02-01]}';
+ count 
+-------
+   515
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# tstzspanset '{[2001-01-01, 2001-02-01]}';
+ count 
+-------
+  1553
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> tstzspanset '{[2001-01-01, 2001-02-01]}';
+ count 
+-------
+ 10827
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> tstzspanset '{[2001-01-01, 2001-02-01]}';
+ count 
+-------
+ 11865
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  1026
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps <@ tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  1026
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+    12
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  1038
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+ 10842
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+ 11868
+(1 row)
+
+DROP INDEX IF EXISTS tbl_tstzspan_big_rtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tstzspanset_big_rtree_idx;
+DROP INDEX
+DROP TABLE IF EXISTS tbl_tstzspan_test;
+NOTICE:  table "tbl_tstzspan_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tstzspan_test AS
+SELECT tstzspan '[2000-01-01,2000-01-02]';
+SELECT 1
+ANALYZE tbl_tstzspan_test;
+ANALYZE
+DELETE FROM tbl_tstzspan_test;
+DELETE 1
+INSERT INTO tbl_tstzspan_test
+SELECT NULL::tstzspan UNION SELECT NULL::tstzspan;
+INSERT 0 1
+ANALYZE tbl_tstzspan_test;
+ANALYZE
+DROP TABLE tbl_tstzspan_test;
+DROP TABLE

@@ -4,11 +4,14 @@ engines:
     language: c
     exclude_paths:
       - "postgis/**"
+      - "postgres/**"
   duplication:
     exclude_paths:
       - "postgis/**"
+      - "postgres/**"
     config:
       languages:
         - "c"
 exclude_paths:
   - "postgis/**"
+  - "postgres/**"

@@ -1,0 +1,4 @@
+comment = 'MobilityDB geospatial trajectory data management & analysis platform'
+default_version = '${MOBILITYDB_VERSION}'
+module_pathname = '${MOBILITYDB_MODULE_PATHNAME}'
+requires = 'postgis'

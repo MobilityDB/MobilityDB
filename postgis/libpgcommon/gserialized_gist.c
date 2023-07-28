@@ -13,6 +13,9 @@
 #include "access/gist.h"    /* For GiST */
 #include "access/itup.h"
 #include "access/skey.h"
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 
 #include "../postgis_config.h"
 

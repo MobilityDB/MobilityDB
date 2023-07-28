@@ -11,7 +11,7 @@ if(DOC_DEV)
   find_package(Doxygen ${DOXYGEN_MINIMUM_VERSION})
 
   if(DOXYGEN_FOUND)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
+    configure_file(${CMAKE_SOURCE_DIR}/doxygen/Doxyfile
       ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
     add_custom_target(doc_dev
       ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile

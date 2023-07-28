@@ -939,14 +939,19 @@ lwgeom_centroid(const LWGEOM* geom)
 	return result;
 }
 
+// MobilityDB: Avoid unused parameter warning
+#if POSTGIS_GEOS_VERSION < 39
+LWGEOM*
+lwgeom_reduceprecision(const LWGEOM* geom __attribute__((unused)),
+	double gridSize __attribute__((unused)))
+{
+	lwerror("Precision reduction requires GEOS-3.9 or higher");
+	return NULL;
+}
+#else
 LWGEOM*
 lwgeom_reduceprecision(const LWGEOM* geom, double gridSize)
 {
-#if POSTGIS_GEOS_VERSION < 39
-	lwerror("Precision reduction requires GEOS-3.9 or higher");
-	return NULL;
-#else
-
 	LWGEOM* result;
 	int32_t srid = RESULT_SRID(geom);
 	uint8_t is3d = FLAGS_GET_Z(geom->flags);
@@ -972,8 +977,8 @@ lwgeom_reduceprecision(const LWGEOM* geom, double gridSize)
 	GEOS_FREE(g1, g3);
 
 	return result;
-#endif
 }
+#endif
 
 LWGEOM *
 lwgeom_pointonsurface(const LWGEOM *geom)

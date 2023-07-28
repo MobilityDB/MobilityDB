@@ -1,0 +1,186 @@
+SELECT asText(tfloat '0.123456789@2000-01-01', 6);
+                astext                 
+---------------------------------------
+ 0.123457@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tfloat '{0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03}', 6);
+                                                        astext                                                         
+-----------------------------------------------------------------------------------------------------------------------
+ {0.123457@Sat Jan 01 00:00:00 2000 PST, 1.523457@Sun Jan 02 00:00:00 2000 PST, 0.123457@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tfloat '[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03]', 6);
+                                                        astext                                                         
+-----------------------------------------------------------------------------------------------------------------------
+ [0.123457@Sat Jan 01 00:00:00 2000 PST, 1.523457@Sun Jan 02 00:00:00 2000 PST, 0.123457@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tfloat '{[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03],[3.723456789@2000-01-04, 3.723456789@2000-01-05]}', 6);
+                                                                                                 astext                                                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[0.123457@Sat Jan 01 00:00:00 2000 PST, 1.523457@Sun Jan 02 00:00:00 2000 PST, 0.123457@Mon Jan 03 00:00:00 2000 PST], [3.723457@Tue Jan 04 00:00:00 2000 PST, 3.723457@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tfloat 'Interp=Step;[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03]', 6);
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[0.123457@Sat Jan 01 00:00:00 2000 PST, 1.523457@Sun Jan 02 00:00:00 2000 PST, 0.123457@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tfloat 'Interp=Step;{[0.123456789@2000-01-01, 1.523456789@2000-01-02, 0.123456789@2000-01-03],[3.723456789@2000-01-04, 3.723456789@2000-01-05]}', 6);
+                                                                                                       astext                                                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[0.123457@Sat Jan 01 00:00:00 2000 PST, 1.523457@Sun Jan 02 00:00:00 2000 PST, 0.123457@Mon Jan 03 00:00:00 2000 PST], [3.723457@Tue Jan 04 00:00:00 2000 PST, 3.723457@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText('{}'::tfloat[]);
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(ARRAY[tbool 'true@2000-01-01']);
+               astext               
+------------------------------------
+ {"t@Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asText(ARRAY[tint '1@2000-01-01']);
+               astext               
+------------------------------------
+ {"1@Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asText(ARRAY[tfloat '1@2000-01-01']);
+               astext               
+------------------------------------
+ {"1@Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asText(ARRAY[ttext 'ABC@2000-01-01']);
+                  astext                  
+------------------------------------------
+ {"\"ABC\"@Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '1@2000-01-01', 1, 3, 15));
+        tfloatfrommfjson        
+--------------------------------
+ 1@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '{1@2000-01-01, 2@2000-01-02}', 1, 3, 15));
+                         tfloatfrommfjson                         
+------------------------------------------------------------------
+ {1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '[1@2000-01-01, 2@2000-01-02]', 1, 3, 15));
+                         tfloatfrommfjson                         
+------------------------------------------------------------------
+ [1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT tfloatFromMFJSON(asMFJSON(tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 3@2000-01-04]}', 1, 3, 15));
+                                                           tfloatfrommfjson                                                           
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST], [3@Mon Jan 03 00:00:00 2000 PST, 3@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT ttextFromMFJSON(asMFJSON(ttext 'AAA@2000-01-01', 1, 5));
+          ttextfrommfjson           
+------------------------------------
+ "AAA"@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT ttextFromMFJSON(asMFJSON(ttext '{AAA@2000-01-01, BBB@2000-01-02}', 1, 5));
+                             ttextfrommfjson                              
+--------------------------------------------------------------------------
+ {"AAA"@Sat Jan 01 00:00:00 2000 PST, "BBB"@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT ttextFromMFJSON(asMFJSON(ttext '[AAA@2000-01-01, BBB@2000-01-02]', 1, 5));
+                             ttextfrommfjson                              
+--------------------------------------------------------------------------
+ ["AAA"@Sat Jan 01 00:00:00 2000 PST, "BBB"@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT ttextFromMFJSON(asMFJSON(ttext '{[AAA@2000-01-01, BBB@2000-01-02], [CCC@2000-01-03, CCC@2000-01-04]}', 1, 5));
+                                                                   ttextfrommfjson                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------------
+ {["AAA"@Sat Jan 01 00:00:00 2000 PST, "BBB"@Sun Jan 02 00:00:00 2000 PST], ["CCC"@Mon Jan 03 00:00:00 2000 PST, "CCC"@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromMFJSON(asMFJSON(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromMFJSON(asMFJSON(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND asText(tfloatFromMFJSON(asMFJSON(temp))) <> asText(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromMFJSON(asMFJSON(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromBinary(asBinary(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromBinary(asBinary(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromBinary(asBinary(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromBinary(asBinary(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromHexWKB(asHexWKB(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromHexWKB(asHexWKB(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromHexWKB(asHexWKB(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexWKB(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+

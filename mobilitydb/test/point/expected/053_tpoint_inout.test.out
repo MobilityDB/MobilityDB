@@ -1,0 +1,767 @@
+SELECT asText(tgeompoint 'Point(1.123456789 1.123456789 1.123456789)@2000-01-01', 6);
+                              astext                               
+-------------------------------------------------------------------
+ POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tgeompoint '{Point(1.123456789 1.123456789 1.123456789)@2000-01-01, Point(2.123456789 2.123456789 2.123456789)@2000-01-02, Point(1.123456789 1.123456789 1.123456789)@2000-01-03}', 6);
+                                                                                                  astext                                                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.123457 2.123457 2.123457)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.123457 1.123457 1.123457)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tgeompoint '[Point(1.123456789 1.123456789 1.123456789)@2000-01-01, Point(2.123456789 2.123456789 2.123456789)@2000-01-02, Point(1.123456789 1.123456789 1.123456789)@2000-01-03]', 6);
+                                                                                                  astext                                                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.123457 2.123457 2.123457)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.123457 1.123457 1.123457)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tgeompoint '{[Point(1.123456789 1.123456789 1.123456789)@2000-01-01, Point(2.123456789 2.123456789 2.123456789)@2000-01-02, Point(1.123456789 1.123456789 1.123456789)@2000-01-03],[Point(3.123456789 3.123456789 3.123456789)@2000-01-04, Point(3.123456789 3.123456789 3.123456789)@2000-01-05]}', 6);
+                                                                                                                                                                       astext                                                                                                                                                                        
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.123457 2.123457 2.123457)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.123457 1.123457 1.123457)@Mon Jan 03 00:00:00 2000 PST], [POINT Z (3.123457 3.123457 3.123457)@Tue Jan 04 00:00:00 2000 PST, POINT Z (3.123457 3.123457 3.123457)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tgeompoint 'Interp=Step;[Point(1.123456789 1.123456789 1.123456789)@2000-01-01, Point(2.123456789 2.123456789 2.123456789)@2000-01-02, Point(1.123456789 1.123456789 1.123456789)@2000-01-03]', 6);
+                                                                                                        astext                                                                                                         
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.123457 2.123457 2.123457)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.123457 1.123457 1.123457)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tgeompoint 'Interp=Step;{[Point(1.123456789 1.123456789 1.123456789)@2000-01-01, Point(2.123456789 2.123456789 2.123456789)@2000-01-02, Point(1.123456789 1.123456789 1.123456789)@2000-01-03],[Point(3.123456789 3.123456789 3.123456789)@2000-01-04, Point(3.123456789 3.123456789 3.123456789)@2000-01-05]}', 6);
+                                                                                                                                                                             astext                                                                                                                                                                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.123457 2.123457 2.123457)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.123457 1.123457 1.123457)@Mon Jan 03 00:00:00 2000 PST], [POINT Z (3.123457 3.123457 3.123457)@Tue Jan 04 00:00:00 2000 PST, POINT Z (3.123457 3.123457 3.123457)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeogpoint 'Point(1.123456789 1.123456789 1.123456789)@2000-01-01', 6);
+                                   asewkt                                    
+-----------------------------------------------------------------------------
+ SRID=4326;POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeogpoint '{Point(1.123456789 1.123456789 1.123456789)@2000-01-01, Point(2.123456789 2.123456789 2.123456789)@2000-01-02, Point(1.123456789 1.123456789 1.123456789)@2000-01-03}', 6);
+                                                                                                       asewkt                                                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.123457 2.123457 2.123457)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.123457 1.123457 1.123457)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeogpoint '[Point(1.123456789 1.123456789 1.123456789)@2000-01-01, Point(2.123456789 2.123456789 2.123456789)@2000-01-02, Point(1.123456789 1.123456789 1.123456789)@2000-01-03]', 6);
+                                                                                                       asewkt                                                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;[POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.123457 2.123457 2.123457)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.123457 1.123457 1.123457)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeogpoint '{[Point(1.123456789 1.123456789 1.123456789)@2000-01-01, Point(2.123456789 2.123456789 2.123456789)@2000-01-02, Point(1.123456789 1.123456789 1.123456789)@2000-01-03],[Point(3.123456789 3.123456789 3.123456789)@2000-01-04, Point(3.123456789 3.123456789 3.123456789)@2000-01-05]}', 6);
+                                                                                                                                                                            asewkt                                                                                                                                                                             
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.123457 2.123457 2.123457)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.123457 1.123457 1.123457)@Mon Jan 03 00:00:00 2000 PST], [POINT Z (3.123457 3.123457 3.123457)@Tue Jan 04 00:00:00 2000 PST, POINT Z (3.123457 3.123457 3.123457)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeogpoint 'Interp=Step;[Point(1.123456789 1.123456789 1.123456789)@2000-01-01, Point(2.123456789 2.123456789 2.123456789)@2000-01-02, Point(1.123456789 1.123456789 1.123456789)@2000-01-03]', 6);
+                                                                                                             asewkt                                                                                                              
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326,Interp=Step;[POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.123457 2.123457 2.123457)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.123457 1.123457 1.123457)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeogpoint 'Interp=Step;{[Point(1.123456789 1.123456789 1.123456789)@2000-01-01, Point(2.123456789 2.123456789 2.123456789)@2000-01-02, Point(1.123456789 1.123456789 1.123456789)@2000-01-03],[Point(3.123456789 3.123456789 3.123456789)@2000-01-04, Point(3.123456789 3.123456789 3.123456789)@2000-01-05]}', 6);
+                                                                                                                                                                                  asewkt                                                                                                                                                                                   
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326,Interp=Step;{[POINT Z (1.123457 1.123457 1.123457)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.123457 2.123457 2.123457)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.123457 1.123457 1.123457)@Mon Jan 03 00:00:00 2000 PST], [POINT Z (3.123457 3.123457 3.123457)@Tue Jan 04 00:00:00 2000 PST, POINT Z (3.123457 3.123457 3.123457)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Point(1 2)@2000-01-01')));
+                 asewkt                  
+-----------------------------------------
+ POINT(1 2)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02}')));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ {POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02)')));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST)
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint '(Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ (POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint '(Point(1 2)@2000-01-01, Point(3 4)@2000-01-02)')));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ (POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST)
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint '{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
+                                                                                  asewkt                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST], [POINT(1 2)@Mon Jan 03 00:00:00 2000 PST, POINT(3 4)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Interp=Step;[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+                                             asewkt                                             
+------------------------------------------------------------------------------------------------
+ Interp=Step;[POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Interp=Step;{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
+                                                                                        asewkt                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST], [POINT(1 2)@Mon Jan 03 00:00:00 2000 PST, POINT(3 4)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;Point(1 2 3)@2000-01-01',1,0,2)));
+                         asewkt                         
+--------------------------------------------------------
+ SRID=4326;POINT Z (1 2 3)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;{Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02}',1,0,2)));
+                                                 asewkt                                                 
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;{POINT Z (1 2 3)@Sat Jan 01 00:00:00 2000 PST, POINT Z (4 5 6)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02]',1,0,2)));
+                                                 asewkt                                                 
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;[POINT Z (1 2 3)@Sat Jan 01 00:00:00 2000 PST, POINT Z (4 5 6)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'SRID=4326;{[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02],[Point(1 2 3)@2000-01-03, Point(4 5 6)@2000-01-04]}',1,0,2)));
+                                                                                                 asewkt                                                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT Z (1 2 3)@Sat Jan 01 00:00:00 2000 PST, POINT Z (4 5 6)@Sun Jan 02 00:00:00 2000 PST], [POINT Z (1 2 3)@Mon Jan 03 00:00:00 2000 PST, POINT Z (4 5 6)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+/* Errors */
+SELECT tgeompointFromMFJSON('ABC');
+ERROR:  Error while processing MFJSON string
+SELECT tgeompointFromMFJSON('{"types":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
+ERROR:  Unable to find 'type' in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"XXX","coordinates":[1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolationss":["Discrete"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["XXX"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete","Linear"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":"[1,1]","datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":"Discrete"}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,2,3,4],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinatess":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimess":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinatess":[[1,1]],"datetimes":["2000-01-01T00:00:00+01"],"interpolations":["Discrete"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":"[[1,1]]","datetimes":["2000-01-01T00:00:00+01"],"interpolations":["Discrete"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[],"datetimes":["2000-01-01T00:00:00+01"],"interpolations":["Discrete"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimess":["2000-01-01T00:00:00+01","2000-01-02T00:00:00+01"],"interpolations":["Linear"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":[],"interpolations":["Linear"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":["2000-01-01T00:00:00+01"],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":["2000-01-01T00:00:00+01","2000-01-02T00:00:00+01"],"lower_incl":true,"upper_inc":true,"interpolations":["Linear"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":["2000-01-01T00:00:00+01","2000-01-02T00:00:00+01"],"lower_inc":true,"upper_incl":true,"interpolations":["Linear"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":{"coordinates":[[1,1]],"datetimes":["2000-01-01T00:00:00+01"],"lower_inc":true,"upper_inc":true},"interpolations":["Linear"]}'
+);
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[],"interpolations":["Linear"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"datetimes":"2000-01-01T00:00:00+01","lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"datetimes":[],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}');
+ERROR:  Invalid 'type' value in MFJSON string
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint 'Point(1 2)@2000-01-01')));
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02}')));
+                                            asewkt                                            
+----------------------------------------------------------------------------------------------
+ SRID=4326;{POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+                                            asewkt                                            
+----------------------------------------------------------------------------------------------
+ SRID=4326;[POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint '{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
+                                                                                       asewkt                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST], [POINT(1 2)@Mon Jan 03 00:00:00 2000 PST, POINT(3 4)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint 'Interp=Step;[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+                                                  asewkt                                                  
+----------------------------------------------------------------------------------------------------------
+ SRID=4326,Interp=Step;[POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint 'Interp=Step;{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
+                                                                                             asewkt                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326,Interp=Step;{[POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST], [POINT(1 2)@Mon Jan 03 00:00:00 2000 PST, POINT(3 4)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'Point(1 2)@2000-01-01')));
+                 asewkt                  
+-----------------------------------------
+ POINT(1 2)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02}')));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ {POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02)')));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST)
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint '(Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ (POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint '(Point(1 2)@2000-01-01, Point(3 4)@2000-01-02)')));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ (POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST)
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint '{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
+                                                                                  asewkt                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 2)@Sat Jan 01 00:00:00 2000 PST, POINT(3 4)@Sun Jan 02 00:00:00 2000 PST], [POINT(1 2)@Mon Jan 03 00:00:00 2000 PST, POINT(3 4)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2000-01-01')));
+                         asewkt                         
+--------------------------------------------------------
+ SRID=4326;POINT Z (1 2 3)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=4326;{Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02}')));
+                                                 asewkt                                                 
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;{POINT Z (1 2 3)@Sat Jan 01 00:00:00 2000 PST, POINT Z (4 5 6)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=4326;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02]')));
+                                                 asewkt                                                 
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;[POINT Z (1 2 3)@Sat Jan 01 00:00:00 2000 PST, POINT Z (4 5 6)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=4326;{[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02],[Point(1 2 3)@2000-01-03, Point(4 5 6)@2000-01-04]}')));
+                                                                                                 asewkt                                                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT Z (1 2 3)@Sat Jan 01 00:00:00 2000 PST, POINT Z (4 5 6)@Sun Jan 02 00:00:00 2000 PST], [POINT Z (1 2 3)@Mon Jan 03 00:00:00 2000 PST, POINT Z (4 5 6)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+select asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'XDR')));
+                      asewkt                       
+---------------------------------------------------
+ SRID=5676;POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+select asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 'XDR')));
+                         asewkt                         
+--------------------------------------------------------
+ SRID=5676;POINT Z (1 1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+/* Errors */
+select asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'ABC')));
+ERROR:  Invalid value for endian flag
+SELECT asText(tgeompoint 'Point(1 1)@2000-01-01');
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+                                                           astext                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+                                                           astext                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+                                                                                                      astext                                                                                                       
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST], [POINT(3 3)@Tue Jan 04 00:00:00 2000 PST, POINT(3 3)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+                   astext                    
+---------------------------------------------
+ POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+                                                                 astext                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------
+ {POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+                                                                 astext                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------
+ [POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+                                                                                                                astext                                                                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST], [POINT(3.5 3.5)@Tue Jan 04 00:00:00 2000 PST, POINT(3.5 3.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tgeompoint 'Point(1 1 1)@2000-01-01');
+                    astext                    
+----------------------------------------------
+ POINT Z (1 1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+                                                                   astext                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT Z (1 1 1)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2 2 2)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1 1 1)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+                                                                   astext                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------
+ [POINT Z (1 1 1)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2 2 2)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1 1 1)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+                                                                                                                   astext                                                                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT Z (1 1 1)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2 2 2)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1 1 1)@Mon Jan 03 00:00:00 2000 PST], [POINT Z (3 3 3)@Tue Jan 04 00:00:00 2000 PST, POINT Z (3 3 3)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+                       astext                       
+----------------------------------------------------
+ POINT Z (1.5 1.5 1.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+                                                                            astext                                                                            
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT Z (1.5 1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.5 2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.5 1.5 1.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
+                                                                            astext                                                                            
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [POINT Z (1.5 1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.5 2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.5 1.5 1.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+                                                                                                                                  astext                                                                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT Z (1.5 1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.5 2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.5 1.5 1.5)@Mon Jan 03 00:00:00 2000 PST], [POINT Z (3.5 3.5 3.5)@Tue Jan 04 00:00:00 2000 PST, POINT Z (3.5 3.5 3.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText('{}'::tgeompoint[]);
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(ARRAY[tgeompoint 'Point(1 1)@2000-01-01']);
+                   astext                    
+---------------------------------------------
+ {"POINT(1 1)@Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asText(ARRAY[geometry 'Point(1 1)', 'Point(2 2)']);
+           astext            
+-----------------------------
+ {"POINT(1 1)","POINT(2 2)"}
+(1 row)
+
+SELECT asEWKT(tgeompoint 'Point(1 1)@2000-01-01');
+                 asewkt                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+                                                           asewkt                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+                                                           asewkt                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+                                                                                                      asewkt                                                                                                       
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST], [POINT(3 3)@Tue Jan 04 00:00:00 2000 PST, POINT(3 3)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+                        asewkt                         
+-------------------------------------------------------
+ SRID=4326;POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+                                                                      asewkt                                                                       
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+                                                                      asewkt                                                                       
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;[POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+                                                                                                                     asewkt                                                                                                                      
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST], [POINT(3.5 3.5)@Tue Jan 04 00:00:00 2000 PST, POINT(3.5 3.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeompoint 'Point(1 1 1)@2000-01-01');
+                    asewkt                    
+----------------------------------------------
+ POINT Z (1 1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+                                                                   asewkt                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT Z (1 1 1)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2 2 2)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1 1 1)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+                                                                   asewkt                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------
+ [POINT Z (1 1 1)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2 2 2)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1 1 1)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+                                                                                                                   asewkt                                                                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT Z (1 1 1)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2 2 2)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1 1 1)@Mon Jan 03 00:00:00 2000 PST], [POINT Z (3 3 3)@Tue Jan 04 00:00:00 2000 PST, POINT Z (3 3 3)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+                            asewkt                            
+--------------------------------------------------------------
+ SRID=4326;POINT Z (1.5 1.5 1.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+                                                                                 asewkt                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{POINT Z (1.5 1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.5 2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.5 1.5 1.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
+                                                                                 asewkt                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;[POINT Z (1.5 1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.5 2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.5 1.5 1.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+                                                                                                                                       asewkt                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT Z (1.5 1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT Z (2.5 2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT Z (1.5 1.5 1.5)@Mon Jan 03 00:00:00 2000 PST], [POINT Z (3.5 3.5 3.5)@Tue Jan 04 00:00:00 2000 PST, POINT Z (3.5 3.5 3.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT('{}'::tgeompoint[]);
+ asewkt 
+--------
+ 
+(1 row)
+
+SELECT asEWKT(ARRAY[tgeompoint 'Point(1 1)@2000-01-01']);
+                   asewkt                    
+---------------------------------------------
+ {"POINT(1 1)@Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asEWKT(ARRAY[geometry 'Point(1 1)', 'Point(2 2)']);
+           asewkt            
+-----------------------------
+ {"POINT(1 1)","POINT(2 2)"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01');
+                                                       asmfjson                                                       
+----------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1]],"datetimes":["Sat Jan 01T00:00:00 2000 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+                                                                                                               asmfjson                                                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1],[2,2],[1,1]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Discrete"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+                                                                                                              asmfjson                                                                                                              
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1],[2,2],[1,1]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+                                                                                                                                                                                            asmfjson                                                                                                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","sequences":[{"coordinates":[[1,1],[2,2],[1,1]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3,3],[3,3]],"datetimes":["Tue Jan 04T00:00:00 2000 PST","Wed Jan 05T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+                                                                                     asmfjson                                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5]],"datetimes":["Sat Jan 01T00:00:00 2000 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+                                                                                                                                                 asmfjson                                                                                                                                                 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5],[2.5,2.5],[1.5,1.5]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Discrete"}
+(1 row)
+
+SELECT asMFJSON(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+                                                                                                                                                asmfjson                                                                                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5],[2.5,2.5],[1.5,1.5]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+                                                                                                                                                                                                                                  asmfjson                                                                                                                                                                                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"sequences":[{"coordinates":[[1.5,1.5],[2.5,2.5],[1.5,1.5]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3.5,3.5],[3.5,3.5]],"datetimes":["Tue Jan 04T00:00:00 2000 PST","Wed Jan 05T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint 'Point(1 1 1)@2000-01-01');
+                                                        asmfjson                                                        
+------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1,1]],"datetimes":["Sat Jan 01T00:00:00 2000 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+                                                                                                                  asmfjson                                                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1,1],[2,2,2],[1,1,1]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Discrete"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+                                                                                                                 asmfjson                                                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1,1],[2,2,2],[1,1,1]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+                                                                                                                                                                                                 asmfjson                                                                                                                                                                                                 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","sequences":[{"coordinates":[[1,1,1],[2,2,2],[1,1,1]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3,3,3],[3,3,3]],"datetimes":["Tue Jan 04T00:00:00 2000 PST","Wed Jan 05T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+                                                                                       asmfjson                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5,1.5]],"datetimes":["Sat Jan 01T00:00:00 2000 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+                                                                                                                                                       asmfjson                                                                                                                                                       
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5,1.5],[2.5,2.5,2.5],[1.5,1.5,1.5]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Discrete"}
+(1 row)
+
+SELECT asMFJSON(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
+                                                                                                                                                      asmfjson                                                                                                                                                      
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"coordinates":[[1.5,1.5,1.5],[2.5,2.5,2.5],[1.5,1.5,1.5]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+                                                                                                                                                                                                                                            asmfjson                                                                                                                                                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeogPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"sequences":[{"coordinates":[[1.5,1.5,1.5],[2.5,2.5,2.5],[1.5,1.5,1.5]],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3.5,3.5,3.5],[3.5,3.5,3.5]],"datetimes":["Tue Jan 04T00:00:00 2000 PST","Wed Jan 05T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01', 0, 0, 20);
+                                                       asmfjson                                                       
+----------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1]],"datetimes":["Sat Jan 01T00:00:00 2000 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01', 0, 0, -1);
+                                                       asmfjson                                                       
+----------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","coordinates":[[1,1]],"datetimes":["Sat Jan 01T00:00:00 2000 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 3, 0, 2);
+                                                                                                                                                                         asmfjson                                                                                                                                                                         
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"bbox":[[50.81,4.38],[50.81,4.38]],"period":{"begin":"Tue Jan 01T08:00:00.15 2019 PST","end":"Tue Jan 01T08:00:00.15 2019 PST","lower_inc":true,"upper_inc":true},"coordinates":[[50.81,4.38]],"datetimes":["Tue Jan 01T08:00:00.15 2019 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 0, 2);
+                                                                                                asmfjson                                                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","crs":{"type":"Name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}},"coordinates":[[50.81,4.38]],"datetimes":["Tue Jan 01T08:00:00.15 2019 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(tgeompoint '[Point(1 2 3)@2019-01-01, Point(4 5 6)@2019-01-02]', 1, 0, 2);
+                                                                                                                                                                      asmfjson                                                                                                                                                                       
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingGeomPoint","bbox":[[1,2,3],[4,5,6]],"period":{"begin":"Tue Jan 01T00:00:00 2019 PST","end":"Wed Jan 02T00:00:00 2019 PST","lower_inc":true,"upper_inc":true},"coordinates":[[1,2,3],[4,5,6]],"datetimes":["Tue Jan 01T00:00:00 2019 PST","Wed Jan 02T00:00:00 2019 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}
+(1 row)
+
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint 'POINT(1 1)@2000-01-01', 1, 3, 15)));
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}', 1, 3, 15)));
+                                       astext                                       
+------------------------------------------------------------------------------------
+ {POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]', 1, 3, 15)));
+                                       astext                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02], [POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}', 1, 3, 15)));
+                                                                                  astext                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST], [POINT(3 3)@Mon Jan 03 00:00:00 2000 PST, POINT(3 3)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+/* Errors */
+SELECT asMFJSON(tgeompoint 'SRID=123456;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 2);
+ERROR:  SRID 123456 unknown in spatial_ref_sys table
+SELECT asBinary(tgeompoint 'Point(1 1)@2000-01-01');
+                          asbinary                          
+------------------------------------------------------------
+ \x01280001000000000000f03f000000000000f03f00209db406000000
+(1 row)
+
+SELECT asBinary(tgeompoint 'Point(1 1)@2000-01-01', 'NDR');
+                          asbinary                          
+------------------------------------------------------------
+ \x01280001000000000000f03f000000000000f03f00209db406000000
+(1 row)
+
+SELECT asBinary(tgeompoint 'Point(1 1)@2000-01-01', 'XDR');
+                          asbinary                          
+------------------------------------------------------------
+ \x000028013ff00000000000003ff000000000000000000006b49d2000
+(1 row)
+
+SELECT asHexEWKB(tgeompoint '[Point(1 1)@2000-01-01]');
+                             ashexewkb                              
+--------------------------------------------------------------------
+ 0128000E0100000003000000000000F03F000000000000F03F00209DB406000000
+(1 row)
+
+SELECT asHexEWKB(tgeompoint '[Point(1 1)@2000-01-01]', 'NDR');
+                             ashexewkb                              
+--------------------------------------------------------------------
+ 0128000E0100000003000000000000F03F000000000000F03F00209DB406000000
+(1 row)
+
+SELECT asHexEWKB(tgeompoint '[Point(1 1)@2000-01-01]', 'XDR');
+                             ashexewkb                              
+--------------------------------------------------------------------
+ 0000280E00000001033FF00000000000003FF000000000000000000006B49D2000
+(1 row)
+
+SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01')));
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01');
+                            ashexewkb                             
+------------------------------------------------------------------
+ 01280041E6100000000000000000F03F000000000000F03F00209DB406000000
+(1 row)
+
+select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'NDR');
+                            ashexewkb                             
+------------------------------------------------------------------
+ 012800412C160000000000000000F03F000000000000F03F00209DB406000000
+(1 row)
+
+select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'XDR');
+                            ashexewkb                             
+------------------------------------------------------------------
+ 000028410000162C3FF00000000000003FF000000000000000000006B49D2000
+(1 row)
+
+/* Errors */
+select asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'ABCD');
+ERROR:  Invalid value for endian flag
+SELECT astext('{}'::geometry[]);
+ astext 
+--------
+ 
+(1 row)
+

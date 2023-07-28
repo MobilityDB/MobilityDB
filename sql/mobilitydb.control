@@ -1,4 +1,0 @@
-comment = 'MobilityDB Extension'
-default_version = '${MOBILITYDB_VERSION}'
-module_pathname = '${MOBILITYDB_MODULE_PATHNAME}'
-requires = 'postgis'

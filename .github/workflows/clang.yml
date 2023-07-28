@@ -29,7 +29,7 @@ jobs:
         fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get postgres version
         run: |
@@ -51,7 +51,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             clang \
-            liblwgeom-dev \
             libgeos++-dev \
             libproj-dev \
             libjson-c-dev \
@@ -66,7 +65,7 @@ jobs:
           export PATH=/usr/lib/postgresql/${PGVER}/bin:$PATH
           mkdir build
           cd build
-          CC=clang cmake -DCMAKE_BUILD_TYPE=Debug ..
+          CC=clang cmake -DCMAKE_BUILD_TYPE=Release ..
 
       - name: Build
         run: |

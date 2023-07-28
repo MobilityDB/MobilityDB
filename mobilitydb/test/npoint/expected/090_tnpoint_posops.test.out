@@ -1,0 +1,1972 @@
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' << tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' << tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' << tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' << tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' << stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' << stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' << stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' << stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' << tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' << tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' << tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' << tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' << tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' << tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' << tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' << tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' << tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' << tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' << tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' << tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' << tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' << tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' << tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' << tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+/* Errors */
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' << stbox 'SRID=4326;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ERROR:  Operation on mixed SRID
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' >> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' >> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' >> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' >> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' >> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' >> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' >> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' >> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' >> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' >> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' >> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' >> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' >> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' >> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' >> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' >> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' >> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' >> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' >> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' >> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' >> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' >> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' >> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' >> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &< tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &< tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &< tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &< tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &< stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &< stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &< stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &< stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &< tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &< tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &< tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &< tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &< tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &< tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &< tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &< tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &< tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &< tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &< tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &< tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &< tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &< tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &< tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &< tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' <<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' <<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' <<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' <<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<| stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<| stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<| stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<| stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' |>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' |>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' |>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' |>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |>> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' |>> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' |>> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' |>> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' |>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' |>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' |>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' |>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' |>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' |>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' |>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' |>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' |>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' |>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' |>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' |>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<| stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<| stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<| stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<| stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' |&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' |&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' |&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' |&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |&> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' |&> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' |&> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' |&> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' |&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' |&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' |&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' |&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' |&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' |&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' |&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' |&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' |&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' |&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' |&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' |&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' <<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' <<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' <<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' <<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' <<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' <<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' <<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' <<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<# stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<# stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<# stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<# stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' <<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' <<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' <<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' #>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' #>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' #>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' #>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #>> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #>> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #>> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #>> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #>> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #>> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #>> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #>> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' &<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' &<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' &<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' &<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' &<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<# stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<# stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<# stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<# stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<# tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<# tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' &<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' &<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' &<# tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' #&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' #&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' #&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])' #&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #&> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #&> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #&> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #&> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #&> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #&> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #&> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #&> stbox 'SRID=5676;STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}' #&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]' #&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' #&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' << tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have space dimension
+SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' &< tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have space dimension
+SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' >> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have space dimension
+SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' &> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have space dimension
+SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' <<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have space dimension
+SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' &<| tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have space dimension
+SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' |>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have space dimension
+SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' |&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have space dimension
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have time dimension
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have time dimension
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' #>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have time dimension
+SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' #&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+ERROR:  The box must have time dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' << stbox 'STBOX T([2000-01-01,2000-01-02])';
+ERROR:  The box must have space dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &< stbox 'STBOX T([2000-01-01,2000-01-02])';
+ERROR:  The box must have space dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' >>  stbox 'STBOX T([2000-01-01,2000-01-02])' ;
+ERROR:  The box must have space dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &>  stbox 'STBOX T([2000-01-01,2000-01-02])';
+ERROR:  The box must have space dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<| stbox 'STBOX T([2000-01-01,2000-01-02])';
+ERROR:  The box must have space dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<| stbox 'STBOX T([2000-01-01,2000-01-02])';
+ERROR:  The box must have space dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01'|>>  stbox 'STBOX T([2000-01-01,2000-01-02])' ;
+ERROR:  The box must have space dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |&>  stbox 'STBOX T([2000-01-01,2000-01-02])';
+ERROR:  The box must have space dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<# stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
+ERROR:  The box must have time dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<# stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
+ERROR:  The box must have time dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #>> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
+ERROR:  The box must have time dimension
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #&> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
+ERROR:  The box must have time dimension

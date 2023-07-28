@@ -1,0 +1,953 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter id="temporal_types_analytics">
+	<title>Temporal Types: Analytics Operations</title>
+
+	<sect1 id="temporal_types_simplification">
+		<title>Simplification</title>
+		<itemizedlist>
+			<listitem id="minDistSimplify">
+				<indexterm><primary><varname>minDistSimplify</varname></primary></indexterm>
+				<para>Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain distance apart. &Z_support; &geography_support;</para>
+				<para><varname>minDistSimplify({tfloat,tpoint},mindist float) → {tfloat,tpoint}</varname></para>
+				<para>In the case of temporal points, the distance is specified in the units of the coordinate system. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT minDistSimplify(tfloat '[1@2000-01-01,2@2000-01-02,3@2000-01-04,4@2000-01-05]', 1);
+-- [1@2000-01-01, 3@2000-01-04]
+SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-04, Point(5 5 5)@2000-01-05)', sqrt(3)));
+-- [POINT Z (1 1 1)@2000-01-01, POINT Z (3 3 3)@2000-01-04, POINT Z (5 5 5)@2000-01-05)
+SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-04, Point(4 4 4)@2000-01-05)', sqrt(3)));
+-- [POINT Z (1 1 1)@2000-01-01, POINT Z (3 3 3)@2000-01-04]
+</programlisting>
+			</listitem>
+
+
+			<listitem id="sss">
+				<indexterm><primary><varname>minDistSimplify</varname></primary></indexterm>
+				<para>Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain distance apart. &Z_support; &geography_support;</para>
+				<para><varname>minDistSimplify({tfloat,tpoint},mindist float) → {tfloat,tpoint}</varname></para>
+				<para>In the case of temporal points, the distance is specified in the units of the coordinate system. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT minDistSimplify(tfloat '[1@2000-01-01,2@2000-01-02,3@2000-01-04,4@2000-01-05]', 1);
+-- [1@2000-01-01, 3@2000-01-04]
+SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-04, Point(5 5 5)@2000-01-05)', sqrt(3)));
+-- [POINT Z (1 1 1)@2000-01-01, POINT Z (3 3 3)@2000-01-04, POINT Z (5 5 5)@2000-01-05)
+SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-04, Point(4 4 4)@2000-01-05)', sqrt(3)));
+-- [POINT Z (1 1 1)@2000-01-01, POINT Z (3 3 3)@2000-01-04]
+</programlisting>
+			</listitem>
+
+
+
+
+			<listitem id="minTimeDeltaSimplify">
+				<indexterm><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
+				<para>Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain time interval apart. &Z_support; &geography_support;</para>
+				<para><varname>minTimeDeltaSimplify({tfloat,tpoint},mint interval) → {tfloat,tpoint}</varname></para>
+				<para>Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT minTimeDeltaSimplify(tfloat '[1@2000-01-01, 2@2000-01-02, 3@2000-01-04,
+  4@2000-01-05]', '1 day');
+-- [1@2000-01-01, 3@2000-01-04]
+SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-04, Point(5 5 5)@2000-01-05)', '1 day'));
+-- [POINT Z (1 1 1)@2000-01-01, POINT Z (3 3 3)@2000-01-04]
+</programlisting>
+			</listitem>
+
+			<listitem id="DouglasPeuckerSimplify">
+				<indexterm><primary><varname>maxDistSimplify</varname></primary></indexterm>
+				<indexterm><primary><varname>DouglasPeuckerSimplify</varname></primary></indexterm>
+				<para>Simplify a temporal float or a temporal point using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;</para>
+				<para><varname>maxDistSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
+				<para><varname>  {tfloat,tgeompoint}</varname></para>
+				<para><varname>DouglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
+				<para><varname>  {tfloat,tgeompoint}</varname></para>
+				<para>The difference between the two functions is that <varname>maxDistSimplify</varname> uses a single-pass version of the algorithm whereas <varname>DouglasPeuckerSimplify</varname> uses the standard recursive algorithm.</para>
+				<para>The function removes values or points that are less than or equal to the distance passed as second argument. In the case of temporal points, the distance is specified in the units of the coordinate system. The third argument applies only for temporal points and specifies whether the spatial or the synchronized distance is used. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
+				<programlisting language="sql" xml:space="preserve">
+-- Only synchronous distance for temporal floats
+SELECT maxDistSimplify(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 3@2000-01-04,
+  1@2000-01-05]', 1, false);
+-- [1@2000-01-01, 1@2000-01-03, 3@2000-01-04, 1@2000-01-05]
+-- Synchronous distance by default for temporal points
+SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
+  Point(3 1)@2000-01-03, Point(3 3)@2000-01-05, Point(5 1)@2000-01-06]', 2));
+-- [POINT(1 1)@2000-01-01, POINT(3 3)@2000-01-05, POINT(5 1)@2000-01-06]
+-- Spatial distance
+SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
+  Point(3 1)@2000-01-03, Point(3 3)@2000-01-05, Point(5 1)@2000-01-06]', 2, false));
+-- [POINT(1 1)@2000-01-01, POINT(5 1)@2000-01-06]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+-- Spatial vs synchronized Euclidean distance
+SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2000-01-01,
+  Point(6 1)@2000-01-06, Point(7 4)@2000-01-07]', 2.3, false));
+-- [POINT(1 1)@2000-01-01, POINT(7 4)@2000-01-07]
+SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2000-01-01,
+  Point(6 1)@2000-01-06, Point(7 4)@2000-01-07]', 2.3, true));
+-- [POINT(1 1)@2000-01-01, POINT(6 1)@2000-01-06, POINT(7 4)@2000-01-07]
+</programlisting>
+				<para>The difference between the spatial and the synchronized distance is illustrated in the last two examples above and in <xref linkend="dist_vs_sed" />. In the first example, which uses the spatial distance, the second instant is removed since the perperdicular distance between <varname>POINT(6 1)</varname> and the line defined by <varname>POINT(1 1)</varname> and <varname>POINT(7 4)</varname> is equal to 2.23. On the contrary, in the second example the second instant is kept since the projection of <varname>Point(6 2)</varname> at timestamp <varname>2000-01-06</varname> over the temporal line segment results in <varname>Point(6 3.5)</varname> and the distance between the original point and its projection is 2.5.</para>
+				<figure id="dist_vs_sed" float="start">
+					<title>Difference between the spatial and the synchronous distance.</title>
+					<mediaobject>
+						<imageobject><imagedata scale='100' fileref='images/dist_vs_sed.pdf' /></imageobject>
+						<imageobject><imagedata scale='100' fileref='images/dist_vs_sed.svg' /></imageobject>
+						<imageobject><imagedata scale='100' fileref='images/dist_vs_sed.png' /></imageobject>
+					</mediaobject>
+				</figure>
+				<para>A typical use for the <varname>DouglasPeuckerSimplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. If the visualization is static, then the spatial distance should be preferred, if the visualization is dynamic or animated, the synchronized distance should be preferred.</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="temporal_types_similarity">
+		<title>Similarity</title>
+		<itemizedlist>
+			<listitem id="hausdorffDistance">
+				<indexterm><primary><varname>hausdorffDistance</varname></primary></indexterm>
+				<para>Get the discrete <ulink url="https://en.wikipedia.org/wiki/Hausdorff_distance">Hausdorff distance</ulink> between two temporal values &Z_support; &geography_support;</para>
+				<para><varname>hausdorffDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
+				<para>This function has a quadratic time complexity in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT hausdorffDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+ tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
+-- 0.5
+SELECT round(hausdorffDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
+  Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
+  Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
+  Point(1.5 2)@2001-01-05]')::numeric, 6);
+-- 1.414214
+</programlisting>
+			</listitem>
+
+			<listitem id="frechetDistance">
+				<indexterm><primary><varname>frechetDistance</varname></primary></indexterm>
+				<para>Get the discrete <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">Fréchet distance</ulink> between two temporal values &Z_support; &geography_support;</para>
+				<para><varname>frechetDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
+				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT frechetDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+ tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
+-- 0.5
+SELECT round(frechetDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
+  Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
+  Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
+  Point(1.5 2)@2001-01-05]')::numeric, 6);
+-- 1.414214
+</programlisting>
+			</listitem>
+
+			<listitem id="frechetDistancePath">
+				<indexterm><primary><varname>frechetDistancePath</varname></primary></indexterm>
+				<para>Get the correspondence pairs between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
+				<para><varname>frechetDistancePath({tnumber, tgeo}, {tnumber, tgeo}) → {(i,j)}</varname></para>
+				<para>This function requires to allocate in memory a distance matrix whose size is quadratic in the number of instants of the temporal values. Therefore, the function will fail for temporal values with large number of instants depending on the available memory.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT frechetDistancePath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+ tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
+-- (0,0)
+-- (1,0)
+-- (2,1)
+-- (3,2)
+-- (4,2)
+SELECT frechetDistancePath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
+  Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
+  Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
+  Point(1.5 2)@2001-01-05]');
+-- (0,0)
+-- (1,1)
+-- (2,1)
+-- (3,1)
+-- (4,2)
+</programlisting>
+			</listitem>
+
+			<listitem id="dynamicTimeWarp">
+				<indexterm><primary><varname>dynamicTimeWarp</varname></primary></indexterm>
+				<para>Get the <ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> (DTW) distance between two temporal values &Z_support; &geography_support;</para>
+				<para><varname>dynamicTimeWarp({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
+				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT dynamicTimeWarp(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+ tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
+-- 2
+SELECT round(dynamicTimeWarp(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
+  Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
+  Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
+  Point(1.5 2)@2001-01-05]')::numeric, 6);
+-- 3.380776
+</programlisting>
+			</listitem>
+
+			<listitem id="dynamicTimeWarpPath">
+				<indexterm><primary><varname>dynamicTimeWarpPath</varname></primary></indexterm>
+				<para>Get the correspondence pairs between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
+				<para><varname>dynamicTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}) → {(i,j)}</varname></para>
+				<para>This function requires to allocate a distance matrix which is quadratic in the size of the number of instants of the temporal values. Therefore, memory allocation will fail for temporal values with large number of instants.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT dynamicTimeWarpPath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+ tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
+-- (0,0)
+-- (1,0)
+-- (2,1)
+-- (3,2)
+-- (4,2)
+SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
+  Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
+  Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
+  Point(1.5 2)@2001-01-05]');
+-- (0,0)
+-- (1,1)
+-- (2,1)
+-- (3,1)
+-- (4,2)
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="temporal_types_tiling">
+		<title>Multidimensional Tiling</title>
+		<para>Multidimensional tiling is the mechanism used to partition the domain of temporal values in buckets or tiles of varying number of dimensions. In the case of a single dimension, the domain can be partitioned by value or by time using buckets of the same size or duration, respectively. For temporal numbers, the domain can be partitioned in two-dimensional tiles of the same size for the value dimension and the same duration for the time dimension. For temporal points, the domain can be partitioned in space in two- or three-dimensional tiles, depending on the number of dimensions of the spatial coordinates. Finally, for temporal points, the domain can be partitioned in space and time using three- or four-dimensional tiles. Furthermore, the temporal values can also be fragmented according to a multidimensional grid defined over the underlying domain.</para>
+
+		<para>Multidimensional tiling can be used for various purposes. For example, it can be used for computing multidimensional histograms, where the temporal values are aggregated according to the underlying partition of the domain. On the other hand, multidimensional tiling can be used for distributing a dataset across a cluster of servers, where each server contains a partition of the dataset. The advantage of this partition mechanism is that it preserves proximitity in space and time, unlike the traditional hash-based partition mechanisms used in big data environments.</para>
+
+		<figure id="tiling" float="start">
+			<title>Multidimensional tiling for temporal floats.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" scale='75' fileref="images/tiling.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='75' fileref="images/tiling.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='75' fileref="images/tiling.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<para>
+			<xref linkend="tiling" /> illustrates multidimensional tiling for temporal floats. The two-dimensional domain is split into tiles having the same size for the value dimension and the same duration for the time dimension. Suppose that this tiling scheme is used for distribute a dataset across a cluster of six servers, as suggested by the gray pattern in the figure. In this case, the values are fragmented so each server will receive the data of contiguous tiles. This implies in particular that four nodes will receive one fragment of the temporal float depicted in the figure. One advantage of this distribution of data based on multidimensional tiling is that it reduces the data that needs to be exchanged between nodes when processing queries, a process typically referred to as <emphasis>reshuffling</emphasis>.
+		</para>
+
+		<para>Many of the functions in this section are <emphasis>set-returning functions</emphasis> (also known as a <emphasis>table functions</emphasis>) since they typically return more than one value. In this case, the functions are marked with the &SRF; symbol.</para>
+
+		<sect2 id="bucket_functions">
+			<title>Bucket Functions</title>
+
+			<itemizedlist>
+				<listitem id="bucketList">
+					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
+					<para>Return a set of couples that cover the span with buckets of the same size or duration aligned with the origin &SRF;</para>
+					<para>If the origin is not specified, it is set by default to 0 for number spans and Monday, January 3, 2000 for periods. The indices start by 1.</para>
+					<para><varname>bucketList(bounds unitspan,size number,origin number=0) → {(index,span)}</varname></para>
+					<para><varname>bucketList(bounds tstzspan,duration interval,origin timestamptz='2000-01-03') → </varname></para>
+					<para><varname>  {(index,span)}</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT (bl).index, (bl).span
+FROM (SELECT bucketList(intspan '[15, 25]', 2) AS bl) t;
+-- 1 | [14,16)
+-- 2 | [16,18)
+-- 3 | [18,20)
+-- ...
+SELECT bucketList(floatspan '[-10, -1]', 2.5, -7);
+-- (1,"[-12, -9.5)")
+-- (2,"[-9.5, -7)")
+-- (3,"[-7, -4.5)")
+-- ...
+SELECT (bl).index, (bl).span
+FROM (SELECT bucketList(tstzspan '[2000-01-15, 2000-01-25]','2 days') AS bl) t;
+-- 1 | [2000-01-15, 2000-01-17)
+-- 2 | [2000-01-17, 2000-01-19)
+-- 3 | [2000-01-19, 2000-01-21)
+-- ...
+SELECT bucketList(tstzspan '[2000-01-15, 2000-01-25]', '2 days', '2000-01-02');
+-- (1,"[2000-01-14, 2000-01-16)")
+-- (2,"[2000-01-16, 2000-01-18)")
+-- (3,"[2000-01-18, 2000-01-20)")
+-- ...
+</programlisting>
+				</listitem>
+
+				<listitem id="valueBucket">
+					<indexterm><primary><varname>valueBucket</varname></primary></indexterm>
+					<para> Return the start value of the bucket that contains the input number.</para>
+					<para>If the origin is not specified, it is set by default to 0.</para>
+					<para><varname>valueBucket(value number,size number,origin number=0) → number</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT valueBucket(3, 2);
+-- 2
+SELECT valueBucket(3.5, 2.5, 1.5);
+-- 1.5
+</programlisting>
+				</listitem>
+
+				<listitem id="spanBucket">
+					<indexterm><primary><varname>spanBucket</varname></primary></indexterm>
+					<para>Return the span in the bucket space that contains the input number.</para>
+					<para>If the origin is not specified, it is set by default to 0.</para>
+					<para><varname>spanBucket(value number,size number,origin number=0) → span</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT spanBucket(2, 2);
+-- [2,4)
+SELECT spanBucket(2, 2, 1);
+-- [1,3)
+SELECT spanBucket(2, 2.5);
+-- [0,2.5)
+SELECT spanBucket(2, 2.5, 1.5);
+-- [1.5,4)
+</programlisting>
+				</listitem>
+
+				<listitem id="timeBucket">
+					<indexterm><primary><varname>timeBucket</varname></primary></indexterm>
+					<para>Return the start timestamp of the bucket that contains the input timestamp.</para>
+					<para>If the origin is not specified, it is set by default to Monday, January 3, 2000.</para>
+					<para><varname>timeBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03') → </varname></para>
+					<para><varname>  timestamptz</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT timeBucket(timestamptz '2020-05-01', interval '2 days');
+-- 2020-04-29 01:00:00+02
+SELECT timeBucket(timestamptz '2020-05-01', interval '2 days', timestamptz '2020-01-01');
+-- 2020-04-30 01:00:00+02
+</programlisting>
+				</listitem>
+
+				<listitem id="periodBucket">
+					<indexterm><primary><varname>periodBucket</varname></primary></indexterm>
+					<para>Return the period in the bucket space that contains the input timestamp.</para>
+					<para>If the origin is not specified, it is set by default to Monday, January 3, 2000.</para>
+					<para><varname>periodBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03') → </varname></para>
+					<para><varname>  tstzspan</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT periodBucket('2000-01-04', interval '1 week');
+-- [2000-01-03, 2000-01-10)
+SELECT periodBucket('2000-01-04', interval '1 week', '2000-01-07');
+-- [1999-12-31, 2000-01-07)
+</programlisting>
+				</listitem>
+
+			</itemizedlist>
+		</sect2>
+
+		<sect2 id="tile_functions">
+			<title>Tile Functions</title>
+
+			<itemizedlist>
+				<listitem id="tileList">
+					<indexterm><primary><varname>tileList</varname></primary></indexterm>
+					<para>Return a set of couples <varname>(index, tile)</varname> that covers the box with multidimensional tiles of the same size and duration &Z_support; &SRF;</para>
+					<para><varname>tileList(bounds tbox,size float,duration interval,vorigin float=0,</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
+					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,] </varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)') → {(index,tile)}</varname></para>
+					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
+					<para>If the origin of the value and/or time dimensions are not specified, they are set by default to 0 or <varname>'Point(0 0 0)'</varname> for the value dimension (depending on the box type) and to Monday, January 3, 2000 for the time dimension.</para>
+					<para>In the case of a spatiotemporal grid, <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. The SRID of the tile coordinates is determined by the input box and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT (gr).index, (gr).tile
+FROM (SELECT tileList(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days')
+  AS gr) t;
+-- 1 | TBOX XT([14,16),[2000-01-15,2000-01-17))
+-- 2 | TBOX XT([16,18),[2000-01-15,2000-01-17))
+-- 3 | TBOX XT([18,20),[2000-01-15,2000-01-17))
+-- ...
+SELECT tileList(tfloat '[15@2000-01-15,25@2000-01-25]'::tbox, 2.0, '2 days', 11.5);
+-- (1,"TBOX XT([13.5,15.5),[2000-01-15,2000-01-17))")
+-- (2,"TBOX XT([15.5,17.5),[2000-01-15,2000-01-17))")
+-- (3,"TBOX XT([17.5,19.5),[2000-01-15,2000-01-17))")
+-- ...
+SELECT tileList(tgeompoint '[Point(3 3)@2000-01-15,
+  Point(15 15)@2000-01-25]'::stbox, 2.0);
+-- (1,"STBOX X((2,2),(4,4))")
+-- (2,"STBOX X((4,2),(6,4))")
+-- (3,"STBOX X((6,2),(8,4))")
+-- ...
+SELECT tileList(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15,
+  Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
+-- (1,"SRID=3812;STBOX X((3,3),(5,5))")
+-- (2,"SRID=3812;STBOX X((5,3),(7,5))")
+-- (3,"SRID=3812;STBOX X((7,3),(9,5))")
+-- ...
+SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15,
+  Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)');
+-- (1,"STBOX Z((3,3,3),(5,5,5))")
+-- (2,"STBOX Z((5,3,3),(7,5,5))")
+-- (3,"STBOX Z((7,3,3),(9,5,5))")
+-- ...
+SELECT tileList(tgeompoint '[Point(3 3)@2000-01-15,
+  Point(15 15)@2000-01-25]'::stbox, 2.0, interval '2 days');
+-- (1,"STBOX XT(((2,2),(4,4)),[2000-01-15,2000-01-17))")
+-- (2,"STBOX XT(((4,2),(6,4)),[2000-01-15,2000-01-17))")
+-- (3,"STBOX XT(((6,2),(8,4)),[2000-01-15,2000-01-17))")
+-- ...
+SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15,
+  Point(15 15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3 3)', '2000-01-15');
+-- (1,"STBOX ZT(((3,3,3),(5,5,5)),[2000-01-15,2000-01-17))")
+-- (2,"STBOX ZT(((5,3,3),(7,5,5))),[2000-01-15,2000-01-17)")
+-- (3,"STBOX ZT(((7,3,3),(9,5,5))),[2000-01-15,2000-01-17)")
+-- ...
+</programlisting>
+				</listitem>
+
+				<listitem id="tile">
+					<indexterm><primary><varname>tile</varname></primary></indexterm>
+					<para>Return the tile of the multidimensional grid that contains the value and the timestamp. &Z_support;</para>
+					<para><varname>tile(value float,time timestamptz,size float,duration interval,</varname></para>
+					<para><varname>  vorigin float=0.0,torigin timestamptz='2000-01-03') → tbox</varname></para>
+					<para><varname>tile(point geometry,xsize float,[ysize float,zsize float],</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)') → stbox</varname></para>
+					<para><varname>tile(point geometry,time timestamptz,xsize float,[ysize float,zsize float,]duration</varname></para>
+					<para><varname>  interval,sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → stbox</varname></para>
+					<para>If the origin of the value and/or time dimensions are not specified, they are set by default to 0 or <varname>Point(0 0 0)</varname> for the value dimension and Monday, January 3, 2000 for the time dimension, respectively.</para>
+					<para>In the case of a spatiotemporal grid, <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. The SRID of the tile coordinates is determined by the input point and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tile(15, '2000-01-15', 2, interval '2 days');
+-- TBOX XT([14,16),[2000-01-15,2000-01-17))
+SELECT tile(15, '2000-01-15', 2, interval '2 days', 1, '2000-01-02');
+-- TBOX XT([15,17),[2000-01-14,2000-01-16))
+SELECT tile(geometry 'Point(1 1 1)', 2.0);
+-- STBOX Z((0,0,0),(2,2,2))
+SELECT tile(geometry 'Point(1 1)', '2000-01-01', 2.0, interval '2 days');
+-- STBOX XT(((0,0),(2,2)),[2000-01-01, 2000-01-03))
+SELECT tile(geometry 'Point(1 1)', '2000-01-01', 2.0, interval '2 days',
+  'Point(1 1)', '2000-01-02');
+-- STBOX XT(((1,1),(3,3)),[1999-12-31, 2000-01-02))
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 id="split_functions">
+			<title>Split Functions</title>
+			<para>These functions fragment a temporal value with respect to a sequence of buckets (see <xref linkend="bucket_functions" />) or tiles (see <xref linkend="tile_functions" />).</para>
+			<itemizedlist>
+				<listitem id="valueSplit">
+					<indexterm><primary><varname>valueSplit</varname></primary></indexterm>
+					<para>Fragment the temporal number with respect to span buckets &SRF;</para>
+					<para><varname>valueSplit(value tnumber,size number,origin number=0) → {(number,tnumber)}</varname></para>
+					<para>If the origin of values is not specified, it is set by default to 0.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT (sp).number, (sp).tnumber
+FROM (SELECT valueSplit(tint '[1@2001-01-01, 2@2001-01-02, 5@2001-01-05, 10@2001-01-10]',
+  2) AS sp) t;
+--  0 | {[1@2001-01-01 00:00:00+01, 1@2001-01-02 00:00:00+01)}
+--  2 | {[2@2001-01-02 00:00:00+01, 2@2001-01-05 00:00:00+01)}
+--  4 | {[5@2001-01-05 00:00:00+01, 5@2001-01-10 00:00:00+01)}
+-- 10 | {[10@2001-01-10 00:00:00+01]}
+SELECT valueSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 2.0, 1.0);
+-- (1,"{[1@2001-01-01 00:00:00+01, 3@2001-01-03 00:00:00+01)}")
+-- (3,"{[3@2001-01-03 00:00:00+01, 5@2001-01-05 00:00:00+01)}")
+-- (5,"{[5@2001-01-05 00:00:00+01, 7@2001-01-07 00:00:00+01)}")
+-- (7,"{[7@2001-01-07 00:00:00+01, 9@2001-01-09 00:00:00+01)}")
+-- (9,"{[9@2001-01-09 00:00:00+01, 10@2001-01-10 00:00:00+01)}")
+</programlisting>
+				</listitem>
+
+				<listitem id="timeSplit">
+					<indexterm><primary><varname>timeSplit</varname></primary></indexterm>
+					<para>Fragment the temporal value with respect to time buckets &Z_support; &SRF;</para>
+					<para><varname>timeSplit(value ttype,duration interval,origin timestamptz='2000-01-03') → </varname></para>
+					<para><varname>  {(time,temp)}</varname></para>
+					<para>If the origin of time is not specified, it is set by default to Monday, January 3, 2000.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT (ts).time, (ts).temp
+FROM (SELECT timeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', '2 days') AS ts) t;
+-- 2011-12-31 | [1@2001-01-01, 2@2001-01-02)
+-- 2001-01-02 | [2@2001-01-02, 4@2001-01-04)
+-- 2001-01-04 | [4@2001-01-04, 6@2001-01-06)
+-- ...
+SELECT (ts).time, astext((ts).temp) AS temp
+FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]',
+  '2 days', '2001-01-01') AS ts) AS t;
+-- 2001-01-01 | [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-03)
+-- 2001-01-03 | [POINT Z (3 3 3)@2001-01-03, POINT Z (5 5 5)@2001-01-05)
+-- 2001-01-05 | [POINT Z (5 5 5)@2001-01-05, POINT Z (7 7 7)@2001-01-07)
+-- ...
+</programlisting>
+					<para>Notice that we can fragment a temporal value in cyclic (instead of linear) time buckets. The following two examples show how to fragment a temporal value by hour and by day of the week.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT (ts).time::time as hour, merge((ts).temp) as temp
+FROM (SELECT timeSplit(tfloat '[1@2001-01-01, 10@2001-01-03]', '1 hour') AS ts) t
+GROUP BY hour ORDER BY hour;
+/* 00:00:00 | {[1@2001-01-01 00:00:00+01, 1.1875@2001-01-01 01:00:00+01),
+               [5.5@2001-01-02 00:00:00+01, 5.6875@2001-01-02 01:00:00+01)} */
+/* 01:00:00 | {[1.1875@2001-01-01 01:00:00+01, 1.375@2001-01-01 02:00:00+01),
+               [5.6875@2001-01-02 01:00:00+01, 5.875@2001-01-02 02:00:00+01)} */
+/* 02:00:00 | {[1.375@2001-01-01 02:00:00+01, 1.5625@2001-01-01 03:00:00+01),
+               [5.875@2001-01-02 02:00:00+01, 6.0625@2001-01-02 03:00:00+01)} */
+/* 03:00:00 | {[1.5625@2001-01-01 03:00:00+01, 1.75@2001-01-01 04:00:00+01),
+               [6.0625@2001-01-02 03:00:00+01, 6.25@2001-01-02 04:00:00+01)} */
+/* ...  */
+SELECT EXTRACT(DOW FROM (ts).time) as dow_no, TO_CHAR((ts).time, 'Dy') as dow,
+  asText(round(merge((ts).temp), 2)) as temp
+FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-14)',
+  '1 hour') AS ts) t
+GROUP BY dow, dow_no ORDER BY dow_no;
+/* 0 | Sun | {[POINT(1 1)@2001-01-01, POINT(1.69 1.69)@2001-01-02),
+             [POINT(5.85 5.85)@2001-01-08, POINT(6.54 6.54)@2001-01-09)} */
+/* 1 | Mon | {[POINT(1.69 1.69)@2001-01-02, POINT(2.38 2.38)@2001-01-03),
+             [POINT(6.54 6.54)@2001-01-09, POINT(7.23 7.23)@2001-01-10)} */
+/* 2 | Tue | {[POINT(2.38 2.38)@2001-01-03, POINT(3.08 3.08)@2001-01-04),
+             [POINT(7.23 7.23)@2001-01-10, POINT(7.92 7.92)@2001-01-11)} */
+/* ... */
+</programlisting>
+				</listitem>
+
+				<listitem id="valueTimeSplit">
+					<indexterm><primary><varname>valueTimeSplit</varname></primary></indexterm>
+					<para>Fragment the temporal number with respect to the tiles in a value-time grid &SRF;</para>
+					<para><varname>valueTimeSplit(value tumber,size number,duration interval,vorigin number=0,</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03') → {(number,time,tnumber}</varname></para>
+					<para>If the origin of values and/or time are not specified, they are set by default to 0 and to Monday, January 3, 2000, respectively.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT (sp).number, (sp).time, (sp).tnumber
+FROM (SELECT valueTimeSplit(tint '[1@2001-01-01, 2@2001-01-02, 5@2001-01-05,
+  10@2001-01-10]', 5, '5 days') AS sp) t;
+--  0 | 2011-12-31 | [1@2001-01-01, 2@2001-01-02, 2@2001-01-05)
+--  5 | 2001-01-05 | [5@2001-01-05, 5@2001-01-10)
+-- 10 | 2001-01-10 | [10@2001-01-10]
+SELECT (sp).number, (sp).time, (sp).tnumber
+FROM (SELECT valueTimeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 5.0, '5 days', 1.0,
+  '2001-01-01') AS sp) t;
+-- 1 | 2001-01-01 | [1@2001-01-01, 6@2001-01-06)
+-- 6 | 2001-01-06 | [6@2001-01-06, 10@2001-01-10)
+</programlisting>
+				</listitem>
+
+				<listitem id="spaceSplit">
+					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
+					<para>Fragment the temporal point with respect to the tiles in a spatial grid &Z_support; &SRF;</para>
+					<para><varname>spaceSplit(value tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
+					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix=true) → {(point,tpoint)}</varname></para>
+					<para>If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname>. The arguments <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
+  2.0) AS sp) t;
+-- POINT(0 0) | {[POINT(1 1)@2020-03-01, POINT(2 2)@2020-03-02)}
+-- POINT(2 2) | {[POINT(2 2)@2020-03-02, POINT(4 4)@2020-03-04)}
+-- POINT(4 4) | {[POINT(4 4)@2020-03-04, POINT(6 6)@2020-03-06)}
+-- ...
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
+  Point(10 10 10)@2020-03-10]', 2.0, 'Point(1 1 1)') AS sp) t;
+-- POINT Z(1 1 1) | {[POINT Z (1 1 1)@2020-03-01, POINT Z (3 3 3)@2020-03-03)}
+-- POINT Z(3 3 3) | {[POINT Z (3 3 3)@2020-03-03, POINT Z (5 5 5)@2020-03-05)}
+-- POINT Z(5 5 5) | {[POINT Z (5 5 5)@2020-03-05, POINT Z (7 7 7)@2020-03-07)}
+-- ...
+</programlisting>
+				</listitem>
+				<listitem id="spaceTimeSplit">
+					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
+					<para>Fragment the temporal point with respect to the tiles in a spatiotemporal grid &Z_support; &SRF;</para>
+					<para><varname>spaceTimeSplit(value tgeompoint,xsize float,[ysize float,ysize float,]</varname></para>
+					<para><varname>  duration interval,sorigin geompoint='Point(0 0 0)',</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix=true) → {(point,time,tpoint)}</varname></para>
+					<para>If the origin of the space and time dimensions are not specified, they are set by default to <varname>'Point(0 0 0)'</varname> and Monday, January 3, 2000, respectively. The arguments <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
+  2.0, '2 days') AS sp) t;
+-- POINT(0 0) | 2020-03-01 | {[POINT(1 1)@2020-03-01, POINT(2 2)@2020-03-02)}
+-- POINT(2 2) | 2020-03-01 | {[POINT(2 2)@2020-03-02, POINT(3 3)@2020-03-03]}
+-- POINT(2 2) | 2020-03-03 | {[POINT(3 3)@2020-03-03, POINT(4 4)@2020-03-04)}
+-- ...
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
+  Point(10 10 10)@2020-03-10]', 2.0, '2 days', 'Point(1 1 1)', '2020-03-01') AS sp) t;
+-- POINT Z(1 1 1) | 2020-03-01 | {[POINT Z(1 1 1)@2020-03-01, POINT Z(3 3 3)@2020-03-03)}
+-- POINT Z(3 3 3) | 2020-03-03 | {[POINT Z(3 3 3)@2020-03-03, POINT Z(5 5 5)@2020-03-05)}
+-- POINT Z(5 5 5) | 2020-03-05 | {[POINT Z(5 5 5)@2020-03-05, POINT Z(7 7 7)@2020-03-07)}
+-- ...
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1 id="temporal_types_aggregations">
+		<title>Aggregations</title>
+
+		<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating temporal types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
+
+		<para>The temporal aggregate functions are the following ones:</para>
+		<itemizedlist>
+			<listitem><para>For all temporal types, the function <varname>tcount</varname> generalize the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of cars in an area).</para></listitem>
+			<listitem><para>For all temporal types, function <varname>extent</varname> returns a bounding box that encloses a set of temporal values. Depending on the base type, the result of this function can be a <varname>tstzspan</varname>, a <varname>tbox</varname> or an <varname>stbox</varname>.</para></listitem>
+			<listitem><para>For the temporal Boolean type, the functions <varname>tand</varname> and <varname>tor</varname> generalize the traditional functions <varname>and</varname> and <varname>or</varname>.</para></listitem>
+			<listitem><para>For temporal numeric types, there are two types of temporal aggregate functions. The functions <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname>, and <varname>tavg</varname> generalize the traditional functions <varname>min</varname>, <varname>max</varname>, <varname>sum</varname>, and <varname>avg</varname>. Furthermore, the functions <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname>, and <varname>wavg</varname> are window (or cumulative) versions of the traditional functions that, given a time interval w, compute the value of the function at an instant t by considering the values during the interval [t-w, t]. All window aggregate functions are available for temporal integers, while for temporal floats only window minimum and maximum are meaningful.</para></listitem>
+			<listitem><para>For the temporal text type, the functions <varname>tmin</varname> y <varname>tmax</varname> generalize the traditional functions <varname>min</varname> and <varname>max</varname>.</para></listitem>
+			<listitem><para>Finally, for temporal point types, the function <varname>tcentroid</varname> generalizes the function <varname>ST_Centroid</varname> provided by PostGIS. For example, given set of objects that move together (that is, a convoy or a flock) the temporal centroid will produce a temporal point that represents at each instant the geometric center (or the center of mass) of all the moving objects.</para></listitem>
+		</itemizedlist>
+
+		<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in <xref linkend="temporal_types_examples" />.</para>
+		<itemizedlist>
+			<listitem id="tcount">
+				<indexterm><primary><varname>tcount</varname></primary></indexterm>
+				<para>Temporal count</para>
+				<para><varname>tcount(ttype) → {tint_seq,tint_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tcount(NoEmps) FROM Department;
+-- {[1@2001-01-01, 2@2001-02-01, 1@2001-08-01, 1@2001-10-01)}
+</programlisting>
+			</listitem>
+
+			<listitem id="extent">
+				<indexterm><primary><varname>extent</varname></primary></indexterm>
+				<para>Bounding box extent</para>
+				<para><varname>extent(temp) → {tstzspan,tbox,stbox}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT extent(noEmps) FROM Department;
+-- TBOX XT((4,12),[2001-01-01,2001-10-01])
+SELECT extent(Trip) FROM Trips;
+-- STBOX XT(((0,0),(3,3)),[2001-01-01 08:00:00+01, 2001-01-01 08:20:00+01))
+</programlisting>
+			</listitem>
+
+			<listitem id="tand">
+				<indexterm><primary><varname>tand</varname></primary></indexterm>
+				<para>Temporal and</para>
+				<para><varname>tand(tbool) → tbool</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tand(NoEmps #&gt; 6) FROM Department;
+-- {[t@2001-01-01, f@2001-04-01, f@2001-10-01)}
+</programlisting>
+			</listitem>
+
+			<listitem id="tor">
+				<indexterm><primary><varname>tor</varname></primary></indexterm>
+				<para>Temporal or</para>
+				<para><varname>tor(tbool) → tbool</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tor(NoEmps #&gt; 6) FROM Department;
+-- {[t@2001-01-01, f@2001-08-01, f@2001-10-01)}
+</programlisting>
+			</listitem>
+
+			<listitem id="tmin">
+				<indexterm><primary><varname>tmin</varname></primary></indexterm>
+				<para>Temporal minimum</para>
+				<para><varname>tmin(ttype) → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tmin(NoEmps) FROM Department;
+-- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
+</programlisting>
+			</listitem>
+
+			<listitem id="tmax">
+				<indexterm><primary><varname>tmax</varname></primary></indexterm>
+				<para>Temporal maximum</para>
+				<para><varname>tmax(ttype) → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tmax(NoEmps) FROM Department;
+-- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}
+</programlisting>
+			</listitem>
+
+			<listitem id="tsum">
+				<indexterm><primary><varname>tsum</varname></primary></indexterm>
+				<para>Temporal sum</para>
+				<para><varname>tsum(tnumber) → {tnumber_seq,tnumber_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tsum(NoEmps) FROM Department;
+/* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,
+   6@2001-10-01)} */
+</programlisting>
+			</listitem>
+
+			<listitem id="tavg">
+				<indexterm><primary><varname>tavg</varname></primary></indexterm>
+				<para>Temporal average</para>
+				<para><varname>tavg(tnumber) → {tfloat_seq,tfloat_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tavg(NoEmps) FROM Department;
+/* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
+   [8@2001-04-01, 8@2001-06-01), [9@2001-06-01, 9@2001-08-01),
+   [6@2001-08-01, 6@2001-10-01) */
+</programlisting>
+			</listitem>
+
+			<listitem id="wmin">
+				<indexterm><primary><varname>wmin</varname></primary></indexterm>
+				<para>Window minimum</para>
+				<para><varname>wmin(tnumber,interval) → {tnumber_seq,tnumber_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT wmin(NoEmps, interval '2 days') FROM Department;
+-- {[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}
+</programlisting>
+			</listitem>
+
+			<listitem id="wmax">
+				<indexterm><primary><varname>wmax</varname></primary></indexterm>
+				<para>Window maximum</para>
+				<para><varname>wmax(tnumber,interval) → {tnumber_discseq,tnumber_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT wmax(NoEmps, interval '2 days') FROM Department;
+-- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-03, 6@2001-10-03)}
+</programlisting>
+			</listitem>
+
+			<listitem id="wcount">
+				<indexterm><primary><varname>wcount</varname></primary></indexterm>
+				<para>Window count</para>
+				<para><varname>wcount(tnumber,interval) → {tint_seq,tint_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT wcount(NoEmps, interval '2 days') FROM Department;
+/* {[1@2001-01-01, 2@2001-02-01, 3@2001-04-01, 2@2001-04-03, 3@2001-06-01, 2@2001-06-03,
+   1@2001-08-03, 1@2001-10-03)} */
+</programlisting>
+			</listitem>
+
+			<listitem id="wsum">
+				<indexterm><primary><varname>wsum</varname></primary></indexterm>
+				<para>Window sum</para>
+				<para><varname>wsum(tint,interval) → {tint_seq,tint_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT wsum(NoEmps, interval '2 days') FROM Department;
+/* {[10@2001-01-01, 14@2001-02-01, 26@2001-04-01, 16@2001-04-03, 22@2001-06-01,
+   18@2001-06-03, 6@2001-08-03, 6@2001-10-03)} */
+</programlisting>
+			</listitem>
+
+			<listitem id="wavg">
+				<indexterm><primary><varname>wavg</varname></primary></indexterm>
+				<para>Window average</para>
+				<para><varname>wavg(tint,interval) → {tfloat_seq,tfloat_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT wavg(NoEmps, interval '2 days') FROM Department;
+/* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
+   [8.66666666666667@2001-04-01, 8.66666666666667@2001-04-03),
+   [8@2001-04-03, 8@2001-06-01),
+   [7.33333333333333@2001-06-01, 7.33333333333333@2001-06-03),
+   [9@2001-06-03, 9@2001-08-03), [6@2001-08-03, 6@2001-10-03)} */
+</programlisting>
+			</listitem>
+
+			<listitem id="tcentroid">
+				<indexterm><primary><varname>tcentroid</varname></primary></indexterm>
+				<para>Temporal centroid</para>
+				<para><varname>tcentroid(tgeompoint) → tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tcentroid(Trip) FROM Trips;
+/* {[POINT(0 0)@2001-01-01 08:00:00+00, POINT(1 0)@2001-01-01 08:05:00+00),
+   [POINT(0.5 0)@2001-01-01 08:05:00+00, POINT(1.5 0.5)@2001-01-01 08:10:00+00,
+   POINT(2 1.5)@2001-01-01 08:15:00+00),
+   [POINT(2 2)@2001-01-01 08:15:00+00, POINT(3 3)@2001-01-01 08:20:00+00)} */
+</programlisting>
+			</listitem>
+
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="temporal_types_indexing">
+		<title>Indexing</title>
+		<para>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree and the SP-GiST index implements an n-dimensional quad-tree. Examples of index creation are as follows:
+			<programlisting language="sql" xml:space="preserve">
+CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
+CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
+</programlisting>
+		</para>
+
+		<para>The GiST and SP-GiST indexes store the bounding box for the temporal types. As explained in <xref linkend="temporal_types" />, these are
+			<itemizedlist>
+				<listitem>
+					<para>the <varname>tstzspan</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types,</para>
+				</listitem>
+
+				<listitem>
+					<para>the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types,</para>
+				</listitem>
+
+				<listitem>
+					<para>the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types.</para>
+				</listitem>
+			</itemizedlist>
+		</para>
+
+		<para>A GiST or SP-GiST index can accelerate queries involving the following operators (see <xref linkend="temporal_types_bbox" /> for more information):
+			<itemizedlist>
+				<listitem>
+					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, which only consider the value dimension in temporal alphanumeric types,</para>
+				</listitem>
+
+				<listitem>
+					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, and <varname>/&amp;&gt;</varname>, which only consider the spatial dimension in temporal point types,</para>
+				</listitem>
+
+				<listitem>
+					<para><varname>&amp;&lt;#</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname>, which only consider the time dimension for all temporal types,</para>
+				</listitem>
+
+				<listitem>
+					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, and <varname>|=|</varname>, which consider as many dimensions as they are shared by the indexed column and the query argument. These operators work on bounding boxes (that is, <varname>tstzspan</varname>, <varname>tbox</varname>, or <varname>stbox</varname>), not the entire values.</para>
+				</listitem>
+			</itemizedlist>
+		</para>
+
+		<para>For example, given the index defined above on the <varname>Department</varname> table and a query that involves a condition with the <varname>&amp;&amp;</varname> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float span, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/span and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <varname>Department</varname> table defined above are given next.
+			<programlisting language="sql" xml:space="preserve">
+SELECT * FROM Department WHERE NoEmps &amp;&amp; intspan '[1, 5)';
+SELECT * FROM Department WHERE NoEmps &amp;&amp; tstzspan '[2001-04-01, 2001-05-01)';
+SELECT * FROM Department WHERE NoEmps &amp;&amp;
+  tbox(intspan '[1, 5)', tstzspan '[2001-04-01, 2001-05-01)');
+SELECT * FROM Department WHERE NoEmps &amp;&amp;
+  tfloat '{[1@2001-01-01, 1@2001-02-01), [5@2001-04-01, 5@2001-05-01)}';
+</programlisting>
+		</para>
+
+		<para>Similarly, examples of queries using the index on the <varname>Trips</varname> table defined above are given next.
+			<programlisting language="sql" xml:space="preserve">
+SELECT * FROM Trips WHERE Trip &amp;&amp; geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))';
+SELECT * FROM Trips WHERE Trip &amp;&amp; timestamptz '2001-01-01';
+SELECT * FROM Trips WHERE Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-05)';
+SELECT * FROM Trips WHERE Trip &amp;&amp;
+  stbox(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', tstzspan '[2001-01-01, 2001-01-05]');
+SELECT * FROM Trips WHERE Trip &amp;&amp;
+  tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-05)}';
+</programlisting>
+		</para>
+
+		<para>Finally, B-tree indexes can be created for table columns of all temporal types. For this index type, the only useful operation is equality. There is a B-tree sort ordering defined for values of temporal types, with corresponding <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname> and operators, but the ordering is rather arbitrary and not usually useful in the real world. B-tree support for temporal types is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
+
+		<para>In order to speed up several of the functions for temporal types, we can add in the <varname>WHERE</varname> clause of queries a bounding box comparison that make uses of the available indexes. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
+			<programlisting language="sql" xml:space="preserve">
+SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)')
+FROM Trips T
+-- Bouding box index filtering
+WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
+</programlisting>
+		</para>
+
+		<para>In the case of temporal points, all spatial relationships with the ever semantics (see <xref linkend="tpoint_spatial_rel" />) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
+			<programlisting language="sql" xml:space="preserve">
+SELECT tintersects(T.Trip, R.Geom)
+FROM Trips T, Regions R
+-- Bouding box index filtering
+WHERE intersects(T.Trip, R.Geom);
+</programlisting>
+		</para>
+	</sect1>
+
+	<sect1 id="temporal_types_statistics">
+		<title>Statistics and Selectivity</title>
+		<sect2>
+			<title>Statistics Collection</title>
+			<para>The PostgreSQL planner relies on statistical information about the contents of tables in order to generate the most efficient execution plan for queries. These statistics include a list of some of the most common values in each column and a histogram showing the approximate data distribution in each column. For large tables, a random sample of the table contents is taken, rather than examining every row. This enables large tables to be analyzed in a small amount of time. The statistical information is gathered by the <varname>ANALYZE</varname> command and stored in the <varname>pg_statistic</varname> catalog table. Since different kinds of statistics may be appropriate for different kinds of data, the table only stores very general statistics (such as number of null values) in dedicated columns. Everything else is stored in five &ldquo;slots&rdquo;, which are couples of array columns that store the statistics for a column of an arbitrary type.</para>
+
+			<para>The statistics collected for time types and temporal types are based on those collected by PostgreSQL for scalar types and span types. For scalar types, such as <varname>float</varname>, the following statistics are collected:
+				<orderedlist numeration="arabic">
+					<listitem>
+						<para>fraction of null values,</para>
+					</listitem>
+					<listitem>
+						<para>average width, in bytes, of non-null values,</para>
+					</listitem>
+					<listitem>
+						<para>number of different non-null values,</para>
+					</listitem>
+					<listitem>
+						<para>array of most common values and array of their frequencies,</para>
+					</listitem>
+					<listitem>
+						<para>histogram of values, where the most common values are excluded,</para>
+					</listitem>
+					<listitem>
+						<para>correlation between physical and logical row ordering.</para>
+					</listitem>
+				</orderedlist>
+			</para>
+
+			<para>For range types, like <varname>tstzrange</varname>, three additional histograms are collected:
+				<orderedlist continuation="continues" numeration="arabic">
+					<listitem>
+						<para>length histogram of non-empty ranges,</para>
+					</listitem>
+					<listitem>
+						<para>histograms of lower and upper bounds.</para>
+					</listitem>
+				</orderedlist>
+			</para>
+
+			<para>For geometries, in addition to (1)&#x2013;(3), the following statistics are collected:
+				<orderedlist continuation="continues" numeration="arabic">
+					<listitem>
+						<para>number of dimensions of the values, N-dimensional bounding box, number of rows in the table, number of rows in the sample, number of non-null values,</para>
+					</listitem>
+					<listitem>
+						<para>N-dimensional histogram that divides the bounding box into a number of cells and keeps the proportion of values that intersects with each cell.</para>
+					</listitem>
+				</orderedlist>
+			</para>
+
+			<para>The statistics collected for columns of the time and span types <varname>tstzset</varname>, <varname>tstzspan</varname>, <varname>tstzspanset</varname>, <varname>intspan</varname>, and <varname>floatspan</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the span types in MobilityDB, which are more efficient versions of the range types in PostgreSQL. For the <varname>tstzset</varname> and the <varname>tstzspanset</varname> types, a value is converted into its bounding period, then the statistics for the <varname>tstzspan</varname> type are collected.</para>
+
+			<para>The statistics collected for columns of temporal types depend on their subtype and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the time and the value dimensions independently. More precisely, the following statistics are collected for the time dimension:
+				<itemizedlist>
+					<listitem>
+						<para>For columns of instant subtype, the statistics (4)&#x2013;(6) are collected for the timestamps.</para>
+					</listitem>
+
+					<listitem>
+						<para>For columns of other subtype, the statistics (7)&#x2013;(8) are collected for the (bounding box) periods.</para>
+					</listitem>
+				</itemizedlist>
+			</para>
+
+			<para>The following statistics are collected for the value dimension:
+				<itemizedlist>
+					<listitem>
+						<para>For columns of temporal types with step interpolation (that is, <varname>tbool</varname>, <varname>ttext</varname>, or <varname>tint</varname>):
+							<itemizedlist>
+								<listitem>
+									<para>For the instant subtype, the statistics (4)&#x2013;(6) are collected for the values.</para>
+								</listitem>
+
+								<listitem>
+									<para>For all other subtypes, the statistics (7)&#x2013;(8) are collected for the values.</para>
+								</listitem>
+							</itemizedlist>
+						</para>
+					</listitem>
+
+					<listitem>
+						<para>For columns of the temporal float type (that is, <varname>tfloat</varname>):
+							<itemizedlist>
+								<listitem>
+									<para>For the instant subtype, the statistics (4)&#x2013;(6) are collected for the values.</para>
+								</listitem>
+								<listitem>
+									<para>For all other subtype, the statistics (7)&#x2013;(8) are collected for the (bounding) value spans.</para>
+								</listitem>
+							</itemizedlist>
+						</para>
+					</listitem>
+
+					<listitem>
+						<para>For columns of temporal point types (that is, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>) the statistics (9)&#x2013;(10) are collected for the points.</para>
+					</listitem>
+				</itemizedlist>
+			</para>
+		</sect2>
+
+		<sect2>
+			<title>Selectivity Estimation</title>
+
+			<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The <emphasis>restriction</emphasis> selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. On the other hand, the <emphasis>join</emphasis> selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
+
+			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a PostgreSQL type (such as <varname>integer</varname>, <varname>timestamptz</varname>, etc.) or a MobilityDB type (such as <varname>tstzspan</varname>, <varname>tint</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and time dimensions. The classes correspond to the type of statistics collected as explained in the previous section.</para>
+
+			<para>MobilityDB estimates both restriction and join selectivity for time, span, and temporal types.</para>
+		</sect2>
+	</sect1>
+</chapter>

@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter id="temporal_types_ops_p2">
+	<title>Tipos temporales: Operaciones genéricas (Parte 2)</title>
+
+	<sect1 id="temporal_types_modifications">
+		<title>Modificaciones</title>
+		<para>A continuación, explicamos la semántica de las operaciones de modificación (es decir, <varname>insert</varname>, <varname>update</varname> y <varname>delete</varname>) para tipos temporales. Estas operaciones tienen una semántica similar a las operaciones correspondientes para tablas temporales de tiempo de aplicación (<emphasis>application-time temporal tables</emphasis>) introducidas en el estándar <ulink url="https://en.wikipedia.org/wiki/SQL:2011">SQL:2011</ulink>. La principal diferencia es que SQL usa marcas de tiempo de tuplas (donde las marcas de tiempo se adjuntan a las tuplas), mientras que los valores temporales en MobilityDB usan marcas de tiempo de atributos (donde las marcas de tiempo se adjuntan a los valores de los atributos).</para>
+
+		<para>La operación <varname>insert</varname> agrega a un valor temporal los instantes de otro sin modificar los instantes existentes, como se ilustra en <xref linkend="insert_fig" />.</para>
+
+		<figure id="insert_fig" float="start">
+			<title>Operación de inserción para valores temporales.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" scale='100' fileref="../images/insert.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='100' fileref="../images/insert.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='100' fileref="../images/insert.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<para>Como se muestra en la figura, los valores temporales solo pueden intersectarse en su límite y, en ese caso, deben tener el mismo valor de base en sus marcas de tiempo comunes; de lo contrario, se genera un error. El resultado de la operación es la unión de los instantes para ambos valores temporales, como se muestra en el primer resultado de la figura. Esto es equivalente a una operación <varname>merge</varname> que se explica a continuación. Alternativamente, como se muestra en el segundo resultado de la figura, los fragmentos insertados que son disjuntos con el valor original se conectan al último instante anterior y al primer instante posterior al fragmento. Se utiliza un parámetro booleano <varname>connect</varname> para elegir entre los dos resultados, y el parámetro es verdadero por defecto. Nótese que esto solo se aplica a valores temporales continuos.</para>
+
+		<para>La operación <varname>update</varname> reemplaza los instantes en un primer valor temporal con los de un segundo valor como se ilustra en la <xref linkend="update_delete_fig" />.</para>
+
+		<figure id="update_delete_fig" float="start">
+			<title>Operaciones de actualización y supresión para valores temporales.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" scale='100' fileref="../images/update_delete.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='100' fileref="../images/update_delete.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='100' fileref="../images/update_delete.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<para>Como se muestra en la figura, el valor resultante contiene los instantes del segundo valor, independientemente de los instantes anteriores que tenía en el valor temporal original. Como en el caso de una operación <varname>insert</varname>, un parámetro booleano adicional determina si los nuevos fragmentos desconectados están conectados en el valor resultante, como se muestra en los dos posibles resultados de la figura. Cuando los dos valores temporales son disjuntos o solo se intersectan en su límite, esto corresponde a una operación <varname>insert</varname> como se explicó anteriormente. En este caso, la operación <varname>update</varname> se comporta como una operación <varname>upsert</varname> en SQL.</para>
+
+		<para>La operación <varname>deleteTime</varname> elimina los instantes de un valor temporal que intersectan un valor de tiempo. Esta operación se puede utilizar en dos situaciones diferentes, ilustradas en la <xref linkend="update_delete_fig" />.</para>
+
+		<orderedlist>
+			<listitem>
+				<para>En el primer caso, que se muestra como el resultado superior de la figura, el significado de la operación es introducir brechas de tiempo después de eliminar los instantes del valor temporal que intersectan el valor de tiempo. Esto es equivalente a las operaciones de restricción (<xref linkend="temporal_types_restrictions" />), que restringen un valor temporal al complemento del valor de tiempo.</para>
+			</listitem>
+
+			<listitem>
+				<para>El segundo caso, que se muestra como el resultado inferior de la figura, se usa para eliminar valores erróneos (por ejemplo, detectados como valores atípicos) sin introducir una brecha de tiempo, o para eliminar una brecha de tiempo. En este caso, los valores en el fragmento del valor temporal se eliminan y el último instante anterior y el primer instante posterior a une fragmento suprimido se conectan. Este comportamiento se especifica estableciendo un parámetro booleano adicional de la operación. Nótese que esto solo se aplica a valores temporales continuos.</para>
+			</listitem>
+		</orderedlist>
+
+		<para>
+			La <xref linkend="modif_sql_fig" /> muestra las operaciones de modificación equivalentes para tablas temporales en el estándar SQL. Intuitivamente, estas figuras se obtienen girando 90 grados en el sentido de las agujas del reloj las figuras correspondientes para los valores temporales (<xref linkend="insert_fig" /> y <xref linkend="update_delete_fig" />). Esto se debe al hecho de que en SQL, las tuplas consecutivas ordenadas por tiempo generalmente se conectan a través de las funciones de ventana <varname>LEAD</varname> y <varname>LAG</varname>.
+		</para>
+
+		<figure id="modif_sql_fig" float="start">
+			<title>Operaciones de modificación para tablas temporales en SQL.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" scale='100' fileref="../images/modif_sql.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='100' fileref="../images/modif_sql.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='100' fileref="../images/modif_sql.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<itemizedlist>
+			<listitem id="insert">
+				<para>Insertar un valor temporal en otro</para>
+				<para><varname>insert(ttype,ttype,connect=true) → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT insert(tint '{1@2000-01-01, 3@2000-01-03, 5@2000-01-05}',
+  tint '{3@2000-01-03, 7@2000-01-07}');
+-- {1@2000-01-01, 3@2000-01-03, 5@2000-01-05, 7@2000-01-07}
+SELECT insert(tint '{1@2000-01-01, 3@2000-01-03, 5@2000-01-05}',
+  tint '{5@2000-01-03, 7@2000-01-07}');
+-- ERROR: The temporal values have different value at their overlapping instant 2000-01-03
+SELECT insert(tfloat '[1@2000-01-01, 2@2000-01-02]',
+  tfloat '[1@2000-01-03, 1@2000-01-05]');
+-- [1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 1@2000-01-05]
+SELECT insert(tfloat '[1@2000-01-01, 2@2000-01-02]',
+  tfloat '[1@2000-01-03, 1@2000-01-05]', false);
+-- {[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 1@2000-01-05]}
+SELECT asText(insert(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02],
+  [Point(3 3 3)@2000-01-04],[Point(1 1 1)@2000-01-05]}',
+  tgeompoint 'Point(1 1 1)@2000-01-03'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02, POINT Z (1 1 1)@2000-01-03,
+ POINT Z (3 3 3)@2000-01-04], [POINT Z (1 1 1)@2000-01-05]} */
+</programlisting>
+			</listitem>
+
+			<listitem id="update">
+				<para>Actualizar un valor temporal con otro</para>
+				<para><varname>update(ttype,ttype,connect=true) → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT update(tint '{1@2000-01-01, 3@2000-01-03, 5@2000-01-05}',
+  tint '{5@2000-01-03, 7@2000-01-07}');
+-- {1@2000-01-01, 5@2000-01-03, 5@2000-01-05, 7@2000-01-07}
+SELECT update(tfloat '[1@2000-01-01, 1@2000-01-05]',
+  tfloat '[1@2000-01-02, 3@2000-01-03, 1@2000-01-04]');
+-- {[1@2000-01-01, 1@2000-01-02, 3@2000-01-03, 1@2000-01-04, 1@2000-01-05]}
+SELECT asText(update(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03,
+  Point(1 1 1)@2000-01-05], [Point(1 1 1)@2000-01-07]}',
+  tgeompoint '[Point(2 2 2)@2000-01-02, Point(2 2 2)@2000-01-04]'));
+/*  {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02, POINT Z (2 2 2)@2000-01-04,
+  POINT Z (1 1 1)@2000-01-05], [POINT Z (1 1 1)@2000-01-07]} */
+</programlisting>
+			</listitem>
+
+			<listitem id="deleteTime">
+				<para>Eliminar de un valor temporal un valor de tiempo</para>
+				<para><varname>deleteTime(ttype,time,connect=true) → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT deleteTime(tint '[1@2000-01-01, 1@2000-01-03]', timestamptz '2000-01-02', false);
+-- {[1@2000-01-01, 1@2000-01-02), (1@2000-01-02, 1@2000-01-03]}
+SELECT deleteTime(tint '[1@2000-01-01, 1@2000-01-03]', timestamptz '2000-01-02');
+-- [1@2000-01-01, 1@2000-01-03]
+SELECT deleteTime(tfloat '[1@2000-01-01, 4@2000-01-02, 2@2000-01-04, 5@2000-01-05]',
+  tstzspan '[2000-01-02, 2000-01-04]');
+-- [1@2000-01-01, 5@2000-01-05]
+SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tstzspan '[2000-01-02, 2000-01-04]'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02, POINT Z (3 3 3)@2000-01-04,
+  POINT Z (3 3 3)@2000-01-05]} */
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
+		<itemizedlist>
+			<listitem id="appendInstant">
+				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
+				<para>Anexar un instante temporal a un valor temporal</para>
+				<para><varname>appendInstant(ttype,ttype_inst) → ttype</varname></para>
+				<para><varname>appendInstant(ttype_inst,maxdist=NULL,maxt=NULL) → ttype_seq</varname></para>
+				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
+				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL. Dos argumentos opcionales establecen una distancia máxima y un intervalo de tiempo máximo de modo que se introduce una brecha de tiempo cada vez que dos instantes consecutivos tienen una distancia o un intervalo de tiempo mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Si uno de estos argumentos no se dan, no se tiene en cuenta para determinar las brechas.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
+-- {1@2000-01-01, 1@2000-01-02}
+SELECT appendInstant(tint '[1@2000-01-01]', tint '1@2000-01-02');
+-- [1@2000-01-01, 1@2000-01-02]
+SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tgeompoint 'Point(1 1 1)@2000-01-06'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
+   [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
+   POINT Z (1 1 1)@2000-01-06]} */
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+WITH temp(inst) AS (
+  SELECT tfloat '1@2000-01-01' UNION
+  SELECT tfloat '2@2000-01-02' UNION
+  SELECT tfloat '3@2000-01-03' UNION
+  SELECT tfloat '4@2000-01-04' UNION
+  SELECT tfloat '5@2000-01-05' )
+SELECT appendInstant(inst ORDER BY inst) FROM temp;
+-- [1@2000-01-01, 5@2000-01-05]
+WITH temp(inst) AS (
+  SELECT tgeogpoint 'Point(1 1)@2000-01-01' UNION
+  SELECT tgeogpoint 'Point(2 2)@2000-01-02' UNION
+  SELECT tgeogpoint 'Point(3 3)@2000-01-03' UNION
+  SELECT tgeogpoint 'Point(4 4)@2000-01-04' UNION
+  SELECT tgeogpoint 'Point(5 5)@2000-01-05' )
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
+/* [POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02, POINT(3 3)@2000-01-03,
+   POINT(4 4)@2000-01-04, POINT(5 5)@2000-01-05] */
+</programlisting>
+				<para>Observe que en la primera consulta con <varname>tfloat</varname>, las observaciones intermedias fueron eliminadas por el proceso de normalización ya que eran redundantes debido a la interpolación lineal. Este no es el caso de la segunda consulta con <varname>tgeogpoint</varname> ya que se utilizan coordenadas geodésicas.</para>
+				<programlisting language="sql" xml:space="preserve">
+WITH temp(inst) AS (
+  SELECT tfloat '1@2000-01-01' UNION
+  SELECT tfloat '2@2000-01-02' UNION
+  SELECT tfloat '4@2000-01-04' UNION
+  SELECT tfloat '5@2000-01-05' UNION
+  SELECT tfloat '7@2000-01-07' )
+SELECT appendInstant(inst, 0.0, '1 day' ORDER BY inst) FROM temp;
+-- {[1@2000-01-01, 2@2000-01-02], [4@2000-01-04, 5@2000-01-05], [7@2000-01-07]}
+WITH temp(inst) AS (
+  SELECT tgeompoint 'Point(1 1)@2000-01-01' UNION
+  SELECT tgeompoint 'Point(2 2)@2000-01-02' UNION
+  SELECT tgeompoint 'Point(4 4)@2000-01-04' UNION
+  SELECT tgeompoint 'Point(5 5)@2000-01-05' UNION
+  SELECT tgeompoint 'Point(7 7)@2000-01-07' )
+SELECT asText(appendInstant(inst, sqrt(2), '1 day' ORDER BY inst)) FROM temp;
+/* {[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],
+   [POINT(4 4)@2000-01-04, POINT(5 5)@2000-01-05], [POINT(7 7)@2000-01-07]} */
+</programlisting>
+			</listitem>
+
+			<listitem id="appendSequence">
+				<indexterm><primary><varname>appendSequence</varname></primary></indexterm>
+				<para>Anexar una secuencia temporal a un valor temporal</para>
+				<para><varname>appendSequence(ttype,ttype_seq) → {ttype_seq, ttype_seqset}</varname></para>
+				<para><varname>appendSequence(ttype_seq) → {ttype_seq,ttype_seqset}</varname></para>
+				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
+				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT appendSequence(tint '1@2000-01-01', tint '{2@2000-01-02, 3@2000-01-03}');
+-- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03}
+SELECT appendSequence(tint '[1@2000-01-01, 2@2000-01-02]',
+  tint '[2@2000-01-02, 3@2000-01-03]');
+-- [1@2000-01-01, 2@2000-01-02, 3@2000-01-03]
+SELECT asText(appendSequence(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tgeompoint '[Point(3 3 3)@2000-01-05, Point(1 1 1)@2000-01-06]'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
+   [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
+   POINT Z (1 1 1)@2000-01-06]} */
+</programlisting>
+			</listitem>
+
+			<listitem id="merge">
+				<indexterm><primary><varname>merge</varname></primary></indexterm>
+				<para>Fusionar los valores temporales</para>
+				<para><varname>merge(ttype,ttype) → ttype</varname></para>
+				<para><varname>merge(ttype[]) → ttype</varname></para>
+				<para>Los valores temporales solo pueden intersectar en su límite y en ese caso, los valores de base en las marcas de tiempo comunes deben ser los mismos; de lo contrario, se genera un error.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
+-- {1@2000-01-01, 1@2000-01-02}
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[2@2000-01-02, 1@2000-01-03]');
+-- [1@2000-01-01, 2@2000-01-02, 1@2000-01-03]
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[3@2000-01-03, 1@2000-01-04]');
+-- {[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 1@2000-01-04]}
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[1@2000-01-02, 2@2000-01-03]');
+-- ERROR:  Both arguments have different value at their overlapping timestamp
+SELECT asText(merge(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tgeompoint '{[Point(3 3 3)@2000-01-05, Point(1 1 1)@2000-01-06]}'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
+   [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
+   POINT Z (1 1 1)@2000-01-06]} */
+
+SELECT merge(ARRAY[tint '1@2000-01-01', '1@2000-01-02']);
+-- {1@2000-01-01, 1@2000-01-02}
+SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{2@2000-01-02, 3@2000-01-03}']);
+-- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03}
+SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{3@2000-01-03, 4@2000-01-04}']);
+-- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04}
+SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[2@2000-01-02, 1@2000-01-03]']);
+-- [1@2000-01-01, 2@2000-01-02, 1@2000-01-03]
+SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[3@2000-01-03, 4@2000-01-04]']);
+-- {[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}
+SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],
+  [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}', '{[Point(4 4)@2000-01-04,
+  Point(3 3)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']);
+/* {[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03,
+   Point(4 4)@2000-01-04, Point(3 3)@2000-01-05],
+   [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]} */
+SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}',
+  '{[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}']);
+-- [Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
+	</sect1>
+
+	<sect1 id="temporal_types_restrictions">
+		<title>Restricciones</title>
+		<para>Hay dos conjuntos complementarios de funciones de restricción. El primer conjunto de funciones restringe el valor temporal con respecto a un valor o una extensión de tiempo. Dos ejemplos son <varname>atValues</varname> o <varname>atTime</varname>. El segundo conjunto de funciones restringe el valor temporal con respecto al <emphasis>complement</emphasis> de un valor o una extensión de tiempo. Dos ejemplos son <varname>minusValues</varname> o <varname>minusTime</varname></para>
+
+		<itemizedlist>
+			<listitem id="atValues">
+				<indexterm><primary><varname>atValues</varname></primary></indexterm>
+				<indexterm><primary><varname>minusValues</varname></primary></indexterm>
+				<para>Restringir a (al complemento de) un valor</para>
+				<para><varname>atValues(ttype,values) → ttype</varname></para>
+				<para><varname>minusValues(ttype,values) → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT atValues(tint '[1@2001-01-01, 1@2001-01-15)', 1);
+-- [1@2001-01-01, 1@2001-01-15)
+SELECT asText(atValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
+  'Point(1 1 1)'));
+-- {[POINT Z (1 1 1)@2001-01-02]}
+SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{1, 3, 5}');
+-- {[1@2001-01-01], [3@2001-01-03]}
+SELECT asText(atValues(tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)',
+  geomset '{"Point(0 0)", "Point(1 1)"}'));
+-- {[POINT(0 0)@2001-01-01], [POINT(1 1)@2001-01-02]}
+SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[1,3]');
+-- [1@2001-01-01, 3@2001-01-03]
+SELECT atValues(tfloat '[1@2001-01-01, 5@2001-01-05)',
+  floatspanset '{[1,2], [3,4]}');
+-- {[1@2001-01-01, 2@2001-01-02],[3@2001-01-03, 4@2001-01-04]}
+</programlisting>
+
+				<programlisting language="sql" xml:space="preserve">
+SELECT minusValue(tint '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03)', 1);
+-- {[2@2001-01-02, 2@2001-01-03)}
+SELECT asText(minusValue(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
+  'Point(1 1 1)'));
+/* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
+   (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03)} */
+SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{2, 3}');
+/* {[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03),
+   (3@2001-01-03, 4@2001-01-04)} */
+SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(3 3 3)@2001-01-04)',
+  geomset '{"Point(1 1 1)", "Point(2 2 2)"}'));
+/* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
+   (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03),
+   (POINT Z (2 2 2)@2001-01-03, POINT Z (3 3 3)@2001-01-04)} */
+SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[2,3]');
+-- {[1@2001-01-01, 2@2001-01-02), (3@2001-01-03, 4@2001-01-04)}
+SELECT minusValues(tfloat '[1@2001-01-01, 5@2001-01-05)',
+  floatspanset '{[1,2], [3,4]}');
+-- {(2@2001-01-02, 3@2001-01-03), (4@2001-01-04, 5@2001-01-05)}
+</programlisting>
+				</listitem>
+
+			<listitem id="atMin">
+				<indexterm><primary><varname>atMin</varname></primary></indexterm>
+				<indexterm><primary><varname>minusMin</varname></primary></indexterm>
+				<para>Restringir al (al complemento del) valor mínimo</para>
+				<para><varname>atMin(torder) → torder</varname></para>
+				<para><varname>minusMin(torder) → torder</varname></para>
+				<para>La función devuelve nulo si el valor mínimo sólo ocurre en límites exclusivos.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT atMin(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}');
+-- {1@2001-01-01, 1@2001-01-05}
+SELECT atMin(tint '(1@2001-01-01, 3@2001-01-03]');
+-- {(1@2001-01-01, 1@2001-01-03)}
+SELECT atMin(tfloat '(1@2001-01-01, 3@2001-01-03]');
+-- NULL
+SELECT atMin(ttext '{(AA@2001-01-01, AA@2001-01-03), (BB@2001-01-03, AA@2001-01-05]}');
+-- {(AA@2001-01-01, AA@2001-01-03), [AA@2001-01-05]}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT minusMin(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}');
+-- {2@2001-01-03}
+SELECT minusMin(tfloat '[1@2001-01-01, 3@2001-01-03]');
+-- {(1@2001-01-01, 3@2001-01-03]}
+SELECT minusMin(tfloat '(1@2001-01-01, 3@2001-01-03)');
+-- {(1@2001-01-01, 3@2001-01-03)}
+SELECT minusMin(tint '{[1@2001-01-01, 1@2001-01-03), (1@2001-01-03, 1@2001-01-05)}');
+-- NULL
+</programlisting>
+			</listitem>
+
+			<listitem id="atMax">
+				<indexterm><primary><varname>atMax</varname></primary></indexterm>
+				<indexterm><primary><varname>minusMax</varname></primary></indexterm>
+				<para>Restringir al (al complemento del) valor máximo</para>
+				<para><varname>atMax(torder) → torder</varname></para>
+				<para><varname>minusMax(torder) → torder</varname></para>
+				<para>La función devuelve nulo si el valor máximo sólo ocurre en límites exclusivos.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT atMax(tint '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
+-- {3@2001-01-05}
+SELECT atMax(tfloat '(1@2001-01-01, 3@2001-01-03)');
+-- NULL
+SELECT atMax(tfloat '{(2@2001-01-01, 1@2001-01-03), [2@2001-01-03, 2@2001-01-05)}');
+-- {[2@2001-01-03, 2@2001-01-05]}
+SELECT atMax(ttext '{(AA@2001-01-01, AA@2001-01-03), (BB@2001-01-03, AA@2001-01-05]}');
+-- {("BB"@2001-01-03, "BB"@2001-01-05)}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT minusMax(tint '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
+-- {1@2001-01-01, 2@2001-01-03}
+SELECT minusMax(tfloat '[1@2001-01-01, 3@2001-01-03]');
+-- {[1@2001-01-01, 3@2001-01-03)}
+SELECT minusMax(tfloat '(1@2001-01-01, 3@2001-01-03)');
+-- {(1@2001-01-01, 3@2001-01-03)}
+SELECT minusMax(tfloat '{[2@2001-01-01, 1@2001-01-03), [2@2001-01-03, 2@2001-01-05)}');
+-- {(2@2001-01-01, 1@2001-01-03)}
+SELECT minusMax(tfloat '{[1@2001-01-01, 3@2001-01-03), (3@2001-01-03, 1@2001-01-05)}');
+-- {[1@2001-01-01, 3@2001-01-03), (3@2001-01-03, 1@2001-01-05)}
+</programlisting>
+			</listitem>
+
+
+			<listitem id="atGeometry">
+				<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
+				<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
+				<para>Restringir a (al complemento de) una geometría, un rango de Z y/o un período &Z_support;</para>
+				<para><varname>atGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
+				<para><varname>minusGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
+				<para><varname>atGeometryTime(tgeompoint,geometry,zspan=NULL,period) → tgeompoint</varname></para>
+				<para><varname>minusGeometryTime(tgeompoint,geometry,zspan=NULL,period) → tgeompoint</varname></para>
+				<para>La geometría debe estar en 2D y el cálculo con respecto a ella se realiza en 2D. El resultado conserva la dimensión Z del punto temporal, si existe.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
+  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+-- {"[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]"}
+SELECT astext(atGeometry(tgeompoint '[Point(0 0 0)@2000-01-01, Point(4 4 4)@2000-01-05]',
+  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+-- {[POINT Z (1 1 1)@2000-01-02, POINT Z (2 2 2)@2000-01-03]}
+SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03,
+  Point(3 1 3)@2000-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
+-- {[POINT Z (2 1 1)@2000-01-02, POINT Z (3 1 1)@2000-01-03, POINT Z (3 1 2)@2000-01-04]}
+</programlisting>
+
+				<programlisting language="sql" xml:space="preserve">
+SELECT asText(atGeometryTime(tgeompoint '[Point(1 1)@2000-01-01,
+  Point(5 1)@2000-01-05, Point(1 1)@2000-01-09]',
+  'Polygon((2 0,2 2,4 2,4 0,2 0))', NULL::floatspan,
+  tstzspan '[2000-01-03, 2000-01-05]'));
+-- {[POINT(3 1)@2000-01-03, POINT(4 1)@2000-01-04]}
+SELECT asText(atGeometryTime(tgeompoint '[Point(1 1 1)@2000-01-01,
+  Point(5 1 5)@2000-01-05, Point(1 1 9)@2000-01-09]',
+  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', floatspan '[0,5]',
+  tstzspan '[2000-01-03, 2000-01-06]'));
+-- {[POINT Z (3 1 3)@2000-01-03, POINT Z (4 1 4)@2000-01-04]}
+</programlisting>
+
+				<programlisting language="sql" xml:space="preserve">
+SELECT asText(minusGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
+  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+/* {[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02), (POINT(2 2)@2001-01-03,
+  POINT(3 3)@2001-01-04)} */
+SELECT astext(minusGeometry(tgeompoint '[Point(0 0 0)@2000-01-01,
+  Point(4 4 4)@2000-01-05]', geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+/* {[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02),
+   (POINT Z (2 2 2)@2000-01-03, POINT Z (4 4 4)@2000-01-05]} */
+SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03,
+  Point(3 1 3)@2000-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 1 1)@2000-01-02),
+    (POINT Z (3 1 2)@2000-01-04, POINT Z (3 1 3)@2000-01-05]} */
+</programlisting>
+
+				<programlisting language="sql" xml:space="preserve">
+SELECT asText(minusGeometryTime(tgeompoint '[Point(1 1)@2000-01-01,
+  Point(5 1)@2000-01-05, Point(1 1)@2000-01-09]',
+  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', NULL::floatspan,
+  tstzspan '[2000-01-03, 2000-01-05]'));
+/* {[POINT(1 1)@2000-01-01, POINT(3 1)@2000-01-03), (POINT(4 1)@2000-01-04,
+     POINT(5 1)@2000-01-05, POINT(1 1)@2000-01-09]} */
+SELECT asText(minusGeometryTime(tgeompoint '[Point(1 1 1)@2000-01-01,
+  Point(5 1 5)@2000-01-05, Point(1 1 9)@2000-01-09]',
+  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', floatspan '[0,5]',
+  tstzspan '[2000-01-03, 2000-01-06]'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (3 1 3)@2000-01-03),
+    (POINT Z (4 1 4)@2000-01-04, POINT Z (5 1 5)@2000-01-05,
+     POINT Z (1 1 9)@2000-01-09]} */
+</programlisting>
+			</listitem>
+
+			<listitem id="atTime">
+				<indexterm><primary><varname>atTime</varname></primary></indexterm>
+				<indexterm><primary><varname>minusTime</varname></primary></indexterm>
+				<para>Restringir a (al complemento de) un valor de tiempo</para>
+				<para><varname>atTime(ttype,time) → ttype</varname></para>
+				<para><varname>minusTime(ttype,time) → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT atTime(tfloat '[1@2001-01-01, 5@2001-01-05)', '2001-01-02');
+-- 2@2001-01-02
+SELECT atTime(tint '[1@2001-01-01, 1@2001-01-15)',
+  tstzset '{2001-01-01, 2001-01-03}');
+-- {1@2001-01-01, 1@2001-01-03}
+SELECT atTime(tfloat '{[1@2001-01-01, 3@2001-01-03), [3@2001-01-04, 1@2001-01-06)}',
+  tstzspan '[2001-01-02,2001-01-05)');
+-- {[2@2001-01-02, 3@2001-01-03), [3@2001-01-04, 2@2001-01-05)}
+SELECT atTime(tint '[1@2001-01-01, 1@2001-01-15)',
+  tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
+-- {[1@2001-01-01, 1@2001-01-03),[1@2001-01-04, 1@2001-01-05)}
+</programlisting>
+					<programlisting language="sql" xml:space="preserve">
+SELECT minusTime(tfloat '[1@2001-01-01, 5@2001-01-05)', '2001-01-02');
+-- {[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 5@2001-01-05)}
+SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
+  tstzset '{2001-01-02, 2001-01-03}');
+/* {[1@2001-01-01, 1@2001-01-02), (1@2001-01-02, 1@2001-01-03),
+   (1@2001-01-03, 1@2001-01-15)} */
+SELECT minusTime(tfloat '{[1@2001-01-01, 3@2001-01-03), [3@2001-01-04, 1@2001-01-06)}',
+  '[2001-01-02,2001-01-05)');
+-- {[1@2001-01-01, 2@2001-01-02), [2@2001-01-05, 1@2001-01-06)}
+SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
+  tstzspanset '{[2001-01-02, 2001-01-03), [2001-01-04, 2001-01-05)}');
+/* {[1@2001-01-01, 1@2001-01-02), [1@2001-01-03, 1@2001-01-04),
+   [1@2001-01-05, 1@2001-01-15)} */
+</programlisting>
+			</listitem>
+
+			<listitem id="atTbox">
+				<indexterm><primary><varname>atTbox</varname></primary></indexterm>
+				<indexterm><primary><varname>minusTbox</varname></primary></indexterm>
+				<para>Restringir a (al complemento de) un <varname>tbox</varname></para>
+				<para><varname>atTbox(tnumber,tbox) → tnumber</varname></para>
+				<para><varname>minusTbox(tnumber,tbox) → tnumber</varname></para>
+				<para>Observe que cuando el cuadro delimitador tiene dimensiones de valor y de tiempo, la diferencia se calcula restringiendo el número temporal al cuadro usando la función <varname>atTbox</varname>, calculando la extensión de tiempo de esta restricción, y restringiendo el número temporal a la diferencia de la extensión del tiempo. Esto es necesario para garantizar que <varname>tnumber = merge(atTbox(tnumber,tbox), minusTbox(tnumber,tbox))</varname> (ver la función <link linkend="merge"><varname>merge</varname></link>). En otras palabras, mientras que la función <varname>atTbox</varname> restringe el número temporal con respecto al rango <emphasis>y</emphasis> al período que definen el cuadro delimitador, la función <varname>minusTbox</varname> restringe el número temporal con respecto al rango <emphasis>o</emphasis> al período. Para obtener la restricción usando una semántica <emphasis>y</emphasis>, deben aplicarse las dos funciones <varname>minusValues</varname> y <varname>minusTime</varname>.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT atTbox(tfloat '[0@2001-01-01, 3@2001-01-04)',
+  tbox 'TBOX XT((0,2),[2001-01-02, 2001-01-04])');
+-- {[1@2001-01-02, 2@2001-01-03]}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT minusTbox(tfloat '[1@2001-01-01, 4@2001-01-04)',
+  'TBOX XT((1,4),[2001-01-03, 2001-01-04])');
+-- {[1@2001-01-01, 3@2001-01-03)}
+WITH temp(temp, box) AS (
+  SELECT tfloat '[1@2001-01-01, 4@2001-01-04)',
+    'TBOX XT((1,2),[2001-01-03, 2001-01-04])' )
+SELECT minusValues(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
+-- {[1@2001-01-01], [2@2001-01-02, 3@2001-01-03)}
+</programlisting>
+			</listitem>
+
+			<listitem id="atStbox">
+				<indexterm><primary><varname>atStbox</varname></primary></indexterm>
+				<indexterm><primary><varname>minusStbox</varname></primary></indexterm>
+				<para>Restringir a (al complemento de) un <varname>stbox</varname> &Z_support;</para>
+				<para><varname>atStbox(tgeompoint,stbox) → tgeompoint</varname></para>
+				<para><varname>minusStbox(tgeompoint,stbox) → tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
+  stbox 'STBOX XT(((0,0),(2,2))),[2001-01-02, 2001-01-04]'));
+-- {[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]}
+SELECT asText(atStbox(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03,
+  Point(3 3 2)@2000-01-04, Point(3 3 7)@2000-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
+/* {[POINT Z (2 2 2)@2000-01-02, POINT Z (3 3 3)@2000-01-03, POINT Z (3 3 2)@2000-01-04,
+  POINT Z (3 3 3)@2000-01-05]} */
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
+  stbox 'STBOX XT(((1,1),(4,4)),[2001-01-03,2001-01-04])'));
+-- {[POINT(1 1)@2001-01-01), POINT(3 3)@2001-01-03)}
+SELECT asText(minusStbox(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03,
+  Point(3 3 2)@2000-01-04, Point(3 3 7)@2000-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02), (POINT Z (3 3 3)@2000-01-05,
+  POINT Z (3 3 7)@2000-01-09]} */
+WITH temp(temp, box) AS (
+  SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
+    stbox 'STBOX XT(((1,1),(2,2)),[2001-01-03,2001-01-04])')
+SELECT asText(minusGeometry(minusTime(temp, box::tstzspan), box::geometry)) FROM temp;
+-- {(POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03)}
+</programlisting>
+				<para>De manera similar a la función <link linkend="atTbox"><varname>minusTbox</varname></link>, cuando el cuadro delimitador tiene dimensiones de espacio y tiempo, la función <varname> minusStbox</varname> restringe el punto temporal con respecto a las  extensiones de espacio <emphasis>o</emphasis> de tiempo del cuadro. Para obtener la restricción utilizando una semántica <emphasis>y</emphasis>, deben aplicarse las dos funciones <varname>minusGeometry</varname> y <varname>minusTime</varname>.</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="temporal_types_comparisons">
+		<title>Comparaciones</title>
+
+		<sect2>
+			<title>Comparaciones tradicionales</title>
+
+			<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los períodos delimitadores (ver la <xref linkend="setspan_comp_operators" />), después los cuadros delimitadores (ver la <xref linkend="box_types_comparisons" />) y si son iguales, entonces la comparación depende del subtipo. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
+
+			<para>Los operadores de igualdad y no igualdad consideran la representación equivalente para diferentes subtipos como se muestra a continuación.
+				<programlisting language="sql" xml:space="preserve">
+SELECT tint '1@2001-01-01' = tint '{1@2001-01-01}';
+-- true
+SELECT tfloat '1.5@2001-01-01' = tfloat '[1.5@2001-01-01]';
+-- true
+SELECT ttext 'AAA@2001-01-01' = ttext '{[AAA@2001-01-01]}';
+-- true
+SELECT tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02}' =
+  tgeompoint '{[Point(1 1)@2001-01-01], [Point(2 2)@2001-01-02]}';
+-- true
+SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02]' =
+  tgeogpoint '{[Point(1 1 1)@2001-01-01], [Point(2 2 2)@2001-01-02]}';
+-- true
+</programlisting>
+			</para>
+
+			<itemizedlist>
+				<listitem id="ttype_eq">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>¿Son iguales los valores temporales?</para>
+					<para><varname>ttype = ttype → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' = tint '[2@2001-01-03, 2@2001-01-05)';
+-- false
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_ne">
+					<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
+					<para>¿Son diferentes los valores temporales?</para>
+					<para><varname>ttype &lt;&gt; ttype → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt;&gt; tint '[2@2001-01-03, 2@2001-01-05)'
+-- true
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_lt">
+					<indexterm><primary><varname>&lt;</varname></primary></indexterm>
+					<para>¿Es el primer valor temporal menor que el segundo?</para>
+					<para><varname>ttype &lt; ttype → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt; tint '[2@2001-01-03, 2@2001-01-05)'
+-- true
+</programlisting>
+				</listitem>
+
+			<listitem id="ttype_gt">
+				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
+				<para>¿Es el primer valor temporal mayor que el segundo?</para>
+				<para><varname>ttype &gt; ttype → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt; tint '[2@2001-01-03, 2@2001-01-05)'
+-- false
+</programlisting>
+			</listitem>
+
+				<listitem id="ttype_le">
+					<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
+					<para>¿Es el primer valor temporal menor o igual que el segundo?</para>
+					<para><varname>ttype &lt;= ttype → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt;= tint '[2@2001-01-03, 2@2001-01-05)'
+-- true
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_ge">
+					<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
+					<para>¿Es el primer valor temporal mayor o igual que el segundo?</para>
+					<para><varname>ttype &gt;= ttype → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt;= tint '[2@2001-01-03, 2@2001-01-05)'
+-- false
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 id="ever_always_comparison">
+			<title>Comparaciones alguna vez y siempre</title>
+			<para>Una posible generalización de los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) a tipos temporales consiste en determinar si la comparación es alguna vez o siempre verdadera. En este caso, el resultado es un valor booleano. MobilityDB proporciona operadores para probar si la comparación de un valor temporal y un valor del tipo base es alguna vez o siempre verdadera. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). Algunos ejemplos son <varname>?=</varname>, <varname>%&lt;&gt;</varname> o <varname>?&lt;=</varname>. La igualdad y la no igualdad alguna vez/siempre  están disponibles para todos los tipos temporales, mientras que las desigualdades alguna vez/siempre sólo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>. Las comparaciones alguna vez y siempre son operadores inversos: por ejemplo,<varname>?=</varname> es el inverso de <varname>%&lt;&gt;</varname> y <varname>?&gt;</varname> es el inverso de <varname>%&lt;=</varname>.</para>
+
+			<itemizedlist>
+				<listitem id="ttype_eveq">
+					<indexterm><primary><varname>?=</varname></primary></indexterm>
+					<indexterm><primary><varname>%=</varname></primary></indexterm>
+					<para>¿Es el valor temporal alguna vez/siempre igual al valor?</para>
+					<para><varname>ttype ?= base → boolean</varname></para>
+					<para><varname>ttype  %= base → boolean</varname></para>
+					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' ?= 2;
+-- true
+SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' ?= 3;
+-- true
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-04)' ?=
+  geometry 'Point(1 1)';
+-- true
+</programlisting>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' %= 2;
+-- true
+SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' %= 3;
+-- true
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-04)' %=
+  geometry 'Point(1 1)';
+-- true
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_evne">
+					<indexterm><primary><varname>?&lt;&gt;</varname></primary></indexterm>
+					<indexterm><primary><varname>%&lt;&gt;</varname></primary></indexterm>
+					<para>¿Es el valor temporal alguna/siempre vez diferente del valor?</para>
+					<para><varname>ttype ?&lt;&gt; base → boolean</varname></para>
+					<para><varname>ttype %&lt;&gt; base → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' ?&lt;&gt; 2;
+-- false
+SELECT tfloat '[2@2001-01-01, 2@2001-01-04)' ?&lt;&gt; 2;
+-- true
+SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-04)' ?&lt;&gt;
+  geometry 'Point(1 1)';
+-- true
+</programlisting>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' %&lt;&gt; 2;
+-- false
+SELECT tfloat '[2@2001-01-01, 2@2001-01-04)' %&lt;&gt; 2;
+-- true
+SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-04)' %&lt;&gt;
+  geometry 'Point(1 1)';
+-- true
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_evlt">
+					<indexterm><primary><varname>?&lt;</varname></primary></indexterm>
+					<indexterm><primary><varname>%&lt;</varname></primary></indexterm>
+					<para>¿Es el valor temporal alguna vez/siempre menor que el valor?</para>
+					<para><varname>tnumber ?&lt; number → boolean</varname></para>
+					<para><varname>tnumber %&lt; number → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' ?&lt; 2;
+-- {[t@2001-01-01, f@2001-01-02, f@2001-01-04)}
+SELECT tint '[2@2001-01-01, 2@2001-01-05)' ?&lt; tfloat '[1@2001-01-03, 3@2001-01-05)';
+-- {[f@2001-01-03, f@2001-01-04], (t@2001-01-04, t@2001-01-05)}
+</programlisting>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' %&lt; 2;
+-- {[t@2001-01-01, f@2001-01-02, f@2001-01-04)}
+SELECT tint '[2@2001-01-01, 2@2001-01-05)' %&lt; tfloat '[1@2001-01-03, 3@2001-01-05)';
+-- {[f@2001-01-03, f@2001-01-04], (t@2001-01-04, t@2001-01-05)}
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_evgt">
+					<indexterm><primary><varname>?&gt;</varname></primary></indexterm>
+					<indexterm><primary><varname>%&gt;</varname></primary></indexterm>
+					<para>¿Es el valor temporal alguna vez mayor que el valor?</para>
+					<para><varname>tnumber ?&gt; number → boolean</varname></para>
+					<para><varname>tnumber %&gt; number → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-03, 1@2001-01-05)' ?&gt; 1;
+-- [f@2001-01-03, f@2001-01-05)
+</programlisting>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-03, 1@2001-01-05)' %&gt; 1;
+-- [f@2001-01-03, f@2001-01-05)
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_evle">
+					<indexterm><primary><varname>?&lt;=</varname></primary></indexterm>
+					<indexterm><primary><varname>%&lt;=</varname></primary></indexterm>
+					<para>¿Es el valor temporal alguna vez/siempre menor o igual que el valor?</para>
+					<para><varname>tnumber ?&lt;= number → boolean</varname></para>
+					<para><varname>tnumber %&lt;= number → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-01, 1@2001-01-05)' ?&lt;= tfloat '{2@2001-01-03, 3@2001-01-04}';
+-- {t@2001-01-03, t@2001-01-04}
+</programlisting>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-01, 1@2001-01-05)' %&lt;= tfloat '{2@2001-01-03, 3@2001-01-04}';
+-- {t@2001-01-03, t@2001-01-04}
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_evge">
+					<indexterm><primary><varname>?&gt;=</varname></primary></indexterm>
+					<indexterm><primary><varname>%&gt;=</varname></primary></indexterm>
+					<para>¿Es el valor temporal alguna vez/siempre mayor o igual que el valor?</para>
+					<para><varname>tnumber ?&gt;= number → boolean</varname></para>
+					<para><varname>tnumber %&gt;= number → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT 'AAA'::text ?&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
+  [BBB@2001-01-04, BBB@2001-01-05)}';
+-- {[f@2001-01-01, f@2001-01-03), [t@2001-01-04, t@2001-01-05)}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELEC	T 'AAA'::text %&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
+  [BBB@2001-01-04, BBB@2001-01-05)}';
+-- {[f@2001-01-01, f@2001-01-03), [t@2001-01-04, t@2001-01-05)}
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Comparaciones temporal</title>
+			<para>Otra posible generalización de los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) a tipos temporales consiste en determinar si la comparación es verdadera o falsa en cada instante. En este caso, el resultado es un booleano temporal. Los operadores de comparación temporal se indican anteponiendo los operadores de comparación tradicionales con <varname>#</varname>. Algunos ejemplos son <varname>#=</varname> o <varname>#&lt;=</varname>. La igualdad y no igualdad temporal están disponibles para todos los tipos temporales, mientras que las desigualdades temporales sólo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>.</para>
+
+			<itemizedlist>
+				<listitem id="ttype_teq">
+					<indexterm><primary><varname>#=</varname></primary></indexterm>
+					<para>Igual temporal</para>
+					<para><varname>{base,ttype} #= {base,ttype} → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tfloat '[1@2001-01-01, 2@2001-01-04)' #= 3;
+-- {[f@2001-01-01, f@2001-01-04)}
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #= tint '[1@2001-01-01, 1@2001-01-04)';
+-- {[t@2001-01-01], (f@2001-01-01, f@2001-01-04)}
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #= tfloat '[4@2001-01-02, 1@2001-01-05)';
+-- {[f@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04)}
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)' #=
+  geometry 'Point(1 1)';
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)' #=
+  tgeompoint '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-03)';
+-- {[f@2001-01-01], (t@2001-01-01, t@2001-01-03)}
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_tne">
+					<indexterm><primary><varname>#&lt;&gt;</varname></primary></indexterm>
+					<para>Diferente temporal</para>
+					<para><varname>{base,ttype} #&lt;&gt; {base,ttype} → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #&lt;&gt; 2;
+-- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, 2001-01-04)}
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #&lt;&gt; tint '[2@2001-01-02, 2@2001-01-05)';
+-- {[f@2001-01-02], (t@2001-01-02, t@2001-01-04)}
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_tlt">
+					<indexterm><primary><varname>#&lt;</varname></primary></indexterm>
+					<para>Menor que temporal</para>
+					<para><varname>{base,torder} #&lt; {base,torder} → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #&lt; 2;
+-- {[t@2001-01-01, f@2001-01-02, f@2001-01-04)}
+SELECT tint '[2@2001-01-01, 2@2001-01-05)' #&lt; tfloat '[1@2001-01-03, 3@2001-01-05)';
+-- {[f@2001-01-03, f@2001-01-04], (t@2001-01-04, t@2001-01-05)}
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_tgt">
+					<indexterm><primary><varname>#&gt;</varname></primary></indexterm>
+					<para>Mayor que temporal</para>
+					<para><varname>{base,torder} #&gt; {base,torder} → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT 1 #&gt; tint '[1@2001-01-03, 1@2001-01-05)';
+-- [f@2001-01-03, f@2001-01-05)
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_tle">
+					<indexterm><primary><varname>#&lt;=</varname></primary></indexterm>
+					<para>Menor o igual que temporal</para>
+					<para><varname>{base,torder} #&lt;= {base,torder} → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-01, 1@2001-01-05)' #&lt;= tfloat '{2@2001-01-03, 3@2001-01-04}';
+-- {t@2001-01-03, t@2001-01-04}
+</programlisting>
+				</listitem>
+
+				<listitem id="ttype_tge">
+					<indexterm><primary><varname>#&gt;=</varname></primary></indexterm>
+					<para>Mayor o igual que temporal</para>
+					<para><varname>{base,torder} #&gt;= {base,torder} → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
+  [BBB@2001-01-04, BBB@2001-01-05)}';
+-- {[f@2001-01-01, f@2001-01-03), [t@2001-01-04, t@2001-01-05)}
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1 id="temporal_types_bbox">
+		<title>Operadores de cuadro delimitador</title>
+
+		<para>Estos operadores prueban si los cuadros delimitadores de sus argumentos satisfacen el predicado y dan como resultado un valor booleano. Como se indica en el <xref linkend="temporal_types" />, el cuadro delimitador asociado a un tipo temporal depende del tipo base: es el tipo <varname>tstzspan</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, el tipo <varname>tbox</varname> para los tipos <varname>tint</varname> y <varname>tfloat</varname> y el tipo <varname>stbox</varname> para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Además, como se dijo en la <xref linkend="box_types_casting" />, muchos tipos PostgreSQL, PostGIS o MobilityDB se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>. Por ejemplo, los tipos numéricos y los rangos se pueden convertir al tipo <varname>tbox</varname>, los tipos <varname>geometry</varname> y <varname>geography</varname> se pueden convertir al tipo <varname>stbox</varname> y los tipos de tiempo y los tipos temporales se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>.</para>
+
+		<para>Un primer conjunto de operadores considera las relaciones topológicas entre los cuadros delimitadores. Hay cinco operadores topológicos: superposición (<varname>&amp;&amp;</varname>), contiene (<varname>@&gt;</varname>), está contenido (<varname>&lt;@</varname>), mismo (<varname>~=</varname>) y adyacente (<varname>-|-</varname>). Los argumentos de estos operadores pueden ser un tipo base, una cuadro delimitador o un tipo temporal y los operadores verifican la relación topológica teniendo en cuenta el valor y/o la dimensión temporal según el tipo de los argumentos.</para>
+
+		<para>Otro conjunto de operadores considera la posición relativa de los cuadros delimitadores. Los operadores <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname> consideran la dimensión de valor para los tipos <varname>tint</varname> y <varname>tfloat</varname> y las coordenadas X para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname> y <varname>|&amp;&gt;</varname> consideran las coordenadas Y para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname> y <varname>/&amp;&gt;</varname> consideran las coordenadas Z para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname> y los operadores <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname> y <varname>#&amp;&gt;</varname> consideran la dimensión tiempo para todos los tipos temporales.</para>
+
+		<para>Finalmente, cabe destacar que los operadores de cuadro delimitador permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
+
+		<para>Refiérase a la <xref linkend="box_types_topo_rel" /> para los operadores de cuadro delimitador.</para>
+	</sect1>
+
+	<sect1 id="temporal_types_miscellaneous">
+		<title>Funciones de utilidad</title>
+		<itemizedlist>
+			<listitem id="mobilitydb_version">
+				<indexterm><primary><varname>mobilitydb_version</varname></primary></indexterm>
+				<para>Versión de la extensión MobilityDB</para>
+				<para><varname>mobilitydb_version() → text</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT mobilitydb_version();
+-- MobilityDB 1.1
+</programlisting>
+			</listitem>
+
+			<listitem id="mobilitydb_full_version">
+				<indexterm><primary><varname>mobilitydb_full_version</varname></primary></indexterm>
+				<para>Versión de la extensión MobilityDB y de sus dependencias</para>
+				<para><varname>mobilitydb_full_version() → text</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT mobilitydb_full_version();
+-- MobilityDB 1.1.0, PostgreSQL 14.2, PostGIS 3.2.1
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+</chapter>

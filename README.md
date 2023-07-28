@@ -32,6 +32,8 @@ Benefits
 
 *   Compatible with the PostgreSQL ecosystem
 
+    <img src="doc/images/mobilitydb_ecosystem.png" width="700" alt="MobilityDB Ecosystem" />
+
 *   Compliant with the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) standards from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC)
 
 *   Adopted by the [Open Source Geospatial Foundation](https://www.osgeo.org/) (OSGeo) as a [community project](https://www.osgeo.org/projects/mobilitydb/)
@@ -46,6 +48,8 @@ Benefits
     *   [MobilityDB-BerlinMOD](https://github.com/MobilityDB/MobilityDB-BerlinMOD)
 
 *   [Plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
+
+*   An extensive [workshop](https://github.com/MobilityDB/MobilityDB-workshop) illustrating various usage scenarios of MobilityDB
 
 Experimental Projects
 -----------------------------
@@ -76,24 +80,23 @@ Branches
 Status
 ------
 
-The extension is under development. We are planning to release the first version in 2021.
+The current version is 1.0. We are planning to release version 1.1 in the summer of 2023.
 
 Requirements
 ------------
 
 *   Linux (other UNIX-like systems may work, but remain untested)
-*   PostgreSQL >= 11
+*   PostgreSQL >= 12
 *   CMake >= 3.7
-*   PostGIS >= 2.5
+*   PostGIS >= 3.0
 *   JSON-C
 *   GNU Scientific Library (GSL)
-*   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ, JSON-C
+*   Development files for PostgreSQL, PostGIS, PROJ, JSON-C
 
-For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 13 and PostGIS 3:
+For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 14 and PostGIS 3:
 ```bash
-apt install build-essential cmake postgresql-server-dev-13 libproj-dev libjson-c-dev
+apt install build-essential cmake postgresql-server-dev-14 libproj-dev libjson-c-dev
 ```
-Notice that if you want to use PostGIS 2.5, this requires in addition to add the dependency `liblwgeom-dev` to the above command.
 
 Building & Installation
 -----------------------

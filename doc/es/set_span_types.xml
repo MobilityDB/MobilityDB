@@ -1,0 +1,1162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter id="set_span_types">
+	<title>Tipos de conjunto y de rango</title>
+
+	<para>
+		MobilityDB proporciona los tipos de <emphasis>conjunto</emphasis>, <emphasis>rango</emphasis> y <emphasis>conjunto de rangos</emphasis> para representar conjuntos de valores de otro tipo, que se denomina <emphasis>tipo base</emphasis>. Los tipos de conjunto son similares a los tipos de matrices de PostgreSQL restringidos a una dimensión, pero imponen la restricción de que los conjuntos no tienen duplicados. Los tipos de rango y conjunto de rangos en MobilityDB corresponden a los tipos de rango y multirango en PostgreSQL pero tienen restricciones adicionales. En particular, los tipos de rango en MobilityDB tienen una longitud fija y no permiten rangos vacíos ni límites infinitos. Si bien los tipos de rango en MobilityDB proporcionan una funcionalidad similar a los tipos de rango en PostgreSQL, los tipos de rango en MobilityDB permiten aumentar el rendimiento. En particular, se elimina la sobrecarga del procesamiento de tipos de longitud variable y, además, se pueden utilizar la aritmética de punteros y la búsqueda binaria.
+	</para>
+
+	<para>
+		Los tipos de base que se utilizan para construir tipos de conjunto, de rango y de conjunto de rangos son los tipos <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, <varname>timestamptz</varname> (marca de tiempo con zona horaria) y <varname>text</varname> proporcionados por PostgreSQL, los tipos <varname>geometry</varname> y <varname>geography</varname> proporcionados por PostGIS, y el tipo <varname>npoint</varname > (punto de red) proporcionado por MobilityDB (ver <xref linkend="temporal_network_points" />). MobilityDB proporciona los siguientes tipos de conjunto y de rango:
+		<itemizedlist>
+			<listitem>
+				<para><varname>set</varname>: <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>textset</varname>, <varname>geomset</varname>, <varname>geogset</varname>, <varname>npointset</varname> (see <xref linkend="temporal_network_points" />).</para>
+			</listitem>
+			<listitem>
+				<para><varname>span</varname>: <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname>, <varname>tstzspan</varname>.</para>
+			</listitem>
+			<listitem>
+				<para><varname>spanset</varname>: <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname>, <varname>tstzspanset</varname>.</para>
+			</listitem>
+		</itemizedlist>
+	</para>
+
+	<para>
+		Los tipos de <emphasis>conjunto</emphasis> son <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>tstzset</varname>, <varname>textset</varname>, <varname>geomset</varname> y <varname>geogset</varname> que representan, respectivamente, un conjunto de valores distintos de tipo <varname>integer</varname>, <varname>bigint</varname >, <varname>float</varname>, <varname>timestamptz</varname> (marca de tiempo con zona horaria), y <varname>text</varname>, así como los tipos PostGIS <varname>geometry</varname> y <varname>geography</varname>.
+	</para>
+
+	<para>
+		Los tipos de <emphasis>rango</emphasis> son <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname> y <varname>tstzspan</varname>, que representan, respectivamente, rangos de valores de tipo <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname> y <varname>timestamptz</varname> (marca de tiempo con zona horaria). Además, MobilityDB tiene los tipos conjunto de rangos correspondientes, a saber, <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname> y <varname>tstzspanset </varname>, que representan conjuntos de rangos disjuntos.
+	</para>
+
+	<para>
+			A continuación presentamos las funciones y operadores para tipos de conjunto y de rango. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo de resultado puede depender del tipo de los argumentos. Para expresar esto en la firma de las funciones y los operadores, utilizamos la siguiente notación:
+	</para>
+	<itemizedlist>
+		<listitem>
+			<para><varname>set</varname> representa cualquier tipo de conjunto, como <varname>intset</varname> o <varname>tstzset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>span</varname> representa cualquier tipo de rango, como <varname>intspan</varname> o <varname>tstzspan</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>spanset</varname> representa cualquier tipo de conjunto de rangos, como <varname>intspanset</varname> o <varname>tstzspanset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>spans</varname> representa cualquier tipo de rango o conjunto de rangos, como <varname>intspan</varname> o <varname>tstzspanset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>numspans</varname> representa cualquier tipo de rango o conjunto de rangos numérico, como <varname>intspan</varname> o <varname>floatspanset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>base</varname> representa cualquier tipo de base de un tipo de conjunto o de rango, como <varname>integer</varname> o <varname>timestamptz</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>number</varname> representa cualquier tipo de base de un tipo de rango numérico, como <varname>integer</varname> o <varname>float</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>tstzspan</varname>, <varname>tstzset</varname> o <varname>tstzspanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para>Un conjunto de tipos como <varname>{set,base}</varname> representa cualquiera de los tipos enumerados,</para>
+		</listitem>
+		<listitem>
+			<para><varname>type[]</varname> representa una matriz de <varname>type</varname>.</para>
+		</listitem>
+	</itemizedlist>
+
+	<para>
+		Como ejemplo, la firma del operador contiene (<varname>@&gt;</varname>) es como sigue:
+	</para>
+	<programlisting xml:space="preserve">
+{set,spans} @&gt; {base,set,spans} → boolean
+</programlisting>
+	<para>
+		Nótese que la firma anterior es una versión abreviada de la firma más precisa a continuación
+	</para>
+	<programlisting xml:space="preserve">
+set @&gt; {base,set} → boolean
+spans @&gt; {base,spans} → boolean
+</programlisting>
+	<para>
+			ya que los conjuntos y los rangos no se pueden mezclar en las operaciones y, por lo tanto, por ejemplo, no se puede preguntar si un rango contiene un conjunto. A continuación, por concisión, utilizamos el estilo abreviado de las firmas anteriores. Además, la parte de tiempo de las marcas de tiempo se omite en la mayoría de los ejemplos. Recuerde que en ese caso PostgreSQL asume el tiempo <varname>00:00:00</varname>.
+	</para>
+
+	<para>
+		A continuación, dado que los tipos de rango y conjunto de rangos tienen funciones y operadores similares, cuando hablamos de tipos rango nos referimos a los tipos de rango y conjuntos de rangos, a menos que nos refiramos explícitamente a los tipos de rango <emphasis>unitarios</emphasis> y a los tipos de <emphasis>conjunto</emphasis> de rangos para distinguirlos. Además, cuando nos referimos a tipos de tiempo, nos referimos a uno de los siguientes tipos: <varname>timestamptz</varname>, <varname>tstzset</varname>, <varname>tstzspan</varname> o <varname>tstzspanset</varname>.
+	</para>
+
+	<sect1>
+		<title>Entrada y salida</title>
+		<para>
+				MobilityDB generaliza los formatos de entrada y salida Well-Known Text (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) y Well-Known Binary (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) del Open Geospatial Consortium (<ulink url="https://www.ogc.org/">OGC</ulink>) a para todos sus tipos. De esta forma, las aplicaciones pueden intercambiar datos entre ellas utilizando un formato de intercambio estandarizado. El formato WKT es legible por humanos, mientras que el formato WKB es más compacto y más eficiente que el formato WKT. El formato WKB se puede generar como una cadena binaria o como una cadena de caracteres codificada en ASCII hexadecimal.
+		</para>
+
+		<para>
+			Los tipos de conjunto representan un conjunto <emphasis>ordenado</emphasis> de valores <emphasis>diferentes</emphasis>. Un conjunto debe contener al menos un elemento. Ejemplos de valores de tipos de conjunto son como sigue:
+		</para>
+		<programlisting language="sql" xml:space="preserve">
+SELECT tstzset '{2001-01-01 08:00:00, 2001-01-03 09:30:00}';
+-- Conjunto unitario
+SELECT textset '{"highway"}';
+-- Conjunto erróneo: elementos desordenados
+SELECT floatset '{3.5, 1.2}';
+-- Conjunto erróneo: elementos duplicados
+SELECT geomset '{"Point(1 1)", "Point(1 1)"}';
+</programlisting>
+		<para>
+			Nótese que los elementos de los conjuntos <varname>textset</varname>, <varname>geomset</varname>, <varname>geogset</varname> y <varname>npointset</varname> deben estar delimitados entre commillas dobles. Nótese también que las geometrías y las geografías utilizan el orden definido por PostGIS.
+		</para>
+
+		<para>
+			Un valor de un tipo de rango unitario tiene dos límites, el <emphasis>límite inferior</emphasis> y el <emphasis>límite superior</emphasis>, que son valores del <emphasis>tipo de base</emphasis> subyacente. Por ejemplo, un valor del tipo <varname>tstzspan</varname> tiene dos límites, que son valores de <varname>timestamptz</varname>. Los límites pueden ser inclusivos o exclusivos. Un límite inclusivo significa que el instante límite está incluido en el rango, mientras que un límite exclusivo significa que el instante límite no está incluido en el rango. En el formato textual de un valor de un rango, los límites inferiores inclusivos y exclusivos están representados, respectivamente, por &ldquo;<varname>[</varname>&rdquo; y &ldquo;<varname>(</varname>&rdquo;. Asimismo, los límites superiores inclusivos y exclusivos se representan, respectivamente, por &ldquo;<varname>]</varname>&rdquo; y &ldquo;<varname>)</varname>&rdquo;. En un valor de un rango, el límite inferior debe ser menor o igual que el límite superior. Un valor de rango con límites iguales e inclusivos se llama <emphasis>rango instantáneo</emphasis> y corresponde a un valor del tipo de base. Ejemplos de valores de rango son como sigue:
+		</para>
+		<programlisting language="sql" xml:space="preserve">
+SELECT intspan '[1, 3)';
+SELECT floatspan '[1.5, 3.5]';
+SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-03 09:30:00)';
+-- Rangos instantáneos
+SELECT intspan '[1, 1]';
+SELECT floatspan '[1.5, 1.5]';
+SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:00:00]';
+-- Rango erróneo: límites inválidos
+SELECT tstzspan '[2001-01-01 08:10:00, 2001-01-01 08:00:00]';
+-- Rango erróneo: rango vacío
+SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:00:00)';
+	</programlisting>
+		<para>
+			Los valores de <varname>intset</varname> y <varname>bigintset</varname> son convertidos en <emphasis>forma normal</emphasis> para que los valores equivalentes tengan representaciones idénticas. En la representación canónica de estos tipos, el límite inferior es inclusivo y el límite superior es exclusivo, como se muestra en los siguientes ejemplos:
+		</para>
+		<programlisting language="sql" xml:space="preserve">
+SELECT intspan '[1, 1]';
+-- [1, 2)
+SELECT bigintspan '(1, 3]';
+--[2, 4)
+</programlisting>
+
+		<para>
+			Un valor de un tipo de conjunto de rangos representa un conjunto <emphasis>ordenado</emphasis> de valores de rango <emphasis>disjuntos</emphasis>. Un valor de conjunto de rangos debe contener al menos un elemento, en cuyo caso corresponde a un único valor de rango. Ejemplos de valores conjunto de rangos son los siguientes:
+		</para>
+		<programlisting language="sql" xml:space="preserve">
+SELECT floatspanset '{[8.1, 8.5],[9.2, 9.4]}';
+-- Singleton spanset
+SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00]}';
+-- Erroneous spanset: unordered elements
+SELECT intspanset '{[3,4],[1,2]}';
+-- Erroneous spanset: overlapping elements
+SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00],
+  [2001-01-01 08:05:00, 2001-01-01 08:15:00]}';
+</programlisting>
+
+		<para>
+			Los valores de los tipos conjunto de rangos son convertidos en <emphasis>forma normal</emphasis> de modo que los valores equivalentes tengan representaciones idénticas. Para ello, los valores de rango consecutivos que son adyacentes se fusionan cuando es posible. Ejemplos de transformación a forma normal son los siguientes:
+		</para>
+		<programlisting language="sql" xml:space="preserve">
+SELECT intspanset '{[1,2],[3,4]}';
+-- {[1, 5)}
+SELECT floatspanset '{[1.5,2.5],(2.5,4.5]}';
+-- {[1.5, 4.5]}
+SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
+  [2001-01-01 08:10:00, 2001-01-01 08:10:00], (2001-01-01 08:10:00, 2001-01-01 08:20:00]}';
+-- {[2001-01-01 08:00:00+00,2001-01-01 08:20:00+00]}
+</programlisting>
+
+		<para>
+			Damos a continuación las funciones de entrada y salida de tipos de conjunto y de rango en formato binario conocido.
+		</para>
+
+		<itemizedlist>
+			<listitem id="setspan_asBinary">
+				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
+				<para>Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+				<para><varname>asBinary({set,spans},endian text='') → bytea</varname></para>
+				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asBinary(tstzset '{2001-01-01, 2001-01-03}');
+-- \x0102000000009c57d3c11c0000005c060fea1c0000
+SELECT asBinary(intspan '[1, 2]');
+-- \x010900010100000003000000
+SELECT asBinary(intspanset '{[1, 2], [4, 5]}', 'XDR');
+ \x00000a00000002010000000100000003010000000400000006
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_asHexWKB">
+				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
+				<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
+				<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
+				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asHexWKB(tstzset '{2001-01-01, 2001-01-03}');
+-- 0102000000009C57D3C11C0000005C060FEA1C0000
+SELECT asHexWKB(intspan '[1, 2]');
+-- 010900010100000003000000
+SELECT asHexWKB(intspanset '{[1, 2], [4, 5]}', 'XDR');
+-- 00000A00000002010000000100000003010000000400000006
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_FromBinary">
+				<indexterm><primary><varname>settypeFromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>spantypeFromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>spansettypeFromBinary</varname></primary></indexterm>
+				<para>Obtener a partir de la representación binaria conocida (WKB)</para>
+				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</para>
+				<para><varname>settypeFromBinary(bytea) → set</varname></para>
+				<para><varname>spantypeFromBinary(bytea) → span</varname></para>
+				<para><varname>spansettypeFromBinary(bytea) → spanset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tstzsetFromBinary('\x01020000000fce0136a58010000bc8f4f92580100');
+-- {2001-01-01, 2001-01-03}
+SELECT intspanFromBinary('\x010800010100000003000000');
+-- [1, 3)
+SELECT tstzspansetFromBinary(
+  '\x01020000000300fce0136a58010000bc8f4f9258010003001c676da6580100007c3e8bba580100');
+-- {[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_FromHexWKB">
+				<indexterm><primary><varname>settypeFromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>spantypeFromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>spansettypeFromHexWKB</varname></primary></indexterm>
+				<para>Obtener a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
+				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</para>
+				<para><varname>settypeFromHexWKB(text) → set</varname></para>
+				<para><varname>spantypeFromHexWKB(text) → span</varname></para>
+				<para><varname>spansettypeFromHexWKB(text) → spanset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tstzsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
+-- {2001-01-01, 2001-01-03}
+SELECT intspanFromHexWKB('010800010100000003000000');
+-- [1, 3)
+SELECT floatspanFromHexWKB('01060001000000000000F83F0000000000000440');
+-- [1.5, 2.5)
+SELECT tstzspanFromHexWKB('010A000300FCE0136A58010000BC8F4F92580100');
+-- [2001-01-01, 2001-01-03]
+SELECT tstzspansetFromHexWKB(
+  '01020000000300FCE0136A58010000BC8F4F9258010003001C676DA6580100007C3E8BBA580100');
+-- {[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1>
+		<title>Constructores</title>
+
+		<para>La función constructora para los tipos de conjunto tiene un único argumento que es una matriz de valores del tipo base correspondiente. Los valores deben estar ordenados y no pueden tener nulos ni duplicados.
+		</para>
+		<itemizedlist>
+			<listitem id="set">
+				<indexterm><primary><varname>intset</varname></primary></indexterm>
+				<indexterm><primary><varname>floatset</varname></primary></indexterm>
+				<indexterm><primary><varname>textset</varname></primary></indexterm>
+				<indexterm><primary><varname>tstzset</varname></primary></indexterm>
+				<para>Constructor para tipos de conjunto</para>
+				<para><varname>set(base[]) → set</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT set(ARRAY['highway', 'primary', 'secondary']);
+-- {"highway", "primary", "secondary"}
+SELECT set(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
+-- {2001-01-01 08:00:00+00, 2001-01-03 09:30:00+00}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
+		<para>Los tipos de rango unitarios tienen una función constructora que acepta cuatro argumentos, donde los dos últimos son opcionales. Los primeros dos argumentos especifican, respectivamente, el límite inferior y el superior, y los dos últimos argumentos son valores booleanos que indican, respectivamente, si los límites inferior y el superior son inclusivos o no. Se supone que los dos últimos argumentos son, respectivamente, verdadero y falso si no se especifican. Nótese que los rangos de enteros se transforman en <emphasis>forma normal</emphasis>, es decir, con límite inferior inclusivo y límite superior exclusivo.
+		</para>
+		<itemizedlist>
+			<listitem id="span">
+				<indexterm><primary><varname>span</varname></primary></indexterm>
+				<para>Constructor para tipos de rango</para>
+				<para><varname>span(base,integer,left_inc=true,right_inc=false) → span</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+-- Rango de flotantes definido con dos argumentos
+SELECT span(20.5, 25);
+-- [20.5, 25)
+-- Rango de enteros definido con cuatro argumentos
+SELECT span(20, 25, false, true);
+-- [21, 26)
+-- Rango de tiempo definido con cuatro argumentos
+SELECT span(timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00', false, true);
+-- (2001-01-01 08:00:00, 2001-01-03 09:30:00]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
+		<para>La función constructora para los tipos de conjuntos de intervalos tiene un solo argumento que es una matriz de valores de intervalos del mismo subtipo.
+		</para>
+		<itemizedlist>
+			<listitem id="spanset">
+					<indexterm><primary><varname>spanset</varname></primary></indexterm>
+				<para>Constructor for conjunto de rangos</para>
+				<para><varname>spanset(span[]) → spanset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT spanset(ARRAY[intspan '[10,12]', '[13,15]']);
+-- {[10, 16)}
+SELECT spanset(ARRAY[floatspan '[10.5,12.5]', '[13.5,15.5]']);
+-- {[10.5, 12.5], [13.5, 15.5]}
+SELECT spanset(ARRAY[tstzspan '[2001-01-01 08:00, 2001-01-01 08:10]',
+  '[2001-01-01 08:20, 2001-01-01 08:40]']);
+-- {[2001-01-01 08:00, 2001-01-01 08:10], [2001-01-01 08:20, 2001-01-01 08:40]};
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1>
+		<title>Conversión de tipos</title>
+		<para>
+			Los valores de los tipos de conjunto y de rango se pueden convertir entre sí o convertirse a tipos de rango de PostgreSQL y desde ellos mediante la función <varname>CAST</varname> o mediante la notación <varname>::</varname>.
+		</para>
+		<itemizedlist>
+			<listitem id="base_cast">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<indexterm><primary><varname>set</varname></primary></indexterm>
+				<indexterm><primary><varname>span</varname></primary></indexterm>
+				<indexterm><primary><varname>spanset</varname></primary></indexterm>
+				<para>Convertir un valor de base en un valor de conjunto, rango o conjunto de rangos</para>
+				<para><varname>base::{set,span,spanset}</varname></para>
+				<para><varname>set(base)</varname></para>
+				<para><varname>span(base)</varname></para>
+				<para><varname>spanset(base)</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT CAST(timestamptz '2001-01-01 08:00:00' AS tstzset);
+-- {2001-01-01 08:00:00}
+SELECT timestamptz '2001-01-01 08:00:00'::tstzspan;
+-- [2001-01-01 08:00:00, 2001-01-01 08:00:00]
+SELECT spanset(timestamptz '2001-01-01 08:00:00');
+-- {[2001-01-01 08:00:00, 2001-01-01 08:00:00]}
+</programlisting>
+			</listitem>
+			<listitem id="set_cast">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Convertir un valor de conjunto en un valor de conjunto de rangos</para>
+				<para><varname>set::spanset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
+  2001-01-01 08:25:00}');
+/* {[2001-01-01 08:00:00, 2001-01-01 08:00:00],
+   [2001-01-01 08:15:00, 2001-01-01 08:15:00],
+   [2001-01-01 08:25:00, 2001-01-01 08:25:00]} */
+</programlisting>
+			</listitem>
+			<listitem id="span_cast">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Convertir un valor de rango a un valor de conjunto de rangos</para>
+				<para><varname>span::spanset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT floatspan '[1.5,2.5]'::floatspanset;
+-- {[1.5, 2.5]}
+SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
+-- {[2001-01-01 08:00:00, 2001-01-01 08:30:00)}
+</programlisting>
+			</listitem>
+
+			<listitem id="range_cast">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<indexterm><primary><varname>span</varname></primary></indexterm>
+				<indexterm><primary><varname>range</varname></primary></indexterm>
+				<para>Convertir un valor de de rango en MobilityDB hacia y desde un valor de rango de PostgreSQL</para>
+				<para><varname>span::range</varname></para>
+				<para><varname>range::span</varname></para>
+				<para><varname>range(span)</varname></para>
+				<para><varname>span(range)</varname></para>
+				<para>Nótese que los valores de rango en PostgreSQL aceptan rangos vacíos y rangos con límites infinitos, que no están permitidos como valores de rango en MobilityDB</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intspan '[10, 20)'::int4range;
+-- [10,20)
+SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzrange;
+-- ["2001-01-01 08:00:00","2001-01-01 08:30:00")
+SELECT int4range '[10, 20)'::intspan;
+-- [10,20)
+SELECT int4range 'empty'::intspan;
+-- ERROR:  Range cannot be empty
+SELECT int4range '[10,)'::intspan;
+-- ERROR:  Range bounds cannot be infinite
+SELECT tstzrange '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspan;
+-- [2001-01-01 08:00:00, 2001-01-01 08:30:00)
+</programlisting>
+			</listitem>
+			<listitem id="multirange_cast">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<indexterm><primary><varname>spanset</varname></primary></indexterm>
+				<indexterm><primary><varname>multirange</varname></primary></indexterm>
+				<para>Convertir un valor de conjunto de rangos de MobilityDB hacia y desde un valor de multirango de PostgreSQL</para>
+				<para><varname>spanset::multirange</varname></para>
+				<para><varname>multirange::spanset</varname></para>
+				<para><varname>multirange(spanset)</varname></para>
+				<para><varname>spanset(multirange)</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intspanset '{[1,2],[4,5]}'::int4multirange;
+-- {[1,3),[4,6)}
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzmultirange;
+-- {[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}
+SELECT int4multirange '{[1,2],[4,5]}'::intspanset;
+-- {[1, 3), [4, 6)}
+SELECT tstzmultirange '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzspanset;
+-- {[2000-01-01, 2000-01-02], [2000-01-04, 2000-01-05]}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1>
+		<title>Accesores</title>
+
+		<itemizedlist>
+			<listitem id="setspan_memSize">
+				<indexterm><primary><varname>memSize</varname></primary></indexterm>
+				<para>Obtener el tamaño de la memoria en bytes</para>
+				<para><varname>memSize({set,spanset}) → integer</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT memSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
+-- 104
+SELECT memSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
+  [2001-01-05, 2001-01-06]}');
+-- 136
+</programlisting>
+			</listitem>
+
+			<listitem id="lower">
+				<indexterm><primary><varname>lower</varname></primary></indexterm>
+				<indexterm><primary><varname>upper</varname></primary></indexterm>
+				<para>Obtener el límite inferior</para>
+				<para><varname>lower(span) → base</varname></para>
+				<para><varname>upper(span) → base</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT lower(intspan '[20, 25)');
+-- 20
+SELECT lower(intspanset '{[1,2],[4,5]}');
+--  1
+SELECT lower(tstzspan '[2011-01-01, 2011-01-05)');
+-- 2011-01-01
+SELECT upper(intspanset '{[1,2],[4,5]}');
+--  6
+SELECT upper(floatspan '[20.5, 25.3)');
+-- 25.3
+SELECT upper(tstzspan '[2011-01-01, 2011-01-05)');
+-- 2011-01-05
+</programlisting>
+			</listitem>
+
+			<listitem id="lower_inc">
+				<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
+				<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
+				<para>¿Es el límite inferior/superior inclusivo?</para>
+				<para><varname>lower_inc(span) → boolean</varname></para>
+				<para><varname>upper_inc(span) → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT lower_inc(intspan '[20, 25)');
+-- true
+SELECT lower_inc(intspanset '{[1,2],[4,5]}');
+-- true
+SELECT lower_inc(tstzspan '[2011-01-01, 2011-01-05)');
+-- true
+SELECT upper_inc(intspanset '{[1,2],[4,5]}');
+-- false
+SELECT upper(floatspan '[20.5, 25.3]');
+-- true
+SELECT upper_inc(tstzspan '[2011-01-01, 2011-01-05)');
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem id="width">
+				<indexterm><primary><varname>width</varname></primary></indexterm>
+				<para>Obtener el ancho del rango como un número de punto flotante</para>
+				<para><varname>width(numspans) → float</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT width(intspan '[1, 3)');
+-- 2
+SELECT width(floatspan '[1, 3.5)');
+-- 2.5
+SELECT width(intspanset '{[1,2],[4,5]}');
+-- 4
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_duration">
+				<indexterm><primary><varname>duration</varname></primary></indexterm>
+				<para>Obtener el intervalo de tiempo</para>
+				<para><varname>duration(tstzspans,boundspan=false) → interval</varname></para>
+				<para>Se puede establecer a verdadero un parámetro adicional para calcular la duración en el rango delimitador, ignorando así los posibles intervalos de tiempo</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT duration(tstzspan '[2001-01-01, 2001-01-03)');
+-- 2 days
+SELECT duration(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
+-- 3 days
+SELECT duration(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}', true);
+-- 4 days
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_span">
+				<indexterm><primary><varname>span</varname></primary></indexterm>
+				<para>Obtener el período en el que se define el conjunto de marcas de tiempo o el conjunto de períodos ignorando las posibles brechas de tiempo</para>
+				<para><varname>span({set,spanset}) → span</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT span(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}');
+-- [2001-01-01, 2001-01-05]
+SELECT span(tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
+-- [2001-01-01, 2001-01-04)
+</programlisting>
+			</listitem>
+
+			<listitem id="numValues">
+				<indexterm><primary><varname>numValues</varname></primary></indexterm>
+				<para>Obtener el número de valores</para>
+				<para><varname>numValues(set) → integer</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT numValues(intset '{1,3,5,7}');
+-- 4
+</programlisting>
+			</listitem>
+
+			<listitem id="set_startValue">
+				<indexterm><primary><varname>startValue</varname></primary></indexterm>
+				<indexterm><primary><varname>endValue</varname></primary></indexterm>
+				<indexterm><primary><varname>valueN</varname></primary></indexterm>
+				<para>Obtener el valor inicial/final/enésimo</para>
+				<para><varname>startValue(set) → base</varname></para>
+				<para><varname>endValue(set) → base</varname></para>
+				<para><varname>valueN(set,integer) → base</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT startValue(intset '{1,3,5,7}');
+-- 1
+SELECT endValue(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}');
+-- 2001-01-07
+SELECT valueN(floatset '{1,3,5,7}',2);
+-- 3
+</programlisting>
+			</listitem>
+
+			<listitem id="set_values">
+				<indexterm><primary><varname>values</varname></primary></indexterm>
+				<para>Obtener los valores</para>
+				<para><varname>values(set) → base[]</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT values(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}');
+-- {"2001-01-01", "2001-01-03)", "2001-01-05", "2001-01-07"}
+</programlisting>
+			</listitem>
+
+			<listitem id="numSpans">
+				<indexterm><primary><varname>numSpans</varname></primary></indexterm>
+				<para>Obtener el número de rangos</para>
+				<para><varname>numSpans(spanset) → integer</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT numSpans(intspanset '{[1,3),[4,4],[6,7)}');
+-- 3
+SELECT numSpans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
+  [2001-01-05, 2001-01-06)}');
+-- 3
+</programlisting>
+			</listitem>
+
+			<listitem id="startSpan">
+				<indexterm><primary><varname>startSpan</varname></primary></indexterm>
+				<indexterm><primary><varname>endSpan</varname></primary></indexterm>
+				<indexterm><primary><varname>spanN</varname></primary></indexterm>
+				<para>Obtener el rango inicial/final/enésimo</para>
+				<para><varname>startSpan(spanset) → span</varname></para>
+				<para><varname>endSpan(spanset) → span</varname></para>
+				<para><varname>spanN(spanset,integer) → span</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT startSpan(intspanset '{[1,3),[4,4],[6,7)}');
+-- [1,3)
+SELECT startSpan(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
+  [2001-01-05, 2001-01-06)}');
+-- [2001-01-01,2001-01-03)
+SELECT endSpan(floatspanset '{[1,3),[4,4],[6,7)}');
+-- [6,7)
+SELECT endSpan(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
+  [2001-01-05, 2001-01-06)}');
+-- [2001-01-05,2001-01-06)
+SELECT spanN(floatspanset '{[1,3),[4,4],[6,7)}',2);
+-- [4,4]
+SELECT spanN(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
+  [2001-01-05, 2001-01-06)}', 2);
+-- [2001-01-04,2001-01-04]
+</programlisting>
+			</listitem>
+
+			<listitem id="spans">
+				<indexterm><primary><varname>spans</varname></primary></indexterm>
+				<para>Obtener los rangos</para>
+				<para><varname>spans(spanset) → span[]</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT spans(floatspanset '{[1,3),[4,4],[6,7)}');
+-- {"[1,3)","[4,4]","[6,7)"}
+SELECT spans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
+  [2001-01-05, 2001-01-06)}');
+-- {"[2001-01-01,2001-01-03)", "[2001-01-04,2001-01-04]", "[2001-01-05,2001-01-06)"}
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_numTimestamps">
+				<indexterm><primary><varname>numTimestamps</varname></primary></indexterm>
+				<para>Obtener el número de marcas de tiempo diferentes</para>
+				<para><varname>numTimestamps(tstzspanset) → integer</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT numTimestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
+-- 3
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_startTimestamp">
+				<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
+				<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
+				<indexterm><primary><varname>timestampN</varname></primary></indexterm>
+				<para>Obtener la marca de tiempo inicial/final/enémsima</para>
+				<para><varname>startTimestamp(tstzspanset) → timestamptz</varname></para>
+				<para><varname>endTimestamp(tstzspanset) → timestamptz</varname></para>
+				<para><varname>timestampN(tstzspanset,integer) → timestamptz</varname></para>
+				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT startTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
+-- 2001-01-01
+SELECT endTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
+-- 2001-01-05
+SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}', 3);
+-- 2001-01-04
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_timestamps">
+				<indexterm><primary><varname>timestamps</varname></primary></indexterm>
+				<para>Obtener las marcas de tiempo diferentes</para>
+				<para><varname>timestamps(tstzspanset) → tstzset</varname></para>
+				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
+-- {"2001-01-01", "2001-01-03", "2001-01-05"}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1>
+		<title>Transformaciones</title>
+
+		<itemizedlist>
+			<listitem id="setspan_shift">
+				<indexterm><primary><varname>shift</varname></primary></indexterm>
+				<para>Desplazar el valor de tiempo con un intervalo</para>
+				<para><varname>shift({tstzset,tstzspan,tstzspanset},interval) → {tstzset,tstzspan,tstzspanset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT shift(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day'::interval);
+-- {2001-01-02, 2001-01-04, 2001-01-06}
+SELECT shift(tstzspan '[2001-01-01, 2001-01-03]', '1 day'::interval);
+-- [2001-01-02, 2001-01-04]
+SELECT shift(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
+  '1 day'::interval);
+-- {[2001-01-02, 2001-01-04], [2001-01-05, 2001-01-06]}
+</programlisting>
+			</listitem>
+
+		<listitem id="setspan_tscale">
+			<indexterm><primary><varname>tscale</varname></primary></indexterm>
+			<para>Escalear el valor de tiempo con un intervalo. Si el lapso de tiempo del valor de tiempo es cero (por ejemplo, para un conjunto de marcas de tiempo único), el resultado es el valor de tiempo. El intervalo dado debe ser estrictamente mayor que cero.</para>
+			<para><varname>tscale({tstzset,tstzspan,tstzspanset},interval) → {tstzset,tstzspan,tstzspanset}</varname></para>
+			<programlisting language="sql" xml:space="preserve">
+SELECT tscale(tstzset '{2001-01-01}', '1 day');
+-- {2001-01-01}
+SELECT tscale(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '2 days');
+-- {2001-01-01, 2001-01-02, 2001-01-03}
+SELECT tscale(tstzspan '[2001-01-01, 2001-01-03]', '1 day');
+-- [2001-01-01, 2001-01-02]
+SELECT tscale(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}', '1 day');
+-- {[2001-01-01 00:00:00, 2001-01-01 12:00:00],
+  [2001-01-01 18:00:00, 2001-01-02 00:00:00]}
+SELECT tscale(tstzset '{2001-01-01}', '-1 day');
+-- ERROR:  The duration must be a positive interval: -1 days
+</programlisting>
+		</listitem>
+
+		<listitem id="setspan_shiftTscale">
+			<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
+			<para>Desplazar y escalear el valor de tiempo con los dos intervalos. Esta función combina en un solo paso las funciones <link linkend="setspan_shift"><varname>shift</varname></link> y <link linkend="setspan_tscale"><varname>tscale</varname></link>.</para>
+			<para><varname>shiftTscale({tstzset,tstzspan,tstzspanset},interval,interval) →</varname></para>
+			<para><varname>  {tstzset,tstzspan,tstzspanset}</varname></para>
+			<programlisting language="sql" xml:space="preserve">
+SELECT shiftTscale(tstzset '{2001-01-01}', '1 day', '1 day');
+-- {2001-01-02}
+SELECT shiftTscale(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day','2 days');
+-- {2001-01-02, 2001-01-03, 2001-01-04}
+SELECT shiftTscale(tstzspan '[2001-01-01, 2001-01-03]', '1 day', '1 day');
+-- [2001-01-02, 2001-01-03]
+SELECT shiftTscale(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
+  '1 day', '1 day');
+/* {[2001-01-02 00:00:00, 2001-01-02 12:00:00],
+   [2001-01-02 18:00:00, 2001-01-03 00:00:00]} */
+</programlisting>
+		</listitem>
+
+			<listitem id="floatspan_round">
+				<indexterm><primary><varname>round</varname></primary></indexterm>
+				<para>Redondear los límites de un rango flotante a un número de decimales</para>
+				<para><varname>round(floatspans,integer) → floatspan</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT round(floatspan '[1.123456789,2.123456789)', 3);
+-- [1.123,2.123)
+SELECT round(floatspan '[1.123456789, inf)', 3);
+-- [1.123,Infinity)
+SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]}', 3);
+-- {[1.123, 2.123], [3.123, 4.123]}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="setspan_comp_operators">
+		<title>Comparaciones</title>
+
+		<para>Los operadores de comparación (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los argumentos izquierdo y derecho sean del mismo tipo. Exceptuando la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real, pero permiten construir índices de árbol B en tipos de rango o de tiempo. Para los valores de rango, los operadores comparan primero el límite inferior y luego el límite superior. Para los valores de conjunto de marcas de tiempo y conjunto de períodos, los operadores comparan primero los períodos delimitadores y, si son iguales, comparan los primeros N instantes o períodos, donde N es el mínimo del número de instantes o períodos que componen ambos valores.</para>
+
+		<para>Los operadores de comparación disponibles para los tipos de conjunto y de rango se dan a continuación. Recuerde que los rangos de enteros siempre se representan por su forma canónica.</para>
+
+		<itemizedlist>
+			<listitem id="setspan_eq">
+				<indexterm><primary><varname>=</varname></primary></indexterm>
+				<para>¿Son iguales los valores?</para>
+				<para><varname>{set,spans} = {set,spans} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intspan '[1,3]' = intspan '[1,4)';
+-- true
+SELECT floatspanset '{[1, 2),[2,3)}' = floatspanset '{[1,3)}';
+-- true
+SELECT tstzspan '[2001-01-01, 2001-01-04)' = tstzspan '[2001-01-01, 2001-01-04)';
+-- true
+SELECT tstzset '{2001-01-01, 2001-01-02}' = tstzset '{2001-01-01, 2001-01-04}';
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_ne">
+				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<para>¿Son diferentes los valores?</para>
+					<para><varname>{set,spans} &lt;&gt; {set,spans} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tstzspan '[2001-01-01, 2001-01-04)' &lt;&gt; tstzspan '[2001-01-03, 2001-01-05)';
+-- true
+SELECT tstzset '{2001-01-01, 2001-01-04}' &lt;&gt; tstzset '{2001-01-01, 2001-01-05}';
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_lt">
+				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
+				<para>¿Es el primer valor menor que el segundo?</para>
+				<para><varname>{set,spans} &lt; {set,spans} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intspanset '{[1,2],[3,4]}' &lt; intspanset '{[3, 4]}';
+-- true
+SELECT floatspan '[3, 4]' &lt; floatspan '(3, 4]';
+-- true
+SELECT tstzspan '[2001-01-01, 2001-01-04)' &lt; tstzspan '[2001-01-01, 2001-01-04]';
+-- true
+SELECT tstzset '{2001-01-01, 2001-01-04}' &lt; tstzset '{2001-01-01, 2001-01-05}';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_gt">
+				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
+				<para>¿Es el primer valor mayor que el segundo?</para>
+				<para><varname>{set,spans} &gt; {set,spans} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT floatspan '[3, 4]' &gt; floatspan '[3, 4)';
+-- true
+SELECT tstzspan '[2001-01-03, 2001-01-04)' &gt; tstzspan '[2001-01-02, 2001-01-05)';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_le">
+				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
+				<para>¿Es el primer valor menor o igual que el segundo?</para>
+				<para><varname>{set,spans} &lt;= {set,spans} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT floatspanset '{[1, 4)}' &lt;= floatspanset '{[1, 5), [6, 7)}';
+-- true
+SELECT tstzspanset '{[2001-01-01, 2001-01-04)}' &lt;=
+  tstzspanset '{[2001-01-01, 2001-01-05), [2001-01-06, 2001-01-07)}';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_ge">
+				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
+				<para>¿Es el primer valor mayor o igual que el segundo?</para>
+				<para><varname>{set,spans} &gt;= {set,spans} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
+-- false
+SELECT tstzspan '[2001-01-03, 2001-01-05)' &gt;= tstzspan '[2001-01-03, 2001-01-04)';
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="setspan_set_operators">
+		<title>Operaciones de conjuntos</title>
+
+		<para>Los tipos de conjunto y de rango tienen operadores de conjuntos asociados, a saber, unión, diferencia e intersección, que se representan, respectivamente, por <varname>+</varname>, <varname>-</varname> y <varname>* </varname>. Los operadores de conjunto para los tipos de rango y tiempo se dan a continuación.</para>
+
+		<itemizedlist>
+			<listitem id="setspan_union">
+				<indexterm><primary><varname>+</varname></primary></indexterm>
+				<para>Unión de valores de rango o de tiempo</para>
+				<para><varname>{set,spans} + {set,spans} → {set,spans}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tstzset '{2011-01-01, 2011-01-03, 2011-01-05}' +
+  tstzset '{2011-01-03, 2011-01-06}';
+-- {2011-01-01, 2011-01-03, 2011-01-05, 2011-01-06}
+SELECT intspan '[1, 3)' + intspan '[3, 5)';
+-- [1, 5)
+SELECT floatspan '[1, 3)' + floatspan '[4, 5)';
+-- {[1, 3), [4, 5)}
+SELECT tstzspanset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +
+  tstzspan '[2011-01-03, 2011-01-04)';
+-- {[2011-01-01, 2011-01-05)}
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_difference">
+				<indexterm><primary><varname>-</varname></primary></indexterm>
+				<para>Diferencia de valores de rango o de tiempo</para>
+				<para><varname>{set,spans} - {set,spans} → {set,spans}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intset '{1, 3, 5}' - intset '{3, 6}';
+-- {1, 5}
+SELECT tstzspan '[2011-01-01, 2011-01-05)' - tstzspan '[2011-01-03, 2011-01-07)';
+-- [2011-01-01, 2011-01-03)
+SELECT floatspan '[1, 5]' - floatspan '[3, 4]';
+-- {[1, 3), (4, 5]}
+SELECT tstzspanset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
+  tstzspanset '{[2011-01-02, 2011-01-03], [2011-01-04, 2011-01-05],
+  [2011-01-08, 2011-01-09]}';
+/* {[2011-01-01,2011-01-02), (2011-01-03,2011-01-04), (2011-01-05,2011-01-06],
+   [2011-01-07,2011-01-08), (2011-01-09,2011-01-10]} */
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_intersection">
+				<indexterm><primary><varname>*</varname></primary></indexterm>
+				<para>Intersección de valores de rango o de tiempo</para>
+				<para><varname>{set,spans} * {set,spans} → {set,spans}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tstzset '{2011-01-01, 2011-01-03}' * tstzset '{2011-01-03, 2011-01-05}';
+-- {2011-01-03}
+SELECT intspan '[1, 5)' * intspan '[3, 6)';
+-- [3, 5)
+SELECT floatspanset '{[1, 5),[6, 8)}' * floatspan '[1, 6)';
+-- {[3, 5)}
+SELECT tstzspan '[2011-01-01, 2011-01-05)' * tstzspan '[2011-01-03, 2011-01-07)';
+-- [2011-01-03, 2011-01-05)
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="setspan_topo_relpos">
+		<title>Operaciones topológicas y de posición relativa</title>
+		<para>A continuación se presentan los operadores topológicos disponibles para los tipos de conjunto y de rango.</para>
+
+		<itemizedlist>
+			<listitem id="setspan_overlaps">
+				<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
+				<para>¿Se superponen los valores (tienen valores en común)?</para>
+				<para><varname>{set,spans} &amp;&amp; {set,spans} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intset '{1, 3}' &amp;&amp; intset '{2, 3, 4}';
+-- true
+SELECT floatspan '[1, 3)' &amp;&amp; floatspan '[3, 4)';
+-- false
+SELECT floatspanset '{[1, 5),[6, 8)}' &amp;&amp; floatspan '[1, 6)';
+-- true
+SELECT tstzspan '[2011-01-01, 2011-01-05)' &amp;&amp; tstzspan '[2011-01-02, 2011-01-07)';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_contains">
+				<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
+				<para>¿Contiene el primer valor el segundo?</para>
+				<para><varname>{set,spans} @&gt; {base,set,span} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT floatset '{1.5, 2.5}' @&gt; 2.5;
+-- true
+SELECT tstzspan '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
+-- true
+SELECT floatspanset '{[1, 2),(2, 3)}' @&gt; 2.0;
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_containedby">
+				<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
+				<para>¿Está el primer valor contenido en el segundo?</para>
+				<para><varname>{base,set,spans} &lt;@ {set,spans} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT timestamptz '2011-01-10' &lt;@ tstzspan '[2011-01-01, 2011-05-01)';
+-- true
+SELECT floatspan '[2, 5]' &lt;@ floatspan '[1, 5)';
+-- false
+SELECT floatspanset '{[1,2],[3,4]}' &lt;@ floatspan '[1, 6]';
+-- true
+SELECT tstzspan '[2011-02-01, 2011-03-01)' &lt;@ tstzspan '[2011-01-01, 2011-05-01)';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_adjacent">
+				<indexterm><primary><varname>-|-</varname></primary></indexterm>
+				<para>¿Es el primer valor adyacente al segundo?</para>
+				<para><varname>spans -|- spans → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intspan '[2, 6)' -|- intspan '[6, 7)';
+-- true
+SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
+-- false
+SELECT floatspanset '{[2, 3],[4, 5)}' -|- floatspan '(5, 6)';
+-- true
+SELECT tstzspan '[2011-01-01, 2011-01-05)' -|- tstzset '{2011-01-05, 2011-01-07}';
+-- true
+SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-01-03)';
+-- false
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
+		<para>Los operadores de posición relativa disponibles para los tipos de conjunto y de rango se dan a continuación. Observe que los operadores para tipos de tiempo tienen un `<varname>#</varname>' adicional para distinguirlos de los operadores para tipos de números.</para>
+
+		<itemizedlist>
+			<listitem id="setspan_left">
+				<indexterm><primary><varname>&lt;&lt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;&lt;#</varname></primary></indexterm>
+				<para>¿Está el primer valor estrictamente a la izquierda del segundo?</para>
+				<para><varname>{number,numspans} &lt;&lt; {number,numspans} → boolean</varname></para>
+				<para><varname>time &lt;&lt;# time → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intspan '[15, 20)' &lt;&lt; 20;
+-- true
+SELECT intspanset '{[15, 17],[18, 20)}' &lt;&lt; 20;
+-- true
+SELECT floatspan '[15, 20)' &lt;&lt; floatspan '(15, 20)';
+-- false
+SELECT tstzspan '[2011-01-01, 2011-01-03)' &lt;&lt;# tstzset '{2011-01-03, 2011-01-05}';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_right">
+				<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
+				<indexterm><primary><varname>#&gt;&gt;</varname></primary></indexterm>
+				<para>¿Está el primer valor estrictamente a la derecha del segundo?</para>
+				<para><varname>{number,numspans} &gt;&gt; {number,numspans} → boolean</varname></para>
+				<para><varname>time #&gt;&gt; time → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intspan '[15, 20)' &gt;&gt; 10;
+-- true
+SELECT floatspan '[15, 20)' &gt;&gt; floatspan '[5, 10]';
+-- true
+SELECT floatspanset '{[15, 17], [18, 20)}' &gt;&gt; floatspan '[5, 10]';
+-- true
+SELECT tstzspan '[2011-01-04, 2011-01-05)' #&gt;&gt;
+  tstzspanset '{[2011-01-01, 2011-01-04), [2011-01-05, 2011-01-06)}';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_overleft">
+				<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&amp;&lt;#</varname></primary></indexterm>
+				<para>¿No está el primer valor a la derecha del segundo?</para>
+				<para><varname>{number,numspans} &amp;&lt; {number,numspans} → boolean</varname></para>
+				<para><varname>time &amp;&lt;# time → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intspan '[15, 20)' &amp;&lt; 18;
+-- false
+SELECT intspanset '{[15, 16],[17, 18)}' &amp;&lt; 18;
+-- true
+SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
+-- true
+SELECT tstzset '{2011-01-02, 2011-01-05}' &amp;&lt;# tstzspan '[2011-01-01, 2011-01-05)';
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_overright">
+				<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
+				<indexterm><primary><varname>#&amp;&gt;</varname></primary></indexterm>
+				<para>¿No está el primer valor a la izquierda del segundo?</para>
+				<para><varname>{number,numspans} &amp;&gt; {number,numspans} → boolean</varname></para>
+				<para><varname>time #&amp;&gt; time → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT intspan '[15, 20)' &amp;&gt; 30;
+-- true
+SELECT floatspan '[1, 6]' &amp;&gt; floatspan '(1, 3)';
+-- false
+SELECT floatspanset '{[1, 2],[3, 4]}' &amp;&gt; floatspan '(1, 3)';
+-- false
+SELECT timestamp '2011-01-01' #&amp;&gt; tstzspan '[2011-01-01, 2011-01-05)';
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1>
+		<title>Operaciones de distancia</title>
+
+		<para>El operador de distancia <varname>&lt;-&gt;</varname> para los tipos de rango o de tiempo considera el lapso o período delimitador y devuelve un valor <varname>float</varname> que es la distancia más pequeña entre los dos valores. En el caso de períodos devuelve el número de segundos entre los dos valores de tiempo. El operador de distancia también se puede usar para búsquedas de vecinos más cercanos utilizando un índice GiST o SP-GiST (ver <xref linkend="indexing_time_types" />).</para>
+
+		<itemizedlist>
+			<listitem id="smallest_distance_time">
+				<indexterm><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Obtener la distancia mínima</para>
+				<para><varname>{number,numspans} &lt;-&gt; {number,numspans} → float</varname></para>
+				<para><varname>time &lt;-&gt; time → float</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT 3 &lt;-&gt; intspan '(5, 7]';
+-- 3
+SELECT floatspan '[1, 3]' &lt;-&gt; floatspan '(5.5, 7]';
+-- 2.5
+SELECT floatspan '[1, 3]' &lt;-&gt; floatspanset '{(5.5, 7],[8, 9]}';
+-- 2.5
+SELECT tstzspan '[2001-01-02, 2001-01-06)' &lt;-&gt; timestamptz '2001-01-07';
+-- 86400
+SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
+  tstzset '{2001-01-02, 2001-01-04}';
+--  0
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+		<sect1>
+		<title>Agregaciones</title>
+
+		<para>Hay varias funciones agregadas definidas para los tipos de conjunto y de rango. Estas se describen a continuación.</para>
+
+		<itemizedlist>
+			<listitem><para>La función <varname>tcount</varname> generaliza la función de agregación tradicional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número of períodos). La función <varname>tcount</varname> devuelve un entero temporal (ver el <xref linkend="temporal_types" />). La función tiene dos parámetros opcionales que especifican la granularidad (un <varname>interval</varname>) y el origen del tiempo (un <varname>timestamptz</varname>). Cuando se dan estos parámetros, el conteo temporal se calcula en intervalos de tiempo de la granularidad dada (ver <xref linkend="temporal_types_tiling" />)</para></listitem>
+			<listitem><para>La función <varname>extent</varname> devuelve el rango o período delimitador que engloba un conjunto de valores de rango o de tiempo.</para></listitem>
+
+			<listitem><para>La unión es una operación muy útil para los tipos de conjunto y de rango. Como hemos visto en la <xref linkend="setspan_set_operators" />, podemos calcular la unión de dos valores de conjunto o de rango usando el operador <varname>+</varname>. Sin embargo, también es muy útil tener una versión agregada del operador de unión para combinar un número arbitrario de valores. Las funciones <varname>set_union</varname> y <varname>span_union</varname> se pueden utilizar para este propósito.</para></listitem>
+		</itemizedlist>
+
+		<itemizedlist>
+			<listitem id="setspan_tcount">
+				<indexterm><primary><varname>tcount</varname></primary></indexterm>
+				<para>Conteo temporal</para>
+				<para><varname>tcount(time) → {tint_seq,tint_seqset}</varname></para>
+				<para><varname>tcount(time, interval, timestamptz) → {tint_seq,tint_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+WITH times(ts) AS (
+  SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
+  SELECT tstzset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
+  SELECT tstzset '{2000-01-01, 2000-01-02}'
+)
+SELECT tcount(ts) FROM times;
+-- {2@2000-01-01, 2@2000-01-02, 1@2000-01-03, 1@2000-01-04, 1@2000-01-05, 1@2000-01-06}
+WITH periods(ps) AS (
+  SELECT tstzspanset '{[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-04)}' UNION
+  SELECT tstzspanset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-06)}' UNION
+  SELECT tstzspanset '{[2000-01-02, 2000-01-06)}'
+)
+SELECT tcount(ps) FROM tstzspans;
+-- {[2@2000-01-01, 3@2000-01-03, 1@2000-01-04, 2@2000-01-05, 2@2000-01-06)}
+WITH periods(ps) AS (
+  SELECT tstzspanset '{[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-04)}' UNION
+  SELECT tstzspanset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-06)}' UNION
+  SELECT tstzspanset '{[2000-01-02, 2000-01-06)}'
+)
+SELECT tcount(ps, '2 days', '2000-01-01') FROM periods;
+-- {[3@2000-01-01, 2@2000-01-05, 2@2000-01-07)}
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_extent">
+				<indexterm><primary><varname>extent</varname></primary></indexterm>
+				<para>Rango o período delimitador</para>
+				<para><varname>extent({set,spans}) → span</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+WITH spans(r) AS (
+  SELECT floatspan '[1, 4)' UNION
+  SELECT floatspan '(5, 8)' UNION
+  SELECT floatspan '(7, 9)'
+)
+SELECT extent(r) FROM spans;
+-- [1,9)
+WITH times(ts) AS (
+  SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
+  SELECT tstzset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
+  SELECT tstzset '{2000-01-01, 2000-01-02}'
+)
+SELECT extent(ts) FROM times;
+-- [2000-01-01, 2000-01-06]
+WITH periods(ps) AS (
+  SELECT tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' UNION
+  SELECT tstzspanset '{[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06]}' UNION
+  SELECT tstzspanset '{[2000-01-02, 2000-01-06]}'
+)
+SELECT extent(ps) FROM periods;
+-- [2000-01-01, 2000-01-06]
+</programlisting>
+			</listitem>
+
+			<listitem id="setspan_union_agg">
+				<indexterm><primary><varname>set_union</varname></primary></indexterm>
+				<indexterm><primary><varname>span_union</varname></primary></indexterm>
+				<para>Unión agregada</para>
+				<para><varname>set_union({value,set}) → set</varname></para>
+				<para><varname>span_union(spans) → spanset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+WITH times(ts) AS (
+  SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
+  SELECT tstzset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
+  SELECT tstzset '{2000-01-01, 2000-01-02}'
+)
+SELECT tunion(ts) FROM times;
+-- {2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}
+WITH periods(ps) AS (
+  SELECT tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' UNION
+  SELECT tstzspanset '{[2000-01-02, 2000-01-03], [2000-01-05, 2000-01-06]}' UNION
+  SELECT tstzspanset '{[2000-01-07, 2000-01-08]}'
+)
+SELECT tunion(ps) FROM periods;
+-- {[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06], [2000-01-07, 2000-01-08]}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id ="indexing_time_types">
+		<title>Indexación</title>
+
+		<para>Se pueden crear índices GiST y SP-GiST en columnas de tablas de los tipos de conjunto y de rango. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple. Un ejemplo de creación de un índice GiST en una columna <varname>During</varname> de tipo <varname>tstzspan</varname> en una tabla <varname>Reservation</varname> es como sigue:
+			<programlisting language="sql" xml:space="preserve">
+CREATE TABLE Reservation (ReservationID integer PRIMARY KEY, RoomID integer,
+  During tstzspan);
+CREATE INDEX Reservation_During_Idx ON Reservation USING GIST(During);
+</programlisting>
+		</para>
+		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname> y <varname>&lt;-&gt;</varname>.</para>
+		<para>Además, se pueden crear índices de árbol B para columnas de tabla de un tipo de rango o de tiempo. Para estos tipos de índices, básicamente la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos de rango o de tiempo con los correspondientes operadores <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname> y <varname>&gt;=</varname>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte del árbol B está destinado principalmente a permitir la clasificación interna en las consultas, en lugar de la creación de índices reales.</para>
+		<para>Finalmente, se pueden crear índices hash para columnas de tabla de un tipo de rango o de tiempo. Para estos tipos de índices, la única operación definida es la igualdad.</para>
+	</sect1>
+</chapter>

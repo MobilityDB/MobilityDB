@@ -1,0 +1,895 @@
+CREATE TABLE test AS
+SELECT NULL::tgeompoint FROM generate_series(1, 10);
+SELECT 10
+ANALYZE test;
+ANALYZE
+DROP TABLE test;
+DROP TABLE
+ANALYZE tbl_tgeompoint3D_big;
+ANALYZE
+ANALYZE tbl_tgeogpoint3D_big;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tgeompoint3D_big_rtree_idx;
+NOTICE:  index "tbl_tgeompoint3d_big_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_rtree_idx;
+NOTICE:  index "tbl_tgeogpoint3d_big_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeompoint3D_big_quadtree_idx;
+NOTICE:  index "tbl_tgeompoint3d_big_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_quadtree_idx;
+NOTICE:  index "tbl_tgeogpoint3d_big_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeompoint3D_big_kdtree_idx;
+NOTICE:  index "tbl_tgeompoint3d_big_kdtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_kdtree_idx;
+NOTICE:  index "tbl_tgeogpoint3d_big_kdtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tgeompoint3D_big_rtree_idx ON tbl_tgeompoint3D_big USING GIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeogpoint3D_big_rtree_idx ON tbl_tgeogpoint3D_big USING GIST(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   829
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9170
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9993
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp < tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <= tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp > tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp >= tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp && tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp -|- tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp << tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+    29
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &< tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+   315
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp >> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  5821
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9322
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<| tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+    38
+(1 row)
+
+SELECT COUNT(*) > 0 FROM tbl_tgeompoint3D_big WHERE temp &<| tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  5757
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9225
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+    27
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+   302
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp />> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  5792
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp /&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9318
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9225
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   916
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9080
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9993
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp < tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp > tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp >= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp -|- tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp &<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #>> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]' <<# temp;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]' &<# temp;
+ count 
+-------
+ 10000
+(1 row)
+
+DROP INDEX IF EXISTS tbl_tgeompoint3D_big_rtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tgeompoint3D_big_quadtree_idx ON tbl_tgeompoint3D_big USING SPGIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeogpoint3D_big_quadtree_idx ON tbl_tgeogpoint3D_big USING SPGIST(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp && tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp -|- tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   829
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9170
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9993
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp << tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+    29
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &< tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+   315
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp >> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  5821
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9322
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<| tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+    38
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<| tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+   333
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  5757
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9225
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+    27
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+   302
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp />> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  5792
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp /&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9318
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9225
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   916
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9080
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9993
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp -|- tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp &<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #>> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10000
+(1 row)
+
+DROP INDEX IF EXISTS tbl_tgeompoint3D_big_quadtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tgeompoint3D_big_kdtree_idx ON tbl_tgeompoint3D_big USING SPGIST(temp tgeompoint_kdtree_ops);
+CREATE INDEX
+CREATE INDEX tbl_tgeogpoint3D_big_kdtree_idx ON tbl_tgeogpoint3D_big USING SPGIST(temp tgeogpoint_kdtree_ops);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp && tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp -|- tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   829
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9170
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9993
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp << tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+    29
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &< tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+   315
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp >> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  5821
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9322
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<| tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+    38
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<| tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+   333
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  5757
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9225
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+    27
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+   302
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp />> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  5792
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp /&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9318
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+  9225
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   916
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9080
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9993
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp -|- tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp &<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #>> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
+ count 
+-------
+ 10000
+(1 row)
+
+DROP INDEX IF EXISTS tbl_tgeompoint3D_big_kdtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_kdtree_idx;
+DROP INDEX
+ANALYZE tbl_tgeompoint;
+ANALYZE
+ANALYZE tbl_tgeompoint3D;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tgeompoint_rtree_idx;
+NOTICE:  index "tbl_tgeompoint_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeompoint3D_rtree_idx;
+NOTICE:  index "tbl_tgeompoint3d_rtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING GIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeompoint3D_rtree_idx ON tbl_tgeompoint3D USING GIST(temp);
+CREATE INDEX
+WITH test AS (
+  SELECT temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance::numeric, 6) FROM test;
+   round   
+-----------
+ 14.770845
+ 32.179461
+ 32.382641
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| tgeompoint '[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeompoint3D ORDER BY 1 LIMIT 3 )
+SELECT round(distance::numeric, 6) FROM test;
+   round   
+-----------
+ 47.623706
+ 56.138497
+ 66.998360
+(3 rows)
+
+DROP INDEX tbl_tgeompoint_rtree_idx;
+DROP INDEX
+DROP INDEX tbl_tgeompoint3D_rtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeompoint_quadtree_idx;
+NOTICE:  index "tbl_tgeompoint_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeompoint3D_quadtree_idx;
+NOTICE:  index "tbl_tgeompoint3d_quadtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING SPGIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeompoint3D_quadtree_idx ON tbl_tgeompoint3D USING SPGIST(temp);
+CREATE INDEX
+WITH test AS (
+  SELECT temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance::numeric, 6) FROM test;
+   round   
+-----------
+ 14.770845
+ 32.179461
+ 32.382641
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| tgeompoint '[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeompoint3D ORDER BY 1 LIMIT 3 )
+SELECT round(distance::numeric, 6) FROM test;
+   round   
+-----------
+ 47.623706
+ 56.138497
+ 66.998360
+(3 rows)
+
+DROP INDEX tbl_tgeompoint_quadtree_idx;
+DROP INDEX
+DROP INDEX tbl_tgeompoint3D_quadtree_idx;
+DROP INDEX
+CREATE TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint_seq(geometry 'Point(5 5 5)', p) AS temp FROM tbl_tstzspan_big;
+SELECT 12500
+CREATE INDEX tbl_tgeompoint3D_big_allthesame_quadtree_idx ON tbl_tgeompoint3D_big_allthesame USING SPGIST(temp);
+CREATE INDEX
+ANALYZE tbl_tgeompoint3D_big_allthesame;
+ANALYZE
+DROP TABLE tbl_tgeompoint3D_big_allthesame;
+DROP TABLE

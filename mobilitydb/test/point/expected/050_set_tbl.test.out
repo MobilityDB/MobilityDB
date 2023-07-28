@@ -1,0 +1,347 @@
+COPY tbl_geomset TO '/tmp/tbl_geomset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_geomset_tmp;
+NOTICE:  table "tbl_geomset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_geomset_tmp AS TABLE tbl_geomset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_geomset_tmp FROM '/tmp/tbl_geomset' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_geomset_tmp;
+DROP TABLE
+COPY tbl_geogset TO '/tmp/tbl_geogset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_geogset_tmp;
+NOTICE:  table "tbl_geogset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_geogset_tmp AS TABLE tbl_geogset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_geogset_tmp FROM '/tmp/tbl_geogset' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_geogset_tmp;
+DROP TABLE
+SELECT MAX(length(asText(g))) FROM tbl_geomset;
+ max 
+-----
+ 491
+(1 row)
+
+SELECT MAX(length(asText(g))) FROM tbl_geogset;
+ max 
+-----
+ 470
+(1 row)
+
+SELECT MAX(length(asEWKT(g))) FROM tbl_geomset;
+ max 
+-----
+ 491
+(1 row)
+
+SELECT MAX(length(asEWKT(g))) FROM tbl_geogset;
+ max 
+-----
+ 570
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromBinary(asBinary(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexWKB(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexWKB(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
+SELECT asText(geomsetFromHexWKB(asHexWKB(geomset '{"Point(1 1 1)"}')));
+       astext        
+---------------------
+ {"POINT Z (1 1 1)"}
+(1 row)
+
+SELECT memSize(set_union(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
+ memsize 
+---------
+    4856
+(1 row)
+
+SELECT memSize(set_union(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
+ memsize 
+---------
+    4856
+(1 row)
+
+SELECT MAX(memSize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
+ max 
+-----
+ 152
+(1 row)
+
+SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
+ max 
+-----
+ 152
+(1 row)
+
+DROP TABLE IF EXISTS test;
+NOTICE:  table "test" does not exist, skipping
+DROP TABLE
+CREATE TABLE test(ps) AS
+WITH test(ps) AS (
+  SELECT span(day, day + interval '1 hour')
+  FROM generate_series(timestamptz '2000-01-01', timestamptz '2000-04-01', '1 day') AS day )
+SELECT spanset(array_agg(ps)) FROM test;
+SELECT 1
+SELECT ps::stbox FROM test;
+                                  ps                                   
+-----------------------------------------------------------------------
+ STBOX T([Sat Jan 01 00:00:00 2000 PST, Sat Apr 01 01:00:00 2000 PST))
+(1 row)
+
+DROP TABLE test;
+DROP TABLE
+SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
+    min     
+------------
+ -96.535171
+(1 row)
+
+SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
+   min    
+----------
+ 0.432515
+(1 row)
+
+SELECT MAX(memSize(g)) FROM tbl_geomset;
+ max 
+-----
+ 504
+(1 row)
+
+SELECT MIN(numValues(g)) FROM tbl_geomset;
+ min 
+-----
+   5
+(1 row)
+
+SELECT MIN(ST_X(startValue(g))) FROM tbl_geomset;
+    min     
+------------
+ -96.535171
+(1 row)
+
+SELECT MIN(ST_X(endValue(g))) FROM tbl_geomset;
+    min     
+------------
+ -94.408967
+(1 row)
+
+SELECT MIN(ST_X(valueN(g, 1))) FROM tbl_geomset;
+    min     
+------------
+ -96.535171
+(1 row)
+
+SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geomset;
+ min 
+-----
+   5
+(1 row)
+
+SELECT MAX(memSize(g)) FROM tbl_geogset;
+ max 
+-----
+ 504
+(1 row)
+
+SELECT MIN(numValues(g)) FROM tbl_geogset;
+ min 
+-----
+   5
+(1 row)
+
+SELECT MIN(ST_X(startValue(g)::geometry)) FROM tbl_geogset;
+   min    
+----------
+ 0.432515
+(1 row)
+
+SELECT MIN(ST_X(endValue(g)::geometry)) FROM tbl_geogset;
+   min    
+----------
+ 0.806752
+(1 row)
+
+SELECT MIN(ST_X(valueN(g, 1)::geometry)) FROM tbl_geogset;
+   min    
+----------
+ 0.432515
+(1 row)
+
+SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
+ min 
+-----
+   5
+(1 row)
+
+SELECT numValues(set_union(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);
+ numvalues 
+-----------
+        99
+(1 row)
+
+SELECT numValues(set_union(g)) FROM tbl_geog_point3D WHERE NOT ST_IsEmpty(g::geometry);
+ numvalues 
+-----------
+        99
+(1 row)
+
+WITH test1(k, g) AS (
+  SELECT k, unnest(g) FROM tbl_geomset ),
+test2 (k, g) AS (
+  SELECT k, set_union(g) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_geomset t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
+ count 
+-------
+     0
+(1 row)
+
+WITH test1(k, g) AS (
+  SELECT k, unnest(g) FROM tbl_geogset ),
+test2 (k, g) AS (
+  SELECT k, set_union(g) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_geogset t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE set_cmp(t1.g, t2.g) = -1;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g = t2.g;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g <> t2.g;
+ count 
+-------
+  9702
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g < t2.g;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g <= t2.g;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g > t2.g;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g >= t2.g;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE set_cmp(t1.g, t2.g) = -1;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g = t2.g;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g <> t2.g;
+ count 
+-------
+  9702
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g < t2.g;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g <= t2.g;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g > t2.g;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g >= t2.g;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT MAX(set_hash(g)) FROM tbl_geomset;
+    max     
+------------
+ 2098051068
+(1 row)
+
+SELECT MAX(set_hash(g)) FROM tbl_geogset;
+    max     
+------------
+ 2135464549
+(1 row)
+
+SELECT numValues(set_union(g)) FROM tbl_geom_point WHERE NOT ST_IsEmpty(g);
+ numvalues 
+-----------
+        99
+(1 row)
+

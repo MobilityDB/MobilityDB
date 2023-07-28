@@ -42,6 +42,7 @@ else()
   endif()
 endif()
 
+message(STATUS "Looking for postgis.control file in ${POSTGRESQL_SHARE_DIR}/extension")
 find_file(POSTGIS_CONTROL postgis.control
   PATHS "${POSTGRESQL_SHARE_DIR}/extension")
 
@@ -70,3 +71,4 @@ message(STATUS "POSTGIS_LIBRARY: ${POSTGIS_LIBRARY}")
 message(STATUS "POSTGIS_CONTROL: ${POSTGIS_CONTROL}")
 message(STATUS "POSTGIS_VERSION: ${POSTGIS_VERSION}")
 message(STATUS "POSTGIS_VERSION_STR: ${POSTGIS_VERSION_STR}")
+message(STATUS "POSTGIS_VERSION_NUMBER: ${POSTGIS_VERSION_NUMBER}")

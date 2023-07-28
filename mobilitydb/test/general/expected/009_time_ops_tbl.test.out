@@ -1,0 +1,163 @@
+SELECT MAX(tprecision(t, '15 minutes')) FROM tbl_timestamptz;
+             max              
+------------------------------
+ Tue Dec 25 23:00:00 2001 PST
+(1 row)
+
+SELECT MAX(lower(tprecision(p, '15 minutes'))) FROM tbl_tstzspan;
+             max              
+------------------------------
+ Sat Dec 29 12:45:00 2001 PST
+(1 row)
+
+SELECT MAX(lower(tprecision(ps, '15 minutes'))) FROM tbl_tstzspanset;
+             max              
+------------------------------
+ Sun Dec 30 04:00:00 2001 PST
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p < t2.p;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <= t2.p;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p > t2.p;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p >= t2.p;
+ count 
+-------
+  4950
+(1 row)
+
+CREATE TABLE tbl_tstzspan_temp AS SELECT k, shift(p, '1 year') AS p FROM tbl_tstzspan;
+SELECT 100
+SELECT COUNT(*) FROM tbl_tstzspan_temp WHERE p && tstzspan '[2001-06-01, 2001-07-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_temp t2 WHERE t1.p && t2.p;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_temp t2 WHERE t1.p @> t2.p;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_temp t2 WHERE t1.p <@ t2.p;
+ count 
+-------
+     0
+(1 row)
+
+SELECT round(_mobdb_span_sel('tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator, intspan '[50, 55]')::numeric, 6);
+  round   
+----------
+ 0.127551
+(1 row)
+
+SELECT round(_mobdb_span_sel('tbl_intspan'::regclass, 'i', '@>(intspan,intspan)'::regoperator, intspan '[50, 55]')::numeric, 6);
+  round   
+----------
+ 0.010803
+(1 row)
+
+SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator, floatspan '[50, 55]')::numeric, 6);
+  round   
+----------
+ 0.104515
+(1 row)
+
+SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator, floatspan '[50, 55]')::numeric, 6);
+  round   
+----------
+ 0.008010
+(1 row)
+
+SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 'p', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]')::numeric, 6);
+  round   
+----------
+ 0.103003
+(1 row)
+
+SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 'p', '@>(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01 00:00:00, 2001-06-01:00:00:03]')::numeric, 6);
+  round   
+----------
+ 0.000031
+(1 row)
+
+SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator)::numeric, 6);
+  round   
+----------
+ 0.102668
+(1 row)
+
+SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '@>(intspan,intspan)'::regoperator)::numeric, 6);
+  round   
+----------
+ 0.017055
+(1 row)
+
+SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator)::numeric, 6);
+  round   
+----------
+ 0.115656
+(1 row)
+
+SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator)::numeric, 6);
+  round   
+----------
+ 0.014657
+(1 row)
+
+SELECT round(_mobdb_span_joinsel('tbl_tstzspan'::regclass, 'p', 'tbl_tstzspan'::regclass, 'p', '&&(tstzspan,tstzspan)'::regoperator)::numeric, 6);
+  round   
+----------
+ 0.000186
+(1 row)
+
+SELECT round(_mobdb_span_joinsel('tbl_tstzspan'::regclass, 'p', 'tbl_tstzspan'::regclass, 'p', '@>(tstzspan,tstzspan)'::regoperator)::numeric, 6);
+  round   
+----------
+ 0.000074
+(1 row)
+
+/* Errors */
+SELECT round(_mobdb_span_sel(1184, 'p', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]')::numeric, 6);
+ERROR:  Oid 1184 does not refer to a table
+SELECT _mobdb_span_sel('tbl_tstzspan'::regclass, 'X', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]');
+ERROR:  attribute "X" does not exist
+SELECT _mobdb_span_sel('tbl_tstzspan'::regclass, 'p', '<(text,text)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]');
+ERROR:  Unknown operator Oid 664
+SELECT _mobdb_span_joinsel(1184, 'X', 'tbl_tstzspan'::regclass, 'p', '&&(tstzspan,tstzspan)'::regoperator);
+ERROR:  Oid 1184 does not refer to a table
+SELECT _mobdb_span_joinsel('tbl_tstzspan'::regclass, 'X', 'tbl_tstzspan'::regclass, 'p', '&&(tstzspan,tstzspan)'::regoperator);
+ERROR:  attribute "X" does not exist
+SELECT _mobdb_span_joinsel('tbl_tstzspan'::regclass, 'p', 1184, 'p', '&&(tstzspan,tstzspan)'::regoperator);
+ERROR:  Oid 1184 does not refer to a table
+SELECT _mobdb_span_joinsel('tbl_tstzspan'::regclass, 'p', 'tbl_tstzspan'::regclass, 'X', '&&(tstzspan,tstzspan)'::regoperator);
+ERROR:  attribute "X" does not exist
+SELECT _mobdb_span_joinsel('tbl_tstzspan'::regclass, 'p', 'tbl_tstzspan'::regclass, 'p', '<(text,text)'::regoperator);
+ERROR:  Unknown span operator 664
+SELECT _mobdb_span_sel('tbl_tstzspan_temp'::regclass, 'p', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]');
+ERROR:  stats for "tbl_tstzspan_temp" do not exist
+SELECT _mobdb_span_joinsel('tbl_tstzspan_temp'::regclass, 'X', 'tbl_tstzspan'::regclass, 'p', '&&(tstzspan,tstzspan)'::regoperator);
+ERROR:  attribute "X" does not exist
+DROP TABLE tbl_tstzspan_temp;
+DROP TABLE

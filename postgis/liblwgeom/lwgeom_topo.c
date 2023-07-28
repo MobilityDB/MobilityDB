@@ -6724,7 +6724,7 @@ _lwt_FindFaceContainingRing(LWT_TOPOLOGY* topo, LWT_EDGERING *ring,
      * and this shell's bbox is not contained in the other */
     if ( minenv && ! gbox_contains_2d(minenv, shellbox) )
     {
-      LWDEBUGF(2, "Bbox of shell %d (face %d) not contained by bbox "
+      LWDEBUGF(2, "Bbox of shell %d (face %d) not contained in bbox "
                   "of last shell found to contain the point",
                   i, _lwt_EdgeRingGetFace(sring));
       continue;
@@ -6895,7 +6895,7 @@ lwt_Polygonize(LWT_TOPOLOGY* topo)
     LWT_EDGERING *ring = holes.rings[i];
 
     containing_face = _lwt_FindFaceContainingRing(topo, ring, &shells);
-    LWDEBUGF(1, "Ring %d contained by face %" LWTFMT_ELEMID, i, containing_face);
+    LWDEBUGF(1, "Ring %d contained in face %" LWTFMT_ELEMID, i, containing_face);
     if ( containing_face == -1 )
     {
       _lwt_release_edges(edgetable.edges, edgetable.size);

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter id="temporal_types_alpha">
+	<title>Tipos temporales: Operaciones alfanuméricas</title>
+
+	<sect1 id="temporal_types_math">
+		<title>Operaciones matemáticas</title>
+
+		<itemizedlist>
+			<listitem id="tnumber_add">
+				<indexterm><primary><varname>+</varname></primary></indexterm>
+				<para>Adición temporal</para>
+				<para><varname>{number,tnumber} + {number,tnumber} → tnumber</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tint '[2@2001-01-01, 2@2001-01-04)' + 1.5;
+-- [3.5@2001-01-01, 3.5@2001-01-04)
+SELECT tint '[2@2001-01-01, 2@2001-01-04)' + tfloat '[1@2001-01-01, 4@2001-01-04)';
+-- [3@2001-01-01, 6@2001-01-04)
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' +
+  tfloat '{[1@2001-01-01, 2@2001-01-02), [1@2001-01-02, 2@2001-01-04)}';
+-- {[2@2001-01-01, 4@2001-01-04), [3@2001-01-02, 6@2001-01-04)}
+</programlisting>
+			</listitem>
+
+			<listitem id="tnumber_sub">
+				<indexterm><primary><varname>-</varname></primary></indexterm>
+				<para>Resta temporal</para>
+				<para><varname>{number,tnumber} - {number,tnumber} → tnumber</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' - tint '[2@2001-01-03, 2@2001-01-05)';
+-- [-1@2001-01-03, -1@2001-01-04)
+SELECT tfloat '[3@2001-01-01, 6@2001-01-04)' - tint '[2@2001-01-01, 2@2001-01-04)';
+-- [1@2001-01-01, 4@2001-01-04)
+</programlisting>
+			</listitem>
+
+			<listitem id="tnumber_mult">
+				<indexterm><primary><varname>*</varname></primary></indexterm>
+				<para>Multiplicación temporal</para>
+				<para><varname>{number,tnumber} * {number,tnumber} → tnumber</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' * 2;
+-- [2@2001-01-01, 8@2001-01-04)
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' * tint '[2@2001-01-01, 2@2001-01-04)';
+-- [2@2001-01-01, 8@2001-01-04)
+SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' * '[3@2001-01-01, 1@2001-01-03)'
+-- {[3@2001-01-01, 4@2001-01-02, 3@2001-01-03)}
+</programlisting>
+			</listitem>
+
+			<listitem id="tnumber_div">
+				<indexterm><primary><varname>/</varname></primary></indexterm>
+				<para>División temporal</para>
+				<para><varname>{number,tnumber} / {number,tnumber} → tnumber</varname></para>
+				<para>La función genera un error si el denominador es alguna vez igual a cero durante el intervalo de tiempo común de los argumentos.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT 2 / tfloat '[1@2001-01-01, 3@2001-01-04)';
+-- [2@2001-01-01, 1@2001-01-02 12:00:00+00, 0.666666666666667@2001-01-04)
+SELECT tfloat '[1@2001-01-01, 5@2001-01-05)' / '[5@2001-01-01, 1@2001-01-05)'
+-- {[0.2@2001-01-01, 1@2001-01-03,2001-01-03, 5@2001-01-03,2001-01-05)}
+SELECT 2 / tfloat '[-1@2000-01-01, 1@2000-01-02]'
+-- ERROR:  Division by zero
+SELECT tfloat '[-1@2000-01-04, 1@2000-01-05]' / tfloat '[-1@2000-01-01, 1@2000-01-05]'
+-- [-2@2000-01-04, 1@2000-01-05]
+</programlisting>
+			</listitem>
+
+			<listitem id="abs">
+				<indexterm><primary><varname>abs</varname></primary></indexterm>
+				<para>Obtener el valor absoluto del número temporal</para>
+				<para><varname>abs(tnumber) → tnumber</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT abs(tfloat '[1@2000-01-01, -1@2000-01-03, 1@2000-01-05, -1@2000-01-07]');
+/* [1@2000-01-01, 0@2000-01-02, 1@2000-01-03, 0@2000-01-04, 1@2000-01-05, 0@2000-01-06,
+  1@2000-01-07] */
+SELECT abs(tint '[1@2000-01-01, -1@2000-01-03, 1@2000-01-05, -1@2000-01-07]');
+-- [1@2000-01-01, 1@2000-01-07]
+</programlisting>
+			</listitem>
+
+			<listitem id="deltaValue">
+				<indexterm><primary><varname>deltaValue</varname></primary></indexterm>
+				<para>Obtener la diferencia de valor entre instantes consectivos del número temporal</para>
+				<para><varname>deltaValue(tnumber) → tnumber</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT deltaValue(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+-- [1@2000-01-01, -1@2000-01-02, -1@2000-01-03)
+SELECT deltaValue(tfloat '{[1.5@2000-01-01, 2@2000-01-02, 1@2000-01-03]
+  [2@2000-01-04, 2@2000-01-05]}');
+/* Interp=Step;{[0.5@2000-01-01, -1@2000-01-02, -1@2000-01-03),
+  [0@2000-01-04, 0@2000-01-05)} */
+</programlisting>
+			</listitem>
+
+			<listitem id="round">
+				<indexterm><primary><varname>round</varname></primary></indexterm>
+				<para>Redondear los valores a un número de posiciones decimales</para>
+				<para><varname>round(tfloat,integer) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT round(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]', 2);
+-- [0.79@2000-01-01, 2.36@2000-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem id="degrees">
+				<indexterm><primary><varname>degrees</varname></primary></indexterm>
+				<indexterm><primary><varname>radians</varname></primary></indexterm>
+				<para>Convertir entre radianes y grados</para>
+				<para><varname>degrees({float,tfloat},normalize=false) → tfloat</varname></para>
+				<para><varname>radians(tfloat) → tfloat</varname></para>
+				<para>Le paramètre supplémentaire dans la fonction <varname>degrees</varname> peut être utilisé pour normaliser les valeurs entre 0 et 360 grados.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT degrees(pi() * 5);
+-- 900
+SELECT degrees(pi() * 5, true);
+-- 180
+SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]');
+-- [45@2000-01-01, 135@2000-01-02]
+SELECT radians(tfloat '[45@2000-01-01, 135@2000-01-02]');
+-- [0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem id="derivative">
+				<indexterm><primary><varname>derivative</varname></primary></indexterm>
+				<para>Obtener la derivada sobre el tiempo del número flotante temporal en unidades por segundo</para>
+				<para><varname>derivative(tfloat) → tfloat</varname></para>
+				<para>El número flotante temporal debe tener interpolación linear</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT derivative(tfloat '{[0@2000-01-01, 10@2000-01-02, 5@2000-01-03],
+  [1@2000-01-04, 0@2000-01-05]}') * 3600 * 24;
+--  Interp=Step;{[-10@2000-01-01, 5@2000-01-02, 5@2000-01-03],
+  [1@2000-01-04, 1@2000-01-05]}
+SELECT derivative(tfloat 'Interp=Step;[0@2000-01-01, 10@2000-01-02, 5@2000-01-03]');
+-- ERROR:  The temporal value must have linear interpolation
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="temporal_types_bool">
+		<title>Operaciones booleanos</title>
+		<itemizedlist>
+			<listitem id="tbool_and">
+				<indexterm><primary><varname>&amp;</varname></primary></indexterm>
+				<para>Y temporal</para>
+				<para><varname>{boolean,tbool} &amp; {boolean,tbool} → tbool</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tbool '[true@2001-01-03, true@2001-01-05)' &amp;
+  tbool '[false@2001-01-03, false@2001-01-05)';
+-- [f@2001-01-03, f@2001-01-05)
+SELECT tbool '[true@2001-01-03, true@2001-01-05)' &amp;
+  tbool '{[false@2001-01-03, false@2001-01-04),
+  [true@2001-01-04, true@2001-01-05)}';
+-- {[f@2001-01-03, t@2001-01-04, t@2001-01-05)}
+</programlisting>
+			</listitem>
+
+			<listitem id="tbool_or">
+				<indexterm><primary><varname>|</varname></primary></indexterm>
+				<para>O temporal</para>
+				<para><varname>{boolean,tbool} | {boolean,tbool} → tbool</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tbool '[true@2001-01-03, true@2001-01-05)' |
+  tbool '[false@2001-01-03, false@2001-01-05)';
+-- [t@2001-01-03, t@2001-01-05)
+</programlisting>
+			</listitem>
+
+			<listitem id="tbool_not">
+				<indexterm><primary><varname>~</varname></primary></indexterm>
+				<para>No temporal</para>
+				<para><varname>~tbool → tbool</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT ~tbool '[true@2001-01-03, true@2001-01-05)';
+-- [f@2001-01-03, f@2001-01-05)
+</programlisting>
+			</listitem>
+
+			<listitem id="whenTrue">
+				<indexterm><primary><varname>whenTrue</varname></primary></indexterm>
+				<para>Obtener el tiempo cuando el booleano temporal toma el valor verdadero</para>
+				<para><varname>whenTrue(tbool) → tstzspanset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT whenTrue(tfloat '[1@2000-01-01, 4@2000-01-04, 1@2000-01-07]' #> 2);
+-- {(2000-01-02, 2000-01-06)}
+SELECT whenTrue(tdwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(4 4)@2000-01-04,
+  Point(1 1)@2000-01-07]', geometry 'Point(1 1)', sqrt(2)));
+-- {[2000-01-01, 2000-01-02], [2000-01-06, 2000-01-07]}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="temporal_types_text">
+		<title>Operaciones de texto</title>
+
+		<itemizedlist>
+			<listitem id="ttext_concat">
+				<indexterm><primary><varname>||</varname></primary></indexterm>
+				<para>Concatenación de texto temporal</para>
+				<para><varname>{text,ttext} || {text,ttext} → ttext</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT ttext '[AA@2001-01-01, AA@2001-01-04)' || text 'B';
+-- ["AAB"@2001-01-01, "AAB"@2001-01-04)
+SELECT ttext '[AA@2001-01-01, AA@2001-01-04)' || ttext '[BB@2001-01-02, BB@2001-01-05)';
+-- ["AABB"@2001-01-02, "AABB"@2001-01-04)
+SELECT ttext '[A@2001-01-01, B@2001-01-03, C@2001-01-04]' ||
+  ttext '{[D@2001-01-01, D@2001-01-02), [E@2001-01-02, E@2001-01-04)}';
+-- {["DA"@2001-01-01, "EA"@2001-01-02, "EB"@2001-01-03, "EB"@2001-01-04)}
+</programlisting>
+			</listitem>
+
+			<listitem id="ttext_lower">
+				<indexterm><primary><varname>lower</varname></primary></indexterm>
+				<indexterm><primary><varname>upper</varname></primary></indexterm>
+				<para>Transformar entre minúsculas y mayúsculas</para>
+				<para><varname>lower(ttext) → ttext</varname></para>
+				<para><varname>upper(ttext) → ttext</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT upper(ttext '[AA@2000-01-01, bb@2000-01-02]');
+-- ["AA"@2000-01-01, "BB"@2000-01-02]
+SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
+-- ["aa"@2000-01-01, "bb"@2000-01-02]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+</chapter>

@@ -1,0 +1,255 @@
+/* Errors */
+SELECT tstzset '2000-01-01, 2000-01-02';
+ERROR:  Could not parse the set: Missing open brace
+LINE 2: SELECT tstzset '2000-01-01, 2000-01-02';
+                       ^
+SELECT tstzset '{2000-01-01, 2000-01-02';
+ERROR:  Could not parse the set: Missing closing brace
+LINE 1: SELECT tstzset '{2000-01-01, 2000-01-02';
+                       ^
+SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
+                                               set                                                
+--------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST", "Sun Jan 02 00:00:00 2000 PST", "Mon Jan 03 00:00:00 2000 PST"}
+(1 row)
+
+SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
+                               set                                
+------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST", "Mon Jan 03 00:00:00 2000 PST"}
+(1 row)
+
+/* Errors */
+SELECT set('{}'::timestamptz[]);
+ERROR:  The input array cannot be empty
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']);
+                                                                    set                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------
+ {"0101000000000000000000F03F000000000000F03F", "010100000000000000000000400000000000000040", "010100000000000000000008400000000000000840"}
+(1 row)
+
+/* Errors */
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Point(1 1 1)']);
+ERROR:  Operation on mixed 2D/3D dimensions
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Point empty']);
+ERROR:  Only non-empty geometries accepted
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']);
+ERROR:  Only point geometries accepted
+SELECT set(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
+ERROR:  Operation on mixed SRID
+SELECT set(timestamptz '2000-01-01');
+               set                
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT timestamptz '2000-01-01'::tstzset;
+             tstzset              
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT memSize(tstzset '{2000-01-01}');
+ memsize 
+---------
+      32
+(1 row)
+
+SELECT memSize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ memsize 
+---------
+      48
+(1 row)
+
+SELECT span(tstzset '{2000-01-01}');
+                             span                             
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT span(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+                             span                             
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT numValues(tstzset '{2000-01-01}');
+ numvalues 
+-----------
+         1
+(1 row)
+
+SELECT numValues(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ numvalues 
+-----------
+         3
+(1 row)
+
+SELECT startValue(tstzset '{2000-01-01}');
+          startvalue          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT startValue(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+          startvalue          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT endValue(tstzset '{2000-01-01}');
+           endvalue           
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT endValue(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+           endvalue           
+------------------------------
+ Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT valueN(tstzset '{2000-01-01}', 1);
+            valuen            
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT valueN(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
+            valuen            
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT valueN(tstzset '{2000-01-01}', 2);
+ valuen 
+--------
+ 
+(1 row)
+
+SELECT valueN(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+ valuen 
+--------
+ 
+(1 row)
+
+SELECT getValues(tstzset '{2000-01-01}');
+            getvalues             
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT getValues(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+                                           getvalues                                            
+------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST","Mon Jan 03 00:00:00 2000 PST"}
+(1 row)
+
+SELECT shift(tstzset '{2000-01-01}', '5 min');
+              shift               
+----------------------------------
+ {"Sat Jan 01 00:05:00 2000 PST"}
+(1 row)
+
+SELECT shift(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
+                                              shift                                               
+--------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:05:00 2000 PST", "Sun Jan 02 00:05:00 2000 PST", "Mon Jan 03 00:05:00 2000 PST"}
+(1 row)
+
+SELECT tscale(tstzset '{2000-01-01}', '1 hour');
+              tscale              
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT tscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
+                                              tscale                                              
+--------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST", "Sat Jan 01 00:30:00 2000 PST", "Sat Jan 01 01:00:00 2000 PST"}
+(1 row)
+
+SELECT shiftTscale(tstzset '{2000-01-01}', '1 day', '1 hour');
+           shifttscale            
+----------------------------------
+ {"Sun Jan 02 00:00:00 2000 PST"}
+(1 row)
+
+SELECT shiftTscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
+                                           shifttscale                                            
+--------------------------------------------------------------------------------------------------
+ {"Sun Jan 02 00:00:00 2000 PST", "Sun Jan 02 00:30:00 2000 PST", "Sun Jan 02 01:00:00 2000 PST"}
+(1 row)
+
+SELECT set_cmp(tstzset '{2000-01-01}', tstzset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzset '{2000-01-01}' = tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzset '{2000-01-01}' <> tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzset '{2000-01-01}' < tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}' < tstzset '{2000-01-01}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzset '{2000-01-01}' <= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzset '{2000-01-01}' > tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzset '{2000-01-01}' >= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') = set_hash(tstzset '{2000-01-01,2000-01-02}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') <> set_hash(tstzset '{2000-01-01,2000-01-02}');
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1) = set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1) <> set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1);
+ ?column? 
+----------
+ f
+(1 row)
+

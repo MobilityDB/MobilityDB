@@ -403,8 +403,10 @@ static int gbox_check_poles(GBOX *gbox)
 */
 void geog2cart(const GEOGRAPHIC_POINT *g, POINT3D *p)
 {
-	p->x = cos(g->lat) * cos(g->lon);
-	p->y = cos(g->lat) * sin(g->lon);
+	/* MEOS: Modified to avoid computing twice cos(g->lat) */
+	double cos_lat = cos(g->lat);
+	p->x = cos_lat * cos(g->lon);
+	p->y = cos_lat * sin(g->lon);
 	p->z = sin(g->lat);
 }
 

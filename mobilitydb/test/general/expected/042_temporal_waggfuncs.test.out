@@ -1,0 +1,249 @@
+SELECT wmin(temp, NULL) FROM (VALUES (NULL::tint),(NULL::tint)) t(temp);
+ wmin 
+------
+ 
+(1 row)
+
+SELECT wmin(temp, NULL) FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
+ wmin 
+------
+ 
+(1 row)
+
+SELECT wmin(temp, interval '5 minutes') FROM (VALUES (NULL::tint),(NULL::tint)) t(temp);
+ wmin 
+------
+ 
+(1 row)
+
+SELECT wmin(temp, interval '5 minutes') FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
+                                wmin                                
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sat Jan 01 00:05:00 2000 PST]}
+(1 row)
+
+SELECT wmax(temp, NULL) FROM (VALUES (NULL::tint),(NULL::tint)) t(temp);
+ wmax 
+------
+ 
+(1 row)
+
+SELECT wmax(temp, NULL) FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
+ wmax 
+------
+ 
+(1 row)
+
+SELECT wmax(temp, interval '5 minutes') FROM (VALUES (NULL::tint),(NULL::tint)) t(temp);
+ wmax 
+------
+ 
+(1 row)
+
+SELECT wmax(temp, interval '5 minutes') FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
+                                wmax                                
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sat Jan 01 00:05:00 2000 PST]}
+(1 row)
+
+SELECT wcount(temp, NULL) FROM (VALUES (NULL::tint),(NULL::tint)) t(temp);
+ wcount 
+--------
+ 
+(1 row)
+
+SELECT wcount(temp, NULL) FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
+ wcount 
+--------
+ 
+(1 row)
+
+SELECT wcount(temp, interval '5 minutes') FROM (VALUES (NULL::tint),(NULL::tint)) t(temp);
+ wcount 
+--------
+ 
+(1 row)
+
+SELECT wcount(temp, interval '5 minutes') FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
+                               wcount                               
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sat Jan 01 00:05:00 2000 PST]}
+(1 row)
+
+SELECT wsum(temp, NULL) FROM (VALUES (NULL::tint),(NULL::tint)) t(temp);
+ wsum 
+------
+ 
+(1 row)
+
+SELECT wsum(temp, NULL) FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
+ wsum 
+------
+ 
+(1 row)
+
+SELECT wsum(temp, interval '5 minutes') FROM (VALUES (NULL::tint),(NULL::tint)) t(temp);
+ wsum 
+------
+ 
+(1 row)
+
+SELECT wsum(temp, interval '5 minutes') FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
+                                wsum                                
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sat Jan 01 00:05:00 2000 PST]}
+(1 row)
+
+SELECT wavg(temp, NULL) FROM (VALUES (NULL::tint),(NULL::tint)) t(temp);
+ wavg 
+------
+ 
+(1 row)
+
+SELECT wavg(temp, NULL) FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
+ wavg 
+------
+ 
+(1 row)
+
+SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tint),(NULL::tint)) t(temp);
+ wavg 
+------
+ 
+(1 row)
+
+SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
+                                      wavg                                      
+--------------------------------------------------------------------------------
+ Interp=Step;{[1@Sat Jan 01 00:00:00 2000 PST, 1@Sat Jan 01 00:05:00 2000 PST]}
+(1 row)
+
+SELECT wmin(temp, NULL) FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
+ wmin 
+------
+ 
+(1 row)
+
+SELECT wmin(temp, NULL) FROM (VALUES (NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+ wmin 
+------
+ 
+(1 row)
+
+SELECT wmin(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
+ wmin 
+------
+ 
+(1 row)
+
+SELECT wmin(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+                                wmin                                
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sat Jan 01 00:05:00 2000 PST]}
+(1 row)
+
+SELECT wmax(temp, NULL) FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
+ wmax 
+------
+ 
+(1 row)
+
+SELECT wmax(temp, NULL) FROM (VALUES (NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+ wmax 
+------
+ 
+(1 row)
+
+SELECT wmax(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
+ wmax 
+------
+ 
+(1 row)
+
+SELECT wmax(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+                                wmax                                
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sat Jan 01 00:05:00 2000 PST]}
+(1 row)
+
+SELECT wcount(temp, NULL) FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
+ wcount 
+--------
+ 
+(1 row)
+
+SELECT wcount(temp, NULL) FROM (VALUES (NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+ wcount 
+--------
+ 
+(1 row)
+
+SELECT wcount(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
+ wcount 
+--------
+ 
+(1 row)
+
+SELECT wcount(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+                               wcount                               
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sat Jan 01 00:05:00 2000 PST]}
+(1 row)
+
+SELECT wsum(temp, NULL) FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
+ wsum 
+------
+ 
+(1 row)
+
+SELECT wsum(temp, NULL) FROM (VALUES (NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+ wsum 
+------
+ 
+(1 row)
+
+SELECT wsum(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
+ wsum 
+------
+ 
+(1 row)
+
+SELECT wsum(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+                                wsum                                
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sat Jan 01 00:05:00 2000 PST]}
+(1 row)
+
+SELECT wavg(temp, NULL) FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
+ wavg 
+------
+ 
+(1 row)
+
+SELECT wavg(temp, NULL) FROM (VALUES (NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+ wavg 
+------
+ 
+(1 row)
+
+SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
+ wavg 
+------
+ 
+(1 row)
+
+SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+                                wavg                                
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sat Jan 01 00:05:00 2000 PST]}
+(1 row)
+
+SELECT wmax(temp, interval '1 day') FROM (VALUES (tfloat '[1@2000-01-01, 1@2000-01-02]'),('[1@2000-01-03, 1@2000-01-04]')) t(temp);
+                                wmax                                
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 1@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+/* Errors */
+SELECT wsum(temp, interval '1 day') FROM (VALUES (tfloat '[1@2000-01-01, 1@2000-01-02]'),('[1@2000-01-03, 1@2000-01-04]')) t(temp);
+ERROR:  Operation not supported for temporal continuous float sequences

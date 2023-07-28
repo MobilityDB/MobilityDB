@@ -1,0 +1,535 @@
+COPY tbl_tnpoint TO '/tmp/tbl_tnpoint' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_tnpoint_tmp;
+NOTICE:  table "tbl_tnpoint_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tnpoint_tmp AS TABLE tbl_tnpoint WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tnpoint_tmp FROM '/tmp/tbl_tnpoint' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_tnpoint_tmp;
+DROP TABLE
+SELECT MAX(getPosition(startValue(tnpoint_inst(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
+   max    
+----------
+ 0.999506
+(1 row)
+
+WITH test(temp) AS (
+SELECT tnpoint_seq(array_agg(t.inst ORDER BY getTimestamp(t.inst)), 'discrete') FROM tbl_tnpoint_inst t GROUP BY k%10 )
+SELECT MAX(getPosition(startValue(temp))) FROM test;
+   max    
+----------
+ 0.936023
+(1 row)
+
+WITH test(temp) AS (
+SELECT tnpoint_seq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY route(t.inst) )
+SELECT MAX(getPosition(startValue(temp))) FROM test;
+   max    
+----------
+ 0.994533
+(1 row)
+
+WITH test(temp) AS (
+SELECT tnpoint_seqset(array_agg(t.seq ORDER BY startTimestamp(t.seq))) FROM tbl_tnpoint_seq t GROUP BY k%10 )
+SELECT MAX(getPosition(startValue(temp))) FROM test;
+   max    
+----------
+ 0.966244
+(1 row)
+
+DROP TABLE IF EXISTS tbl_tnpointinst_test;
+NOTICE:  table "tbl_tnpointinst_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tnpointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tnpoint_seq;
+SELECT 496
+WITH temp AS (
+  SELECT numSequences(tnpoint_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval, 5.0))
+  FROM tbl_tnpointinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+ max 
+-----
+   9
+(1 row)
+
+DROP TABLE tbl_tnpointinst_test;
+DROP TABLE
+SELECT DISTINCT tempSubtype(tnpoint(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tnpoint_inst;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint_seq(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint_seqset(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tnpoint_discseq;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint_seq(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint_seqset(ti)) FROM tbl_tnpoint_discseq;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint_seq(seq)) FROM tbl_tnpoint_seq;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint_seqset(seq)) FROM tbl_tnpoint_seq;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint(ss)) FROM tbl_tnpoint_seqset WHERE numInstants(ss) = 1;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tnpoint_seqset WHERE duration(ss) = '00:00:00';
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint_seq(ss)) FROM tbl_tnpoint_seqset WHERE numSequences(ss) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tnpoint_seqset(ss)) FROM tbl_tnpoint_seqset;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tnpoint 'Npoint(1, 0.1)@2000-01-01' UNION
+  SELECT tnpoint 'Npoint(1, 0.2)@2000-01-02' UNION
+  SELECT tnpoint 'Npoint(1, 0.4)@2000-01-04' UNION
+  SELECT tnpoint 'Npoint(1, 0.5)@2000-01-05' UNION
+  SELECT tnpoint 'Npoint(1, 0.7)@2000-01-07' )
+SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
+                                                                                                             appendinstant                                                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[NPoint(1,0.1)@Sat Jan 01 00:00:00 2000 PST], [NPoint(1,0.2)@Sun Jan 02 00:00:00 2000 PST], [NPoint(1,0.4)@Tue Jan 04 00:00:00 2000 PST], [NPoint(1,0.5)@Wed Jan 05 00:00:00 2000 PST], [NPoint(1,0.7)@Fri Jan 07 00:00:00 2000 PST]}
+(1 row)
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tnpoint;
+ max 
+-----
+  57
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE temp::tgeompoint IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE round(temp, 7) = round((temp::tgeompoint)::tnpoint, 7);
+ count 
+-------
+   100
+(1 row)
+
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
+ tempsubtype 
+-------------
+ Instant
+ Sequence
+ SequenceSet
+(3 rows)
+
+SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
+ max  
+------
+ 3240
+(1 row)
+
+/*
+SELECT stbox(temp) FROM tbl_tnpoint;
+*/
+SELECT getValue(inst) FROM tbl_tnpoint_inst ORDER BY getValue(inst) LIMIT 1;
+      getvalue      
+--------------------
+ NPoint(0,0.658185)
+(1 row)
+
+SELECT MAX(numValues(getValues(temp))) FROM tbl_tnpoint;
+ max 
+-----
+  56
+(1 row)
+
+SELECT MAX(array_length(positions(temp), 1)) FROM tbl_tnpoint;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(route(inst)) FROM tbl_tnpoint_inst;
+ max 
+-----
+  99
+(1 row)
+
+SELECT MAX(numValues(routes(temp))) FROM tbl_tnpoint;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(duration(getTime(temp))) FROM tbl_tnpoint;
+   max    
+----------
+ 04:00:00
+(1 row)
+
+SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
+             max              
+------------------------------
+ Sun Dec 30 10:06:00 2001 PST
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp ?= t2.np;
+ count 
+-------
+   101
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp %= t2.np;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE ever_eq(t1.inst, t2.np);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE always_eq(t1.inst, t2.np);
+ count 
+-------
+     0
+(1 row)
+
+SELECT MAX(startTimestamp(shift(t1.temp, t2.i))) FROM tbl_tnpoint t1, tbl_interval t2;
+             max              
+------------------------------
+ Wed Dec 26 12:38:00 2001 PST
+(1 row)
+
+SELECT DISTINCT MAX(getPosition(startValue(temp))) FROM tbl_tnpoint;
+   max    
+----------
+ 0.999961
+(1 row)
+
+SELECT DISTINCT MAX(getPosition(endValue(temp))) FROM tbl_tnpoint;
+   max    
+----------
+ 0.995935
+(1 row)
+
+SELECT MAX(duration(temp)) FROM tbl_tnpoint;
+   max    
+----------
+ 04:00:00
+(1 row)
+
+SELECT MAX(numInstants(temp)) FROM tbl_tnpoint;
+ max 
+-----
+  56
+(1 row)
+
+SELECT MAX(Route(startInstant(temp))) FROM tbl_tnpoint;
+ max 
+-----
+  99
+(1 row)
+
+SELECT MAX(Route(endInstant(temp))) FROM tbl_tnpoint;
+ max 
+-----
+  99
+(1 row)
+
+SELECT MAX(Route(instantN(temp, 1))) FROM tbl_tnpoint;
+ max 
+-----
+  99
+(1 row)
+
+SELECT MAX(array_length(instants(temp),1)) FROM tbl_tnpoint;
+ max 
+-----
+  56
+(1 row)
+
+SELECT MAX(numTimestamps(temp)) FROM tbl_tnpoint;
+ max 
+-----
+  56
+(1 row)
+
+SELECT MAX(startTimestamp(temp)) FROM tbl_tnpoint;
+             max              
+------------------------------
+ Wed Dec 26 10:59:00 2001 PST
+(1 row)
+
+SELECT MAX(endTimestamp(temp)) FROM tbl_tnpoint;
+             max              
+------------------------------
+ Wed Dec 26 14:16:00 2001 PST
+(1 row)
+
+SELECT MAX(timestampN(temp,1)) FROM tbl_tnpoint;
+             max              
+------------------------------
+ Wed Dec 26 10:59:00 2001 PST
+(1 row)
+
+SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tnpoint;
+ max 
+-----
+  56
+(1 row)
+
+SELECT MAX(numSequences(ss)) FROM tbl_tnpoint_seqset;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(duration(startSequence(ss))) FROM tbl_tnpoint_seqset;
+   max    
+----------
+ 00:50:00
+(1 row)
+
+SELECT MAX(duration(endSequence(ss))) FROM tbl_tnpoint_seqset;
+   max    
+----------
+ 00:50:00
+(1 row)
+
+SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tnpoint_seqset;
+   max    
+----------
+ 00:50:00
+(1 row)
+
+SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tnpoint_seqset;
+ max 
+-----
+   9
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint
+WHERE atValues(temp, np) IS NOT NULL;
+ count 
+-------
+   101
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint
+WHERE minusValues(temp, np) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint,
+( SELECT set_union(np) AS s FROM tbl_npoint) tmp
+WHERE atValues(temp, s) IS NOT NULL;
+ count 
+-------
+    30
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint,
+( SELECT set_union(np) AS s FROM tbl_npoint) tmp
+WHERE minusValues(temp, s) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
+WHERE atTime(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
+WHERE minusTime(temp, t) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
+WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
+WHERE atTime(temp, t) IS NOT NULL;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
+WHERE minusTime(temp, t) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
+WHERE atTime(temp, p) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
+WHERE minusTime(temp, p) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
+WHERE atTime(temp, ps) IS NOT NULL;
+ count 
+-------
+     3
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
+WHERE minusTime(temp, ps) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
+WHERE t1.temp = t2.temp;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
+WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
+WHERE t1.temp < t2.temp;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
+WHERE t1.temp <= t2.temp;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
+WHERE t1.temp > t2.temp;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
+WHERE t1.temp >= t2.temp;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT MAX(temporal_hash(temp)) FROM tbl_tnpoint;
+    max     
+------------
+ 2137747695
+(1 row)
+
+CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
+CREATE INDEX
+DROP INDEX tbl_tnpoint_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
+CREATE INDEX
+DROP INDEX tbl_tnpoint_quadtree_idx;
+DROP INDEX

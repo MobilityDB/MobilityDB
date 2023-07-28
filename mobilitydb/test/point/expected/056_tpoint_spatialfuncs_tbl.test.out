@@ -1,0 +1,606 @@
+SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint;
+ srid 
+------
+    0
+(1 row)
+
+SELECT DISTINCT SRID(temp) FROM tbl_tgeogpoint;
+ srid 
+------
+ 4326
+(1 row)
+
+SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint3D;
+ srid 
+------
+    0
+(1 row)
+
+SELECT DISTINCT SRID(temp) FROM tbl_tgeogpoint3D;
+ srid 
+------
+ 4326
+(1 row)
+
+/*
+SELECT setSRID(temp,5676) FROM tbl_tgeompoint;
+SELECT setSRID(temp,4326) FROM tbl_tgeogpoint;
+SELECT setSRID(temp,5676) FROM tbl_tgeompoint3D;
+SELECT setSRID(temp,4326) FROM tbl_tgeogpoint3D;
+*/
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE startValue(transform(setSRID(temp, 5676), 4326)) = st_transform(st_setSRID(startValue(temp), 5676), 4326);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5676), 4326)) = st_transform(st_setSRID(startValue(temp), 5676), 4326);
+ count 
+-------
+   100
+(1 row)
+
+SELECT ST_AsText(transform_gk(geometry 'Linestring empty'));
+    st_astext     
+------------------
+ LINESTRING EMPTY
+(1 row)
+
+SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) FROM tbl_tgeompoint;
+      round      
+-----------------
+ 12685412.960367
+(1 row)
+
+SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) FROM tbl_geom_point;
+      round      
+-----------------
+ 15523281.670409
+(1 row)
+
+SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geom_linestring WHERE NOT ST_IsEmpty(g);
+      round      
+-----------------
+ 13567136.086579
+(1 row)
+
+SELECT tgeogpoint(temp) FROM tbl_tgeompoint LIMIT 10;
+                                   tgeogpoint                                    
+---------------------------------------------------------------------------------
+ 0101000020E61000000000D0B7817C3540000046622AB45440@Mon Jun 11 07:33:00 2001 PDT
+ 0101000020E610000000003E85299356400000008A7D1E4B40@Fri Aug 10 23:38:00 2001 PDT
+ 0101000020E61000000000D0B7817C3540000046622AB45440@Mon Jun 11 07:33:00 2001 PDT
+ 0101000020E610000000003E85299356400000008A7D1E4B40@Fri Aug 10 23:38:00 2001 PDT
+ 0101000020E610000000006C0CDBC9444000006808F6425040@Mon Dec 03 04:05:00 2001 PST
+ 0101000020E61000000000EC7DCCC75040000000274BE04140@Sun Aug 05 22:33:00 2001 PDT
+ 0101000020E610000000008C3BAC024140000022A5D9DF5540@Mon Dec 03 04:05:00 2001 PST
+ 0101000020E61000000000008AC9664840000028AB24E54340@Sun Aug 05 22:33:00 2001 PDT
+ 0101000020E61000000000A06B28DB1840000078CFBA365240@Wed May 09 07:16:00 2001 PDT
+ 0101000020E610000000006C4D92BB4140000018C7FAF53640@Tue Oct 09 10:44:00 2001 PDT
+(10 rows)
+
+SELECT tgeompoint(temp) FROM tbl_tgeogpoint LIMIT 10;
+                                   tgeompoint                                    
+---------------------------------------------------------------------------------
+ 0101000020E610000000001CC61C8A3B4000007E2CEEA64140@Tue Oct 16 08:01:00 2001 PDT
+ 0101000020E61000000000A0CD090614C00000712AEFA94740@Thu Feb 15 08:33:00 2001 PST
+ 0101000020E610000000001CC61C8A3B4000007E2CEEA64140@Tue Oct 16 08:01:00 2001 PDT
+ 0101000020E61000000000A0CD090614C00000712AEFA94740@Thu Feb 15 08:33:00 2001 PST
+ 0101000020E61000000000F818320C30400000AAC489684E40@Mon May 28 23:20:00 2001 PDT
+ 0101000020E610000000002CF4799237400000F3C2C82D4640@Tue Oct 02 23:00:00 2001 PDT
+ 0101000020E61000000000988F364E394000004522A6B44E40@Mon May 28 23:20:00 2001 PDT
+ 0101000020E61000000000805B63A033400000A98DCA8D5040@Tue Oct 02 23:00:00 2001 PDT
+ 0101000020E6100000000078BAE00C3E400000942579B14840@Sun Apr 15 02:53:00 2001 PDT
+ 0101000020E61000000000600E98AD1CC00000D5707C284640@Sun Dec 09 01:19:00 2001 PST
+(10 rows)
+
+SELECT tgeogpoint(temp) FROM tbl_tgeompoint3D LIMIT 10;
+                                           tgeogpoint                                            
+-------------------------------------------------------------------------------------------------
+ 01010000A0E610000000004453E6914D40000020108B4132400000C02D06D85540@Sun Dec 31 21:13:00 2000 PST
+ 01010000A0E610000000002804C5DC43400000FC220B16554000003828DE6F5040@Sun Nov 04 17:52:00 2001 PST
+ 01010000A0E610000000004453E6914D40000020108B4132400000C02D06D85540@Sun Dec 31 21:13:00 2000 PST
+ 01010000A0E610000000002804C5DC43400000FC220B16554000003828DE6F5040@Sun Nov 04 17:52:00 2001 PST
+ 01010000A0E610000000005034717141400000B0068CD138400000284C15424B40@Mon May 21 03:03:00 2001 PDT
+ 01010000A0E61000000000AC2D7E884A400000306941C3264000004A88FD925540@Sun Jun 10 07:03:00 2001 PDT
+ 01010000A0E61000000000BC726A63524000005CA7FFF8474000007C4D9A835340@Mon May 21 03:03:00 2001 PDT
+ 01010000A0E61000000000608E62222E400000E007FF9D2B400000E0609F555540@Sun Jun 10 07:03:00 2001 PDT
+ 01010000A0E61000000000D07887A328400000505C1BE84D40000044AEDCF74540@Wed Jul 18 06:10:00 2001 PDT
+ 01010000A0E610000000005404A91E52400000387402D1414000007069D9784F40@Wed Apr 25 17:13:00 2001 PDT
+(10 rows)
+
+SELECT tgeompoint(temp) FROM tbl_tgeogpoint3D LIMIT 10;
+                                           tgeompoint                                            
+-------------------------------------------------------------------------------------------------
+ 01010000A0E6100000000024DA9682374000000012D7AD41400000B00959467A40@Fri Jun 22 03:37:00 2001 PDT
+ 01010000A0E61000000000A8967CE83540000081F860F643400080A2589BD38540@Thu Aug 30 14:53:00 2001 PDT
+ 01010000A0E6100000000024DA9682374000000012D7AD41400000B00959467A40@Fri Jun 22 03:37:00 2001 PDT
+ 01010000A0E61000000000A8967CE83540000081F860F643400080A2589BD38540@Thu Aug 30 14:53:00 2001 PDT
+ 01010000A0E61000000000885B6B312D400000ED0A12084E4000003F26D0318640@Sun Mar 25 13:59:00 2001 PST
+ 01010000A0E61000000000401948E40EC00000A4E7950A46400000EF6A07FB7140@Wed Nov 07 10:54:00 2001 PST
+ 01010000A0E61000000000C843043B20400000CF6D9C6F4B400000C398BA0B8A40@Sun Mar 25 13:59:00 2001 PST
+ 01010000A0E61000000000DC7CFA2D37400000BE28E08641400000AF3EC9E17B40@Wed Nov 07 10:54:00 2001 PST
+ 01010000A0E6100000000040824C6B02C00000CB9759724B400000A461C73C8E40@Sun Dec 23 00:21:00 2001 PST
+ 01010000A0E610000000003C6599203F400000C874E33051400000FABA46988140@Wed Oct 10 11:35:00 2001 PDT
+(10 rows)
+
+SELECT temp::tgeogpoint FROM tbl_tgeompoint LIMIT 10;
+                                      temp                                       
+---------------------------------------------------------------------------------
+ 0101000020E61000000000D0B7817C3540000046622AB45440@Mon Jun 11 07:33:00 2001 PDT
+ 0101000020E610000000003E85299356400000008A7D1E4B40@Fri Aug 10 23:38:00 2001 PDT
+ 0101000020E61000000000D0B7817C3540000046622AB45440@Mon Jun 11 07:33:00 2001 PDT
+ 0101000020E610000000003E85299356400000008A7D1E4B40@Fri Aug 10 23:38:00 2001 PDT
+ 0101000020E610000000006C0CDBC9444000006808F6425040@Mon Dec 03 04:05:00 2001 PST
+ 0101000020E61000000000EC7DCCC75040000000274BE04140@Sun Aug 05 22:33:00 2001 PDT
+ 0101000020E610000000008C3BAC024140000022A5D9DF5540@Mon Dec 03 04:05:00 2001 PST
+ 0101000020E61000000000008AC9664840000028AB24E54340@Sun Aug 05 22:33:00 2001 PDT
+ 0101000020E61000000000A06B28DB1840000078CFBA365240@Wed May 09 07:16:00 2001 PDT
+ 0101000020E610000000006C4D92BB4140000018C7FAF53640@Tue Oct 09 10:44:00 2001 PDT
+(10 rows)
+
+SELECT temp::tgeompoint FROM tbl_tgeogpoint LIMIT 10;
+                                      temp                                       
+---------------------------------------------------------------------------------
+ 0101000020E610000000001CC61C8A3B4000007E2CEEA64140@Tue Oct 16 08:01:00 2001 PDT
+ 0101000020E61000000000A0CD090614C00000712AEFA94740@Thu Feb 15 08:33:00 2001 PST
+ 0101000020E610000000001CC61C8A3B4000007E2CEEA64140@Tue Oct 16 08:01:00 2001 PDT
+ 0101000020E61000000000A0CD090614C00000712AEFA94740@Thu Feb 15 08:33:00 2001 PST
+ 0101000020E61000000000F818320C30400000AAC489684E40@Mon May 28 23:20:00 2001 PDT
+ 0101000020E610000000002CF4799237400000F3C2C82D4640@Tue Oct 02 23:00:00 2001 PDT
+ 0101000020E61000000000988F364E394000004522A6B44E40@Mon May 28 23:20:00 2001 PDT
+ 0101000020E61000000000805B63A033400000A98DCA8D5040@Tue Oct 02 23:00:00 2001 PDT
+ 0101000020E6100000000078BAE00C3E400000942579B14840@Sun Apr 15 02:53:00 2001 PDT
+ 0101000020E61000000000600E98AD1CC00000D5707C284640@Sun Dec 09 01:19:00 2001 PST
+(10 rows)
+
+SELECT temp::tgeogpoint FROM tbl_tgeompoint3D LIMIT 10;
+                                              temp                                               
+-------------------------------------------------------------------------------------------------
+ 01010000A0E610000000004453E6914D40000020108B4132400000C02D06D85540@Sun Dec 31 21:13:00 2000 PST
+ 01010000A0E610000000002804C5DC43400000FC220B16554000003828DE6F5040@Sun Nov 04 17:52:00 2001 PST
+ 01010000A0E610000000004453E6914D40000020108B4132400000C02D06D85540@Sun Dec 31 21:13:00 2000 PST
+ 01010000A0E610000000002804C5DC43400000FC220B16554000003828DE6F5040@Sun Nov 04 17:52:00 2001 PST
+ 01010000A0E610000000005034717141400000B0068CD138400000284C15424B40@Mon May 21 03:03:00 2001 PDT
+ 01010000A0E61000000000AC2D7E884A400000306941C3264000004A88FD925540@Sun Jun 10 07:03:00 2001 PDT
+ 01010000A0E61000000000BC726A63524000005CA7FFF8474000007C4D9A835340@Mon May 21 03:03:00 2001 PDT
+ 01010000A0E61000000000608E62222E400000E007FF9D2B400000E0609F555540@Sun Jun 10 07:03:00 2001 PDT
+ 01010000A0E61000000000D07887A328400000505C1BE84D40000044AEDCF74540@Wed Jul 18 06:10:00 2001 PDT
+ 01010000A0E610000000005404A91E52400000387402D1414000007069D9784F40@Wed Apr 25 17:13:00 2001 PDT
+(10 rows)
+
+SELECT temp::tgeompoint FROM tbl_tgeogpoint3D LIMIT 10;
+                                              temp                                               
+-------------------------------------------------------------------------------------------------
+ 01010000A0E6100000000024DA9682374000000012D7AD41400000B00959467A40@Fri Jun 22 03:37:00 2001 PDT
+ 01010000A0E61000000000A8967CE83540000081F860F643400080A2589BD38540@Thu Aug 30 14:53:00 2001 PDT
+ 01010000A0E6100000000024DA9682374000000012D7AD41400000B00959467A40@Fri Jun 22 03:37:00 2001 PDT
+ 01010000A0E61000000000A8967CE83540000081F860F643400080A2589BD38540@Thu Aug 30 14:53:00 2001 PDT
+ 01010000A0E61000000000885B6B312D400000ED0A12084E4000003F26D0318640@Sun Mar 25 13:59:00 2001 PST
+ 01010000A0E61000000000401948E40EC00000A4E7950A46400000EF6A07FB7140@Wed Nov 07 10:54:00 2001 PST
+ 01010000A0E61000000000C843043B20400000CF6D9C6F4B400000C398BA0B8A40@Sun Mar 25 13:59:00 2001 PST
+ 01010000A0E61000000000DC7CFA2D37400000BE28E08641400000AF3EC9E17B40@Wed Nov 07 10:54:00 2001 PST
+ 01010000A0E6100000000040824C6B02C00000CB9759724B400000A461C73C8E40@Sun Dec 23 00:21:00 2001 PST
+ 01010000A0E610000000003C6599203F400000C874E33051400000FABA46988140@Wed Oct 10 11:35:00 2001 PDT
+(10 rows)
+
+SELECT asText(round(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
+                     astext                      
+-------------------------------------------------
+ POINT(21.49 97.18)@Mon Jun 11 07:33:00 2001 PDT
+ POINT(90.3 54.24)@Fri Aug 10 23:38:00 2001 PDT
+ POINT(21.49 97.18)@Mon Jun 11 07:33:00 2001 PDT
+ POINT(90.3 54.24)@Fri Aug 10 23:38:00 2001 PDT
+ POINT(41.58 65.05)@Mon Dec 03 04:05:00 2001 PST
+ POINT(67.12 35.75)@Sun Aug 05 22:33:00 2001 PDT
+ POINT(34.02 92.5)@Mon Dec 03 04:05:00 2001 PST
+ POINT(48.8 39.79)@Sun Aug 05 22:33:00 2001 PDT
+ POINT(6.21 72.86)@Wed May 09 07:16:00 2001 PDT
+ POINT(35.47 22.96)@Tue Oct 09 10:44:00 2001 PDT
+(10 rows)
+
+SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
+                     astext                      
+-------------------------------------------------
+ POINT(27.54 35.3)@Tue Oct 16 08:01:00 2001 PDT
+ POINT(-5.01 47.33)@Thu Feb 15 08:33:00 2001 PST
+ POINT(27.54 35.3)@Tue Oct 16 08:01:00 2001 PDT
+ POINT(-5.01 47.33)@Thu Feb 15 08:33:00 2001 PST
+ POINT(16.05 60.82)@Mon May 28 23:20:00 2001 PDT
+ POINT(23.57 44.36)@Tue Oct 02 23:00:00 2001 PDT
+ POINT(25.31 61.41)@Mon May 28 23:20:00 2001 PDT
+ POINT(19.63 66.22)@Tue Oct 02 23:00:00 2001 PDT
+ POINT(30.05 49.39)@Sun Apr 15 02:53:00 2001 PDT
+ POINT(-7.17 44.32)@Sun Dec 09 01:19:00 2001 PST
+(10 rows)
+
+SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
+                          astext                          
+----------------------------------------------------------
+ POINT Z (59.14 18.26 87.38)@Sun Dec 31 21:13:00 2000 PST
+ POINT Z (39.72 95.66 65.75)@Sun Nov 04 17:52:00 2001 PST
+ POINT Z (59.14 18.26 87.38)@Sun Dec 31 21:13:00 2000 PST
+ POINT Z (39.72 95.66 65.75)@Sun Nov 04 17:52:00 2001 PST
+ POINT Z (34.89 24.82 54.52)@Mon May 21 03:03:00 2001 PDT
+ POINT Z (53.07 11.38 86.3)@Sun Jun 10 07:03:00 2001 PDT
+ POINT Z (73.55 47.95 78.06)@Mon May 21 03:03:00 2001 PDT
+ POINT Z (15.07 13.81 85.34)@Sun Jun 10 07:03:00 2001 PDT
+ POINT Z (12.32 59.81 43.94)@Wed Jul 18 06:10:00 2001 PDT
+ POINT Z (72.48 35.63 62.94)@Wed Apr 25 17:13:00 2001 PDT
+(10 rows)
+
+SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
+                          astext                           
+-----------------------------------------------------------
+ POINT Z (23.51 35.36 420.4)@Fri Jun 22 03:37:00 2001 PDT
+ POINT Z (21.91 39.92 698.45)@Thu Aug 30 14:53:00 2001 PDT
+ POINT Z (23.51 35.36 420.4)@Fri Jun 22 03:37:00 2001 PDT
+ POINT Z (21.91 39.92 698.45)@Thu Aug 30 14:53:00 2001 PDT
+ POINT Z (14.6 60.06 710.23)@Sun Mar 25 13:59:00 2001 PST
+ POINT Z (-3.86 44.08 287.69)@Wed Nov 07 10:54:00 2001 PST
+ POINT Z (8.12 54.87 833.47)@Sun Mar 25 13:59:00 2001 PST
+ POINT Z (23.18 35.05 446.11)@Wed Nov 07 10:54:00 2001 PST
+ POINT Z (-2.3 54.89 967.6)@Sun Dec 23 00:21:00 2001 PST
+ POINT Z (31.13 68.76 563.03)@Wed Oct 10 11:35:00 2001 PDT
+(10 rows)
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint;
+   round   
+-----------
+ 98.055514
+(1 row)
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+   round   
+-----------
+ 30.050304
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint;
+   round   
+-----------
+ 99.507493
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+   round   
+-----------
+ 67.815801
+(1 row)
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+   round   
+-----------
+ 88.833620
+(1 row)
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+   round   
+-----------
+ 31.711561
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+   round   
+-----------
+ 97.438117
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+   round   
+-----------
+ 71.386957
+(1 row)
+
+SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+   round   
+-----------
+ 97.118984
+(1 row)
+
+SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+   round    
+------------
+ 984.325312
+(1 row)
+
+SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint;
+ max 
+-----
+  56
+(1 row)
+
+SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint;
+ max 
+-----
+  47
+(1 row)
+
+SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint3D;
+ max 
+-----
+  52
+(1 row)
+
+SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint3D;
+ max 
+-----
+  52
+(1 row)
+
+SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint;
+    round    
+-------------
+ 2517.034440
+(1 row)
+
+SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint3D;
+    round    
+-------------
+ 2974.577302
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(temp));
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(temp));
+ count 
+-------
+   100
+(1 row)
+
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint;
+    round    
+-------------
+ 2517.034440
+(1 row)
+
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+      round      
+-----------------
+ 75503509.305624
+(1 row)
+
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+    round    
+-------------
+ 2974.577302
+(1 row)
+
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+      round      
+-----------------
+ 75084456.388854
+(1 row)
+
+SELECT MAX(ST_Area(convexHull(temp))) FROM tbl_tgeompoint;
+        max        
+-------------------
+ 9220.856176317631
+(1 row)
+
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint;
+  round   
+----------
+ 1.606515
+(1 row)
+
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+  round   
+----------
+ 1.860218
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
+AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
+ count 
+-------
+    43
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
+AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
+ count 
+-------
+    37
+(1 row)
+
+SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint;
+ max 
+-----
+  26
+(1 row)
+
+SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint3D;
+ max 
+-----
+  39
+(1 row)
+
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint;
+   round    
+------------
+ 170.328089
+(1 row)
+
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+   round    
+------------
+ 169.178471
+(1 row)
+
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+   round    
+------------
+ 180.963911
+(1 row)
+
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+   round    
+------------
+ 193.561739
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL;
+ count 
+-------
+    48
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL;
+ count 
+-------
+    47
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL;
+ count 
+-------
+    48
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL;
+ count 
+-------
+    41
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE angularDifference(temp) IS NOT NULL;
+ count 
+-------
+    48
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE angularDifference(temp) IS NOT NULL;
+ count 
+-------
+    43
+(1 row)
+
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point t1, tbl_tgeompoint t2
+WHERE bearing(g, temp) IS NOT NULL;
+    max     
+------------
+ 359.996647
+(1 row)
+
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeompoint t1, tbl_geom_point t2
+WHERE bearing(temp, g) IS NOT NULL;
+    max     
+------------
+ 359.998758
+(1 row)
+
+SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
+    max     
+------------
+ 359.944855
+(1 row)
+
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geog_point t1, tbl_tgeogpoint t2
+WHERE bearing(g, temp) IS NOT NULL;
+    max     
+------------
+ 359.997863
+(1 row)
+
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeogpoint t1, tbl_geog_point t2
+WHERE bearing(temp, g) IS NOT NULL;
+    max     
+------------
+ 359.998567
+(1 row)
+
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
+WHERE bearing(g, temp) IS NOT NULL;
+    max     
+------------
+ 359.999319
+(1 row)
+
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeompoint3D t1, tbl_geom_point3D t2
+WHERE bearing(temp, g) IS NOT NULL;
+    max     
+------------
+ 359.993033
+(1 row)
+
+SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
+    max     
+------------
+ 355.897777
+(1 row)
+
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geog_point3D t1, tbl_tgeogpoint3D t2
+WHERE bearing(g, temp) IS NOT NULL;
+    max     
+------------
+ 359.997568
+(1 row)
+
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeogpoint3D t1, tbl_geog_point3D t2
+WHERE bearing(temp, g) IS NOT NULL;
+    max     
+------------
+ 359.998981
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE isSimple(temp);
+ count 
+-------
+    67
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE isSimple(temp);
+ count 
+-------
+    65
+(1 row)
+
+SELECT SUM(numInstants(t)) FROM tbl_tgeompoint, unnest(makeSimple(temp)) t;
+ sum  
+------
+ 1034
+(1 row)
+
+SELECT SUM(numInstants(t)) FROM tbl_tgeompoint3D, unnest(makeSimple(temp)) t;
+ sum  
+------
+ 1028
+(1 row)
+
+SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint3D;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_geometry t2 WHERE t1.k % 2 = 0 AND temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_stbox t2 WHERE temp != merge(atStbox(temp, b), minusStbox(temp, b));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint3d t1, tbl_geodstbox3d t2 WHERE temp != merge(atStbox(temp, b), minusStbox(temp, b));
+ count 
+-------
+     0
+(1 row)
+

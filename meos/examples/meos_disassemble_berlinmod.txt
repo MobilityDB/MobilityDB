@@ -1,0 +1,29 @@
+/* SQL Script to generate the trips.csv file from the trip_instants.csv */
+
+CREATE TABLE trip_instants (
+  tripid int NOT NULL,
+  vehid int NOT NULL,
+  day date NOT NULL,
+  seqno int NOT NULL,
+  geom geometry NOT NULL,
+  t timestamptz NOT NULL
+);
+COPY trip_instants FROM '/home/esteban/src/MobilityDB/meos/examples/trip_instants.csv' CSV HEADER;
+
+CREATE TABLE trips (
+  tripid int NOT NULL,
+  vehid int NOT NULL,
+  day date NOT NULL,
+  seqno int NOT NULL,
+  trip tgeompoint NOT NULL
+);
+
+INSERT INTO trips
+SELECT tripid, vehid, day, seqno,
+  tgeompoint_contseq(array_agg(tgeompoint(geom, t) ORDER BY t)) AS trip
+FROM trip_instants
+GROUP BY tripid, vehid, day, seqno
+ORDER BY tripid, vehid, day, seqno;
+
+COPY (SELECT tripid, vehid, day, seqno, asHexEWKB(trip) AS trip FROM trips) TO
+  '/home/esteban/src/MobilityDB/meos/examples/trips.csv' CSV HEADER;
