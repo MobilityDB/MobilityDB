@@ -1,5 +1,4 @@
 add_library(pg_point OBJECT
-  geography_functions.c
   projection_gk.c
   stbox.c
   tpoint.c
