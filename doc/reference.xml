@@ -624,24 +624,6 @@
 			<title>Constructors</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="set"><varname>set</varname></link>: Constructor for set values</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="span"><varname>span</varname></link>: Constructor for span values</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="spanset"><varname>spanset</varname></link>: Constructor for span set values</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-
-		<sect2>
-			<title>Constructors</title>
-			<itemizedlist>
-				<listitem>
 					<para><link linkend="ttype_const"><varname>ttype</varname></link>: Constructor for temporal types from a base value and a time value</para>
 				</listitem>
 
