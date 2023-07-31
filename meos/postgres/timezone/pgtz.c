@@ -89,7 +89,8 @@ pg_TZDIR(void)
     return tzdir;
 
   get_share_path(my_exec_path, tzdir);
-  strlcpy(tzdir + strlen(tzdir), "/timezone", MAXPGPATH - strlen(tzdir));
+  // strlcpy(tzdir + strlen(tzdir), "/timezone", MAXPGPATH - strlen(tzdir));
+  strncpy(tzdir + strlen(tzdir), "/timezone", MAXPGPATH - strlen(tzdir));
 
   done_tzdir = true;
   return tzdir;
