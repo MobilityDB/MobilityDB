@@ -150,23 +150,23 @@
 			<title>Conversión de tipos</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="base_cast"><varname>::</varname>, <varname>set(base)</varname>, <varname>span(base)</varname>, <varname>spanset(base)</varname></link>: Convertir un valor de base en un valor de conjunto, de rango o de conjunto de rangos</para>
+					<para><link linkend="base_convert"><varname>::</varname>, <varname>set(base)</varname>, <varname>span(base)</varname>, <varname>spanset(base)</varname></link>: Convertir un valor de base en un valor de conjunto, de rango o de conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="set_cast"><varname>::</varname>, <varname>spanset(set)</varname></link>: Convertir un valor de conjunto en un valor de conjunto de rangos</para>
+					<para><link linkend="set_convert"><varname>::</varname>, <varname>spanset(set)</varname></link>: Convertir un valor de conjunto en un valor de conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_cast"><varname>::</varname>, <varname>spanset(span)</varname></link>: Convertir un rango a un conjunto de rangos</para>
+					<para><link linkend="span_convert"><varname>::</varname>, <varname>spanset(span)</varname></link>: Convertir un rango a un conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_cast"><varname>::</varname>, <varname>span(range)</varname>, <varname>range(span)</varname></link>: Convertir un rango de MobilityDB hacia y desde un rango PostgreSQL</para>
+					<para><link linkend="range_convert"><varname>::</varname>, <varname>span(range)</varname>, <varname>range(span)</varname></link>: Convertir un rango de MobilityDB hacia y desde un rango PostgreSQL</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="multirange_cast"><varname>::</varname>, <varname>multirange(spanset)</varname>, <varname>spanset(multirange)</varname></link>: Convertir un rango PostgreSQL a un rango MobilityDB</para>
+					<para><link linkend="multirange_convert"><varname>::</varname>, <varname>multirange(spanset)</varname>, <varname>spanset(multirange)</varname></link>: Convertir un rango PostgreSQL a un rango MobilityDB</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -404,19 +404,19 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tbox_cast_to"><varname>tbox::type</varname></link>: Convertir un <varname>tbox</varname> a otro tipo</para>
+					<para><link linkend="tbox_convert_to"><varname>tbox::type</varname></link>: Convertir un <varname>tbox</varname> a otro tipo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tbox_cast_from"><varname>type::tbox</varname></link>: Convertir otro tipo a un <varname>tbox</varname></para>
+					<para><link linkend="tbox_convert_from"><varname>type::tbox</varname></link>: Convertir otro tipo a un <varname>tbox</varname></para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_cast_to"><varname>stbox::type</varname></link>: Convertir un <varname>stbox</varname> a otro tipo</para>
+					<para><link linkend="stbox_convert_to"><varname>stbox::type</varname></link>: Convertir un <varname>stbox</varname> a otro tipo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_cast_from"><varname>type::stbox</varname></link>: Convertir otro tipo a un <varname>stbox</varname></para>
+					<para><link linkend="stbox_convert_from"><varname>type::stbox</varname></link>: Convertir otro tipo a un <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

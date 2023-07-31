@@ -306,18 +306,18 @@ SELECT spanset(ARRAY[tstzspan '[2001-01-01 08:00, 2001-01-01 08:10]',
 	</sect1>
 
 	<sect1>
-		<title>Casting</title>
+		<title>Conversions</title>
 		<para>
 			Values of set and span types can be converted to one another or converted to and from PostgreSQL range types using the function <varname>CAST</varname> or using the <varname>::</varname> notation.
 		</para>
 
 		<itemizedlist>
-			<listitem id="base_cast">
+			<listitem id="base_convert">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<indexterm><primary><varname>set</varname></primary></indexterm>
 				<indexterm><primary><varname>span</varname></primary></indexterm>
 				<indexterm><primary><varname>spanset</varname></primary></indexterm>
-				<para>Cast a base value to a set, span, or span set value</para>
+				<para>Convert a base value to a set, span, or span set value</para>
 				<para><varname>base::{set,span,spanset}</varname></para>
 				<para><varname>set(base)</varname></para>
 				<para><varname>span(base)</varname></para>
@@ -332,9 +332,9 @@ SELECT spanset(timestamptz '2001-01-01 08:00:00');
 </programlisting>
 			</listitem>
 
-			<listitem id="set_cast">
+			<listitem id="set_convert">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast a set value to a span set value</para>
+				<para>Convert a set value to a span set value</para>
 				<para><varname>set::spanset</varname></para>
 				<para><varname>spanset(set)</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -346,10 +346,10 @@ SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
 </programlisting>
 			</listitem>
 
-			<listitem id="span_cast">
+			<listitem id="span_convert">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<indexterm><primary><varname>spanset</varname></primary></indexterm>
-				<para>Cast a span value to a span set value</para>
+				<para>Convert a span value to a span set value</para>
 				<para><varname>span::spanset</varname></para>
 				<para><varname>spanset(span)</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -360,11 +360,11 @@ SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
 </programlisting>
 			</listitem>
 
-			<listitem id="range_cast">
+			<listitem id="range_convert">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<indexterm><primary><varname>span</varname></primary></indexterm>
 				<indexterm><primary><varname>range</varname></primary></indexterm>
-				<para>Cast a span value to and from a PostgreSQL range value</para>
+				<para>Convert a span value to and from a PostgreSQL range value</para>
 				<para><varname>span::range</varname></para>
 				<para><varname>range::span</varname></para>
 				<para><varname>range(span)</varname></para>
@@ -385,11 +385,11 @@ SELECT tstzrange '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspan;
 -- [2001-01-01 08:00:00, 2001-01-01 08:30:00)
 </programlisting>
 			</listitem>
-			<listitem id="multirange_cast">
+			<listitem id="multirange_convert">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<indexterm><primary><varname>spanset</varname></primary></indexterm>
 				<indexterm><primary><varname>multirange</varname></primary></indexterm>
-				<para>Cast a span set value to and from a PostgreSQL multirange value</para>
+				<para>Convert a span set value to and from a PostgreSQL multirange value</para>
 				<para><varname>spanset::multirange</varname></para>
 				<para><varname>multirange::spanset</varname></para>
 				<para><varname>multirange(spanset)</varname></para>

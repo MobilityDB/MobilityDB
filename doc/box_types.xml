@@ -207,13 +207,13 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03,2001-01-
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="box_types_casting">
-		<title>Casting</title>
+	<sect1 id="box_types_conversions">
+		<title>Conversions</title>
 
 		<itemizedlist>
-			<listitem id="tbox_cast_to">
+			<listitem id="tbox_convert_to">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast a <varname>tbox</varname> to another type</para>
+				<para>Convert a <varname>tbox</varname> to another type</para>
 				<para><varname>tbox::{floatspan,tstzspan}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02))'::floatspan;
@@ -223,9 +223,9 @@ SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02))'::tstzspan;
 </programlisting>
 			</listitem>
 
-			<listitem id="tbox_cast_from">
+			<listitem id="tbox_convert_from">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast another type to a <varname>tbox</varname></para>
+				<para>Convert another type to a <varname>tbox</varname></para>
 				<para><varname>{number,span,time,tnumber}::tbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '(1.0,2.0)'::tbox;
@@ -235,9 +235,9 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 </programlisting>
 			</listitem>
 
-			<listitem id="stbox_cast_to">
+			<listitem id="stbox_convert_to">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast an <varname>stbox</varname> to a another type</para>
+				<para>Convert an <varname>stbox</varname> to a another type</para>
 				<para><varname>stbox::{tstzspan,geometry}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan;
@@ -257,9 +257,9 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01
 </programlisting>
 			</listitem>
 
-			<listitem id="stbox_cast_from">
+			<listitem id="stbox_convert_from">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast another type to an <varname>stbox</varname></para>
+				<para>Convert another type to an <varname>stbox</varname></para>
 				<para><varname>{geo,time,tpoint}::stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT geometry 'Linestring(1 1,2 2)'::stbox;

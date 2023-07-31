@@ -189,7 +189,7 @@ SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 			<itemizedlist>
 				<listitem id="npoint_geometry">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
-					<para>Cast a network point to a geometry</para>
+					<para>Convert a network point to a geometry</para>
 					<para><varname>{npoint,nsegment}::geometry</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText(npoint(76, 0.33)::geometry);
@@ -206,7 +206,7 @@ SELECT ST_AsText(nsegment(76, 0.33, 0.33)::geometry);
 			<itemizedlist>
 				<listitem id="geometry_npoint">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
-					<para>Cast a geometry to a network point</para>
+					<para>Convert a geometry to a network point</para>
 					<para><varname>geometry::{npoint,nsegment}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT geometry 'Point(279.269156511873 811.497076880187)'::npoint;
@@ -428,14 +428,14 @@ SELECT tnpoint_seqset_gaps(ARRAY[tnpoint 'NPoint(1,0.1)@2000-01-01',
 			</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_network_types_casting">
-		<title>Casting</title>
+	<sect1 id="temporal_network_types_conversions">
+		<title>Conversions</title>
 
 		<para>A temporal network point value can be converted to and from a temporal geometry point. This can be done using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation. A null value is returned if any of the composing geometry point values cannot be converted into a <varname>npoint</varname> value.</para>
 		<itemizedlist>
 			<listitem id="tnpoint_tgeompoint">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast a temporal network point to a temporal geometry point</para>
+				<para>Convert a temporal network point to a temporal geometry point</para>
 				<para><varname>tnpoint::tgeompoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText((tnpoint '[NPoint(1, 0.2)@2001-01-01,
@@ -447,7 +447,7 @@ SELECT asText((tnpoint '[NPoint(1, 0.2)@2001-01-01,
 
 			<listitem id="tgeompoint_tnpoint">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast a temporal geometry point to a temporal network point</para>
+				<para>Convert a temporal geometry point to a temporal network point</para>
 				<para><varname>tgeompoint::tnpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
