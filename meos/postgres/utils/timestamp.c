@@ -22,7 +22,7 @@
 #include "utils/timestamp_def.h"
 #include "utils/datetime.h"
 
-#define SAMESIGN(a,b)	(((a) < 0) == ((b) < 0))
+#define SAMESIGN(a,b) (((a) < 0) == ((b) < 0))
 
 static TimeOffset time2t(const int hour, const int min, const int sec, const fsec_t fsec);
 static Timestamp dt2local(Timestamp dt, int timezone);
@@ -289,7 +289,7 @@ dt2local(Timestamp dt, int tz)
 }
 
 /*----------------------------------------------------------
- *	Relational operators for timestamp.
+ * Relational operators for timestamp.
  *---------------------------------------------------------*/
 
 void
@@ -338,4 +338,172 @@ int
 timestamp_cmp_internal(Timestamp dt1, Timestamp dt2)
 {
   return (dt1 < dt2) ? -1 : ((dt1 > dt2) ? 1 : 0);
+}
+
+/* isoweek2j()
+ *
+ *  Return the Julian day which corresponds to the first day (Monday) of the given ISO 8601 year and week.
+ *  Julian days are used to convert between ISO week dates and Gregorian dates.
+ */
+int
+isoweek2j(int year, int week)
+{
+  int day0, day4;
+
+  /* fourth day of current year */
+  day4 = date2j(year, 1, 4);
+
+  /* day0 == offset to first day of week (Monday) */
+  day0 = j2day(day4 - 1);
+
+  return ((week - 1) * 7) + (day4 - day0);
+}
+
+/* isoweek2date()
+ * Convert ISO week of year number to date.
+ * The year field must be specified with the ISO year!
+ * karel 2000/08/07
+ */
+void
+isoweek2date(int woy, int *year, int *mon, int *mday)
+{
+  j2date(isoweek2j(*year, woy), year, mon, mday);
+}
+
+/* isoweekdate2date()
+ *
+ *  Convert an ISO 8601 week date (ISO year, ISO week) into a Gregorian date.
+ *  Gregorian day of week sent so weekday strings can be supplied.
+ *  Populates year, mon, and mday with the correct Gregorian values.
+ *  year must be passed in as the ISO year.
+ */
+void
+isoweekdate2date(int isoweek, int wday, int *year, int *mon, int *mday)
+{
+  int jday;
+
+  jday = isoweek2j(*year, isoweek);
+  /* convert Gregorian week start (Sunday=1) to ISO week start (Monday=1) */
+  if (wday > 1)
+    jday += wday - 2;
+  else
+    jday += 6;
+  j2date(jday, year, mon, mday);
+}
+
+/* date2isoweek()
+ *
+ *  Returns ISO week number of year.
+ */
+int
+date2isoweek(int year, int mon, int mday)
+{
+  float8 result;
+  int day0, day4, dayn;
+
+  /* current day */
+  dayn = date2j(year, mon, mday);
+
+  /* fourth day of current year */
+  day4 = date2j(year, 1, 4);
+
+  /* day0 == offset to first day of week (Monday) */
+  day0 = j2day(day4 - 1);
+
+  /*
+   * We need the first week containing a Thursday, otherwise this day falls
+   * into the previous year for purposes of counting weeks
+   */
+  if (dayn < day4 - day0)
+  {
+    day4 = date2j(year - 1, 1, 4);
+
+    /* day0 == offset to first day of week (Monday) */
+    day0 = j2day(day4 - 1);
+  }
+
+  result = (dayn - (day4 - day0)) / 7 + 1;
+
+  /*
+   * Sometimes the last few days in a year will fall into the first week of
+   * the next year, so check for this.
+   */
+  if (result >= 52)
+  {
+    day4 = date2j(year + 1, 1, 4);
+
+    /* day0 == offset to first day of week (Monday) */
+    day0 = j2day(day4 - 1);
+
+    if (dayn >= day4 - day0)
+      result = (dayn - (day4 - day0)) / 7 + 1;
+  }
+
+  return (int) result;
+}
+
+
+/* date2isoyear()
+ *
+ *  Returns ISO 8601 year number.
+ *  Note: zero or negative results follow the year-zero-exists convention.
+ */
+int
+date2isoyear(int year, int mon, int mday)
+{
+  float8 result;
+  int day0, day4, dayn;
+
+  /* current day */
+  dayn = date2j(year, mon, mday);
+
+  /* fourth day of current year */
+  day4 = date2j(year, 1, 4);
+
+  /* day0 == offset to first day of week (Monday) */
+  day0 = j2day(day4 - 1);
+
+  /*
+   * We need the first week containing a Thursday, otherwise this day falls
+   * into the previous year for purposes of counting weeks
+   */
+  if (dayn < day4 - day0)
+  {
+    day4 = date2j(year - 1, 1, 4);
+
+    /* day0 == offset to first day of week (Monday) */
+    day0 = j2day(day4 - 1);
+
+    year--;
+  }
+
+  result = (dayn - (day4 - day0)) / 7 + 1;
+
+  /*
+   * Sometimes the last few days in a year will fall into the first week of
+   * the next year, so check for this.
+   */
+  if (result >= 52)
+  {
+    day4 = date2j(year + 1, 1, 4);
+
+    /* day0 == offset to first day of week (Monday) */
+    day0 = j2day(day4 - 1);
+
+    if (dayn >= day4 - day0)
+      year++;
+  }
+
+  return year;
+}
+
+/* date2isoyearday()
+ *
+ *	Returns the ISO 8601 day-of-year, given a Gregorian year, month and day.
+ *	Possible return values are 1 through 371 (364 in non-leap years).
+ */
+int
+date2isoyearday(int year, int mon, int mday)
+{
+  return date2j(year, mon, mday) - isoweek2j(date2isoyear(year, mon, mday), 1) + 1;
 }

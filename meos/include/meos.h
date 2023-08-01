@@ -309,6 +309,11 @@ extern TimestampTz pg_timestamp_pl_interval(TimestampTz timestamp, const Interva
 extern TimestampTz pg_timestamptz_in(const char *str, int32 typmod);
 extern char *pg_timestamptz_out(TimestampTz dt);
 extern char *text2cstring(const text *textptr);
+extern text *pg_timestamp_to_char(Timestamp dt, text *fmt);
+extern text *pg_timestamptz_to_char(TimestampTz dt, text *fmt);
+extern text *pg_interval_to_char(Interval *it, text *fmt);
+extern TimestampTz pg_to_timestamp(text *date_txt, text *fmt);
+extern DateADT pg_to_date(text *date_txt, text *fmt);
 
 /*****************************************************************************
  * Functions for input/output and manipulation of PostGIS types
@@ -1128,6 +1133,7 @@ extern Temporal *sub_int_tint(int i, const Temporal *tnumber);
 extern Temporal *sub_tfloat_float(const Temporal *tnumber, double d);
 extern Temporal *sub_tint_int(const Temporal *tnumber, int i);
 extern Temporal *sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2);
+extern Temporal *tfloat_round(const Temporal *temp, int maxdd);
 extern Temporal *tfloat_degrees(const Temporal *temp, bool normalize);
 extern Temporal *tfloat_derivative(const Temporal *temp);
 extern Temporal *tfloat_radians(const Temporal *temp);
