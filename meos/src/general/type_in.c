@@ -783,6 +783,8 @@ temporal_from_mfjson(const char *mfjson)
       sscanf(srs, "EPSG:%d", &srid);
       pfree(srs);
     }
+    else if (temptype == T_TGEOGPOINT)
+      srid = 4326;
   }
 
   /* Read interpolation value */

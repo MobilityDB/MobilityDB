@@ -751,7 +751,6 @@ stbox_hast(const STBox *box)
  * @ingroup libmeos_box_accessor
  * @brief Return true if a spatiotemporal box is geodetic
  * @sqlfunc isGeodetic()
- * @pymeosfunc geodetic()
  */
 bool
 stbox_isgeodetic(const STBox *box)

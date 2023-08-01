@@ -144,7 +144,6 @@ contains_floatspan_float(const Span *s, double d)
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a period contains a timestamp.
  * @sqlop @p \@>
- * @pymeosfunc contains_timestamp()
  */
 bool
 contains_period_timestamp(const Span *p, TimestampTz t)
@@ -250,7 +249,6 @@ contained_span_span(const Span *s1, const Span *s2)
  * @ingroup libmeos_setspan_topo
  * @brief Return true if two spans overlap.
  * @sqlop @p &&
- * @pymeosfunc overlap()
  */
 bool
 overlaps_span_span(const Span *s1, const Span *s2)

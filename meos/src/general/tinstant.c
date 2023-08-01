@@ -498,7 +498,6 @@ tinstant_instants(const TInstant *inst, int *count)
  * @note Since the corresponding function for temporal sequences need to
  * interpolate the value, it is necessary to return a copy of the value
  * @sqlfunc valueAtTimestamp()
- * @pymeosfunc TInstant.valueAtTimestamp()
  */
 bool
 tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)

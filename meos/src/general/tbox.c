@@ -686,7 +686,6 @@ tbox_hast(const TBox *box)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmin()
- * @pymeosfunc xmin()
  */
 bool
 tbox_xmin(const TBox *box, double *result)
@@ -703,7 +702,6 @@ tbox_xmin(const TBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmin_inc()
- * @pymeosfunc xmin_inc()
  */
 bool
 tbox_xmin_inc(const TBox *box, bool *result)
@@ -720,7 +718,6 @@ tbox_xmin_inc(const TBox *box, bool *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmax()
- * @pymeosfunc xmax()
  */
 bool
 tbox_xmax(const TBox *box, double *result)
@@ -737,7 +734,6 @@ tbox_xmax(const TBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmax_inc()
- * @pymeosfunc xmax_inc()
  */
 bool
 tbox_xmax_inc(const TBox *box, bool *result)
@@ -754,7 +750,6 @@ tbox_xmax_inc(const TBox *box, bool *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin()
- * @pymeosfunc tmin()
  */
 bool
 tbox_tmin(const TBox *box, TimestampTz *result)
@@ -771,7 +766,6 @@ tbox_tmin(const TBox *box, TimestampTz *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin_inc()
- * @pymeosfunc tmin_inc()
  */
 bool
 tbox_tmin_inc(const TBox *box, bool *result)
@@ -788,7 +782,6 @@ tbox_tmin_inc(const TBox *box, bool *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax()
- * @pymeosfunc tmax()
  */
 bool
 tbox_tmax(const TBox *box, TimestampTz *result)
@@ -805,7 +798,6 @@ tbox_tmax(const TBox *box, TimestampTz *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax_inc()
- * @pymeosfunc tmax_inc()
  */
 bool
 tbox_tmax_inc(const TBox *box, bool *result)
@@ -1180,7 +1172,6 @@ intersection_tbox_tbox(const TBox *box1, const TBox *box2)
  * @brief Return true if the temporal boxes are equal
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
- * @pymeosfunc __eq__()
  */
 bool
 tbox_eq(const TBox *box1, const TBox *box2)

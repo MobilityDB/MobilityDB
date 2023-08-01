@@ -653,7 +653,6 @@ floatspan_lower(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a period
  * @sqlfunc lower()
- * @pymeosfunc lower()
  */
 TimestampTz
 period_lower(const Span *p)
@@ -698,7 +697,6 @@ floatspan_upper(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a period
  * @sqlfunc upper()
- * @pymeosfunc upper()
  */
 TimestampTz
 period_upper(const Span *p)
@@ -710,7 +708,6 @@ period_upper(const Span *p)
  * @ingroup libmeos_setspan_accessor
  * @brief Return true if the lower bound of a span is inclusive
  * @sqlfunc lower_inc()
- * @pymeosfunc lower_inc()
  */
 bool
 span_lower_inc(const Span *s)
@@ -722,7 +719,6 @@ span_lower_inc(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return true if the upper bound of a span is inclusive
  * @sqlfunc upper_inc()
- * @pymeosfunc upper_inc()
  */
 bool
 span_upper_inc(const Span *s)
@@ -746,7 +742,6 @@ span_width(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the duration of a period as an interval.
  * @sqlfunc duration()
- * @pymeosfunc duration()
  */
 Interval *
 period_duration(const Span *s)
@@ -871,7 +866,6 @@ span_expand(const Span *s1, Span *s2)
  * @brief Shift a span by a value.
  * @pre The value is of the same type as the span base type
  * @sqlfunc shift()
- * @pymeosfunc shift()
  */
 void
 span_shift(Span *s, Datum shift)
@@ -971,7 +965,6 @@ period_shift_tscale1(Span *p, const Interval *shift, const Interval *duration,
  * @ingroup libmeos_setspan_transf
  * @brief Shift and/or scale a period by the intervals.
  * @sqlfunc shift(), tscale(), shiftTscale()
- * @pymeosfunc shiftTscale()
  */
 Span *
 period_shift_tscale(const Span *p, const Interval *shift,
@@ -1001,7 +994,6 @@ period_shift_tscale(const Span *p, const Interval *shift,
  * @brief Return true if the first span is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
- * @pymeosfunc __eq__()
  */
 bool
 span_eq(const Span *s1, const Span *s2)
@@ -1032,7 +1024,6 @@ span_ne(const Span *s1, const Span *s2)
  * equal, or greater than the second one.
  * @note Function used for B-tree comparison
  * @sqlfunc intspan_cmp(), bigintspan_cmp(), floatspan_cmp(), period_cmp()
- * @pymeosfunc _cmp()
  */
 int
 span_cmp(const Span *s1, const Span *s2)
@@ -1057,7 +1048,6 @@ span_cmp(const Span *s1, const Span *s2)
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is less than the second one.
  * @sqlop @p <
- * @pymeosfunc __lt__()
  */
 bool
 span_lt(const Span *s1, const Span *s2)
@@ -1070,7 +1060,6 @@ span_lt(const Span *s1, const Span *s2)
  * @brief Return true if the first span is less than or equal to the
  * second one.
  * @sqlop @p <=
- * @pymeosfunc __le__()
  */
 bool
 span_le(const Span *s1, const Span *s2)
@@ -1083,7 +1072,6 @@ span_le(const Span *s1, const Span *s2)
  * @brief Return true if the first span is greater than or equal to the
  * second one.
  * @sqlop @p >=
- * @pymeosfunc __ge__()
  */
 bool
 span_ge(const Span *s1, const Span *s2)
@@ -1095,7 +1083,6 @@ span_ge(const Span *s1, const Span *s2)
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is greater than the second one.
  * @sqlop @p >
- * @pymeosfunc __gt__()
  */
 bool
 span_gt(const Span *s1, const Span *s2)
