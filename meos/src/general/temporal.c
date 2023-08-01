@@ -50,6 +50,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/doxygen_libmeos.h"
+#include "general/lifting.h"
 #include "general/pg_types.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
@@ -956,6 +957,24 @@ temporal_merge_array(Temporal **temparr, int count)
  *****************************************************************************/
 
 /**
+ * Transform integer to float
+ */
+static Datum
+datum_int_to_float(Datum d)
+{
+  return Float8GetDatum((double) DatumGetInt32(d));
+}
+
+/**
+ * Transform float to integer
+ */
+static Datum
+datum_float_to_int(Datum d)
+{
+  return Int32GetDatum((int) DatumGetFloat8(d));
+}
+
+/**
  * @ingroup libmeos_temporal_cast
  * @brief Cast a temporal integer to a temporal float.
  * @sqlop @p ::
@@ -963,15 +982,14 @@ temporal_merge_array(Temporal **temparr, int count)
 Temporal *
 tint_to_tfloat(const Temporal *temp)
 {
-  Temporal *result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tintinst_to_tfloatinst((TInstant *) temp);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tintseq_to_tfloatseq((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tintseqset_to_tfloatseqset((TSequenceSet *) temp);
-  return result;
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_int_to_float;
+  lfinfo.numparam = 0;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
 }
 
 /**
@@ -982,15 +1000,17 @@ tint_to_tfloat(const Temporal *temp)
 Temporal *
 tfloat_to_tint(const Temporal *temp)
 {
-  Temporal *result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tfloatinst_to_tintinst((TInstant *) temp);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tfloatseq_to_tintseq((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tfloatseqset_to_tintseqset((TSequenceSet *) temp);
-  return result;
+  if (MEOS_FLAGS_GET_LINEAR(temp->flags))
+    elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_float_to_int;
+  lfinfo.numparam = 0;
+  lfinfo.restype = T_TINT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
 }
 
 /**

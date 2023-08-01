@@ -509,40 +509,6 @@ tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
 }
 
 /*****************************************************************************
- * Cast functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Cast a temporal instant integer to a temporal instant float.
- * @sqlop @p ::
- */
-TInstant *
-tintinst_to_tfloatinst(const TInstant *inst)
-{
-  TInstant *result = tinstant_copy(inst);
-  result->temptype = T_TFLOAT;
-  MEOS_FLAGS_SET_CONTINUOUS(result->flags, true);
-  result->value = Float8GetDatum((double) DatumGetInt32(tinstant_value(inst)));
-  return result;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Cast a temporal instant float to a temporal instant integer.
- * @sqlop @p ::
- */
-TInstant *
-tfloatinst_to_tintinst(const TInstant *inst)
-{
-  TInstant *result = tinstant_copy(inst);
-  result->temptype = T_TINT;
-  MEOS_FLAGS_SET_CONTINUOUS(result->flags, false);
-  result->value = Int32GetDatum((double) DatumGetFloat8(tinstant_value(inst)));
-  return result;
-}
-
-/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 

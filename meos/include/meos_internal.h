@@ -555,13 +555,7 @@ extern TSequenceSet *tsequenceset_from_base_periodset(Datum value, meosType temp
 /* Cast functions for temporal types */
 
 extern void temporal_set_period(const Temporal *temp, Span *p);
-extern TInstant *tfloatinst_to_tintinst(const TInstant *inst);
-extern TSequence *tfloatseq_to_tintseq(const TSequence *seq);
-extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ss);
 extern void tinstant_set_period(const TInstant *inst, Span *p);
-extern TInstant *tintinst_to_tfloatinst(const TInstant *inst);
-extern TSequence *tintseq_to_tfloatseq(const TSequence *seq);
-extern TSequenceSet *tintseqset_to_tfloatseqset(const TSequenceSet *ss);
 extern void tsequence_set_period(const TSequence *seq, Span *p);
 extern void tsequenceset_set_period(const TSequenceSet *ss, Span *p);
 
@@ -571,6 +565,7 @@ extern void tsequenceset_set_period(const TSequenceSet *ss, Span *p);
 
 extern Datum temporal_end_value(const Temporal *temp);
 extern Datum temporal_max_value(const Temporal *temp);
+extern size_t temporal_mem_size(const Temporal *temp);
 extern Datum temporal_min_value(const Temporal *temp);
 extern void temporal_set_bbox(const Temporal *temp, void *box);
 extern void tnumber_set_span(const Temporal *temp, Span *span);

@@ -1215,66 +1215,6 @@ tsequenceset_value_at_timestamp(const TSequenceSet *ss, TimestampTz t,
 }
 
 /*****************************************************************************
- * Cast functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Cast a temporal sequence set integer to a temporal sequence set float.
- * @sqlop @p ::
- */
-TSequenceSet *
-tintseqset_to_tfloatseqset(const TSequenceSet *ss)
-{
-  TSequenceSet *result = tsequenceset_copy(ss);
-  result->temptype = T_TFLOAT;
-  MEOS_FLAGS_SET_CONTINUOUS(result->flags, true);
-  MEOS_FLAGS_SET_INTERP(result->flags, STEP);
-  for (int i = 0; i < ss->count; i++)
-  {
-    TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(result, i);
-    seq->temptype = T_TFLOAT;
-    MEOS_FLAGS_SET_CONTINUOUS(seq->flags, true);
-    MEOS_FLAGS_SET_INTERP(seq->flags, STEP);
-    for (int j = 0; j < seq->count; j++)
-    {
-      TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, j);
-      inst->temptype = T_TFLOAT;
-      inst->value = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
-    }
-  }
-  return result;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Cast a temporal sequence set float to a temporal sequence set integer.
- * @sqlop @p ::
- */
-TSequenceSet *
-tfloatseqset_to_tintseqset(const TSequenceSet *ss)
-{
-  if (MEOS_FLAGS_GET_LINEAR(ss->flags))
-    elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
-  TSequenceSet *result = tsequenceset_copy(ss);
-  result->temptype = T_TINT;
-  MEOS_FLAGS_SET_CONTINUOUS(result->flags, false);
-  MEOS_FLAGS_SET_INTERP(result->flags, STEP);
-  for (int i = 0; i < ss->count; i++)
-  {
-    TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(result, i);
-    seq->temptype = T_TINT;
-    for (int j = 0; j < seq->count; j++)
-    {
-      TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, j);
-      inst->temptype = T_TINT;
-      inst->value = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
-    }
-  }
-  return result;
-}
-
-/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 
