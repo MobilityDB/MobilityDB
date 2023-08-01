@@ -765,7 +765,6 @@ stbox_isgeodetic(const STBox *box)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmin()
- * @pymeosfunc xmin()
  */
 bool
 stbox_xmin(const STBox *box, double *result)
@@ -782,7 +781,6 @@ stbox_xmin(const STBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmax()
- * @pymeosfunc xmax()
  */
 bool
 stbox_xmax(const STBox *box, double *result)
@@ -799,7 +797,6 @@ stbox_xmax(const STBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Ymin()
- * @pymeosfunc ymin()
  */
 bool
 stbox_ymin(const STBox *box, double *result)
@@ -816,7 +813,6 @@ stbox_ymin(const STBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Ymax()
- * @pymeosfunc ymax()
  */
 bool
 stbox_ymax(const STBox *box, double *result)
@@ -833,7 +829,6 @@ stbox_ymax(const STBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Zmin()
- * @pymeosfunc zmin()
  */
 bool
 stbox_zmin(const STBox *box, double *result)
@@ -850,7 +845,6 @@ stbox_zmin(const STBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Zmax()
- * @pymeosfunc zmax()
  */
 bool
 stbox_zmax(const STBox *box, double *result)
@@ -867,7 +861,6 @@ stbox_zmax(const STBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin()
- * @pymeosfunc tmin()
  */
 bool
 stbox_tmin(const STBox *box, TimestampTz *result)
@@ -885,7 +878,6 @@ stbox_tmin(const STBox *box, TimestampTz *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin_inc()
- * @pymeosfunc tmin_inc()
  */
 bool
 stbox_tmin_inc(const STBox *box, bool *result)
@@ -902,7 +894,6 @@ stbox_tmin_inc(const STBox *box, bool *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax()
- * @pymeosfunc tmax()
  */
 bool
 stbox_tmax(const STBox *box, TimestampTz *result)
@@ -920,7 +911,6 @@ stbox_tmax(const STBox *box, TimestampTz *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax_inc()
- * @pymeosfunc tmax_inc()
  */
 bool
 stbox_tmax_inc(const STBox *box, bool *result)
@@ -939,7 +929,6 @@ stbox_tmax_inc(const STBox *box, bool *result)
  * @ingroup libmeos_box_accessor
  * @brief Return the SRID of a spatiotemporal box.
  * @sqlfunc SRID()
- * @pymeosfunc srid()
  */
 int32
 stbox_srid(const STBox *box)
@@ -1615,7 +1604,6 @@ stbox_quad_split(const STBox *box, int *count)
  * @brief Return true if the spatiotemporal boxes are equal.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
- * @pymeosfunc __eq__()
  */
 bool
 stbox_eq(const STBox *box1, const STBox *box2)
