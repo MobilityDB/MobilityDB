@@ -43,7 +43,6 @@
 /*****************************************************************************/
 
 extern Datum datum_round_float(Datum value, Datum size);
-extern Temporal *tfloat_round(const Temporal *temp, Datum size);
 
 /*****************************************************************************/
 

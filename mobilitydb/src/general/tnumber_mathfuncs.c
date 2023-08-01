@@ -326,28 +326,6 @@ datum_round_float(Datum value, Datum size)
   return result;
 }
 
-/**
- * @brief Round a temporal number to a given number of decimal places
- */
-Temporal *
-tfloat_round(const Temporal *temp, Datum digits)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_round_float;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = digits;
-  lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.argtype[1] = T_INT4;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
-
 PGDLLEXPORT Datum Tfloat_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_round);
 /**
@@ -359,7 +337,7 @@ Datum
 Tfloat_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum size = PG_GETARG_DATUM(1);
+  int size = PG_GETARG_INT32(1);
   Temporal *result = tfloat_round(temp, size);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

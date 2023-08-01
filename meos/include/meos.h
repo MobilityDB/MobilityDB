@@ -1133,6 +1133,7 @@ extern Temporal *sub_int_tint(int i, const Temporal *tnumber);
 extern Temporal *sub_tfloat_float(const Temporal *tnumber, double d);
 extern Temporal *sub_tint_int(const Temporal *tnumber, int i);
 extern Temporal *sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2);
+extern Temporal *tfloat_round(const Temporal *temp, int maxdd);
 extern Temporal *tfloat_degrees(const Temporal *temp, bool normalize);
 extern Temporal *tfloat_derivative(const Temporal *temp);
 extern Temporal *tfloat_radians(const Temporal *temp);
