@@ -1234,6 +1234,8 @@ tintseqset_to_tfloatseqset(const TSequenceSet *ss)
   {
     TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(result, i);
     seq->temptype = T_TFLOAT;
+    MEOS_FLAGS_SET_CONTINUOUS(seq->flags, true);
+    MEOS_FLAGS_SET_INTERP(seq->flags, STEP);
     for (int j = 0; j < seq->count; j++)
     {
       TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, j);
