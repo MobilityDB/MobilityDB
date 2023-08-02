@@ -53,6 +53,7 @@
 #include "general/temporaltypes.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
+#include "point/tpoint_distance.h"
 
 /*****************************************************************************
  * Utility functions
@@ -1376,7 +1377,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * @brief Return true if two segments of twp temporal geographic points
+ * @brief Return true if two segments of two temporal geographic points
  * intersect at a timestamp
  * @param[in] start1,end1 Temporal instants defining the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
@@ -1388,42 +1389,10 @@ bool
 tgeogpointsegm_intersection(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-  GEOGRAPHIC_EDGE e1, e2;
-  POINT3D A1, A2, B1, B2;
-  POINT4D p1, p2, p3, p4;
-
-  datum_point4d(tinstant_value(start1), &p1);
-  geographic_point_init(p1.x, p1.y, &(e1.start));
-  geog2cart(&(e1.start), &A1);
-
-  datum_point4d(tinstant_value(end1), &p2);
-  geographic_point_init(p2.x, p2.y, &(e1.end));
-  geog2cart(&(e1.end), &A2);
-
-  datum_point4d(tinstant_value(start2), &p3);
-  geographic_point_init(p3.x, p3.y, &(e2.start));
-  geog2cart(&(e2.start), &B1);
-
-  datum_point4d(tinstant_value(end2), &p4);
-  geographic_point_init(p4.x, p4.y, &(e2.end));
-  geog2cart(&(e2.end), &B2);
-
-  if (! edge_intersects(&A1, &A2, &B1, &B2))
-    return false;
-
-  /* Compute the intersection point */
-  GEOGRAPHIC_POINT inter;
-  edge_intersection(&e1, &e2, &inter);
-  /* Compute distance from beginning of the segment to closest point */
-  long double seglength = sphere_distance(&(e1.start), &(e1.end));
-  long double length = sphere_distance(&(e1.start), &inter);
-  long double fraction = length / seglength;
-
-  long double duration = (long double) (end1->t - start1->t);
-  *t = start1->t + (TimestampTz) (duration * fraction);
-  /* Note that due to roundoff errors it may be the case that the
-   * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  if (*t <= start1->t || *t >= end1->t)
+  Datum mindist;
+  bool found = tgeogpoint_min_dist_at_timestamp(start1, end1, start2, end2,
+    &mindist, t);
+  if (! found || DatumGetFloat8(mindist) > MEOS_EPSILON)
     return false;
   return true;
 }
@@ -2916,7 +2885,9 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
     proj = tsegment_value_at_timestamp(start, end, true, *t);
   q = DATUM_POINT2D_P(proj);
   /* We add a turning point only if p is to the North of q */
-  return FP_GTEQ(p->y, q->y) ? true : false;
+  bool result = FP_GTEQ(p->y, q->y) ? true : false;
+  pfree(DatumGetPointer(proj));
+  return result;
 }
 
 /**

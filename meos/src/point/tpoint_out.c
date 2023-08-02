@@ -78,7 +78,7 @@ wkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 char *
 ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 {
-  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
   char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, maxdd, &len);
