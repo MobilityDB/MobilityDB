@@ -59,14 +59,19 @@ These projects push the boundaries of MobilityDB and connect it with the Postgre
 ### Cloud
 
 *   [MobilityDB-AWS](https://github.com/MobilityDB/MobilityDB-AWS): MobilityDB on Amazon Web Services
-*   [MobilityDB-Azure](https://github.com/JimTsesm/MobilityDB-Azure): MobilityDB on Azure
+*   [MobilityDB-Azure](https://github.com/MobilityDB/MobilityDB-Azure): MobilityDB on Azure
 
 ### Visualization
 
 *   [MobilityDB-Deck](https://github.com/MobilityDB/MobilityDB-Deck) Integration of MobilityDB with [deck.gl](https://deck.gl/)
 *   [MobilityDB-Leaflet](https://github.com/MobilityDB/MobilityDB-Leaflet) Integration of MobilityDB with [Leaflet](https://leafletjs.com/)
-*   [MobilityDB-OpenLayers](https://github.com/MobilityDB/MobilityDB-OpenLayesr) Integration of MobilityDB with [OpenLayers](https://openlayers.org/)
+*   [MobilityDB-OpenLayers](https://github.com/MobilityDB/MobilityDB-OpenLayers) Integration of MobilityDB with [OpenLayers](https://openlayers.org/)
 *   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS): Integration of MobilityDB with [QGIS](https://qgis.org/)
+
+### Public Transport
+
+*   [MobilityDB-PublicTransport](https://github.com/MobilityDB/MobilityDB-PublicTransport) Integration of MobilityDB with public transport standards such as [GTFS](https://gtfs.org/) and [Netex](https://netex-cen.eu/)
+*   [MobilityDB-OpenTripPlanner](https://github.com/MobilityDB/MobilityDB-OpenTripPlanner) Integration of MobilityDB with public transport standards such as [OpenTripPlanner](https://www.opentripplanner.org/)
 
 Mailing Lists
 ------------
