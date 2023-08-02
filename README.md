@@ -43,23 +43,35 @@ Benefits
     *   [MobilityDB-python](https://github.com/MobilityDB/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
     *   [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB
 
-*   Data generator and benchmark tool based on the [BerlinMOD](http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html) benchmark. The data generator takes input data from [Open Street Map](https://www.openstreetmap.org/) and uses [pgRouting](https://pgrouting.org/) to generate routes between pairs of source and target locations.
+*   Data generator and benchmark tool based on the [BerlinMOD](https://secondo-database.github.io/BerlinMOD/BerlinMOD.html) benchmark. The data generator takes input data from [Open Street Map](https://www.openstreetmap.org/) and uses [pgRouting](https://pgrouting.org/) to generate routes between pairs of source and target locations.
 
     *   [MobilityDB-BerlinMOD](https://github.com/MobilityDB/MobilityDB-BerlinMOD)
 
-*   [Plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
+*   [MOVE plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
 
 *   An extensive [workshop](https://github.com/MobilityDB/MobilityDB-workshop) illustrating various usage scenarios of MobilityDB
 
 Experimental Projects
------------------------------
+---------------------
 
 These projects push the boundaries of MobilityDB and connect it with the PostgreSQL/PostGIS ecosystem.
 
+### Cloud
+
 *   [MobilityDB-AWS](https://github.com/MobilityDB/MobilityDB-AWS): MobilityDB on Amazon Web Services
-*   [MobilityDB-Azure](https://github.com/JimTsesm/MobilityDB-Azure): MobilityDB on Azure
-*   [MobilityDB-Deck](https://github.com/MobilityDB/MobilityDB-Deck) Integration of MobilityDB with the data visualization framework Deck.gl
-*   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS): Integration of MobilityDB with QGIS
+*   [MobilityDB-Azure](https://github.com/MobilityDB/MobilityDB-Azure): MobilityDB on Azure
+
+### Visualization
+
+*   [MobilityDB-Deck](https://github.com/MobilityDB/MobilityDB-Deck): Integration of MobilityDB with [deck.gl](https://deck.gl/)
+*   [MobilityDB-Leaflet](https://github.com/MobilityDB/MobilityDB-Leaflet): Integration of MobilityDB with [Leaflet](https://leafletjs.com/)
+*   [MobilityDB-OpenLayers](https://github.com/MobilityDB/MobilityDB-OpenLayers): Integration of MobilityDB with [OpenLayers](https://openlayers.org/)
+*   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS): Integration of MobilityDB with [QGIS](https://qgis.org/)
+
+### Public Transport
+
+*   [MobilityDB-PublicTransport](https://github.com/MobilityDB/MobilityDB-PublicTransport): Integration of MobilityDB with public transport standards such as [GTFS](https://gtfs.org/) and [Netex](https://netex-cen.eu/)
+*   [MobilityDB-OpenTripPlanner](https://github.com/MobilityDB/MobilityDB-OpenTripPlanner): Integration of MobilityDB with public transport standards such as [OpenTripPlanner](https://www.opentripplanner.org/)
 
 Mailing Lists
 ------------
@@ -80,7 +92,9 @@ Branches
 Status
 ------
 
-The current version is 1.0. We are planning to release version 1.1 in the summer of 2023.
+The current pre-release version is 1.1. We plan to release 1.1 when the currently ongoing packaging for Debian and YUM is finished. For more information, please refer to the mailing lists [pgsql-pkg-debian](https://www.postgresql.org/list/pgsql-pkg-debian/) and [pgsql-pkg-yum](https://www.postgresql.org/list/pgsql-pkg-yum/).
+
+MobilityDB is part of the PostGIS bundle for Windows.
 
 Requirements
 ------------
@@ -93,9 +107,9 @@ Requirements
 *   GNU Scientific Library (GSL)
 *   Development files for PostgreSQL, PostGIS, PROJ, JSON-C
 
-For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 14 and PostGIS 3:
+For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 15 and PostGIS 3:
 ```bash
-apt install build-essential cmake postgresql-server-dev-14 libproj-dev libjson-c-dev
+apt install build-essential cmake postgresql-server-dev-15 libproj-dev libjson-c-dev
 ```
 
 Building & Installation
@@ -119,7 +133,6 @@ You should also set the following in `postgresql.conf` depending on the version 
 shared_preload_libraries = 'postgis-3'
 max_locks_per_transaction = 128
 ```
-You can replace `postgis-2.5` above if you want to use PostGIS 2.5.
 
 If you do not preload the PostGIS library you will not be able to load the MobilityDB library and will get an error message such as the following one
 ```bash

@@ -475,7 +475,7 @@ tnumberseq_delta_value(const TSequence *seq)
   interpType interp = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
     DISCRETE : STEP;
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    false, interp, NORMALIZE);
+    interp == DISCRETE ? true : false, interp, NORMALIZE);
 }
 
 /**

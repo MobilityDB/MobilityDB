@@ -320,7 +320,7 @@ SELECT spanset(ARRAY[tstzspan '[2001-01-01 08:00, 2001-01-01 08:10]',
 			Los valores de los tipos de conjunto y de rango se pueden convertir entre sí o convertirse a tipos de rango de PostgreSQL y desde ellos mediante la función <varname>CAST</varname> o mediante la notación <varname>::</varname>.
 		</para>
 		<itemizedlist>
-			<listitem id="base_cast">
+			<listitem id="base_convert">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<indexterm><primary><varname>set</varname></primary></indexterm>
 				<indexterm><primary><varname>span</varname></primary></indexterm>
@@ -339,7 +339,7 @@ SELECT spanset(timestamptz '2001-01-01 08:00:00');
 -- {[2001-01-01 08:00:00, 2001-01-01 08:00:00]}
 </programlisting>
 			</listitem>
-			<listitem id="set_cast">
+			<listitem id="set_convert">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir un valor de conjunto en un valor de conjunto de rangos</para>
 				<para><varname>set::spanset</varname></para>
@@ -351,7 +351,7 @@ SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
    [2001-01-01 08:25:00, 2001-01-01 08:25:00]} */
 </programlisting>
 			</listitem>
-			<listitem id="span_cast">
+			<listitem id="span_convert">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir un valor de rango a un valor de conjunto de rangos</para>
 				<para><varname>span::spanset</varname></para>
@@ -363,7 +363,7 @@ SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
 </programlisting>
 			</listitem>
 
-			<listitem id="range_cast">
+			<listitem id="range_convert">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<indexterm><primary><varname>span</varname></primary></indexterm>
 				<indexterm><primary><varname>range</varname></primary></indexterm>
@@ -388,7 +388,7 @@ SELECT tstzrange '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspan;
 -- [2001-01-01 08:00:00, 2001-01-01 08:30:00)
 </programlisting>
 			</listitem>
-			<listitem id="multirange_cast">
+			<listitem id="multirange_convert">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<indexterm><primary><varname>spanset</varname></primary></indexterm>
 				<indexterm><primary><varname>multirange</varname></primary></indexterm>

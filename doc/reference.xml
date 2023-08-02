@@ -147,26 +147,26 @@
 		</sect2>
 
 		<sect2>
-			<title>Casting</title>
+			<title>Conversions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="base_cast"><varname>::</varname>, <varname>set(base)</varname>, <varname>span(base)</varname>, <varname>spanset(base)</varname></link>: Cast a base value to a set, span, or span set value</para>
+					<para><link linkend="base_convert"><varname>::</varname>, <varname>set(base)</varname>, <varname>span(base)</varname>, <varname>spanset(base)</varname></link>: Convert a base value to a set, span, or span set value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="set_cast"><varname>::</varname>, <varname>spanset(set)</varname></link>: Cast a set value to a span set value</para>
+					<para><link linkend="set_convert"><varname>::</varname>, <varname>spanset(set)</varname></link>: Convert a set value to a span set value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_cast"><varname>::</varname>, <varname>spanset(span)</varname></link>: Cast a span value to a span set value</para>
+					<para><link linkend="span_convert"><varname>::</varname>, <varname>spanset(span)</varname></link>: Convert a span value to a span set value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_cast"><varname>::</varname>, <varname>range(span)</varname>, <varname>span(range)</varname></link>: Cast a span value to and from a PostgreSQL range value</para>
+					<para><link linkend="range_convert"><varname>::</varname>, <varname>range(span)</varname>, <varname>span(range)</varname></link>: Convert a span value to and from a PostgreSQL range value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="multirange_cast"><varname>::</varname>, <varname>multirange(spanset)</varname>, <varname>spanset(multirange)</varname></link>: Cast a span set value to and from a PostgreSQL multirange value</para>
+					<para><link linkend="multirange_convert"><varname>::</varname>, <varname>multirange(spanset)</varname>, <varname>spanset(multirange)</varname></link>: Convert a span set value to and from a PostgreSQL multirange value</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -399,23 +399,23 @@
 		</sect2>
 
 		<sect2>
-			<title>Casting</title>
+			<title>Conversions</title>
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tbox_cast_to"><varname>tbox::type</varname></link>: Cast a <varname>tbox</varname> to another type</para>
+					<para><link linkend="tbox_convert_to"><varname>tbox::type</varname></link>: Convert a <varname>tbox</varname> to another type</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tbox_cast_from"><varname>type::tbox</varname></link>: Cast another type to a <varname>tbox</varname></para>
+					<para><link linkend="tbox_convert_from"><varname>type::tbox</varname></link>: Convert another type to a <varname>tbox</varname></para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_cast_to"><varname>stbox::type</varname></link>: Cast an <varname>stbox</varname> to another type</para>
+					<para><link linkend="stbox_convert_to"><varname>stbox::type</varname></link>: Convert an <varname>stbox</varname> to another type</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_cast_from"><varname>type::stbox</varname></link>: Cast another type to an <varname>stbox</varname></para>
+					<para><link linkend="stbox_convert_from"><varname>type::stbox</varname></link>: Convert another type to an <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -624,24 +624,6 @@
 			<title>Constructors</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="set"><varname>set</varname></link>: Constructor for set values</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="span"><varname>span</varname></link>: Constructor for span values</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="spanset"><varname>spanset</varname></link>: Constructor for span set values</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-
-		<sect2>
-			<title>Constructors</title>
-			<itemizedlist>
-				<listitem>
 					<para><link linkend="ttype_const"><varname>ttype</varname></link>: Constructor for temporal types from a base value and a time value</para>
 				</listitem>
 
@@ -656,24 +638,24 @@
 		</sect2>
 
 		<sect2>
-			<title>Casting</title>
+			<title>Conversions</title>
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_bbox"><varname>ttype::tstzspan</varname>, <varname>tnumber::{numspan,tbox}</varname>, <varname>tpoint::stbox</varname></link>: Cast a temporal value to a bounding box</para>
+					<para><link linkend="ttype_bbox"><varname>ttype::tstzspan</varname>, <varname>tnumber::{numspan,tbox}</varname>, <varname>tpoint::stbox</varname></link>: Convert a temporal value to a bounding box</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname></link>: Cast between a temporal integer and a temporal float</para>
+					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname></link>: Convert between a temporal integer and a temporal float</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Cast between a temporal geometry point and a temporal geography point</para>
+					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Convert between a temporal geometry point and a temporal geography point</para>
 				</listitem>
 
 
 				<listitem>
-					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname>, <varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Cast between a temporal point and a PostGIS trajectory</para>
+					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname>, <varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Convert between a temporal point and a PostGIS trajectory</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1528,11 +1510,11 @@
 				<title>Spatial Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint_geometry"><varname>::</varname></link>: Cast a network point to a geometry</para>
+						<para><link linkend="npoint_geometry"><varname>::</varname></link>: Convert a network point to a geometry</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="geometry_npoint"><varname>::</varname></link>: Cast a geometry to a network point</para>
+						<para><link linkend="geometry_npoint"><varname>::</varname></link>: Convert a geometry to a network point</para>
 					</listitem>
 
 					<listitem>
@@ -1592,14 +1574,14 @@
 			</sect3>
 
 			<sect3>
-				<title>Casting</title>
+				<title>Conversions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_tgeompoint"><varname>tnpoint::tgeompoint</varname></link>: Cast a temporal network point to a temporal geometry point</para>
+						<para><link linkend="tnpoint_tgeompoint"><varname>tnpoint::tgeompoint</varname></link>: Convert a temporal network point to a temporal geometry point</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tgeompoint_tnpoint"><varname>tgeompoint::tnpoint</varname></link>: Cast a temporal geometry point to a temporal network point</para>
+						<para><link linkend="tgeompoint_tnpoint"><varname>tgeompoint::tnpoint</varname></link>: Convert a temporal geometry point to a temporal network point</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

@@ -1742,54 +1742,6 @@ tsequence_merge_array(const TSequence **sequences, int count)
 }
 
 /*****************************************************************************
- * Cast functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Cast a temporal sequence integer to a temporal sequence float.
- * @sqlop @p ::
- */
-TSequence *
-tintseq_to_tfloatseq(const TSequence *seq)
-{
-  TSequence *result = tsequence_copy(seq);
-  result->temptype = T_TFLOAT;
-  MEOS_FLAGS_SET_CONTINUOUS(result->flags, true);
-  MEOS_FLAGS_SET_INTERP(result->flags, MEOS_FLAGS_GET_INTERP(result->flags));
-  for (int i = 0; i < seq->count; i++)
-  {
-    TInstant *inst = (TInstant *) TSEQUENCE_INST_N(result, i);
-    inst->temptype = T_TFLOAT;
-    inst->value = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
-  }
-  return result;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Cast a temporal sequence float to a temporal sequence integer.
- * @sqlop @p ::
- */
-TSequence *
-tfloatseq_to_tintseq(const TSequence *seq)
-{
-  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
-    elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
-  TSequence *result = tsequence_copy(seq);
-  result->temptype = T_TINT;
-  MEOS_FLAGS_SET_CONTINUOUS(result->flags, false);
-  MEOS_FLAGS_SET_INTERP(result->flags, MEOS_FLAGS_GET_INTERP(result->flags));
-  for (int i = 0; i < seq->count; i++)
-  {
-    TInstant *inst = (TInstant *) TSEQUENCE_INST_N(result, i);
-    inst->temptype = T_TINT;
-    inst->value = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
-  }
-  return result;
-}
-
-/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 

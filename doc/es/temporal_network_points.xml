@@ -428,7 +428,7 @@ SELECT tnpoint_seqset_gaps(ARRAY[tnpoint 'NPoint(1,0.1)@2000-01-01',
 			</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_network_points_casting">
+	<sect1 id="temporal_network_points_conversion">
 		<title>Conversión de tipos</title>
 
 		<para>Un valor de punto de red temporal se puede convertir en y desde un punto de geometría temporal. Esto se puede hacer usando un <varname>CAST</varname> explícito o usando la notación <varname>::</varname>. Se devuelve un valor nulo si alguno de los valores de puntos de geometría que componen no se puede convertir en un valor <varname>npoint</varname>.</para>

@@ -526,14 +526,14 @@ SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2000-01-01',
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_types_casting">
-		<title>Casting</title>
+	<sect1 id="temporal_types_conversions">
+		<title>Conversions</title>
 
 		<para>A temporal value can be converted into a compatible type using the notation <varname>CAST(ttype1 AS ttype2)</varname> or <varname>ttype1::ttype2</varname>.</para>
 		<itemizedlist>
 			<listitem id="ttype_bbox">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast a temporal value to a bounding box</para>
+				<para>Convert a temporal value to a bounding box</para>
 				<para><varname>ttype::tstzspan</varname></para>
 				<para><varname>tnumber::{numspan,tbox}</varname></para>
 				<para><varname>tpoint::stbox</varname></para>
@@ -571,7 +571,7 @@ SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
 
 			<listitem id="tint_tfloat">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast between a temporal integer and a temporal float</para>
+				<para>Convert between a temporal integer and a temporal float</para>
 				<para><varname>tint::tfloat</varname></para>
 				<para><varname>tfloat::tint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -588,7 +588,7 @@ SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 
 			<listitem id="tgeompoint_tgeogpoint">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast a temporal geometry point to a temporal geography point</para>
+				<para>Convert a temporal geometry point to a temporal geography point</para>
 				<para><varname>tgeompoint::tgeogpoint</varname></para>
 				<para><varname>tgeogpoint::tgeompoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -607,7 +607,7 @@ SELECT asText((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
 		<itemizedlist>
 			<listitem id="tgeompoint_geometry">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Cast between a temporal point and a PostGIS trajectory</para>
+				<para>Convert between a temporal point and a PostGIS trajectory</para>
 				<para><varname>tpoint::geo</varname></para>
 				<para><varname>geo::tpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">

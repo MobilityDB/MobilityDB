@@ -517,7 +517,7 @@ SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2000-01-01',
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_types_casting">
+	<sect1 id="temporal_types_conversions">
 		<title>Conversión de tipos</title>
 
 		<para>Un valor temporal se puede convertir en un tipo compatible usando la notación <varname>CAST(ttype1 AS ttype2)</varname> o <varname>ttype1::ttype2</varname>.</para>

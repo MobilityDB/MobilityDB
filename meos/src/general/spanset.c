@@ -463,7 +463,6 @@ span_to_spanset(const Span *s)
  * @brief Shift a span set by a value.
  * @pre The value is of the same type as the span base type
  * @sqlfunc shift()
- * @pymeosfunc shift()
  */
 void
 spanset_shift(SpanSet *ss, Datum shift)
@@ -480,7 +479,6 @@ spanset_shift(SpanSet *ss, Datum shift)
  * @ingroup libmeos_setspan_transf
  * @brief Return a period set shifted and/or scaled by the intervals.
  * @sqlfunc shift(), tscale(), shiftTscale()
- * @pymeosfunc shift()
  */
 SpanSet *
 periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
@@ -524,7 +522,6 @@ spanset_mem_size(const SpanSet *ss)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the bounding span of a span set.
  * @sqlfunc span()
- * @pymeosfunc period()
  */
 Span *
 spanset_span(const SpanSet *ss)
@@ -571,7 +568,6 @@ floatspanset_lower(const SpanSet *ss)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a period set
  * @sqlfunc lower()
- * @pymeosfunc lower()
  */
 TimestampTz
 periodset_lower(const SpanSet *ps)
@@ -616,7 +612,6 @@ floatspanset_upper(const SpanSet *ss)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a period
  * @sqlfunc upper()
- * @pymeosfunc upper()
  */
 TimestampTz
 periodset_upper(const SpanSet *ps)
@@ -629,7 +624,6 @@ periodset_upper(const SpanSet *ps)
  * @ingroup libmeos_setspan_accessor
  * @brief Return true if the lower bound of a span set is inclusive
  * @sqlfunc lower_inc()
- * @pymeosfunc lower_inc()
  */
 bool
 spanset_lower_inc(const SpanSet *ss)
@@ -641,7 +635,6 @@ spanset_lower_inc(const SpanSet *ss)
  * @ingroup libmeos_setspan_accessor
  * @brief Return true if the upper bound of a span set is inclusive
  * @sqlfunc upper_inc()
- * @pymeosfunc upper_inc()
  */
 bool
 spanset_upper_inc(const SpanSet *ss)
@@ -670,7 +663,6 @@ spanset_width(const SpanSet *ss)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the duration of a period set
  * @sqlfunc duration()
- * @pymeosfunc duration()
  */
 Interval *
 periodset_duration(const SpanSet *ps, bool boundspan)
@@ -695,7 +687,6 @@ periodset_duration(const SpanSet *ps, bool boundspan)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of timestamps of a period set
  * @sqlfunc numTimestamps()
- * @pymeosfunc numTimestamps()
  */
 int
 periodset_num_timestamps(const SpanSet *ps)
@@ -732,7 +723,6 @@ periodset_num_timestamps(const SpanSet *ps)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start timestamp of a period set.
  * @sqlfunc startTimestamp()
- * @pymeosfunc startTimestamp()
  */
 TimestampTz
 periodset_start_timestamp(const SpanSet *ps)
@@ -745,7 +735,6 @@ periodset_start_timestamp(const SpanSet *ps)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end timestamp of a period set.
  * @sqlfunc endTimestamp()
- * @pymeosfunc endTimestamp()
  */
 TimestampTz
 periodset_end_timestamp(const SpanSet *ps)
@@ -763,7 +752,6 @@ periodset_end_timestamp(const SpanSet *ps)
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
  * @sqlfunc timestampN()
- * @pymeosfunc timestampN()
  */
 bool
 periodset_timestamp_n(const SpanSet *ps, int n, TimestampTz *result)
@@ -813,7 +801,6 @@ periodset_timestamp_n(const SpanSet *ps, int n, TimestampTz *result)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of timestamps of a period set
  * @sqlfunc timestamps()
- * @pymeosfunc timestamps()
  */
 TimestampTz *
 periodset_timestamps(const SpanSet *ps, int *count)
@@ -840,7 +827,6 @@ periodset_timestamps(const SpanSet *ps, int *count)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of spans of a span set
  * @sqlfunc numSpans()
- * @pymeosfunc numSpans()
  */
 int
 spanset_num_spans(const SpanSet *ss)
@@ -852,7 +838,6 @@ spanset_num_spans(const SpanSet *ss)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start span of a span set
  * @sqlfunc startSpan()
- * @pymeosfunc startSpan()
  */
 Span *
 spanset_start_span(const SpanSet *ss)
@@ -865,7 +850,6 @@ spanset_start_span(const SpanSet *ss)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end span of a span set
  * @sqlfunc endSpan()
- * @pymeosfunc endSpan()
  */
 Span *
 spanset_end_span(const SpanSet *ss)
@@ -878,7 +862,6 @@ spanset_end_span(const SpanSet *ss)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th span of a span set
  * @sqlfunc spanN()
- * @pymeosfunc spanN()
  */
 Span *
 spanset_span_n(const SpanSet *ss, int i)
@@ -893,7 +876,6 @@ spanset_span_n(const SpanSet *ss, int i)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the spans of a span set.
  * @sqlfunc spans()
- * @pymeosfunc spans()
  */
 const Span **
 spanset_spans(const SpanSet *ss)
@@ -913,7 +895,6 @@ spanset_spans(const SpanSet *ss)
  * @brief Return true if the first span set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
- * @pymeosfunc __eq__()
  */
 bool
 spanset_eq(const SpanSet *ss1, const SpanSet *ss2)

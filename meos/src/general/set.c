@@ -480,7 +480,6 @@ SET_VAL_N(const Set *s, int index)
  * @param[in] basetype Base type
  * @param[in] ordered True for ordered sets
  * @sqlfunc intset(), bigintset(), floatset(), textset(), tstzset()
- * @pymeosfunc TstzSet()
  */
 Set *
 set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
@@ -625,7 +624,6 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
  * @param[in] basetype Base type
  * @param[in] ordered True for ordered sets
  * @sqlfunc intset(), bigintset(), floatset(), textset(), tstzset()
- * @pymeosfunc TstzSet()
  */
 Set *
 set_make(const Datum *values, int count, meosType basetype, bool ordered)
@@ -845,7 +843,6 @@ set_set_span(const Set *set, Span *s)
  * @brief Return the bounding box of a spatial set.
  * @sqlfunc stbox()
  * @sqlop @p ::
- * @pymeosfunc stbox()
  */
 STBox *
 spatialset_stbox(const Set *s)
@@ -891,7 +888,6 @@ set_mem_size(const Set *s)
  * @brief Return the bounding span of a set.
  * @sqlfunc span()
  * @sqlop @p ::
- * @pymeosfunc span()
  */
 Span *
 set_span(const Set *s)
@@ -905,7 +901,6 @@ set_span(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of values of a set.
  * @sqlfunc numTimestamps()
- * @pymeosfunc numTimestamps()
  */
 int
 set_num_values(const Set *s)
@@ -917,7 +912,6 @@ set_num_values(const Set *s)
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the start value of a set.
  * @sqlfunc startTimestamp()
- * @pymeosfunc startTimestamp()
  */
 Datum
 set_start_value(const Set *s)
@@ -930,7 +924,6 @@ set_start_value(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of an integer set.
  * @sqlfunc startValue()
- * @pymeosfunc startValue()
  */
 int
 intset_start_value(const Set *s)
@@ -943,7 +936,6 @@ intset_start_value(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a big integer set.
  * @sqlfunc startValue()
- * @pymeosfunc startValue()
  */
 int64
 bigintset_start_value(const Set *s)
@@ -956,7 +948,6 @@ bigintset_start_value(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a float set.
  * @sqlfunc startValue()
- * @pymeosfunc startValue()
  */
 double
 floatset_start_value(const Set *s)
@@ -969,7 +960,6 @@ floatset_start_value(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a timestamp set.
  * @sqlfunc startTimestamp()
- * @pymeosfunc startTimestamp()
  */
 TimestampTz
 timestampset_start_timestamp(const Set *ts)
@@ -983,7 +973,6 @@ timestampset_start_timestamp(const Set *ts)
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the end value of a set.
  * @sqlfunc endTimestamp()
- * @pymeosfunc endTimestamp()
  */
 Datum
 set_end_value(const Set *s)
@@ -996,7 +985,6 @@ set_end_value(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of an integer set.
  * @sqlfunc endValue()
- * @pymeosfunc endValue()
  */
 int
 intset_end_value(const Set *s)
@@ -1009,7 +997,6 @@ intset_end_value(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a big integer set.
  * @sqlfunc endValue()
- * @pymeosfunc endValue()
  */
 int64
 bigintset_end_value(const Set *s)
@@ -1022,7 +1009,6 @@ bigintset_end_value(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a float set.
  * @sqlfunc endValue()
- * @pymeosfunc endValue()
  */
 double
 floatset_end_value(const Set *s)
@@ -1035,7 +1021,6 @@ floatset_end_value(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a timestamp set.
  * @sqlfunc endTimestamp()
- * @pymeosfunc endTimestamp()
  */
 TimestampTz
 timestampset_end_timestamp(const Set *ts)
@@ -1054,7 +1039,6 @@ timestampset_end_timestamp(const Set *ts)
  * @result Return true if the value is found
  * @note It is assumed that n is 1-based
  * @sqlfunc valueN(), timestampN()
- * @pymeosfunc timestampN()
  */
 bool
 set_value_n(const Set *s, int n, Datum *result)
@@ -1075,7 +1059,6 @@ set_value_n(const Set *s, int n, Datum *result)
  * @result Return true if the value is found
  * @note It is assumed that n is 1-based
  * @sqlfunc valueN()
- * @pymeosfunc valueN()
  */
 bool
 intset_value_n(const Set *s, int n, int *result)
@@ -1095,7 +1078,6 @@ intset_value_n(const Set *s, int n, int *result)
  * @result Return true if the value is found
  * @note It is assumed that n is 1-based
  * @sqlfunc valueN()
- * @pymeosfunc valueN()
  */
 bool
 bigintset_value_n(const Set *s, int n, int64 *result)
@@ -1115,7 +1097,6 @@ bigintset_value_n(const Set *s, int n, int64 *result)
  * @result Return true if the value is found
  * @note It is assumed that n is 1-based
  * @sqlfunc valueN()
- * @pymeosfunc valueN()
  */
 bool
 floatset_value_n(const Set *s, int n, double *result)
@@ -1135,7 +1116,6 @@ floatset_value_n(const Set *s, int n, double *result)
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
  * @sqlfunc timestampN()
- * @pymeosfunc timestampN()
  */
 bool
 timestampset_timestamp_n(const Set *ts, int n, TimestampTz *result)
@@ -1151,7 +1131,6 @@ timestampset_timestamp_n(const Set *ts, int n, TimestampTz *result)
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the array of values of a set.
  * @sqlfunc values(), timestamps()
- * @pymeosfunc timestamps()
  */
 Datum *
 set_values(const Set *s)
@@ -1167,7 +1146,6 @@ set_values(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of an integer set.
  * @sqlfunc values()
- * @pymeosfunc values()
  */
 int *
 intset_values(const Set *s)
@@ -1182,7 +1160,6 @@ intset_values(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a big integer set.
  * @sqlfunc values()
- * @pymeosfunc values()
  */
 int64 *
 bigintset_values(const Set *s)
@@ -1197,7 +1174,6 @@ bigintset_values(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a float set.
  * @sqlfunc values()
- * @pymeosfunc values()
  */
 double *
 floatset_values(const Set *s)
@@ -1212,7 +1188,6 @@ floatset_values(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a timestamp set.
  * @sqlfunc timestamps()
- * @pymeosfunc timestamps()
  */
 TimestampTz *
 timestampset_values(const Set *ts)
@@ -1260,7 +1235,6 @@ set_shift(const Set *s, Datum shift)
  * @ingroup libmeos_setspan_transf
  * @brief Return a timestamp set shifted and/or scaled by the intervals
  * @sqlfunc shift(), tscale(), shiftTscale()
- * @pymeosfunc shift()
  */
 Set *
 timestampset_shift_tscale(const Set *s, const Interval *shift,
@@ -1308,7 +1282,6 @@ timestampset_shift_tscale(const Set *s, const Interval *shift,
  * @brief Return true if the first set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
- * @pymeosfunc __eq__()
  */
 bool
 set_eq(const Set *s1, const Set *s2)
