@@ -52,14 +52,21 @@ Benefits
 *   An extensive [workshop](https://github.com/MobilityDB/MobilityDB-workshop) illustrating various usage scenarios of MobilityDB
 
 Experimental Projects
------------------------------
+---------------------
 
 These projects push the boundaries of MobilityDB and connect it with the PostgreSQL/PostGIS ecosystem.
 
+### Cloud
+
 *   [MobilityDB-AWS](https://github.com/MobilityDB/MobilityDB-AWS): MobilityDB on Amazon Web Services
 *   [MobilityDB-Azure](https://github.com/JimTsesm/MobilityDB-Azure): MobilityDB on Azure
-*   [MobilityDB-Deck](https://github.com/MobilityDB/MobilityDB-Deck) Integration of MobilityDB with the data visualization framework Deck.gl
-*   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS): Integration of MobilityDB with QGIS
+
+### Visualization
+
+*   [MobilityDB-Deck](https://github.com/MobilityDB/MobilityDB-Deck) Integration of MobilityDB with [deck.gl](https://deck.gl/)
+*   [MobilityDB-Leaflet](https://github.com/MobilityDB/MobilityDB-Leaflet) Integration of MobilityDB with [Leaflet](https://leafletjs.com/)
+*   [MobilityDB-OpenLayers](https://github.com/MobilityDB/MobilityDB-OpenLayesr) Integration of MobilityDB with [OpenLayers](https://openlayers.org/)
+*   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS): Integration of MobilityDB with [QGIS](https://qgis.org/)
 
 Mailing Lists
 ------------
