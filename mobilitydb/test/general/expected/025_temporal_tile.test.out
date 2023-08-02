@@ -68,9 +68,9 @@ SELECT valueBucket(-3.5, 2, -2);
 
 /* Errors */
 SELECT valueBucket(3, -2);
-ERROR:  The value must be positive: -2
+ERROR:  The value must be strictly positive: -2
 SELECT valueBucket(3.5, -2.5);
-ERROR:  The value must be positive: -2.500000
+ERROR:  The value must be strictly positive: -2.500000
 SELECT valueBucket(-2147483647, 3, 2);
 ERROR:  number out of span
 SELECT valueBucket(2147483646, 3, -2);

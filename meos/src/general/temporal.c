@@ -189,7 +189,7 @@ ensure_common_dimension(int16 flags1, int16 flags2)
 void
 ensure_non_negative(int i)
 {
-  if (i <= 0)
+  if (i < 0)
     elog(ERROR, "The value cannot be negative: %d", i);
   return;
 }
