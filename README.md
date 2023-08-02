@@ -92,7 +92,9 @@ Branches
 Status
 ------
 
-The current pre-release version is 1.1.  We plan to release 1.1 when the currently ongoing packaging for Debian and YUM is finished. For more information, please refer to the mailing lists [pgsql-pkg-debian](https://www.postgresql.org/list/pgsql-pkg-debian/) and [pgsql-pkg-yum](https://www.postgresql.org/list/pgsql-pkg-yum/).
+The current pre-release version is 1.1. We plan to release 1.1 when the currently ongoing packaging for Debian and YUM is finished. For more information, please refer to the mailing lists [pgsql-pkg-debian](https://www.postgresql.org/list/pgsql-pkg-debian/) and [pgsql-pkg-yum](https://www.postgresql.org/list/pgsql-pkg-yum/).
+
+MobilityDB is part of the PostGIS bundle for Windows.
 
 Requirements
 ------------
