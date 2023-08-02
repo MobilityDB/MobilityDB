@@ -506,13 +506,20 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
    * the SQL function definition */
   GSERIALIZED *gsbound = gserialized_boundary(gs);
   bool result = false;
+  varfunc func =
+    (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
+    (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
   if (! gserialized_is_empty(gsbound))
-  {
-    varfunc func =
-      (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
-      (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
     result = espatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
       INVERT_NO);
+  else
+  {
+    /* The geometry is a point or a multipoint -> the boundary is empty */
+    GSERIALIZED *traj = tpoint_trajectory(temp);
+    GSERIALIZED *tempbound = gserialized_boundary(traj);
+    result = func(PointerGetDatum(tempbound), PointerGetDatum(gs));
+    pfree(traj);
+    pfree(tempbound);
   }
   pfree(gsbound);
   return result ? 1 : 0;

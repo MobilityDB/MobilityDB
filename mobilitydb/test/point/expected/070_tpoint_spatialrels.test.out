@@ -1145,7 +1145,7 @@ SELECT etouches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geo
 SELECT etouches(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'CircularString(1 1,2 2,3 1,2 0,1 1)');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT etouches(tgeompoint '[Point(0 0 0)@2000-01-01,Point(1 1 1)@2000-01-02]',
