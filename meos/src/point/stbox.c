@@ -153,6 +153,10 @@ stbox_in(const char *str)
 char *
 stbox_out(const STBox *box, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(box != NULL);
+  ensure_non_negative(maxdd);
+
   static size_t size = MAXSTBOXLEN + 1;
   char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
     *zmax = NULL, *period = NULL;

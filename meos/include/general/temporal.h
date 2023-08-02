@@ -363,6 +363,7 @@ extern void ensure_same_temptype(const Temporal *temp1,
   const Temporal *temp2);
 extern void ensure_same_continuous_interpolation(const Temporal *temp1,
   const Temporal *temp2);
+extern void ensure_non_negative(int i);
 extern void ensure_positive_datum(Datum size, meosType basetype);
 extern void ensure_valid_duration(const Interval *duration);
 

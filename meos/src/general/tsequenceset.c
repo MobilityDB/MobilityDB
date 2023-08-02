@@ -2678,6 +2678,10 @@ tgeogpointseqset_in(const char *str)
 char *
 tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
 {
+  /* Ensure validity of the arguments */
+  assert(ss != NULL);
+  ensure_non_negative(maxdd);
+
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;
   char prefix[20];

@@ -250,6 +250,10 @@ npoint_in(const char *str, bool end)
 char *
 npoint_out(const Npoint *np, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(np != NULL);
+  ensure_non_negative(maxdd);
+
   char *result = palloc(MAXNPOINTLEN);
   char *rid = int8_out(np->rid);
   char *pos = float8_out(np->pos, maxdd);
@@ -275,6 +279,10 @@ nsegment_in(const char *str)
 char *
 nsegment_out(const Nsegment *ns, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(ns != NULL);
+  ensure_non_negative(maxdd);
+
   char *result = palloc(MAXNPOINTLEN);
   char *rid = int8_out(ns->rid);
   char *pos1 = float8_out(ns->pos1, maxdd);

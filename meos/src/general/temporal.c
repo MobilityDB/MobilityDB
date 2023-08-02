@@ -187,6 +187,17 @@ ensure_common_dimension(int16 flags1, int16 flags2)
  * @brief Ensure that the number is positive
  */
 void
+ensure_non_negative(int i)
+{
+  if (i <= 0)
+    elog(ERROR, "The value cannot be negative: %d", i);
+  return;
+}
+
+/**
+ * @brief Ensure that the number is strictly positive
+ */
+void
 ensure_positive_datum(Datum size, meosType basetype)
 {
   assert(span_basetype(basetype));
@@ -194,19 +205,19 @@ ensure_positive_datum(Datum size, meosType basetype)
   {
     int isize = DatumGetInt32(size);
     if (isize <= 0)
-      elog(ERROR, "The value must be positive: %d", isize);
+      elog(ERROR, "The value must be strictly positive: %d", isize);
   }
   else if (basetype == T_FLOAT8)
   {
     double dsize = DatumGetFloat8(size);
     if (dsize <= 0.0)
-      elog(ERROR, "The value must be positive: %f", dsize);
+      elog(ERROR, "The value must be strictly positive: %f", dsize);
   }
   else /* basetype == T_TIMESTAMPTZ */
   {
     int64 isize = DatumGetInt64(size);
     if (isize <= 0)
-      elog(ERROR, "The value must be positive: " INT64_FORMAT "", isize);
+      elog(ERROR, "The value must be strictly positive: " INT64_FORMAT "", isize);
   }
   return;
 }
@@ -446,6 +457,10 @@ ttext_in(const char *str)
 char *
 temporal_out(const Temporal *temp, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(temp != NULL);
+  ensure_non_negative(maxdd);
+
   char *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)

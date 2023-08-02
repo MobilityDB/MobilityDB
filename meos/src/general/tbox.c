@@ -112,6 +112,10 @@ tbox_in(const char *str)
 char *
 tbox_out(const TBox *box, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(box != NULL);
+  ensure_non_negative(maxdd);
+
   static size_t size = MAXTBOXLEN + 1;
   char *result = palloc(size);
   char *period = NULL, *span = NULL;

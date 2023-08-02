@@ -1088,7 +1088,10 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
 char *
 basetype_out(Datum value, meosType basetype, int maxdd)
 {
+  /* Ensure validity of the arguments */
   assert(meos_basetype(basetype));
+  ensure_non_negative(maxdd);
+
   switch (basetype)
   {
     case T_TIMESTAMPTZ:

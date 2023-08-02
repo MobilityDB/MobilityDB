@@ -687,6 +687,10 @@ char *
 tsequence_to_string(const TSequence *seq, int maxdd, bool component,
   outfunc value_out)
 {
+  /* Ensure validity of the arguments */
+  assert(seq != NULL);
+  ensure_non_negative(maxdd);
+
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
   char prefix[20];

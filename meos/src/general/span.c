@@ -322,6 +322,10 @@ unquote(char *str)
 char *
 span_out(const Span *s, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(s != NULL);
+  ensure_non_negative(maxdd);
+
   char *lower = unquote(basetype_out(s->lower, s->basetype, maxdd));
   char *upper = unquote(basetype_out(s->upper, s->basetype, maxdd));
   char open = s->lower_inc ? (char) '[' : (char) '(';

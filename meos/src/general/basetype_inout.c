@@ -40,6 +40,7 @@
 #include <liblwgeom_internal.h> /* for OUT_DOUBLE_BUFFER_SIZE */
 /* MEOS */
 #include <meos.h>
+#include "general/temporal.h"
 
 #if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
   extern int64 pg_strtoint64(const char *s);
@@ -475,6 +476,9 @@ float8_in(const char *num, const char *type_name, const char *orig_string)
 char *
 float8_out(double num, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  ensure_non_negative(maxdd);
+
   char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
   lwprint_double(num, maxdd, ascii);
   return ascii;
