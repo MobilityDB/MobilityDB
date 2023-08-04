@@ -1360,9 +1360,9 @@ SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5)@2000-01-0
 (1 row)
 
 SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'),6));
-                        astext                         
--------------------------------------------------------
- POINT(1.999848 2.000076)@Sat Jan 01 12:00:00 2000 PST
+                   astext                    
+---------------------------------------------
+ POINT(3.5 3.5)@Tue Jan 04 00:00:00 2000 PST
 (1 row)
 
 SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'),6));
@@ -1456,9 +1456,9 @@ SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5 1.5)@2000-
 (1 row)
 
 SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'),6));
-                           astext                           
-------------------------------------------------------------
- POINT Z (1.999848 2.000076 2)@Sat Jan 01 12:00:00 2000 PST
+                       astext                       
+----------------------------------------------------
+ POINT Z (3.5 3.5 3.5)@Tue Jan 04 00:00:00 2000 PST
 (1 row)
 
 /* Errors */
@@ -3746,9 +3746,9 @@ SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 
 (1 row)
 
 SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
-                    st_astext                    
--------------------------------------------------
- LINESTRING(1.999848 2.000076,1.999848 2.000076)
+          st_astext          
+-----------------------------
+ LINESTRING(3.5 3.5,3.5 3.5)
 (1 row)
 
 SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'), 6);
@@ -3842,9 +3842,9 @@ SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(
 (1 row)
 
 SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
-                       st_astext                        
---------------------------------------------------------
- LINESTRING Z (1.999848 2.000076 2,1.999848 2.000076 2)
+               st_astext                
+----------------------------------------
+ LINESTRING Z (3.5 3.5 3.5,3.5 3.5 3.5)
 (1 row)
 
 SELECT ST_AsTexT(shortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02], (Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(3 3)@2000-01-01, Point(3 3)@2000-01-02], (Point(2 2)@2000-01-04, Point(3 3)@2000-01-05]}'));
