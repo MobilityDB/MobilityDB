@@ -34,8 +34,6 @@
  * for temporal number.
  */
 
-#include "pg_general/tnumber_mathfuncs.h"
-
 /* C */
 #include <assert.h>
 #include <math.h>

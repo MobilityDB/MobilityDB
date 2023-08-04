@@ -43,12 +43,12 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/set.h"
+#include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_general/tnumber_mathfuncs.h"
 #include "pg_general/type_util.h"
 #include "pg_point/postgis.h"
 #include "pg_point/tpoint_spatialfuncs.h"
@@ -874,26 +874,6 @@ Stbox_expand_time(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(stbox_expand_time(box, interval));
 }
 
-/**
- * @brief Sets the precision of the coordinates of the spatiotemporal box.
- */
-static STBox *
-stbox_round(const STBox *box, Datum size)
-{
-  ensure_has_X_stbox(box);
-  STBox *result = stbox_copy(box);
-  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin), size));
-  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), size));
-  result->ymin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymin), size));
-  result->ymax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymax), size));
-  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
-  {
-    result->zmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmin), size));
-    result->zmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmax), size));
-  }
-  return result;
-}
-
 PGDLLEXPORT Datum Stbox_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_round);
 /**
@@ -905,8 +885,8 @@ Datum
 Stbox_round(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(stbox_round(box, size));
+  int maxdd = PG_GETARG_INT32(1);
+  PG_RETURN_POINTER(stbox_round(box, maxdd));
 }
 
 /*****************************************************************************

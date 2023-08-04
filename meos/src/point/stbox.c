@@ -1017,6 +1017,31 @@ stbox_expand_time(const STBox *box, const Interval *interval)
   return result;
 }
 
+/**
+ * @brief Sets the precision of the coordinates of the spatiotemporal box.
+ */
+STBox *
+stbox_round(const STBox *box, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  assert(box != NULL);
+  ensure_has_X_stbox(box);
+  ensure_non_negative(maxdd);
+
+  STBox *result = stbox_copy(box);
+  Datum size = Int32GetDatum(maxdd);
+  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin), size));
+  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), size));
+  result->ymin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymin), size));
+  result->ymax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymax), size));
+  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
+  {
+    result->zmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmin), size));
+    result->zmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmax), size));
+  }
+  return result;
+}
+
 /*****************************************************************************
  * Topological operators
  *****************************************************************************/

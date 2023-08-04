@@ -505,6 +505,29 @@ periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
   return result;
 }
 
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the precision of the float span set to the number of decimal places.
+ */
+SpanSet *
+floatspanset_round(const SpanSet *ss, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  assert(ss != NULL);
+  assert(ss->basetype == T_FLOAT8);
+  ensure_non_negative(maxdd);
+
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  Datum size = Int32GetDatum(maxdd);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const Span *span = spanset_sp_n(ss, i);
+    floatspan_round_int(span, size, &spans[i]);
+  }
+  SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
+  return result;
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/

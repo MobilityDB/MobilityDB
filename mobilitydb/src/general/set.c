@@ -48,12 +48,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
-#include "pg_general/tnumber_mathfuncs.h"
 #include "pg_general/type_util.h"
 
 /*****************************************************************************
@@ -344,18 +344,6 @@ Set_values(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
-/**
- * @brief Set the precision of the float set to the number of decimal places.
- */
-Set *
-floatset_round(const Set *s, Datum size)
-{
-  Set *result = set_copy(s);
-  for (int i = 0; i < s->count; i++)
-    (SET_OFFSETS_PTR(result))[i] = datum_round_float(SET_VAL_N(s, i), size);
-  return result;
-}
-
 PGDLLEXPORT Datum Floatset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatset_round);
 /**
@@ -367,8 +355,8 @@ Datum
 Floatset_round(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Datum size = PG_GETARG_DATUM(1);
-  Set *result = floatset_round(s, size);
+  int maxdd = PG_GETARG_INT32(1);
+  Set *result = floatset_round(s, maxdd);
   PG_RETURN_POINTER(result);
 }
 

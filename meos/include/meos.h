@@ -499,7 +499,11 @@ extern TimestampTz *timestampset_values(const Set *ts);
 
 /* Transformation functions for set and span types */
 
+extern Set *floatset_round(const Set *s, int maxdd);
+extern Span *floatspan_round(const Span *s, int maxdd);
+extern SpanSet *floatspanset_round(const SpanSet *ss, int maxdd);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
+extern Set *geoset_round(const Set *s, int maxdd);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern void numspan_set_floatspan(const Span *s1, Span *s2);
 extern Span *period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
@@ -805,14 +809,16 @@ extern int32 stbox_srid(const STBox *box);
 
 /* Transformation functions for box types */
 
+extern void stbox_expand(const STBox *box1, STBox *box2);
+extern STBox *stbox_expand_space(const STBox *box, double d);
+extern STBox *stbox_expand_time(const STBox *box, const Interval *interval);
+extern STBox *stbox_get_space(const STBox *box);
+extern STBox *stbox_round(const STBox *box, int maxdd);
+extern STBox *stbox_set_srid(const STBox *box, int32 srid);
 extern void tbox_expand(const TBox *box1, TBox *box2);
 extern TBox *tbox_expand_value(const TBox *box, const double d);
 extern TBox *tbox_expand_time(const TBox *box, const Interval *interval);
-extern void stbox_expand(const STBox *box1, STBox *box2);
-extern STBox *stbox_set_srid(const STBox *box, int32 srid);
-extern STBox *stbox_get_space(const STBox *box);
-extern STBox *stbox_expand_space(const STBox *box, double d);
-extern STBox *stbox_expand_time(const STBox *box, const Interval *interval);
+extern TBox *tbox_round(const TBox *box, int maxdd);
 
 /*****************************************************************************/
 
@@ -1306,6 +1312,7 @@ extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
 extern STBox *geo_expand_space(const GSERIALIZED *gs, double d);
 extern Temporal *tgeompoint_tgeogpoint(const Temporal *temp, bool oper);
 extern STBox *tpoint_expand_space(const Temporal *temp, double d);
+extern Temporal *tpoint_round(const Temporal *temp, int maxdd);
 extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
 

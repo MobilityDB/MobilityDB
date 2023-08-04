@@ -50,7 +50,6 @@
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/type_util.h"
-#include "pg_general/tnumber_mathfuncs.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -594,20 +593,6 @@ Tbox_expand_time(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(tbox_expand_time(box, interval));
 }
 
-/**
- * @brief Set the precision of the value dimension of the temporal box to
- * the number of decimal places.
- */
-static TBox *
-tbox_round(const TBox *box, Datum size)
-{
-  ensure_has_X_tbox(box);
-  TBox *result = tbox_copy(box);
-  result->span.lower = datum_round_float(box->span.lower, size);
-  result->span.upper = datum_round_float(box->span.upper, size);
-  return result;
-}
-
 PGDLLEXPORT Datum Tbox_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_round);
 /**
@@ -620,8 +605,8 @@ Datum
 Tbox_round(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(tbox_round(box, size));
+  int maxdd = PG_GETARG_INT32(1);
+  PG_RETURN_POINTER(tbox_round(box, maxdd));
 }
 
 /*****************************************************************************

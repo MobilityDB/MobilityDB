@@ -648,6 +648,7 @@ tfloat_round(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
   assert(temp != NULL);
+  assert(temp->temptype == T_TFLOAT);
   ensure_non_negative(maxdd);
 
   /* We only need to fill these parameters for tfunc_temporal */
