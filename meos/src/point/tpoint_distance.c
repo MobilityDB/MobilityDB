@@ -142,8 +142,8 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
       /* Get the spherical distance between point and edge */
       edge_distance_to_point(&e, &closest1, &proj);
       /* Compute distance from beginning of the segment to closest point */
-      long double seglength = sphere_distance(&(e.start), &(e.end));
-      long double length = sphere_distance(&(e.start), &proj);
+      double seglength = sphere_distance(&(e.start), &(e.end));
+      double length = sphere_distance(&(e.start), &proj);
       *fraction = length / seglength;
     }
   }
