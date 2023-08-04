@@ -1908,17 +1908,17 @@ tcontseq_to_step(const TSequence *seq)
     return tsequence_copy(seq);
 
   /* interp == LINEAR */
-  if (seq->count > 2)
+  meosType basetype = temptype_basetype(seq->temptype);
+  if ((seq->count > 2) ||
+      (seq->count == 2 && ! datum_eq(
+        tinstant_value(TSEQUENCE_INST_N(seq, 0)),
+        tinstant_value(TSEQUENCE_INST_N(seq, 1)), basetype)))
     elog(ERROR, "Cannot transform input value to step interpolation");
 
-  meosType basetype = temptype_basetype(seq->temptype);
   const TInstant *instants[2];
   for (int i = 0; i < seq->count; i++)
     instants[i] = TSEQUENCE_INST_N(seq, i);
-  if (seq->count == 2 && ! datum_eq(tinstant_value(instants[0]),
-      tinstant_value(instants[1]), basetype))
-    elog(ERROR, "Cannot transform input value to step interpolation");
-  return tsequence_make(instants, 2, seq->period.lower_inc,
+  return tsequence_make(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, STEP, NORMALIZE_NO);
 }
 
