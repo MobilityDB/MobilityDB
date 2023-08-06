@@ -504,23 +504,21 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
+  varfunc func = (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
+    (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
+  GSERIALIZED *traj = tpoint_trajectory(temp);
   GSERIALIZED *gsbound = gserialized_boundary(gs);
   bool result = false;
-  varfunc func =
-    (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
-    (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
   if (! gserialized_is_empty(gsbound))
-    result = espatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
-      INVERT_NO);
+    result = func(PointerGetDatum(gsbound), PointerGetDatum(traj));
   else if (MEOS_FLAGS_GET_LINEAR(temp->flags))
   {
     /* The geometry is a point or a multipoint -> the boundary is empty */
-    GSERIALIZED *traj = tpoint_trajectory(temp);
     GSERIALIZED *tempbound = gserialized_boundary(traj);
     result = func(PointerGetDatum(tempbound), PointerGetDatum(gs));
     pfree(tempbound);
-    pfree(traj);
   }
+  pfree(traj);
   pfree(gsbound);
   return result ? 1 : 0;
 }
