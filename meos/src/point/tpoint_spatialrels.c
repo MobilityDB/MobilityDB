@@ -518,7 +518,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     if (tempbound)
     {
       result = func(PointerGetDatum(tempbound), PointerGetDatum(gs));
-      pfree(tempbound);
+      // pfree(tempbound);
     }
   }
   pfree(traj);
