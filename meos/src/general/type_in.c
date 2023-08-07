@@ -849,10 +849,10 @@ byte_from_wkb_state(wkb_parse_state *s)
 /**
  * @brief Read a 2-byte integer and advance the parse state forward
  */
-uint16_t
+int16_t
 int16_from_wkb_state(wkb_parse_state *s)
 {
-  uint16_t i = 0;
+  int16_t i = 0;
   /* Does the data we want to read exist? */
   wkb_parse_state_check(s, MEOS_WKB_INT2_SIZE);
   /* Get the data */
@@ -874,10 +874,10 @@ int16_from_wkb_state(wkb_parse_state *s)
 /**
  * @brief Read a 4-byte integer and advance the parse state forward
  */
-uint32_t
+int32_t
 int32_from_wkb_state(wkb_parse_state *s)
 {
-  uint32_t i = 0;
+  int32_t i = 0;
   /* Does the data we want to read exist? */
   wkb_parse_state_check(s, MEOS_WKB_INT4_SIZE);
   /* Get the data */
@@ -899,10 +899,10 @@ int32_from_wkb_state(wkb_parse_state *s)
 /**
  * @brief Read an 8-byte integer and advance the parse state forward
  */
-uint64_t
+int64_t
 int64_from_wkb_state(wkb_parse_state *s)
 {
-  uint64_t i = 0;
+  int64_t i = 0;
   /* Does the data we want to read exist? */
   wkb_parse_state_check(s, MEOS_WKB_INT8_SIZE);
   /* Get the data */

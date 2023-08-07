@@ -131,10 +131,13 @@ tbox_out(const TBox *box, int maxdd)
     period = span_out(&box->period, maxdd);
 
   /* Print the box */
+  char *spantype = "";
+  if (hasx)
+    spantype = box->span.basetype == T_INT4 ? "INT" : "FLOAT";
   if (hasx && hast)
-    snprintf(result, size, "TBOX XT(%s,%s)", span, period);
+    snprintf(result, size, "TBOX%s XT(%s,%s)", spantype, span, period);
   else if (hasx)
-    snprintf(result, size, "TBOX X(%s)", span);
+    snprintf(result, size, "TBOX%s X(%s)", spantype, span);
   else /* hast */
     snprintf(result, size, "TBOX T(%s)", period);
 
@@ -309,7 +312,7 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
 {
   assert(tnumber_spantype(span->spantype));
   TBox *result = palloc(sizeof(TBox));
-  numspan_set_floatspan(span, &result->span);
+  memcpy(&result->span, span, sizeof(Span));
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
   MEOS_FLAGS_SET_X(result->flags, true);
@@ -328,7 +331,7 @@ span_period_to_tbox(const Span *span, const Span *p)
   assert(tnumber_spantype(span->spantype));
   assert(p->basetype == T_TIMESTAMPTZ);
   TBox *result = palloc(sizeof(TBox));
-  numspan_set_floatspan(span, &result->span);
+  memcpy(&result->span, span, sizeof(Span));
   memcpy(&result->period, p, sizeof(Span));
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_T(result->flags, true);
@@ -350,8 +353,7 @@ number_set_tbox(Datum value, meosType basetype, TBox *box)
   assert(tnumber_basetype(basetype));
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  Datum dvalue = Float8GetDatum(datum_double(value, basetype));
-  span_set(dvalue, dvalue, true, true, T_FLOAT8, &box->span);
+  span_set(value, value, true, true, basetype, &box->span);
   MEOS_FLAGS_SET_X(box->flags, true);
   MEOS_FLAGS_SET_T(box->flags, false);
   return;
@@ -367,8 +369,8 @@ int_set_tbox(int i, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  Datum d = Float8GetDatum((double) i);
-  span_set(d, d, true, true, T_FLOAT8, &box->span);
+  Datum d = Int32GetDatum(i);
+  span_set(d, d, true, true, T_INT4, &box->span);
   MEOS_FLAGS_SET_X(box->flags, true);
   MEOS_FLAGS_SET_T(box->flags, false);
   return;
@@ -460,9 +462,9 @@ numset_set_tbox(const Set *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  Span sp;
-  set_set_span(s, &sp);
-  numspan_set_floatspan(&sp, &box->span);
+  Span span;
+  set_set_span(s, &span);
+  memcpy(&box->span, &span, sizeof(Span));
   MEOS_FLAGS_SET_X(box->flags, true);
   MEOS_FLAGS_SET_T(box->flags, false);
   return;
@@ -524,7 +526,7 @@ numspan_set_tbox(const Span *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  numspan_set_floatspan(s, &box->span);
+  memcpy(&box->span, s, sizeof(Span));
   MEOS_FLAGS_SET_X(box->flags, true);
   MEOS_FLAGS_SET_T(box->flags, false);
   return;

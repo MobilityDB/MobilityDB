@@ -51,7 +51,7 @@
  * @brief Return the minimum value of two span base values
  */
 Datum
-span_value_min(Datum l, Datum r, meosType type)
+span_min_value(Datum l, Datum r, meosType type)
 {
   assert(span_basetype(type));
   if (type == T_TIMESTAMPTZ)
@@ -69,7 +69,7 @@ span_value_min(Datum l, Datum r, meosType type)
  * @brief Return the maximum value of two span base values
  */
 Datum
-span_value_max(Datum l, Datum r, meosType type)
+span_max_value(Datum l, Datum r, meosType type)
 {
   assert(span_basetype(type));
   if (type == T_TIMESTAMPTZ)
@@ -1080,8 +1080,8 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
     return false;
 
   memset(result, 0, sizeof(Span));
-  Datum lower = span_value_max(s1->lower, s2->lower, s1->basetype);
-  Datum upper = span_value_min(s1->upper, s2->upper, s1->basetype);
+  Datum lower = span_max_value(s1->lower, s2->lower, s1->basetype);
+  Datum upper = span_min_value(s1->upper, s2->upper, s1->basetype);
   bool lower_inc = s1->lower == s2->lower ? s1->lower_inc && s2->lower_inc :
     ( lower == s1->lower ? s1->lower_inc : s2->lower_inc );
   bool upper_inc = s1->upper == s2->upper ? s1->upper_inc && s2->upper_inc :

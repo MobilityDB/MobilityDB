@@ -263,7 +263,20 @@ tbox_parse(const char **str)
   Span period;
 
   p_whitespace(str);
-  if (pg_strncasecmp(*str, "TBOX", 4) == 0)
+  /* By default the span type is float span */
+  meosType spantype = T_FLOATSPAN;
+  if (pg_strncasecmp(*str, "TBOXINT", 7) == 0)
+  {
+    spantype = T_INTSPAN;
+    *str += 7;
+    p_whitespace(str);
+  }
+  else if (pg_strncasecmp(*str, "TBOXFLOAT", 9) == 0)
+  {
+    *str += 9;
+    p_whitespace(str);
+  }
+  else if (pg_strncasecmp(*str, "TBOX", 4) == 0)
   {
     *str += 4;
     p_whitespace(str);
@@ -298,7 +311,7 @@ tbox_parse(const char **str)
 
   if (hasx)
   {
-    span_parse(str, T_FLOATSPAN, false, &span);
+    span_parse(str, spantype, false, &span);
     if (hast)
     {
       /* Consume the optional comma separating the span and the period */

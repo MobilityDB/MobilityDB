@@ -1071,15 +1071,15 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tbox within a range and a tstzspan
+ * Generate a random tboxfloat within a range and a tstzspan
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value between the bounds
  * @param[in] maxminutes Maximum number of minutes between the bounds
  */
-DROP FUNCTION IF EXISTS random_tbox;
-CREATE FUNCTION random_tbox(lowvalue float, highvalue float,
+DROP FUNCTION IF EXISTS random_tboxfloat;
+CREATE FUNCTION random_tboxfloat(lowvalue float, highvalue float,
    lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int)
   RETURNS tbox AS $$
 DECLARE
@@ -1102,7 +1102,43 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tbox(-100, 100, '2001-01-01', '2002-01-01', 10, 10) AS b
+SELECT k, random_tboxfloat(-100, 100, '2001-01-01', '2002-01-01', 10, 10) AS b
+FROM generate_series(1,10) k;
+*/
+
+/**
+ * Generate a random tboxint within a range and a tstzspan
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
+ * @param[in] maxdelta Maximum value between the bounds
+ * @param[in] maxminutes Maximum number of minutes between the bounds
+ */
+DROP FUNCTION IF EXISTS random_tboxint;
+CREATE FUNCTION random_tboxint(lowvalue int, highvalue int,
+   lowtime timestamptz, hightime timestamptz, maxdelta int, maxminutes int)
+  RETURNS tbox AS $$
+DECLARE
+  xmin int;
+  tmin timestamptz;
+BEGIN
+  IF lowvalue > highvalue - maxdelta THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - maxdelta: %, %, %',
+      lowvalue, highvalue, maxdelta;
+  END IF;
+  IF lowtime > hightime - interval '1 minute' * maxminutes THEN
+    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxminutes minutes: %, %, %',
+      lowtime, hightime, maxminutes;
+  END IF;
+  xmin = random_int(lowvalue, highvalue - maxdelta);
+  tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
+  RETURN tbox(span(xmin, xmin + random_int(1, maxdelta)),
+    span(tmin, tmin + random_minutes(1, maxminutes)));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_tboxint(-100, 100, '2001-01-01', '2002-01-01', 10, 10) AS b
 FROM generate_series(1,10) k;
 */
 

@@ -2238,10 +2238,7 @@ tsequence_min_value(const TSequence *seq)
   if (tnumber_type(seq->temptype))
   {
     TBox *box = TSEQUENCE_BBOX_PTR(seq);
-    Datum dmin = box->span.lower;
-    meosType basetype = temptype_basetype(seq->temptype);
-    Datum min = double_datum(DatumGetFloat8(dmin), basetype);
-    return min;
+    return box->span.lower;
   }
 
   meosType basetype = temptype_basetype(seq->temptype);
@@ -2266,10 +2263,11 @@ tsequence_max_value(const TSequence *seq)
   if (tnumber_type(seq->temptype))
   {
     TBox *box = TSEQUENCE_BBOX_PTR(seq);
-    Datum dmax = box->span.upper;
-    /* The span in a TBox is always a double span */
+    Datum max = box->span.upper;
+    /* The upper bound of an integer span in canonical form is non exclusive */
     meosType basetype = temptype_basetype(seq->temptype);
-    Datum max = double_datum(DatumGetFloat8(dmax), basetype);
+    if (basetype == T_INT4)
+      max = Int32GetDatum(DatumGetInt32(max) - 1);
     return max;
   }
 

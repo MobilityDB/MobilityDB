@@ -1079,7 +1079,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
   else
   {
     TBox *box = (TBox *) temporal_bbox_ptr(temp);
-    floatspan_set_numspan(&box->span, s, basetype);
+    memcpy(s, &box->span, sizeof(Span));
   }
   return;
 }
@@ -2534,13 +2534,11 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
   {
     TBox box;
     temporal_set_bbox(temp, &box);
-    meosType basetype = temptype_basetype(temp->temptype);
-    Datum dvalue = Float8GetDatum(datum_double(value, basetype));
-    return (ever &&
-        datum_le(box.span.lower, dvalue, box.span.basetype) &&
-        datum_le(dvalue, box.span.upper, box.span.basetype)) ||
-      (!ever && box.span.lower == dvalue &&
-        dvalue == box.span.upper);
+    Datum upper = box.span.basetype == T_INT4 ?
+      Int32GetDatum(DatumGetInt32(box.span.upper) - 1) : box.span.upper;
+    return (ever && contains_span_value(&box.span, value, box.span.basetype)) ||
+      (!ever && datum_eq(box.span.lower, value, box.span.basetype) &&
+      datum_eq(upper, value, box.span.basetype) == value);
   }
   else if (tspatial_type(temp->temptype))
   {
@@ -2580,10 +2578,10 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
   {
     TBox box;
     temporal_set_bbox(temp, &box);
-    meosType basetype = temptype_basetype(temp->temptype);
-    Datum dvalue = Float8GetDatum(datum_double(value, basetype));
-    if ((ever && datum_lt(dvalue, box.span.lower, box.span.basetype)) ||
-      (! ever && datum_lt(dvalue, box.span.upper, box.span.basetype)))
+    Datum upper = box.span.basetype == T_INT4 ?
+      Int32GetDatum(DatumGetInt32(box.span.upper) - 1) : box.span.upper;
+    if ((ever && datum_lt(value, box.span.lower, box.span.basetype)) ||
+      (! ever && datum_lt(value, upper, box.span.basetype)))
       return false;
   }
   return true;
