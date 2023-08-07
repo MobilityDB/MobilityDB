@@ -511,16 +511,17 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   bool result = false;
   if (gsbound && ! gserialized_is_empty(gsbound))
     result = func(PointerGetDatum(gsbound), PointerGetDatum(traj));
-  else if (MEOS_FLAGS_GET_LINEAR(temp->flags))
-  {
-    /* The geometry is a point or a multipoint -> the boundary is empty */
-    GSERIALIZED *tempbound = gserialized_boundary(traj);
-    if (tempbound)
-    {
-      result = func(PointerGetDatum(tempbound), PointerGetDatum(gs));
+  /* TODO */
+  // else if (MEOS_FLAGS_GET_LINEAR(temp->flags))
+  // {
+    // /* The geometry is a point or a multipoint -> the boundary is empty */
+    // GSERIALIZED *tempbound = gserialized_boundary(traj);
+    // if (tempbound)
+    // {
+      // result = func(PointerGetDatum(tempbound), PointerGetDatum(gs));
       // pfree(tempbound);
-    }
-  }
+    // }
+  // }
   pfree(traj);
   pfree(gsbound);
   return result ? 1 : 0;
