@@ -186,9 +186,12 @@ periodset_in(const char *str)
 char *
 spanset_out(const SpanSet *ss, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(ss != NULL);
+  ensure_non_negative(maxdd);
+
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;
-
   for (int i = 0; i < ss->count; i++)
   {
     const Span *s = spanset_sp_n(ss, i);
@@ -499,6 +502,29 @@ periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
   /* Shift and/or scale the periodset */
   for (int i = 0; i < ps->count; i++)
     period_delta_scale(&result->elems[i], origin, delta, scale);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the precision of the float span set to the number of decimal places.
+ */
+SpanSet *
+floatspanset_round(const SpanSet *ss, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  assert(ss != NULL);
+  assert(ss->basetype == T_FLOAT8);
+  ensure_non_negative(maxdd);
+
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  Datum size = Int32GetDatum(maxdd);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const Span *span = spanset_sp_n(ss, i);
+    floatspan_round_int(span, size, &spans[i]);
+  }
+  SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
   return result;
 }
 

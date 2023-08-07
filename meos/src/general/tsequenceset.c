@@ -1386,11 +1386,32 @@ tsequenceset_to_step(const TSequenceSet *ss)
   if (! MEOS_FLAGS_GET_LINEAR(ss->flags))
     return tsequenceset_copy(ss);
 
-  if (ss->count != ss->totalcount)
-    elog(ERROR, "Cannot transform input value to a temporal step sequence");
+  /* Test whether it is possible to set the interpolation to step */
+  meosType basetype = temptype_basetype(ss->temptype);
+  const TSequence *seq;
+  for (int i = 0; i < ss->count; i++)
+  {
+    seq = TSEQUENCESET_SEQ_N(ss, i);
+    if ((seq->count > 2) ||
+        (seq->count == 2 && ! datum_eq(
+          tinstant_value(TSEQUENCE_INST_N(seq, 0)),
+          tinstant_value(TSEQUENCE_INST_N(seq, 1)), basetype)))
+      elog(ERROR, "Cannot transform input value to step interpolation");
+  }
 
-  TSequenceSet *result = tsequenceset_copy(ss);
-  MEOS_FLAGS_SET_INTERP(result->flags, STEP);
+  /* Construct the result */
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    seq = TSEQUENCESET_SEQ_N(ss, i);
+    const TInstant *instants[2];
+    for (int j = 0; j < seq->count; j++)
+      instants[j] = TSEQUENCE_INST_N(seq, j);
+    sequences[i] = tsequence_make(instants, seq->count, seq->period.lower_inc,
+      seq->period.upper_inc, STEP, NORMALIZE_NO);
+  }
+  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
+    NORMALIZE_NO);
   return result;
 }
 
@@ -2678,6 +2699,10 @@ tgeogpointseqset_in(const char *str)
 char *
 tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
 {
+  /* Ensure validity of the arguments */
+  assert(ss != NULL);
+  ensure_non_negative(maxdd);
+
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;
   char prefix[20];

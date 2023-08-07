@@ -232,6 +232,10 @@ tgeogpointinst_in(const char *str)
 char *
 tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
 {
+  /* Ensure validity of the arguments */
+  assert(inst != NULL);
+  ensure_non_negative(maxdd);
+
   char *t = pg_timestamptz_out(inst->t);
   meosType basetype = temptype_basetype(inst->temptype);
   char *value = value_out(tinstant_value(inst), basetype, maxdd);

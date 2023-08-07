@@ -44,6 +44,7 @@
 #include "general/doublen.h"
 
 /* C */
+#include <assert.h>
 #include <float.h>
 /* PostgreSQL */
 #include <utils/float.h>
@@ -74,6 +75,10 @@ double2_make(double a, double b)
 char *
 double2_out(const double2 *d, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(d != NULL);
+  ensure_non_negative(maxdd);
+
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
   char *result = palloc(strlen(astr) + strlen(bstr) + 4);
@@ -155,6 +160,10 @@ double3_make(double a, double b, double c)
 char *
 double3_out(const double3 *d, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(d != NULL);
+  ensure_non_negative(maxdd);
+
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
   char *cstr = float8_out(d->c, maxdd);
@@ -244,6 +253,10 @@ double4_make(double a, double b, double c, double d)
 char *
 double4_out(const double4 *d, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(d != NULL);
+  ensure_non_negative(maxdd);
+
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
   char *cstr = float8_out(d->c, maxdd);

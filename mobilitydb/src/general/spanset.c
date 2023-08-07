@@ -564,22 +564,6 @@ Spanset_spans(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
-/**
- * @brief Set the precision of the float span set to the number of decimal places.
- */
-static SpanSet *
-floatspanset_round(SpanSet *ss, Datum size)
-{
-  Span *spans = palloc(sizeof(Span) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-  {
-    const Span *span = spanset_sp_n(ss, i);
-    floatspan_round(span, size, &spans[i]);
-  }
-  SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
-  return result;
-}
-
 PGDLLEXPORT Datum Floatspanset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspanset_round);
 /**
@@ -591,8 +575,8 @@ Datum
 Floatspanset_round(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum size = PG_GETARG_DATUM(1);
-  SpanSet *result = floatspanset_round(ss, size);
+  int maxdd = PG_GETARG_INT32(1);
+  SpanSet *result = floatspanset_round(ss, maxdd);
   PG_RETURN_POINTER(result);
 }
 

@@ -142,8 +142,8 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
       /* Get the spherical distance between point and edge */
       edge_distance_to_point(&e, &closest1, &proj);
       /* Compute distance from beginning of the segment to closest point */
-      long double seglength = sphere_distance(&(e.start), &(e.end));
-      long double length = sphere_distance(&(e.start), &proj);
+      double seglength = sphere_distance(&(e.start), &(e.end));
+      double length = sphere_distance(&(e.start), &proj);
       *fraction = length / seglength;
     }
   }
@@ -194,14 +194,14 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  *****************************************************************************/
 
 /**
- * @brief Return the value and timestamp at which the a temporal point segment
+ * @brief Return the distance and timestamp at which a temporal point segment
  * and a point are at the minimum distance. These are the turning points when
  * computing the temporal distance.
  *
  * @param[in] start,end Instants defining the first segment
  * @param[in] point Base point
  * @param[in] basetype Base type
- * @param[out] value Projected value at turning point
+ * @param[out] value Minimum distance at turning point
  * @param[out] t Timestamp at turning point
  * @pre The segment is not constant.
  * @note The parameter basetype is not needed for temporal points
@@ -248,6 +248,9 @@ point2d_min_dist(const POINT2D *p1, const POINT2D *p2, const POINT2D *p3,
     return false;
 
   *fraction = (f1 + f2 + f3 + f4) / denum;
+  if (*fraction <= MEOS_EPSILON || *fraction >= (1.0 - MEOS_EPSILON))
+    return false;
+
   return true;
 }
 
@@ -280,17 +283,20 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
     return false;
 
   *fraction = (f1 + f2 + f3 + f4 + f5 + f6) / denum;
+  if (*fraction <= MEOS_EPSILON || *fraction >= (1.0 - MEOS_EPSILON))
+    return false;
+
   return true;
 }
 
 /**
- * @brief Return the value and timestamp at which the two temporal geometric
+ * @brief Return the distance and timestamp at which two temporal geometric
  * point segments are at the minimum distance. These are the turning points
  * when computing the temporal distance.
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
- * @param[out] value Value
+ * @param[out] mindist Mininum distance
  * @param[out] t Timestamp
  * @note The PostGIS functions `lw_dist2d_seg_seg` and `lw_dist3d_seg_seg`
  * cannot be used since they do not take time into consideration and would
@@ -298,11 +304,10 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
  * `[Point(2 2)@t1, Point(1 1)@t2]` and `[Point(3 1)@t1, Point(1 1)@t2]`
  * is at `Point(2 2)@t2` instead of `Point(1.5 1.5)@(t1 + (t2 - t1)/2)`.
  * @pre The segments are not both constants.
- * @note
  */
 static bool
 tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, Datum *mindist, TimestampTz *t)
 {
   double fraction;
   bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
@@ -326,16 +331,14 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
     if (!found)
       return false;
   }
-  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-    return false;
 
   double duration = end1->t - start1->t;
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* We know that this function is called only for linear segments */
   Datum value1 = tsegment_value_at_timestamp(start1, end1, true, *t);
   Datum value2 = tsegment_value_at_timestamp(start2, end2, true, *t);
-  *value = hasz ?
-    geom_distance3d(value1, value2) : geom_distance2d(value1, value2);
+  *mindist = hasz ? geom_distance3d(value1, value2) :
+    geom_distance2d(value1, value2);
   return true;
 }
 
@@ -350,53 +353,50 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @param[out] t Timestamp
  * @pre The segments are not both constants.
  */
-static bool
+bool
 tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *mindist, TimestampTz *t)
 {
   const POINT2D *p1 = DATUM_POINT2D_P(tinstant_value(start1));
   const POINT2D *p2 = DATUM_POINT2D_P(tinstant_value(end1));
-  const POINT2D *p3 = DATUM_POINT2D_P(tinstant_value(start2));
-  const POINT2D *p4 = DATUM_POINT2D_P(tinstant_value(end2));
+  const POINT2D *q1 = DATUM_POINT2D_P(tinstant_value(start2));
+  const POINT2D *q2 = DATUM_POINT2D_P(tinstant_value(end2));
   GEOGRAPHIC_EDGE e1, e2;
   GEOGRAPHIC_POINT close1, close2;
   POINT3D A1, A2, B1, B2;
   geographic_point_init(p1->x, p1->y, &(e1.start));
   geographic_point_init(p2->x, p2->y, &(e1.end));
-  geographic_point_init(p3->x, p3->y, &(e2.start));
-  geographic_point_init(p4->x, p4->y, &(e2.end));
+  geographic_point_init(q1->x, q1->y, &(e2.start));
+  geographic_point_init(q2->x, q2->y, &(e2.end));
   geog2cart(&(e1.start), &A1);
   geog2cart(&(e1.end), &A2);
   geog2cart(&(e2.start), &B1);
   geog2cart(&(e2.end), &B2);
   double fraction;
-  if (edge_intersects(&A1, &A2, &B1, &B2))
+  // TODO: The next computation should be done on geodetic coordinates
+  bool found = point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
+    (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction);
+  if (! found)
+    return false;
+
+  if (mindist)
   {
-    /* We know that the distance is 0 */
-    if (mindist)
-      *mindist = Float8GetDatum(0.0);
-    bool found = point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
-      (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction);
-    if (! found)
+    /* Calculate distance and direction for the edges */
+    double dist1 = sphere_distance(&(e1.start), &(e1.end));
+    double dir1 = sphere_direction(&(e1.start), &(e1.end), dist1);
+    double dist2 = sphere_distance(&(e2.start), &(e2.end));
+    double dir2 = sphere_direction(&(e2.start), &(e2.end), dist2);
+    /* Compute minimum distance */
+    int res = sphere_project(&(e1.start), dist1 * fraction, dir1, &close1);
+    if (res == LW_FAILURE)
       return false;
-  }
-  else
-  {
-    /* Compute closest points en each segment */
-    edge_distance_to_edge(&e1, &e2, &close1, &close2);
-    if (geographic_point_equals(&e1.start, &close1) ||
-      geographic_point_equals(&e1.end, &close1))
+    res = sphere_project(&(e2.start), dist2 * fraction, dir2, &close2);
+    if (res == LW_FAILURE)
       return false;
-    /* Compute distance between closest points */
-    if (mindist)
-      *mindist = Float8GetDatum(WGS84_RADIUS * sphere_distance(&close1,
-        &close2));
-    /* Compute distance from beginning of the segment to one closest point */
-    long double seglength = sphere_distance(&(e1.start), &(e1.end));
-    long double length = sphere_distance(&(e1.start), &close1);
-    fraction = (double) (length / seglength);
+    *mindist = Float8GetDatum(sphere_distance(&close1, &close2));
   }
 
+  /* Compute the timestamp of intersection */
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return false;
   double duration = (double) (end1->t - start1->t);
@@ -414,12 +414,11 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @param[out] t Timestamp
  * @pre The segments are not both constants.
  */
-static bool
+bool
 tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
   if (MEOS_FLAGS_GET_GEODETIC(start1->flags))
-    /* The distance output parameter is not used here */
     return tgeogpoint_min_dist_at_timestamp(start1, end1, start2, end2, value, t);
   else
     return tgeompoint_min_dist_at_timestamp(start1, end1, start2, end2, value, t);

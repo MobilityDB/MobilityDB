@@ -52,10 +52,6 @@ extern void span_write(const Span *s, StringInfo buf);
 extern void range_set_span(RangeType *range, TypeCacheEntry *typcache,
   Span *result);
 
-/* Transformation functions */
-
-extern void floatspan_round(const Span *span, Datum size, Span *result);
-
 /*****************************************************************************/
 
 #endif /* __PG_SPAN_H__ */

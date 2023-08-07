@@ -259,6 +259,7 @@ extern void value_set_span(Datum d, meosType basetype, Span *s);
 
 /* Transformation functions for set and span types */
 
+extern void floatspan_round_int(const Span *span, Datum size, Span *result);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);

@@ -47,6 +47,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
@@ -241,6 +242,10 @@ set_basetype_quotes(meosType type)
 char *
 set_out_fn(const Set *s, int maxdd, outfunc value_out)
 {
+  /* Ensure validity of the arguments */
+  assert(s != NULL);
+  ensure_non_negative(maxdd);
+
   char **strings = palloc(sizeof(char *) * s->count);
   size_t outlen = 0;
   for (int i = 0; i < s->count; i++)
@@ -1210,6 +1215,53 @@ geoset_srid(const Set *set)
   assert(geo_basetype(set->basetype));
   GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(set, 0));
   return gserialized_get_srid(gs);
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Set the precision of the float set to the number of decimal places.
+ */
+Set *
+floatset_round(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  assert(s != NULL);
+  assert(s->basetype == T_FLOAT8);
+  ensure_non_negative(maxdd);
+
+  Set *result = set_copy(s);
+  Datum size = Int32GetDatum(maxdd);
+  for (int i = 0; i < s->count; i++)
+    (SET_OFFSETS_PTR(result))[i] = datum_round_float(SET_VAL_N(s, i), size);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Set the precision of the coordinates to the number of decimal places.
+ */
+Set *
+geoset_round(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  assert(s != NULL);
+  assert(s->basetype == T_GEOMETRY || s->basetype == T_GEOGRAPHY);
+  ensure_non_negative(maxdd);
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  Datum size = Int32GetDatum(maxdd);
+  for (int i = 0; i < s->count; i++)
+  {
+    Datum value = SET_VAL_N(s, i);
+    values[i] = datum_round_geo(value, size);
+  }
+  Set *result = set_make(values, s->count, s->basetype, ORDERED);
+  pfree(values);
+  return result;
 }
 
 /*****************************************************************************

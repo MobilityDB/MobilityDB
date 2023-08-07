@@ -322,6 +322,10 @@ unquote(char *str)
 char *
 span_out(const Span *s, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(s != NULL);
+  ensure_non_negative(maxdd);
+
   char *lower = unquote(basetype_out(s->lower, s->basetype, maxdd));
   char *upper = unquote(basetype_out(s->upper, s->basetype, maxdd));
   char open = s->lower_inc ? (char) '[' : (char) '(';
@@ -783,6 +787,38 @@ floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype)
   else /* basetype == T_FLOAT8 */
     memcpy(s2, s1, sizeof(Span));
   return;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the precision of the float span to the number of decimal places.
+ */
+void
+floatspan_round_int(const Span *span, Datum size, Span *result)
+{
+  /* Set precision of bounds */
+  Datum lower = datum_round_float(span->lower, size);
+  Datum upper = datum_round_float(span->upper, size);
+  /* Set resulting span */
+  span_set(lower, upper, span->lower_inc, span->upper_inc, span->basetype,
+    result);
+  return;
+}
+
+/**
+ * @brief Set the precision of the float span to the number of decimal places.
+ */
+Span *
+floatspan_round(const Span *span, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  assert(span != NULL);
+  assert(span->basetype == T_FLOAT8);
+  ensure_non_negative(maxdd);
+
+  Span *result = palloc(sizeof(Span));
+  floatspan_round_int(span, Int32GetDatum(maxdd), result);
+  return result;
 }
 
 /*****************************************************************************/

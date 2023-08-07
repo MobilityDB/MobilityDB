@@ -1816,7 +1816,9 @@ ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT setInterp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'discrete');
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT setInterp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', 'step');
-ERROR:  Cannot transform input value to a temporal step sequence
+ERROR:  Cannot transform input value to step interpolation
+SELECT setInterp(tfloat '{[1@2000-01-01, 2@2000-01-02],[1@2000-01-03, 2@2000-01-05]}', 'step');
+ERROR:  Cannot transform input value to step interpolation
 SELECT setInterp(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]', 'step');
 ERROR:  Cannot transform input value to step interpolation
 SELECT setInterp(tfloat '[1@2000-01-01, 2@2000-01-02]', 'step');

@@ -46,12 +46,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
-#include "pg_general/span.h"
-#include "pg_general/tnumber_mathfuncs.h"
 #include "pg_general/type_util.h"
 
 /*****************************************************************************
@@ -356,21 +355,6 @@ Period_duration(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
-/**
- * @brief Set the precision of the float span to the number of decimal places.
- */
-void
-floatspan_round(const Span *span, Datum size, Span *result)
-{
-  /* Set precision of bounds */
-  Datum lower = datum_round_float(span->lower, size);
-  Datum upper = datum_round_float(span->upper, size);
-  /* Set resulting span */
-  span_set(lower, upper, span->lower_inc, span->upper_inc, span->basetype,
-    result);
-  return;
-}
-
 PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspan_round);
 /**
@@ -382,9 +366,8 @@ Datum
 Floatspan_round(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
-  Datum size = PG_GETARG_DATUM(1);
-  Span *result = palloc(sizeof(Span));
-  floatspan_round(span, size, result);
+  int maxdd = PG_GETARG_INT32(1);
+  Span *result = floatspan_round(span, maxdd);
   PG_RETURN_POINTER(result);
 }
 

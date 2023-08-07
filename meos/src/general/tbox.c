@@ -112,6 +112,10 @@ tbox_in(const char *str)
 char *
 tbox_out(const TBox *box, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  assert(box != NULL);
+  ensure_non_negative(maxdd);
+
   static size_t size = MAXTBOXLEN + 1;
   char *result = palloc(size);
   char *period = NULL, *span = NULL;
@@ -812,6 +816,7 @@ tbox_tmax_inc(const TBox *box, bool *result)
  * Transformation functions
  *****************************************************************************/
 
+
 /**
  * @ingroup libmeos_box_transf
  * @brief Expand the second temporal box with the first one
@@ -859,6 +864,26 @@ tbox_expand_time(const TBox *box, const Interval *interval)
   result->period.upper = TimestampTzGetDatum(tmax);
   return result;
 }
+
+/**
+ * @brief Set the precision of the value dimension of the temporal box to
+ * the number of decimal places.
+ */
+TBox *
+tbox_round(const TBox *box, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  assert(box != NULL);
+  ensure_has_X_tbox(box);
+  ensure_non_negative(maxdd);
+
+  TBox *result = tbox_copy(box);
+  Datum size = Int32GetDatum(maxdd);
+  result->span.lower = datum_round_float(box->span.lower, size);
+  result->span.upper = datum_round_float(box->span.upper, size);
+  return result;
+}
+
 
 /*****************************************************************************
  * Topological operators

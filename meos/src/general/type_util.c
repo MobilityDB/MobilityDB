@@ -186,6 +186,7 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
 /**
  * @brief Return true if the values are equal even if their type is not the same
  * @note This function should be faster than the function datum_cmp2
+ * @pre For geometry and geography types it us supposed that the type is a POINT
  */
 bool
 datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
@@ -213,9 +214,10 @@ datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
     return double3_eq(DatumGetDouble3P(l), DatumGetDouble3P(r));
   if (typel == T_DOUBLE4 && typel == typer)
     return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
-  if ((typel == T_GEOMETRY || typel == T_GEOGRAPHY) && typel == typer)
-    return (gserialized_cmp(DatumGetGserializedP(l),
-      DatumGetGserializedP(r)) == 0);
+  if (typel == T_GEOMETRY && typel == typer)
+    return datum_point_eq(l, r);
+  if (typel == T_GEOGRAPHY && typel == typer)
+    return datum_point_same(l, r);
 #if NPOINT
   if (typel == T_NPOINT && typel == typer)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
@@ -1088,7 +1090,10 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
 char *
 basetype_out(Datum value, meosType basetype, int maxdd)
 {
+  /* Ensure validity of the arguments */
   assert(meos_basetype(basetype));
+  ensure_non_negative(maxdd);
+
   switch (basetype)
   {
     case T_TIMESTAMPTZ:

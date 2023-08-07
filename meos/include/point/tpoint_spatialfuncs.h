@@ -161,7 +161,6 @@ extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 /* Set precision of the coordinates */
 
 extern Datum datum_round_geo(Datum value, Datum size);
-extern Temporal *tpoint_round(const Temporal *temp, Datum size);
 
 /*****************************************************************************/
 
