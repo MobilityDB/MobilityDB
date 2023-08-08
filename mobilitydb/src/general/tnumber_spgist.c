@@ -463,7 +463,7 @@ tbox_xmin_cmp(const TBox *box1, const TBox *box2)
 {
   assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
   if (datum_eq2(box1->span.lower, box2->span.lower, box1->span.basetype,
-        box2->span.basetype))
+      box2->span.basetype))
     return 0;
   return datum_gt2(box1->span.lower, box2->span.lower, box1->span.basetype,
     box2->span.basetype) ? 1 : -1;
@@ -477,7 +477,7 @@ tbox_xmax_cmp(const TBox *box1, const TBox *box2)
 {
   assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
   if (datum_eq2(box1->span.upper, box2->span.upper, box1->span.basetype,
-        box2->span.basetype))
+      box2->span.basetype))
     return 0;
   return datum_gt2(box1->span.upper, box2->span.upper, box1->span.basetype,
     box2->span.basetype) ? 1 : -1;

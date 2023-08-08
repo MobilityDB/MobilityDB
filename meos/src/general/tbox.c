@@ -698,7 +698,7 @@ tbox_xmin(const TBox *box, double *result)
 {
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
-  *result = DatumGetFloat8(box->span.lower);
+  *result = datum_double(box->span.lower, box->span.basetype);
   return true;
 }
 
@@ -730,7 +730,11 @@ tbox_xmax(const TBox *box, double *result)
 {
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
-  *result = DatumGetFloat8(box->span.upper);
+  if (box->span.basetype == T_INT4)
+    /* Integer spans are canonicalized, i.e., the upper bound is exclusive */
+    *result = (double) (DatumGetInt32(box->span.upper) - 1);
+  else
+    *result = DatumGetFloat8(box->span.upper);
   return true;
 }
 
