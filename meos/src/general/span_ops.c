@@ -159,7 +159,7 @@ contains_period_timestamp(const Span *p, TimestampTz t)
 bool
 contains_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   int c1 = datum_cmp(s1->lower, s2->lower, s1->basetype);
   int c2 = datum_cmp(s1->upper, s2->upper, s1->basetype);
   if (
@@ -253,7 +253,7 @@ contained_span_span(const Span *s1, const Span *s2)
 bool
 overlaps_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   int cmp1 = datum_cmp(s1->lower, s2->upper, s1->basetype);
   int cmp2 = datum_cmp(s2->lower, s1->upper, s1->basetype);
   if (
@@ -338,7 +338,7 @@ adjacent_span_span(const Span *s1, const Span *s2)
    * Two spans A..B and C..D are adjacent if and only if
    * B is adjacent to C, or D is adjacent to A.
    */
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   return (
     (datum_eq2(s1->upper, s2->lower, s1->basetype, s2->basetype) &&
       s1->upper_inc != s2->lower_inc) ||
@@ -473,7 +473,7 @@ before_period_timestamp(const Span *p, TimestampTz t)
 bool
 left_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   int cmp = datum_cmp(s1->upper, s2->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || ! s2->lower_inc)));
 }
@@ -734,7 +734,7 @@ overbefore_period_timestamp(const Span *p, TimestampTz t)
 bool
 overleft_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || s2->upper_inc)));
 }
@@ -864,7 +864,7 @@ overafter_period_timestamp(const Span *p, TimestampTz t)
 bool
 overright_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   int cmp = datum_cmp(s2->lower, s1->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->lower_inc || s2->lower_inc)));
 }
@@ -883,7 +883,7 @@ overright_span_span(const Span *s1, const Span *s2)
 void
 bbox_union_span_span(const Span *s1, const Span *s2, Span *result)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   memset(result, 0, sizeof(Span));
   memcpy(result, s1, sizeof(Span));
   span_expand(s2, result);
@@ -1074,7 +1074,7 @@ intersection_period_timestamp(const Span *p, TimestampTz t,
 bool
 inter_span_span(const Span *s1, const Span *s2, Span *result)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   /* Bounding box test */
   if (! overlaps_span_span(s1, s2))
     return false;
@@ -1481,7 +1481,7 @@ distance_period_timestamp(const Span *p, TimestampTz t)
 double
 distance_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
 
   /* If the spans intersect return 0 */
   if (overlaps_span_span(s1, s2))

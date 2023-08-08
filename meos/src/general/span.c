@@ -57,6 +57,18 @@
  *****************************************************************************/
 
 /**
+ * @brief Ensure that the span arguments have the same type in order to be able
+ * to apply operations to them
+ */
+void
+ensure_same_spantype(const Span *s1, const Span *s2)
+{
+  if (s1->spantype != s2->spantype)
+    elog(ERROR, "Operation on mixed span types");
+  return;
+}
+
+/**
  * @brief Deconstruct a span
  * @param[in] s Span value
  * @param[out] lower,upper Bounds
@@ -885,7 +897,7 @@ floatspan_set_intspan(const Span *s1, Span *s2)
 void
 span_expand(const Span *s1, Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   int cmp1 = datum_cmp(s2->lower, s1->lower, s1->basetype);
   int cmp2 = datum_cmp(s2->upper, s1->upper, s1->basetype);
   bool lower1 = cmp1 < 0 || (cmp1 == 0 && (s2->lower_inc || ! s1->lower_inc));
@@ -1034,7 +1046,7 @@ period_shift_tscale(const Span *p, const Interval *shift,
 bool
 span_eq(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   if (s1->lower != s2->lower || s1->upper != s2->upper ||
     s1->lower_inc != s2->lower_inc || s1->upper_inc != s2->upper_inc)
     return false;
@@ -1064,7 +1076,7 @@ span_ne(const Span *s1, const Span *s2)
 int
 span_cmp(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   int cmp = datum_cmp2(s1->lower, s2->lower, s1->basetype, s2->basetype);
   if (cmp != 0)
     return cmp;

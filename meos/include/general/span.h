@@ -77,6 +77,7 @@ typedef struct
 
 /* General functions */
 
+extern void ensure_same_spantype(const Span *s1, const Span *s2);
 extern void span_deserialize(const Span *s, SpanBound *lower,
   SpanBound *upper);
 extern Span *span_serialize(SpanBound *lower, SpanBound *upper);

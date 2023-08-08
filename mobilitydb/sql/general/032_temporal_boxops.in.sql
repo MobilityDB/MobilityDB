@@ -252,10 +252,6 @@ CREATE FUNCTION temporal_overlaps(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tint, tfloat)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
   PROCEDURE = temporal_overlaps,
@@ -284,12 +280,6 @@ CREATE OPERATOR && (
 CREATE OPERATOR && (
   PROCEDURE = temporal_overlaps,
   LEFTARG = tint, RIGHTARG = tint,
-  COMMUTATOR = &&,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
-);
-CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
-  LEFTARG = tint, RIGHTARG = tfloat,
   COMMUTATOR = &&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -340,10 +330,6 @@ CREATE FUNCTION temporal_contains(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tint, tfloat)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
   PROCEDURE = temporal_contains,
@@ -372,12 +358,6 @@ CREATE OPERATOR @> (
 CREATE OPERATOR @> (
   PROCEDURE = temporal_contains,
   LEFTARG = tint, RIGHTARG = tint,
-  COMMUTATOR = <@,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
-);
-CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
-  LEFTARG = tint, RIGHTARG = tfloat,
   COMMUTATOR = <@,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -428,10 +408,6 @@ CREATE FUNCTION temporal_contained(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tint, tfloat)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
   PROCEDURE = temporal_contained,
@@ -460,12 +436,6 @@ CREATE OPERATOR <@ (
 CREATE OPERATOR <@ (
   PROCEDURE = temporal_contained,
   LEFTARG = tint, RIGHTARG = tint,
-  COMMUTATOR = @>,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
-);
-CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
-  LEFTARG = tint, RIGHTARG = tfloat,
   COMMUTATOR = @>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -516,10 +486,6 @@ CREATE FUNCTION temporal_same(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tint, tfloat)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
   PROCEDURE = temporal_same,
@@ -548,12 +514,6 @@ CREATE OPERATOR ~= (
 CREATE OPERATOR ~= (
   PROCEDURE = temporal_same,
   LEFTARG = tint, RIGHTARG = tint,
-  COMMUTATOR = ~=,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
-);
-CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
-  LEFTARG = tint, RIGHTARG = tfloat,
   COMMUTATOR = ~=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -604,10 +564,6 @@ CREATE FUNCTION temporal_adjacent(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tint, tfloat)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
   PROCEDURE = temporal_adjacent,
@@ -636,12 +592,6 @@ CREATE OPERATOR -|- (
 CREATE OPERATOR -|- (
   PROCEDURE = temporal_adjacent,
   LEFTARG = tint, RIGHTARG = tint,
-  COMMUTATOR = -|-,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
-);
-CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
-  LEFTARG = tint, RIGHTARG = tfloat,
   COMMUTATOR = -|-,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -691,10 +641,6 @@ CREATE FUNCTION temporal_overlaps(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tfloat, tint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tnumber_tnumber'
@@ -721,12 +667,6 @@ CREATE OPERATOR && (
 CREATE OPERATOR && (
   PROCEDURE = temporal_overlaps,
   LEFTARG = tfloat, RIGHTARG = tbox,
-  COMMUTATOR = &&,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
-);
-CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
-  LEFTARG = tfloat, RIGHTARG = tint,
   COMMUTATOR = &&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -779,10 +719,6 @@ CREATE FUNCTION temporal_contains(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tfloat, tint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tnumber_tnumber'
@@ -809,12 +745,6 @@ CREATE OPERATOR @> (
 CREATE OPERATOR @> (
   PROCEDURE = temporal_contains,
   LEFTARG = tfloat, RIGHTARG = tbox,
-  COMMUTATOR = <@,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
-);
-CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
-  LEFTARG = tfloat, RIGHTARG = tint,
   COMMUTATOR = <@,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -867,10 +797,6 @@ CREATE FUNCTION temporal_contained(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tfloat, tint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tnumber_tnumber'
@@ -897,12 +823,6 @@ CREATE OPERATOR <@ (
 CREATE OPERATOR <@ (
   PROCEDURE = temporal_contained,
   LEFTARG = tfloat, RIGHTARG = tbox,
-  COMMUTATOR = @>,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
-);
-CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
-  LEFTARG = tfloat, RIGHTARG = tint,
   COMMUTATOR = @>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -955,10 +875,6 @@ CREATE FUNCTION temporal_same(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tfloat, tint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_same(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tnumber_tnumber'
@@ -985,12 +901,6 @@ CREATE OPERATOR ~= (
 CREATE OPERATOR ~= (
   PROCEDURE = temporal_same,
   LEFTARG = tfloat, RIGHTARG = tbox,
-  COMMUTATOR = ~=,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
-);
-CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
-  LEFTARG = tfloat, RIGHTARG = tint,
   COMMUTATOR = ~=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -1043,10 +953,6 @@ CREATE FUNCTION temporal_adjacent(tfloat, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tfloat, tint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tnumber_tnumber'
@@ -1073,12 +979,6 @@ CREATE OPERATOR -|- (
 CREATE OPERATOR -|- (
   PROCEDURE = temporal_adjacent,
   LEFTARG = tfloat, RIGHTARG = tbox,
-  COMMUTATOR = -|-,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
-);
-CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
-  LEFTARG = tfloat, RIGHTARG = tint,
   COMMUTATOR = -|-,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
