@@ -2538,7 +2538,7 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
       Int32GetDatum(DatumGetInt32(box.span.upper) - 1) : box.span.upper;
     return (ever && contains_span_value(&box.span, value, box.span.basetype)) ||
       (!ever && datum_eq(box.span.lower, value, box.span.basetype) &&
-      datum_eq(upper, value, box.span.basetype) == value);
+      datum_eq(upper, value, box.span.basetype));
   }
   else if (tspatial_type(temp->temptype))
   {

@@ -42,19 +42,10 @@ CREATE FUNCTION tnumber_distance(integer, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Distance_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_distance(integer, tfloat)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_number_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
   PROCEDURE = tnumber_distance,
   LEFTARG = integer, RIGHTARG = tint,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = integer, RIGHTARG = tfloat,
   COMMUTATOR = <->
 );
 
@@ -62,20 +53,11 @@ CREATE OPERATOR <-> (
 
 /* float <-> <TYPE> */
 
-CREATE FUNCTION tnumber_distance(float, tint)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_number_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_distance(float, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = float, RIGHTARG = tint,
-  COMMUTATOR = <->
-);
 CREATE OPERATOR <-> (
   PROCEDURE = tnumber_distance,
   LEFTARG = float, RIGHTARG = tfloat,
@@ -89,16 +71,8 @@ CREATE FUNCTION tnumber_distance(tint, integer)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Distance_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_distance(tint, float)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tnumber_number'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_distance(tint, tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Distance_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_distance(tint, tfloat)
-  RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -109,34 +83,16 @@ CREATE OPERATOR <-> (
 );
 CREATE OPERATOR <-> (
   PROCEDURE = tnumber_distance,
-  LEFTARG = tint, RIGHTARG = float,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
   LEFTARG = tint, RIGHTARG = tint,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = tint, RIGHTARG = tfloat,
   COMMUTATOR = <->
 );
 
 /*****************************************************************************/
 /* tfloat <-> <TYPE> */
 
-CREATE FUNCTION tnumber_distance(tfloat, integer)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tnumber_number'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_distance(tfloat, float)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tnumber_number'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_distance(tfloat, tint)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_distance(tfloat, tfloat)
   RETURNS tfloat
@@ -145,17 +101,7 @@ CREATE FUNCTION tnumber_distance(tfloat, tfloat)
 
 CREATE OPERATOR <-> (
   PROCEDURE = tnumber_distance,
-  LEFTARG = tfloat, RIGHTARG = integer,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
   LEFTARG = tfloat, RIGHTARG = float,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = tfloat, RIGHTARG = tint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
@@ -171,11 +117,7 @@ CREATE OPERATOR <-> (
 /* integer |=| <TYPE> */
 
 CREATE FUNCTION nearestApproachDistance(integer, tint)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_number_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(integer, tfloat)
-  RETURNS float
+  RETURNS int
   AS 'MODULE_PATHNAME', 'NAD_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -184,30 +126,16 @@ CREATE OPERATOR |=| (
   LEFTARG = integer, RIGHTARG = tint,
   COMMUTATOR = |=|
 );
-CREATE OPERATOR |=| (
-  PROCEDURE = nearestApproachDistance,
-  LEFTARG = integer, RIGHTARG = tfloat,
-  COMMUTATOR = |=|
-);
 
 /*****************************************************************************/
 
 /* float |=| <TYPE> */
 
-CREATE FUNCTION nearestApproachDistance(float, tint)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_number_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(float, tfloat)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR |=| (
-  PROCEDURE = nearestApproachDistance,
-  LEFTARG = float, RIGHTARG = tint,
-  COMMUTATOR = |=|
-);
 CREATE OPERATOR |=| (
   PROCEDURE = nearestApproachDistance,
   LEFTARG = float, RIGHTARG = tfloat,
@@ -223,7 +151,7 @@ CREATE FUNCTION nearestApproachDistance(tbox, tbox)
   AS 'MODULE_PATHNAME', 'NAD_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tbox, tint)
-  RETURNS float
+  RETURNS int
   AS 'MODULE_PATHNAME', 'NAD_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tbox, tfloat)
@@ -251,34 +179,21 @@ CREATE OPERATOR |=| (
 /* tint |=| <TYPE> */
 
 CREATE FUNCTION nearestApproachDistance(tint, integer)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_tnumber_number'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(tint, float)
-  RETURNS float
+  RETURNS int
   AS 'MODULE_PATHNAME', 'NAD_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tint, tbox)
-  RETURNS float
+  RETURNS int
   AS 'MODULE_PATHNAME', 'NAD_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tint, tint)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(tint, tfloat)
-  RETURNS float
+  RETURNS int
   AS 'MODULE_PATHNAME', 'NAD_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR |=| (
   PROCEDURE = nearestApproachDistance,
   LEFTARG = tint, RIGHTARG = integer,
-  COMMUTATOR = |=|
-);
-CREATE OPERATOR |=| (
-  PROCEDURE = nearestApproachDistance,
-  LEFTARG = tint, RIGHTARG = float,
   COMMUTATOR = |=|
 );
 CREATE OPERATOR |=| (
@@ -291,19 +206,10 @@ CREATE OPERATOR |=| (
   LEFTARG = tint, RIGHTARG = tint,
   COMMUTATOR = |=|
 );
-CREATE OPERATOR |=| (
-  PROCEDURE = nearestApproachDistance,
-  LEFTARG = tint, RIGHTARG = tfloat,
-  COMMUTATOR = |=|
-);
 
 /*****************************************************************************/
 /* tfloat |=| <TYPE> */
 
-CREATE FUNCTION nearestApproachDistance(tfloat, integer)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_tnumber_number'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tfloat, float)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tnumber_number'
@@ -312,20 +218,11 @@ CREATE FUNCTION nearestApproachDistance(tfloat, tbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION nearestApproachDistance(tfloat, tint)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tfloat, tfloat)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR |=| (
-  PROCEDURE = nearestApproachDistance,
-  LEFTARG = tfloat, RIGHTARG = integer,
-  COMMUTATOR = |=|
-);
 CREATE OPERATOR |=| (
   PROCEDURE = nearestApproachDistance,
   LEFTARG = tfloat, RIGHTARG = float,
@@ -334,11 +231,6 @@ CREATE OPERATOR |=| (
 CREATE OPERATOR |=| (
   PROCEDURE = nearestApproachDistance,
   LEFTARG = tfloat, RIGHTARG = tbox,
-  COMMUTATOR = |=|
-);
-CREATE OPERATOR |=| (
-  PROCEDURE = nearestApproachDistance,
-  LEFTARG = tfloat, RIGHTARG = tint,
   COMMUTATOR = |=|
 );
 CREATE OPERATOR |=| (

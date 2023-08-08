@@ -436,7 +436,7 @@ bound_parse(const char **str, meosType basetype)
   p_whitespace(str);
   int delim = 0;
   while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
-    (*str)[delim] != '}' && (*str)[delim] != ')' &&  (*str)[delim] != '\0')
+    (*str)[delim] != '}' && (*str)[delim] != ')' && (*str)[delim] != '\0')
     delim++;
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);

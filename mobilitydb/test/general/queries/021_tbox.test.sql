@@ -31,7 +31,9 @@
 -- Tbox
 -------------------------------------------------------------------------------
 
+SELECT tbox 'TBOXINT XT([1, 1],[2000-01-01,2000-01-02])'; -- Both X and T dimensions
 SELECT tbox 'TBOXFLOAT XT([1.0, 1.0],[2000-01-01,2000-01-02])'; -- Both X and T dimensions
+SELECT tbox 'TBOXINT X([1, 1])'; -- Only X dimension
 SELECT tbox 'TBOXFLOAT X([1.0, 1.0])'; -- Only X dimension
 SELECT tbox 'TBOX T([2000-01-01,2000-01-02])'; -- Only T dimension
 SELECT tbox 'TBOXINT XT([1,2][2000-01-01,2000-01-02])'; -- Optional comma
@@ -48,7 +50,6 @@ SELECT tbox 'TBOXFLOAT X((1, AA))';
 SELECT tbox 'TBOXFLOAT X((1, 2000-01-01))';
 SELECT tbox 'TBOXFLOAT X((1, 2), 2, 2))';
 SELECT tbox 'TBOXFLOAT X((1, 2),(AA, 2))';
-SELECT tbox 'TBOXFLOAT XT([1,2][2000-01-01,2000-01-02])';
 SELECT tbox 'TBOXFLOAT X((1, 2),(2000-01-01, AA))';
 SELECT tbox 'TBOXFLOAT X((1, 2),(2000-01-01, 2000-01-02)';
 SELECT tbox 'TBOXFLOAT X((2,2000-01-02),(1,2000-01-01))XXXX';
