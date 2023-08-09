@@ -340,9 +340,9 @@ adjacent_span_span(const Span *s1, const Span *s2)
    */
   ensure_same_spantype(s1, s2);
   return (
-    (datum_eq2(s1->upper, s2->lower, s1->basetype, s2->basetype) &&
+    (datum_eq(s1->upper, s2->lower, s1->basetype) &&
       s1->upper_inc != s2->lower_inc) ||
-    (datum_eq2(s2->upper, s1->lower, s2->basetype, s1->basetype) &&
+    (datum_eq(s2->upper, s1->lower, s1->basetype) &&
       s2->upper_inc != s1->lower_inc) );
 }
 

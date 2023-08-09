@@ -62,6 +62,19 @@ DROP INDEX IF EXISTS tbl_tfloat_big_kdtree_idx;
 DROP INDEX IF EXISTS tbl_ttext_big_kdtree_idx;
 
 -------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS test_idxops;
+CREATE TABLE test_idxops(
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  no_idx BIGINT,
+  rtree_idx BIGINT,
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
+);
+
+-------------------------------------------------------------------------------
 -- Without Index
 -------------------------------------------------------------------------------
 
@@ -70,155 +83,285 @@ SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && NULL::tbool;
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp < tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <= tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp > tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp >= tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp < tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<=', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp <= tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp > tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>=', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp >= tbool '[true@2001-01-01, true@2001-02-01]';
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@2001-02-01]';
-
--------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp < tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <= tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp > tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >= tint '[1@2001-01-01, 10@2001-02-01]';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp @> tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp <@ tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp ~= tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp -|- tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp <<# tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp &<# tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp #>> tbool '[true@2001-01-01, true@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@2001-02-01]';
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tint', 'intspan', COUNT(*) FROM tbl_tint_big WHERE temp && intspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tint', 'intspan', COUNT(*) FROM tbl_tint_big WHERE temp @> intspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tint', 'intspan', COUNT(*) FROM tbl_tint_big WHERE temp <@ intspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tint', 'intspan', COUNT(*) FROM tbl_tint_big WHERE temp ~= intspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tint', 'intspan', COUNT(*) FROM tbl_tint_big WHERE temp -|- intspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tint', 'intspan', COUNT(*) FROM tbl_tint_big WHERE temp << intspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tint', 'intspan', COUNT(*) FROM tbl_tint_big WHERE temp &< intspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tint', 'intspan', COUNT(*) FROM tbl_tint_big WHERE temp >> intspan '[97,100]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tint', 'intspan', COUNT(*) FROM tbl_tint_big WHERE temp &> intspan '[97,100]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tint', 'tstzspan', COUNT(*) FROM tbl_tint_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tint', 'tstzspan', COUNT(*) FROM tbl_tint_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tint', 'tstzspan', COUNT(*) FROM tbl_tint_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tint', 'tstzspan', COUNT(*) FROM tbl_tint_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp && tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp @> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp <@ tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp &< tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp >> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp &> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp <<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp &<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp #>> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp #&> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp < tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <= tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp > tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >= tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp < tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<=', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp <= tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp > tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>=', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp >= tint '[1@2001-01-01, 10@2001-02-01]';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp && tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp @> tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp &< tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp >> tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp &> tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp <<# tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp &<# tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp #>> tint '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp #&> tint '[1@2001-01-01, 10@2001-02-01]';
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat_big WHERE temp && floatspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat_big WHERE temp << floatspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatspan '[1,3]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatspan '[97,100]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatspan '[97,100]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]';
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp && tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp @> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp << tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp &< tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp >> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp &> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp < tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<=', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp <= tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp > tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>=', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp >= tfloat '[1@2001-01-01, 10@2001-02-01]';
+
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp @> tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp << tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp &< tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp >> tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp &> tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tfloat '[1@2001-01-01, 10@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-02-01]';
+
+-------------------------------------------------------------------------------
+
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
+
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<=', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>=', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp @> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp <@ ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp ~= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp &<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
 
 -------------------------------------------------------------------------------
 -- R-Tree Index
@@ -236,155 +379,415 @@ SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && NULL::tbool;
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp < tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <= tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp > tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp >= tbool '[true@2001-01-01, true@2001-02-01]';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp < tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <= tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp > tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp >= tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'tbool' AND rightarg = 'tbool';
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@2001-02-01]';
-
--------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp < tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <= tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp > tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >= tint '[1@2001-01-01, 10@2001-02-01]';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tint '[1@2001-01-01, 10@2001-02-01]';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'tbool';
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intspan '[1,3]' )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intspan '[1,3]' )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intspan '[1,3]' )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intspan '[1,3]' )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intspan '[1,3]' )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intspan '[1,3]' )
+WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intspan '[1,3]' )
+WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intspan '[97,100]' )
+WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intspan '[97,100]' )
+WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tstzspan';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tbox';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp < tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <= tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp > tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >= tfloat '[1@2001-01-01, 10@2001-02-01]';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp < tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <= tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp > tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >= tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'tint' AND rightarg = 'tint';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-02-01]';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tint';
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatspan '[1,3]' )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatspan '[1,3]' )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatspan '[1,3]' )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatspan '[1,3]' )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatspan '[1,3]' )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatspan '[1,3]' )
+WHERE op = '<<' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatspan '[1,3]' )
+WHERE op = '&<' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatspan '[97,100]' )
+WHERE op = '>>' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatspan '[97,100]' )
+WHERE op = '&>' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '>>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp < tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <= tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp > tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >= tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'ttext';
 
 -------------------------------------------------------------------------------
 
@@ -415,155 +818,415 @@ SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && NULL::tbool;
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp < tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <= tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp > tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp >= tbool '[true@2001-01-01, true@2001-02-01]';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp < tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <= tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp > tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp >= tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'tbool' AND rightarg = 'tbool';
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@2001-02-01]';
-
--------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp < tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <= tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp > tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >= tint '[1@2001-01-01, 10@2001-02-01]';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tint '[1@2001-01-01, 10@2001-02-01]';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'tbool';
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intspan '[1,3]' )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intspan '[1,3]' )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intspan '[1,3]' )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intspan '[1,3]' )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intspan '[1,3]' )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intspan '[1,3]' )
+WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intspan '[1,3]' )
+WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intspan '[97,100]' )
+WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intspan '[97,100]' )
+WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tstzspan';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tbox';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp < tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <= tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp > tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >= tfloat '[1@2001-01-01, 10@2001-02-01]';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp < tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <= tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp > tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >= tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'tint' AND rightarg = 'tint';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-02-01]';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tint';
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatspan '[1,3]' )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatspan '[1,3]' )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatspan '[1,3]' )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatspan '[1,3]' )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatspan '[1,3]' )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatspan '[1,3]' )
+WHERE op = '<<' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatspan '[1,3]' )
+WHERE op = '&<' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatspan '[97,100]' )
+WHERE op = '>>' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatspan '[97,100]' )
+WHERE op = '&>' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '>>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp < tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <= tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp > tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >= tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'ttext';
 
 -------------------------------------------------------------------------------
 
@@ -583,155 +1246,433 @@ CREATE INDEX tbl_ttext_big_kdtree_idx ON tbl_ttext_big USING SPGIST(temp ttext_k
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'tstzspan';
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp < tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <= tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp > tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp >= tbool '[true@2001-01-01, true@2001-02-01]';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp < tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <= tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp > tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp >= tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'tbool' AND rightarg = 'tbool';
 
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tbool '[true@2001-01-01, true@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@2001-02-01]';
-
--------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp < tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <= tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp > tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >= tint '[1@2001-01-01, 10@2001-02-01]';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tint '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tint '[1@2001-01-01, 10@2001-02-01]';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp @> tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <@ tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp ~= tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp -|- tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp <<# tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp &<# tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #>> tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'tbool';
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatspan '[1,3]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatspan '[97,100]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp && intspan '[1,3]' )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> intspan '[1,3]' )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ intspan '[1,3]' )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= intspan '[1,3]' )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- intspan '[1,3]' )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << intspan '[1,3]' )
+WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< intspan '[1,3]' )
+WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> intspan '[97,100]' )
+WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> intspan '[97,100]' )
+WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tstzspan';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tbox';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp < tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <= tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp > tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >= tfloat '[1@2001-01-01, 10@2001-02-01]';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp < tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <= tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp > tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >= tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'tint' AND rightarg = 'tint';
 
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tfloat '[1@2001-01-01, 10@2001-02-01]';
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-02-01]';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp && tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp @> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp <<# tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp &<# tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #>> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp #&> tint '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tint';
 
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && floatspan '[1,3]' )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> floatspan '[1,3]' )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ floatspan '[1,3]' )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= floatspan '[1,3]' )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- floatspan '[1,3]' )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << floatspan '[1,3]' )
+WHERE op = '<<' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< floatspan '[1,3]' )
+WHERE op = '&<' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> floatspan '[97,100]' )
+WHERE op = '>>' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> floatspan '[97,100]' )
+WHERE op = '&>' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tstzspan '[2001-11-01, 2001-12-01]' )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '>>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tbox 'TBOXFLOAT XT([1,50],[2001-01-01,2001-02-01])' )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
 
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp < tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <= tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp > tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >= tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp @> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <@ tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ~= tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp -|- tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp << tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '>>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp <<# tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &<# tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #>> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '>=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp @> ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <@ ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ~= ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp &<# ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
+WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+
+DROP INDEX tbl_tbool_big_kdtree_idx;
+DROP INDEX tbl_tint_big_kdtree_idx;
+DROP INDEX tbl_tfloat_big_kdtree_idx;
+DROP INDEX tbl_ttext_big_kdtree_idx;
+
+-------------------------------------------------------------------------------
+-- TEST THE EQUIVALENCE
+-------------------------------------------------------------------------------
+
+SELECT * FROM test_idxops
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR
+  no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
+ORDER BY op, leftarg, rightarg;
+
+DROP TABLE test_idxops;
 
 -------------------------------------------------------------------------------
 -- Index support functions

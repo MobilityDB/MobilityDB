@@ -130,8 +130,9 @@ span_bound_cmp(const SpanBound *b1, const SpanBound *b2)
   {
     if (! b1->inclusive && ! b2->inclusive)
     {
-      /* both are exclusive */
+      /* both bounds are exclusive */
       if (b1->lower == b2->lower)
+        /* both are lower bound */
         return 0;
       else
         return b1->lower ? 1 : -1;
@@ -160,19 +161,19 @@ span_bound_qsort_cmp(const void *a1, const void *a2)
  * @brief Compare the lower bounds of two spans, returning <0, 0, or >0 according to
  * whether the first bound is less than, equal to, or greater than the second one.
  *
- * @note The function is equivalent to `span_bound_cmp` but avoids
+ * @note The function is equivalent to #span_bound_cmp but avoids
  * deserializing the spans into lower and upper bounds
  */
 int
-span_lower_cmp(const Span *a, const Span *b)
+span_lower_cmp(const Span *s1, const Span *s2)
 {
-  int result = datum_cmp2(a->lower, b->lower, a->basetype, b->basetype);
+  int result = datum_cmp2(s1->lower, s2->lower, s1->basetype, s2->basetype);
   if (result == 0)
   {
-    if (a->lower_inc == b->lower_inc)
+    if (s1->lower_inc == s2->lower_inc)
       /* both are inclusive or exclusive */
       return 0;
-    else if (a->lower_inc)
+    else if (s1->lower_inc)
       /* first is inclusive and second is exclusive */
       return 1;
     else
@@ -186,19 +187,19 @@ span_lower_cmp(const Span *a, const Span *b)
  * @brief Compare the upper bounds of two spans, returning <0, 0, or >0 according to
  * whether the first bound is less than, equal to, or greater than the second one.
  *
- * @note The function is equivalent to `span_bound_cmp` but avoids
+ * @note The function is equivalent to #span_bound_cmp but avoids
  * deserializing the spans into lower and upper bounds
  */
 int
-span_upper_cmp(const Span *a, const Span *b)
+span_upper_cmp(const Span *s1, const Span *s2)
 {
-  int result = datum_cmp2(a->upper, b->upper, a->basetype, b->basetype);
+  int result = datum_cmp2(s1->upper, s2->upper, s1->basetype, s2->basetype);
   if (result == 0)
   {
-    if (a->upper_inc == b->upper_inc)
+    if (s1->upper_inc == s2->upper_inc)
       /* both are inclusive or exclusive */
       return 0;
-    else if (a->upper_inc)
+    else if (s1->upper_inc)
       /* first is inclusive and second is exclusive */
       return 1;
     else

@@ -106,6 +106,14 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tboxfloat(0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
 FROM generate_series(perc+1, size) AS k;
 
+DROP TABLE IF EXISTS tbl_tboxint;
+CREATE TABLE tbl_tboxint AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tboxint(0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
+FROM generate_series(perc+1, size) AS k;
+
 DROP TABLE IF EXISTS tbl_interval;
 CREATE TABLE tbl_interval AS
 /* Add perc NULL values */

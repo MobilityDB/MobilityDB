@@ -198,11 +198,11 @@ tinstant_set_bbox(const TInstant *inst, void *box)
   {
     meosType basetype = temptype_basetype(inst->temptype);
     Datum value = tinstant_value(inst);
+    Datum time = TimestampTzGetDatum(inst->t);
     TBox *tbox = (TBox *) box;
     memset(tbox, 0, sizeof(TBox));
-    span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
-      true, true, T_TIMESTAMPTZ, &tbox->period);
     span_set(value, value, true, true, basetype, &tbox->span);
+    span_set(time, time, true, true, T_TIMESTAMPTZ, &tbox->period);
     MEOS_FLAGS_SET_X(tbox->flags, true);
     MEOS_FLAGS_SET_T(tbox->flags, true);
   }

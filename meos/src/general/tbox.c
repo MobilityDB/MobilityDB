@@ -642,7 +642,12 @@ tbox_to_floatspan(const TBox *box)
 {
   if (! MEOS_FLAGS_GET_X(box->flags))
     return NULL;
-  return span_copy(&box->span);
+  if (box->span.basetype == T_FLOAT8)
+    return span_copy(&box->span);
+  /* Convert the integer span to a float span */
+  Span *result = palloc(sizeof(Span));
+  intspan_set_floatspan(&box->span, result);
+  return result;
 }
 
 /**

@@ -238,7 +238,7 @@ spannode_kdtree_next(const SpanNode *nodebox, const Span *centroid,
     }
     else
     {
-      /* The inclusive flag must be negated so that the bounds with the
+      /* The inclusive flag must set to true so that the bounds with the
        * same timestamp are in one of the two childs */
       next_nodespan->left.upper = centroid->upper;
       next_nodespan->left.upper_inc = true;
