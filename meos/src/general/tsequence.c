@@ -2477,20 +2477,20 @@ tsequence_timestamps(const TSequence *seq, int *count)
  * @brief Return the base value of the segment of a temporal sequence at a
  * timestamp
  * @param[in] inst1,inst2 Temporal instants defining the segment
- * @param[in] linear True if the segment has linear interpolation
+ * @param[in] interp Interpolation of the segment
  * @param[in] t Timestamp
  * @pre The timestamp t satisfies inst1->t <= t <= inst2->t
  * @note The function creates a new value that must be freed
  */
 Datum
 tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
-  bool linear, TimestampTz t)
+  interpType interp, TimestampTz t)
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   /* Constant segment or t is equal to lower bound or step interpolation */
   if (datum_eq(value1, value2, temptype_basetype(inst1->temptype)) ||
-    inst1->t == t || (! linear && t < inst2->t))
+    inst1->t == t || (interp != LINEAR && t < inst2->t))
     return tinstant_value_copy(inst1);
 
   /* t is equal to upper bound */
@@ -2501,7 +2501,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   long double duration1 = (long double) (t - inst1->t);
   long double duration2 = (long double) (inst2->t - inst1->t);
   long double ratio = duration1 / duration2;
-  // TEST !!!! USED FOR ASSESSING FLOATINGING POINT PRECISION IN MOBILITYDB !!!
+  // TEST !!!! USED FOR ASSESSING FLOATINGING POINT PRECISION IN MEOS !!!
   // long double ratio = (double)(t - inst1->t) / (double)(inst2->t - inst1->t);
   assert(temptype_continuous(inst1->temptype));
   if (inst1->temptype == T_TFLOAT)
@@ -2611,8 +2611,8 @@ tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, bool strict,
   else
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, n + 1);
-    bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
-    *result = tsegment_value_at_timestamp(inst1, inst2, linear, t);
+    interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+    *result = tsegment_value_at_timestamp(inst1, inst2, interp, t);
   }
   return true;
 }
@@ -2714,9 +2714,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
     {
       TimestampTz crosstime;
       Datum inter1, inter2;
-      if (tsegment_intersection(instants1[ninsts - 1], inst1,
-        (interp1 == LINEAR), instants2[ninsts - 1], inst2, (interp2 == LINEAR),
-        &inter1, &inter2, &crosstime))
+      if (tsegment_intersection(instants1[ninsts - 1], inst1, interp1,
+        instants2[ninsts - 1], inst2, interp2, &inter1, &inter2, &crosstime))
       {
         instants1[ninsts] = tofree[nfree++] = tinstant_make(inter1,
           seq1->temptype, crosstime);
@@ -2952,7 +2951,7 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 
   if (result && inter != NULL)
     /* We are sure it is linear interpolation */
-    *inter = tsegment_value_at_timestamp(inst1, inst2, true, *t);
+    *inter = tsegment_value_at_timestamp(inst1, inst2, LINEAR, *t);
   return result;
 }
 
@@ -3057,14 +3056,14 @@ tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
  */
 bool
 tsegment_intersection(const TInstant *start1, const TInstant *end1,
-  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  Datum *inter1, Datum *inter2, TimestampTz *t)
+  interpType interp1, const TInstant *start2, const TInstant *end2,
+  interpType interp2, Datum *inter1, Datum *inter2, TimestampTz *t)
 {
   bool result = false; /* Make compiler quiet */
   Datum value;
   meosType basetype1 = temptype_basetype(start1->temptype);
   meosType basetype2 = temptype_basetype(start2->temptype);
-  if (! linear1)
+  if (interp1 != LINEAR)
   {
     value = tinstant_value(start1);
     if (inter1 != NULL)
@@ -3072,7 +3071,7 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
     result = tlinearsegm_intersection_value(start2, end2, value, basetype1,
       inter2, t);
   }
-  else if (! linear2)
+  else if (interp2 != LINEAR)
   {
     value = tinstant_value(start2);
     if (inter2 != NULL)
@@ -3092,9 +3091,9 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
       result = tgeogpointsegm_intersection(start1, end1, start2, end2, t);
     /* We are sure it is linear interpolation */
     if (result && inter1 != NULL)
-      *inter1 = tsegment_value_at_timestamp(start1, end1, true, *t);
+      *inter1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
     if (result && inter2 != NULL)
-      *inter2 = tsegment_value_at_timestamp(start2, end2, true, *t);
+      *inter2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
   }
   return result;
 }
@@ -3912,13 +3911,12 @@ tnumberdiscseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
  */
 static int
 tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
-  bool linear, bool lower_inc, bool upper_inc, const Span *span,
+  interpType interp, bool lower_inc, bool upper_inc, const Span *span,
   bool atfunc, TSequence **result)
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   meosType basetype = temptype_basetype(inst1->temptype);
-  interpType interp = linear ? LINEAR : STEP;
   TInstant *instants[2];
   bool found;
 
@@ -3936,7 +3934,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   }
 
   /* Step interpolation */
-  if (! linear)
+  if (interp == STEP)
   {
     int nseqs = 0;
     found = contains_span_value(span, value1, basetype);
@@ -4005,7 +4003,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   {
     /* To reduce the roundoff errors we project the temporal number to the
      * timestamp instead of taking the bound value */
-    inter1 = tsegment_at_timestamp(inst1, inst2, linear, t1);
+    inter1 = tsegment_at_timestamp(inst1, inst2, interp, t1);
     tofree1 = true;
   }
   int j = 1;
@@ -4020,7 +4018,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
     {
       /* To reduce the roundoff errors we project the temporal number to the
        * timestamp instead of taking the bound value */
-      inter2 = tsegment_at_timestamp(inst1, inst2, linear, t2);
+      inter2 = tsegment_at_timestamp(inst1, inst2, interp, t2);
       tofree2 = true;
     }
     j = 2;
@@ -4138,7 +4136,7 @@ tnumbercontseq_restrict_span_iter(const TSequence *seq, const Span *span,
   }
 
   /* General case */
-  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int nseqs = 0;
@@ -4146,7 +4144,7 @@ tnumbercontseq_restrict_span_iter(const TSequence *seq, const Span *span,
   {
     inst2 = TSEQUENCE_INST_N(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    nseqs += tnumbersegm_restrict_span(inst1, inst2, linear, lower_inc,
+    nseqs += tnumbersegm_restrict_span(inst1, inst2, interp, lower_inc,
       upper_inc, span, atfunc, &result[nseqs]);
     inst1 = inst2;
     lower_inc = true;
@@ -4210,7 +4208,7 @@ tnumbercontseq_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
   }
 
   /* General case */
-  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   if (atfunc)
   {
     /* AT function */
@@ -4224,7 +4222,7 @@ tnumbercontseq_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
       for (int j = 0; j < ss->count; j++)
       {
         const Span *s = spanset_sp_n(ss, j);
-        nseqs += tnumbersegm_restrict_span(inst1, inst2, linear, lower_inc,
+        nseqs += tnumbersegm_restrict_span(inst1, inst2, interp, lower_inc,
           upper_inc, s, REST_AT, &result[nseqs]);
       }
       inst1 = inst2;
@@ -4570,16 +4568,16 @@ tdiscseq_restrict_periodset(const TSequence *seq, const SpanSet *ps,
 /**
  * @brief Restrict the segment of a temporal sequence to a timestamp
  * @param[in] inst1,inst2 Temporal instants defining the segment
- * @param[in] linear True if linear interpolation
+ * @param[in] interp Interpolation of the segment
  * @param[in] t Timestamp
  * @pre The timestamp t satisfies inst1->t <= t <= inst2->t
  * @note The function creates a new value that must be freed
  */
 TInstant *
 tsegment_at_timestamp(const TInstant *inst1, const TInstant *inst2,
-  bool linear, TimestampTz t)
+  interpType interp, TimestampTz t)
 {
-  Datum value = tsegment_value_at_timestamp(inst1, inst2, linear, t);
+  Datum value = tsegment_value_at_timestamp(inst1, inst2, interp, t);
   TInstant *result = tinstant_make(value, inst1->temptype, t);
   DATUM_FREE(value, temptype_basetype(inst1->temptype));
   return result;
@@ -4610,7 +4608,7 @@ tcontseq_at_timestamp(const TSequence *seq, TimestampTz t)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, n + 1);
     return tsegment_at_timestamp(inst1, inst2,
-      MEOS_FLAGS_GET_LINEAR(seq->flags), t);
+      MEOS_FLAGS_GET_INTERP(seq->flags), t);
   }
 }
 
@@ -4691,7 +4689,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       /* inst1->t < t */
       instants[n] = (TInstant *) inst1;
       instants[n + 1] = (interp == LINEAR) ?
-        tsegment_at_timestamp(inst1, inst2, (interp == LINEAR), t) :
+        tsegment_at_timestamp(inst1, inst2, interp, t) :
         tinstant_make(tinstant_value(inst1), inst1->temptype, t);
       result[nseqs++] = tsequence_make((const TInstant **) instants, n + 2,
         seq->period.lower_inc, false, interp, NORMALIZE_NO);
@@ -4703,7 +4701,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
   inst2 = TSEQUENCE_INST_N(seq, n + 1);
   if (t < inst2->t)
   {
-    instants[0] = tsegment_at_timestamp(inst1, inst2, (interp == LINEAR), t);
+    instants[0] = tsegment_at_timestamp(inst1, inst2, interp, t);
     for (i = 1; i < seq->count - n; i++)
       instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, i + n);
     result[nseqs++] = tsequence_make((const TInstant **) instants,
@@ -4977,8 +4975,7 @@ tcontseq_at_period(const TSequence *seq, const Span *p)
   /* Compute the value at the beginning of the intersecting period */
   inst1 = TSEQUENCE_INST_N(seq, n);
   inst2 = TSEQUENCE_INST_N(seq, n + 1);
-  instants[0] = tsegment_at_timestamp(inst1, inst2, (interp == LINEAR),
-    inter.lower);
+  instants[0] = tsegment_at_timestamp(inst1, inst2, interp, inter.lower);
   int ninsts = 1;
   for (int i = n + 2; i < seq->count; i++)
   {
@@ -4997,8 +4994,8 @@ tcontseq_at_period(const TSequence *seq, const Span *p)
   /* The last two values of sequences with step interpolation and
    * exclusive upper bound must be equal */
   if (interp == LINEAR || inter.upper_inc)
-    instants[ninsts++] = tsegment_at_timestamp(inst1, inst2,
-      (interp == LINEAR), inter.upper);
+    instants[ninsts++] = tsegment_at_timestamp(inst1, inst2, interp,
+      inter.upper);
   else
   {
     Datum value = tinstant_value(instants[ninsts - 1]);

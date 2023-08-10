@@ -1645,7 +1645,7 @@ SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tint_inst;
 SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_tint_discseq;
              max              
 ------------------------------
- Sun Dec 30 06:15:00 2001 PST
+ Thu Nov 29 18:45:00 2001 PST
 (1 row)
 
 SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tint_seq;

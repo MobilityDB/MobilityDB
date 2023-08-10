@@ -172,8 +172,8 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
 {
   if (! tnumber_arithop_tp_at_timestamp1(start1, end1, start2, end2, t))
     return false;
-  Datum value1 = tsegment_value_at_timestamp(start1, end1, true, *t);
-  Datum value2 = tsegment_value_at_timestamp(start2, end2, true, *t);
+  Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
+  Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
   assert (op == '*' || op == '/');
   *value = (op == '*') ?
     datum_mult(value1, value2, start1->temptype, start2->temptype) :

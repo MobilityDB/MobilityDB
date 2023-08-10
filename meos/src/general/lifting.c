@@ -1075,8 +1075,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   /* Array that keeps the new instants added for the synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
-  bool linear1 = MEOS_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MEOS_FLAGS_GET_LINEAR(seq2->flags);
+  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
+  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
   meosType basetype1 = temptype_basetype(seq1->temptype);
   meosType basetype2 = temptype_basetype(seq2->temptype);
   meosType restype = lfinfo->restype;
@@ -1120,18 +1120,18 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     else if (cmp < 0)
     {
       i++;
-      end2 = tsegment_at_timestamp(start2, end2, linear2, end1->t);
+      end2 = tsegment_at_timestamp(start2, end2, interp2, end1->t);
       tofree[nfree++] = end2;
     }
     else
     {
       j++;
-      end1 = tsegment_at_timestamp(start1, end1, linear1, end2->t);
+      end1 = tsegment_at_timestamp(start1, end1, interp1, end2->t);
       tofree[nfree++] = end1;
     }
     /* Compute the function at the end instant */
-    Datum endvalue1 = linear1 ? tinstant_value(end1) : startvalue1;
-    Datum endvalue2 = linear2 ? tinstant_value(end2) : startvalue2;
+    Datum endvalue1 = interp1 == LINEAR ? tinstant_value(end1) : startvalue1;
+    Datum endvalue2 = interp2 == LINEAR ? tinstant_value(end2) : startvalue2;
     Datum endresult = tfunc_base_base(endvalue1, endvalue2, lfinfo);
     Datum intvalue1, intvalue2, intresult;
     TimestampTz inttime = 0; /* make compiler quiet */
@@ -1153,8 +1153,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
       /* Compute the function at the middle time between the start and end
        * instants */
       inttime = start1->t + ((end1->t - start1->t) / 2);
-      intvalue1 = tsegment_value_at_timestamp(start1, end1, linear1, inttime);
-      intvalue2 = tsegment_value_at_timestamp(start2, end2, linear2, inttime);
+      intvalue1 = tsegment_value_at_timestamp(start1, end1, interp1, inttime);
+      intvalue2 = tsegment_value_at_timestamp(start2, end2, interp2, inttime);
       intresult = tfunc_base_base(intvalue1, intvalue2, lfinfo);
       lower_eq = datum_eq(startresult, intresult, resbasetype);
       if (lower_eq)
@@ -1180,8 +1180,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     {
       /* Determine whether there is a crossing and compute the value at the
        * crossing if there is one */
-      bool hascross = tsegment_intersection(start1, end1, linear1,
-        start2, end2, linear2, &intvalue1, &intvalue2, &inttime);
+      bool hascross = tsegment_intersection(start1, end1, interp1,
+        start2, end2, interp2, &intvalue1, &intvalue2, &inttime);
       if (! hascross)
       {
         instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
@@ -1260,9 +1260,9 @@ static int
 tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   LiftedFunctionInfo *lfinfo, Span *inter, TSequence **result)
 {
-  bool linear1 = MEOS_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MEOS_FLAGS_GET_LINEAR(seq2->flags);
-  assert(linear1 != linear2);
+  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
+  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
+  assert(interp1 != interp2);
   /* Array that keeps the new instants to be accumulated */
   TInstant **instants = palloc(sizeof(TInstant *) * seq1->count);
   /* Array that keeps the new instants added for synchronization */
@@ -1307,13 +1307,13 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
     else if (cmp < 0)
     {
       i++;
-      end2 = tsegment_at_timestamp(start2, end2, linear2, end1->t);
+      end2 = tsegment_at_timestamp(start2, end2, interp2, end1->t);
       tofree[nfree++] = end2;
     }
     else
     {
       j++;
-      end1 = tsegment_at_timestamp(start1, end1, linear1, end2->t);
+      end1 = tsegment_at_timestamp(start1, end1, interp1, end2->t);
       tofree[nfree++] = end1;
       makeseq = true;
     }
@@ -1325,7 +1325,7 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
     /* Close the current sequence if the step sequence changed value */
     if (makeseq)
     {
-      Datum closeresult = linear1 ?
+      Datum closeresult = interp1 == LINEAR ?
         tfunc_base_base(endvalue1, startvalue2, lfinfo) :
         tfunc_base_base(startvalue1, endvalue2, lfinfo);
       instants[ninsts++] = tinstant_make(closeresult, restype, end1->t);
@@ -1915,8 +1915,8 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
     j = tcontseq_find_timestamp(seq2, inter->lower) + 1;
   }
   bool lower_inc = inter->lower_inc;
-  bool linear1 = MEOS_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MEOS_FLAGS_GET_LINEAR(seq2->flags);
+  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
+  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
   Datum startvalue1, startvalue2;
   meosType basetype1 = temptype_basetype(seq1->temptype);
   meosType basetype2 = temptype_basetype(seq2->temptype);
@@ -1942,18 +1942,18 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
     else if (cmp < 0)
     {
       i++;
-      end2 = tsegment_at_timestamp(start2, end2, linear2, end1->t);
+      end2 = tsegment_at_timestamp(start2, end2, interp2, end1->t);
       tofree[nfree++] = end2;
     }
     else
     {
       j++;
-      end1 = tsegment_at_timestamp(start1, end1, linear1, end2->t);
+      end1 = tsegment_at_timestamp(start1, end1, interp1, end2->t);
       tofree[nfree++] = end1;
     }
     /* Compute the function at the end instant */
-    Datum endvalue1 = linear1 ? tinstant_value(end1) : startvalue1;
-    Datum endvalue2 = linear2 ? tinstant_value(end2) : startvalue2;
+    Datum endvalue1 = interp1 == LINEAR ? tinstant_value(end1) : startvalue1;
+    Datum endvalue2 = interp2 == LINEAR ? tinstant_value(end2) : startvalue2;
     if (DatumGetBool(tfunc_base_base(endvalue1, endvalue2, lfinfo)))
     {
       pfree_array((void **) tofree, nfree);
@@ -1965,13 +1965,13 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
     /* If either the start values or the end values are equal and both have
      * linear interpolation compute the function an intermediate point */
     if (datum_eq2(startvalue1, startvalue2, basetype1, basetype2) ||
-         (linear1 && linear2 &&
+         (interp1 == LINEAR && interp2 == LINEAR &&
           datum_eq2(endvalue1, endvalue2, basetype1, basetype2)))
     {
       /* Compute the function at the middle time between the start and end instants */
       inttime = start1->t + ((end1->t - start1->t) / 2);
-      intvalue1 = tsegment_value_at_timestamp(start1, end1, linear1, inttime);
-      intvalue2 = tsegment_value_at_timestamp(start2, end2, linear2, inttime);
+      intvalue1 = tsegment_value_at_timestamp(start1, end1, interp1, inttime);
+      intvalue2 = tsegment_value_at_timestamp(start2, end2, interp2, inttime);
       if (DatumGetBool(tfunc_base_base(intvalue1, intvalue2, lfinfo)))
       {
         pfree_array((void **) tofree, nfree);
@@ -1982,8 +1982,8 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
     {
       /* Determine whether there is a crossing and if there is one compute the
        * value at the crossing */
-      bool hascross = tsegment_intersection(start1, end1, linear1,
-        start2, end2, linear2, &intvalue1, &intvalue2, &inttime);
+      bool hascross = tsegment_intersection(start1, end1, interp1,
+        start2, end2, interp2, &intvalue1, &intvalue2, &inttime);
       if (hascross && DatumGetBool(tfunc_base_base(intvalue1, intvalue2, lfinfo)))
       {
         pfree_array((void **) tofree, nfree);

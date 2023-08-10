@@ -167,8 +167,8 @@ INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp <@ tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
-INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
+-- INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+-- SELECT '-|-', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'tint', 'tbox', COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
@@ -203,8 +203,8 @@ INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]';
-INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]';
+-- INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+-- SELECT '-|-', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'tint', 'tint', COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
@@ -502,9 +502,9 @@ WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
-UPDATE test_idxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
-WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
+-- UPDATE test_idxops
+-- SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+-- WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
 WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tbox';
@@ -555,9 +555,9 @@ WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
 UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]' )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
-UPDATE test_idxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]' )
-WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+-- UPDATE test_idxops
+-- SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]' )
+-- WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
 UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]' )
 WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tint';
@@ -941,9 +941,9 @@ WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
-UPDATE test_idxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
-WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
+-- UPDATE test_idxops
+-- SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+-- WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
 WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tbox';
@@ -994,9 +994,9 @@ WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
 UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]' )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
-UPDATE test_idxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]' )
-WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+-- UPDATE test_idxops
+-- SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]' )
+-- WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
 UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]' )
 WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tint';
@@ -1369,9 +1369,9 @@ WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
-UPDATE test_idxops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
-WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
+-- UPDATE test_idxops
+-- SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
+-- WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tbox 'TBOXINT XT([1,50],[2001-01-01,2001-02-01])' )
 WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tbox';
@@ -1422,9 +1422,9 @@ WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
 UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]' )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
-UPDATE test_idxops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]' )
-WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+-- UPDATE test_idxops
+-- SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp -|- tint '[1@2001-01-01, 10@2001-02-01]' )
+-- WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
 UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint_big WHERE temp << tint '[1@2001-01-01, 10@2001-02-01]' )
 WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tint';

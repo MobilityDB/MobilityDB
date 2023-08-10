@@ -601,7 +601,7 @@ SELECT asText((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
 		</itemizedlist>
 
 		<para>
-			A common way to store temporal points in PostGIS is to represent them as geometries of type <varname>LINESTRING M</varname> and abuse the M dimension to encode timestamps as seconds since 1970-01-01 00:00:00. These time-enhanced geometries, called <emphasis>trajectories</emphasis>, can be validated with the function <varname>ST_IsValidTrajectory</varname> to verify that the M value is growing from each vertex to the next. Trajectories can be manipulated with the functions <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname>, and <varname>ST_CPAWithin</varname>. Temporal point values can be converted to/from PostGIS trajectories.
+			A common way to store temporal points in PostGIS is to represent them as geometries of type <varname>LINESTRING M</varname> and use the M dimension to encode timestamps as seconds since 1970-01-01 00:00:00. These time-enhanced geometries, called <ulink url="https://postgis.net/docs/reference.html#Temporal">trajectories</ulink>, can be validated with the function <varname>ST_IsValidTrajectory</varname> to verify that the M value is growing from each vertex to the next. Trajectories can be manipulated with the functions <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname>, and <varname>ST_CPAWithin</varname>. Temporal point values can be converted to/from PostGIS trajectories.
 		</para>
 
 		<itemizedlist>

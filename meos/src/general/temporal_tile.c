@@ -672,7 +672,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * count);
-  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   int i = 0,      /* counter for instants of temporal value */
       ninsts = 0, /* counter for instants of next split */
       nfree = 0,  /* counter for instants to free */
@@ -682,7 +682,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     if ((lower <= inst->t && inst->t < upper) ||
-      (inst->t == upper && (linear || i == seq->count - 1)))
+      (inst->t == upper && (interp == LINEAR || i == seq->count - 1)))
     {
       instants[ninsts++] = inst;
       i++;
@@ -693,9 +693,9 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
       /* Compute the value at the end of the bucket */
       if (instants[ninsts - 1]->t < upper)
       {
-        if (linear)
+        if (interp == LINEAR)
           tofree[nfree] = tsegment_at_timestamp(instants[ninsts - 1], inst,
-            linear, upper);
+            interp, upper);
         else
         {
           /* The last two values of sequences with step interpolation and
@@ -708,7 +708,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
       lower_inc1 = (nfrags == 0) ? seq->period.lower_inc : true;
       times[nfrags] = lower;
       result[nfrags++] = tsequence_make(instants, ninsts, lower_inc1,
-         (ninsts > 1) ? false : true, linear ? LINEAR : STEP, NORMALIZE);
+         (ninsts > 1) ? false : true, interp, NORMALIZE);
       ninsts = 0;
       lower = upper;
       upper += tunits;
@@ -727,7 +727,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
     lower_inc1 = (nfrags == 0) ? seq->period.lower_inc : true;
     times[nfrags] = lower;
     result[nfrags++] = tsequence_make(instants, ninsts, lower_inc1,
-      seq->period.upper_inc, linear ? LINEAR : STEP, NORMALIZE);
+      seq->period.upper_inc, interp, NORMALIZE);
   }
   pfree_array((void **) tofree, nfree);
   pfree(instants);
@@ -750,8 +750,8 @@ tsequence_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
 {
   TSequence **result = palloc(sizeof(TSequence *) * count);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  *newcount = tsequence_time_split1(seq, start, end, tunits, count,
-    result, times);
+  *newcount = tsequence_time_split1(seq, start, end, tunits, count, result,
+    times);
   *buckets = times;
   return result;
 }

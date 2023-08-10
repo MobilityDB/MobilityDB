@@ -592,7 +592,7 @@ SELECT asText((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
 		</itemizedlist>
 
 		<para>
-			Una forma común de almacenar puntos temporales en PostGIS es representarlos como geometrías de tipo <varname>LINESTRING M</varname> y utilizar la dimensión M para codificar marcas de tiempo como segundos desde 1970-01-01 00:00:00. Estas geometrías aumentadas con tiempo, llamadas <emphasis>trayectorias</emphasis>, se pueden validar con la función <varname>ST_IsValidTrajectory</varname> para verificar quel el valor M está creciendo de cada vértice al siguiente. Las trayectorias se pueden manipular con las funciones <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname> y <varname>ST_CPAWithin</varname>. Los valores de puntos temporales se pueden convertir a/desde trayectorias de PostGIS.
+			Una forma común de almacenar puntos temporales en PostGIS es representarlos como geometrías de tipo <varname>LINESTRING M</varname> y utilizar la dimensión M para codificar marcas de tiempo como segundos desde 1970-01-01 00:00:00. Estas geometrías aumentadas con tiempo, llamadas <ulink url="https://postgis.net/docs/reference.html#Temporal">trayectorias</ulink>, se pueden validar con la función <varname>ST_IsValidTrajectory</varname> para verificar quel el valor M está creciendo de cada vértice al siguiente. Las trayectorias se pueden manipular con las funciones <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname> y <varname>ST_CPAWithin</varname>. Los valores de puntos temporales se pueden convertir a/desde trayectorias de PostGIS.
 		</para>
 
 		<itemizedlist>

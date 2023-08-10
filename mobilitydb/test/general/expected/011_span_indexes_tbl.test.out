@@ -612,3 +612,5 @@ ORDER BY op, leftarg, rightarg;
  @>  | intspan   | int       |    620 |       620 |          620 |        606
 (5 rows)
 
+DROP TABLE test_idxops;
+DROP TABLE

@@ -79,8 +79,8 @@ extern bool tlinearsegm_intersection_value(const TInstant *inst1,
   const TInstant *inst2, Datum value, meosType basetype, Datum *inter,
   TimestampTz *t);
 extern bool tsegment_intersection(const TInstant *start1,
-  const TInstant *end1, bool linear1, const TInstant *start2,
-  const TInstant *end2, bool linear2, Datum *inter1, Datum *inter2,
+  const TInstant *end1, interpType interp1, const TInstant *start2,
+  const TInstant *end2, interpType interp2, Datum *inter1, Datum *inter2,
   TimestampTz *t);
 
 extern bool intersection_tdiscseq_tdiscseq(const TSequence *seq1,
@@ -119,7 +119,7 @@ extern int tfloatseq_spans(const TSequence *seq, Span *result);
 extern int tsequence_segments_iter(const TSequence *seq, TSequence **result);
 extern int tsequence_timestamps_iter(const TSequence *seq, TimestampTz *result);
 extern Datum tsegment_value_at_timestamp(const TInstant *inst1,
-  const TInstant *inst2, bool linear, TimestampTz t);
+  const TInstant *inst2, interpType interp, TimestampTz t);
 
 /* Restriction Functions */
 
@@ -132,7 +132,7 @@ extern int tnumbercontseq_restrict_span_iter(const TSequence *seq,
 extern int tnumbercontseq_restrict_spanset_iter(const TSequence *seq,
   const SpanSet *ss, bool atfunc, TSequence **result);
 extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
-  const TInstant *inst2, bool linear, TimestampTz t);
+  const TInstant *inst2, interpType interp, TimestampTz t);
 extern int tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
   TSequence **result);
 extern int tcontseq_minus_timestampset_iter(const TSequence *seq, const Set *s,

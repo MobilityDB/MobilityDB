@@ -1515,39 +1515,73 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
   int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
-  const TInstant *end = TSEQUENCE_INST_N(seq, 1);
   lower = lower_bucket;
-  /* Loop for each segment */
-  bool lower_inc = seq->period.lower_inc;
-  int i = 1; /* Current segment of the sequence */
+  int i; /* Current segment of the sequence */
   int ninsts = 0; /* Number of instants of the result */
-  while (i < seq->count && lower < upper_bucket)
+  int cmp1;
+  if (interp == DISCRETE)
   {
-    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    int cmp1 = timestamptz_cmp_internal(start->t, lower);
-    int cmp2 = timestamptz_cmp_internal(lower, end->t);
-    /* If the segment contains the lower bound of the bucket */
-    if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
-        (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
+    i = 0; /* Current instant of the sequence */
+    while (i < seq->count && lower < upper_bucket)
     {
-      Datum value = tsegment_value_at_timestamp(start, end, linear, lower);
-      instants[ninsts++] = tinstant_make(value, seq->temptype, lower);
-      /* Advance the bucket */
-      lower += tunits;
-    }
-    /* Advance the bucket if it is after the start of the segment */
-    else if (cmp1 >= 0)
-      lower += tunits;
-    /* Advance the segment if it is after the lower bound of the bucket */
-    else if (cmp2 >= 0)
-    {
+      cmp1 = timestamptz_cmp_internal(start->t, lower);
+      /* If the instant is equal to the lower bound of the bucket */
+      if (cmp1 == 0)
+      {
+        instants[ninsts++] = tinstant_copy(start);
+        lower += tunits;
+      }
+      /* Advance the bucket if it is after the instant */
+      else if (cmp1 > 0)
+      {
+        int times = ceil((start->t - lower) * 1.0 / tunits);
+        lower +=  times * tunits;
+        continue;
+      }
+      if (cmp1 <= 0)
+      {
+        /* If there are no more segments */
+        if (i == seq->count - 1)
+          break;
+        start = TSEQUENCE_INST_N(seq, ++i);
+      }
       /* If there are no more segments */
-      if (i == seq->count - 1)
-        break;
-      start = end;
-      end = TSEQUENCE_INST_N(seq, ++i);
+    }
+  }
+  else
+  {
+    /* Loop for each segment */
+    const TInstant *end = TSEQUENCE_INST_N(seq, 1);
+    bool lower_inc = seq->period.lower_inc;
+    i = 1; /* Current segment of the sequence */
+    ninsts = 0; /* Number of instants of the result */
+    while (i < seq->count && lower < upper_bucket)
+    {
+      bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+      cmp1 = timestamptz_cmp_internal(start->t, lower);
+      int cmp2 = timestamptz_cmp_internal(lower, end->t);
+      /* If the segment contains the lower bound of the bucket */
+      if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
+          (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
+      {
+        Datum value = tsegment_value_at_timestamp(start, end, interp, lower);
+        instants[ninsts++] = tinstant_make(value, seq->temptype, lower);
+        /* Advance the bucket */
+        lower += tunits;
+      }
+      /* Advance the bucket if it is after the start of the segment */
+      else if (cmp1 >= 0)
+        lower += tunits;
+      /* Advance the segment if it is after the lower bound of the bucket */
+      else if (cmp2 >= 0)
+      {
+        /* If there are no more segments */
+        if (i == seq->count - 1)
+          break;
+        start = end;
+        end = TSEQUENCE_INST_N(seq, ++i);
+      }
     }
   }
   if (ninsts == 0)
