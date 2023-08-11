@@ -344,10 +344,10 @@ datum_add(Datum l, Datum r, meosType typel, meosType typer)
     result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
   else if (typel == T_INT8 && typer == T_INT8)
     result = Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
-  else if(typel == T_FLOAT8 && typer == T_FLOAT8)
+  else if (typel == T_FLOAT8 && typer == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
   else
-    elog(ERROR, "unknown add function for base types: %d and ", typel, typer);
+    elog(ERROR, "unknown add function for base types: %d and %d", typel, typer);
   return result;
 }
 
@@ -362,10 +362,10 @@ datum_sub(Datum l, Datum r, meosType typel, meosType typer)
     result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
   else if (typel == T_INT8 && typer == T_INT8)
     result = Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
-  else if(typel == T_FLOAT8 && typer == T_FLOAT8)
+  else if (typel == T_FLOAT8 && typer == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
   else
-    elog(ERROR, "unknown sub function for base types: %d and ", typel, typer);
+    elog(ERROR, "unknown sub function for base types: %d and %d", typel, typer);
   return result;
 }
 
@@ -380,10 +380,10 @@ datum_mult(Datum l, Datum r, meosType typel, meosType typer)
     result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
   else if (typel == T_INT8 && typer == T_INT8)
     result = Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
-  else if(typel == T_FLOAT8 && typer == T_FLOAT8)
+  else if (typel == T_FLOAT8 && typer == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
   else
-    elog(ERROR, "unknown mul function for base types: %d and ", typel, typer);
+    elog(ERROR, "unknown mul function for base types: %d and %d", typel, typer);
   return result;
 }
 
@@ -398,10 +398,10 @@ datum_div(Datum l, Datum r, meosType typel, meosType typer)
     result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
   else if (typel == T_INT8 && typer == T_INT8)
     result = Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
-  else if(typel == T_FLOAT8 && typer == T_FLOAT8)
+  else if (typel == T_FLOAT8 && typer == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
   else
-    elog(ERROR, "unknown mul function for base types: %d and ", typel, typer);
+    elog(ERROR, "unknown mul function for base types: %d and %d", typel, typer);
   return result;
 }
 

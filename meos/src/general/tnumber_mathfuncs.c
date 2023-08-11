@@ -175,9 +175,11 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
   Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
   Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
   assert (op == '*' || op == '/');
+  assert (start1->temptype == start2->temptype);
+  meosType basetype = temptype_basetype(start1->temptype);
   *value = (op == '*') ?
-    datum_mult(value1, value2, start1->temptype, start2->temptype) :
-    datum_div(value1, value2, start1->temptype, start2->temptype);
+    datum_mult(value1, value2, basetype, basetype) :
+    datum_div(value1, value2, basetype, basetype);
   return true;
 }
 
