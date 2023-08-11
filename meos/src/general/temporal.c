@@ -1493,30 +1493,21 @@ tinstant_tsample(const TInstant *inst, const Interval *duration,
   return NULL;
 }
 
+
 /**
  * @brief Sample the temporal value according to period buckets.
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
+ * @note The result is an temporal sequence with discrete interpolation
  */
-TSequence *
-tsequence_tsample(const TSequence *seq, const Interval *duration,
-  TimestampTz torigin)
+int
+tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
+  TimestampTz upper_bucket, int64 tunits, TInstant **result)
 {
-  ensure_valid_duration(duration);
-  int64 tunits = interval_units(duration);
-  TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
-  TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
-    tunits;
-  /* Number of buckets */
-  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
-  lower = lower_bucket;
+  TimestampTz lower = lower_bucket;
   int i; /* Current segment of the sequence */
   int ninsts = 0; /* Number of instants of the result */
   int cmp1;
@@ -1529,13 +1520,13 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
       /* If the instant is equal to the lower bound of the bucket */
       if (cmp1 == 0)
       {
-        instants[ninsts++] = tinstant_copy(start);
+        result[ninsts++] = tinstant_copy(start);
         lower += tunits;
       }
       /* Advance the bucket if it is after the instant */
       else if (cmp1 > 0)
       {
-        int times = ceil((start->t - lower) * 1.0 / tunits);
+        int times = ceil((double) (start->t - lower) / tunits);
         lower +=  times * tunits;
         continue;
       }
@@ -1555,7 +1546,6 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
     const TInstant *end = TSEQUENCE_INST_N(seq, 1);
     bool lower_inc = seq->period.lower_inc;
     i = 1; /* Current segment of the sequence */
-    ninsts = 0; /* Number of instants of the result */
     while (i < seq->count && lower < upper_bucket)
     {
       bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
@@ -1566,7 +1556,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
           (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
       {
         Datum value = tsegment_value_at_timestamp(start, end, interp, lower);
-        instants[ninsts++] = tinstant_make(value, seq->temptype, lower);
+        result[ninsts++] = tinstant_make(value, seq->temptype, lower);
         /* Advance the bucket */
         lower += tunits;
       }
@@ -1584,12 +1574,34 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
       }
     }
   }
-  if (ninsts == 0)
-  {
-    pfree(instants);
-    return NULL;
-  }
-  return tsequence_make_free(instants, ninsts, true, true, interp, NORMALIZE);
+  return ninsts;
+}
+
+/**
+ * @brief Sample the temporal value according to period buckets.
+ * @param[in] seq Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ * @note The result is an temporal sequence with discrete interpolation
+ */
+TSequence *
+tsequence_tsample(const TSequence *seq, const Interval *duration,
+  TimestampTz torigin)
+{
+  ensure_valid_duration(duration);
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
+  TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
+  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bucket */
+  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+    tunits;
+  /* Number of buckets */
+  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  int ninsts = tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
+    &instants[0]);
+  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**
@@ -1598,21 +1610,30 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  */
-TSequenceSet *
+TSequence *
 tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  ensure_valid_duration(duration);
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = tsequenceset_start_timestamp(ss);
+  TimestampTz upper = tsequenceset_end_timestamp(ss);
+  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bucket */
+  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+    tunits;
+  /* Number of buckets */
+  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
   /* Loop for each segment */
-  int nseqs = 0;
+  int ninsts = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    TSequence *sample = tsequence_tsample(seq, duration, torigin);
-    if (sample)
-      sequences[nseqs++] = sample;
+    ninsts += tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
+      &instants[ninsts]);
   }
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**

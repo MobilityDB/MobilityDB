@@ -613,7 +613,6 @@ float_to_floatspan(double d)
     T_FLOAT8);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_cast
@@ -627,6 +626,7 @@ timestamp_to_period(TimestampTz t)
     true, true, T_TIMESTAMPTZ);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -770,6 +770,7 @@ period_duration(const Span *s)
  * Transformation functions
  *****************************************************************************/
 
+#if 0 /* not used */
 /**
  * @ingroup libmeos_internal_setspan_transf
  * @brief Set the second span with the first one transformed to floatspan
@@ -801,6 +802,7 @@ floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype)
     memcpy(s2, s1, sizeof(Span));
   return;
 }
+#endif /* not used */
 
 /**
  * @ingroup libmeos_internal_setspan_transf
@@ -877,6 +879,7 @@ intspan_set_floatspan(const Span *s1, Span *s2)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_internal_setspan_transf
  * @brief Set the second span with the first one transformed to a integer span
@@ -890,6 +893,7 @@ floatspan_set_intspan(const Span *s1, Span *s2)
   span_set(lower, upper, true, false, T_INT4, s2);
   return;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_transf

@@ -1043,7 +1043,11 @@ TSequence *
 tsequence_make_free_exp(TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
-  assert(count > 0);
+  if (count == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
   TSequence *result = tsequence_make_exp((const TInstant **) instants, count,
     maxcount, lower_inc, upper_inc, interp, normalize);
   pfree_array((void **) instants, count);
@@ -4786,11 +4790,6 @@ tcontseq_at_timestampset(const TSequence *seq, const Set *ts)
     inst = tcontseq_at_timestamp(seq, t);
     if (inst != NULL)
       instants[ninsts++] = inst;
-  }
-  if (ninsts == 0)
-  {
-    pfree(instants);
-    return NULL;
   }
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
 }

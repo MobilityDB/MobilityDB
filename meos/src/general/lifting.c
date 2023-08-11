@@ -816,11 +816,6 @@ tfunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
     else
       inst2 = TSEQUENCE_INST_N(seq2, ++j);
   }
-  if (ninsts == 0)
-  {
-    pfree(instants);
-    return NULL;
-  }
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
     NORMALIZE_NO);
 }
@@ -854,11 +849,6 @@ tfunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
     }
     if (upper1 < inst->t)
       break;
-  }
-  if (ninsts == 0)
-  {
-    pfree(instants);
-    return NULL;
   }
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
 }
@@ -914,11 +904,6 @@ tfunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
       i++;
     else
       j++;
-  }
-  if (ninsts == 0)
-  {
-    pfree(instants);
-    return NULL;
   }
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
 }

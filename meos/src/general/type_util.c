@@ -340,33 +340,14 @@ Datum
 datum_add(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result = 0;
-  if (typel == T_INT4)
-  {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum((int64) DatumGetInt32(l) + DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
-  }
-  else if (typel == T_INT8)
-  {
-    if (typer == T_INT4)
-      result = Int64GetDatum(DatumGetInt64(l) + DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) + (double) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Float8GetDatum(DatumGetFloat8(l) + (double) DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
-  }
+  if (typel == T_INT4 && typer == T_INT4)
+    result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+  else if (typel == T_INT8 && typer == T_INT8)
+    result = Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
+  else if(typel == T_FLOAT8 && typer == T_FLOAT8)
+    result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
+  else
+    elog(ERROR, "unknown add function for base types: %d and ", typel, typer);
   return result;
 }
 
@@ -377,33 +358,14 @@ Datum
 datum_sub(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result = 0;
-  if (typel == T_INT4)
-  {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum(DatumGetInt32(l) - DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt32(l) - DatumGetFloat8(r));
-  }
-  else if (typel == T_INT8)
-  {
-    if (typer == T_INT4)
-      result = Int64GetDatum(DatumGetInt64(l) - (int64) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt32(l) - DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) - (double) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Float8GetDatum(DatumGetFloat8(l) - (double) DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
-  }
+  if (typel == T_INT4 && typer == T_INT4)
+    result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+  else if (typel == T_INT8 && typer == T_INT8)
+    result = Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
+  else if(typel == T_FLOAT8 && typer == T_FLOAT8)
+    result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
+  else
+    elog(ERROR, "unknown sub function for base types: %d and ", typel, typer);
   return result;
 }
 
@@ -414,33 +376,14 @@ Datum
 datum_mult(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result = 0;
-  if (typel == T_INT4)
-  {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum((int64) DatumGetInt32(l) * DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt32(l) * DatumGetFloat8(r));
-  }
-  else if (typel == T_INT8)
-  {
-    if (typer == T_INT4)
-      result = Int64GetDatum(DatumGetInt64(l) * (int64) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt64(l) * DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) * (double) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Float8GetDatum(DatumGetFloat8(l) * (double) DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
-  }
+  if (typel == T_INT4 && typer == T_INT4)
+    result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+  else if (typel == T_INT8 && typer == T_INT8)
+    result = Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
+  else if(typel == T_FLOAT8 && typer == T_FLOAT8)
+    result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
+  else
+    elog(ERROR, "unknown mul function for base types: %d and ", typel, typer);
   return result;
 }
 
@@ -451,33 +394,14 @@ Datum
 datum_div(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result;
-  if (typel == T_INT4)
-  {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum((int64) DatumGetInt32(l) / DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt32(l) / DatumGetFloat8(r));
-  }
-  else if (typel == T_INT8)
-  {
-    if (typer == T_INT4)
-      result = Int64GetDatum(DatumGetInt64(l) / (int64) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt64(l) / DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) / (double) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Float8GetDatum(DatumGetFloat8(l) / (double) DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
-  }
+  if (typel == T_INT4 && typer == T_INT4)
+    result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+  else if (typel == T_INT8 && typer == T_INT8)
+    result = Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
+  else if(typel == T_FLOAT8 && typer == T_FLOAT8)
+    result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
+  else
+    elog(ERROR, "unknown mul function for base types: %d and ", typel, typer);
   return result;
 }
 
@@ -580,21 +504,6 @@ datum_double(Datum d, meosType basetype)
     return (double) DatumGetInt64(d);
   else /* basetype == T_FLOAT8 */
     return DatumGetFloat8(d);
-}
-
-/**
- * @brief Convert a double to a datum
- */
-Datum
-double_datum(double d, meosType basetype)
-{
-  assert(tnumber_basetype(basetype));
-  if (basetype == T_INT4)
-    return Int32GetDatum((int32) d);
-  if (basetype == T_INT8)
-    return Int64GetDatum((int64) d);
-  else /* basetype == T_FLOAT8 */
-    return Float8GetDatum(d);
 }
 
 /*****************************************************************************

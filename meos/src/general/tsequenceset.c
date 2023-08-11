@@ -1915,11 +1915,6 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss, const Set *ts,
           j++;
       }
     }
-    if (count == 0)
-    {
-      pfree(instants);
-      return NULL;
-    }
     return (Temporal *) tsequence_make_free(instants, count, true, true,
       DISCRETE, NORMALIZE_NO);
   }

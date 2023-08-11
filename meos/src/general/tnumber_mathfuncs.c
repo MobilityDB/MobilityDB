@@ -472,8 +472,7 @@ tnumberseq_delta_value(const TSequence *seq)
   }
   instants[seq->count - 1] = tinstant_make(delta, seq->temptype, inst1->t);
   /* Resulting sequence has discrete or step interpolation */
-  interpType interp = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
-    DISCRETE : STEP;
+  interpType interp = MEOS_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEP;
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     interp == DISCRETE ? true : false, interp, NORMALIZE);
 }
@@ -586,8 +585,6 @@ tnumberseq_angular_difference(const TSequence *seq)
   /* We are sure that there are at least 2 instants */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int ninsts = tnumberseq_angular_difference1(seq, instants);
-  if (ninsts == 0)
-    return NULL;
   /* Resulting sequence has discrete interpolation */
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE);
 }
@@ -610,8 +607,6 @@ tnumberseqset_angular_difference(const TSequenceSet *ss)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     ninsts += tnumberseq_angular_difference1(seq, &instants[ninsts]);
   }
-  if (ninsts == 0)
-    return NULL;
   /* Resulting sequence has discrete interpolation */
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
     NORMALIZE);
