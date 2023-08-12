@@ -248,6 +248,7 @@ SELECT eintersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02], 
 SELECT eintersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02], [Point(3 3)@2000-01-03, Point(3 3)@2000-01-04)}', tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-04]');
 SELECT eintersects(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]');
 SELECT eintersects(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', tgeompoint 'Interp=Step;[Point(1 0)@2000-01-01, Point(1 1)@2000-01-02]');
+SELECT eintersects(tgeompoint '[Point(1 1)@2019-09-01, Point(2 2)@2019-09-02]', tgeompoint '[Point(2 2)@2019-09-01, Point(1 1)@2019-09-02]');
 
 /* Errors */
 SELECT eintersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');

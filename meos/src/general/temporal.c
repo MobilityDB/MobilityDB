@@ -255,7 +255,7 @@ ensure_valid_duration(const Interval *duration)
 {
   if (duration->month != 0)
   {
-    elog(ERROR, "Interval defined in terms of month, year, century etc. not supported");
+    elog(ERROR, "Interval defined in terms of month, year, century, etc. not supported");
   }
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
@@ -720,7 +720,7 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
   Interval *maxt, bool expand)
 {
   /* Validity tests */
-  assert(temp->temptype == inst->temptype);
+  ensure_same_temptype(temp, (Temporal *) inst);
   if (inst->subtype != TINSTANT)
     elog(ERROR, "The second argument must be of instant subtype");
   /* The test to ensure the increasing timestamps must be done in the
@@ -753,7 +753,7 @@ Temporal *
 temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 {
   /* Validity tests */
-  assert(temp->temptype == seq->temptype);
+  ensure_same_temptype(temp, (Temporal *) seq);
   if (seq->subtype != TSEQUENCE)
     elog(ERROR, "The second argument must be of sequence subtype");
   ensure_same_interpolation(temp, (Temporal *) seq);
@@ -873,7 +873,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
     return temporal_copy(temp1);
 
   /* Convert to the same subtype */
-  assert(temp1->temptype == temp2->temptype);
+  ensure_same_temptype(temp1, temp2);
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -3482,7 +3482,7 @@ Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
   /* Convert to the same subtype */
-  assert(temp1->temptype == temp2->temptype);
+  ensure_same_temptype(temp1, temp2);
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -4000,11 +4000,7 @@ temporal_stops(const Temporal *temp, double maxdist,
 {
   if (maxdist < 0)
     elog(ERROR, "The maximum distance must be positive: %f", maxdist);
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = pg_interval_cmp(minduration, &intervalzero);
-  if (cmp < 0)
-    elog(ERROR, "The duration must be positive");
+  ensure_valid_duration(minduration);
   int64 mintunits = interval_units(minduration);
 
   TSequenceSet *result = NULL;
@@ -4096,7 +4092,7 @@ temporal_compact(const Temporal *temp)
 bool
 temporal_eq(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1->temptype == temp2->temptype);
+  ensure_same_temptype(temp1, temp2);
   assert(temptype_subtype(temp1->subtype));
   assert(temptype_subtype(temp2->subtype));
 
@@ -4194,7 +4190,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
 int
 temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1->temptype == temp2->temptype);
+  ensure_same_temptype(temp1, temp2);
 
   /* Compare bounding period
    * We need to compare periods AND bounding boxes since the bounding boxes
