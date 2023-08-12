@@ -4000,7 +4000,12 @@ temporal_stops(const Temporal *temp, double maxdist,
 {
   if (maxdist < 0)
     elog(ERROR, "The maximum distance must be positive: %f", maxdist);
-  ensure_valid_duration(minduration);
+  /* We cannot call #ensure_valid_duration since the duration may be zero */
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  int cmp = pg_interval_cmp(minduration, &intervalzero);
+  if (cmp < 0)
+    elog(ERROR, "The duration must be positive");
   int64 mintunits = interval_units(minduration);
 
   TSequenceSet *result = NULL;

@@ -419,7 +419,7 @@ SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-0
 				<para><varname>angularDifference(tpoint) → tfloat</varname></para>
 				<para>El resultado se expresa en grados.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT round(angulardifference(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
+SELECT round(angularDifference(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
   Point(1 1)@2000-01-03]'), 3);
 -- {0@2000-01-01, 180@2000-01-02, 0@2000-01-03}
 SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2000-01-01,
