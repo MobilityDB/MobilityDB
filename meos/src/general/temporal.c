@@ -181,6 +181,31 @@ ensure_common_dimension(int16 flags1, int16 flags2)
   return;
 }
 
+/**
+ * @brief Ensure that two temporal values have the same temporal type
+ * @param[in] temp1,temp2 Input values
+ */
+void
+ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
+{
+  if (temp1->temptype != temp2->temptype)
+    elog(ERROR, "Operation on mixed temporal types");
+  return;
+}
+
+/**
+ * @brief Ensure that a temporal value has the same base type as the given one
+ * @param[in] temp Input value
+ * @param[in] basetype Input base type
+ */
+void
+ensure_same_temptype_basetype(const Temporal *temp, meosType basetype)
+{
+  if (temptype_basetype(temp->temptype) != basetype)
+    elog(ERROR, "Operation on mixed temporal type and base type");
+  return;
+}
+
 /*****************************************************************************/
 
 /**

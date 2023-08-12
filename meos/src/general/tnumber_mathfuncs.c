@@ -231,6 +231,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
   Datum (*func)(Datum, Datum, meosType, meosType), bool invert)
 {
   assert(tnumber_basetype(basetype));
+  ensure_same_temptype_basetype(temp, basetype);
   /* If division test whether the denominator is zero */
   if (oper == DIV)
   {
@@ -278,6 +279,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {
+  ensure_same_temptype(temp1, temp2);
   bool linear1 = MEOS_FLAGS_GET_LINEAR(temp1->flags);
   bool linear2 = MEOS_FLAGS_GET_LINEAR(temp2->flags);
 
