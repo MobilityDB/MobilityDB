@@ -603,14 +603,10 @@ SELECT * FROM test_idxops
 WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR
   no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
 ORDER BY op, leftarg, rightarg;
- op  |  leftarg  | rightarg  | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
------+-----------+-----------+--------+-----------+--------------+------------
- &&  | floatspan | floatspan |   1713 |      1713 |         1713 |       1638
- &&  | intspan   | intspan   |   1701 |      1701 |         1701 |       1458
- -|- | intspan   | intspan   |    214 |       214 |          174 |        158
- @>  | floatspan | float     |    611 |       611 |          611 |        340
- @>  | intspan   | int       |    620 |       620 |          620 |        606
-(5 rows)
+ op  | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
+-----+---------+----------+--------+-----------+--------------+------------
+ -|- | intspan | intspan  |    214 |       214 |          174 |        214
+(1 row)
 
 DROP TABLE test_idxops;
 DROP TABLE
