@@ -1323,8 +1323,8 @@ datum_distance(Datum value1, Datum value2, meosType basetype, int16 flags)
   double result = -1.0; /* make compiler quiet */
   if (tnumber_basetype(basetype))
     result = (basetype == T_INT4) ?
-      (double) DatumGetInt32(number_distance(value1, value2, basetype, basetype)) :
-      DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
+      (double) DatumGetInt32(number_distance(value1, value2, basetype)) :
+      DatumGetFloat8(number_distance(value1, value2, basetype));
   else if (geo_basetype(basetype))
     result = DatumGetFloat8(point_distance(value1, value2));
 #if NPOINT

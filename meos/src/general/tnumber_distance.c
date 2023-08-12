@@ -53,32 +53,14 @@
  * @brief Return the distance between two numbers
  */
 Datum
-double_distance(Datum l, Datum r)
-{
-  return Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
-}
-
-/**
- * @brief Return the distance between two numbers
- */
-Datum
-number_distance(Datum l, Datum r, meosType typel, meosType typer)
+number_distance(Datum l, Datum r, meosType type)
 {
   Datum result = 0;
-  if (typel == T_INT4) /** xx **/
-  {
-    if (typer == T_INT4)
-      result = Int32GetDatum(abs(DatumGetInt32(l) - DatumGetInt32(r)));
-    else if (typer == T_FLOAT8)
-      result = Float8GetDatum(fabs(DatumGetInt32(l) - DatumGetFloat8(r)));
-  }
-  else if (typel == T_FLOAT8)
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetInt32(r)));
-    else if (typer == T_FLOAT8)
+  assert(tnumber_basetype(type));
+  if (type == T_INT4)
+    result = Int32GetDatum(abs(DatumGetInt32(l) - DatumGetInt32(r)));
+  else /* type == T_FLOAT8 */
       result = Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
-  }
   return result;
 }
 

@@ -69,6 +69,19 @@ ensure_same_spantype(const Span *s1, const Span *s2)
 }
 
 /**
+ * @brief Ensure that a span value has the same base type as the given one
+ * @param[in] span Input value
+ * @param[in] basetype Input base type
+ */
+void
+ensure_same_spantype_basetype(const Span *s, meosType basetype)
+{
+  if (s->basetype != basetype)
+    elog(ERROR, "Operation on mixed span type and base type");
+  return;
+}
+
+/**
  * @brief Deconstruct a span
  * @param[in] s Span value
  * @param[out] lower,upper Bounds

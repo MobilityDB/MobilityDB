@@ -133,7 +133,7 @@ SELECT timeBucket('-infinity'::timestamptz, '1 day');
 ERROR:  timestamp out of span
 /* Errors */
 SELECT timeBucket('2020-01-01', '1 month', timestamptz '2001-06-01');
-ERROR:  Interval defined in terms of month, year, century etc. not supported
+ERROR:  Interval defined in terms of month, year, century, etc. not supported
 SELECT periodBucket('2020-01-01', '1 week');
                          periodbucket                         
 --------------------------------------------------------------
