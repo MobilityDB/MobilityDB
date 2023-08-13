@@ -347,7 +347,7 @@ tnumber_at_span(const Temporal *temp, const Span *span)
 Temporal *
 tnumber_minus_span(const Temporal *temp, const Span *span)
 {
-  Temporal *result = tnumber_restrict_span(temp, span, REST_AT);
+  Temporal *result = tnumber_restrict_span(temp, span, REST_MINUS);
   return result;
 }
 
@@ -372,7 +372,7 @@ tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 Temporal *
 tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 {
-  Temporal *result = tnumber_restrict_spanset(temp, ss, REST_AT);
+  Temporal *result = tnumber_restrict_spanset(temp, ss, REST_MINUS);
   return result;
 }
 
