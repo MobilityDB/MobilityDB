@@ -163,43 +163,44 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 
 		<itemizedlist>
 			<listitem id="stbox">
-				<indexterm><primary><varname>stbox</varname></primary></indexterm>
+				<indexterm><primary><varname>stbox_x</varname></primary></indexterm>
 				<indexterm><primary><varname>stbox_z</varname></primary></indexterm>
 				<indexterm><primary><varname>stbox_t</varname></primary></indexterm>
+				<indexterm><primary><varname>stbox_xt</varname></primary></indexterm>
 				<indexterm><primary><varname>stbox_zt</varname></primary></indexterm>
 				<indexterm><primary><varname>geodstbox_z</varname></primary></indexterm>
 				<indexterm><primary><varname>geodstbox_t</varname></primary></indexterm>
 				<indexterm><primary><varname>geodstbox_zt</varname></primary></indexterm>
 				<para>Constructor para <varname>stbox</varname></para>
-				<para><varname>stbox(float,float,float,float,integer) → stbox</varname></para>
+				<para><varname>stbox_x(float,float,float,float,integer) → stbox</varname></para>
 				<para><varname>stbox_z(float,float,float,float,float,float,integer) → stbox</varname></para>
-				<para><varname>stbox_t(float,float,float,float,{timestamptz,tstzspan},integer) → stbox</varname></para>
+				<para><varname>stbox_t(time) → stbox</varname></para>
+          <para><varname>stbox_xt(float,float,float,float,{timestamptz,tstzspan},integer) → stbox</varname></para>
 				<para><varname>stbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},integer) → stbox</varname></para>
 				<para><varname>geodstbox_z(float,float,float,float,float,float,integer) → stbox</varname></para>
 				<para><varname>geodstbox_t(time) → stbox</varname></para>
 				<para><varname>geodstbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},integer) → stbox</varname></para>
 				<para><varname>stbox(geo) → stbox</varname></para>
-				<para><varname>stbox_t(time) → stbox</varname></para>
 				<para><varname>stbox(geo,time) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 -- Sólo dimensión de valores con coordenadas X e Y
-SELECT stbox(1.0,2.0,1.0,2.0);
+SELECT stbox_x(1.0,2.0,1.0,2.0);
 -- Sólo dimensión de valores con coordenadas X, Y y Z
 SELECT stbox_z(1.0,2.0,3.0,1.0,2.0,3.0);
 -- Sólo dimensión de valores con coordenadas X, Y y Z con SRID
 SELECT stbox_z(1.0,2.0,3.0,1.0,2.0,3.0,5676);
 -- Sólo dimensión de tiempo
-SELECT stbox_t('[2001-01-03,2001-01-03]');
+SELECT stbox_t(tstzspan '[2001-01-03,2001-01-03]');
 -- Dimensiones de valor (con coordenadas X e Y) y de tiempo
-SELECT stbox_t(1.0,2.0, 1.0,2.0, '[2001-01-03,2001-01-03]');
+SELECT stbox_xt(1.0,2.0, 1.0,2.0, tstzspan '[2001-01-03,2001-01-03]');
 -- Dimensiones de valor (con coordenadas X, Y y Z) y de tiempo
-SELECT stbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, '[2001-01-03,2001-01-03]');
+SELECT stbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-03]');
 -- Sólo dimensión de valores con coordenadas geodéticas X, Y y Z
 SELECT geodstbox_z(1.0,2.0,3.0,1.0,2.0,3.0);
 -- Sólo dimensión de tiempo para cuadro geodético
 SELECT geodstbox_t('[2001-01-03,2001-01-03]');
 -- Dimensiones de valor (con coordenadas geodéticas X, Y y Z) y de tiempo
-SELECT geodstbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, '[2001-01-03,2001-01-04]');
+SELECT geodstbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-04]');
 -- Geometry and time dimensión
 SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03, 2001-01-05]');
 -- Geography and time dimensión

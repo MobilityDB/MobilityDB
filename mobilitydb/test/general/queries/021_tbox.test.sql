@@ -85,8 +85,10 @@ SELECT COUNT(*) FROM tbl_tboxfloat WHERE tboxFromHexWKB(asHexWKB(b)) <> b;
 -- Constructors
 -------------------------------------------------------------------------------
 
+SELECT tbox(floatspan '[1,2]', timestamptz '2000-01-01');
 SELECT tbox(floatspan '[1,2]', tstzspan '[2000-01-01,2000-01-02]');
 SELECT tbox(floatspan '[1,2]');
+SELECT tbox(timestamptz '2000-01-01');
 SELECT tbox(tstzspan '[2000-01-01,2000-01-02]');
 
 -------------------------------------------------------------------------------

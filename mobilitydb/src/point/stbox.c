@@ -48,6 +48,7 @@
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/type_util.h"
 #include "pg_point/postgis.h"
@@ -158,7 +159,7 @@ stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
   bool hast, bool geodetic)
 {
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  int srid = 0; /* make Codacy quiet */
+  int srid = 0;
   Span *period = NULL;
 
   int i = 0;
@@ -183,7 +184,14 @@ stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
   }
   if (hast)
   {
-    period = PG_GETARG_SPAN_P(i++);
+    meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, i));
+    if (basetype == T_TSTZSPAN)
+      period = PG_GETARG_SPAN_P(i++);
+    else /* basetype == T_TIMESTAMPTZ */
+    {
+      TimestampTz t = PG_GETARG_TIMESTAMPTZ(i++);
+      period = span_make(t, t, true, true, T_TIMESTAMPTZ);
+    }
   }
   if (hasx)
     srid = PG_GETARG_INT32(i++);
@@ -196,30 +204,15 @@ stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Stbox_constructor_t(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_constructor_t);
-/**
- * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc stbox_t()
- */
-Datum
-Stbox_constructor_t(PG_FUNCTION_ARGS)
-{
-  if (PG_NARGS() > 1)
-    return stbox_constructor_ext(fcinfo, true, false, true, false);
-  return stbox_constructor_ext(fcinfo, false, false, true, false);
-}
-
-PGDLLEXPORT Datum Stbox_constructor(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_constructor);
+PGDLLEXPORT Datum Stbox_constructor_x(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_constructor_x);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
  * @sqlfunc stbox()
  */
 Datum
-Stbox_constructor(PG_FUNCTION_ARGS)
+Stbox_constructor_x(PG_FUNCTION_ARGS)
 {
   return stbox_constructor_ext(fcinfo, true, false, false, false);
 }
@@ -235,6 +228,32 @@ Datum
 Stbox_constructor_z(PG_FUNCTION_ARGS)
 {
   return stbox_constructor_ext(fcinfo, true, true, false, false);
+}
+
+PGDLLEXPORT Datum Stbox_constructor_t(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_constructor_t);
+/**
+ * @ingroup mobilitydb_box_constructor
+ * @brief Construct a spatiotemporal box from the arguments
+ * @sqlfunc stbox_t()
+ */
+Datum
+Stbox_constructor_t(PG_FUNCTION_ARGS)
+{
+  return stbox_constructor_ext(fcinfo, false, false, true, false);
+}
+
+PGDLLEXPORT Datum Stbox_constructor_xt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_constructor_xt);
+/**
+ * @ingroup mobilitydb_box_constructor
+ * @brief Construct a spatiotemporal box from the arguments
+ * @sqlfunc stbox_xt()
+ */
+Datum
+Stbox_constructor_xt(PG_FUNCTION_ARGS)
+{
+  return stbox_constructor_ext(fcinfo, true, false, true, false);
 }
 
 PGDLLEXPORT Datum Stbox_constructor_zt(PG_FUNCTION_ARGS);
@@ -253,19 +272,6 @@ Stbox_constructor_zt(PG_FUNCTION_ARGS)
 /* The names of the SQL and C functions are different, otherwise there is
  * ambiguity and explicit casting of the arguments to ::timestamptz is needed */
 
-PGDLLEXPORT Datum Geodstbox_constructor_t(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
-/**
- * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc geodstbox_t()
- */
-Datum
-Geodstbox_constructor_t(PG_FUNCTION_ARGS)
-{
-  return stbox_constructor_ext(fcinfo, false, false, true, true);
-}
-
 PGDLLEXPORT Datum Geodstbox_constructor_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_z);
 /**
@@ -277,6 +283,19 @@ Datum
 Geodstbox_constructor_z(PG_FUNCTION_ARGS)
 {
   return stbox_constructor_ext(fcinfo, true, true, false, true);
+}
+
+PGDLLEXPORT Datum Geodstbox_constructor_t(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
+/**
+ * @ingroup mobilitydb_box_constructor
+ * @brief Construct a spatiotemporal box from the arguments
+ * @sqlfunc geodstbox_t()
+ */
+Datum
+Geodstbox_constructor_t(PG_FUNCTION_ARGS)
+{
+  return stbox_constructor_ext(fcinfo, false, false, true, true);
 }
 
 PGDLLEXPORT Datum Geodstbox_constructor_zt(PG_FUNCTION_ARGS);
