@@ -1136,11 +1136,11 @@ overafter_tbox_tbox(const TBox *box1, const TBox *box2)
  * @sqlop @p +
  */
 TBox *
-union_tbox_tbox(const TBox *box1, const TBox *box2)
+union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
 {
   ensure_same_dimensionality_tbox(box1, box2);
   /* The union of boxes that do not intersect cannot be represented by a box */
-  if (! overlaps_tbox_tbox(box1, box2))
+  if (strict && ! overlaps_tbox_tbox(box1, box2))
     elog(ERROR, "Result of box union would not be contiguous");
 
   bool hasx = MEOS_FLAGS_GET_X(box1->flags);

@@ -867,7 +867,7 @@ extern bool overafter_stbox_stbox(const STBox *box1, const STBox *box2);
 
 /* Set functions for box types */
 
-extern TBox *union_tbox_tbox(const TBox *box1, const TBox *box2);
+extern TBox *union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict);
 extern bool inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result);
 extern TBox *intersection_tbox_tbox(const TBox *box1, const TBox *box2);
 extern STBox *union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict);
