@@ -66,7 +66,7 @@ span_bucket_set(Datum lower, Datum size, meosType basetype, Span *span)
 {
   Datum upper = (basetype == T_TIMESTAMPTZ) ?
     TimestampTzGetDatum(DatumGetTimestampTz(lower) + DatumGetInt64(size)) :
-    datum_add(lower, size, basetype, basetype);
+    datum_add(lower, size, basetype);
   span_set(lower, upper, true, false, basetype, span);
   return;
 }
@@ -131,7 +131,7 @@ span_bucket_state_next(SpanBucketState *state)
   state->value = (state->basetype == T_TIMESTAMPTZ) ?
     TimestampTzGetDatum(DatumGetTimestampTz(state->value) +
       DatumGetInt64(state->size)) :
-    datum_add(state->value, state->size, state->basetype, state->basetype);
+    datum_add(state->value, state->size, state->basetype);
   if (datum_gt(state->value, state->maxvalue, state->basetype))
     state->done = true;
   return;
@@ -1007,7 +1007,7 @@ tnumberseq_disc_value_split(const TSequence *seq, Datum start_bucket,
         true, true, DISCRETE, NORMALIZE_NO);
       values[nfrags++] = bucket_value;
     }
-    bucket_value = datum_add(bucket_value, size, basetype, basetype);
+    bucket_value = datum_add(bucket_value, size, basetype);
   }
   pfree(instants);
   pfree(numinsts);
@@ -1181,7 +1181,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
     TInstant *bounds[2];
     bounds[first] = (cmp <= 0) ? (TInstant *) inst1 : (TInstant *) inst2;
     Datum bucket_lower = (cmp <= 0) ? bucket_value1 : bucket_value2;
-    Datum bucket_upper = datum_add(bucket_lower, size, basetype, basetype);
+    Datum bucket_upper = datum_add(bucket_lower, size, basetype);
     for (int j = first_bucket; j <= last_bucket; j++)
     {
       /* Choose between interpolate or take one of the segment ends */
@@ -1243,7 +1243,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
         LINEAR, NORMALIZE_NO);
       bounds[first] = bounds[last];
       bucket_lower = bucket_upper;
-      bucket_upper = datum_add(bucket_upper, size, basetype, basetype);
+      bucket_upper = datum_add(bucket_upper, size, basetype);
     }
     inst1 = inst2;
     value1 = value2;
@@ -1308,7 +1308,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
         numseqs[i], NORMALIZE);
       values[nfrags++] = bucket_value;
     }
-    bucket_value = datum_add(bucket_value, size, basetype, basetype);
+    bucket_value = datum_add(bucket_value, size, basetype);
   }
   pfree(sequences);
   pfree(numseqs);
@@ -1365,7 +1365,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
         numseqs[i], NORMALIZE);
       values[nfrags++] = bucket_value;
     }
-    bucket_value = datum_add(bucket_value, size, basetype, basetype);
+    bucket_value = datum_add(bucket_value, size, basetype);
   }
   pfree(bucketseqs);
   pfree(numseqs);
@@ -1434,7 +1434,7 @@ temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
     Span *span = tnumber_to_span((const Temporal *) temp);
     Datum start_value = span->lower;
     /* We need to add size to obtain the end value of the last bucket */
-    Datum end_value = datum_add(span->upper, size, basetype, basetype);
+    Datum end_value = datum_add(span->upper, size, basetype);
     start_bucket = datum_bucket(start_value, size, vorigin, basetype);
     end_bucket = datum_bucket(end_value, size, vorigin, basetype);
     value_count = (basetype == T_INT4) ? /** xx **/
@@ -1487,7 +1487,7 @@ temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
     Datum lower_value = start_bucket;
     while (datum_lt(lower_value, end_bucket, basetype))
     {
-      Datum upper_value = datum_add(lower_value, size, basetype, basetype);
+      Datum upper_value = datum_add(lower_value, size, basetype);
       Span s;
       span_set(lower_value, upper_value, true, false, basetype, &s);
       Temporal *atspan = tnumber_restrict_span(temp, &s, REST_AT);

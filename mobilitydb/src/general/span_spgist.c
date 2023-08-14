@@ -50,6 +50,7 @@
 #include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
+#include "pg_general/spanset.h"
 #include "pg_general/span_gist.h"
 #include "pg_general/temporal.h"
 

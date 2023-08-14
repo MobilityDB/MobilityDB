@@ -55,6 +55,39 @@
  *****************************************************************************/
 
 /**
+ * @brief Ensure that the span set values have the same type
+ */
+void
+ensure_same_spansettype(const SpanSet *ss1, const SpanSet *ss2)
+{
+  if (ss1->spansettype != ss2->spansettype)
+    elog(ERROR, "Operation on mixed span set types");
+  return;
+}
+
+/**
+ * @brief Ensure that a span set and a span value have the same span type
+ */
+void
+ensure_same_spansettype_spantype(const SpanSet *ss, const Span *s)
+{
+  if (ss->spantype != s->spantype)
+    elog(ERROR, "Operation on mixed span set and span types");
+  return;
+}
+
+/**
+ * @brief Ensure that a span set value has the same base type as the given one
+ */
+void
+ensure_same_spansettype_basetype(const SpanSet *ss, meosType basetype)
+{
+  if (ss->basetype != basetype)
+    elog(ERROR, "Operation on mixed span set and base types");
+  return;
+}
+
+/**
  * @brief Return the location of a value in a span set using binary search.
  *
  * If the value is found, the index of the span is returned in the output

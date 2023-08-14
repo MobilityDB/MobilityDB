@@ -43,6 +43,7 @@
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
+#include "pg_general/spanset.h"
 
 /*****************************************************************************
  * Time precision functions

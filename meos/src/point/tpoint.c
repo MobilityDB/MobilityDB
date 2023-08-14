@@ -126,7 +126,7 @@ tpoint_expand_space(const Temporal *temp, double d)
  */
 Temporal *
 tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, meosType, meosType), bool invert)
+  Datum (*func)(Datum, Datum, meosType), bool invert)
 {
   if (gserialized_is_empty(gs))
     return NULL;

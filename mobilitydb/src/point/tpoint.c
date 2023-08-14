@@ -504,7 +504,7 @@ Tpoint_expand_space(PG_FUNCTION_ARGS)
  */
 static Datum
 tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, meosType, meosType))
+  Datum (*func)(Datum, Datum, meosType))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -521,7 +521,7 @@ tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
  */
 static Datum
 tcomp_tpoint_point_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, meosType, meosType))
+  Datum (*func)(Datum, Datum, meosType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -546,7 +546,7 @@ PG_FUNCTION_INFO_V1(Teq_geo_tpoint);
 Datum
 Teq_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return tcomp_geo_tpoint_ext(fcinfo, &datum2_eq2);
+  return tcomp_geo_tpoint_ext(fcinfo, &datum2_eq);
 }
 
 PGDLLEXPORT Datum Teq_tpoint_geo(PG_FUNCTION_ARGS);
@@ -560,7 +560,7 @@ PG_FUNCTION_INFO_V1(Teq_tpoint_geo);
 Datum
 Teq_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tcomp_tpoint_point_ext(fcinfo, &datum2_eq2);
+  return tcomp_tpoint_point_ext(fcinfo, &datum2_eq);
 }
 
 PGDLLEXPORT Datum Tne_geo_tpoint(PG_FUNCTION_ARGS);
@@ -574,7 +574,7 @@ PG_FUNCTION_INFO_V1(Tne_geo_tpoint);
 Datum
 Tne_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return tcomp_geo_tpoint_ext(fcinfo, &datum2_ne2);
+  return tcomp_geo_tpoint_ext(fcinfo, &datum2_ne);
 }
 
 PGDLLEXPORT Datum Tne_tpoint_geo(PG_FUNCTION_ARGS);
@@ -588,7 +588,7 @@ PG_FUNCTION_INFO_V1(Tne_tpoint_geo);
 Datum
 Tne_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tcomp_tpoint_point_ext(fcinfo, &datum2_ne2);
+  return tcomp_tpoint_point_ext(fcinfo, &datum2_ne);
 }
 
 /*****************************************************************************/

@@ -60,6 +60,31 @@
  *****************************************************************************/
 
 /**
+ * @brief Ensure that the set arguments have the same type in order to be able
+ * to apply operations to them
+ */
+void
+ensure_same_settype(const Set *s1, const Set *s2)
+{
+  if (s1->settype != s2->settype)
+    elog(ERROR, "Operation on mixed set types");
+  return;
+}
+
+/**
+ * @brief Ensure that a set value has the same base type as the given one
+ * @param[in] s Input value
+ * @param[in] basetype Input base type
+ */
+void
+ensure_same_settype_basetype(const Set *s, meosType basetype)
+{
+  if (s->basetype != basetype)
+    elog(ERROR, "Operation on mixed set type and base type");
+  return;
+}
+
+/**
  * @brief Return the location of a value in a set using binary search.
  *
  * If the value is found, the index of the value is returned in the output
@@ -159,7 +184,7 @@ set_in(const char *str, meosType settype)
 Set *
 intset_in(const char *str)
 {
-  return set_parse(&str, T_INT4);
+  return set_parse(&str, T_INTSET);
 }
 
 /**
@@ -169,7 +194,7 @@ intset_in(const char *str)
 Set *
 bigintset_in(const char *str)
 {
-  return set_parse(&str, T_INT8);
+  return set_parse(&str, T_BIGINTSET);
 }
 
 /**
@@ -179,7 +204,7 @@ bigintset_in(const char *str)
 Set *
 floatset_in(const char *str)
 {
-  return set_parse(&str, T_FLOAT8);
+  return set_parse(&str, T_FLOATSET);
 }
 
 /**
@@ -189,7 +214,7 @@ floatset_in(const char *str)
 Set *
 geogset_in(const char *str)
 {
-  return set_parse(&str, T_GEOMETRY);
+  return set_parse(&str, T_GEOMSET);
 }
 
 /**
@@ -199,7 +224,7 @@ geogset_in(const char *str)
 Set *
 geomset_in(const char *str)
 {
-  return set_parse(&str, T_GEOGRAPHY);
+  return set_parse(&str, T_GEOGSET);
 }
 
 /**
@@ -1210,10 +1235,10 @@ timestampset_values(const Set *ts)
  * @sqlfunc SRID()
  */
 int
-geoset_srid(const Set *set)
+geoset_srid(const Set *s)
 {
-  assert(geo_basetype(set->basetype));
-  GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(set, 0));
+  assert(geo_basetype(s->basetype));
+  GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(s, 0));
   return gserialized_get_srid(gs);
 }
 
@@ -1249,7 +1274,7 @@ geoset_round(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
   assert(s != NULL);
-  assert(s->basetype == T_GEOMETRY || s->basetype == T_GEOGRAPHY);
+  assert(geo_basetype(s->basetype));
   ensure_non_negative(maxdd);
 
   Datum *values = palloc(sizeof(Datum) * s->count);
@@ -1279,7 +1304,7 @@ set_shift(const Set *s, Datum shift)
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
     (SET_OFFSETS_PTR(result))[i] =
-      datum_add(SET_VAL_N(s, i), shift, s->basetype, s->basetype);
+      datum_add(SET_VAL_N(s, i), shift, s->basetype);
   return result;
 }
 
@@ -1338,7 +1363,7 @@ timestampset_shift_tscale(const Set *s, const Interval *shift,
 bool
 set_eq(const Set *s1, const Set *s2)
 {
-  assert(s1->settype == s2->settype);
+  ensure_same_settype(s1, s2);
   if (s1->count != s2->count)
     return false;
   /* s1 and s2 have the same number of values */
@@ -1376,7 +1401,7 @@ set_ne(const Set *s1, const Set *s2)
 int
 set_cmp(const Set *s1, const Set *s2)
 {
-  assert(s1->settype == s2->settype);
+  ensure_same_settype(s1, s2);
   int count = Min(s1->count, s2->count);
   int result = 0;
   for (int i = 0; i < count; i++)

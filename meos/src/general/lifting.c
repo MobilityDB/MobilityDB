@@ -394,6 +394,7 @@ static int
 tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo, TSequence **result)
 {
+  assert(temptype_basetype(seq->temptype) == lfinfo->argtype[1]);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
   Datum startvalue = tinstant_value(start);
@@ -433,8 +434,8 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
     }
     /* If either the start or the end value is equal to the value compute the
      * function at the middle time between the start and end instants */
-    else if (datum_eq2(startvalue, value, basetype, lfinfo->argtype[1]) ||
-         datum_eq2(endvalue, value, basetype, lfinfo->argtype[1]))
+    else if (datum_eq(startvalue, value, basetype) ||
+         datum_eq(endvalue, value, basetype))
     {
       inttime = start->t + ((end->t - start->t) / 2);
       intvalue = tsegment_value_at_timestamp(start, end, LINEAR, inttime);
@@ -1055,6 +1056,7 @@ static int
 tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
   LiftedFunctionInfo *lfinfo, Span *inter, TSequence **result)
 {
+  assert(seq1->temptype == seq2->temptype);
   int count = seq1->count + seq2->count;
   /* Array that keeps the new instants to be accumulated */
   TInstant **instants = palloc(sizeof(TInstant *) * count);
@@ -1062,8 +1064,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
-  meosType basetype1 = temptype_basetype(seq1->temptype);
-  meosType basetype2 = temptype_basetype(seq2->temptype);
+  meosType basetype = temptype_basetype(seq1->temptype);
   meosType restype = lfinfo->restype;
   meosType resbasetype = temptype_basetype(lfinfo->restype);
   interpType interp = lfinfo->reslinear ? LINEAR : STEP;
@@ -1124,16 +1125,16 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
 
     /* If both segments are constant compute the function at the start and
      * end instants and continue the current sequence */
-    if (datum_eq(startvalue1, endvalue1, basetype1) &&
-        datum_eq(startvalue2, endvalue2, basetype2))
+    if (datum_eq(startvalue1, endvalue1, basetype) &&
+        datum_eq(startvalue2, endvalue2, basetype))
     {
       instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
     }
     /* If either the start values are equal or both have linear interpolation
      * and the end values are equal compute the function at the start
      * instant, at an intermediate point, and at the end instant */
-    else if (datum_eq2(startvalue1, startvalue2, basetype1, basetype2) ||
-      datum_eq2(endvalue1, endvalue2, basetype1, basetype2))
+    else if (datum_eq(startvalue1, startvalue2, basetype) ||
+      datum_eq(endvalue1, endvalue2, basetype))
     {
       /* Compute the function at the middle time between the start and end
        * instants */
@@ -1214,8 +1215,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
           lower_inc = false;
           instants[ninsts++] = tinstant_make(endresult, restype, inttime);
         }
-        DATUM_FREE(intvalue1, basetype1);
-        DATUM_FREE(intvalue2, basetype2);
+        DATUM_FREE(intvalue1, basetype);
+        DATUM_FREE(intvalue2, basetype);
         DATUM_FREE(intresult, resbasetype);
       }
     }
@@ -1880,6 +1881,7 @@ static int
 efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   const TSequence *seq2, LiftedFunctionInfo *lfinfo, Span *inter)
 {
+  assert(seq1->temptype == seq2->temptype);
   /* Array that keeps the new instants added for the synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
     (seq1->count + seq2->count) * 2);
@@ -1903,8 +1905,7 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
   Datum startvalue1, startvalue2;
-  meosType basetype1 = temptype_basetype(seq1->temptype);
-  meosType basetype2 = temptype_basetype(seq2->temptype);
+  meosType basetype = temptype_basetype(seq1->temptype);
   while (i < seq1->count && j < seq2->count)
   {
     /* Compute the function at the start instant */
@@ -1949,9 +1950,9 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
     TimestampTz inttime;
     /* If either the start values or the end values are equal and both have
      * linear interpolation compute the function an intermediate point */
-    if (datum_eq2(startvalue1, startvalue2, basetype1, basetype2) ||
+    if (datum_eq(startvalue1, startvalue2, basetype) ||
          (interp1 == LINEAR && interp2 == LINEAR &&
-          datum_eq2(endvalue1, endvalue2, basetype1, basetype2)))
+          datum_eq(endvalue1, endvalue2, basetype)))
     {
       /* Compute the function at the middle time between the start and end instants */
       inttime = start1->t + ((end1->t - start1->t) / 2);

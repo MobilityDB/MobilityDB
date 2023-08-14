@@ -47,9 +47,10 @@
  * @sqlop @p ||
  */
 Temporal *
-textcat_text_ttext(const text *txt, const Temporal *temp)
+textcat_text_ttext(const text *txt, const Temporal *ttext)
 {
-  Temporal *result = textfunc_ttext_text(temp, PointerGetDatum(txt),
+  ensure_same_temptype_basetype(ttext, T_TEXT);
+  Temporal *result = textfunc_ttext_text(ttext, PointerGetDatum(txt),
     &datum_textcat, INVERT);
   return result;
 }
@@ -60,9 +61,10 @@ textcat_text_ttext(const text *txt, const Temporal *temp)
  * @sqlop @p ||
  */
 Temporal *
-textcat_ttext_text(const Temporal *temp, const text *txt)
+textcat_ttext_text(const Temporal *ttext, const text *txt)
 {
-  Temporal *result = textfunc_ttext_text(temp, PointerGetDatum(txt),
+  ensure_same_temptype_basetype(ttext, T_TEXT);
+  Temporal *result = textfunc_ttext_text(ttext, PointerGetDatum(txt),
     &datum_textcat, INVERT_NO);
   return result;
 }
@@ -73,9 +75,10 @@ textcat_ttext_text(const Temporal *temp, const text *txt)
  * @sqlop @p ||
  */
 Temporal *
-textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
+textcat_ttext_ttext(const Temporal *ttext1, const Temporal *ttext2)
 {
-  Temporal *result = textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
+  ensure_same_temptype(ttext1, ttext2);
+  Temporal *result = textfunc_ttext_ttext(ttext1, ttext2, &datum_textcat);
   return result;
 }
 
@@ -87,9 +90,10 @@ textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
  * @sqlfunc upper()
  */
 Temporal *
-ttext_upper(const Temporal *temp)
+ttext_upper(const Temporal *ttext)
 {
-  Temporal *result = textfunc_ttext(temp, &datum_upper);
+  ensure_same_temptype_basetype(ttext, T_TEXT);
+  Temporal *result = textfunc_ttext(ttext, &datum_upper);
   return result;
 }
 
@@ -99,9 +103,10 @@ ttext_upper(const Temporal *temp)
  * @sqlfunc lower()
  */
 Temporal *
-ttext_lower(const Temporal *temp)
+ttext_lower(const Temporal *ttext)
 {
-  Temporal *result = textfunc_ttext(temp, &datum_lower);
+  ensure_same_temptype_basetype(ttext, T_TEXT);
+  Temporal *result = textfunc_ttext(ttext, &datum_lower);
   return result;
 }
 

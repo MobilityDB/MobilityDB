@@ -475,6 +475,39 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+CREATE TYPE float8range AS RANGE (
+    subtype = float8,
+    subtype_diff = float8mi
+);
+
+/**
+ * Generate a random float range
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] maxdelta Maximum difference between the lower and upper bounds
+ */
+DROP FUNCTION IF EXISTS random_float8range;
+CREATE FUNCTION random_float8range(lowvalue float, highvalue float, maxdelta float)
+  RETURNS float8range AS $$
+DECLARE
+  v float;
+BEGIN
+  IF lowvalue > highvalue - maxdelta THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - maxdelta: %, %, %',
+      lowvalue, highvalue, maxdelta;
+  END IF;
+  v = random_float(lowvalue, highvalue - maxdelta);
+  RETURN floatrange(v, v + random_float(1, maxdelta));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_float8range(-100.0, 100.0, 10.0) AS ir
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
 /**
  * Generate an array of random floatspans within a span
  *

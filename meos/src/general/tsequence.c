@@ -2933,10 +2933,12 @@ bool
 tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, meosType basetype, Datum *inter, TimestampTz *t)
 {
+  assert(temptype_basetype(inst1->temptype) == basetype);
+  assert(temptype_basetype(inst2->temptype) == basetype);
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  if (datum_eq2(value, value1, basetype, temptype_basetype(inst1->temptype)) ||
-      datum_eq2(value, value2, basetype, temptype_basetype(inst2->temptype)))
+  if (datum_eq(value, value1, basetype) ||
+      datum_eq(value, value2, basetype))
     return false;
 
   assert(temptype_continuous(inst1->temptype));
@@ -3049,9 +3051,9 @@ tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
  * @brief Return true if  two segments of a temporal sequence intersect at a
  * timestamp
  * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] linear1 True if the first segment has linear interpolation
+ * @param[in] interp1 Interpolation of the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[in] linear2 True if the second segment has linear interpolation
+ * @param[in] interp2 Interpolation of the second segment
  * @param[out] inter1, inter2 Base values taken by the two segments
  * at the timestamp
  * @param[out] t Timestamp
@@ -3907,7 +3909,7 @@ tnumberdiscseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
  * @brief Restrict a segment of a temporal number to (the complement of) a span
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
- * @param[in] linear True if the segment has linear interpolation
+ * @param[in] interp Interpolation of the segment
  * @param[in] span Span of base values
  * @param[in] atfunc True if the restriction is at, false for minus
  * @param[out] result Array on which the pointers of the newly constructed

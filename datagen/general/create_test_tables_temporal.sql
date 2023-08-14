@@ -138,6 +138,15 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_int4range(0, 100, 10) AS i
 FROM generate_series(perc+1, size) AS k;
 
+DROP TABLE IF EXISTS tbl_float8range;
+CREATE TABLE tbl_float8range AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_float8range(0, 100, 10) AS i
+FROM generate_series(perc+1, size) AS k;
+
+
 DROP TABLE IF EXISTS tbl_intspan;
 CREATE TABLE tbl_intspan AS
 /* Add perc NULL values */

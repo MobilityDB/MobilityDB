@@ -83,6 +83,7 @@ datum_not(Datum d)
 Temporal *
 tnot_tbool(const Temporal *temp)
 {
+  ensure_same_temptype_basetype(temp, T_TBOOL);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_not;
@@ -139,6 +140,7 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
 SpanSet *
 tbool_when_true(const Temporal *temp)
 {
+  ensure_same_temptype_basetype(temp, T_TBOOL);
   Temporal *temp1 = temporal_restrict_value(temp, BoolGetDatum(true), REST_AT);
   if (! temp1)
     return NULL;

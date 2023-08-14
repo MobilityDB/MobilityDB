@@ -862,6 +862,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 Temporal *
 temporal_merge(const Temporal *temp1, const Temporal *temp2)
 {
+  ensure_same_temptype(temp1, temp2);
   Temporal *result;
   /* Can't do anything with null inputs */
   if (! temp1 && ! temp2)
@@ -1022,6 +1023,7 @@ datum_float_to_int(Datum d)
 Temporal *
 tint_to_tfloat(const Temporal *temp)
 {
+  ensure_same_temptype_basetype(temp, T_TINT);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_int_to_float;
@@ -1040,6 +1042,7 @@ tint_to_tfloat(const Temporal *temp)
 Temporal *
 tfloat_to_tint(const Temporal *temp)
 {
+  ensure_same_temptype_basetype(temp, T_TFLOAT);
   if (MEOS_FLAGS_GET_LINEAR(temp->flags))
     elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
 
@@ -1117,6 +1120,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
 Span *
 tnumber_to_span(const Temporal *temp)
 {
+  ensure_tnumber_type(temp->temptype);
   Span *result = palloc(sizeof(Span));
   tnumber_set_span(temp, result);
   return result;
@@ -1522,8 +1526,9 @@ tinstant_tsample(const TInstant *inst, const Interval *duration,
 /**
  * @brief Sample the temporal value according to period buckets.
  * @param[in] seq Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] lower_bucket,upper_bucket First and last buckets
+ * @param[in] tunits Time size of the tiles in PostgreSQL time units
+ * @param[out] result Output array of temporal instants
  * @note The result is an temporal sequence with discrete interpolation
  */
 int
@@ -1795,6 +1800,7 @@ temporal_values(const Temporal *temp, int *count)
 bool *
 tbool_values(const Temporal *temp, int *count)
 {
+  ensure_same_temptype_basetype(temp, T_TBOOL);
   Datum *datumarr = temporal_values(temp, count);
   bool *result = palloc(sizeof(bool) * *count);
   for (int i = 0; i < *count; i++)

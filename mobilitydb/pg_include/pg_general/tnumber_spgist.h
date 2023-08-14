@@ -40,8 +40,10 @@
 
 /*****************************************************************************/
 
-/* The following functions are also called by tpoint_spgist.c */
-extern int compareDoubles(const void *a, const void *b);
+extern int compareInt4(const void *a, const void *b);
+/* The following function is also called by tpoint_spgist.c */
+extern int compareFloat8(const void *a, const void *b);
+extern int compareTimestampTz(const void *a, const void *b);
 
 /*****************************************************************************/
 

@@ -28,53 +28,22 @@
  *****************************************************************************/
 
 /**
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
- * for temporal numbers.
+ * @brief Basic functions for set of disjoint spans.
  */
 
-#ifndef __TEMPORAL_MATHFUNCS_H__
-#define __TEMPORAL_MATHFUNCS_H__
+#ifndef __PG_SPANSET_H__
+#define __PG_SPANSET_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-/* PostgreSQL */
-#include "general/temporal.h"
+/* MEOS */
+#include "general/span.h"
 
 /*****************************************************************************/
 
-/** Enumeration for the arithmetic functions */
+/* General functions */
 
-typedef enum
-{
-  ADD,
-  SUB,
-  MULT,
-  DIV,
-  DIST,
-} TArithmetic;
-
-/*****************************************************************************/
-
-extern bool tnumber_mult_tp_at_timestamp(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  Datum *value, TimestampTz *t);
-extern bool tnumber_div_tp_at_timestamp(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  Datum *value, TimestampTz *t);
-
-extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,
-  meosType basetype, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType), bool invert);
-extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
-  const Temporal *temp2, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType),
-  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
-    const TInstant *, Datum *, TimestampTz *));
-
-extern Datum datum_round_float(Datum value, Datum size);
-
-extern TSequence *tfloatseq_derivative(const TSequence *seq);
-extern TSequenceSet *tfloatseqset_derivative(const TSequenceSet *ss);
+extern void spanset_span_slice(Datum d, Span *p);
 
 /*****************************************************************************/
 

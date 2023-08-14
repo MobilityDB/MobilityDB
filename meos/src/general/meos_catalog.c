@@ -695,6 +695,18 @@ tnumber_type(meosType type)
 }
 
 /**
+ * @brief Ensure that a temporal value is a temporal number
+ */
+void
+ensure_tnumber_type(meosType type)
+{
+  if (! tnumber_type(type))
+    elog(ERROR, "The temporal value is not a temporal number");
+  return;
+}
+
+
+/**
  * @brief Return true if the type is a temporal number base type
  */
 bool

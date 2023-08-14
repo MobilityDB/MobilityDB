@@ -111,15 +111,15 @@
  *   - 01: DISCRETE
  *   - 10: STEP
  *   - 11: LINEAR
- *   C: continuous base type / Ordered collection
+ *   C: continuous base type / Ordered set
  *   B: base type passed by value
  * Notice that formally speaking the interpolation flags are only needed
  * for sequence and sequence set subtypes.
  *****************************************************************************/
 
-/* The following flag is only used for Collection and TInstant */
+/* The following flag is only used for Set and TInstant */
 #define MEOS_FLAG_BYVAL      0x0001  // 1
-/* The following flag is only used for Collection */
+/* The following flag is only used for Set */
 #define MEOS_FLAG_ORDERED    0x0002  // 2
 /* The following flag is only used for Temporal */
 #define MEOS_FLAG_CONTINUOUS 0x0002  // 2

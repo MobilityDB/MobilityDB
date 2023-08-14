@@ -42,10 +42,10 @@
 /*****************************************************************************/
 
 extern Temporal *tcomp_temporal_base(const Temporal *temp, Datum value,
-  meosType basetype, Datum (*func)(Datum, Datum, meosType, meosType),
+  meosType basetype, Datum (*func)(Datum, Datum, meosType),
   bool invert);
 extern Temporal *tcomp_temporal_temporal(const Temporal *temp1,
-  const Temporal *temp2, Datum (*func)(Datum, Datum, meosType, meosType));
+  const Temporal *temp2, Datum (*func)(Datum, Datum, meosType));
 
 /*****************************************************************************/
 

@@ -240,6 +240,7 @@ extern int16 basetype_length(meosType basetype);
 extern bool talphanum_type(meosType type);
 extern bool talpha_type(meosType temptype);
 extern bool tnumber_type(meosType temptype);
+extern void ensure_tnumber_type(meosType temptype);
 extern bool tnumber_basetype(meosType basetype);
 extern bool tnumber_settype(meosType settype);
 extern bool tnumber_spantype(meosType settype);
