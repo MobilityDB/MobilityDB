@@ -96,19 +96,24 @@ SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT stbox_t('[2001-01-03,2001-01-06]');
-SELECT stbox(1,2,3,4);
+SELECT stbox_t(timestamptz '2001-01-03');
+SELECT stbox_t(tstzspan '[2001-01-03,2001-01-06]');
+SELECT stbox_x(1,2,3,4);
 SELECT stbox_z(1,2,3,4,5,6);
-SELECT stbox_t(1,2,3,4,'[2001-01-03,2001-01-06]');
-SELECT stbox_zt(1,2,3,4,5,6,'[2001-01-04,2001-01-08]');
+SELECT stbox_xt(1,2,3,4,timestamptz '2001-01-03');
+SELECT stbox_xt(1,2,3,4,tstzspan '[2001-01-03,2001-01-06]');
+SELECT stbox_zt(1,2,3,4,5,6,timestamptz '2001-01-04');
+SELECT stbox_zt(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
 
-SELECT geodstbox_t('[2001-01-03,2001-01-06]');
+SELECT geodstbox_t(timestamptz '2001-01-03');
+SELECT geodstbox_t(tstzspan '[2001-01-03,2001-01-06]');
 SELECT geodstbox_z(1,2,3,4,5,6);
-SELECT geodstbox_zt(1,2,3,4,5,6,'[2001-01-04,2001-01-08]');
-
-SELECT stbox_zt(8,7,6,4,3,2,'[2001-01-01,2001-01-05]');
-SELECT stbox_t(6,5,3,2,'[2001-01-01,2001-01-04]');
-SELECT geodstbox_zt(8,7,6,4,3,2,'[2001-01-01,2001-01-05]');
+SELECT geodstbox_zt(1,2,3,4,5,6,timestamptz '2001-01-04');
+SELECT geodstbox_zt(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
+-- Ordering the coordinates
+SELECT stbox_xt(4,3,2,1,tstzspan '[2001-01-01,2001-01-04]');
+SELECT stbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
+SELECT geodstbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
 
 -------------------------------------------------------------------------------
 -- Casting

@@ -394,7 +394,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox"><varname>stbox, stbox_z, stbox_t, stbox_zt, geodstbox_z, geodstbox_t, geodstbox_zt</varname></link>: Constructor para <varname>stbox</varname></para>
+					<para><link linkend="stbox"><varname>stbox_x, stbox_z, stbox_t, stbox_xt, stbox_zt, geodstbox_z, geodstbox_t, geodstbox_zt</varname></link>: Constructor para <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

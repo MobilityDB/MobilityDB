@@ -58,7 +58,7 @@
 Temporal *
 teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_eq2, INVERT);
+  return tcomp_tpoint_point(tpoint, geo, &datum2_eq, INVERT);
 }
 
 /**
@@ -69,7 +69,7 @@ teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 Temporal *
 teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_eq2, INVERT_NO);
+  return tcomp_tpoint_point(tpoint, geo, &datum2_eq, INVERT_NO);
 }
 
 /**
@@ -80,7 +80,7 @@ teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 Temporal *
 tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_ne2, INVERT);
+  return tcomp_tpoint_point(tpoint, geo, &datum2_ne, INVERT);
 }
 
 /**
@@ -91,7 +91,7 @@ tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 Temporal *
 tne_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_ne2, INVERT_NO);
+  return tcomp_tpoint_point(tpoint, geo, &datum2_ne, INVERT_NO);
 }
 
 /*****************************************************************************/

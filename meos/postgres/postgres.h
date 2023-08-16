@@ -65,6 +65,7 @@
 #define elog(error, ...) \
   do { \
     fprintf (stderr, __VA_ARGS__); \
+    fprintf (stderr, "\n"); \
     if (error == ERROR) \
       exit(EXIT_FAILURE); \
   } while(0);

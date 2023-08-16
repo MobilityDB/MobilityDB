@@ -63,7 +63,7 @@
  */
 static Datum
 arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType, meosType))
+  Datum (*func)(Datum, Datum, meosType))
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -82,7 +82,7 @@ arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  */
 static Datum
 arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType, meosType))
+  Datum (*func)(Datum, Datum, meosType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
@@ -102,7 +102,7 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  */
 static Datum
 arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType, meosType),
+  Datum (*func)(Datum, Datum, meosType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {

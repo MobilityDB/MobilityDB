@@ -98,6 +98,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <access/spgist.h>
 #include <access/spgist_private.h>
@@ -149,16 +150,41 @@ typedef struct SortedTbox
 static void
 tboxnode_init(TBox *centroid, TboxNode *nodebox)
 {
-  double infinity = get_float8_infinity();
-  memset(nodebox, 0, sizeof(TboxNode));
-  nodebox->left.span.lower = nodebox->right.span.lower =
-    Float8GetDatum(-infinity);
-  nodebox->left.span.upper = nodebox->right.span.upper =
-    Float8GetDatum(infinity);
+  Datum neginf, posinf;
+  if (centroid->span.basetype == T_INT4)
+  {
+    posinf = Int32GetDatum(INT_MAX);
+    neginf = Int32GetDatum(INT_MIN);
+  }
+  else
+  {
+    double d = get_float8_infinity();
+    posinf = Float8GetDatum(d);
+    neginf = Float8GetDatum(d * -1.0);
+  }
+  // Span s, p;
+  // memset(nodebox, 0, sizeof(TboxNode));
+  // /* Bounds set to true and false to account for canonicalization of intspans */
+  // span_set(neginf, posinf, true, false, centroid->span.basetype, &s);
+  // span_set(TimestampTzGetDatum(DT_NOBEGIN), TimestampTzGetDatum(DT_NOEND),
+    // true, false, T_TIMESTAMPTZ, &p);
+  // tbox_set(&s, &p, &nodebox->left);
+  // tbox_set(&s, &p, &nodebox->right);
+  nodebox->left.span.lower = nodebox->right.span.lower = neginf;
+  nodebox->left.span.upper = nodebox->right.span.upper = posinf;
+  nodebox->left.span.spantype = nodebox->right.span.spantype = 
+    centroid->span.spantype;
+  nodebox->left.span.basetype = nodebox->right.span.basetype = 
+    centroid->span.basetype;
+
   nodebox->left.period.lower = nodebox->right.period.lower =
     TimestampTzGetDatum(DT_NOBEGIN);
   nodebox->left.period.upper = nodebox->right.period.upper =
     TimestampTzGetDatum(DT_NOEND);
+  nodebox->left.period.spantype = nodebox->right.period.spantype = 
+    centroid->period.spantype;
+  nodebox->left.period.basetype = nodebox->right.period.basetype = 
+    centroid->period.basetype;
   nodebox->left.flags = nodebox->right.flags = centroid->flags;
   return;
 }
@@ -186,10 +212,10 @@ get_quadrant4D(const TBox *centroid, const TBox *inBox)
 {
   uint8 quadrant = 0;
 
-  if (datum_gt(inBox->span.lower, centroid->span.lower, T_FLOAT8))
+  if (datum_gt(inBox->span.lower, centroid->span.lower, inBox->span.basetype))
     quadrant |= 0x8;
 
-  if (datum_gt(inBox->span.upper, centroid->span.upper, T_FLOAT8))
+  if (datum_gt(inBox->span.upper, centroid->span.upper, inBox->span.basetype))
     quadrant |= 0x4;
 
   if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
@@ -293,8 +319,8 @@ overlap4D(const TboxNode *nodebox, const TBox *query)
   /* If the dimension is not missing */
   if (MEOS_FLAGS_GET_X(query->flags))
     result &=
-      datum_le(nodebox->left.span.lower, query->span.upper, T_FLOAT8) &&
-      datum_ge(nodebox->right.span.upper, query->span.lower, T_FLOAT8);
+      datum_le(nodebox->left.span.lower, query->span.upper, query->span.basetype) &&
+      datum_ge(nodebox->right.span.upper, query->span.lower, query->span.basetype);
   /* If the dimension is not missing */
   if (MEOS_FLAGS_GET_T(query->flags))
     result &=
@@ -313,8 +339,8 @@ contain4D(const TboxNode *nodebox, const TBox *query)
   /* If the dimension is not missing */
   if (MEOS_FLAGS_GET_X(query->flags))
     result &=
-      datum_ge(nodebox->right.span.upper, query->span.upper, T_FLOAT8) &&
-      datum_le(nodebox->left.span.lower, query->span.lower, T_FLOAT8);
+      datum_ge(nodebox->right.span.upper, query->span.upper, query->span.basetype) &&
+      datum_le(nodebox->left.span.lower, query->span.lower, query->span.basetype);
   /* If the dimension is not missing */
   if (MEOS_FLAGS_GET_T(query->flags))
     result &=
@@ -329,7 +355,7 @@ contain4D(const TboxNode *nodebox, const TBox *query)
 static bool
 left4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_lt(nodebox->right.span.upper, query->span.lower, T_FLOAT8);
+  return datum_lt(nodebox->right.span.upper, query->span.lower, query->span.basetype);
 }
 
 /**
@@ -339,7 +365,7 @@ left4D(const TboxNode *nodebox, const TBox *query)
 static bool
 overLeft4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_le(nodebox->right.span.upper, query->span.upper, T_FLOAT8);
+  return datum_le(nodebox->right.span.upper, query->span.upper, query->span.basetype);
 }
 
 /**
@@ -348,7 +374,7 @@ overLeft4D(const TboxNode *nodebox, const TBox *query)
 static bool
 right4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_gt(nodebox->left.span.lower, query->span.upper, T_FLOAT8);
+  return datum_gt(nodebox->left.span.lower, query->span.upper, query->span.basetype);
 }
 
 /**
@@ -358,7 +384,7 @@ right4D(const TboxNode *nodebox, const TBox *query)
 static bool
 overRight4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_ge(nodebox->left.span.lower, query->span.lower, T_FLOAT8);
+  return datum_ge(nodebox->left.span.lower, query->span.lower, query->span.basetype);
 }
 
 /**
@@ -414,12 +440,14 @@ distance_tbox_nodebox(const TBox *query, const TboxNode *nodebox)
     return DBL_MAX;
 
   double result;
-  if (datum_lt(query->span.upper, nodebox->left.span.lower, T_FLOAT8))
-    result = DatumGetFloat8(nodebox->left.span.lower) -
-      DatumGetFloat8(query->span.upper);
-  else if (datum_gt(query->span.lower, nodebox->right.span.upper, T_FLOAT8))
-    result = DatumGetFloat8(query->span.lower) -
-      DatumGetFloat8(nodebox->right.span.upper);
+  if (datum_lt(query->span.upper, nodebox->left.span.lower, query->span.basetype))
+    result = (query->span.basetype == T_INT4) ?
+      (double) (DatumGetInt32(nodebox->left.span.lower) - DatumGetInt32(query->span.upper)) :
+      DatumGetFloat8(nodebox->left.span.lower) - DatumGetFloat8(query->span.upper);
+  else if (datum_gt(query->span.lower, nodebox->right.span.upper, query->span.basetype))
+    result = (query->span.basetype == T_INT4) ?
+      (double) (DatumGetInt32(query->span.lower) - DatumGetInt32(nodebox->right.span.upper)) :
+      DatumGetFloat8(query->span.lower) - DatumGetFloat8(nodebox->right.span.upper);
   else
     result = 0.0;
   return result;
@@ -462,11 +490,10 @@ static int
 tbox_xmin_cmp(const TBox *box1, const TBox *box2)
 {
   assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
-  if (datum_eq2(box1->span.lower, box2->span.lower, box1->span.basetype,
-        box2->span.basetype))
+  if (datum_eq(box1->span.lower, box2->span.lower, box1->span.basetype))
     return 0;
-  return datum_gt2(box1->span.lower, box2->span.lower, box1->span.basetype,
-    box2->span.basetype) ? 1 : -1;
+  return datum_gt(box1->span.lower, box2->span.lower, box1->span.basetype) ?
+    1 : -1;
 }
 
 /**
@@ -476,11 +503,10 @@ static int
 tbox_xmax_cmp(const TBox *box1, const TBox *box2)
 {
   assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
-  if (datum_eq2(box1->span.upper, box2->span.upper, box1->span.basetype,
-        box2->span.basetype))
+  if (datum_eq(box1->span.upper, box2->span.upper, box1->span.basetype))
     return 0;
-  return datum_gt2(box1->span.upper, box2->span.upper, box1->span.basetype,
-    box2->span.basetype) ? 1 : -1;
+  return datum_gt(box1->span.upper, box2->span.upper, box1->span.basetype) ?
+    1 : -1;
 }
 
 /**
@@ -490,11 +516,10 @@ static int
 tbox_tmin_cmp(const TBox *box1, const TBox *box2)
 {
   assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
-  if (datum_eq2(box1->period.lower, box2->period.lower, box1->period.basetype,
-        box2->period.basetype))
+  if (datum_eq(box1->period.lower, box2->period.lower, box1->period.basetype))
     return 0;
-  return datum_gt2(box1->period.lower, box2->period.lower, box1->period.basetype,
-        box2->period.basetype) ? 1 : -1;
+  return datum_gt(box1->period.lower, box2->period.lower,
+    box1->period.basetype) ? 1 : -1;
 }
 
 /**
@@ -504,11 +529,10 @@ static int
 tbox_tmax_cmp(const TBox *box1, const TBox *box2)
 {
   assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
-  if (datum_eq2(box1->period.upper, box2->period.upper, box1->period.basetype,
-        box2->period.basetype))
+  if (datum_eq(box1->period.upper, box2->period.upper, box1->period.basetype))
     return 0;
-  return datum_gt2(box1->period.upper, box2->period.upper, box1->period.basetype,
-        box2->period.basetype) ? 1 : -1;
+  return datum_gt(box1->period.upper, box2->period.upper,
+    box1->period.basetype) ? 1 : -1;
 }
 
 static int
@@ -636,20 +660,43 @@ Tbox_kdtree_choose(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Comparator for qsort
- *
- * We don't need to use the floating point macros in here, because this is
- * only going to be used in a place to affect the performance of the index,
- * not the correctness.
+ * @brief Comparator for qsort for integer values
  */
 int
-compareDoubles(const void *a, const void *b)
+compareInt4(const void *a, const void *b)
 {
-  double x = *(double *) a;
-  double y = *(double *) b;
+  int x = DatumGetInt32(*(Datum *) a);
+  int y = DatumGetInt32(*(Datum *) b);
   if (x == y)
     return 0;
   return (x > y) ? 1 : -1;
+}
+
+/**
+ * @brief Comparator for qsort for double values
+ * @note We don't need to use the floating point macros in here, because this
+ * is only going to be used in a place to affect the performance of the index,
+ * not the correctness.
+ */
+int
+compareFloat8(const void *a, const void *b)
+{
+  double x = DatumGetFloat8(*(Datum *) a);
+  double y = DatumGetFloat8(*(Datum *) b);
+  if (x == y)
+    return 0;
+  return (x > y) ? 1 : -1;
+}
+
+/**
+ * @brief Comparator for qsort for timestamp values
+ */
+int
+compareTimestampTz(const void *a, const void *b)
+{
+  TimestampTz x = *(TimestampTz *) a;
+  TimestampTz y = *(TimestampTz *) b;
+  return timestamptz_cmp_internal(x,y);
 }
 
 PGDLLEXPORT Datum Tbox_quadtree_picksplit(PG_FUNCTION_ARGS);
@@ -667,33 +714,39 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
   TBox *centroid;
   int median, i;
-  double *lowXs = palloc(sizeof(double) * in->nTuples);
-  double *highXs = palloc(sizeof(double) * in->nTuples);
-  double *lowTs = palloc(sizeof(double) * in->nTuples);
-  double *highTs = palloc(sizeof(double) * in->nTuples);
+  Datum *lowXs = palloc(sizeof(Datum) * in->nTuples);
+  Datum *highXs = palloc(sizeof(Datum) * in->nTuples);
+  TimestampTz *lowTs = palloc(sizeof(TimestampTz) * in->nTuples);
+  TimestampTz *highTs = palloc(sizeof(TimestampTz) * in->nTuples);
 
+
+  /* Get basetype of span in the datums */
+  TBox *box = DatumGetTboxP(in->datums[0]);
+  meosType basetype = box->span.basetype;
   /* Calculate median of all 4D coordinates */
   for (i = 0; i < in->nTuples; i++)
   {
-    TBox *box = DatumGetTboxP(in->datums[i]);
-    lowXs[i] = DatumGetFloat8(box->span.lower);
-    highXs[i] = DatumGetFloat8(box->span.upper);
-    lowTs[i] = (double) DatumGetTimestampTz(box->period.lower);
-    highTs[i] = (double) DatumGetTimestampTz(box->period.upper);
+    box = DatumGetTboxP(in->datums[i]);
+    lowXs[i] = box->span.lower;
+    highXs[i] = box->span.upper;
+    lowTs[i] = DatumGetTimestampTz(box->period.lower);
+    highTs[i] = DatumGetTimestampTz(box->period.upper);
   }
 
-  qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-  qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-  qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-  qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(lowXs, (size_t) in->nTuples, sizeof(Datum), 
+    (basetype == T_INT4) ? compareInt4 : compareFloat8);
+  qsort(highXs, (size_t) in->nTuples, sizeof(Datum), 
+    (basetype == T_INT4) ? compareInt4 : compareFloat8);
+  qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
+  qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
 
   median = in->nTuples >> 1;
 
   centroid = palloc0(sizeof(TBox));
-  centroid->span.lower = Float8GetDatum(lowXs[median]);
-  centroid->span.upper = Float8GetDatum(highXs[median]);
-  centroid->period.lower = TimestampTzGetDatum((TimestampTz) lowTs[median]);
-  centroid->period.upper = TimestampTzGetDatum((TimestampTz) highTs[median]);
+  Span s, p;
+  span_set(lowXs[median], highXs[median], true, true, basetype, &s);
+  span_set(lowTs[median], highTs[median], true, true, T_TIMESTAMPTZ, &p);
+  tbox_set(&s, &p, centroid);
 
   /* Fill the output */
   out->hasPrefix = true;

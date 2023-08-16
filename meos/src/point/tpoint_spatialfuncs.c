@@ -3240,7 +3240,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
   *value = (Datum) 0;
   /* Compute the projected value only for geometries */
   if (! geodetic)
-    proj = tsegment_value_at_timestamp(start, end, true, *t);
+    proj = tsegment_value_at_timestamp(start, end, LINEAR, *t);
   q = DATUM_POINT2D_P(proj);
   /* We add a turning point only if p is to the North of q */
   bool result = FP_GTEQ(p->y, q->y) ? true : false;
@@ -3301,8 +3301,8 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* We need to verify that at timestamp t the first segment is to the
    * North of the second */
-  Datum value1 = tsegment_value_at_timestamp(start1, end1, true, *t);
-  Datum value2 = tsegment_value_at_timestamp(start2, end2, true, *t);
+  Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
+  Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
   sp1 = DATUM_POINT2D_P(value1);
   sp2 = DATUM_POINT2D_P(value2);
   if (sp1->y > sp2->y) // TODO Use MEOS_EPSILON

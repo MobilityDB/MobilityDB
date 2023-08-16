@@ -179,6 +179,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
 bool
 contains_set_value(const Set *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   /* Bounding box test */
   if (! bbox_contains_set_value(s, d, basetype))
     return false;
@@ -195,6 +196,7 @@ contains_set_value(const Set *s, Datum d, meosType basetype)
 bool
 contains_intset_int(const Set *s, int i)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return contains_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -206,6 +208,7 @@ contains_intset_int(const Set *s, int i)
 bool
 contains_bigintset_bigint(const Set *s, int64 i)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return contains_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -217,6 +220,7 @@ contains_bigintset_bigint(const Set *s, int64 i)
 bool
 contains_floatset_float(const Set *s, double d)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return contains_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -228,6 +232,7 @@ contains_floatset_float(const Set *s, double d)
 bool
 contains_textset_text(const Set *s, text *t)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   return contains_set_value(s, PointerGetDatum(t), T_TEXT);
 }
 
@@ -237,9 +242,10 @@ contains_textset_text(const Set *s, text *t)
  * @sqlop @p \@>
  */
 bool
-contains_timestampset_timestamp(const Set *ts, TimestampTz t)
+contains_timestampset_timestamp(const Set *s, TimestampTz t)
 {
-  return contains_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
+  return contains_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -251,6 +257,7 @@ contains_timestampset_timestamp(const Set *ts, TimestampTz t)
 bool
 contains_set_set(const Set *s1, const Set *s2)
 {
+  ensure_same_settype(s1, s2);
   /* Bounding box test */
   if (! bbox_contains_set_set(s1, s2))
     return false;
@@ -296,6 +303,7 @@ contained_value_set(Datum d, meosType basetype, const Set *s)
 bool
 contained_int_intset(int i, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return contained_value_set(Int32GetDatum(i), T_INT4, s);
 }
 
@@ -307,6 +315,7 @@ contained_int_intset(int i, const Set *s)
 bool
 contained_bigint_bigintset(int64 i, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return contained_value_set(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -318,6 +327,7 @@ contained_bigint_bigintset(int64 i, const Set *s)
 bool
 contained_float_floatset(double d, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return contained_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -329,6 +339,7 @@ contained_float_floatset(double d, const Set *s)
 bool
 contained_text_textset(text *txt, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   return contained_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
@@ -338,9 +349,10 @@ contained_text_textset(text *txt, const Set *s)
  * @sqlop @p <@
  */
 bool
-contained_timestamp_timestampset(TimestampTz t, const Set *ts)
+contained_timestamp_timestampset(TimestampTz t, const Set *s)
 {
-  return contains_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
+  return contains_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -360,13 +372,14 @@ contained_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libmeos_setspan"_topo
  * @brief Return true if two sets overlap.
  * @sqlop @p &&
  */
 bool
 overlaps_set_set(const Set *s1, const Set *s2)
 {
+  ensure_same_settype(s1, s2);
   /* Bounding box test */
   if (! bbox_overlaps_set_set(s1, s2))
     return false;
@@ -398,8 +411,9 @@ overlaps_set_set(const Set *s1, const Set *s2)
 bool
 left_value_set(Datum d, meosType basetype, const Set *s)
 {
+  assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, MINIDX);
-  return datum_lt2(d, d1, s->basetype, basetype);
+  return datum_lt(d, d1, basetype);
 }
 
 #if MEOS
@@ -411,6 +425,7 @@ left_value_set(Datum d, meosType basetype, const Set *s)
 bool
 left_int_intset(int i, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return left_value_set(Int32GetDatum(i), T_INT4, s);
 }
 
@@ -422,6 +437,7 @@ left_int_intset(int i, const Set *s)
 bool
 left_bigint_bigintset(int64 i, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return left_value_set(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -433,6 +449,7 @@ left_bigint_bigintset(int64 i, const Set *s)
 bool
 left_float_floatset(double d, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return left_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -444,6 +461,7 @@ left_float_floatset(double d, const Set *s)
 bool
 left_text_textset(text *txt, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   return left_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
@@ -453,9 +471,10 @@ left_text_textset(text *txt, const Set *s)
  * @sqlop @p <<#
  */
 bool
-before_timestamp_timestampset(TimestampTz t, const Set *ts)
+before_timestamp_timestampset(TimestampTz t, const Set *s)
 {
-  return left_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
+  return left_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
 
@@ -466,8 +485,9 @@ before_timestamp_timestampset(TimestampTz t, const Set *ts)
 bool
 left_set_value(const Set *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, s->MAXIDX);
-  return datum_lt2(d1, d, s->basetype, basetype);
+  return datum_lt(d1, d, basetype);
 }
 
 #if MEOS
@@ -479,6 +499,7 @@ left_set_value(const Set *s, Datum d, meosType basetype)
 bool
 left_intset_int(const Set *s, int i)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return left_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -491,6 +512,7 @@ left_intset_int(const Set *s, int i)
 bool
 left_bigintset_bigint(const Set *s, int64 i)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return left_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -502,6 +524,7 @@ left_bigintset_bigint(const Set *s, int64 i)
 bool
 left_floatset_float(const Set *s, double d)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return left_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -513,6 +536,7 @@ left_floatset_float(const Set *s, double d)
 bool
 left_textset_text(const Set *s, text *txt)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   return left_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -524,6 +548,7 @@ left_textset_text(const Set *s, text *txt)
 bool
 before_timestampset_timestamp(const Set *s, TimestampTz t)
 {
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
   return left_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -536,9 +561,10 @@ before_timestampset_timestamp(const Set *s, TimestampTz t)
 bool
 left_set_set(const Set *s1, const Set *s2)
 {
+  ensure_same_settype(s1, s2);
   Datum d1 = SET_VAL_N(s1, s1->count - 1);
   Datum d2 = SET_VAL_N(s2, 0);
-  return (datum_lt2(d1, d2, s1->basetype, s2->basetype));
+  return (datum_lt(d1, d2, s1->basetype));
 }
 
 /*****************************************************************************
@@ -564,7 +590,8 @@ right_value_set(Datum d, meosType basetype, const Set *s)
 bool
 right_int_intset(int i, const Set *s)
 {
-  return left_intset_int(s, i);
+  ensure_same_settype_basetype(s, T_INT4);
+  return left_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -576,7 +603,8 @@ right_int_intset(int i, const Set *s)
 bool
 right_bigint_bigintset(int64 i, const Set *s)
 {
-  return left_bigintset_bigint(s, i);
+  ensure_same_settype_basetype(s, T_INT8);
+  return left_set_value(s, Int64GetDatum(i), T_INT4);
 }
 
 /**
@@ -587,7 +615,8 @@ right_bigint_bigintset(int64 i, const Set *s)
 bool
 right_float_floatset(double d, const Set *s)
 {
-  return left_floatset_float(s, d);
+  ensure_same_settype_basetype(s, T_FLOAT8);
+  return left_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
@@ -598,7 +627,8 @@ right_float_floatset(double d, const Set *s)
 bool
 right_text_textset(text *txt, const Set *s)
 {
-  return left_textset_text(s, txt);
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
+  return left_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
@@ -607,9 +637,10 @@ right_text_textset(text *txt, const Set *s)
  * @sqlop @p #>>
  */
 bool
-after_timestamp_timestampset(TimestampTz t, const Set *ts)
+after_timestamp_timestampset(TimestampTz t, const Set *s)
 {
-  return before_timestampset_timestamp(ts, t);
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
+  return left_set_value(s, TimestampTzGetDatum(t), T_TEXT);
 }
 #endif /* MEOS */
 
@@ -633,6 +664,7 @@ right_set_value(const Set *s, Datum d, meosType basetype)
 bool
 right_intset_int(const Set *s, int i)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return right_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -645,6 +677,7 @@ right_intset_int(const Set *s, int i)
 bool
 right_bigintset_bigint(const Set *s, int64 i)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return right_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -656,6 +689,7 @@ right_bigintset_bigint(const Set *s, int64 i)
 bool
 right_floatset_float(const Set *s, double d)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return right_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -667,6 +701,7 @@ right_floatset_float(const Set *s, double d)
 bool
 right_textset_text(const Set *s, text *txt)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   return right_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -678,6 +713,7 @@ right_textset_text(const Set *s, text *txt)
 bool
 after_timestampset_timestamp(const Set *s, TimestampTz t)
 {
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
   return right_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -705,8 +741,9 @@ right_set_set(const Set *s1, const Set *s2)
 bool
 overleft_value_set(Datum d, meosType basetype, const Set *s)
 {
+  assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, s->MAXIDX);
-  return datum_le2(d, d1, basetype, s->basetype);
+  return datum_le(d, d1, basetype);
 }
 
 #if MEOS
@@ -718,6 +755,7 @@ overleft_value_set(Datum d, meosType basetype, const Set *s)
 bool
 overleft_int_intset(int i, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return overleft_value_set(Int32GetDatum(i), T_INT4, s);
 }
 
@@ -730,6 +768,7 @@ overleft_int_intset(int i, const Set *s)
 bool
 overleft_bigint_bigintset(int64 i, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return overleft_value_set(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -741,6 +780,7 @@ overleft_bigint_bigintset(int64 i, const Set *s)
 bool
 overleft_float_floatset(double d, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return overleft_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -752,6 +792,7 @@ overleft_float_floatset(double d, const Set *s)
 bool
 overleft_text_textset(text *txt, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   return overleft_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
@@ -761,9 +802,10 @@ overleft_text_textset(text *txt, const Set *s)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestamp_timestampset(TimestampTz t, const Set *ts)
+overbefore_timestamp_timestampset(TimestampTz t, const Set *s)
 {
-  return overleft_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
+  return overleft_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
 
@@ -775,8 +817,9 @@ overbefore_timestamp_timestampset(TimestampTz t, const Set *ts)
 bool
 overleft_set_value(const Set *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, s->MAXIDX);
-  return datum_le2(d1, d, s->basetype, basetype);
+  return datum_le(d1, d, basetype);
 }
 
 #if MEOS
@@ -788,6 +831,7 @@ overleft_set_value(const Set *s, Datum d, meosType basetype)
 bool
 overleft_intset_int(const Set *s, int i)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return overleft_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -800,6 +844,7 @@ overleft_intset_int(const Set *s, int i)
 bool
 overleft_bigintset_bigint(const Set *s, int64 i)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return overleft_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -811,6 +856,7 @@ overleft_bigintset_bigint(const Set *s, int64 i)
 bool
 overleft_floatset_float(const Set *s, double d)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return overleft_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -822,6 +868,7 @@ overleft_floatset_float(const Set *s, double d)
 bool
 overleft_textset_text(const Set *s, text *txt)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   return overleft_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -833,6 +880,7 @@ overleft_textset_text(const Set *s, text *txt)
 bool
 overbefore_timestampset_timestamp(const Set *s, TimestampTz t)
 {
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
   return overleft_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -846,9 +894,10 @@ overbefore_timestampset_timestamp(const Set *s, TimestampTz t)
 bool
 overleft_set_set(const Set *s1, const Set *s2)
 {
+  ensure_same_settype(s1, s2);
   Datum d1 = SET_VAL_N(s1, s1->count - 1);
   Datum d2 = SET_VAL_N(s2, s2->count - 1);
-  return datum_le2(d1, d2, s1->basetype, s2->basetype);
+  return datum_le(d1, d2, s1->basetype);
 }
 
 /*****************************************************************************
@@ -862,8 +911,9 @@ overleft_set_set(const Set *s1, const Set *s2)
 bool
 overright_value_set(Datum d, meosType basetype, const Set *s)
 {
+  assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, MINIDX);
-  return datum_ge2(d, d1, basetype, s->basetype);
+  return datum_ge(d, d1, basetype);
 }
 
 #if MEOS
@@ -876,6 +926,7 @@ overright_value_set(Datum d, meosType basetype, const Set *s)
 bool
 overright_int_intset(int i, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return overright_value_set(Int32GetDatum(i), T_INT4, s);
 }
 
@@ -888,6 +939,7 @@ overright_int_intset(int i, const Set *s)
 bool
 overright_bigint_bigintset(int64 i, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return overright_value_set(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -900,6 +952,7 @@ overright_bigint_bigintset(int64 i, const Set *s)
 bool
 overright_float_floatset(double d, const Set *s)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return overright_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -909,9 +962,10 @@ overright_float_floatset(double d, const Set *s)
  * @sqlop @p #&>
  */
 bool
-overafter_timestamp_timestampset(TimestampTz t, const Set *ts)
+overafter_timestamp_timestampset(TimestampTz t, const Set *s)
 {
-  return overright_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
+  return overright_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
 
@@ -922,8 +976,9 @@ overafter_timestamp_timestampset(TimestampTz t, const Set *ts)
 bool
 overright_set_value(const Set *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, MINIDX);
-  return datum_ge2(d1, d, s->basetype, basetype);
+  return datum_ge(d1, d, basetype);
 }
 
 #if MEOS
@@ -936,6 +991,7 @@ overright_set_value(const Set *s, Datum d, meosType basetype)
 bool
 overright_intset_int(const Set *s, int i)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return overright_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -948,6 +1004,7 @@ overright_intset_int(const Set *s, int i)
 bool
 overright_bigintset_bigint(const Set *s, int64 i)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return overright_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -959,6 +1016,7 @@ overright_bigintset_bigint(const Set *s, int64 i)
 bool
 overright_floatset_float(const Set *s, double d)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return overright_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -970,6 +1028,7 @@ overright_floatset_float(const Set *s, double d)
 bool
 overright_textset_text(const Set *s, text *txt)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   return overright_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -981,6 +1040,7 @@ overright_textset_text(const Set *s, text *txt)
 bool
 overafter_timestampset_timestamp(const Set *s, TimestampTz t)
 {
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
   return overright_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -994,9 +1054,10 @@ overafter_timestampset_timestamp(const Set *s, TimestampTz t)
 bool
 overright_set_set(const Set *s1, const Set *s2)
 {
+  ensure_same_settype(s1, s2);
   Datum d1 = SET_VAL_N(s1, 0);
   Datum d2 = SET_VAL_N(s2, 0);
-  return datum_ge2(d1, d2, s1->basetype, s2->basetype);
+  return datum_ge(d1, d2, s1->basetype);
 }
 
 /*****************************************************************************
@@ -1010,7 +1071,7 @@ overright_set_set(const Set *s1, const Set *s2)
 Set *
 union_set_value(const Set *s, Datum d, meosType basetype)
 {
-  assert(basetype == s->basetype);
+  assert(s->basetype == basetype);
   Datum *values = palloc(sizeof(Datum *) * (s->count + 1));
   int nvals = 0;
   bool found = false;
@@ -1044,6 +1105,7 @@ union_set_value(const Set *s, Datum d, meosType basetype)
 Set *
 union_intset_int(const Set *s, int i)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return union_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -1055,6 +1117,7 @@ union_intset_int(const Set *s, int i)
 Set *
 union_bigintset_bigint(const Set *s, int64 i)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return union_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -1066,6 +1129,7 @@ union_bigintset_bigint(const Set *s, int64 i)
 Set *
 union_floatset_float(const Set *s, double d)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return union_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1077,6 +1141,7 @@ union_floatset_float(const Set *s, double d)
 Set *
 union_textset_text(const Set *s, text *txt)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   return union_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -1086,9 +1151,10 @@ union_textset_text(const Set *s, text *txt)
  * @sqlop @p +
  */
 Set *
-union_timestampset_timestamp(const Set *ts, const TimestampTz t)
+union_timestampset_timestamp(const Set *s, const TimestampTz t)
 {
-  return union_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
+  return union_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -1100,6 +1166,7 @@ union_timestampset_timestamp(const Set *ts, const TimestampTz t)
 Set *
 union_set_set(const Set *s1, const Set *s2)
 {
+  ensure_same_settype(s1, s2);
   return setop_set_set(s1, s2, UNION);
 }
 
@@ -1115,7 +1182,7 @@ bool
 intersection_set_value(const Set *s, Datum d, meosType basetype,
   Datum *result)
 {
-  assert(basetype == s->basetype);
+  assert(s->basetype == basetype);
   if (! contains_set_value(s, d, basetype))
     return false;
   *result  = d;
@@ -1132,6 +1199,7 @@ intersection_set_value(const Set *s, Datum d, meosType basetype,
 bool
 intersection_intset_int(const Set *s, int i, int *result)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   Datum v;
   bool found = intersection_set_value(s, Int32GetDatum(i), T_INT4, &v);
   *result = DatumGetInt32(v);
@@ -1147,6 +1215,7 @@ intersection_intset_int(const Set *s, int i, int *result)
 bool
 intersection_bigintset_bigint(const Set *s, int64 i, int64 *result)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   Datum v;
   bool found = intersection_set_value(s, Int64GetDatum(i), T_INT8, &v);
   *result = DatumGetInt64(v);
@@ -1162,6 +1231,7 @@ intersection_bigintset_bigint(const Set *s, int64 i, int64 *result)
 bool
 intersection_floatset_float(const Set *s, double d, double *result)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   Datum v;
   bool found = intersection_set_value(s, Float8GetDatum(d), T_FLOAT8, &v);
   *result = DatumGetInt32(v);
@@ -1176,6 +1246,7 @@ intersection_floatset_float(const Set *s, double d, double *result)
 bool
 intersection_textset_text(const Set *s, const text *txt, text **result)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   Datum v;
   bool found = intersection_set_value(s, PointerGetDatum(txt), T_TEXT, &v);
   *result = DatumGetTextP(v);
@@ -1189,11 +1260,12 @@ intersection_textset_text(const Set *s, const text *txt, text **result)
  * @sqlop @p *
  */
 bool
-intersection_timestampset_timestamp(const Set *ts, TimestampTz t,
+intersection_timestampset_timestamp(const Set *s, TimestampTz t,
   TimestampTz *result)
 {
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
   Datum v;
-  bool found = intersection_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ,
+  bool found = intersection_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ,
     &v);
   *result = DatumGetTimestampTz(v);
   return found;
@@ -1208,6 +1280,7 @@ intersection_timestampset_timestamp(const Set *ts, TimestampTz t,
 Set *
 intersection_set_set(const Set *s1, const Set *s2)
 {
+  ensure_same_settype(s1, s2);
   return setop_set_set(s1, s2, INTER);
 }
 
@@ -1224,6 +1297,7 @@ intersection_set_set(const Set *s1, const Set *s2)
 bool
 minus_value_set(Datum d, meosType basetype, const Set *s, Datum *result)
 {
+  assert(s->basetype == basetype);
   if (contains_set_value(s, d, basetype))
     return false;
   *result = d;
@@ -1239,6 +1313,7 @@ minus_value_set(Datum d, meosType basetype, const Set *s, Datum *result)
 bool
 minus_int_intset(int i, const Set *s, int *result)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   Datum v;
   bool found = minus_value_set(Int32GetDatum(i), T_INT4, s, &v);
   *result = DatumGetInt32(v);
@@ -1254,6 +1329,7 @@ minus_int_intset(int i, const Set *s, int *result)
 bool
 minus_bigint_bigintset(int64 i, const Set *s, int64 *result)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   Datum v;
   bool found = minus_value_set(Int64GetDatum(i), T_INT8, s, &v);
   *result = DatumGetInt64(v);
@@ -1268,6 +1344,7 @@ minus_bigint_bigintset(int64 i, const Set *s, int64 *result)
 bool
 minus_float_floatset(double d, const Set *s, double *result)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   Datum v;
   bool found = minus_value_set(Float8GetDatum(d), T_FLOAT8, s, &v);
   *result = DatumGetFloat8(v);
@@ -1282,6 +1359,7 @@ minus_float_floatset(double d, const Set *s, double *result)
 bool
 minus_text_textset(const text *txt, const Set *s, text **result)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   Datum v;
   bool found = minus_value_set(PointerGetDatum(txt), T_TEXT, s, &v);
   *result = DatumGetTextP(v);
@@ -1296,6 +1374,7 @@ minus_text_textset(const text *txt, const Set *s, text **result)
 Set *
 minus_set_value(const Set *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   /* Bounding box test */
   if (! bbox_contains_set_value(s, d, basetype))
     return set_copy(s);
@@ -1321,6 +1400,7 @@ minus_set_value(const Set *s, Datum d, meosType basetype)
 Set *
 minus_intset_int(const Set *s, int i)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return minus_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -1332,6 +1412,7 @@ minus_intset_int(const Set *s, int i)
 Set *
 minus_bigintset_bigint(const Set *s, int64 i)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return minus_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -1343,6 +1424,7 @@ minus_bigintset_bigint(const Set *s, int64 i)
 Set *
 minus_floatset_float(const Set *s, double d)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return minus_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1354,6 +1436,7 @@ minus_floatset_float(const Set *s, double d)
 Set *
 minus_textset_text(const Set *s, const text *txt)
 {
+  ensure_same_settype_basetype(s, T_TEXT);
   return minus_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -1363,20 +1446,21 @@ minus_textset_text(const Set *s, const text *txt)
  * @sqlop @p -
  */
 Set *
-minus_timestampset_timestamp(const Set *ts, TimestampTz t)
+minus_timestampset_timestamp(const Set *s, TimestampTz t)
 {
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
   /* Bounding box test */
-  Span s;
-  set_set_span(ts, &s);
-  if (! contains_period_timestamp(&s, t))
-    return set_copy(ts);
+  Span s1;
+  set_set_span(s, &s1);
+  if (! contains_period_timestamp(&s1, t))
+    return set_copy(s);
 
-  Datum *values = palloc(sizeof(TimestampTz) * ts->count);
+  Datum *values = palloc(sizeof(TimestampTz) * s->count);
   int nvals = 0;
   Datum v = TimestampTzGetDatum(t);
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < s->count; i++)
   {
-    Datum v1 = SET_VAL_N(ts, i);
+    Datum v1 = SET_VAL_N(s, i);
     if (datum_ne(v, v1, T_TIMESTAMPTZ))
       values[nvals++] = v1;
   }
@@ -1392,6 +1476,7 @@ minus_timestampset_timestamp(const Set *ts, TimestampTz t)
 Set *
 minus_set_set(const Set *s1, const Set *s2)
 {
+  ensure_same_settype(s1, s2);
   return setop_set_set(s1, s2, MINUS);
 }
 
@@ -1407,6 +1492,7 @@ minus_set_set(const Set *s1, const Set *s2)
 double
 distance_set_value(const Set *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   Span sp;
   set_set_span(s, &sp);
   return distance_span_value(&sp, d, basetype);
@@ -1421,6 +1507,7 @@ distance_set_value(const Set *s, Datum d, meosType basetype)
 double
 distance_intset_int(const Set *s, int i)
 {
+  ensure_same_settype_basetype(s, T_INT4);
   return distance_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -1433,6 +1520,7 @@ distance_intset_int(const Set *s, int i)
 double
 distance_bigintset_bigint(const Set *s, int64 i)
 {
+  ensure_same_settype_basetype(s, T_INT8);
   return distance_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -1444,6 +1532,7 @@ distance_bigintset_bigint(const Set *s, int64 i)
 double
 distance_floatset_float(const Set *s, double d)
 {
+  ensure_same_settype_basetype(s, T_FLOAT8);
   return distance_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1453,9 +1542,10 @@ distance_floatset_float(const Set *s, double d)
  * @sqlop @p <->
  */
 double
-distance_timestampset_timestamp(const Set *ts, TimestampTz t)
+distance_timestampset_timestamp(const Set *s, TimestampTz t)
 {
-  return distance_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  ensure_same_settype_basetype(s, T_TIMESTAMPTZ);
+  return distance_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1466,6 +1556,7 @@ distance_timestampset_timestamp(const Set *ts, TimestampTz t)
 double
 distance_set_set(const Set *s1, const Set *s2)
 {
+  ensure_same_settype(s1, s2);
   Span sp1, sp2;
   set_set_span(s1, &sp1);
   set_set_span(s2, &sp2);

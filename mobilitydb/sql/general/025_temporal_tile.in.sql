@@ -148,13 +148,11 @@ CREATE TYPE float_tfloat AS (
   tnumber tfloat
 );
 
-CREATE FUNCTION valueSplit(tint, size integer,
-    origin integer DEFAULT 0)
+CREATE FUNCTION valueSplit(tint, size integer, origin integer DEFAULT 0)
   RETURNS SETOF int_tint
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION valueSplit(tfloat, size float,
-    origin float DEFAULT 0.0)
+CREATE FUNCTION valueSplit(tfloat, size float, origin float DEFAULT 0.0)
   RETURNS SETOF float_tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;

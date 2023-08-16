@@ -358,7 +358,7 @@ Temporal_enforce_typmod(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Peak into a temporal datum to find the bounding box. If the datum needs
+ * @brief Peek into a temporal datum to find the bounding box. If the datum
  * needs to be detoasted, extract only the header and not the full object.
  */
 void

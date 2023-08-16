@@ -172,12 +172,14 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
 {
   if (! tnumber_arithop_tp_at_timestamp1(start1, end1, start2, end2, t))
     return false;
-  Datum value1 = tsegment_value_at_timestamp(start1, end1, true, *t);
-  Datum value2 = tsegment_value_at_timestamp(start2, end2, true, *t);
+  Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
+  Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
   assert (op == '*' || op == '/');
+  assert (start1->temptype == start2->temptype);
+  meosType basetype = temptype_basetype(start1->temptype);
   *value = (op == '*') ?
-    datum_mult(value1, value2, start1->temptype, start2->temptype) :
-    datum_div(value1, value2, start1->temptype, start2->temptype);
+    datum_mult(value1, value2, basetype) :
+    datum_div(value1, value2, basetype);
   return true;
 }
 
@@ -225,10 +227,10 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  */
 Temporal *
 arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
-  TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType, meosType), bool invert)
+  TArithmetic oper, Datum (*func)(Datum, Datum, meosType), bool invert)
 {
   assert(tnumber_basetype(basetype));
+  ensure_same_temptype_basetype(temp, basetype);
   /* If division test whether the denominator is zero */
   if (oper == DIV)
   {
@@ -272,10 +274,11 @@ arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
  */
 Temporal *
 arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
-  TArithmetic oper, Datum (*func)(Datum, Datum, meosType, meosType),
+  TArithmetic oper, Datum (*func)(Datum, Datum, meosType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {
+  ensure_same_temptype(temp1, temp2);
   bool linear1 = MEOS_FLAGS_GET_LINEAR(temp1->flags);
   bool linear2 = MEOS_FLAGS_GET_LINEAR(temp2->flags);
 
@@ -472,8 +475,7 @@ tnumberseq_delta_value(const TSequence *seq)
   }
   instants[seq->count - 1] = tinstant_make(delta, seq->temptype, inst1->t);
   /* Resulting sequence has discrete or step interpolation */
-  interpType interp = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
-    DISCRETE : STEP;
+  interpType interp = MEOS_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEP;
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     interp == DISCRETE ? true : false, interp, NORMALIZE);
 }
@@ -586,8 +588,6 @@ tnumberseq_angular_difference(const TSequence *seq)
   /* We are sure that there are at least 2 instants */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int ninsts = tnumberseq_angular_difference1(seq, instants);
-  if (ninsts == 0)
-    return NULL;
   /* Resulting sequence has discrete interpolation */
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE);
 }
@@ -610,8 +610,6 @@ tnumberseqset_angular_difference(const TSequenceSet *ss)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     ninsts += tnumberseq_angular_difference1(seq, &instants[ninsts]);
   }
-  if (ninsts == 0)
-    return NULL;
   /* Resulting sequence has discrete interpolation */
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
     NORMALIZE);

@@ -64,10 +64,10 @@ extern bool tnumber_div_tp_at_timestamp(const TInstant *start1,
 
 extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,
   meosType basetype, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType, meosType), bool invert);
+  Datum (*func)(Datum, Datum, meosType), bool invert);
 extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
   const Temporal *temp2, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType, meosType),
+  Datum (*func)(Datum, Datum, meosType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *));
 

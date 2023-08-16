@@ -829,7 +829,7 @@ Union_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBox *box1 = PG_GETARG_TBOX_P(0);
   TBox *box2 = PG_GETARG_TBOX_P(1);
-  TBox *result = union_tbox_tbox(box1, box2);
+  TBox *result = union_tbox_tbox(box1, box2, true);
   PG_RETURN_POINTER(result);
 }
 

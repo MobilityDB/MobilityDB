@@ -50,7 +50,7 @@
  */
 Temporal *
 tcomp_temporal_base(const Temporal *temp, Datum value, meosType basetype,
-  Datum (*func)(Datum, Datum, meosType, meosType), bool invert)
+  Datum (*func)(Datum, Datum, meosType), bool invert)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -73,7 +73,7 @@ tcomp_temporal_base(const Temporal *temp, Datum value, meosType basetype,
  */
 Temporal *
 tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, meosType, meosType))
+  Datum (*func)(Datum, Datum, meosType))
 {
   if (tgeo_type(temp1->temptype))
   {

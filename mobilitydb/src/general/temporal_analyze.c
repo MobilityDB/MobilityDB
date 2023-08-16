@@ -189,7 +189,7 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     time_lowers[non_null_cnt] = period_lower;
     time_uppers[non_null_cnt] = period_upper;
     time_lengths[non_null_cnt] = distance_value_value(period_upper.val,
-      period_lower.val, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+      period_lower.val, T_TIMESTAMPTZ);
 
     /* Increment non null count */
     non_null_cnt++;

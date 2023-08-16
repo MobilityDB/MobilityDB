@@ -706,7 +706,7 @@ tnumberseqset_valuespans(const TSequenceSet *ss)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     TBox *box = TSEQUENCE_BBOX_PTR(seq);
-    floatspan_set_numspan(&box->span, &spans[i], basetype);
+    memcpy(&spans[i], &box->span, sizeof(Span));
   }
   Span *normspans = spanarr_normalize(spans, ss->count, SORT, &count);
   pfree(spans);
@@ -792,10 +792,7 @@ tsequenceset_min_value(const TSequenceSet *ss)
   if (tnumber_type(ss->temptype))
   {
     TBox *box = TSEQUENCESET_BBOX_PTR(ss);
-    Datum dmin = box->span.lower;
-    meosType basetype = temptype_basetype(ss->temptype);
-    Datum min = double_datum(DatumGetFloat8(dmin), basetype);
-    return min;
+    return box->span.lower;
   }
 
   meosType basetype = temptype_basetype(ss->temptype);
@@ -820,10 +817,11 @@ tsequenceset_max_value(const TSequenceSet *ss)
   if (tnumber_type(ss->temptype))
   {
     TBox *box = TSEQUENCESET_BBOX_PTR(ss);
-    Datum dmax = box->span.upper;
-    /* The span in a TBox is always a double span */
+    Datum max = box->span.upper;
+    /* The upper bound of an integer span in canonical form is non exclusive */
     meosType basetype = temptype_basetype(ss->temptype);
-    Datum max = double_datum(DatumGetFloat8(dmax), basetype);
+    if (basetype == T_INT4)
+      max = Int32GetDatum(DatumGetInt32(max) - 1);
     return max;
   }
 
@@ -1916,11 +1914,6 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss, const Set *ts,
         if (t >= DatumGetTimestampTz(seq->period.upper))
           j++;
       }
-    }
-    if (count == 0)
-    {
-      pfree(instants);
-      return NULL;
     }
     return (Temporal *) tsequence_make_free(instants, count, true, true,
       DISCRETE, NORMALIZE_NO);

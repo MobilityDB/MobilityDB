@@ -197,13 +197,12 @@ tinstant_set_bbox(const TInstant *inst, void *box)
   else if (tnumber_type(inst->temptype))
   {
     meosType basetype = temptype_basetype(inst->temptype);
-    Datum value = Float8GetDatum(datum_double(tinstant_value(inst), basetype));
+    Datum value = tinstant_value(inst);
+    Datum time = TimestampTzGetDatum(inst->t);
     TBox *tbox = (TBox *) box;
     memset(tbox, 0, sizeof(TBox));
-    span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
-      true, true, T_TIMESTAMPTZ, &tbox->period);
-    /* TBox always has a float span */
-    span_set(value, value, true, true, T_FLOAT8, &tbox->span);
+    span_set(value, value, true, true, basetype, &tbox->span);
+    span_set(time, time, true, true, T_TIMESTAMPTZ, &tbox->period);
     MEOS_FLAGS_SET_X(tbox->flags, true);
     MEOS_FLAGS_SET_T(tbox->flags, true);
   }
@@ -267,17 +266,11 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, bool lower_inc,
         max_inc = (i < count - 1) ? true : upper_inc1;
     }
   }
-  /* TBox always has a float span */
-  if (basetype == T_INT4)
-  {
-    min = Float8GetDatum((double) DatumGetInt32(min));
-    max = Float8GetDatum((double) DatumGetInt32(max));
-  }
-  if (datum_eq(min, max, T_FLOAT8))
+  if (datum_eq(min, max, basetype))
   {
     min_inc = max_inc = true;
   }
-  span_set(min, max, min_inc, max_inc, T_FLOAT8, &box->span);
+  span_set(min, max, min_inc, max_inc, basetype, &box->span);
   /* Compute the time span */
   span_set(TimestampTzGetDatum(instants[0]->t),
     TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,

@@ -131,10 +131,13 @@ tbox_out(const TBox *box, int maxdd)
     period = span_out(&box->period, maxdd);
 
   /* Print the box */
+  char *spantype = "";
+  if (hasx)
+    spantype = box->span.basetype == T_INT4 ? "INT" : "FLOAT";
   if (hasx && hast)
-    snprintf(result, size, "TBOX XT(%s,%s)", span, period);
+    snprintf(result, size, "TBOX%s XT(%s,%s)", spantype, span, period);
   else if (hasx)
-    snprintf(result, size, "TBOX X(%s)", span);
+    snprintf(result, size, "TBOX%s X(%s)", spantype, span);
   else /* hast */
     snprintf(result, size, "TBOX T(%s)", period);
 
@@ -210,12 +213,11 @@ tbox_copy(const TBox *box)
 TBox *
 number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
 {
-  TBox *result = palloc(sizeof(TBox));
-  number_set_tbox(d, basetype, result);
+  Span s, p;
+  span_set(d, d, true, true, basetype, &s);
   Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
+  return tbox_make(&s, &p);;
 }
 
 #if MEOS
@@ -227,12 +229,7 @@ number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
 TBox *
 int_timestamp_to_tbox(int i, TimestampTz t)
 {
-  TBox *result = palloc(sizeof(TBox));
-  int_set_tbox(i, result);
-  Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  return number_timestamp_to_tbox(Int32GetDatum(i), T_INT4, t);
 }
 
 /**
@@ -243,12 +240,7 @@ int_timestamp_to_tbox(int i, TimestampTz t)
 TBox *
 float_timestamp_to_tbox(double d, TimestampTz t)
 {
-  TBox *result = palloc(sizeof(TBox));
-  float_set_tbox(d, result);
-  Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  return number_timestamp_to_tbox(Float8GetDatum(d), T_FLOAT8, t);
 }
 #endif /* MEOS */
 
@@ -260,11 +252,9 @@ float_timestamp_to_tbox(double d, TimestampTz t)
 TBox *
 number_period_to_tbox(Datum d, meosType basetype, const Span *p)
 {
-  TBox *result = palloc(sizeof(TBox));
-  number_set_tbox(d, basetype, result);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  Span s;
+  span_set(d, d, true, true, basetype, &s);
+  return tbox_make(&s, p);
 }
 
 #if MEOS
@@ -276,11 +266,7 @@ number_period_to_tbox(Datum d, meosType basetype, const Span *p)
 TBox *
 int_period_to_tbox(int i, const Span *p)
 {
-  TBox *result = palloc(sizeof(TBox));
-  int_set_tbox(i, result);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  return number_period_to_tbox(Int32GetDatum(i), T_INT4, p);
 }
 
 /**
@@ -291,11 +277,7 @@ int_period_to_tbox(int i, const Span *p)
 TBox *
 float_period_to_tbox(double d, const Span *p)
 {
-  TBox *result = palloc(sizeof(TBox));
-  float_set_tbox(d, result);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  return number_period_to_tbox(Float8GetDatum(d), T_FLOAT8, p);
 }
 #endif /* MEOS */
 
@@ -305,16 +287,13 @@ float_period_to_tbox(double d, const Span *p)
  * @sqlfunc tbox()
  */
 TBox *
-span_timestamp_to_tbox(const Span *span, TimestampTz t)
+span_timestamp_to_tbox(const Span *s, TimestampTz t)
 {
-  assert(tnumber_spantype(span->spantype));
-  TBox *result = palloc(sizeof(TBox));
-  numspan_set_floatspan(span, &result->span);
+  assert(tnumber_spantype(s->spantype));
   Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  Span p;
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
+  return tbox_make(s, &p);
 }
 
 /**
@@ -323,16 +302,11 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
  * @sqlfunc tbox()
  */
 TBox *
-span_period_to_tbox(const Span *span, const Span *p)
+span_period_to_tbox(const Span *s, const Span *p)
 {
-  assert(tnumber_spantype(span->spantype));
+  assert(tnumber_spantype(s->spantype));
   assert(p->basetype == T_TIMESTAMPTZ);
-  TBox *result = palloc(sizeof(TBox));
-  numspan_set_floatspan(span, &result->span);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  return tbox_make(s, p);
 }
 
 /*****************************************************************************
@@ -348,12 +322,9 @@ void
 number_set_tbox(Datum value, meosType basetype, TBox *box)
 {
   assert(tnumber_basetype(basetype));
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  Datum dvalue = Float8GetDatum(datum_double(value, basetype));
-  span_set(dvalue, dvalue, true, true, T_FLOAT8, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  Span s;
+  span_set(value, value, true, true, basetype, &s);
+  tbox_set(&s, NULL, box);
   return;
 }
 
@@ -365,13 +336,7 @@ number_set_tbox(Datum value, meosType basetype, TBox *box)
 void
 int_set_tbox(int i, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  Datum d = Float8GetDatum((double) i);
-  span_set(d, d, true, true, T_FLOAT8, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
-  return;
+  return number_set_tbox(Int32GetDatum(i), T_INT4, box);
 }
 
 /**
@@ -395,13 +360,7 @@ int_to_tbox(int i)
 void
 float_set_tbox(double d, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  Datum dd = Float8GetDatum(d);
-  span_set(dd, dd, true, true, T_FLOAT8, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
-  return;
+  return number_set_tbox(Float8GetDatum(d), T_FLOAT8, box);
 }
 
 /**
@@ -426,12 +385,10 @@ float_to_tbox(double d)
 void
 timestamp_set_tbox(TimestampTz t, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, &box->period);
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  Span p;
+  Datum dt = TimestampTzGetDatum(t);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
+  tbox_set(NULL, &p, box);
   return;
 }
 
@@ -458,13 +415,9 @@ timestamp_to_tbox(TimestampTz t)
 void
 numset_set_tbox(const Set *s, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  Span sp;
-  set_set_span(s, &sp);
-  numspan_set_floatspan(&sp, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  Span span;
+  set_set_span(s, &span);
+  tbox_set(&span, NULL, box);
   return;
 }
 
@@ -491,11 +444,9 @@ numset_to_tbox(const Set *s)
 void
 timestampset_set_tbox(const Set *s, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  set_set_span(s, &box->period);
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  Span p;
+  set_set_span(s, &p);
+  tbox_set(NULL, &p, box);
   return;
 }
 
@@ -522,11 +473,7 @@ timestampset_to_tbox(const Set *s)
 void
 numspan_set_tbox(const Span *s, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  numspan_set_floatspan(s, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  tbox_set(s, NULL, box);
   return;
 }
 
@@ -553,11 +500,7 @@ numspan_to_tbox(const Span *s)
 void
 period_set_tbox(const Span *p, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  memcpy(&box->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  tbox_set(NULL, p, box);
   return;
 }
 
@@ -584,7 +527,7 @@ void
 numspanset_set_tbox(const SpanSet *ss, TBox *box)
 {
   assert(tnumber_spansettype(ss->spansettype));
-  numspan_set_tbox(&ss->span, box);
+  tbox_set(&ss->span, NULL, box);
   return;
 }
 
@@ -609,7 +552,7 @@ numspanset_to_tbox(const SpanSet *ss)
 void
 periodset_set_tbox(const SpanSet *ps, TBox *box)
 {
-  period_set_tbox(&ps->span, box);
+  tbox_set(NULL, &ps->span, box);
   return;
 }
 
@@ -640,7 +583,12 @@ tbox_to_floatspan(const TBox *box)
 {
   if (! MEOS_FLAGS_GET_X(box->flags))
     return NULL;
-  return span_copy(&box->span);
+  if (box->span.basetype == T_FLOAT8)
+    return span_copy(&box->span);
+  /* Convert the integer span to a float span */
+  Span *result = palloc(sizeof(Span));
+  intspan_set_floatspan(&box->span, result);
+  return result;
 }
 
 /**
@@ -696,7 +644,7 @@ tbox_xmin(const TBox *box, double *result)
 {
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
-  *result = DatumGetFloat8(box->span.lower);
+  *result = datum_double(box->span.lower, box->span.basetype);
   return true;
 }
 
@@ -728,7 +676,11 @@ tbox_xmax(const TBox *box, double *result)
 {
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
-  *result = DatumGetFloat8(box->span.upper);
+  if (box->span.basetype == T_INT4)
+    /* Integer spans are canonicalized, i.e., the upper bound is exclusive */
+    *result = (double) (DatumGetInt32(box->span.upper) - 1);
+  else
+    *result = DatumGetFloat8(box->span.upper);
   return true;
 }
 
@@ -1125,11 +1077,11 @@ overafter_tbox_tbox(const TBox *box1, const TBox *box2)
  * @sqlop @p +
  */
 TBox *
-union_tbox_tbox(const TBox *box1, const TBox *box2)
+union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
 {
   ensure_same_dimensionality_tbox(box1, box2);
   /* The union of boxes that do not intersect cannot be represented by a box */
-  if (! overlaps_tbox_tbox(box1, box2))
+  if (strict && ! overlaps_tbox_tbox(box1, box2))
     elog(ERROR, "Result of box union would not be contiguous");
 
   bool hasx = MEOS_FLAGS_GET_X(box1->flags);

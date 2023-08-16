@@ -28,36 +28,22 @@
  *****************************************************************************/
 
 /**
- * @brief Distance functions for temporal numbers.
+ * @brief Basic functions for set of disjoint spans.
  */
 
-#ifndef __TNUMBER_DISTANCE_H__
-#define __TNUMBER_DISTANCE_H__
+#ifndef __PG_SPANSET_H__
+#define __PG_SPANSET_H__
 
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
-#include "general/meos_catalog.h"
-#include "general/temporal.h"
+#include "general/span.h"
 
 /*****************************************************************************/
 
-/* Distance functions */
+/* General functions */
 
-extern Temporal *distance_tnumber_number(const Temporal *temp, Datum value,
-  meosType valuetype, meosType restype);
-extern Temporal *distance_tnumber_tnumber1(const Temporal *temp1,
-  const Temporal *temp2, meosType restype);
-
-extern Datum number_distance(Datum l, Datum r, meosType type);
-
-/* Nearest approach distance */
-
-extern double nad_tnumber_number(const Temporal *temp, Datum value,
-  meosType basetype);
-extern double nad_tbox_tbox(const TBox *box1, const TBox *box2);
-extern double nad_tnumber_tbox(const Temporal *temp, const TBox *box);
-
-// NAI and shortestline functions are not yet implemented
-// Are they useful ?
+extern void spanset_span_slice(Datum d, Span *p);
 
 /*****************************************************************************/
 

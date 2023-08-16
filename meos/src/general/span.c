@@ -57,6 +57,28 @@
  *****************************************************************************/
 
 /**
+ * @brief Ensure that the span values have the same type
+ */
+void
+ensure_same_spantype(const Span *s1, const Span *s2)
+{
+  if (s1->spantype != s2->spantype)
+    elog(ERROR, "Operation on mixed span types");
+  return;
+}
+
+/**
+ * @brief Ensure that a span value has the same base type as the given one
+ */
+void
+ensure_same_spantype_basetype(const Span *s, meosType basetype)
+{
+  if (s->basetype != basetype)
+    elog(ERROR, "Operation on mixed span and base types");
+  return;
+}
+
+/**
  * @brief Deconstruct a span
  * @param[in] s Span value
  * @param[out] lower,upper Bounds
@@ -106,8 +128,9 @@ span_deserialize(const Span *s, SpanBound *lower, SpanBound *upper)
 int
 span_bound_cmp(const SpanBound *b1, const SpanBound *b2)
 {
+  assert(b1->basetype == b2->basetype);
   /* Compare the values */
-  int32 result = datum_cmp2(b1->val, b2->val, b1->basetype, b2->basetype);
+  int32 result = datum_cmp(b1->val, b2->val, b1->basetype);
 
   /*
    * If the comparison is not equal and the bounds are both inclusive or
@@ -118,8 +141,9 @@ span_bound_cmp(const SpanBound *b1, const SpanBound *b2)
   {
     if (! b1->inclusive && ! b2->inclusive)
     {
-      /* both are exclusive */
+      /* both bounds are exclusive */
       if (b1->lower == b2->lower)
+        /* both are lower bound */
         return 0;
       else
         return b1->lower ? 1 : -1;
@@ -148,19 +172,20 @@ span_bound_qsort_cmp(const void *a1, const void *a2)
  * @brief Compare the lower bounds of two spans, returning <0, 0, or >0 according to
  * whether the first bound is less than, equal to, or greater than the second one.
  *
- * @note The function is equivalent to `span_bound_cmp` but avoids
+ * @note The function is equivalent to #span_bound_cmp but avoids
  * deserializing the spans into lower and upper bounds
  */
 int
-span_lower_cmp(const Span *a, const Span *b)
+span_lower_cmp(const Span *s1, const Span *s2)
 {
-  int result = datum_cmp2(a->lower, b->lower, a->basetype, b->basetype);
+  assert(s1->basetype == s2->basetype);
+  int result = datum_cmp(s1->lower, s2->lower, s1->basetype);
   if (result == 0)
   {
-    if (a->lower_inc == b->lower_inc)
+    if (s1->lower_inc == s2->lower_inc)
       /* both are inclusive or exclusive */
       return 0;
-    else if (a->lower_inc)
+    else if (s1->lower_inc)
       /* first is inclusive and second is exclusive */
       return 1;
     else
@@ -174,19 +199,20 @@ span_lower_cmp(const Span *a, const Span *b)
  * @brief Compare the upper bounds of two spans, returning <0, 0, or >0 according to
  * whether the first bound is less than, equal to, or greater than the second one.
  *
- * @note The function is equivalent to `span_bound_cmp` but avoids
+ * @note The function is equivalent to #span_bound_cmp but avoids
  * deserializing the spans into lower and upper bounds
  */
 int
-span_upper_cmp(const Span *a, const Span *b)
+span_upper_cmp(const Span *s1, const Span *s2)
 {
-  int result = datum_cmp2(a->upper, b->upper, a->basetype, b->basetype);
+  assert(s1->basetype == s2->basetype);
+  int result = datum_cmp(s1->upper, s2->upper, s1->basetype);
   if (result == 0)
   {
-    if (a->upper_inc == b->upper_inc)
+    if (s1->upper_inc == s2->upper_inc)
       /* both are inclusive or exclusive */
       return 0;
-    else if (a->upper_inc)
+    else if (s1->upper_inc)
       /* first is inclusive and second is exclusive */
       return 1;
     else
@@ -500,7 +526,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   }
 
   meosType spantype = basetype_spantype(basetype);
-  int cmp = datum_cmp2(lower, upper, basetype, basetype);
+  int cmp = datum_cmp(lower, upper, basetype);
   /* error check: if lower bound value is above upper, it's wrong */
   if (cmp > 0)
     elog(ERROR, "Span lower bound must be less than or equal to span upper bound");
@@ -600,7 +626,6 @@ float_to_floatspan(double d)
     T_FLOAT8);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_cast
@@ -614,6 +639,7 @@ timestamp_to_period(TimestampTz t)
     true, true, T_TIMESTAMPTZ);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -739,7 +765,7 @@ span_upper_inc(const Span *s)
 double
 span_width(const Span *s)
 {
-  return distance_value_value(s->lower, s->upper, s->basetype, s->basetype);
+  return distance_value_value(s->lower, s->upper, s->basetype);
 }
 
 /**
@@ -757,6 +783,7 @@ period_duration(const Span *s)
  * Transformation functions
  *****************************************************************************/
 
+#if 0 /* not used */
 /**
  * @ingroup libmeos_internal_setspan_transf
  * @brief Set the second span with the first one transformed to floatspan
@@ -788,6 +815,7 @@ floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype)
     memcpy(s2, s1, sizeof(Span));
   return;
 }
+#endif /* not used */
 
 /**
  * @ingroup libmeos_internal_setspan_transf
@@ -864,6 +892,7 @@ intspan_set_floatspan(const Span *s1, Span *s2)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_internal_setspan_transf
  * @brief Set the second span with the first one transformed to a integer span
@@ -877,6 +906,7 @@ floatspan_set_intspan(const Span *s1, Span *s2)
   span_set(lower, upper, true, false, T_INT4, s2);
   return;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_transf
@@ -885,7 +915,7 @@ floatspan_set_intspan(const Span *s1, Span *s2)
 void
 span_expand(const Span *s1, Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   int cmp1 = datum_cmp(s2->lower, s1->lower, s1->basetype);
   int cmp2 = datum_cmp(s2->upper, s1->upper, s1->basetype);
   bool lower1 = cmp1 < 0 || (cmp1 == 0 && (s2->lower_inc || ! s1->lower_inc));
@@ -906,8 +936,8 @@ span_expand(const Span *s1, Span *s2)
 void
 span_shift(Span *s, Datum shift)
 {
-  s->lower = datum_add(s->lower, shift, s->basetype, s->basetype);
-  s->upper = datum_add(s->upper, shift, s->basetype, s->basetype);
+  s->lower = datum_add(s->lower, shift, s->basetype);
+  s->upper = datum_add(s->upper, shift, s->basetype);
   return;
 }
 
@@ -1034,7 +1064,7 @@ period_shift_tscale(const Span *p, const Interval *shift,
 bool
 span_eq(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  ensure_same_spantype(s1, s2);
   if (s1->lower != s2->lower || s1->upper != s2->upper ||
     s1->lower_inc != s2->lower_inc || s1->upper_inc != s2->upper_inc)
     return false;
@@ -1064,13 +1094,13 @@ span_ne(const Span *s1, const Span *s2)
 int
 span_cmp(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
-  int cmp = datum_cmp2(s1->lower, s2->lower, s1->basetype, s2->basetype);
+  ensure_same_spantype(s1, s2);
+  int cmp = datum_cmp(s1->lower, s2->lower, s1->basetype);
   if (cmp != 0)
     return cmp;
   if (s1->lower_inc != s2->lower_inc)
     return s1->lower_inc ? -1 : 1;
-  cmp = datum_cmp2(s1->upper, s2->upper, s1->basetype, s2->basetype);
+  cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
   if (cmp != 0)
     return cmp;
   if (s1->upper_inc != s2->upper_inc)

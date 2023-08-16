@@ -120,16 +120,18 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p)
   else if (type == T_TBOX)
   {
     const TBox *box = DatumGetTboxP(((Const *) other)->constvalue);
-    *s = tbox_to_floatspan(box);
-    *p = tbox_to_period(box);
+    if (MEOS_FLAGS_GET_X(box->flags))
+      *s = span_copy(&box->span);
+    if (MEOS_FLAGS_GET_T(box->flags))
+      *p = span_copy(&box->period);
   }
   else if (tnumber_type(type))
   {
     const Temporal *temp = DatumGetTemporalP(((Const *) other)->constvalue);
     TBox box;
     temporal_set_bbox(temp, &box);
-    *s = tbox_to_floatspan(&box);
-    *p = tbox_to_period(&box);
+    *s = span_copy(&box.span);
+    *p = span_copy(&box.period);
   }
   else
     return false;

@@ -480,22 +480,23 @@ SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
 				<para>Restringir a (al complemento de) un <varname>tbox</varname></para>
 				<para><varname>atTbox(tnumber,tbox) → tnumber</varname></para>
 				<para><varname>minusTbox(tnumber,tbox) → tnumber</varname></para>
-				<para>Observe que cuando el cuadro delimitador tiene dimensiones de valor y de tiempo, la diferencia se calcula restringiendo el número temporal al cuadro usando la función <varname>atTbox</varname>, calculando la extensión de tiempo de esta restricción, y restringiendo el número temporal a la diferencia de la extensión del tiempo. Esto es necesario para garantizar que <varname>tnumber = merge(atTbox(tnumber,tbox), minusTbox(tnumber,tbox))</varname> (ver la función <link linkend="merge"><varname>merge</varname></link>). En otras palabras, mientras que la función <varname>atTbox</varname> restringe el número temporal con respecto al rango <emphasis>y</emphasis> al período que definen el cuadro delimitador, la función <varname>minusTbox</varname> restringe el número temporal con respecto al rango <emphasis>o</emphasis> al período. Para obtener la restricción usando una semántica <emphasis>y</emphasis>, deben aplicarse las dos funciones <varname>minusValues</varname> y <varname>minusTime</varname>.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT atTbox(tfloat '[0@2001-01-01, 3@2001-01-04)',
-  tbox 'TBOX XT((0,2),[2001-01-02, 2001-01-04])');
+  tbox 'TBOXFLOAT XT((0,2),[2001-01-02, 2001-01-04])');
 -- {[1@2001-01-02, 2@2001-01-03]}
 </programlisting>
+
 				<programlisting language="sql" xml:space="preserve">
 SELECT minusTbox(tfloat '[1@2001-01-01, 4@2001-01-04)',
-  'TBOX XT((1,4),[2001-01-03, 2001-01-04])');
+  'TBOXFLOAT XT((1,4),[2001-01-03, 2001-01-04])');
 -- {[1@2001-01-01, 3@2001-01-03)}
 WITH temp(temp, box) AS (
   SELECT tfloat '[1@2001-01-01, 4@2001-01-04)',
-    'TBOX XT((1,2),[2001-01-03, 2001-01-04])' )
+    tbox 'TBOXFLOAT XT((1,2),[2001-01-03, 2001-01-04])' )
 SELECT minusValues(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
 -- {[1@2001-01-01], [2@2001-01-02, 3@2001-01-03)}
 </programlisting>
+				<para>Observe que cuando el cuadro delimitador tiene dimensiones de valor y de tiempo, la diferencia se calcula restringiendo el número temporal al cuadro usando la función <varname>atTbox</varname>, calculando la extensión de tiempo de esta restricción, y restringiendo el número temporal a la diferencia de la extensión del tiempo. Esto es necesario para garantizar que <varname>tnumber = merge(atTbox(tnumber,tbox), minusTbox(tnumber,tbox))</varname> (ver la función <link linkend="merge"><varname>merge</varname></link>). En otras palabras, mientras que la función <varname>atTbox</varname> restringe el número temporal con respecto al rango <emphasis>y</emphasis> al período que definen el cuadro delimitador, la función <varname>minusTbox</varname> restringe el número temporal con respecto al rango <emphasis>o</emphasis> al período. Para obtener la restricción usando una semántica <emphasis>y</emphasis>, deben aplicarse las dos funciones <varname>minusValues</varname> y <varname>minusTime</varname>.</para>
 			</listitem>
 
 			<listitem id="atStbox">

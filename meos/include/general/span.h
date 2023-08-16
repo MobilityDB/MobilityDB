@@ -77,13 +77,15 @@ typedef struct
 
 /* General functions */
 
+extern void ensure_same_spantype(const Span *s1, const Span *s2);
+extern void ensure_same_spantype_basetype(const Span *s, meosType basetype);
 extern void span_deserialize(const Span *s, SpanBound *lower,
   SpanBound *upper);
 extern Span *span_serialize(SpanBound *lower, SpanBound *upper);
 extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
-extern int span_bound_qsort_cmp(const void *a1, const void *a2);
-extern int span_lower_cmp(const Span *a, const Span *b);
-extern int span_upper_cmp(const Span *a, const Span *b);
+extern int span_bound_qsort_cmp(const void *s1, const void *s2);
+extern int span_lower_cmp(const Span *s1, const Span *s2);
+extern int span_upper_cmp(const Span *s1, const Span *s2);
 extern Span *spanarr_normalize(Span *spans, int count, bool sort,
   int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);

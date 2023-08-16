@@ -95,16 +95,9 @@ CREATE FUNCTION asHexWKB(stbox, endianenconding text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
-/* The names of the SQL and C functions are different, otherwise there is
- * ambiguity and explicit casting of the arguments to timestamptz is needed */
-CREATE FUNCTION stbox_t(tstzspan)
+CREATE FUNCTION stbox_x(float, float, float, float, srid int DEFAULT 0)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_constructor_t'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION stbox(float, float, float, float, srid int DEFAULT 0)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_constructor'
+  AS 'MODULE_PATHNAME', 'Stbox_constructor_x'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox_z(float, float, float, float, float, float,
@@ -113,10 +106,32 @@ CREATE FUNCTION stbox_z(float, float, float, float, float, float,
   AS 'MODULE_PATHNAME', 'Stbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_t(float, float, float, float, tstzspan,
-    srid int DEFAULT 0)
+CREATE FUNCTION stbox_t(timestamptz)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_t'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox_t(tstzspan)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_constructor_t'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox_xt(float, float, float, float, timestamptz,
+    srid int DEFAULT 0)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_constructor_xt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox_xt(float, float, float, float, tstzspan,
+    srid int DEFAULT 0)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_constructor_xt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox_zt(float, float, float, float, float, float,
+    timestamptz, srid int DEFAULT 0)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox_zt(float, float, float, float, float, float,
@@ -125,8 +140,11 @@ CREATE FUNCTION stbox_zt(float, float, float, float, float, float,
   AS 'MODULE_PATHNAME', 'Stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* The names of the SQL and C functions are different, otherwise there is
- * ambiguity and explicit casting of the arguments to ::timestamptz is needed */
+CREATE FUNCTION geodstbox_t(timestamptz)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Geodstbox_constructor_t'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION geodstbox_t(tstzspan)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_t'
@@ -136,6 +154,12 @@ CREATE FUNCTION geodstbox_z(float, float, float, float, float, float,
     srid int DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geodstbox_zt(float, float, float, float, float, float,
+    timestamptz, srid int DEFAULT 4326)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Geodstbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geodstbox_zt(float, float, float, float, float, float,

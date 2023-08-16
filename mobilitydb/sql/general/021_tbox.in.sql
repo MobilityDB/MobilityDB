@@ -225,11 +225,11 @@ CREATE CAST (tbox AS tstzspan) WITH FUNCTION timeSpan(tbox);
  *****************************************************************************/
 
 CREATE FUNCTION hasX(tbox)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_hasx'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION hasT(tbox)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_hast'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

@@ -181,6 +181,31 @@ ensure_common_dimension(int16 flags1, int16 flags2)
   return;
 }
 
+/**
+ * @brief Ensure that two temporal values have the same temporal type
+ * @param[in] temp1,temp2 Input values
+ */
+void
+ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
+{
+  if (temp1->temptype != temp2->temptype)
+    elog(ERROR, "Operation on mixed temporal types");
+  return;
+}
+
+/**
+ * @brief Ensure that a temporal value has the same base type as the given one
+ * @param[in] temp Input value
+ * @param[in] basetype Input base type
+ */
+void
+ensure_same_temptype_basetype(const Temporal *temp, meosType basetype)
+{
+  if (temptype_basetype(temp->temptype) != basetype)
+    elog(ERROR, "Operation on mixed temporal type and base type");
+  return;
+}
+
 /*****************************************************************************/
 
 /**
@@ -230,7 +255,7 @@ ensure_valid_duration(const Interval *duration)
 {
   if (duration->month != 0)
   {
-    elog(ERROR, "Interval defined in terms of month, year, century etc. not supported");
+    elog(ERROR, "Interval defined in terms of month, year, century, etc. not supported");
   }
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
@@ -695,7 +720,7 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
   Interval *maxt, bool expand)
 {
   /* Validity tests */
-  assert(temp->temptype == inst->temptype);
+  ensure_same_temptype(temp, (Temporal *) inst);
   if (inst->subtype != TINSTANT)
     elog(ERROR, "The second argument must be of instant subtype");
   /* The test to ensure the increasing timestamps must be done in the
@@ -728,7 +753,7 @@ Temporal *
 temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 {
   /* Validity tests */
-  assert(temp->temptype == seq->temptype);
+  ensure_same_temptype(temp, (Temporal *) seq);
   if (seq->subtype != TSEQUENCE)
     elog(ERROR, "The second argument must be of sequence subtype");
   ensure_same_interpolation(temp, (Temporal *) seq);
@@ -848,7 +873,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
     return temporal_copy(temp1);
 
   /* Convert to the same subtype */
-  assert(temp1->temptype == temp2->temptype);
+  ensure_same_temptype(temp1, temp2);
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -997,6 +1022,7 @@ datum_float_to_int(Datum d)
 Temporal *
 tint_to_tfloat(const Temporal *temp)
 {
+  ensure_same_temptype_basetype(temp, T_INT4);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_int_to_float;
@@ -1015,6 +1041,7 @@ tint_to_tfloat(const Temporal *temp)
 Temporal *
 tfloat_to_tint(const Temporal *temp)
 {
+  ensure_same_temptype_basetype(temp, T_FLOAT8);
   if (MEOS_FLAGS_GET_LINEAR(temp->flags))
     elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
 
@@ -1079,7 +1106,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
   else
   {
     TBox *box = (TBox *) temporal_bbox_ptr(temp);
-    floatspan_set_numspan(&box->span, s, basetype);
+    memcpy(s, &box->span, sizeof(Span));
   }
   return;
 }
@@ -1092,6 +1119,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
 Span *
 tnumber_to_span(const Temporal *temp)
 {
+  ensure_tnumber_type(temp->temptype);
   Span *result = palloc(sizeof(Span));
   tnumber_set_span(temp, result);
   return result;
@@ -1493,11 +1521,97 @@ tinstant_tsample(const TInstant *inst, const Interval *duration,
   return NULL;
 }
 
+
+/**
+ * @brief Sample the temporal value according to period buckets.
+ * @param[in] seq Temporal value
+ * @param[in] lower_bucket,upper_bucket First and last buckets
+ * @param[in] tunits Time size of the tiles in PostgreSQL time units
+ * @param[out] result Output array of temporal instants
+ * @note The result is an temporal sequence with discrete interpolation
+ */
+int
+tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
+  TimestampTz upper_bucket, int64 tunits, TInstant **result)
+{
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  const TInstant *start = TSEQUENCE_INST_N(seq, 0);
+  TimestampTz lower = lower_bucket;
+  int i; /* Current segment of the sequence */
+  int ninsts = 0; /* Number of instants of the result */
+  int cmp1;
+  if (interp == DISCRETE)
+  {
+    i = 0; /* Current instant of the sequence */
+    while (i < seq->count && lower < upper_bucket)
+    {
+      cmp1 = timestamptz_cmp_internal(start->t, lower);
+      /* If the instant is equal to the lower bound of the bucket */
+      if (cmp1 == 0)
+      {
+        result[ninsts++] = tinstant_copy(start);
+        lower += tunits;
+      }
+      /* Advance the bucket if it is after the instant */
+      else if (cmp1 > 0)
+      {
+        int times = ceil((double) (start->t - lower) / tunits);
+        lower +=  times * tunits;
+        continue;
+      }
+      if (cmp1 <= 0)
+      {
+        /* If there are no more segments */
+        if (i == seq->count - 1)
+          break;
+        start = TSEQUENCE_INST_N(seq, ++i);
+      }
+      /* If there are no more segments */
+    }
+  }
+  else
+  {
+    /* Loop for each segment */
+    const TInstant *end = TSEQUENCE_INST_N(seq, 1);
+    bool lower_inc = seq->period.lower_inc;
+    i = 1; /* Current segment of the sequence */
+    while (i < seq->count && lower < upper_bucket)
+    {
+      bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+      cmp1 = timestamptz_cmp_internal(start->t, lower);
+      int cmp2 = timestamptz_cmp_internal(lower, end->t);
+      /* If the segment contains the lower bound of the bucket */
+      if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
+          (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
+      {
+        Datum value = tsegment_value_at_timestamp(start, end, interp, lower);
+        result[ninsts++] = tinstant_make(value, seq->temptype, lower);
+        /* Advance the bucket */
+        lower += tunits;
+      }
+      /* Advance the bucket if it is after the start of the segment */
+      else if (cmp1 >= 0)
+        lower += tunits;
+      /* Advance the segment if it is after the lower bound of the bucket */
+      else if (cmp2 >= 0)
+      {
+        /* If there are no more segments */
+        if (i == seq->count - 1)
+          break;
+        start = end;
+        end = TSEQUENCE_INST_N(seq, ++i);
+      }
+    }
+  }
+  return ninsts;
+}
+
 /**
  * @brief Sample the temporal value according to period buckets.
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
+ * @note The result is an temporal sequence with discrete interpolation
  */
 TSequence *
 tsequence_tsample(const TSequence *seq, const Interval *duration,
@@ -1514,48 +1628,9 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
   /* Number of buckets */
   int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
   TInstant **instants = palloc(sizeof(TInstant *) * count);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
-  const TInstant *start = TSEQUENCE_INST_N(seq, 0);
-  const TInstant *end = TSEQUENCE_INST_N(seq, 1);
-  lower = lower_bucket;
-  /* Loop for each segment */
-  bool lower_inc = seq->period.lower_inc;
-  int i = 1; /* Current segment of the sequence */
-  int ninsts = 0; /* Number of instants of the result */
-  while (i < seq->count && lower < upper_bucket)
-  {
-    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    int cmp1 = timestamptz_cmp_internal(start->t, lower);
-    int cmp2 = timestamptz_cmp_internal(lower, end->t);
-    /* If the segment contains the lower bound of the bucket */
-    if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
-        (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
-    {
-      Datum value = tsegment_value_at_timestamp(start, end, linear, lower);
-      instants[ninsts++] = tinstant_make(value, seq->temptype, lower);
-      /* Advance the bucket */
-      lower += tunits;
-    }
-    /* Advance the bucket if it is after the start of the segment */
-    else if (cmp1 >= 0)
-      lower += tunits;
-    /* Advance the segment if it is after the lower bound of the bucket */
-    else if (cmp2 >= 0)
-    {
-      /* If there are no more segments */
-      if (i == seq->count - 1)
-        break;
-      start = end;
-      end = TSEQUENCE_INST_N(seq, ++i);
-    }
-  }
-  if (ninsts == 0)
-  {
-    pfree(instants);
-    return NULL;
-  }
-  return tsequence_make_free(instants, ninsts, true, true, interp, NORMALIZE);
+  int ninsts = tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
+    &instants[0]);
+  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**
@@ -1564,21 +1639,30 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  */
-TSequenceSet *
+TSequence *
 tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  ensure_valid_duration(duration);
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = tsequenceset_start_timestamp(ss);
+  TimestampTz upper = tsequenceset_end_timestamp(ss);
+  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bucket */
+  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+    tunits;
+  /* Number of buckets */
+  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
   /* Loop for each segment */
-  int nseqs = 0;
+  int ninsts = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    TSequence *sample = tsequence_tsample(seq, duration, torigin);
-    if (sample)
-      sequences[nseqs++] = sample;
+    ninsts += tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
+      &instants[ninsts]);
   }
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**
@@ -1715,6 +1799,7 @@ temporal_values(const Temporal *temp, int *count)
 bool *
 tbool_values(const Temporal *temp, int *count)
 {
+  ensure_same_temptype_basetype(temp, T_BOOL);
   Datum *datumarr = temporal_values(temp, count);
   bool *result = palloc(sizeof(bool) * *count);
   for (int i = 0; i < *count; i++)
@@ -2534,13 +2619,11 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
   {
     TBox box;
     temporal_set_bbox(temp, &box);
-    meosType basetype = temptype_basetype(temp->temptype);
-    Datum dvalue = Float8GetDatum(datum_double(value, basetype));
-    return (ever &&
-        datum_le(box.span.lower, dvalue, box.span.basetype) &&
-        datum_le(dvalue, box.span.upper, box.span.basetype)) ||
-      (!ever && box.span.lower == dvalue &&
-        dvalue == box.span.upper);
+    Datum upper = box.span.basetype == T_INT4 ?
+      Int32GetDatum(DatumGetInt32(box.span.upper) - 1) : box.span.upper;
+    return (ever && contains_span_value(&box.span, value, box.span.basetype)) ||
+      (!ever && datum_eq(box.span.lower, value, box.span.basetype) &&
+      datum_eq(upper, value, box.span.basetype));
   }
   else if (tspatial_type(temp->temptype))
   {
@@ -2580,10 +2663,10 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
   {
     TBox box;
     temporal_set_bbox(temp, &box);
-    meosType basetype = temptype_basetype(temp->temptype);
-    Datum dvalue = Float8GetDatum(datum_double(value, basetype));
-    if ((ever && datum_lt(dvalue, box.span.lower, box.span.basetype)) ||
-      (! ever && datum_lt(dvalue, box.span.upper, box.span.basetype)))
+    Datum upper = box.span.basetype == T_INT4 ?
+      Int32GetDatum(DatumGetInt32(box.span.upper) - 1) : box.span.upper;
+    if ((ever && datum_lt(value, box.span.lower, box.span.basetype)) ||
+      (! ever && datum_lt(value, upper, box.span.basetype)))
       return false;
   }
   return true;
@@ -3404,7 +3487,7 @@ Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
   /* Convert to the same subtype */
-  assert(temp1->temptype == temp2->temptype);
+  ensure_same_temptype(temp1, temp2);
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -3922,6 +4005,7 @@ temporal_stops(const Temporal *temp, double maxdist,
 {
   if (maxdist < 0)
     elog(ERROR, "The maximum distance must be positive: %f", maxdist);
+  /* We cannot call #ensure_valid_duration since the duration may be zero */
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
   int cmp = pg_interval_cmp(minduration, &intervalzero);
@@ -4018,7 +4102,7 @@ temporal_compact(const Temporal *temp)
 bool
 temporal_eq(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1->temptype == temp2->temptype);
+  ensure_same_temptype(temp1, temp2);
   assert(temptype_subtype(temp1->subtype));
   assert(temptype_subtype(temp2->subtype));
 
@@ -4116,7 +4200,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
 int
 temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1->temptype == temp2->temptype);
+  ensure_same_temptype(temp1, temp2);
 
   /* Compare bounding period
    * We need to compare periods AND bounding boxes since the bounding boxes

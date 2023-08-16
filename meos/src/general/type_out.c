@@ -98,7 +98,7 @@ int32_mfjson_buf(char *output, int i)
 static size_t
 double_mfjson_buf(char *output, double d, int precision)
 {
-  assert (precision <= OUT_MAX_DOUBLE_PRECISION);
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
   ptr += lwprint_double(d, precision, ptr);
   return (ptr - output);
@@ -180,7 +180,7 @@ coordinates_mfjson_size(int npoints, bool hasz, int precision)
 static size_t
 coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
 {
-  assert (precision <= OUT_MAX_DOUBLE_PRECISION);
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
   ptr += sprintf(ptr, "[");
   if (MEOS_FLAGS_GET_Z(inst->flags))
@@ -310,12 +310,15 @@ tbox_mfjson_size(int precision)
 static size_t
 tbox_mfjson_buf(char *output, const TBox *bbox, int precision)
 {
-  assert (precision <= OUT_MAX_DOUBLE_PRECISION);
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
+  bool intbox = bbox->span.basetype == T_INT4;
   char *ptr = output;
   ptr += sprintf(ptr, "\"bbox\":[");
-  ptr += lwprint_double(DatumGetFloat8(bbox->span.lower), precision, ptr);
+  ptr += intbox ? sprintf(ptr, "%d", DatumGetInt32(bbox->span.lower)) :
+    lwprint_double(DatumGetFloat8(bbox->span.lower), precision, ptr);
   ptr += sprintf(ptr, ",");
-  ptr += lwprint_double(DatumGetFloat8(bbox->span.upper), precision, ptr);
+  ptr += intbox ? sprintf(ptr, "%d", DatumGetInt32(bbox->span.upper) - 1) :
+    lwprint_double(DatumGetFloat8(bbox->span.upper), precision, ptr);
   ptr += sprintf(ptr, "],\"period\":{\"begin\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
   ptr += sprintf(ptr, ",\"end\":");
@@ -357,7 +360,7 @@ stbox_mfjson_size(bool hasz, int precision)
 static size_t
 stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
 {
-  assert (precision <= OUT_MAX_DOUBLE_PRECISION);
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
   ptr += sprintf(ptr, "\"bbox\":[[");
   ptr += lwprint_double(bbox->xmin, precision, ptr);

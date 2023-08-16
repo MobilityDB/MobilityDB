@@ -335,8 +335,8 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   double duration = end1->t - start1->t;
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* We know that this function is called only for linear segments */
-  Datum value1 = tsegment_value_at_timestamp(start1, end1, true, *t);
-  Datum value2 = tsegment_value_at_timestamp(start2, end2, true, *t);
+  Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
+  Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
   *mindist = hasz ? geom_distance3d(value1, value2) :
     geom_distance2d(value1, value2);
   return true;
