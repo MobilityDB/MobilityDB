@@ -862,7 +862,6 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 Temporal *
 temporal_merge(const Temporal *temp1, const Temporal *temp2)
 {
-  ensure_same_temptype(temp1, temp2);
   Temporal *result;
   /* Can't do anything with null inputs */
   if (! temp1 && ! temp2)

@@ -326,11 +326,9 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
   /* Calculate extension of original span by calling distance_value_value */
   float8 diff = 0.0;
   if (span_bound_cmp(&new_lower, &orig_lower) < 0)
-    diff += distance_value_value(orig->lower, new->lower, orig->basetype,
-      new->basetype);
+    diff += distance_value_value(orig->lower, new->lower, orig->basetype);
   if (span_bound_cmp(&new_upper, &orig_upper) > 0)
-    diff += distance_value_value(new->upper, orig->upper, new->basetype,
-      orig->basetype);
+    diff += distance_value_value(new->upper, orig->upper, new->basetype);
   *penalty = (float4) diff;
 
   PG_RETURN_POINTER(penalty);
@@ -465,7 +463,7 @@ span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
      * used for overlap measure.
      */
     overlap = (float4) distance_value_value(left_upper->val, right_lower->val,
-      left_upper->basetype, right_lower->basetype);
+      left_upper->basetype);
 
     /* If there is no previous selection, select this split */
     if (context->first)
@@ -773,9 +771,9 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
          */
         common_entries[common_entries_count].delta =
           distance_value_value(span->lower, context.right_lower.val,
-            span->basetype, context.right_lower.basetype) -
+            span->basetype) -
           distance_value_value(context.left_upper.val, span->upper,
-            context.right_lower.basetype, span->basetype);
+            span->basetype);
         common_entries_count++;
       }
       else

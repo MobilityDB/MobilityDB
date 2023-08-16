@@ -295,7 +295,7 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     lowers[non_null_cnt] = lower;
     uppers[non_null_cnt] = upper;
     lengths[non_null_cnt] = distance_value_value(upper.val, lower.val,
-      upper.basetype, lower.basetype);
+      upper.basetype);
 
     /* Increment non null count */
     non_null_cnt++;
