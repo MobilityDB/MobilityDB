@@ -358,7 +358,7 @@ Temporal_enforce_typmod(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Peek into a temporal datum to find the bounding box. If the datum 
+ * @brief Peek into a temporal datum to find the bounding box. If the datum
  * needs to be detoasted, extract only the header and not the full object.
  */
 void
@@ -1991,7 +1991,13 @@ Temporal_merge(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = temporal_merge(temp1, temp2);
+  Temporal *result = NULL;
+  if (! temp1)
+    result = temp2;
+  else if (! temp2)
+    result = temp1;
+  else
+    result = temporal_merge(temp1, temp2);
   if (temp1)
     PG_FREE_IF_COPY(temp1, 0);
   if (temp2)

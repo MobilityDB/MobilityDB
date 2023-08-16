@@ -1023,7 +1023,7 @@ datum_float_to_int(Datum d)
 Temporal *
 tint_to_tfloat(const Temporal *temp)
 {
-  ensure_same_temptype_basetype(temp, T_TINT);
+  ensure_same_temptype_basetype(temp, T_INT4);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_int_to_float;
@@ -1042,7 +1042,7 @@ tint_to_tfloat(const Temporal *temp)
 Temporal *
 tfloat_to_tint(const Temporal *temp)
 {
-  ensure_same_temptype_basetype(temp, T_TFLOAT);
+  ensure_same_temptype_basetype(temp, T_FLOAT8);
   if (MEOS_FLAGS_GET_LINEAR(temp->flags))
     elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
 
@@ -1800,7 +1800,7 @@ temporal_values(const Temporal *temp, int *count)
 bool *
 tbool_values(const Temporal *temp, int *count)
 {
-  ensure_same_temptype_basetype(temp, T_TBOOL);
+  ensure_same_temptype_basetype(temp, T_BOOL);
   Datum *datumarr = temporal_values(temp, count);
   bool *result = palloc(sizeof(bool) * *count);
   for (int i = 0; i < *count; i++)
