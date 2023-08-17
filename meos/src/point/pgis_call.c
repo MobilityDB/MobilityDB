@@ -71,6 +71,9 @@ void srid_check_latlong(int32_t srid);
   #include <lwgeom_pg.h>
 #endif
 
+GSERIALIZED *
+gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod);
+
 /*****************************************************************************
  * Functions adapted from lwgeom_box.c
  *****************************************************************************/
@@ -1342,7 +1345,7 @@ postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
  * @note PostGIS function: LWGEOM_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-gserialized_in(char *input, int32 geom_typmod)
+pgis_geometry_in(char *input, int32 geom_typmod)
 {
   char *str = input;
   LWGEOM_PARSER_RESULT lwg_parser_result;
@@ -1452,17 +1455,14 @@ gserialized_out(const GSERIALIZED *geom)
 
 #if MEOS
 /**
- * @ingroup libmeos_pgis_types
- * @brief Return a geometry from its WKT representation (and optionally a SRID)
- * @note This is a a stricter version of geometry_in, where we refuse to accept
- *  (HEX)WKB or EWKT.
- * @note PostGIS function: LWGEOM_from_text(PG_FUNCTION_ARGS)
+ * @brief Return a geometry/geography from its WKT representation (and
+ * optionally a SRID)
  */
-GSERIALIZED *
-gserialized_from_text(char *wkt, int srid)
+static GSERIALIZED *
+gserialized_from_text(char *wkt, int srid, bool geography)
 {
   LWGEOM_PARSER_RESULT lwg_parser_result;
-  GSERIALIZED *geom_result = NULL;
+  GSERIALIZED *geo_result = NULL;
   LWGEOM *lwgeom;
 
   if (lwgeom_parse_wkt(&lwg_parser_result, wkt, LW_PARSER_CHECK_ALL) == LW_FAILURE )
@@ -1479,17 +1479,47 @@ gserialized_from_text(char *wkt, int srid)
   if ( srid > 0 )
     lwgeom_set_srid(lwgeom, srid);
 
-  geom_result = geo_serialize(lwgeom);
+  geo_result = geography ?
+    gserialized_geography_from_lwgeom(lwgeom, -1) : geo_serialize(lwgeom);
+  /* Clean up */
+  lwgeom_free(lwg_parser_result.geom);
   lwgeom_parser_result_free(&lwg_parser_result);
+  pfree(wkt);
 
-  return geom_result;
+  return geo_result;
+}
+
+/**
+ * @ingroup libmeos_pgis_types
+ * @brief Return a geometry from its WKT representation (and optionally a SRID)
+ * @note This is a a stricter version of pgis_geometry_in, where we refuse to
+ * accept (HEX)WKB or EWKT.
+ * @note PostGIS function: LWGEOM_from_text(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+geometry_from_text(char *wkt, int srid)
+{
+  return gserialized_from_text(wkt, srid, false);
+}
+
+/**
+ * @ingroup libmeos_pgis_types
+ * @brief Return a geometry from its WKT representation (and optionally a SRID)
+ * @note This is a a stricter version of gegraphy_in, where we refuse to accept
+ *  (HEX)WKB or EWKT.
+ * @note PostGIS function: geography_from_text(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+geography_from_text(char *wkt, int srid)
+{
+  return gserialized_from_text(wkt, srid, true);
 }
 
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return the WKT representation (and optionally a SRID) of a geometry
- * @note This is a a stricter version of geometry_in, where we refuse to accept
- * (HEX)WKB or EWKT.
+ * @note This is a a stricter version of pgis_geometry_in, where we refuse to
+ * accept (HEX)WKB or EWKT.
  * @note PostGIS function: LWGEOM_asText(PG_FUNCTION_ARGS)
  */
 char *
@@ -1502,8 +1532,8 @@ gserialized_as_text(const GSERIALIZED *geom, int precision)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return the EWKT representation (and optionally a SRID) of a geometry
- * @note This is a a stricter version of geometry_in, where we refuse to accept
- * (HEX)WKB or EWKT.
+ * @note This is a a stricter version of pgis_geometry_in, where we refuse to
+ * accept (HEX)WKB or EWKT.
  * @note PostGIS function: LWGEOM_asEWKT(PG_FUNCTION_ARGS)
  */
 char *
@@ -1513,18 +1543,30 @@ gserialized_as_ewkt(const GSERIALIZED *geom, int precision)
   return lwgeom_to_wkt(lwgeom, WKT_EXTENDED, precision, NULL);
 }
 
-
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return a geometry from its WKT representation
- * @note This is a a stricter version of geometry_in, where we refuse to accept
- * (HEX)WKB or EWKT.
+ * @note This is a a stricter version of pgis_geometry_in, where we refuse to
+ * accept (HEX)WKB or EWKT.
  * @note PostGIS function: LWGEOM_from_text(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-gserialized_from_hexewkb(const char *wkt)
+geometry_from_hexewkb(const char *wkt)
 {
-  return gserialized_in((char *) wkt, -1);
+  return pgis_geometry_in((char *) wkt, -1);
+}
+
+/**
+ * @ingroup libmeos_pgis_types
+ * @brief Return a geography from its WKT representation
+ * @note This is a a stricter version of pgis_geography_in, where we refuse to
+ * accept (HEX)WKB or EWKT.
+ * @note PostGIS function: LWGEOM_from_text(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+geography_from_hexewkb(const char *wkt)
+{
+  return pgis_geography_in((char *) wkt, -1);
 }
 
 /**
@@ -1539,7 +1581,7 @@ gserialized_as_hexewkb(const GSERIALIZED *geom, const char *type)
   /* If user specified endianness, respect it */
   if (type != NULL)
   {
-    if  ( ! strncmp(type, "xdr", 3) || ! strncmp(type, "XDR", 3) )
+    if  (! strncmp(type, "xdr", 3) || ! strncmp(type, "XDR", 3))
       variant = variant | WKB_XDR;
     else
       variant = variant | WKB_NDR;
@@ -1562,7 +1604,7 @@ gserialized_as_hexewkb(const GSERIALIZED *geom, const char *type)
 GSERIALIZED *
 gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid)
 {
-  uint8_t *wkb = (uint8_t*) VARDATA(bytea_wkb);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
   LWGEOM *lwgeom = lwgeom_from_wkb(wkb, VARSIZE_ANY_EXHDR(bytea_wkb),
     LW_PARSER_CHECK_ALL);
   if (!lwgeom)
@@ -1571,7 +1613,7 @@ gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid)
   if (srid > 0)
     lwgeom_set_srid(lwgeom, srid);
 
-  if ( lwgeom_needs_bbox(lwgeom) )
+  if (lwgeom_needs_bbox(lwgeom))
     lwgeom_add_bbox(lwgeom);
 
   GSERIALIZED *geom = geo_serialize(lwgeom);
@@ -1771,7 +1813,7 @@ gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
  * @note PostGIS function: geography_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-gserialized_geog_in(char *str, int32 geog_typmod)
+pgis_geography_in(char *str, int32 geog_typmod)
 {
   LWGEOM_PARSER_RESULT lwg_parser_result;
   LWGEOM *lwgeom = NULL;

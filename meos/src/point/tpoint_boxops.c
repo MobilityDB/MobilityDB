@@ -200,6 +200,8 @@ tpointseq_stboxes_iter(const TSequence *seq, STBox *result)
 STBox *
 tpointseq_stboxes(const TSequence *seq, int *count)
 {
+  assert(seq); assert(count);
+  assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   int newcount = seq->count == 1 ? 1 : seq->count - 1;
   STBox *result = palloc(sizeof(STBox) * newcount);
@@ -218,6 +220,8 @@ tpointseq_stboxes(const TSequence *seq, int *count)
 STBox *
 tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 {
+  assert(ss); assert(count);
+  assert(tgeo_type(ss->temptype));
   assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
   STBox *result = palloc(sizeof(STBox) * ss->totalcount);
   int nboxes = 0;
@@ -238,6 +242,9 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 STBox *
 tpoint_stboxes(const Temporal *temp, int *count)
 {
+  assert(temp); assert(count);
+  ensure_tgeo_type(temp->temptype);
+
   STBox *result = NULL;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || MEOS_FLAGS_GET_DISCRETE(temp->flags))

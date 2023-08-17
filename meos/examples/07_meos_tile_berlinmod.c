@@ -94,7 +94,7 @@ int main(void)
   int no_rows, no_cols, *no_cells;
   STBox *trip_extent =
     stbox_in("SRID=3857;STBOX X((473212.810151,6578740.528027),(499152.544688,6607165.513683))");
-  GSERIALIZED *sorigin = gserialized_in("Point(0 0)", -1);
+  GSERIALIZED *sorigin = pgis_geometry_in("Point(0 0)", -1);
   STBox *trip_tiles = stbox_tile_list(trip_extent, 5e3, 5e3, 0, NULL, sorigin,
     0, &no_cells);
   /* Compute the (value and time) tiles for speed of trips */

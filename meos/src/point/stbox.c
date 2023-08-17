@@ -63,7 +63,7 @@ extern void ll2cart(const POINT2D *g, POINT3D *p);
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libmeos_internal_box_transf
  * @brief Expand the second spatiotemporal box with the first one.
  * @pre No tests are made concerning the srid, dimensionality, etc.
  * This should be ensured by the calling function.
@@ -71,6 +71,7 @@ extern void ll2cart(const POINT2D *g, POINT3D *p);
 void
 stbox_expand(const STBox *box1, STBox *box2)
 {
+  assert(box1); assert(box2);
   if (MEOS_FLAGS_GET_X(box2->flags))
   {
     box2->xmin = Min(box1->xmin, box2->xmin);
@@ -143,6 +144,7 @@ ensure_has_T_stbox(const STBox *box)
 STBox *
 stbox_in(const char *str)
 {
+  assert(str);
   return stbox_parse(&str);
 }
 
@@ -154,7 +156,7 @@ char *
 stbox_out(const STBox *box, int maxdd)
 {
   /* Ensure validity of the arguments */
-  assert(box != NULL);
+  assert(box);
   ensure_non_negative(maxdd);
 
   static size_t size = MAXSTBOXLEN + 1;
@@ -260,6 +262,7 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
   const Span *p, STBox *box)
 {
+  assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   MEOS_FLAGS_SET_X(box->flags, hasx);
@@ -298,6 +301,7 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 STBox *
 stbox_copy(const STBox *box)
 {
+  assert(box);
   STBox *result = palloc(sizeof(STBox));
   memcpy(result, box, sizeof(STBox));
   return result;
@@ -313,6 +317,7 @@ stbox_copy(const STBox *box)
 STBox *
 geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
 {
+  assert(gs);
   if (gserialized_is_empty(gs))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
@@ -331,6 +336,7 @@ geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
 STBox *
 geo_period_to_stbox(const GSERIALIZED *gs, const Span *p)
 {
+  assert(gs); assert(p);
   if (gserialized_is_empty(gs))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
@@ -352,6 +358,7 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Span *p)
 void
 stbox_set_gbox(const STBox *box, GBOX *gbox)
 {
+  assert(box); assert(gbox);
   ensure_has_X_stbox(box);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(gbox, 0, sizeof(GBOX));
@@ -379,6 +386,7 @@ stbox_set_gbox(const STBox *box, GBOX *gbox)
 void
 stbox_set_box3d(const STBox *box, BOX3D *box3d)
 {
+  assert(box); assert(box3d);
   ensure_has_X_stbox(box);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box3d, 0, sizeof(BOX3D));
@@ -405,6 +413,7 @@ stbox_set_box3d(const STBox *box, BOX3D *box3d)
 GSERIALIZED *
 stbox_to_geo(const STBox *box)
 {
+  assert(box);
   ensure_has_X_stbox(box);
   LWGEOM *geo;
   GSERIALIZED *result;
@@ -463,6 +472,7 @@ stbox_to_geo(const STBox *box)
 Span *
 stbox_to_period(const STBox *box)
 {
+  assert(box);
   if (! MEOS_FLAGS_GET_T(box->flags))
     return NULL;
   return span_copy(&box->period);
@@ -505,6 +515,7 @@ point_get_coords(const GSERIALIZED *point, bool hasz, double *x, double *y,
 bool
 geo_set_stbox(const GSERIALIZED *gs, STBox *box)
 {
+  assert(gs); assert(box);
   if (gserialized_is_empty(gs))
     return false;
 
@@ -562,6 +573,7 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
 STBox *
 geo_to_stbox(const GSERIALIZED *gs)
 {
+  assert(gs);
   STBox *result = palloc(sizeof(STBox));
   geo_set_stbox(gs, result);
   return result;
@@ -578,6 +590,7 @@ geo_to_stbox(const GSERIALIZED *gs)
 void
 geoarr_set_stbox(const Datum *values, int count, STBox *box)
 {
+  assert(values); assert(box);
   geo_set_stbox(DatumGetGserializedP(values[0]), box);
   for (int i = 1; i < count; i++)
   {
@@ -595,6 +608,7 @@ geoarr_set_stbox(const Datum *values, int count, STBox *box)
 void
 timestamp_set_stbox(TimestampTz t, STBox *box)
 {
+  assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
@@ -626,11 +640,12 @@ timestamp_to_stbox(TimestampTz t)
  * @brief Set a spatiotemporal box from a timestamp set.
  */
 void
-timestampset_set_stbox(const Set *ts, STBox *box)
+timestampset_set_stbox(const Set *s, STBox *box)
 {
+  assert(s); assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
-  set_set_span(ts, &box->period);
+  set_set_span(s, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -643,10 +658,11 @@ timestampset_set_stbox(const Set *ts, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-timestampset_to_stbox(const Set *ts)
+timestampset_to_stbox(const Set *s)
 {
+  assert(s);
   STBox *result = palloc(sizeof(STBox));
-  timestampset_set_stbox(ts, result);
+  timestampset_set_stbox(s, result);
   return result;
 }
 #endif /* MEOS */
@@ -656,11 +672,12 @@ timestampset_to_stbox(const Set *ts)
  * @brief Set a spatiotemporal box from a period.
  */
 void
-period_set_stbox(const Span *p, STBox *box)
+period_set_stbox(const Span *s, STBox *box)
 {
+  assert(s); assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
-  memcpy(&box->period, p, sizeof(Span));
+  memcpy(&box->period, s, sizeof(Span));
   MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -673,10 +690,11 @@ period_set_stbox(const Span *p, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-period_to_stbox(const Span *p)
+period_to_stbox(const Span *s)
 {
+  assert(s);
   STBox *result = palloc(sizeof(STBox));
-  period_set_stbox(p, result);
+  period_set_stbox(s, result);
   return result;
 }
 #endif /* MEOS */
@@ -686,11 +704,12 @@ period_to_stbox(const Span *p)
  * @brief Set a spatiotemporal box from a period set.
  */
 void
-periodset_set_stbox(const SpanSet *ps, STBox *box)
+periodset_set_stbox(const SpanSet *ss, STBox *box)
 {
+  assert(ss); assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
-  memcpy(&box->period, &ps->span, sizeof(Span));
+  memcpy(&box->period, &ss->span, sizeof(Span));
   MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -703,10 +722,11 @@ periodset_set_stbox(const SpanSet *ps, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-periodset_to_stbox(const SpanSet *ps)
+periodset_to_stbox(const SpanSet *ss)
 {
+  assert(ss);
   STBox *result = palloc(sizeof(STBox));
-  periodset_set_stbox(ps, result);
+  periodset_set_stbox(ss, result);
   return result;
 }
 #endif /* MEOS */
@@ -723,6 +743,7 @@ periodset_to_stbox(const SpanSet *ps)
 bool
 stbox_hasx(const STBox *box)
 {
+  assert(box);
   bool result = MEOS_FLAGS_GET_X(box->flags);
   return result;
 }
@@ -735,6 +756,7 @@ stbox_hasx(const STBox *box)
 bool
 stbox_hasz(const STBox *box)
 {
+  assert(box);
   bool result = MEOS_FLAGS_GET_Z(box->flags);
   return result;
 }
@@ -747,6 +769,7 @@ stbox_hasz(const STBox *box)
 bool
 stbox_hast(const STBox *box)
 {
+  assert(box);
   bool result = MEOS_FLAGS_GET_T(box->flags);
   return result;
 }
@@ -759,6 +782,7 @@ stbox_hast(const STBox *box)
 bool
 stbox_isgeodetic(const STBox *box)
 {
+  assert(box);
   bool result = MEOS_FLAGS_GET_GEODETIC(box->flags);
   return result;
 }
@@ -773,6 +797,7 @@ stbox_isgeodetic(const STBox *box)
 bool
 stbox_xmin(const STBox *box, double *result)
 {
+  assert(box); assert(result);
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->xmin;
@@ -789,6 +814,7 @@ stbox_xmin(const STBox *box, double *result)
 bool
 stbox_xmax(const STBox *box, double *result)
 {
+  assert(box); assert(result);
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->xmax;
@@ -805,6 +831,7 @@ stbox_xmax(const STBox *box, double *result)
 bool
 stbox_ymin(const STBox *box, double *result)
 {
+  assert(box); assert(result);
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->ymin;
@@ -821,6 +848,7 @@ stbox_ymin(const STBox *box, double *result)
 bool
 stbox_ymax(const STBox *box, double *result)
 {
+  assert(box); assert(result);
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->ymax;
@@ -837,6 +865,7 @@ stbox_ymax(const STBox *box, double *result)
 bool
 stbox_zmin(const STBox *box, double *result)
 {
+  assert(box); assert(result);
   if (! MEOS_FLAGS_GET_Z(box->flags))
     return false;
   *result = box->zmin;
@@ -853,6 +882,7 @@ stbox_zmin(const STBox *box, double *result)
 bool
 stbox_zmax(const STBox *box, double *result)
 {
+  assert(box); assert(result);
   if (! MEOS_FLAGS_GET_Z(box->flags))
     return false;
   *result = box->zmax;
@@ -869,6 +899,7 @@ stbox_zmax(const STBox *box, double *result)
 bool
 stbox_tmin(const STBox *box, TimestampTz *result)
 {
+  assert(box); assert(result);
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.lower);
@@ -886,9 +917,10 @@ stbox_tmin(const STBox *box, TimestampTz *result)
 bool
 stbox_tmin_inc(const STBox *box, bool *result)
 {
+  assert(box); assert(result);
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
-  *result = DatumGetBool(box->period.lower);
+  *result = DatumGetBool(box->period.lower_inc);
   return true;
 }
 
@@ -902,6 +934,7 @@ stbox_tmin_inc(const STBox *box, bool *result)
 bool
 stbox_tmax(const STBox *box, TimestampTz *result)
 {
+  assert(box); assert(result);
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.upper);
@@ -919,9 +952,10 @@ stbox_tmax(const STBox *box, TimestampTz *result)
 bool
 stbox_tmax_inc(const STBox *box, bool *result)
 {
+  assert(box); assert(result);
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
-  *result = DatumGetBool(box->period.upper);
+  *result = DatumGetBool(box->period.upper_inc);
   return true;
 }
 
@@ -937,6 +971,7 @@ stbox_tmax_inc(const STBox *box, bool *result)
 int32
 stbox_srid(const STBox *box)
 {
+  assert(box);
   return box->srid;
 }
 
@@ -948,6 +983,7 @@ stbox_srid(const STBox *box)
 STBox *
 stbox_set_srid(const STBox *box, int32 srid)
 {
+  assert(box);
   STBox *result = stbox_copy(box);
   result->srid = srid;
   return result;
@@ -966,6 +1002,7 @@ stbox_set_srid(const STBox *box, int32 srid)
 STBox *
 stbox_get_space(const STBox *box)
 {
+  assert(box);
   ensure_has_X_stbox(box);
   STBox *result = palloc(sizeof(STBox));
   stbox_set(true, MEOS_FLAGS_GET_Z(box->flags),
@@ -983,6 +1020,7 @@ stbox_get_space(const STBox *box)
 STBox *
 stbox_expand_space(const STBox *box, double d)
 {
+  assert(box);
   ensure_has_X_stbox(box);
   STBox *result = stbox_copy(box);
   result->xmin -= d;
@@ -1006,6 +1044,7 @@ stbox_expand_space(const STBox *box, double d)
 STBox *
 stbox_expand_time(const STBox *box, const Interval *interval)
 {
+  assert(box); assert(interval);
   ensure_has_T_stbox(box);
   STBox *result = stbox_copy(box);
   TimestampTz tmin = pg_timestamp_mi_interval(DatumGetTimestampTz(
@@ -1024,7 +1063,7 @@ STBox *
 stbox_round(const STBox *box, int maxdd)
 {
   /* Ensure validity of the arguments */
-  assert(box != NULL);
+  assert(box);
   ensure_has_X_stbox(box);
   ensure_non_negative(maxdd);
 
@@ -1093,6 +1132,7 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
 bool
 contains_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   bool hasx, hasz, hast, geodetic;
   topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
   if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
@@ -1127,6 +1167,7 @@ contained_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   bool hasx, hasz, hast, geodetic;
   topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
   if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
@@ -1150,6 +1191,7 @@ overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 same_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   bool hasx, hasz, hast, geodetic;
   topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
   if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
@@ -1171,6 +1213,7 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   bool hasx, hasz, hast, geodetic;
   topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
   STBox inter;
@@ -1226,6 +1269,7 @@ pos_stbox_stbox_test(const STBox *box1, const STBox *box2)
 bool
 left_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_X_stbox(box1);
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
@@ -1241,6 +1285,7 @@ left_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 overleft_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_X_stbox(box1);
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
@@ -1256,6 +1301,7 @@ overleft_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 right_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_X_stbox(box1);
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
@@ -1271,6 +1317,7 @@ right_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 overright_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_X_stbox(box1);
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
@@ -1286,6 +1333,7 @@ overright_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 below_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_X_stbox(box1);
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
@@ -1301,6 +1349,7 @@ below_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 overbelow_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_X_stbox(box1);
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
@@ -1316,6 +1365,7 @@ overbelow_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 above_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_X_stbox(box1);
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
@@ -1331,6 +1381,7 @@ above_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 overabove_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_X_stbox(box1);
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
@@ -1346,6 +1397,7 @@ overabove_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 front_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_Z(box1->flags);
   ensure_has_Z(box2->flags);
   pos_stbox_stbox_test(box1, box2);
@@ -1361,6 +1413,7 @@ front_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 overfront_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_Z(box1->flags);
   ensure_has_Z(box2->flags);
   pos_stbox_stbox_test(box1, box2);
@@ -1376,6 +1429,7 @@ overfront_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 back_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_Z(box1->flags);
   ensure_has_Z(box2->flags);
   pos_stbox_stbox_test(box1, box2);
@@ -1391,6 +1445,7 @@ back_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 overback_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_Z(box1->flags);
   ensure_has_Z(box2->flags);
   pos_stbox_stbox_test(box1, box2);
@@ -1406,6 +1461,7 @@ overback_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 before_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
   return left_span_span(&box1->period, &box2->period);
@@ -1421,6 +1477,7 @@ before_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
   return overleft_span_span(&box1->period, &box2->period);
@@ -1435,6 +1492,7 @@ overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 after_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
   return right_span_span(&box1->period, &box2->period);
@@ -1449,6 +1507,7 @@ after_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 overafter_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
   return overright_span_span(&box1->period, &box2->period);
@@ -1466,6 +1525,7 @@ overafter_stbox_stbox(const STBox *box1, const STBox *box2)
 STBox *
 union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
 {
+  assert(box1); assert(box2);
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_dimensionality(box1->flags, box2->flags);
   ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
@@ -1489,6 +1549,7 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
 bool
 inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
 {
+  assert(box1); assert(box2);
   bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
   bool hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
@@ -1538,6 +1599,7 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
 STBox *
 intersection_stbox_stbox(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   ensure_same_geodetic(box1->flags, box2->flags);
   // ensure_same_dimensionality(box1->flags, box2->flags);
   ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
@@ -1571,6 +1633,7 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
 STBox *
 stbox_quad_split(const STBox *box, int *count)
 {
+  assert(box); assert(count);
   ensure_has_X_stbox(box);
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -1637,7 +1700,9 @@ stbox_quad_split(const STBox *box, int *count)
 bool
 stbox_eq(const STBox *box1, const STBox *box2)
 {
-  if (box1->xmin != box2->xmin || box1->ymin != box2->ymin ||
+  assert(box1); assert(box2);
+  if (box1->flags != box2->flags || 
+      box1->xmin != box2->xmin || box1->ymin != box2->ymin ||
       box1->zmin != box2->zmin || box1->xmax != box2->xmax ||
       box1->ymax != box2->ymax || box1->zmax != box2->zmax ||
       box1->srid != box2->srid || ! span_eq(&box1->period, &box2->period))
@@ -1666,6 +1731,7 @@ stbox_ne(const STBox *box1, const STBox *box2)
 int
 stbox_cmp(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   /* Compare the SRID */
   if (box1->srid < box2->srid)
     return -1;
@@ -1733,6 +1799,7 @@ stbox_cmp(const STBox *box1, const STBox *box2)
 bool
 stbox_lt(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   int cmp = stbox_cmp(box1, box2);
   return cmp < 0;
 }
@@ -1746,6 +1813,7 @@ stbox_lt(const STBox *box1, const STBox *box2)
 bool
 stbox_le(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   int cmp = stbox_cmp(box1, box2);
   return cmp <= 0;
 }
@@ -1759,6 +1827,7 @@ stbox_le(const STBox *box1, const STBox *box2)
 bool
 stbox_ge(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   int cmp = stbox_cmp(box1, box2);
   return cmp >= 0;
 }
@@ -1771,6 +1840,7 @@ stbox_ge(const STBox *box1, const STBox *box2)
 bool
 stbox_gt(const STBox *box1, const STBox *box2)
 {
+  assert(box1); assert(box2);
   int cmp = stbox_cmp(box1, box2);
   return cmp > 0;
 }

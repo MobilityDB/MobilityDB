@@ -162,6 +162,11 @@ extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 
 extern Datum datum_round_geo(Datum value, Datum size);
 
+/* Stop function */
+
+int tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
+  TSequence **result);
+
 /*****************************************************************************/
 
 #endif

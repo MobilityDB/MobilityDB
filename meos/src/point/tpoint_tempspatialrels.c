@@ -481,10 +481,12 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
  * @sqlfunc tdisjoint()
  */
 Temporal *
-tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
+tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  return tinterrel_tpoint_geo(temp, geo, TDISJOINT, restr, atvalue);
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
+  return tinterrel_tpoint_geo(temp, gs, TDISJOINT, restr, atvalue);
 }
 
 /**
@@ -494,10 +496,12 @@ tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
  * @sqlfunc tintersects()
  */
 Temporal *
-tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
+tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  return tinterrel_tpoint_geo(temp, geo, TINTERSECTS, restr, atvalue);
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
+  return tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr, atvalue);
 }
 #endif /* MEOS */
 
@@ -1086,6 +1090,8 @@ Temporal *
 tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return NULL;
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr,
@@ -1129,6 +1135,8 @@ Temporal *
 ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return NULL;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -1167,6 +1175,8 @@ Temporal *
 tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool restr, bool atvalue)
 {
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return NULL;
   ensure_point_type(gs);
@@ -1301,6 +1311,9 @@ Temporal *
 tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   double dist, bool restr, bool atvalue)
 {
+  assert(temp1); assert(temp2);
+  ensure_tgeo_type(temp1->temptype);
+  ensure_tgeo_type(temp2->temptype);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   Temporal *sync1, *sync2;
   /* Return false if the temporal points do not intersect in time

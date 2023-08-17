@@ -74,6 +74,7 @@
 Datum
 tinstant_value(const TInstant *inst)
 {
+  assert(inst);
   /* For base types passed by value */
   if (MEOS_FLAGS_GET_BYVAL(inst->flags))
     return inst->value;
@@ -88,6 +89,7 @@ tinstant_value(const TInstant *inst)
 Datum
 tinstant_value_copy(const TInstant *inst)
 {
+  assert(inst);
   /* For base types passed by value */
   if (MEOS_FLAGS_GET_BYVAL(inst->flags))
     return inst->value;
@@ -102,7 +104,6 @@ tinstant_value_copy(const TInstant *inst)
 
 /**
  * @brief Set the value and the timestamp of a temporal instant
- *
  * @param[in,out] inst Temporal instant to be modified
  * @param[in] value Value
  * @param[in] t Timestamp
@@ -112,6 +113,7 @@ tinstant_value_copy(const TInstant *inst)
 void
 tinstant_set(TInstant *inst, Datum value, TimestampTz t)
 {
+  assert(inst);
   inst->t = t;
   inst->value = value;
 }
@@ -122,6 +124,7 @@ tinstant_set(TInstant *inst, Datum value, TimestampTz t)
 double
 tnumberinst_double(const TInstant *inst)
 {
+  assert(inst);
   assert(tnumber_type(inst->temptype));
   Datum d = tinstant_value(inst);
   if (inst->temptype == T_TINT)
@@ -145,6 +148,7 @@ tnumberinst_double(const TInstant *inst)
 TInstant *
 tinstant_in(const char *str, meosType temptype)
 {
+  assert(str);
   return tinstant_parse(&str, temptype, true, true);
 }
 
@@ -156,6 +160,7 @@ tinstant_in(const char *str, meosType temptype)
 TInstant *
 tboolinst_in(const char *str)
 {
+  assert(str);
   return tinstant_parse(&str, T_TBOOL, true, true);
 }
 
@@ -167,6 +172,7 @@ tboolinst_in(const char *str)
 TInstant *
 tintinst_in(const char *str)
 {
+  assert(str);
   return tinstant_parse(&str, T_TINT, true, true);
 }
 
@@ -178,6 +184,7 @@ tintinst_in(const char *str)
 TInstant *
 tfloatinst_in(const char *str)
 {
+  assert(str);
   return tinstant_parse(&str, T_TFLOAT, true, true);
 }
 
@@ -189,6 +196,7 @@ tfloatinst_in(const char *str)
 TInstant *
 ttextinst_in(const char *str)
 {
+  assert(str);
   return tinstant_parse(&str, T_TTEXT, true, true);
 }
 
@@ -200,6 +208,7 @@ ttextinst_in(const char *str)
 TInstant *
 tgeompointinst_in(const char *str)
 {
+  assert(str);
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
   assert (temp->subtype == TINSTANT);
@@ -214,6 +223,7 @@ tgeompointinst_in(const char *str)
 TInstant *
 tgeogpointinst_in(const char *str)
 {
+  assert(str);
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
   assert (temp->subtype == TINSTANT);
@@ -233,7 +243,7 @@ char *
 tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
 {
   /* Ensure validity of the arguments */
-  assert(inst != NULL);
+  assert(inst);
   ensure_non_negative(maxdd);
 
   char *t = pg_timestamptz_out(inst->t);
@@ -420,6 +430,7 @@ tinstant_copy(const TInstant *inst)
 Datum *
 tinstant_values(const TInstant *inst, int *count)
 {
+  assert(inst); assert(count);
   Datum *result = palloc(sizeof(Datum));
   result[0] = tinstant_value(inst);
   *count = 1;
@@ -434,6 +445,7 @@ tinstant_values(const TInstant *inst, int *count)
 SpanSet *
 tnumberinst_valuespans(const TInstant *inst)
 {
+  assert(inst);
   Datum value = tinstant_value(inst);
   Span s;
   span_set(value, value, true, true, temptype_basetype(inst->temptype), &s);
@@ -448,6 +460,7 @@ tnumberinst_valuespans(const TInstant *inst)
 SpanSet *
 tinstant_time(const TInstant *inst)
 {
+  assert(inst);
   SpanSet *result = timestamp_to_periodset(inst->t);
   return result;
 }
@@ -459,10 +472,11 @@ tinstant_time(const TInstant *inst)
  * @sqlop @p ::
  */
 void
-tinstant_set_period(const TInstant *inst, Span *p)
+tinstant_set_period(const TInstant *inst, Span *s)
 {
+  assert(inst); assert(s);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
-    true, true, T_TIMESTAMPTZ, p);
+    true, true, T_TIMESTAMPTZ, s);
   return;
 }
 
@@ -475,6 +489,7 @@ tinstant_set_period(const TInstant *inst, Span *p)
 TimestampTz *
 tinstant_timestamps(const TInstant *inst, int *count)
 {
+  assert(inst); assert(count);
   TimestampTz *result = palloc(sizeof(TimestampTz));
   result[0] = inst->t;
   *count = 1;
@@ -490,6 +505,7 @@ tinstant_timestamps(const TInstant *inst, int *count)
 const TInstant **
 tinstant_instants(const TInstant *inst, int *count)
 {
+  assert(inst); assert(count);
   const TInstant **result = palloc(sizeof(TInstant *));
   result[0] = inst;
   *count = 1;
@@ -506,6 +522,7 @@ tinstant_instants(const TInstant *inst, int *count)
 bool
 tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
 {
+  assert(inst); assert(result);
   if (t != inst->t)
     return false;
   *result = tinstant_value_copy(inst);
@@ -524,6 +541,7 @@ tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
 TInstant *
 tsequence_to_tinstant(const TSequence *seq)
 {
+  assert(seq);
   if (seq->count != 1)
     elog(ERROR, "Cannot transform input value to a temporal instant");
 
@@ -538,6 +556,7 @@ tsequence_to_tinstant(const TSequence *seq)
 TInstant *
 tsequenceset_to_tinstant(const TSequenceSet *ss)
 {
+  assert(ss);
   if (ss->totalcount != 1)
     elog(ERROR, "Cannot transform input value to a temporal instant");
   return tinstant_copy(TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0));
@@ -551,6 +570,7 @@ tsequenceset_to_tinstant(const TSequenceSet *ss)
 TInstant *
 tinstant_shift(const TInstant *inst, const Interval *interval)
 {
+  assert(inst); assert(interval);
   TInstant *result = tinstant_copy(inst);
   result->t = pg_timestamp_pl_interval(inst->t, interval);
   return result;
@@ -568,6 +588,7 @@ tinstant_shift(const TInstant *inst, const Interval *interval)
 bool
 tinstant_ever_eq(const TInstant *inst, Datum value)
 {
+  assert(inst);
   return datum_eq(tinstant_value(inst), value,
     temptype_basetype(inst->temptype));
 }
@@ -593,6 +614,7 @@ tinstant_always_eq(const TInstant *inst, Datum value)
 bool
 tinstant_ever_lt(const TInstant *inst, Datum value)
 {
+  assert(inst);
   return datum_lt(tinstant_value(inst), value,
     temptype_basetype(inst->temptype));
 }
@@ -606,6 +628,7 @@ tinstant_ever_lt(const TInstant *inst, Datum value)
 bool
 tinstant_ever_le(const TInstant *inst, Datum value)
 {
+  assert(inst);
   return datum_le(tinstant_value(inst), value,
     temptype_basetype(inst->temptype));
 }
@@ -618,6 +641,7 @@ tinstant_ever_le(const TInstant *inst, Datum value)
 bool
 tinstant_always_lt(const TInstant *inst, Datum value)
 {
+  assert(inst);
   return datum_lt(tinstant_value(inst), value,
     temptype_basetype(inst->temptype));
 }
@@ -631,6 +655,7 @@ tinstant_always_lt(const TInstant *inst, Datum value)
 bool
 tinstant_always_le(const TInstant *inst, Datum value)
 {
+  assert(inst);
   return datum_le(tinstant_value(inst), value,
     temptype_basetype(inst->temptype));
 }
@@ -647,6 +672,7 @@ tinstant_always_le(const TInstant *inst, Datum value)
 TInstant *
 tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 {
+  assert(inst);
   if (datum_eq(value, tinstant_value(inst),
       temptype_basetype(inst->temptype)))
     return atfunc ? tinstant_copy(inst) : NULL;
@@ -662,14 +688,13 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
  * discrete sequence.
  */
 bool
-tinstant_restrict_values_test(const TInstant *inst, const Set *set,
-  bool atfunc)
+tinstant_restrict_values_test(const TInstant *inst, const Set *s, bool atfunc)
 {
   Datum value = tinstant_value(inst);
   meosType basetype = temptype_basetype(inst->temptype);
-  for (int i = 0; i < set->count; i++)
+  for (int i = 0; i < s->count; i++)
   {
-    if (datum_eq(value, SET_VAL_N(set, i), basetype))
+    if (datum_eq(value, SET_VAL_N(s, i), basetype))
       return atfunc ? true : false;
   }
   return atfunc ? false : true;
@@ -681,9 +706,10 @@ tinstant_restrict_values_test(const TInstant *inst, const Set *set,
  * @sqlfunc atValues(), minusValues()
  */
 TInstant *
-tinstant_restrict_values(const TInstant *inst, const Set *set, bool atfunc)
+tinstant_restrict_values(const TInstant *inst, const Set *s, bool atfunc)
 {
-  if (tinstant_restrict_values_test(inst, set, atfunc))
+  assert(inst);
+  if (tinstant_restrict_values_test(inst, s, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -691,21 +717,20 @@ tinstant_restrict_values(const TInstant *inst, const Set *set, bool atfunc)
 /**
  * @brief Return true if a temporal number instant satisfies the restriction to
  * (the complement of) a span of base values
- *
  * @param[in] inst Temporal number
- * @param[in] span Span of base values
+ * @param[in] s Span of base values
  * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number
  * @note This function is called for each composing instant in a temporal
  * discrete sequence.
  */
 bool
-tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
+tnumberinst_restrict_span_test(const TInstant *inst, const Span *s,
   bool atfunc)
 {
   Datum d = tinstant_value(inst);
   meosType basetype = temptype_basetype(inst->temptype);
-  bool contains = contains_span_value(span, d, basetype);
+  bool contains = contains_span_value(s, d, basetype);
   return atfunc ? contains : ! contains;
 }
 
@@ -715,16 +740,16 @@ tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
  * base values.
  *
  * @param[in] inst Temporal number
- * @param[in] span Span of base values
+ * @param[in] s Span of base values
  * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number
  * @sqlfunc atSpan(), minusSpan()
  */
 TInstant *
-tnumberinst_restrict_span(const TInstant *inst, const Span *span,
-  bool atfunc)
+tnumberinst_restrict_span(const TInstant *inst, const Span *s, bool atfunc)
 {
-  if (tnumberinst_restrict_span_test(inst, span, atfunc))
+  assert(inst); assert(s);
+  if (tnumberinst_restrict_span_test(inst, s, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -759,6 +784,7 @@ TInstant *
 tnumberinst_restrict_spanset(const TInstant *inst, const SpanSet *ss,
   bool atfunc)
 {
+  assert(inst); assert(ss);
   if (tnumberinst_restrict_spanset_test(inst, ss, atfunc))
     return tinstant_copy(inst);
   return NULL;
@@ -775,7 +801,8 @@ tnumberinst_restrict_spanset(const TInstant *inst, const SpanSet *ss,
 TInstant *
 tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
 {
-  if (t == inst->t)
+  assert(inst);
+  if (inst->t == t)
     return atfunc ? tinstant_copy(inst) : NULL;
   return atfunc ? NULL : tinstant_copy(inst);
 }
@@ -788,11 +815,11 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
  * discrete sequence.
  */
 bool
-tinstant_restrict_timestampset_test(const TInstant *inst, const Set *ts,
+tinstant_restrict_timestampset_test(const TInstant *inst, const Set *s,
   bool atfunc)
 {
-  for (int i = 0; i < ts->count; i++)
-    if (inst->t == DatumGetTimestampTz(SET_VAL_N(ts, i)))
+  for (int i = 0; i < s->count; i++)
+    if (inst->t == DatumGetTimestampTz(SET_VAL_N(s, i)))
       return atfunc ? true : false;
   return atfunc ? false : true;
 }
@@ -803,10 +830,10 @@ tinstant_restrict_timestampset_test(const TInstant *inst, const Set *ts,
  * @sqlfunc atTstzSet(), minusTstzSet()
  */
 TInstant *
-tinstant_restrict_timestampset(const TInstant *inst, const Set *ts,
-  bool atfunc)
+tinstant_restrict_timestampset(const TInstant *inst, const Set *s, bool atfunc)
 {
-  if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
+  assert(inst); assert(s);
+  if (tinstant_restrict_timestampset_test(inst, s, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -817,10 +844,10 @@ tinstant_restrict_timestampset(const TInstant *inst, const Set *ts,
  * @sqlfunc atPeriod(), minusPeriod()
  */
 TInstant *
-tinstant_restrict_period(const TInstant *inst, const Span *period,
-  bool atfunc)
+tinstant_restrict_period(const TInstant *inst, const Span *s, bool atfunc)
 {
-  bool contains = contains_period_timestamp(period, inst->t);
+  assert(inst); assert(s);
+  bool contains = contains_period_timestamp(s, inst->t);
   if ((atfunc && ! contains) || (! atfunc && contains))
     return NULL;
   return tinstant_copy(inst);
@@ -833,11 +860,11 @@ tinstant_restrict_period(const TInstant *inst, const Span *period,
  * discrete sequence.
  */
 bool
-tinstant_restrict_periodset_test(const TInstant *inst, const SpanSet *ps,
+tinstant_restrict_periodset_test(const TInstant *inst, const SpanSet *ss,
   bool atfunc)
 {
-  for (int i = 0; i < ps->count; i++)
-    if (contains_period_timestamp(spanset_sp_n(ps, i), inst->t))
+  for (int i = 0; i < ss->count; i++)
+    if (contains_period_timestamp(spanset_sp_n(ss, i), inst->t))
       return atfunc ? true : false;
   return atfunc ? false : true;
 }
@@ -848,10 +875,11 @@ tinstant_restrict_periodset_test(const TInstant *inst, const SpanSet *ps,
  * @sqlfunc atTime(), minusTime()
  */
 TInstant *
-tinstant_restrict_periodset(const TInstant *inst,const  SpanSet *ps,
+tinstant_restrict_periodset(const TInstant *inst,const  SpanSet *ss,
   bool atfunc)
 {
-  if (tinstant_restrict_periodset_test(inst, ps, atfunc))
+  assert(inst); assert(ss);
+  if (tinstant_restrict_periodset_test(inst, ss, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -867,6 +895,8 @@ tinstant_restrict_periodset(const TInstant *inst,const  SpanSet *ps,
 Temporal *
 tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 {
+  assert(inst1); assert(inst2);
+  assert(inst1->temptype == inst2->temptype);
   const TInstant *instants[] = {inst1, inst2};
   return tinstant_merge_array(instants, 2);
 }
@@ -882,6 +912,7 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 Temporal *
 tinstant_merge_array(const TInstant **instants, int count)
 {
+  assert(instants);
   assert(count > 1);
   tinstarr_sort((TInstant **) instants, count);
   /* Ensure validity of the arguments and compute the bounding box */
@@ -912,6 +943,8 @@ bool
 intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
   TInstant **inter1, TInstant **inter2)
 {
+  assert(inst1); assert(inst2);
+  assert(inter1); assert(inter2);
   /* Test whether the two temporal instants overlap on time */
   if (inst1->t != inst2->t)
     return false;
@@ -939,6 +972,7 @@ intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 bool
 tinstant_eq(const TInstant *inst1, const TInstant *inst2)
 {
+  assert(inst1); assert(inst2);
   assert(inst1->temptype == inst2->temptype);
   /* Compare values and timestamps */
   Datum value1 = tinstant_value(inst1);
@@ -963,6 +997,7 @@ tinstant_eq(const TInstant *inst1, const TInstant *inst2)
 int
 tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 {
+  assert(inst1); assert(inst2);
   assert(inst1->temptype == inst2->temptype);
   /* Compare timestamps */
   int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
@@ -995,6 +1030,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 uint32
 tinstant_hash(const TInstant *inst)
 {
+  assert(inst);
   Datum value = tinstant_value(inst);
   meosType basetype = temptype_basetype(inst->temptype);
   /* Apply the hash function to the base type */

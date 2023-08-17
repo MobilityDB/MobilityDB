@@ -34,6 +34,8 @@
 
 #include "point/tpoint.h"
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
@@ -58,6 +60,7 @@
 GSERIALIZED *
 gserialized_copy(const GSERIALIZED *g)
 {
+  assert(g);
   GSERIALIZED *result = palloc(VARSIZE(g));
   memcpy(result, g, VARSIZE(g));
   return result;
@@ -76,6 +79,7 @@ gserialized_copy(const GSERIALIZED *g)
 STBox *
 tpoint_to_stbox(const Temporal *temp)
 {
+  assert(temp);
   STBox *result = palloc(sizeof(STBox));
   temporal_set_bbox(temp, result);
   return result;
@@ -94,6 +98,7 @@ tpoint_to_stbox(const Temporal *temp)
 STBox *
 geo_expand_space(const GSERIALIZED *gs, double d)
 {
+  assert(gs);
   if (gserialized_is_empty(gs))
     return NULL;
   STBox box;
@@ -111,6 +116,9 @@ geo_expand_space(const GSERIALIZED *gs, double d)
 STBox *
 tpoint_expand_space(const Temporal *temp, double d)
 {
+  assert(temp);
+  /* This function is also called for tnpoint */
+  assert(tspatial_type(temp->temptype));
   STBox box;
   temporal_set_bbox(temp, &box);
   STBox *result = stbox_expand_space(&box, d);
@@ -128,6 +136,7 @@ Temporal *
 tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, meosType), bool invert)
 {
+  assert(temp); assert(gs); assert(func);
   if (gserialized_is_empty(gs))
     return NULL;
   ensure_point_type(gs);

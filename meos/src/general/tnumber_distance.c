@@ -78,6 +78,8 @@ Temporal *
 distance_tnumber_number(const Temporal *temp, Datum value, meosType valuetype,
   meosType restype)
 {
+  assert(temp);
+  assert(temptype_basetype(temp->temptype) == valuetype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &number_distance;
@@ -105,6 +107,7 @@ distance_tnumber_number(const Temporal *temp, Datum value, meosType valuetype,
 Temporal *
 distance_tint_int(const Temporal *temp, int i)
 {
+  ensure_same_temporal_basetype(temp, T_INT4);
   return distance_tnumber_number(temp, Int32GetDatum(i), T_INT4, T_TINT);
 }
 
@@ -116,6 +119,7 @@ distance_tint_int(const Temporal *temp, int i)
 Temporal *
 distance_tfloat_float(const Temporal *temp, double d)
 {
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return distance_tnumber_number(temp, Int32GetDatum(d), T_FLOAT8, T_TFLOAT);
 }
 #endif /* MEOS */
@@ -143,15 +147,16 @@ tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 }
 
 /**
+ * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between two temporal numbers
- *
- * @param[in] temp1,temp2 Temporal numbers
- * @param[in] restype Type of the result
+ * @sqlop @p <->
  */
 Temporal *
-distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
-  meosType restype)
+distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
+  assert(temp1); assert(temp2);
+  assert(temp1->temptype == temp2->temptype);
+  assert(tnumber_type(temp1->temptype));
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &number_distance;
@@ -159,7 +164,7 @@ distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
   lfinfo.args = true;
   lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
   lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
-  lfinfo.restype = restype;
+  lfinfo.restype = temp1->temptype;
   lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
     MEOS_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
@@ -168,24 +173,6 @@ distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
   Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_dist
- * @brief Return the temporal distance between two temporal numbers
- * @sqlop @p <->
- */
-Temporal *
-distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
-{
-  meosType restype;
-  if (temp1->subtype == T_TINT && temp2->subtype == T_TINT)
-    restype = T_TINT;
-  else
-    restype = T_TFLOAT;
-  return distance_tnumber_tnumber1(temp1, temp2, restype);
-}
-#endif /* MEOS */
 
 /*****************************************************************************
  * Nearest approach distance
@@ -199,7 +186,9 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tnumber_number(const Temporal *temp, Datum value, meosType basetype)
 {
-  assert(tnumber_basetype(basetype));
+  assert(temp);
+  assert(tnumber_type(temp->temptype));
+  assert(temptype_basetype(temp->temptype) == basetype);
   TBox box1, box2;
   temporal_set_bbox(temp, &box1);
   number_set_tbox(value, basetype, &box2);
@@ -216,6 +205,8 @@ nad_tnumber_number(const Temporal *temp, Datum value, meosType basetype)
 int
 nad_tint_int(const Temporal *temp, int i)
 {
+  assert(temp);
+  ensure_same_temporal_basetype(temp, T_INT4);
   double result = nad_tnumber_number(temp, Int32GetDatum(i), T_INT4);
   return (int) result;
 }
@@ -229,6 +220,8 @@ nad_tint_int(const Temporal *temp, int i)
 double
 nad_tfloat_float(const Temporal *temp, double d)
 {
+  assert(temp);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return nad_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
@@ -242,24 +235,16 @@ double
 nad_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Test the validity of the arguments */
+  assert(box1); assert(box2);
   ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
+  ensure_same_span_type(&box1->span, &box2->span);
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
     return DBL_MAX;
 
-  /* If the boxes intersect in the value dimension return 0 */
-  if (datum_le(box1->span.lower, box2->span.upper, T_FLOAT8) &&
-      datum_le(box2->span.lower, box1->span.upper, T_FLOAT8))
-    return 0.0;
-
-  if (datum_lt(box1->span.upper, box2->span.lower, T_FLOAT8))
-    /* box1 is to the left of box2 */
-    return DatumGetFloat8(box2->span.lower) - DatumGetFloat8(box1->span.upper);
-  else
-    /* box1 is to the right of box2 */
-    return DatumGetFloat8(box1->span.lower) - DatumGetFloat8(box2->span.upper);
+  return distance_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -272,7 +257,9 @@ double
 nad_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Test the validity of the arguments */
+  assert(temp); assert(box);
   ensure_has_X_tbox(box);
+  ensure_same_temporal_basetype(temp, box->span.basetype);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   Span p, inter;
   if (hast)
@@ -309,11 +296,14 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
 Datum
 nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
+  assert(temp1); assert(temp2);
+  assert(temp1->temptype == temp2->temptype);
+  assert(tnumber_type(temp1->temptype));
   TBox box1, box2;
   temporal_set_bbox(temp1, &box1);
   temporal_set_bbox(temp2, &box2);
   double result = nad_tbox_tbox(&box1, &box2);
-  if (temp1->subtype == T_TINT && temp2->subtype == T_TINT)
+  if (temp1->temptype == T_TINT)
     return Int32GetDatum(result);
   else
     return Float8GetDatum(result);
@@ -327,6 +317,9 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 int
 nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 {
+  assert(temp1); assert(temp2);
+  ensure_same_temporal_type(temp1, temp2);
+  ensure_tnumber_type(temp1->temptype);
   Datum result = nad_tnumber_tnumber(temp1, temp2);
   return Int32GetDatum(result);
 }
@@ -339,6 +332,9 @@ nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
 {
+  assert(temp1); assert(temp2);
+  ensure_same_temporal_type(temp1, temp2);
+  ensure_tnumber_type(temp1->temptype);
   Datum result = nad_tnumber_tnumber(temp1, temp2);
   return Float8GetDatum(result);
 }

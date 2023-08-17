@@ -34,6 +34,8 @@
 
 #include "general/ttext_textfuncs.h"
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
@@ -96,7 +98,6 @@ datum_textcat(Datum l, Datum r)
 }
 
 #if MEOS
-
 char *
 pnstrdup(const char *in, Size size)
 {
@@ -245,6 +246,8 @@ datum_upper(Datum value)
 Temporal *
 textfunc_ttext(const Temporal *temp, Datum (*func)(Datum value))
 {
+  assert(temp); assert(func);
+  assert(temp->temptype == T_TTEXT);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -263,6 +266,8 @@ Temporal *
 textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func,
   bool invert)
 {
+  assert(temp);
+  assert(temp->temptype == T_TTEXT);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -283,6 +288,9 @@ Temporal *
 textfunc_ttext_ttext(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func)
 {
+  assert(temp1); assert(temp2);
+  assert(temp1->temptype == temp2->temptype);
+  assert(temp1->temptype == T_TTEXT);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;

@@ -435,8 +435,10 @@ tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 Temporal *
 distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
 {
+  assert(temp); assert(geo);
   if (gserialized_is_empty(geo))
     return NULL;
+  ensure_tgeo_type(temp->temptype);
   ensure_point_type(geo);
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(geo));
   ensure_same_dimensionality_tpoint_gs(temp, geo);
@@ -465,6 +467,9 @@ distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
 Temporal *
 distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  assert(temp1); assert(temp2);
+  ensure_tgeo_type(temp1->temptype);
+  ensure_same_temporal_type(temp1, temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
 
@@ -711,6 +716,8 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
 TInstant *
 nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return NULL;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -741,6 +748,9 @@ nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 TInstant *
 nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  assert(temp1); assert(temp2);
+  ensure_tgeo_type(temp1->temptype);
+  ensure_same_temporal_type(temp1, temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
   TInstant *result = NULL;
@@ -770,6 +780,8 @@ nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -790,6 +802,7 @@ nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 double
 nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 {
+  assert(box); assert(gs);
   if (gserialized_is_empty(gs))
     return -1;
   ensure_same_srid_stbox_gs(box, gs);
@@ -811,6 +824,7 @@ double
 nad_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Test the validity of the arguments */
+  assert(box1); assert(box2);
   ensure_has_X_stbox(box1); ensure_has_X_stbox(box2);
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_spatial_dimensionality(box1->flags, box2->flags);
@@ -846,6 +860,8 @@ double
 nad_tpoint_stbox(const Temporal *temp, const STBox *box)
 {
   /* Test the validity of the arguments */
+  assert(temp); assert(box);
+  ensure_tgeo_type(temp->temptype);
   ensure_has_X_stbox(box);
   ensure_same_geodetic(temp->flags, box->flags);
   ensure_same_spatial_dimensionality_temp_box(temp->flags, box->flags);
@@ -886,6 +902,9 @@ nad_tpoint_stbox(const Temporal *temp, const STBox *box)
 double
 nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  assert(temp1); assert(temp2);
+  ensure_tgeo_type(temp1->temptype);
+  ensure_same_temporal_type(temp1, temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
   Temporal *dist = distance_tpoint_tpoint(temp1, temp2);
@@ -911,6 +930,8 @@ bool
 shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   GSERIALIZED **result)
 {
+  assert(temp); assert(gs); assert(result);
+  ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return false;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -942,8 +963,12 @@ bool
 shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   GSERIALIZED **result)
 {
+  assert(temp1); assert(temp2); assert(result);
+  ensure_tgeo_type(temp1->temptype);
+  ensure_same_temporal_type(temp1, temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
+
   Temporal *dist = distance_tpoint_tpoint(temp1, temp2);
   if (dist == NULL)
     return false;

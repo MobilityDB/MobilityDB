@@ -86,7 +86,7 @@ typedef struct
  *
  * @note Function taken from PostGIS file lwin_geojson.c
  */
-json_object *
+static json_object *
 findMemberByName(json_object *poObj, const char *pszName)
 {
   json_object *poTmp = poObj;
@@ -296,6 +296,8 @@ TInstant *
 tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   meosType temptype)
 {
+  assert(mfjson);
+  assert(temporal_type(temptype));
   bool geodetic = (temptype == T_TGEOGPOINT);
   bool byvalue = basetype_byvalue(temptype_basetype(temptype));
   Datum value = 0; /* make compiler quiet */
@@ -375,6 +377,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 TInstant *
 tboolinst_from_mfjson(json_object *mfjson)
 {
+  assert(mfjson);
   return tinstant_from_mfjson(mfjson, false, 0, T_TBOOL);
 }
 
@@ -386,6 +389,7 @@ tboolinst_from_mfjson(json_object *mfjson)
 TInstant *
 tintinst_from_mfjson(json_object *mfjson)
 {
+  assert(mfjson);
   return tinstant_from_mfjson(mfjson, false, 0, T_TINT);
 }
 
@@ -397,6 +401,7 @@ tintinst_from_mfjson(json_object *mfjson)
 TInstant *
 tfloatinst_from_mfjson(json_object *mfjson)
 {
+  assert(mfjson);
   return tinstant_from_mfjson(mfjson, false, 0, T_TFLOAT);
 }
 
@@ -408,6 +413,7 @@ tfloatinst_from_mfjson(json_object *mfjson)
 TInstant *
 ttextinst_from_mfjson(json_object *mfjson)
 {
+  assert(mfjson);
   return tinstant_from_mfjson(mfjson, false, 0, T_TTEXT);
 }
 
@@ -420,6 +426,7 @@ ttextinst_from_mfjson(json_object *mfjson)
 TInstant *
 tgeompointinst_from_mfjson(json_object *mfjson, int srid)
 {
+  assert(mfjson);
   return tinstant_from_mfjson(mfjson, true, srid, T_TGEOMPOINT);
 }
 
@@ -432,6 +439,7 @@ tgeompointinst_from_mfjson(json_object *mfjson, int srid)
 TInstant *
 tgeogpointinst_from_mfjson(json_object *mfjson, int srid)
 {
+  assert(mfjson);
   return tinstant_from_mfjson(mfjson, true, srid, T_TGEOGPOINT);
 }
 #endif /* MEOS */
@@ -443,6 +451,8 @@ static TInstant **
 tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   meosType temptype, int *count)
 {
+  assert(mfjson);
+  assert(count);
   bool geodetic = (temptype == T_TGEOGPOINT);
   bool byvalue = basetype_byvalue(temptype_basetype(temptype));
   /* Get coordinates and datetimes */
@@ -480,6 +490,7 @@ TSequence *
 tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   meosType temptype, interpType interp)
 {
+  assert(mfjson);
   /* Get the array of temporal instant points */
   int count;
   TInstant **instants = tinstarr_from_mfjson(mfjson, isgeo, srid, temptype,
@@ -513,6 +524,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 TSequence *
 tboolseq_from_mfjson(json_object *mfjson)
 {
+  assert(mfjson);
   return tsequence_from_mfjson(mfjson, false, 0, T_TBOOL, STEP);
 }
 
@@ -524,6 +536,7 @@ tboolseq_from_mfjson(json_object *mfjson)
 TSequence *
 tintseq_from_mfjson(json_object *mfjson)
 {
+  assert(mfjson);
   return tsequence_from_mfjson(mfjson, false, 0, T_TINT, STEP);
 }
 
@@ -535,6 +548,7 @@ tintseq_from_mfjson(json_object *mfjson)
 TSequence *
 tfloatseq_from_mfjson(json_object *mfjson, interpType interp)
 {
+  assert(mfjson);
   return tsequence_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
 }
 
@@ -546,6 +560,7 @@ tfloatseq_from_mfjson(json_object *mfjson, interpType interp)
 TSequence *
 ttextseq_from_mfjson(json_object *mfjson)
 {
+  assert(mfjson);
   return tsequence_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
 }
 
@@ -558,6 +573,7 @@ ttextseq_from_mfjson(json_object *mfjson)
 TSequence *
 tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
+  assert(mfjson);
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
 }
 
@@ -570,6 +586,7 @@ tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 TSequence *
 tgeogpointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
+  assert(mfjson);
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
 }
 #endif /* MEOS */
@@ -582,6 +599,7 @@ TSequenceSet *
 tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   meosType temptype, interpType interp)
 {
+  assert(mfjson);
   json_object *seqs = NULL;
   seqs = findMemberByName(mfjson, "sequences");
   /* We don't need to test that seqs is NULL since to differentiate between
@@ -614,6 +632,7 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 TSequenceSet *
 tboolseqset_from_mfjson(json_object *mfjson)
 {
+  assert(mfjson);
   return tsequenceset_from_mfjson(mfjson, false, 0, T_TBOOL, STEP);
 }
 
@@ -625,6 +644,7 @@ tboolseqset_from_mfjson(json_object *mfjson)
 TSequenceSet *
 tintseqset_from_mfjson(json_object *mfjson)
 {
+  assert(mfjson);
   return tsequenceset_from_mfjson(mfjson, false, 0, T_TINT, STEP);
 }
 
@@ -636,6 +656,7 @@ tintseqset_from_mfjson(json_object *mfjson)
 TSequenceSet *
 tfloatseqset_from_mfjson(json_object *mfjson, interpType interp)
 {
+  assert(mfjson);
   return tsequenceset_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
 }
 
@@ -647,6 +668,7 @@ tfloatseqset_from_mfjson(json_object *mfjson, interpType interp)
 TSequenceSet *
 ttextseqset_from_mfjson(json_object *mfjson)
 {
+  assert(mfjson);
   return tsequenceset_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
 }
 
@@ -659,6 +681,7 @@ ttextseqset_from_mfjson(json_object *mfjson)
 TSequenceSet *
 tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
+  assert(mfjson);
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
 }
 
@@ -671,6 +694,7 @@ tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 TSequenceSet *
 tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
+  assert(mfjson);
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
 }
 #endif /* MEOS */
@@ -693,6 +717,7 @@ ensure_temptype_mfjson(const char *typestr)
 Temporal *
 temporal_from_mfjson(const char *mfjson)
 {
+  assert(mfjson);
   char *srs = NULL;
   int srid = 0;
   Temporal *result = NULL;
@@ -1578,6 +1603,7 @@ datum_from_hexwkb(const char *hexwkb, size_t size, meosType type)
 Set *
 set_from_wkb(const uint8_t *wkb, size_t size)
 {
+  assert(wkb);
   /* We pass ANY set type, the actual type is read from the byte string */
   return DatumGetSetP(datum_from_wkb(wkb, size, T_INTSET));
 }
@@ -1591,6 +1617,7 @@ set_from_wkb(const uint8_t *wkb, size_t size)
 Set *
 set_from_hexwkb(const char *hexwkb)
 {
+  assert(hexwkb);
   size_t size = strlen(hexwkb);
   /* We pass ANY set type, the actual type is read from the byte string */
   return DatumGetSetP(datum_from_hexwkb(hexwkb, size, T_INTSET));
@@ -1607,6 +1634,7 @@ set_from_hexwkb(const char *hexwkb)
 Span *
 span_from_wkb(const uint8_t *wkb, size_t size)
 {
+  assert(wkb);
   /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(datum_from_wkb(wkb, size, T_INTSPAN));
 }
@@ -1619,6 +1647,7 @@ span_from_wkb(const uint8_t *wkb, size_t size)
 Span *
 span_from_hexwkb(const char *hexwkb)
 {
+  assert(hexwkb);
   size_t size = strlen(hexwkb);
   /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(datum_from_hexwkb(hexwkb, size, T_INTSPAN));
@@ -1635,6 +1664,7 @@ span_from_hexwkb(const char *hexwkb)
 SpanSet *
 spanset_from_wkb(const uint8_t *wkb, size_t size)
 {
+  assert(wkb);
   /* We pass ANY span set type, the actual type is read from the byte string */
   return DatumGetSpanSetP(datum_from_wkb(wkb, size, T_INTSPANSET));
 }
@@ -1647,6 +1677,7 @@ spanset_from_wkb(const uint8_t *wkb, size_t size)
 SpanSet *
 spanset_from_hexwkb(const char *hexwkb)
 {
+  assert(hexwkb);
   size_t size = strlen(hexwkb);
   /* We pass ANY span set type, the actual type is read from the byte string */
   return DatumGetSpanSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
@@ -1663,6 +1694,7 @@ spanset_from_hexwkb(const char *hexwkb)
 TBox *
 tbox_from_wkb(const uint8_t *wkb, size_t size)
 {
+  assert(wkb);
   return DatumGetTboxP(datum_from_wkb(wkb, size, T_TBOX));
 }
 
@@ -1674,6 +1706,7 @@ tbox_from_wkb(const uint8_t *wkb, size_t size)
 TBox *
 tbox_from_hexwkb(const char *hexwkb)
 {
+  assert(hexwkb);
   size_t size = strlen(hexwkb);
   return DatumGetTboxP(datum_from_hexwkb(hexwkb, size, T_TBOX));
 }
@@ -1689,6 +1722,7 @@ tbox_from_hexwkb(const char *hexwkb)
 STBox *
 stbox_from_wkb(const uint8_t *wkb, size_t size)
 {
+  assert(wkb);
   return DatumGetSTboxP(datum_from_wkb(wkb, size, T_STBOX));
 }
 
@@ -1701,6 +1735,7 @@ stbox_from_wkb(const uint8_t *wkb, size_t size)
 STBox *
 stbox_from_hexwkb(const char *hexwkb)
 {
+  assert(hexwkb);
   size_t size = strlen(hexwkb);
   return DatumGetSTboxP(datum_from_hexwkb(hexwkb, size, T_STBOX));
 }
@@ -1717,6 +1752,7 @@ stbox_from_hexwkb(const char *hexwkb)
 Temporal *
 temporal_from_wkb(const uint8_t *wkb, size_t size)
 {
+  assert(wkb);
   /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(datum_from_wkb(wkb, size, T_TINT));
 }
@@ -1730,6 +1766,7 @@ temporal_from_wkb(const uint8_t *wkb, size_t size)
 Temporal *
 temporal_from_hexwkb(const char *hexwkb)
 {
+  assert(hexwkb);
   size_t size = strlen(hexwkb);
   /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(datum_from_hexwkb(hexwkb, size, T_TINT));

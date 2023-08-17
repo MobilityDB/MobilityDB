@@ -147,7 +147,7 @@ int main(void)
     /* Transform the string representing the date into a date value */
     rec.day = pg_date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
-    rec.point = gserialized_in(point_buffer, -1);
+    rec.point = pgis_geometry_in(point_buffer, -1);
     /* Transform the string representing the timestamp into a timestamp value */
     rec.t = pg_timestamp_in(timestamp_buffer, -1);
     /* Transform the string representing the trip into a temporal value */
