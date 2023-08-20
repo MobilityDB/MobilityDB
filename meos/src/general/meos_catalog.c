@@ -312,7 +312,7 @@ bool
 meostype_internal(meosType type)
 {
   if (type == T_DOUBLE2 || type == T_DOUBLE3 || type == T_DOUBLE4 ||
-      type == T_TDOUBLE2 || type == T_TDOUBLE3 || type == T_DOUBLE4)
+      type == T_TDOUBLE2 || type == T_TDOUBLE3 || type == T_TDOUBLE4)
     return true;
   return false;
 }
@@ -560,6 +560,7 @@ spatialset_type(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Ensure that a temporal value is a temporal number
  */
@@ -570,6 +571,7 @@ ensure_spatialset_type(meosType type)
     elog(ERROR, "The set value must be a spatial set");
   return;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 

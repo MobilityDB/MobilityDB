@@ -321,7 +321,7 @@ datum_bucket(Datum value, Datum size, Datum origin, meosType basetype)
 #if MEOS
 /**
  * @brief Return the bucket list from a span.
- * @param[in] bounds Input span to split
+ * @param[in] s Input span to split
  * @param[in] size Bucket size
  * @param[in] origin Origin of the buckets
  * @param[out] count Number of elements in the output array

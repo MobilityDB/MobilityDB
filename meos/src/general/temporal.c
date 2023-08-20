@@ -3689,14 +3689,8 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
   if (new1->subtype == TINSTANT)
     result = tinstant_merge((TInstant *) new1, (TInstant *) new2);
   else if (new1->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_GET_DISCRETE(new1->flags) || ! connect)
-      result = (Temporal *) tsequence_merge((TSequence *) new1,
-        (TSequence *) new2);
-    else
-      result = (Temporal *) tcontseq_insert((TSequence *) new1,
-        (TSequence *) new2);
-  }
+    result = (Temporal *) tsequence_insert((TSequence *) new1,
+      (TSequence *) new2, connect);
   else /* new1->subtype == TSEQUENCESET */
   {
     result = connect ?
@@ -3747,14 +3741,8 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
     result = (Temporal *) tinstant_restrict_timestamp((TInstant *) temp, t,
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
-      result = (Temporal *) tdiscseq_minus_timestamp((TSequence *) temp, t);
-    else
-      result = connect ?
-        (Temporal *) tcontseq_minus_timestamp((TSequence *) temp, t) :
-        (Temporal *) tcontseq_delete_timestamp((TSequence *) temp, t);
-  }
+    result = (Temporal *) tsequence_delete_timestamp((TSequence *) temp, t,
+      connect);
   else /* temp->subtype == TSEQUENCESET */
   {
     result = connect ?
@@ -3781,15 +3769,8 @@ temporal_delete_timestampset(const Temporal *temp, const Set *s, bool connect)
     result = (Temporal *) tinstant_restrict_timestampset((TInstant *) temp, s,
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
-      result = (Temporal *) tdiscseq_restrict_timestampset((TSequence *) temp,
-        s, REST_MINUS);
-    else
-      result = connect ?
-        (Temporal *) tcontseq_delete_timestampset((TSequence *) temp, s) :
-        (Temporal *) tcontseq_minus_timestampset((TSequence *) temp, s);
-  }
+    result = (Temporal *) tsequence_delete_timestampset((TSequence *) temp, s,
+      connect);
   else /* temp->subtype == TSEQUENCESET */
   {
     result = connect ?
@@ -3816,15 +3797,8 @@ temporal_delete_period(const Temporal *temp, const Span *s, bool connect)
     result = (Temporal *) tinstant_restrict_period((TInstant *) temp, s,
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
-      result = (Temporal *) tdiscseq_restrict_period((TSequence *) temp, s,
-        REST_MINUS);
-    else
-      result = connect ?
-        (Temporal *) tcontseq_delete_period((TSequence *) temp, s) :
-        (Temporal *) tcontseq_minus_period((TSequence *) temp, s);
-  }
+    result = (Temporal *) tsequence_delete_period((TSequence *) temp, s,
+      connect);
   else /* temp->subtype == TSEQUENCESET */
   {
     result = connect ?
@@ -3852,16 +3826,8 @@ temporal_delete_periodset(const Temporal *temp, const SpanSet *ss,
     result = (Temporal *) tinstant_restrict_periodset((TInstant *) temp, ss,
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
-      result = (Temporal *) tdiscseq_restrict_periodset((TSequence *) temp, ss,
-        REST_MINUS);
-    else
-      result = connect ?
-        (Temporal *) tcontseq_delete_periodset((TSequence *) temp, ss) :
-        (Temporal *) tcontseq_restrict_periodset((TSequence *) temp, ss,
-          REST_MINUS);
-  }
+    result = (Temporal *) tsequence_delete_periodset((TSequence *) temp, ss,
+      connect);
   else /* temp->subtype == TSEQUENCESET */
   {
     result = connect ?

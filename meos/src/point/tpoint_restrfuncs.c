@@ -862,7 +862,6 @@ tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point discrete sequence to (the complement of) a
  * geometry and possibly a Z span and a period.
  * @param[in] seq Temporal point
@@ -871,7 +870,6 @@ tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] period Period to restrict the T dimension
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre Instantaneous sequences have been managed in the calling function
- * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
  */
 TSequence *
 tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
@@ -899,7 +897,6 @@ tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence point with step interpolation to a
  * geometry and possibly a Z span and a period.
  * @param[in] seq Temporal point
@@ -911,7 +908,6 @@ tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
  * @note The function computes the "at" restriction on all dimensions. Then,
  * for the "minus" restriction, it computes the complement of the "at"
  * restriction with respect to the time dimension.
- * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
  */
 TSequenceSet *
 tpointseq_step_restrict_geom_time(const TSequence *seq,
@@ -1357,7 +1353,6 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence point with linear interpolation to
  * (the complement of) a geometry and possibly a Z span and a period.
  * @param[in] seq Temporal point
@@ -1374,7 +1369,6 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
  * geometry, which is an expensive operation. Notice that we need to filter wrt
  * the Z dimension after that since while doing this, the subtype of the
  * temporal point may change from a sequence to a sequence set.
- * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
  */
 TSequenceSet *
 tpointseq_linear_restrict_geom_time(const TSequence *seq,
@@ -1939,7 +1933,6 @@ tpointinst_restrict_stbox(const TInstant *inst, const STBox *box,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point discrete sequence to (the complement of) a
  * spatiotemporal box.
  * @param[in] seq Temporal discrete sequence point
@@ -1947,7 +1940,6 @@ tpointinst_restrict_stbox(const TInstant *inst, const STBox *box,
  * @param[in] border_inc True when the box contains the upper border
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre Instantaneous sequences have been managed in the calling function
- * @sqlfunc atStbox(), minusStbox()
  */
 TSequence *
 tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
@@ -1975,7 +1967,6 @@ tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence point with step interpolation to a
  * spatiotemporal box.
  * @param[in] seq Temporal point
@@ -1986,7 +1977,6 @@ tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
  * @note The function computes the "at" restriction on all dimensions. Then,
  * for the "minus" restriction, it computes the complement of the "at"
  * restriction with respect to the time dimension.
- * @sqlfunc atStbox(), minusStbox()
  */
 TSequenceSet *
 tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
@@ -2277,7 +2267,6 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence to (the complement of) a
  * spatiotemporal box.
  * @param[in] seq Temporal sequence point
@@ -2293,7 +2282,6 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
  * @note The function first filters the temporal point wrt the time dimension
  * to reduce the number of instants before computing the restriction to the
  * spatial dimension.
- * @sqlfunc atStbox(), minusStbox()
  */
 TSequenceSet *
 tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
@@ -2494,7 +2482,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 Temporal *
 tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
-  assert(temp); assert(stbox);
+  assert(temp); assert(box);
   ensure_tgeo_type(temp->temptype);
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_AT);
   return result;
@@ -2508,7 +2496,7 @@ tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 Temporal *
 tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
-  assert(temp); assert(stbox);
+  assert(temp); assert(box);
   ensure_tgeo_type(temp->temptype);
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);
   return result;

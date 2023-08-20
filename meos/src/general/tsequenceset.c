@@ -1326,10 +1326,8 @@ tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal discrete sequence transformed into a temporal
  * sequence set.
- * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
  */
 TSequenceSet *
 tdiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
@@ -1722,7 +1720,7 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
  * @brief Restrict a temporal sequence set to (the complement of) an array of
  * base values.
  * @param[in] ss Temporal sequence set
- * @param[in] set Set of base values
+ * @param[in] s Set of base values
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre There are no duplicates values in the array
  * @sqlfunc atValues(), minusValues()
@@ -1807,7 +1805,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *s,
  * @brief Restrict a temporal number to (the complement of) an array of
  * spans of base values
  * @param[in] ss Temporal number
- * @param[in] spanset Span set
+ * @param[in] sps Span set
  * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number value
  * @sqlfunc atSpanset(), minusSpanset()

@@ -1587,21 +1587,14 @@ lwline_make(Datum value1, Datum value2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Compute the trajectory of a temporal discrete sequence point
  * @param[in] seq Temporal value
  * @note Notice that this function does not remove duplicate points
- * @sqlfunc trajectory()
  */
 GSERIALIZED *
 tpointseq_disc_trajectory(const TSequence *seq)
 {
-  assert(seq);
-  assert(tgeo_type(seq->temptype));
-  /* Singleton discrete sequence */
-  if (seq->count == 1)
-    return DatumGetGserializedP(tinstant_value_copy(TSEQUENCE_INST_N(seq, 0)));
-
+  assert(seq->count > 1);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -1616,23 +1609,16 @@ tpointseq_disc_trajectory(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal sequence point
  * @param[in] seq Temporal sequence
  * @note Since the sequence has been already validated there is no verification
  * of the input in this function, in particular for geographies it is supposed
  * that the composing points are geodetic
- * @sqlfunc trajectory()
  */
 GSERIALIZED *
 tpointseq_cont_trajectory(const TSequence *seq)
 {
-  assert(seq);
-  assert(tgeo_type(seq->temptype));
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-    return DatumGetGserializedP(tinstant_value_copy(TSEQUENCE_INST_N(seq, 0)));
-
+  assert(seq->count > 1);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   /* Remove two consecutive points if they are equal */
   Datum value = tinstant_value(TSEQUENCE_INST_N(seq, 0));
@@ -1659,6 +1645,29 @@ tpointseq_cont_trajectory(const TSequence *seq)
     pfree(points);
   }
   return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @brief Return the trajectory of a temporal sequence point
+ * @param[in] seq Temporal sequence
+ * @note Since the sequence has been already validated there is no verification
+ * of the input in this function, in particular for geographies it is supposed
+ * that the composing points are geodetic
+ * @sqlfunc trajectory()
+ */
+GSERIALIZED *
+tpointseq_trajectory(const TSequence *seq)
+{
+  assert(seq);
+  assert(tgeo_type(seq->temptype));
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return DatumGetGserializedP(tinstant_value_copy(TSEQUENCE_INST_N(seq, 0)));
+
+  GSERIALIZED *result = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
+    tpointseq_disc_trajectory(seq) :  tpointseq_cont_trajectory(seq);
+  return result; 
 }
 
 /**
@@ -1736,7 +1745,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   assert(tgeo_type(ss->temptype));
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tpointseq_cont_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
+    return tpointseq_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
 
   int32 srid = tpointseqset_srid(ss);
   bool linear = MEOS_FLAGS_GET_LINEAR(ss->flags);
@@ -1807,9 +1816,7 @@ tpoint_trajectory(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = DatumGetGserializedP(tinstant_value_copy((TInstant *) temp));
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
-      tpointseq_disc_trajectory((TSequence *) temp) :
-      tpointseq_cont_trajectory((TSequence *) temp);
+    result = tpointseq_trajectory((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tpointseqset_trajectory((TSequenceSet *) temp);
   return result;

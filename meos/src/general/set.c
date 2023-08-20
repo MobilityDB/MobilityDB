@@ -83,6 +83,7 @@ ensure_same_set_type(const Set *s1, const Set *s2)
   return;
 }
 
+#if MEOS
 /**
  * @brief Ensure that a set value has the same base type as the given one
  * @param[in] s Input value
@@ -96,6 +97,7 @@ ensure_same_set_basetype(const Set *s, meosType basetype)
       meostype_name(s->settype), meostype_name(basetype));
   return;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return the location of a value in a set using binary search.
@@ -773,29 +775,15 @@ timestampset_make(const TimestampTz *values, int count)
  * @brief Construct a geometry set from an array of values.
 */
 Set *
-geomset_make(const GSERIALIZED **values, int count)
+geoset_make(const GSERIALIZED **values, int count)
 {
   assert(values);
   assert(count > 0);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(values[0]->gflags); 
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = PointerGetDatum(values[i]);
-  return set_make(datums, count, T_GEOMETRY, ORDERED);
-}
-
-/**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct a geography set from an array of values.
-*/
-Set *
-geogset_make(const GSERIALIZED **values, int count)
-{
-  assert(values);
-  assert(count > 0);
-  Datum *datums = palloc(sizeof(Datum *) * count);
-  for (int i = 0; i < count; ++i)
-    datums[i] = PointerGetDatum(values[i]);
-  return set_make(datums, count, T_GEOGRAPHY, ORDERED);
+  return set_make(datums, count, geodetic ? T_GEOMETRY : T_GEOGRAPHY, ORDERED);
 }
 #endif /* MEOS */
 

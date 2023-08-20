@@ -34,6 +34,8 @@
 
 #include "point/tpoint_parser.h"
 
+/* C */
+#include <assert.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>

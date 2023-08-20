@@ -149,6 +149,8 @@ extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
 extern LWLINE *lwline_make(Datum value1, Datum value2);
 extern LWGEOM *lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines,
   int npoints, int nlines);
+extern GSERIALIZED *tpointseq_disc_trajectory(const TSequence *seq);
+extern GSERIALIZED *tpointseq_cont_trajectory(const TSequence *seq);
 
 /* Functions for spatial reference systems */
 
