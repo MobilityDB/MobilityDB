@@ -43,9 +43,10 @@
 
 /* General functions */
 
-extern void ensure_same_spansettype(const SpanSet *ss1, const SpanSet *ss2);
-extern void ensure_same_spansettype_spantype(const SpanSet *ss, const Span *s);
-extern void ensure_same_spansettype_basetype(const SpanSet *ss, meosType basetype);
+extern void ensure_spanset_has_type(const SpanSet *ss, meosType spansettype);
+extern void ensure_same_spanset_type(const SpanSet *ss1, const SpanSet *ss2);
+extern void ensure_same_spanset_spantype(const SpanSet *ss, const Span *s);
+extern void ensure_same_spanset_basetype(const SpanSet *ss, meosType basetype);
 extern bool spanset_find_value(const SpanSet *ss, Datum v, int *loc);
 extern const Span *spanset_sp_n(const SpanSet *ss, int index);
 

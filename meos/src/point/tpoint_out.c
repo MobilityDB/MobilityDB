@@ -98,7 +98,8 @@ char *
 tpoint_as_text(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  assert(temp != NULL);
+  assert(temp);
+  ensure_tgeo_type(temp->temptype);
   ensure_non_negative(maxdd);
 
   char *result;
@@ -122,7 +123,7 @@ char *
 tpoint_as_ewkt(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  assert(temp != NULL);
+  assert(temp);
   ensure_non_negative(maxdd);
 
   int srid = tpoint_srid(temp);
@@ -157,6 +158,7 @@ char **
 geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
 {
   /* Ensure validity of the arguments */
+  assert(geoarr);
   assert(count > 0);
   ensure_non_negative(maxdd);
 
@@ -179,6 +181,7 @@ tpointarr_as_text(const Temporal **temparr, int count, int maxdd,
   bool extended)
 {
   /* Ensure validity of the arguments */
+  assert(temparr);
   assert(count > 0);
   ensure_non_negative(maxdd);
 

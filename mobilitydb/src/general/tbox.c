@@ -309,7 +309,7 @@ Span_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   TBox *result = palloc(sizeof(TBox));
-  if (tnumber_spantype(s->spantype))
+  if (numspan_type(s->spantype))
     numspan_set_tbox(s, result);
   else
     period_set_tbox(s, result);

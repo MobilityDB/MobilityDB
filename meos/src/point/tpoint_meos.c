@@ -34,7 +34,8 @@
 
 #include "point/tpoint.h"
 
-/* PostgreSQL */
+/* C */
+#include <assert.h>
 /* MEOS */
 #include "general/lifting.h"
 #include "general/meos_catalog.h"
@@ -56,9 +57,11 @@
  * @sqlop @p #=
  */
 Temporal *
-teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
+teq_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_eq, INVERT);
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
+  return tcomp_tpoint_point(temp, gs, &datum2_eq, INVERT);
 }
 
 /**
@@ -67,9 +70,11 @@ teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
  * @sqlop @p #=
  */
 Temporal *
-teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
+teq_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_eq, INVERT_NO);
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
+  return tcomp_tpoint_point(temp, gs, &datum2_eq, INVERT_NO);
 }
 
 /**
@@ -78,9 +83,11 @@ teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
  * @sqlop @p #<>
  */
 Temporal *
-tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
+tne_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_ne, INVERT);
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
+  return tcomp_tpoint_point(temp, gs, &datum2_ne, INVERT);
 }
 
 /**
@@ -89,9 +96,11 @@ tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
  * @sqlop @p #<>
  */
 Temporal *
-tne_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
+tne_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_ne, INVERT_NO);
+  assert(temp); assert(gs);
+  ensure_tgeo_type(temp->temptype);
+  return tcomp_tpoint_point(temp, gs, &datum2_ne, INVERT_NO);
 }
 
 /*****************************************************************************/

@@ -163,7 +163,6 @@ datum_lt(Datum l, Datum r, meosType type)
   return datum_cmp(l, r, type) < 0;
 }
 
-
 /**
  * @brief Return true if the first value is less than or equal to the second one
  */
@@ -870,7 +869,7 @@ hypot4d(double x, double y, double z, double m)
 #endif /* not used */
 
 /*****************************************************************************
- * Input/output PostgreSQL functions
+ * Input/output PostgreSQL and PostGIS functions
  *****************************************************************************/
 
 /**
@@ -899,9 +898,9 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
     case T_TEXT:
       return PointerGetDatum(cstring2text(str));
     case T_GEOMETRY:
-      return PointerGetDatum(gserialized_in((char *) str, -1));
+      return PointerGetDatum(pgis_geometry_in((char *) str, -1));
     case T_GEOGRAPHY:
-      return PointerGetDatum(gserialized_geog_in((char *) str, -1));
+      return PointerGetDatum(pgis_geography_in((char *) str, -1));
 #if NPOINT
     case T_NPOINT:
       return PointerGetDatum(npoint_parse(&str, end));

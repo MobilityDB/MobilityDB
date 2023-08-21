@@ -43,6 +43,8 @@
  * arguments is a stbox.
  */
 
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
 #include <meos.h>
 /* MobilityDB */
