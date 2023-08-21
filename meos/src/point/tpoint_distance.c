@@ -374,6 +374,8 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   geog2cart(&(e2.end), &B2);
   double fraction;
   // TODO: The next computation should be done on geodetic coordinates
+  // The value found by the linear approximation below could be the starting
+  // point for an iterative method such as gradient descent or Newton's method
   bool found = point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
     (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction);
   if (! found)
