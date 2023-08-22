@@ -1545,7 +1545,7 @@ Temporal **
 tint_value_split(Temporal *temp, int size, int origin, int *newcount)
 {
   assert(temp); assert(newcount);
-  ensure_temporal_has_type(temp, T_INT4);
+  ensure_temporal_has_type(temp, T_TINT);
   Datum *value_buckets;
   return temporal_value_time_split1(temp, Int32GetDatum(size), NULL,
     Int32GetDatum(origin), 0, true, false, &value_buckets, NULL, newcount);
@@ -1564,7 +1564,7 @@ Temporal **
 tfloat_value_split(Temporal *temp, double size, double origin, int *newcount)
 {
   assert(temp); assert(newcount);
-  ensure_temporal_has_type(temp, T_FLOAT8);
+  ensure_temporal_has_type(temp, T_TFLOAT);
   Datum *value_buckets;
   return temporal_value_time_split1(temp, Float8GetDatum(size), NULL,
     Float8GetDatum(origin), 0, true, false, &value_buckets, NULL, newcount);

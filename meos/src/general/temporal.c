@@ -170,7 +170,7 @@ void
 ensure_common_dimension(int16 flags1, int16 flags2)
 {
   if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) &&
-    MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
+      MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
     elog(ERROR, "The temporal values must have at least one common dimension");
   return;
 }
@@ -182,7 +182,8 @@ void
 ensure_temporal_has_type(const Temporal *temp, meosType temptype)
 {
   if (temp->temptype != temptype)
-    elog(ERROR, "The temporal value must be of type %s", meostype_name(temptype));
+    elog(ERROR, "The temporal value must be of type %s",
+      meostype_name(temptype));
   return;
 }
 
@@ -208,7 +209,8 @@ void
 ensure_same_temporal_basetype(const Temporal *temp, meosType basetype)
 {
   if (temptype_basetype(temp->temptype) != basetype)
-    elog(ERROR, "Operation on mixed temporal type and base type");
+    elog(ERROR, "Operation on mixed temporal type and base type: %s, %s",
+      meostype_name(temp->temptype), meostype_name(basetype));
   return;
 }
 
