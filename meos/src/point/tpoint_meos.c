@@ -34,6 +34,8 @@
 
 #include "point/tpoint.h"
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 /* MEOS */
 #include "general/lifting.h"
@@ -56,9 +58,12 @@
  * @sqlop @p #=
  */
 Temporal *
-teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
+teq_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_eq, INVERT);
+  assert(temp); assert(gs);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
+  ensure_same_temptype_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
+  return tcomp_tpoint_point(temp, gs, &datum2_eq, INVERT);
 }
 
 /**
@@ -67,9 +72,12 @@ teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
  * @sqlop @p #=
  */
 Temporal *
-teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
+teq_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_eq, INVERT_NO);
+  assert(temp); assert(gs);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
+  ensure_same_temptype_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
+  return tcomp_tpoint_point(temp, gs, &datum2_eq, INVERT_NO);
 }
 
 /**
@@ -78,9 +86,12 @@ teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
  * @sqlop @p #<>
  */
 Temporal *
-tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
+tne_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_ne, INVERT);
+  assert(temp); assert(gs);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
+  ensure_same_temptype_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
+  return tcomp_tpoint_point(temp, gs, &datum2_ne, INVERT);
 }
 
 /**
@@ -89,9 +100,12 @@ tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
  * @sqlop @p #<>
  */
 Temporal *
-tne_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
+tne_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tcomp_tpoint_point(tpoint, geo, &datum2_ne, INVERT_NO);
+  assert(temp); assert(gs);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
+  ensure_same_temptype_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
+  return tcomp_tpoint_point(temp, gs, &datum2_ne, INVERT_NO);
 }
 
 /*****************************************************************************/
