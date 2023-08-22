@@ -125,7 +125,7 @@ tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
-double
+static double
 tinstarr_similarity(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc)
 {
@@ -151,6 +151,8 @@ double
 temporal_similarity(const Temporal *temp1, const Temporal *temp2,
   SimFunc simfunc)
 {
+  assert(temp1); assert(temp2);
+  ensure_same_temporal_type(temp1, temp2);
   double result;
   int count1, count2;
   const TInstant **instants1 = temporal_instants(temp1, &count1);
@@ -360,7 +362,7 @@ tinstarr_similarity_matrix1(const TInstant **instants1, int count1,
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  * @param[out] count Number of elements in the resulting array
  */
-Match *
+static Match *
 tinstarr_similarity_matrix(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc, int *count)
 {
@@ -390,6 +392,8 @@ Match *
 temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
   int *count, SimFunc simfunc)
 {
+  assert(temp1); assert(temp2); assert(count);
+  ensure_same_temporal_type(temp1, temp2);
   int count1, count2;
   const TInstant **instants1 = temporal_instants(temp1, &count1);
   const TInstant **instants2 = temporal_instants(temp2, &count2);
@@ -425,7 +429,8 @@ temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
  * @sqlfunc dynamicTimeWarpPath()
  */
 Match *
-temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count)
+temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
+  int *count)
 {
   return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);
 }
@@ -492,6 +497,8 @@ tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
 double
 temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 {
+  assert(temp1); assert(temp2);
+  ensure_same_temporal_type(temp1, temp2);
   double result;
   int count1, count2;
   const TInstant **instants1 = temporal_instants(temp1, &count1);

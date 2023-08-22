@@ -162,14 +162,6 @@ tboxnode_init(TBox *centroid, TboxNode *nodebox)
     posinf = Float8GetDatum(d);
     neginf = Float8GetDatum(d * -1.0);
   }
-  // Span s, p;
-  // memset(nodebox, 0, sizeof(TboxNode));
-  // /* Bounds set to true and false to account for canonicalization of intspans */
-  // span_set(neginf, posinf, true, false, centroid->span.basetype, &s);
-  // span_set(TimestampTzGetDatum(DT_NOBEGIN), TimestampTzGetDatum(DT_NOEND),
-    // true, false, T_TIMESTAMPTZ, &p);
-  // tbox_set(&s, &p, &nodebox->left);
-  // tbox_set(&s, &p, &nodebox->right);
   nodebox->left.span.lower = nodebox->right.span.lower = neginf;
   nodebox->left.span.upper = nodebox->right.span.upper = posinf;
   nodebox->left.span.spantype = nodebox->right.span.spantype = 

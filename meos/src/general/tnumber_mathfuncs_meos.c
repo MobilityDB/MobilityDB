@@ -56,7 +56,7 @@ Temporal *
 add_int_tint(int i, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, ADD,
     &datum_add, INVERT);
 }
@@ -70,7 +70,7 @@ Temporal *
 add_float_tfloat(double d, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, ADD,
     &datum_add, INVERT);
 }
@@ -84,7 +84,7 @@ Temporal *
 add_tint_int(const Temporal *temp, int i)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, ADD,
     &datum_add, INVERT_NO);
 }
@@ -98,7 +98,7 @@ Temporal *
 add_tfloat_float(const Temporal *temp, double d)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, ADD,
     &datum_add, INVERT_NO);
 }
@@ -112,7 +112,7 @@ Temporal *
 add_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return arithop_tnumber_tnumber(temp1, temp2, ADD, &datum_add, NULL);
 }
 
@@ -129,7 +129,7 @@ Temporal *
 sub_int_tint(int i, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, SUB,
     &datum_sub, INVERT);
 }
@@ -143,7 +143,7 @@ Temporal *
 sub_float_tfloat(double d, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, SUB,
     &datum_sub, INVERT);
 }
@@ -157,7 +157,7 @@ Temporal *
 sub_tint_int(const Temporal *temp, int i)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, SUB,
     &datum_sub, INVERT_NO);
 }
@@ -171,7 +171,7 @@ Temporal *
 sub_tfloat_float(const Temporal *temp, double d)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, SUB,
     &datum_sub, INVERT_NO);
 }
@@ -185,7 +185,7 @@ Temporal *
 sub_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return arithop_tnumber_tnumber(temp1, temp2, SUB, &datum_sub, NULL);
 }
 
@@ -202,7 +202,7 @@ Temporal *
 mult_int_tint(int i, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, MULT,
     &datum_mult, INVERT);
 }
@@ -216,7 +216,7 @@ Temporal *
 mult_float_tfloat(double d, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, MULT,
     &datum_mult, INVERT);
 }
@@ -230,7 +230,7 @@ Temporal *
 mult_tint_int(const Temporal *temp, int i)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, MULT,
     &datum_mult, INVERT_NO);
 }
@@ -244,7 +244,7 @@ Temporal *
 mult_tfloat_float(const Temporal *temp, double d)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, MULT,
     &datum_mult, INVERT_NO);
 }
@@ -258,7 +258,7 @@ Temporal *
 mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return arithop_tnumber_tnumber(temp1, temp2, MULT, &datum_mult,
     &tnumber_mult_tp_at_timestamp);
 }
@@ -276,7 +276,7 @@ Temporal *
 div_int_tint(int i, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, DIV,
     &datum_div, INVERT);
 }
@@ -290,7 +290,7 @@ Temporal *
 div_float_tfloat(double d, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, DIV,
     &datum_div, INVERT);
 }
@@ -304,7 +304,7 @@ Temporal *
 div_tint_int(const Temporal *temp, int i)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, DIV,
     &datum_div, INVERT_NO);
 }
@@ -318,7 +318,7 @@ Temporal *
 div_tfloat_float(const Temporal *temp, double d)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, DIV,
     &datum_div, INVERT_NO);
 }
@@ -332,7 +332,7 @@ Temporal *
 div_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return arithop_tnumber_tnumber(temp1, temp2, DIV, &datum_div,
     &tnumber_div_tp_at_timestamp);
 }

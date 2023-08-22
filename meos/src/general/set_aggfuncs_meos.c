@@ -91,6 +91,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
 Set *
 set_append_value(Set *set, Datum d, meosType basetype)
 {
+  assert(set);
   assert(set->basetype == basetype);
 
   /* Account for expandable structures

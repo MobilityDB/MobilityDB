@@ -29,10 +29,9 @@
 
 /**
  * @file
- * @brief Functions for parsing time types and temporal types
- *
- * Many functions make two passes for parsing, the first one to obtain the
- * number of elements in order to do memory allocation with `palloc`, the
+ * @brief Functions for parsing base, set, span, tbox, and temporal types
+ * @note Many functions make two passes for parsing, the first one to obtain 
+ * the number of elements in order to do memory allocation with `palloc`, the
  * second one to create the type. This is the only approach we can see at the
  * moment which is both correct and simple.
  */
@@ -401,7 +400,7 @@ Set *
 set_parse(const char **str, meosType settype)
 {
   if (!p_obrace(str))
-    elog(ERROR, "Could not parse the set: Missing open brace");
+    elog(ERROR, "Could not parse set: Missing open brace");
 
   /* First parsing */
   meosType basetype = settype_basetype(settype);
@@ -414,7 +413,7 @@ set_parse(const char **str, meosType settype)
     elem_parse(str, basetype);
   }
   if (!p_cbrace(str))
-    elog(ERROR, "Could not parse the set: Missing closing brace");
+    elog(ERROR, "Could not parse set: Missing closing brace");
 
   *str = bak;
   Datum *values = palloc(sizeof(Datum) * count);

@@ -292,6 +292,7 @@ int
 espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum))
 {
+  assert(temp1); assert(temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Fill the lifted structure */
@@ -331,14 +332,16 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  * @sqlfunc contains()
  */
 int
-econtains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp)
+econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
-  if (gserialized_is_empty(geo))
+  assert(temp); assert(gs); 
+  ensure_tgeo_type(temp->temptype);
+  if (gserialized_is_empty(gs))
     return -1;
-  ensure_has_not_Z_gs(geo);
+  ensure_has_not_Z_gs(gs);
   ensure_has_not_Z(temp->flags);
   GSERIALIZED *traj = tpoint_trajectory(temp);
-  bool result = gserialized_relate_pattern(geo, traj, "T********");
+  bool result = gserialized_relate_pattern(gs, traj, "T********");
   return result ? 1 : 0;
 }
 
@@ -411,6 +414,8 @@ edisjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
 int
 edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
+  assert(temp); assert(gs); 
+  ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -439,6 +444,9 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  assert(temp1); assert(temp2);
+  ensure_tgeo_type(temp1->temptype);
+  ensure_tgeo_type(temp2->temptype);
   if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
     return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_nsame);
   else
@@ -459,6 +467,8 @@ edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 int
 eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
+  assert(temp); assert(gs); 
+  ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
@@ -477,6 +487,9 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  assert(temp1); assert(temp2);
+  ensure_tgeo_type(temp1->temptype);
+  ensure_tgeo_type(temp2->temptype);
   if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
     return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_same);
   else
@@ -499,6 +512,8 @@ eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 int
 etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
+  assert(temp); assert(gs); 
+  ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -541,6 +556,8 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
+  assert(temp); assert(gs); 
+  ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
   datum_func3 func = get_dwithin_fn_gs(temp->flags, gs->gflags);
@@ -719,6 +736,9 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 int
 edwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist)
 {
+  assert(temp1); assert(temp2);
+  ensure_tgeo_type(temp1->temptype);
+  ensure_tgeo_type(temp2->temptype);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time

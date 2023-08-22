@@ -108,9 +108,7 @@ Distance_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Temporal *result = distance_tnumber_tnumber1(temp1, temp2,
-    oid_type(temptypid));
+  Temporal *result = distance_tnumber_tnumber(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
@@ -230,12 +228,7 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  assert(tnumber_type(temp1->temptype));
-  assert(tnumber_type(temp2->temptype));
-  /* Result of the distance function is a tint iff both arguments are tint */
-  meosType restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
-    T_TINT : T_TFLOAT;
-  Temporal *dist = distance_tnumber_tnumber1(temp1, temp2, restype);
+  Temporal *dist = distance_tnumber_tnumber(temp1, temp2);
   if (dist == NULL)
   {
     PG_FREE_IF_COPY(temp1, 0);
@@ -244,9 +237,6 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
   }
 
   Datum result = temporal_min_value(dist);
-  if (restype == T_TINT)
-    result = Float8GetDatum((double) DatumGetInt32(result));
-  pfree(dist);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_DATUM(result);

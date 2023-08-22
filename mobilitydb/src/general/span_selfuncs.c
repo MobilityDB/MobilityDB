@@ -86,9 +86,9 @@ static bool
 value_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
   meosType rtype)
 {
-  if ((numspan_basetype(ltype) || numset_type(ltype) || numspan_type(ltype) ||
+  if ((numset_type(ltype) || numspan_basetype(ltype) || numspan_type(ltype) ||
         spanset_type(ltype)) &&
-      (numspan_basetype(rtype) || numset_type(rtype) || numspan_type(rtype) ||
+      (numset_type(rtype) || numspan_basetype(rtype) || numspan_type(rtype) ||
         spanset_type(rtype)))
     return true;
   return false;
@@ -768,7 +768,7 @@ span_const_to_span(Node *other, Span *span)
 {
   Oid consttype = ((Const *) other)->consttype;
   meosType type = oid_type(consttype);
-  assert(span_basetype(type) || set_span_type(type) || span_type(type) ||
+  assert(span_basetype(type) || set_spantype(type) || span_type(type) ||
     spanset_type(type) || talpha_type(type));
   if (span_basetype(type))
   {
@@ -777,7 +777,7 @@ span_const_to_span(Node *other, Span *span)
     Datum value = ((Const *) other)->constvalue;
     span_set(value, value, true, true, type, span);
   }
-  else if (set_span_type(type))
+  else if (set_spantype(type))
   {
     /* The right argument is a set constant. We convert it into
      * its bounding span. */

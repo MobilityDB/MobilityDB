@@ -53,7 +53,7 @@ Temporal *
 teq_bool_tbool(bool b, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_BOOL);
+  ensure_same_temporal_basetype(temp, T_BOOL);
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_eq,
     INVERT);
 }
@@ -67,7 +67,7 @@ Temporal *
 teq_int_tint(int i, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_eq,
     INVERT);
 }
@@ -81,7 +81,7 @@ Temporal *
 teq_float_tfloat(double d, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_eq,
     INVERT);
 }
@@ -95,39 +95,9 @@ Temporal *
 teq_text_ttext(const text *txt, const Temporal *temp)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_eq,
     INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal equality of a point and a temporal geometric
- * point.
- * @sqlop @p #=
- */
-Temporal *
-teq_point_tgeompoint(const GSERIALIZED *gs, const Temporal *temp)
-{
-  assert(temp); assert(gs);
-  ensure_same_temptype_basetype(temp, T_GEOMETRY);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), T_GEOMETRY, &datum2_eq,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal equality of a point and a temporal geographic
- * point.
- * @sqlop @p #=
- */
-Temporal *
-teq_point_tgeogpoint(const GSERIALIZED *gs, const Temporal *temp)
-{
-  assert(temp); assert(gs);
-  ensure_same_temptype_basetype(temp, T_GEOGRAPHY);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), T_GEOGRAPHY,
-    &datum2_eq, INVERT);
 }
 
 /**
@@ -139,7 +109,7 @@ Temporal *
 teq_tbool_bool(const Temporal *temp, bool b)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_BOOL);
+  ensure_same_temporal_basetype(temp, T_BOOL);
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_eq,
     INVERT_NO);
 }
@@ -153,7 +123,7 @@ Temporal *
 teq_tint_int(const Temporal *temp, int i)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_eq,
     INVERT_NO);
 }
@@ -167,7 +137,7 @@ Temporal *
 teq_tfloat_float(const Temporal *temp, double d)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_eq,
     INVERT_NO);
 }
@@ -181,38 +151,8 @@ Temporal *
 teq_ttext_text(const Temporal *temp, const text *txt)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_eq,
-    INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal equality of a temporal geometric point and a
- * point.
- * @sqlop @p #=
- */
-Temporal *
-teq_tgeompoint_point(const Temporal *temp, const GSERIALIZED *gs)
-{
-  assert(temp); assert(gs);
-  ensure_same_temptype_basetype(temp, T_GEOMETRY);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), T_GEOMETRY, &datum2_eq,
-    INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal equality of a temporal geographic point and a
- * point.
- * @sqlop @p #=
- */
-Temporal *
-teq_tgeogpoint_point(const Temporal *temp, const GSERIALIZED *gs)
-{
-  assert(temp); assert(gs);
-  ensure_same_temptype_basetype(temp, T_GEOGRAPHY);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), T_GEOGRAPHY, &datum2_eq,
     INVERT_NO);
 }
 
@@ -225,7 +165,7 @@ Temporal *
 teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
 }
 
@@ -241,7 +181,7 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tne_bool_tbool(bool b, const Temporal *temp)
 {
-  ensure_same_temptype_basetype(temp, T_BOOL);
+  ensure_same_temporal_basetype(temp, T_BOOL);
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_ne,
     INVERT);
 }
@@ -255,7 +195,7 @@ Temporal *
 tne_int_tint(int i, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ne,
     INVERT);
 }
@@ -269,7 +209,7 @@ Temporal *
 tne_float_tfloat(double d, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ne,
     INVERT);
 }
@@ -283,38 +223,8 @@ Temporal *
 tne_text_ttext(const text *txt, const Temporal *temp)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ne,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal inequality of a point and a temporal geometric
- * point.
- * @sqlop @p #<>
- */
-Temporal *
-tne_point_tgeompoint(const GSERIALIZED *gs, const Temporal *temp)
-{
-  assert(temp); assert(gs);
-  ensure_same_temptype_basetype(temp, T_GEOMETRY);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), T_GEOMETRY, &datum2_ne,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal inequality of a point and a temporal geographic
- * point.
- * @sqlop @p #<>
- */
-Temporal *
-tne_point_tgeogpoint(const GSERIALIZED *gs, const Temporal *temp)
-{
-  assert(temp); assert(gs);
-  ensure_same_temptype_basetype(temp, T_GEOGRAPHY);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), T_GEOGRAPHY, &datum2_ne,
     INVERT);
 }
 
@@ -327,7 +237,7 @@ Temporal *
 tne_tbool_bool(const Temporal *temp, bool b)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_BOOL);
+  ensure_same_temporal_basetype(temp, T_BOOL);
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_ne,
     INVERT_NO);
 }
@@ -341,7 +251,7 @@ Temporal *
 tne_tint_int(const Temporal *temp, int i)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ne,
     INVERT_NO);
 }
@@ -355,7 +265,7 @@ Temporal *
 tne_tfloat_float(const Temporal *temp, double d)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ne,
     INVERT_NO);
 }
@@ -369,38 +279,8 @@ Temporal *
 tne_ttext_text(const Temporal *temp, const text *txt)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ne,
-    INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal inequality of a temporal geometric point and a
- * point.
- * @sqlop @p #<>
- */
-Temporal *
-tne_tgeompoint_point(const Temporal *temp, const GSERIALIZED *gs)
-{
-  assert(temp); assert(gs);
-  ensure_same_temptype_basetype(temp, T_GEOMETRY);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), T_GEOMETRY, &datum2_ne,
-    INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal inequality of a temporal geographic point and a
- * point.
- * @sqlop @p #<>
- */
-Temporal *
-tne_tgeogpoint_point(const Temporal *temp, const GSERIALIZED *gs)
-{
-  assert(temp); assert(gs);
-  ensure_same_temptype_basetype(temp, T_GEOGRAPHY);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), T_GEOGRAPHY, &datum2_ne,
     INVERT_NO);
 }
 
@@ -413,7 +293,7 @@ Temporal *
 tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
 }
 
@@ -430,7 +310,7 @@ Temporal *
 tlt_int_tint(int i, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_lt,
     INVERT);
 }
@@ -444,7 +324,7 @@ Temporal *
 tlt_float_tfloat(double d, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_lt,
     INVERT);
 }
@@ -458,7 +338,7 @@ Temporal *
 tlt_text_ttext(const text *txt, const Temporal *temp)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_lt,
     INVERT);
 }
@@ -472,7 +352,7 @@ Temporal *
 tlt_tint_int(const Temporal *temp, int i)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_lt,
     INVERT_NO);
 }
@@ -486,7 +366,7 @@ Temporal *
 tlt_tfloat_float(const Temporal *temp, double d)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_lt,
     INVERT_NO);
 }
@@ -500,7 +380,7 @@ Temporal *
 tlt_ttext_text(const Temporal *temp, const text *txt)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_lt,
     INVERT_NO);
 }
@@ -514,7 +394,7 @@ Temporal *
 tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
 }
 
@@ -532,7 +412,7 @@ Temporal *
 tle_int_tint(int i, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_le,
     INVERT);
 }
@@ -547,7 +427,7 @@ Temporal *
 tle_float_tfloat(double d, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_le,
     INVERT);
 }
@@ -562,7 +442,7 @@ Temporal *
 tle_text_ttext(const text *txt, const Temporal *temp)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_le,
     INVERT);
 }
@@ -577,7 +457,7 @@ Temporal *
 tle_tint_int(const Temporal *temp, int i)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_le,
     INVERT_NO);
 }
@@ -592,7 +472,7 @@ Temporal *
 tle_tfloat_float(const Temporal *temp, double d)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_le,
     INVERT_NO);
 }
@@ -607,7 +487,7 @@ Temporal *
 tle_ttext_text(const Temporal *temp, const text *txt)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_le,
     INVERT_NO);
 }
@@ -621,7 +501,7 @@ Temporal *
 tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
 }
 
@@ -638,7 +518,7 @@ Temporal *
 tgt_int_tint(int i, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_gt,
     INVERT);
 }
@@ -652,7 +532,7 @@ Temporal *
 tgt_float_tfloat(double d, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_gt,
     INVERT);
 }
@@ -666,7 +546,7 @@ Temporal *
 tgt_text_ttext(const text *txt, const Temporal *temp)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_gt,
     INVERT);
 }
@@ -680,7 +560,7 @@ Temporal *
 tgt_tint_int(const Temporal *temp, int i)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_gt,
     INVERT_NO);
 }
@@ -694,7 +574,7 @@ Temporal *
 tgt_tfloat_float(const Temporal *temp, double d)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_gt,
     INVERT_NO);
 }
@@ -708,7 +588,7 @@ Temporal *
 tgt_ttext_text(const Temporal *temp, const text *txt)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_gt,
     INVERT_NO);
 }
@@ -722,7 +602,7 @@ Temporal *
 tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
 }
 
@@ -740,7 +620,7 @@ Temporal *
 tge_int_tint(int i, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ge,
     INVERT);
 }
@@ -755,7 +635,7 @@ Temporal *
 tge_float_tfloat(double d, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ge,
     INVERT);
 }
@@ -770,7 +650,7 @@ Temporal *
 tge_text_ttext(const text *txt, const Temporal *temp)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ge,
     INVERT);
 }
@@ -785,7 +665,7 @@ Temporal *
 tge_tint_int(const Temporal *temp, int i)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_INT4);
+  ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ge,
     INVERT_NO);
 }
@@ -800,7 +680,7 @@ Temporal *
 tge_tfloat_float(const Temporal *temp, double d)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_FLOAT8);
+  ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ge,
     INVERT_NO);
 }
@@ -815,7 +695,7 @@ Temporal *
 tge_ttext_text(const Temporal *temp, const text *txt)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ge,
     INVERT_NO);
 }
@@ -829,7 +709,7 @@ Temporal *
 tge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
 }
 

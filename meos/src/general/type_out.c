@@ -567,6 +567,7 @@ char *
 tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox,
   char *srs)
 {
+  assert(inst);
   /* Get bounding box if needed */
   bboxunion *bbox = NULL, tmp;
   if (with_bbox)
@@ -591,6 +592,7 @@ tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox,
 char *
 tboolinst_as_mfjson(const TInstant *inst, bool with_bbox)
 {
+  assert(inst);
   return tinstant_as_mfjson(inst, 0, with_bbox, NULL);
 }
 
@@ -602,6 +604,7 @@ tboolinst_as_mfjson(const TInstant *inst, bool with_bbox)
 char *
 tintinst_as_mfjson(const TInstant *inst, bool with_bbox)
 {
+  assert(inst);
   return tinstant_as_mfjson(inst, 0, with_bbox, NULL);
 }
 
@@ -613,6 +616,7 @@ tintinst_as_mfjson(const TInstant *inst, bool with_bbox)
 char *
 tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision)
 {
+  assert(inst);
   return tinstant_as_mfjson(inst, precision, with_bbox, NULL);
 }
 
@@ -624,32 +628,20 @@ tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision)
 char *
 ttextinst_as_mfjson(const TInstant *inst, bool with_bbox)
 {
+  assert(inst);
   return tinstant_as_mfjson(inst, 0, with_bbox, NULL);
 }
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal instant geometric
- * point.
+ * @brief Return the MF-JSON representation of a temporal instant point.
  * @sqlfunc asMFJSON()
  */
 char *
-tgeompointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
+tpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
   char *srs)
 {
-  return tinstant_as_mfjson(inst, precision, with_bbox, srs);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal instant geographic
- * point.
- * @sqlfunc asMFJSON()
- */
-char *
-tgeogpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
-  char *srs)
-{
+  assert(inst);
   return tinstant_as_mfjson(inst, precision, with_bbox, srs);
 }
 #endif /* MEOS */
@@ -728,6 +720,7 @@ char *
 tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox,
   char *srs)
 {
+  assert(seq);
   /* Get bounding box if needed */
   bboxunion *bbox = NULL, tmp;
   if (with_bbox)
@@ -752,6 +745,7 @@ tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox,
 char *
 tboolseq_as_mfjson(const TSequence *seq, bool with_bbox)
 {
+  assert(seq);
   return tsequence_as_mfjson(seq, 0, with_bbox, NULL);
 }
 
@@ -763,6 +757,7 @@ tboolseq_as_mfjson(const TSequence *seq, bool with_bbox)
 char *
 tintseq_as_mfjson(const TSequence *seq, bool with_bbox)
 {
+  assert(seq);
   return tsequence_as_mfjson(seq, 0, with_bbox, NULL);
 }
 
@@ -774,6 +769,7 @@ tintseq_as_mfjson(const TSequence *seq, bool with_bbox)
 char *
 tfloatseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision)
 {
+  assert(seq);
   return tsequence_as_mfjson(seq, precision, with_bbox, NULL);
 }
 
@@ -785,32 +781,20 @@ tfloatseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision)
 char *
 ttextseq_as_mfjson(const TSequence *seq, bool with_bbox)
 {
+  assert(seq);
   return tsequence_as_mfjson(seq, 0, with_bbox, NULL);
 }
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence geometric
- * point.
+ * @brief Return the MF-JSON representation of a temporal sequence point.
  * @sqlfunc asMFJSON()
  */
 char *
-tgeompointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
+tpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
   char *srs)
 {
-  return tsequence_as_mfjson(seq, precision, with_bbox, srs);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence geographic
- * point.
- * @sqlfunc asMFJSON()
- */
-char *
-tgeogpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
-  char *srs)
-{
+  assert(seq);
   return tsequence_as_mfjson(seq, precision, with_bbox, srs);
 }
 #endif /* MEOS */
@@ -902,6 +886,7 @@ char *
 tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox,
   char *srs)
 {
+  assert(ss);
   /* Get bounding box if needed */
   bboxunion *bbox = NULL, tmp;
   if (with_bbox)
@@ -927,6 +912,7 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox,
 char *
 tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 {
+  assert(ss);
   return tsequenceset_as_mfjson(ss, 0, with_bbox, NULL);
 }
 
@@ -938,6 +924,7 @@ tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 char *
 tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 {
+  assert(ss);
   return tsequenceset_as_mfjson(ss, 0, with_bbox, NULL);
 }
 
@@ -949,6 +936,7 @@ tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 char *
 tfloatseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision)
 {
+  assert(ss);
   return tsequenceset_as_mfjson(ss, precision, with_bbox, NULL);
 }
 
@@ -960,32 +948,20 @@ tfloatseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision)
 char *
 ttextseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 {
+  assert(ss);
   return tsequenceset_as_mfjson(ss, 0, with_bbox, NULL);
 }
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence set
- * geometric point.
+ * @brief Return the MF-JSON representation of a temporal sequence set point.
  * @sqlfunc asMFJSON()
  */
 char *
-tgeompointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
+tpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
   int precision, char *srs)
 {
-  return tsequenceset_as_mfjson(ss, precision, with_bbox, srs);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence set
- * geographic point.
- * @sqlfunc asMFJSON()
- */
-char *
-tgeogpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
-  int precision, char *srs)
-{
+  assert(ss);
   return tsequenceset_as_mfjson(ss, precision, with_bbox, srs);
 }
 #endif /* MEOS */
@@ -1004,6 +980,7 @@ char *
 temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   int precision, char *srs)
 {
+  assert(temp);
   char *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1035,6 +1012,7 @@ char **
 temporalarr_out(const Temporal **temparr, int count, int maxdd)
 {
   /* Ensure validity of the arguments */
+  assert(temparr);
   assert(count > 0);
   ensure_non_negative(maxdd);
 
@@ -1812,7 +1790,7 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
  * - Two base type values
  */
 static uint8_t *
-span_to_wkb_buf_int1(const Span *s, uint8_t *buf, uint8_t variant)
+span_to_wkb_buf_int_iter(const Span *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the span bounds */
   buf = bounds_to_wkb_buf(s->lower_inc, s->upper_inc, buf, variant);
@@ -1834,7 +1812,7 @@ span_to_wkb_buf_int(const Span *s, uint8_t *buf, uint8_t variant)
   /* Write the span type */
   buf = int16_to_wkb_buf(s->spantype, buf, variant);
   /* Write the span bounds and values */
-  buf = span_to_wkb_buf_int1(s, buf, variant);
+  buf = span_to_wkb_buf_int_iter(s, buf, variant);
   return buf;
 }
 
@@ -1877,7 +1855,7 @@ spanset_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
   buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Write the periods */
   for (int i = 0; i < ss->count; i++)
-    buf = span_to_wkb_buf_int1(&ss->elems[i], buf, variant);
+    buf = span_to_wkb_buf_int_iter(&ss->elems[i], buf, variant);
   /* Write the temporal dimension if any */
   return buf;
 }
@@ -2310,6 +2288,7 @@ datum_as_hexwkb(Datum value, meosType type, uint8_t variant, size_t *size)
 uint8_t *
 span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 {
+  assert(s); assert(size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->spantype, variant,
     size_out);
   return result;
@@ -2324,6 +2303,7 @@ span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 char *
 span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 {
+  assert(s); assert(size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->spantype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2340,6 +2320,7 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 uint8_t *
 set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 {
+  assert(s); assert(size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->settype, variant,
     size_out);
   return result;
@@ -2354,6 +2335,7 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 char *
 set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 {
+  assert(s); assert(size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->settype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2370,6 +2352,7 @@ set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 uint8_t *
 spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
+  assert(ss); assert(size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(ss), ss->spansettype, variant,
     size_out);
   return result;
@@ -2384,6 +2367,7 @@ spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 char *
 spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
+  assert(ss); assert(size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(ss), ss->spansettype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2400,6 +2384,7 @@ spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 uint8_t *
 tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
+  assert(box); assert(size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_TBOX, variant,
     size_out);
   return result;
@@ -2414,6 +2399,7 @@ tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 char *
 tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
+  assert(box); assert(size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_TBOX,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2430,6 +2416,7 @@ tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 uint8_t *
 stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
+  assert(box); assert(size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_STBOX, variant,
     size_out);
   return result;
@@ -2444,6 +2431,7 @@ stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 char *
 stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
+  assert(box); assert(size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2460,6 +2448,7 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 uint8_t *
 temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
+  assert(temp); assert(size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant, size_out);
   return result;
@@ -2474,6 +2463,7 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 char *
 temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
+  assert(temp); assert(size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;

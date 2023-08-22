@@ -495,11 +495,12 @@ bool
 tpoint_to_geo_meas(const Temporal *tpoint, const Temporal *meas,
   bool segmentize, GSERIALIZED **result)
 {
+  assert(tpoint); assert(result);
   assert(tgeo_type(tpoint->temptype));
   Temporal *sync1, *sync2;
   if (meas)
   {
-    assert(tnumber_type(meas->temptype));
+    ensure_tnumber_type(meas->temptype);
     /* Return false if the temporal values do not intersect in time
      * The operation is synchronization without adding crossings */
     if (! intersection_temporal_temporal(tpoint, meas, SYNCHRONIZE_NOCROSS,
@@ -769,6 +770,7 @@ geo_to_tpointseqset(const LWGEOM *lwgeom, bool hasz, bool geodetic)
 Temporal *
 geo_to_tpoint(const GSERIALIZED *geo)
 {
+  assert(geo);
   ensure_non_empty(geo);
   ensure_has_M_gs(geo);
   bool hasz = (bool) FLAGS_GET_Z(geo->gflags);
@@ -870,6 +872,8 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
 Temporal *
 temporal_simplify_min_dist(const Temporal *temp, double dist)
 {
+  assert(temp);
+  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
   ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8);
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -963,6 +967,8 @@ tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
 Temporal *
 temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 {
+  assert(temp); assert(mint);
+  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
   ensure_valid_duration(mint);
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -1294,6 +1300,8 @@ tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
 Temporal *
 temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
+  assert(temp);
+  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
@@ -1440,6 +1448,8 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
 Temporal *
 temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
+  assert(temp);
+  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
@@ -2035,6 +2045,9 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr,
   int *count)
 {
+  assert(temp); assert(bounds); assert(geom); assert(timesarr); assert(count);
+  ensure_tgeo_type(temp->temptype);
+
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
     elog(ERROR, "%s: Geometric bounds are too small", __func__);
   if (extent <= 0)

@@ -52,7 +52,7 @@ Temporal *
 textcat_text_ttext(const text *txt, const Temporal *temp)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   Temporal *result = textfunc_ttext_text(temp, PointerGetDatum(txt),
     &datum_textcat, INVERT);
   return result;
@@ -67,7 +67,7 @@ Temporal *
 textcat_ttext_text(const Temporal *temp, const text *txt)
 {
   assert(temp); assert(txt);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   Temporal *result = textfunc_ttext_text(temp, PointerGetDatum(txt),
     &datum_textcat, INVERT_NO);
   return result;
@@ -82,7 +82,7 @@ Temporal *
 textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   Temporal *result = textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
   return result;
 }
@@ -98,7 +98,7 @@ Temporal *
 ttext_upper(const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   Temporal *result = textfunc_ttext(temp, &datum_upper);
   return result;
 }
@@ -112,7 +112,7 @@ Temporal *
 ttext_lower(const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_TEXT);
+  ensure_same_temporal_basetype(temp, T_TEXT);
   Temporal *result = textfunc_ttext(temp, &datum_lower);
   return result;
 }

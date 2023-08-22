@@ -52,7 +52,7 @@ Temporal *
 tand_bool_tbool(bool b, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_BOOL);
+  ensure_same_temporal_basetype(temp, T_BOOL);
   return boolop_tbool_bool(temp, b, &datum_and, INVERT);
 }
 
@@ -65,7 +65,7 @@ Temporal *
 tand_tbool_bool(const Temporal *temp, bool b)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_BOOL);
+  ensure_same_temporal_basetype(temp, T_BOOL);
   return boolop_tbool_bool(temp, b, &datum_and, INVERT_NO);
 }
 
@@ -78,7 +78,7 @@ Temporal *
 tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return boolop_tbool_tbool(temp1, temp2, &datum_and);
 }
 
@@ -95,7 +95,7 @@ Temporal *
 tor_bool_tbool(bool b, const Temporal *temp)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_BOOL);
+  ensure_same_temporal_basetype(temp, T_BOOL);
   return boolop_tbool_bool(temp, b, &datum_or, INVERT);
 }
 
@@ -108,7 +108,7 @@ Temporal *
 tor_tbool_bool(const Temporal *temp, bool b)
 {
   assert(temp);
-  ensure_same_temptype_basetype(temp, T_BOOL);
+  ensure_same_temporal_basetype(temp, T_BOOL);
   return boolop_tbool_bool(temp, b, &datum_or, INVERT_NO);
 }
 
@@ -121,7 +121,7 @@ Temporal *
 tor_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temptype(temp1, temp2);
+  ensure_same_temporal_type(temp1, temp2);
   return boolop_tbool_tbool(temp1, temp2, &datum_or);
 }
 

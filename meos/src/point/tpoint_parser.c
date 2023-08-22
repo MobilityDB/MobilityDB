@@ -34,6 +34,8 @@
 
 #include "point/tpoint_parser.h"
 
+/* C */
+#include <assert.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -487,6 +489,7 @@ tpoint_parse(const char **str, meosType temptype)
 Temporal *
 tgeompoint_in(const char *str)
 {
+  assert(str);
   return tpoint_parse(&str, T_TGEOMPOINT);
 }
 /**
@@ -497,6 +500,7 @@ tgeompoint_in(const char *str)
 Temporal *
 tgeogpoint_in(const char *str)
 {
+  assert(str);
   return tpoint_parse(&str, T_TGEOGPOINT);
 }
 #endif /* MEOS */

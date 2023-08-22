@@ -58,11 +58,11 @@
  * @sqlop @p #=
  */
 Temporal *
-teq_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+teq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
   assert(temp); assert(gs);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-  ensure_same_temptype_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
+  ensure_same_temporal_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
   return tcomp_tpoint_point(temp, gs, &datum2_eq, INVERT);
 }
 
@@ -72,11 +72,11 @@ teq_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
  * @sqlop @p #=
  */
 Temporal *
-teq_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
   assert(temp); assert(gs);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-  ensure_same_temptype_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
+  ensure_same_temporal_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
   return tcomp_tpoint_point(temp, gs, &datum2_eq, INVERT_NO);
 }
 
@@ -86,11 +86,11 @@ teq_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlop @p #<>
  */
 Temporal *
-tne_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+tne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
   assert(temp); assert(gs);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-  ensure_same_temptype_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
+  ensure_same_temporal_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
   return tcomp_tpoint_point(temp, gs, &datum2_ne, INVERT);
 }
 
@@ -100,11 +100,11 @@ tne_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
  * @sqlop @p #<>
  */
 Temporal *
-tne_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
   assert(temp); assert(gs);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-  ensure_same_temptype_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
+  ensure_same_temporal_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
   return tcomp_tpoint_point(temp, gs, &datum2_ne, INVERT_NO);
 }
 
