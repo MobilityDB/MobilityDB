@@ -16,6 +16,3 @@ add_library(point OBJECT
   tpoint_tile.c
 )
 
-add_library(point_meos OBJECT
-  tpoint_meos.c
-)

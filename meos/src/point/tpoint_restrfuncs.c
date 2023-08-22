@@ -77,7 +77,7 @@ point_force2d(Datum point, Datum srid)
 static Temporal *
 tpoint_force2d(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   assert(tgeo_type(temp->temptype));
   assert(MEOS_FLAGS_GET_Z(temp->flags));
   /* We only need to fill these parameters for tfunc_temporal */
@@ -514,7 +514,7 @@ tpointseqset_is_simple(const TSequenceSet *ss)
 bool
 tpoint_is_simple(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   bool result;
   assert(temptype_subtype(temp->subtype));
@@ -715,7 +715,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 Temporal **
 tpoint_make_simple(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
+  ensure_not_null((void *) temp); ensure_not_null((void *) count);
   ensure_tgeo_type(temp->temptype);
   Temporal **result;
   assert(temptype_subtype(temp->subtype));
@@ -779,7 +779,7 @@ point_get_z(Datum point)
 Temporal *
 tpoint_get_coord(const Temporal *temp, int coord)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   assert(tgeo_type(temp->temptype));
   if (coord == 2)
     ensure_has_Z(temp->flags);
@@ -875,7 +875,7 @@ TSequence *
 tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
-  assert(seq); assert(gs);
+  assert(seq); ensure_not_null((void *) gs);
   assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert(seq->count > 1);
@@ -913,7 +913,7 @@ TSequenceSet *
 tpointseq_step_restrict_geom_time(const TSequence *seq,
   const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc)
 {
-  assert(seq); assert(gs);
+  assert(seq); ensure_not_null((void *) gs);
   assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
   assert(seq->count > 1);
@@ -1128,27 +1128,27 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
   }
 
   /* General case */
-  LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
-  int type = lwgeom_inter->type;
+  LWGEOM *geom_inter = lwgeom_from_gserialized(gsinter);
+  int type = geom_inter->type;
   int ninter;
-  LWPOINT *lwpoint_inter = NULL; /* make compiler quiet */
-  LWLINE *lwline_inter = NULL; /* make compiler quiet */
+  LWPOINT *point_inter = NULL; /* make compiler quiet */
+  LWLINE *line_inter = NULL; /* make compiler quiet */
   LWCOLLECTION *coll = NULL; /* make compiler quiet */
   if (type == POINTTYPE)
   {
     ninter = 1;
-    lwpoint_inter = lwgeom_as_lwpoint(lwgeom_inter);
+    point_inter = lwgeom_as_lwpoint(geom_inter);
   }
   else if (type == LINETYPE)
   {
     ninter = 1;
-    lwline_inter = lwgeom_as_lwline(lwgeom_inter);
+    line_inter = lwgeom_as_lwline(geom_inter);
   }
   else
   /* It is a collection of type MULTIPOINTTYPE, MULTILINETYPE, or
    * COLLECTIONTYPE */
   {
-    coll = lwgeom_as_lwcollection(lwgeom_inter);
+    coll = lwgeom_as_lwcollection(geom_inter);
     ninter = coll->ngeoms;
   }
   Span *periods = palloc(sizeof(Span) * ninter);
@@ -1160,9 +1160,9 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
       /* Find the i-th intersection */
       LWGEOM *subgeom = coll->geoms[i];
       if (subgeom->type == POINTTYPE)
-        lwpoint_inter = lwgeom_as_lwpoint(subgeom);
+        point_inter = lwgeom_as_lwpoint(subgeom);
       else /* type == LINETYPE */
-        lwline_inter = lwgeom_as_lwline(subgeom);
+        line_inter = lwgeom_as_lwline(subgeom);
       type = subgeom->type;
     }
     TimestampTz t1, t2;
@@ -1170,7 +1170,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
     /* Each intersection is either a point or a linestring */
     if (type == POINTTYPE)
     {
-      gspoint = geo_serialize((LWGEOM *) lwpoint_inter);
+      gspoint = geo_serialize((LWGEOM *) point_inter);
       tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1);
       pfree(gspoint);
       /* If the intersection is not at an exclusive bound */
@@ -1181,13 +1181,13 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
     else
     {
       /* Get the fraction of the start point of the intersecting line */
-      LWPOINT *lwpoint = lwline_get_lwpoint(lwline_inter, 0);
-      gspoint = geo_serialize((LWGEOM *) lwpoint);
+      LWPOINT *point = lwline_get_lwpoint(line_inter, 0);
+      gspoint = geo_serialize((LWGEOM *) point);
       tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1);
       pfree(gspoint);
       /* Get the fraction of the end point of the intersecting line */
-      lwpoint = lwline_get_lwpoint(lwline_inter, lwline_inter->points->npoints - 1);
-      gspoint = geo_serialize((LWGEOM *) lwpoint);
+      point = lwline_get_lwpoint(line_inter, line_inter->points->npoints - 1);
+      gspoint = geo_serialize((LWGEOM *) point);
       tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t2);
       pfree(gspoint);
       /* If t1 == t2 and the intersection is not at an exclusive bound */
@@ -1208,7 +1208,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
       }
     }
   }
-  lwgeom_free(lwgeom_inter);
+  lwgeom_free(geom_inter);
 
   if (npers == 0)
   {
@@ -1374,7 +1374,7 @@ TSequenceSet *
 tpointseq_linear_restrict_geom_time(const TSequence *seq,
   const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc)
 {
-  assert(seq); assert(gs);
+  assert(seq); ensure_not_null((void *) gs);
   assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   assert(seq->count > 1);
@@ -1611,7 +1611,7 @@ Temporal *
 tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
-  assert(temp); assert(gs);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_AT);
 }
@@ -1625,7 +1625,7 @@ Temporal *
 tpoint_minus_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
-  assert(temp); assert(gs);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_MINUS);
 }
@@ -2482,7 +2482,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 Temporal *
 tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
-  assert(temp); assert(box);
+  ensure_not_null((void *) temp); ensure_not_null((void *) box);
   ensure_tgeo_type(temp->temptype);
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_AT);
   return result;
@@ -2496,7 +2496,7 @@ tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 Temporal *
 tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
-  assert(temp); assert(box);
+  ensure_not_null((void *) temp); ensure_not_null((void *) box);
   ensure_tgeo_type(temp->temptype);
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);
   return result;

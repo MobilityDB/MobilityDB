@@ -768,21 +768,21 @@ tnpoint_azimuth(const Temporal *temp)
  * @brief Restrict a temporal network point to (the complement of) a geometry
  */
 Temporal *
-tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *geo,
+tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(geo));
-  if (gserialized_is_empty(geo))
+  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
+  if (gserialized_is_empty(gs))
   {
     Temporal *result = atfunc ? NULL : temporal_copy(temp);
     if (atfunc)
       return NULL;
     return result;
   }
-  ensure_has_not_Z_gs(geo);
+  ensure_has_not_Z_gs(gs);
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *resultgeom = tpoint_restrict_geom_time(tempgeom, geo, zspan,
+  Temporal *resultgeom = tpoint_restrict_geom_time(tempgeom, gs, zspan,
     period, atfunc);
   Temporal *result = NULL;
   if (resultgeom != NULL)

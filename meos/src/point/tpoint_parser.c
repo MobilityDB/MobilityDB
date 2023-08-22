@@ -489,7 +489,7 @@ tpoint_parse(const char **str, meosType temptype)
 Temporal *
 tgeompoint_in(const char *str)
 {
-  assert(str);
+  ensure_not_null((void *) str);
   return tpoint_parse(&str, T_TGEOMPOINT);
 }
 /**
@@ -500,7 +500,7 @@ tgeompoint_in(const char *str)
 Temporal *
 tgeogpoint_in(const char *str)
 {
-  assert(str);
+  ensure_not_null((void *) str);
   return tpoint_parse(&str, T_TGEOGPOINT);
 }
 #endif /* MEOS */

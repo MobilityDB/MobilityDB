@@ -85,7 +85,7 @@ datum_not(Datum d)
 Temporal *
 tnot_tbool(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_temporal_has_type(temp, T_TBOOL);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -104,7 +104,7 @@ tnot_tbool(const Temporal *temp)
 Temporal *
 boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   assert(temp->temptype == T_TBOOL);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -148,7 +148,7 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
 SpanSet *
 tbool_when_true(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_temporal_has_type(temp, T_TBOOL);
   Temporal *temp1 = temporal_restrict_value(temp, BoolGetDatum(true), REST_AT);
   if (! temp1)

@@ -439,7 +439,7 @@ tnumberseqset_abs(const TSequenceSet *ss)
 Temporal *
 tnumber_abs(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tnumber_type(temp->temptype);
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
@@ -548,7 +548,7 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
 Temporal *
 tnumber_delta_value(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tnumber_type(temp->temptype);
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
@@ -615,6 +615,7 @@ tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
 TSequence *
 tnumberseq_angular_difference(const TSequence *seq)
 {
+  assert(seq);
   /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
@@ -634,6 +635,7 @@ tnumberseq_angular_difference(const TSequence *seq)
 TSequence *
 tnumberseqset_angular_difference(const TSequenceSet *ss)
 {
+  assert(ss);
   /* Singleton sequence set */
   if (ss->count == 1)
     return tnumberseq_angular_difference(TSEQUENCESET_SEQ_N(ss, 0));
@@ -659,7 +661,7 @@ tnumberseqset_angular_difference(const TSequenceSet *ss)
 Temporal *
 tnumber_angular_difference(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tnumber_type(temp->temptype);
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
@@ -685,8 +687,8 @@ Temporal *
 tfloat_round(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  assert(temp != NULL);
-  assert(temp->temptype == T_TFLOAT);
+  ensure_not_null((void *) temp);
+  ensure_temporal_has_type(temp, T_TFLOAT);
   ensure_non_negative(maxdd);
 
   /* We only need to fill these parameters for tfunc_temporal */
@@ -713,7 +715,7 @@ tfloat_round(const Temporal *temp, int maxdd)
 Temporal *
 tfloat_degrees(const Temporal *temp, bool normalize)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_temporal_has_type(temp, T_TFLOAT);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -738,7 +740,7 @@ tfloat_degrees(const Temporal *temp, bool normalize)
 Temporal *
 tfloat_radians(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_temporal_has_type(temp, T_TFLOAT);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -834,7 +836,7 @@ tfloatseqset_derivative(const TSequenceSet *ss)
 Temporal *
 tfloat_derivative(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_temporal_has_type(temp, T_TFLOAT);
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));

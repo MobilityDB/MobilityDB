@@ -980,7 +980,7 @@ char *
 temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   int precision, char *srs)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   char *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2288,7 +2288,7 @@ datum_as_hexwkb(Datum value, meosType type, uint8_t variant, size_t *size)
 uint8_t *
 span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 {
-  assert(s); assert(size_out);
+  ensure_not_null((void *) s); ensure_not_null((void *) size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->spantype, variant,
     size_out);
   return result;
@@ -2303,7 +2303,7 @@ span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 char *
 span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 {
-  assert(s); assert(size_out);
+  ensure_not_null((void *) s); ensure_not_null((void *) size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->spantype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2320,7 +2320,7 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 uint8_t *
 set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 {
-  assert(s); assert(size_out);
+  ensure_not_null((void *) s); ensure_not_null((void *) size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->settype, variant,
     size_out);
   return result;
@@ -2335,7 +2335,7 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 char *
 set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 {
-  assert(s); assert(size_out);
+  ensure_not_null((void *) s); ensure_not_null((void *) size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->settype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2352,7 +2352,7 @@ set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 uint8_t *
 spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
-  assert(ss); assert(size_out);
+  ensure_not_null((void *) ss); ensure_not_null((void *) size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(ss), ss->spansettype, variant,
     size_out);
   return result;
@@ -2367,7 +2367,7 @@ spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 char *
 spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
-  assert(ss); assert(size_out);
+  ensure_not_null((void *) ss); ensure_not_null((void *) size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(ss), ss->spansettype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2384,7 +2384,7 @@ spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 uint8_t *
 tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
-  assert(box); assert(size_out);
+  ensure_not_null((void *) box); ensure_not_null((void *) size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_TBOX, variant,
     size_out);
   return result;
@@ -2399,7 +2399,7 @@ tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 char *
 tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
-  assert(box); assert(size_out);
+  ensure_not_null((void *) box); ensure_not_null((void *) size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_TBOX,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2416,7 +2416,7 @@ tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 uint8_t *
 stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
-  assert(box); assert(size_out);
+  ensure_not_null((void *) box); ensure_not_null((void *) size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_STBOX, variant,
     size_out);
   return result;
@@ -2431,7 +2431,7 @@ stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 char *
 stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
-  assert(box); assert(size_out);
+  ensure_not_null((void *) box); ensure_not_null((void *) size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2448,7 +2448,7 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 uint8_t *
 temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
-  assert(temp); assert(size_out);
+  ensure_not_null((void *) temp); ensure_not_null((void *) size_out);
   uint8_t *result = datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant, size_out);
   return result;
@@ -2463,7 +2463,7 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 char *
 temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
-  assert(temp); assert(size_out);
+  ensure_not_null((void *) temp); ensure_not_null((void *) size_out);
   char *result = (char *) datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;

@@ -191,7 +191,7 @@ spanset_in(const char *str, meosType spansettype)
 SpanSet *
 intspanset_in(const char *str)
 {
-  assert(str);
+  ensure_not_null((void *) str);
   return spanset_parse(&str, T_INTSPANSET);
 }
 
@@ -202,7 +202,7 @@ intspanset_in(const char *str)
 SpanSet *
 bigintspanset_in(const char *str)
 {
-  assert(str);
+  ensure_not_null((void *) str);
   return spanset_parse(&str, T_BIGINTSPANSET);
 }
 
@@ -213,7 +213,7 @@ bigintspanset_in(const char *str)
 SpanSet *
 floatspanset_in(const char *str)
 {
-  assert(str);
+  ensure_not_null((void *) str);
   return spanset_parse(&str, T_FLOATSPANSET);
 }
 
@@ -224,7 +224,7 @@ floatspanset_in(const char *str)
 SpanSet *
 periodset_in(const char *str)
 {
-  assert(str);
+  ensure_not_null((void *) str);
   return spanset_parse(&str, T_TSTZSPANSET);
 }
 #endif /* MEOS */
@@ -260,7 +260,7 @@ spanset_out(const SpanSet *ss, int maxdd)
 char *
 intspanset_out(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_INTSPANSET);
   return spanset_out(ss, 0);
 }
@@ -272,7 +272,7 @@ intspanset_out(const SpanSet *ss)
 char *
 bigintspanset_out(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_BIGINTSPANSET);
   return spanset_out(ss, 0);
 }
@@ -284,7 +284,7 @@ bigintspanset_out(const SpanSet *ss)
 char *
 floatspanset_out(const SpanSet *ss, int maxdd)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_FLOATSPANSET);
   return spanset_out(ss, maxdd);
 }
@@ -296,7 +296,7 @@ floatspanset_out(const SpanSet *ss, int maxdd)
 char *
 periodset_out(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_TSTZSPANSET);
   return spanset_out(ss, 0);
 }
@@ -307,7 +307,7 @@ periodset_out(const SpanSet *ss)
  ****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libmeos_internal_setspan_constructor
  * @brief Construct a span set from an array of disjoint spans enabling the
  * data structure to expand.
  *
@@ -388,6 +388,8 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
 SpanSet *
 spanset_make(Span *spans, int count, bool normalize)
 {
+  ensure_not_null((void *) spans);
+  ensure_positive(count);
   return spanset_make_exp(spans, count, count, normalize, true);
 }
 
@@ -400,7 +402,6 @@ spanset_make(Span *spans, int count, bool normalize)
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized.
  * @see spanset_make
- * @sqlfunc spanset()
  */
 SpanSet *
 spanset_make_free(Span *spans, int count, bool normalize)
@@ -419,7 +420,7 @@ spanset_make_free(Span *spans, int count, bool normalize)
 SpanSet *
 spanset_copy(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   SpanSet *result = palloc(VARSIZE(ss));
   memcpy(result, ss, VARSIZE(ss));
   return result;
@@ -497,7 +498,7 @@ timestamp_to_periodset(TimestampTz t)
 SpanSet *
 set_to_spanset(const Set *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   Span *spans = palloc(sizeof(Span) * s->count);
   for (int i = 0; i < s->count; i++)
   {
@@ -515,7 +516,7 @@ set_to_spanset(const Set *s)
 SpanSet *
 span_to_spanset(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   return spanset_make((Span *) s, 1, NORMALIZE_NO);
 }
 
@@ -550,7 +551,7 @@ SpanSet *
 periodset_shift_tscale(const SpanSet *ss, const Interval *shift,
   const Interval *duration)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_TSTZSPANSET);
   assert(shift || duration);
   if (duration)
@@ -618,7 +619,7 @@ spanset_mem_size(const SpanSet *ss)
 Span *
 spanset_span(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   Span *result = palloc(sizeof(Span));
   memcpy(result, &ss->span, sizeof(Span));
   return result;
@@ -632,7 +633,7 @@ spanset_span(const SpanSet *ss)
 int
 intspanset_lower(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_INTSPANSET);
   return DatumGetInt32(ss->elems[0].lower);
 }
@@ -645,7 +646,7 @@ intspanset_lower(const SpanSet *ss)
 int
 bigintspanset_lower(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_BIGINTSPANSET);
   return DatumGetInt64(ss->elems[0].lower);
 }
@@ -658,7 +659,7 @@ bigintspanset_lower(const SpanSet *ss)
 double
 floatspanset_lower(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_FLOATSPANSET);
   return Float8GetDatum(ss->elems[0].lower);
 }
@@ -671,7 +672,7 @@ floatspanset_lower(const SpanSet *ss)
 TimestampTz
 periodset_lower(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_TSTZSPANSET);
   return TimestampTzGetDatum(ss->elems[0].lower);
 }
@@ -684,7 +685,7 @@ periodset_lower(const SpanSet *ss)
 int
 intspanset_upper(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_INTSPANSET);
   return Int32GetDatum(ss->elems[ss->count - 1].upper);
 }
@@ -697,7 +698,7 @@ intspanset_upper(const SpanSet *ss)
 int
 bigintspanset_upper(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_BIGINTSPANSET);
   return Int64GetDatum(ss->elems[ss->count - 1].upper);
 }
@@ -710,7 +711,7 @@ bigintspanset_upper(const SpanSet *ss)
 double
 floatspanset_upper(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_FLOATSPANSET);
   return Float8GetDatum(ss->elems[ss->count - 1].upper);
 }
@@ -723,7 +724,7 @@ floatspanset_upper(const SpanSet *ss)
 TimestampTz
 periodset_upper(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_TSTZSPANSET);
   return TimestampTzGetDatum(ss->elems[ss->count - 1].upper);
 }
@@ -737,7 +738,7 @@ periodset_upper(const SpanSet *ss)
 bool
 spanset_lower_inc(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   return ss->elems[0].lower_inc;
 }
 
@@ -749,7 +750,7 @@ spanset_lower_inc(const SpanSet *ss)
 bool
 spanset_upper_inc(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   return ss->elems[ss->count - 1].upper_inc;
 }
 
@@ -761,7 +762,7 @@ spanset_upper_inc(const SpanSet *ss)
 double
 spanset_width(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   double result = 0;
   for (int i = 0; i < ss->count; i++)
   {
@@ -779,7 +780,7 @@ spanset_width(const SpanSet *ss)
 Interval *
 periodset_duration(const SpanSet *ss, bool boundspan)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_TSTZSPANSET);
   if (boundspan)
     return pg_timestamp_mi(ss->span.upper, ss->span.lower);
@@ -805,7 +806,7 @@ periodset_duration(const SpanSet *ss, bool boundspan)
 int
 periodset_num_timestamps(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_TSTZSPANSET);
   const Span *p = spanset_sp_n(ss, 0);
   TimestampTz prev = p->lower;
@@ -843,7 +844,7 @@ periodset_num_timestamps(const SpanSet *ss)
 TimestampTz
 periodset_start_timestamp(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_TSTZSPANSET);
   const Span *p = spanset_sp_n(ss, 0);
   return p->lower;
@@ -857,7 +858,7 @@ periodset_start_timestamp(const SpanSet *ss)
 TimestampTz
 periodset_end_timestamp(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   ensure_spanset_has_type(ss, T_TSTZSPANSET);
   const Span *p = spanset_sp_n(ss, ss->count - 1);
   return p->upper;
@@ -876,7 +877,7 @@ periodset_end_timestamp(const SpanSet *ss)
 bool
 periodset_timestamp_n(const SpanSet *ss, int n, TimestampTz *result)
 {
-  assert(ss); assert(result);
+  ensure_not_null((void *) ss); ensure_not_null((void *) result);
   ensure_spanset_has_type(ss, T_TSTZSPANSET);
   int pernum = 0;
   const Span *p = spanset_sp_n(ss, pernum);
@@ -927,7 +928,7 @@ periodset_timestamp_n(const SpanSet *ss, int n, TimestampTz *result)
 TimestampTz *
 periodset_timestamps(const SpanSet *ss, int *count)
 {
-  assert(ss); assert(count);
+  ensure_not_null((void *) ss); ensure_not_null((void *) count);
   ensure_spanset_has_type(ss, T_TSTZSPANSET);
   TimestampTz *result = palloc(sizeof(TimestampTz) * 2 * ss->count);
   const Span *p = spanset_sp_n(ss, 0);
@@ -955,7 +956,7 @@ periodset_timestamps(const SpanSet *ss, int *count)
 int
 spanset_num_spans(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   return ss->count;
 }
 
@@ -967,7 +968,7 @@ spanset_num_spans(const SpanSet *ss)
 Span *
 spanset_start_span(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   Span *result = span_copy(spanset_sp_n(ss, 0));
   return result;
 }
@@ -980,7 +981,7 @@ spanset_start_span(const SpanSet *ss)
 Span *
 spanset_end_span(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   Span *result = span_copy(spanset_sp_n(ss, ss->count - 1));
   return result;
 }
@@ -993,7 +994,7 @@ spanset_end_span(const SpanSet *ss)
 Span *
 spanset_span_n(const SpanSet *ss, int i)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   Span *result = NULL;
   if (i >= 1 && i <= ss->count)
     result = span_copy(spanset_sp_n(ss, i - 1));
@@ -1008,7 +1009,7 @@ spanset_span_n(const SpanSet *ss, int i)
 const Span **
 spanset_spans(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   const Span **spans = palloc(sizeof(Span *) * ss->count);
   for (int i = 0; i < ss->count; i++)
     spans[i] = spanset_sp_n(ss, i);
@@ -1028,7 +1029,7 @@ spanset_spans(const SpanSet *ss)
 bool
 spanset_eq(const SpanSet *ss1, const SpanSet *ss2)
 {
-  assert(ss1); assert(ss2);
+  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
   ensure_same_spanset_type(ss1, ss2);
   if (ss1->count != ss2->count)
     return false;
@@ -1066,7 +1067,7 @@ spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
 int
 spanset_cmp(const SpanSet *ss1, const SpanSet *ss2)
 {
-  assert(ss1); assert(ss2);
+  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
   ensure_same_spanset_type(ss1, ss2);
   int count1 = ss1->count;
   int count2 = ss2->count;
@@ -1153,7 +1154,7 @@ spanset_gt(const SpanSet *ss1, const SpanSet *ss2)
 uint32
 spanset_hash(const SpanSet *ss)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   uint32 result = 1;
   for (int i = 0; i < ss->count; i++)
   {
@@ -1172,7 +1173,7 @@ spanset_hash(const SpanSet *ss)
 uint64
 spanset_hash_extended(const SpanSet *ss, uint64 seed)
 {
-  assert(ss);
+  ensure_not_null((void *) ss);
   uint64 result = 1;
   for (int i = 0; i < ss->count; i++)
   {

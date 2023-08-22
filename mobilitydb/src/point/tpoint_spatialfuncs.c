@@ -289,12 +289,12 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
     }
   }
   /* Last parameter set to STEP to force the function to return multipoint */
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, ss->totalcount, STEP);
-  Datum multipoint = PointerGetDatum(geo_serialize(lwgeom));
-  lwgeom_free(lwgeom);
+  LWGEOM *geom = lwpointarr_make_trajectory(points, ss->totalcount, STEP);
+  Datum multipoint = PointerGetDatum(geo_serialize(geom));
+  lwgeom_free(geom);
   Datum transf = datum_transform(multipoint, srid);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
-  LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+  LWMPOINT *mpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   TInstant **instants = palloc(sizeof(TInstant *) * maxcount);
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
@@ -305,7 +305,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
     for (int j = 0; j < seq->count; j++)
     {
       GSERIALIZED *point = geo_serialize((LWGEOM *)
-        (lwmpoint->geoms[npoints++]));
+        (mpoint->geoms[npoints++]));
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       instants[j] = tinstant_make(PointerGetDatum(point), inst->temptype,
         inst->t);
@@ -321,7 +321,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   pfree(instants);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(transf));
   pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
-  lwmpoint_free(lwmpoint);
+  lwmpoint_free(mpoint);
   return result;
 }
 

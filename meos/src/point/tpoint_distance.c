@@ -113,25 +113,25 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2,
  * from measures.c
  */
 static double
-lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
+lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
   double *fraction)
 {
   double result;
-  if (FLAGS_GET_GEODETIC(lw1->flags))
+  if (FLAGS_GET_GEODETIC(geom1->flags))
   {
     double min_dist = FLT_MAX;
     double max_dist = FLT_MAX;
     GEOGRAPHIC_POINT closest1, closest2;
     GEOGRAPHIC_EDGE e;
-    CIRC_NODE *circ_tree1 = lwgeom_calculate_circ_tree(lw1);
-    CIRC_NODE *circ_tree2 = lwgeom_calculate_circ_tree(lw2);
+    CIRC_NODE *circ_tree1 = lwgeom_calculate_circ_tree(geom1);
+    CIRC_NODE *circ_tree2 = lwgeom_calculate_circ_tree(geom2);
     circ_tree_distance_tree_internal(circ_tree1, circ_tree2, FP_TOLERANCE,
       &min_dist, &max_dist, &closest1, &closest2);
     result = sphere_distance(&closest1, &closest2);
     if (fraction != NULL)
     {
-      assert(lw1->type == LINETYPE);
-      LWLINE *lwline = lwgeom_as_lwline(lw1);
+      assert(geom1->type == LINETYPE);
+      LWLINE *lwline = lwgeom_as_lwline(geom1);
       /* Initialize edge */
       POINT4D a, b;
       GEOGRAPHIC_POINT proj;
@@ -149,18 +149,18 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
   }
   else
   {
-    if (FLAGS_GET_Z(lw1->flags))
+    if (FLAGS_GET_Z(geom1->flags))
     {
       DISTPTS3D dl;
       dl.mode = mode;
       dl.distance= FLT_MAX;
       dl.tolerance = 0;
-      lw_dist3d_recursive(lw1, lw2, &dl);
+      lw_dist3d_recursive(geom1, geom2, &dl);
       result = dl.distance;
       if (fraction != NULL)
       {
-        assert(lw1->type == LINETYPE);
-        LWLINE *lwline = lwgeom_as_lwline(lw1);
+        assert(geom1->type == LINETYPE);
+        LWLINE *lwline = lwgeom_as_lwline(geom1);
         POINT3DZ a, b, closest;
         getPoint3dz_p(lwline->points, 0, &a);
         getPoint3dz_p(lwline->points, 1, &b);
@@ -173,12 +173,12 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
       dl.mode = mode;
       dl.distance= FLT_MAX;
       dl.tolerance = 0;
-      lw_dist2d_recursive(lw1, lw2, &dl);
+      lw_dist2d_recursive(geom1, geom2, &dl);
       result = dl.distance;
       if (fraction != NULL)
       {
-        assert(lw1->type == LINETYPE);
-        LWLINE *lwline = lwgeom_as_lwline(lw1);
+        assert(geom1->type == LINETYPE);
+        LWLINE *lwline = lwgeom_as_lwline(geom1);
         POINT2D a, b, closest;
         getPoint2d_p(lwline->points, 0, &a);
         getPoint2d_p(lwline->points, 1, &b);
@@ -435,15 +435,15 @@ tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @sqlop @p <->
  */
 Temporal *
-distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
+distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(temp); assert(geo);
-  if (gserialized_is_empty(geo))
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
+  if (gserialized_is_empty(gs))
     return NULL;
   ensure_tgeo_type(temp->temptype);
-  ensure_point_type(geo);
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(geo));
-  ensure_same_dimensionality_tpoint_gs(temp, geo);
+  ensure_point_type(gs);
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -457,7 +457,7 @@ distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
   lfinfo.tpfunc_base = lfinfo.reslinear ?
     &tpoint_geo_min_dist_at_timestamp : NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal_base(temp, PointerGetDatum(geo), &lfinfo);
+  Temporal *result = tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
   return result;
 }
 
@@ -469,7 +469,7 @@ distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
 Temporal *
 distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_tgeo_type(temp1->temptype);
   ensure_same_temporal_type(temp1, temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
@@ -718,7 +718,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
 TInstant *
 nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(temp); assert(gs);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return NULL;
@@ -750,7 +750,7 @@ nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 TInstant *
 nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_tgeo_type(temp1->temptype);
   ensure_same_temporal_type(temp1, temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
@@ -782,7 +782,7 @@ nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(temp); assert(gs);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
@@ -804,7 +804,7 @@ nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 double
 nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 {
-  assert(box); assert(gs);
+  ensure_not_null((void *) box); ensure_not_null((void *) gs);
   if (gserialized_is_empty(gs))
     return -1;
   ensure_same_srid_stbox_gs(box, gs);
@@ -826,7 +826,7 @@ double
 nad_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Test the validity of the arguments */
-  assert(box1); assert(box2);
+  ensure_not_null((void *) box1); ensure_not_null((void *) box2);
   ensure_has_X_stbox(box1); ensure_has_X_stbox(box2);
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_spatial_dimensionality(box1->flags, box2->flags);
@@ -862,7 +862,7 @@ double
 nad_tpoint_stbox(const Temporal *temp, const STBox *box)
 {
   /* Test the validity of the arguments */
-  assert(temp); assert(box);
+  ensure_not_null((void *) temp); ensure_not_null((void *) box);
   ensure_tgeo_type(temp->temptype);
   ensure_has_X_stbox(box);
   ensure_same_geodetic(temp->flags, box->flags);
@@ -904,7 +904,7 @@ nad_tpoint_stbox(const Temporal *temp, const STBox *box)
 double
 nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_tgeo_type(temp1->temptype);
   ensure_same_temporal_type(temp1, temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
@@ -932,7 +932,8 @@ bool
 shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   GSERIALIZED **result)
 {
-  assert(temp); assert(gs); assert(result);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
+  ensure_not_null((void *) result);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return false;
@@ -965,7 +966,8 @@ bool
 shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   GSERIALIZED **result)
 {
-  assert(temp1); assert(temp2); assert(result);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
+  ensure_not_null((void *) result);
   ensure_tgeo_type(temp1->temptype);
   ensure_same_temporal_type(temp1, temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));

@@ -319,6 +319,8 @@ extern DateADT pg_to_date(text *date_txt, text *fmt);
  * Functions for input/output and manipulation of PostGIS types
  *****************************************************************************/
 
+extern GSERIALIZED *geography_from_hexewkb(const char *wkt);
+extern GSERIALIZED *geometry_from_hexewkb(const char *wkt);
 extern bytea *gserialized_as_ewkb(const GSERIALIZED *geom, char *type);
 extern char *gserialized_as_ewkt(const GSERIALIZED *geom, int precision);
 extern char *gserialized_as_geojson(const GSERIALIZED *geom, int option, int precision, char *srs);
@@ -326,7 +328,6 @@ extern char *gserialized_as_hexewkb(const GSERIALIZED *geom, const char *type);
 extern char *gserialized_as_text(const GSERIALIZED *geom, int precision);
 extern GSERIALIZED *gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid);
 extern GSERIALIZED *gserialized_from_geojson(const char *geojson);
-extern GSERIALIZED *gserialized_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geometry_from_text(char *wkt, int srid);
 extern GSERIALIZED *geography_from_text(char *wkt, int srid);
 extern GSERIALIZED *pgis_geography_in(char *input, int32 geom_typmod);
@@ -404,7 +405,6 @@ extern Span *span_copy(const Span *s);
 extern SpanSet *spanset_copy(const SpanSet *ps);
 extern SpanSet *spanset_make(Span *spans, int count, bool normalize);
 extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool ordered);
-extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize);
 extern Set *textset_make(const text **values, int count);
 extern Set *timestampset_make(const TimestampTz *values, int count);
 

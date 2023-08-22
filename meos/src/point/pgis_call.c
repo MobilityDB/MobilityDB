@@ -72,7 +72,7 @@ void srid_check_latlong(int32_t srid);
 #endif
 
 GSERIALIZED *
-gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod);
+gserialized_geography_from_lwgeom(LWGEOM *geom, int32 geog_typmod);
 
 /*****************************************************************************
  * Functions adapted from lwgeom_box.c

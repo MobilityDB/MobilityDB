@@ -34,8 +34,6 @@
 
 #include "general/temporal.h"
 
-/* C */
-#include <assert.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -52,7 +50,7 @@
 Temporal *
 tbool_at_value(const Temporal *temp, bool b)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_BOOL);
   Temporal *result = temporal_restrict_value(temp, BoolGetDatum(b), REST_AT);
   return result;
@@ -66,7 +64,7 @@ tbool_at_value(const Temporal *temp, bool b)
 Temporal *
 tint_at_value(const Temporal *temp, int i)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   Temporal *result = temporal_restrict_value(temp, Int32GetDatum(i), REST_AT);
   return result;
@@ -80,7 +78,7 @@ tint_at_value(const Temporal *temp, int i)
 Temporal *
 tfloat_at_value(const Temporal *temp, double d)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   Temporal *result = temporal_restrict_value(temp, Float8GetDatum(d), REST_AT);
   return result;
@@ -94,7 +92,7 @@ tfloat_at_value(const Temporal *temp, double d)
 Temporal *
 ttext_at_value(const Temporal *temp, text *txt)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_TEXT);
   Temporal *result = temporal_restrict_value(temp, PointerGetDatum(txt), REST_AT);
   return result;
@@ -108,7 +106,7 @@ ttext_at_value(const Temporal *temp, text *txt)
 Temporal *
 tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   Temporal *result = temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
   return result;
@@ -122,7 +120,7 @@ tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 Temporal *
 tbool_minus_value(const Temporal *temp, bool b)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_BOOL);
   Temporal *result = temporal_restrict_value(temp, BoolGetDatum(b), REST_MINUS);
   return result;
@@ -136,7 +134,7 @@ tbool_minus_value(const Temporal *temp, bool b)
 Temporal *
 tint_minus_value(const Temporal *temp, int i)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   Temporal *result = temporal_restrict_value(temp, Int32GetDatum(i), REST_MINUS);
   return result;
@@ -150,7 +148,7 @@ tint_minus_value(const Temporal *temp, int i)
 Temporal *
 tfloat_minus_value(const Temporal *temp, double d)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   Temporal *result = temporal_restrict_value(temp, Float8GetDatum(d), REST_MINUS);
   return result;
@@ -164,7 +162,7 @@ tfloat_minus_value(const Temporal *temp, double d)
 Temporal *
 ttext_minus_value(const Temporal *temp, text *txt)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_TEXT);
   Temporal *result = temporal_restrict_value(temp, PointerGetDatum(txt), REST_MINUS);
   return result;
@@ -178,7 +176,7 @@ ttext_minus_value(const Temporal *temp, text *txt)
 Temporal *
 tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   Temporal *result = temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
   return result;
@@ -194,7 +192,7 @@ tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 Temporal *
 temporal_at_values(const Temporal *temp, const Set *s)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, s->basetype);
   return temporal_restrict_values(temp, s, REST_AT);
 }
@@ -207,7 +205,7 @@ temporal_at_values(const Temporal *temp, const Set *s)
 Temporal *
 temporal_minus_values(const Temporal *temp, const Set *s)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, s->basetype);
   return temporal_restrict_values(temp, s, REST_MINUS);
 }
@@ -223,7 +221,7 @@ bool
 tbool_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
   bool *value)
 {
-  assert(temp); assert(value);
+  ensure_not_null((void *) temp); ensure_not_null((void *) value);
   ensure_temporal_has_type(temp, T_TBOOL);
   Datum res;
   bool result = temporal_value_at_timestamp(temp, t, strict, &res);
@@ -240,7 +238,7 @@ bool
 tint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
   int *value)
 {
-  assert(temp); assert(value);
+  ensure_not_null((void *) temp); ensure_not_null((void *) value);
   ensure_temporal_has_type(temp, T_TINT);
   Datum res;
   bool result = temporal_value_at_timestamp(temp, t, strict, &res);
@@ -257,7 +255,7 @@ bool
 tfloat_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
   double *value)
 {
-  assert(temp); assert(value);
+  ensure_not_null((void *) temp); ensure_not_null((void *) value);
   ensure_temporal_has_type(temp, T_TFLOAT);
   Datum res;
   bool result = temporal_value_at_timestamp(temp, t, strict, &res);
@@ -274,7 +272,7 @@ bool
 ttext_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
   text **value)
 {
-  assert(temp); assert(value);
+  ensure_not_null((void *) temp); ensure_not_null((void *) value);
   ensure_temporal_has_type(temp, T_TTEXT);
   Datum res;
   bool result = temporal_value_at_timestamp(temp, t, strict, &res);
@@ -291,7 +289,7 @@ bool
 tpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
   GSERIALIZED **value)
 {
-  assert(temp); assert(value);
+  ensure_not_null((void *) temp); ensure_not_null((void *) value);
   ensure_tgeo_type(temp->temptype);
   Datum res;
   bool result = temporal_value_at_timestamp(temp, t, strict, &res);
@@ -309,7 +307,7 @@ tpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 Temporal *
 temporal_at_min(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   Temporal *result = temporal_restrict_minmax(temp, GET_MIN, REST_AT);
   return result;
 }
@@ -322,7 +320,7 @@ temporal_at_min(const Temporal *temp)
 Temporal *
 temporal_minus_min(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   Temporal *result = temporal_restrict_minmax(temp, GET_MIN, REST_MINUS);
   return result;
 }
@@ -335,7 +333,7 @@ temporal_minus_min(const Temporal *temp)
 Temporal *
 temporal_at_max(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_AT);
   return result;
 }
@@ -348,7 +346,7 @@ temporal_at_max(const Temporal *temp)
 Temporal *
 temporal_minus_max(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
   return result;
 }
@@ -363,7 +361,7 @@ temporal_minus_max(const Temporal *temp)
 Temporal *
 tnumber_at_span(const Temporal *temp, const Span *s)
 {
-  assert(temp); assert(s);
+  ensure_not_null((void *) temp); ensure_not_null((void *) s);
   Temporal *result = tnumber_restrict_span(temp, s, REST_AT);
   return result;
 }
@@ -376,7 +374,7 @@ tnumber_at_span(const Temporal *temp, const Span *s)
 Temporal *
 tnumber_minus_span(const Temporal *temp, const Span *s)
 {
-  assert(temp); assert(s);
+  ensure_not_null((void *) temp); ensure_not_null((void *) s);
   Temporal *result = tnumber_restrict_span(temp, s, REST_MINUS);
   return result;
 }
@@ -389,7 +387,7 @@ tnumber_minus_span(const Temporal *temp, const Span *s)
 Temporal *
 tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 {
-  assert(temp); assert(ss);
+  ensure_not_null((void *) temp); ensure_not_null((void *) ss);
   Temporal *result = tnumber_restrict_spanset(temp, ss, REST_AT);
   return result;
 }
@@ -403,7 +401,7 @@ tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 Temporal *
 tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 {
-  assert(temp); assert(ss);
+  ensure_not_null((void *) temp); ensure_not_null((void *) ss);
   Temporal *result = tnumber_restrict_spanset(temp, ss, REST_MINUS);
   return result;
 }
@@ -418,7 +416,7 @@ tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 Temporal *
 temporal_at_timestamp(const Temporal *temp, TimestampTz t)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   Temporal *result = temporal_restrict_timestamp(temp, t, REST_AT);
   return result;
 }
@@ -431,7 +429,7 @@ temporal_at_timestamp(const Temporal *temp, TimestampTz t)
 Temporal *
 temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   Temporal *result = temporal_restrict_timestamp(temp, t, REST_MINUS);
   return result;
 }
@@ -444,7 +442,7 @@ temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
 Temporal *
 temporal_at_timestampset(const Temporal *temp, const Set *s)
 {
-  assert(temp); assert(s);
+  ensure_not_null((void *) temp); ensure_not_null((void *) s);
   Temporal *result = temporal_restrict_timestampset(temp, s, REST_AT);
   return result;
 }
@@ -457,7 +455,7 @@ temporal_at_timestampset(const Temporal *temp, const Set *s)
 Temporal *
 temporal_minus_timestampset(const Temporal *temp, const Set *s)
 {
-  assert(temp); assert(s);
+  ensure_not_null((void *) temp); ensure_not_null((void *) s);
   Temporal *result = temporal_restrict_timestampset(temp, s, REST_MINUS);
   return result;
 }
@@ -470,7 +468,7 @@ temporal_minus_timestampset(const Temporal *temp, const Set *s)
 Temporal *
 temporal_at_period(const Temporal *temp, const Span *s)
 {
-  assert(temp); assert(s);
+  ensure_not_null((void *) temp); ensure_not_null((void *) s);
   Temporal *result = temporal_restrict_period(temp, s, REST_AT);
   return result;
 }
@@ -483,7 +481,7 @@ temporal_at_period(const Temporal *temp, const Span *s)
 Temporal *
 temporal_minus_period(const Temporal *temp, const Span *s)
 {
-  assert(temp); assert(s);
+  ensure_not_null((void *) temp); ensure_not_null((void *) s);
   Temporal *result = temporal_restrict_period(temp, s, REST_MINUS);
   return result;
 }
@@ -496,7 +494,7 @@ temporal_minus_period(const Temporal *temp, const Span *s)
 Temporal *
 temporal_at_periodset(const Temporal *temp, const SpanSet *ss)
 {
-  assert(temp); assert(ss);
+  ensure_not_null((void *) temp); ensure_not_null((void *) ss);
   Temporal *result = temporal_restrict_periodset(temp, ss, REST_AT);
   return result;
 }
@@ -509,7 +507,7 @@ temporal_at_periodset(const Temporal *temp, const SpanSet *ss)
 Temporal *
 temporal_minus_periodset(const Temporal *temp, const SpanSet *ss)
 {
-  assert(temp); assert(ss);
+  ensure_not_null((void *) temp); ensure_not_null((void *) ss);
   Temporal *result = temporal_restrict_periodset(temp, ss, REST_MINUS);
   return result;
 }

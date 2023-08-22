@@ -244,7 +244,7 @@ tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
 {
   /* Ensure validity of the arguments */
   assert(inst);
-  ensure_non_negative(maxdd);
+  assert(maxdd >= 0);
 
   char *t = pg_timestamptz_out(inst->t);
   meosType basetype = temptype_basetype(inst->temptype);
@@ -380,6 +380,7 @@ tfloatinst_make(double d, TimestampTz t)
 TInstant *
 ttextinst_make(const text *txt, TimestampTz t)
 {
+  ensure_not_null((void *) txt);
   return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
 }
 
@@ -391,6 +392,7 @@ ttextinst_make(const text *txt, TimestampTz t)
 TInstant *
 tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
+  ensure_not_null((void *) gs);
   return tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, t);
 }
 /**
@@ -401,6 +403,7 @@ tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t)
 TInstant *
 tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
+  ensure_not_null((void *) gs);
   return tinstant_make(PointerGetDatum(gs), T_TGEOGPOINT, t);
 }
 #endif /* MEOS */
@@ -412,6 +415,7 @@ tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 TInstant *
 tinstant_copy(const TInstant *inst)
 {
+  assert(inst);
   TInstant *result = palloc0(VARSIZE(inst));
   memcpy(result, inst, VARSIZE(inst));
   return result;

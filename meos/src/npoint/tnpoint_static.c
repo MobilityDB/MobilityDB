@@ -104,17 +104,17 @@ npointarr_geom(Npoint **points, int count)
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
   for (int i = 0; i < count; i++)
   {
-    GSERIALIZED *line = route_geom(points[i]->rid);
-    int32_t srid = gserialized_get_srid(line);
-    LWGEOM *lwline = lwgeom_from_gserialized(line);
-    geoms[i] = lwgeom_line_interpolate_point(lwline, points[i]->pos, srid, 0);
-    pfree(line); pfree(lwline);
+    GSERIALIZED *gsline = route_geom(points[i]->rid);
+    int32_t srid = gserialized_get_srid(gsline);
+    LWGEOM *line = lwgeom_from_gserialized(gsline);
+    geoms[i] = lwgeom_line_interpolate_point(line, points[i]->pos, srid, 0);
+    pfree(gsline); pfree(line);
   }
   int newcount;
   LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, count, &newcount);
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  pfree(newgeoms); pfree(lwgeom);
+  LWGEOM *geom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
+  GSERIALIZED *result = geo_serialize(geom);
+  pfree(newgeoms); pfree(geom);
   pfree_array((void **) geoms, count);
   return result;
 }

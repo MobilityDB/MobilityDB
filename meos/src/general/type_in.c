@@ -717,7 +717,7 @@ ensure_temptype_mfjson(const char *typestr)
 Temporal *
 temporal_from_mfjson(const char *mfjson)
 {
-  assert(mfjson);
+  ensure_not_null((void *) mfjson);
   char *srs = NULL;
   int srid = 0;
   Temporal *result = NULL;
@@ -1603,7 +1603,7 @@ datum_from_hexwkb(const char *hexwkb, size_t size, meosType type)
 Set *
 set_from_wkb(const uint8_t *wkb, size_t size)
 {
-  assert(wkb);
+  ensure_not_null((void *) wkb);
   /* We pass ANY set type, the actual type is read from the byte string */
   return DatumGetSetP(datum_from_wkb(wkb, size, T_INTSET));
 }
@@ -1617,7 +1617,7 @@ set_from_wkb(const uint8_t *wkb, size_t size)
 Set *
 set_from_hexwkb(const char *hexwkb)
 {
-  assert(hexwkb);
+  ensure_not_null((void *) hexwkb);
   size_t size = strlen(hexwkb);
   /* We pass ANY set type, the actual type is read from the byte string */
   return DatumGetSetP(datum_from_hexwkb(hexwkb, size, T_INTSET));
@@ -1634,7 +1634,7 @@ set_from_hexwkb(const char *hexwkb)
 Span *
 span_from_wkb(const uint8_t *wkb, size_t size)
 {
-  assert(wkb);
+  ensure_not_null((void *) wkb);
   /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(datum_from_wkb(wkb, size, T_INTSPAN));
 }
@@ -1647,7 +1647,7 @@ span_from_wkb(const uint8_t *wkb, size_t size)
 Span *
 span_from_hexwkb(const char *hexwkb)
 {
-  assert(hexwkb);
+  ensure_not_null((void *) hexwkb);
   size_t size = strlen(hexwkb);
   /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(datum_from_hexwkb(hexwkb, size, T_INTSPAN));
@@ -1664,7 +1664,7 @@ span_from_hexwkb(const char *hexwkb)
 SpanSet *
 spanset_from_wkb(const uint8_t *wkb, size_t size)
 {
-  assert(wkb);
+  ensure_not_null((void *) wkb);
   /* We pass ANY span set type, the actual type is read from the byte string */
   return DatumGetSpanSetP(datum_from_wkb(wkb, size, T_INTSPANSET));
 }
@@ -1677,7 +1677,7 @@ spanset_from_wkb(const uint8_t *wkb, size_t size)
 SpanSet *
 spanset_from_hexwkb(const char *hexwkb)
 {
-  assert(hexwkb);
+  ensure_not_null((void *) hexwkb);
   size_t size = strlen(hexwkb);
   /* We pass ANY span set type, the actual type is read from the byte string */
   return DatumGetSpanSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
@@ -1694,7 +1694,7 @@ spanset_from_hexwkb(const char *hexwkb)
 TBox *
 tbox_from_wkb(const uint8_t *wkb, size_t size)
 {
-  assert(wkb);
+  ensure_not_null((void *) wkb);
   return DatumGetTboxP(datum_from_wkb(wkb, size, T_TBOX));
 }
 
@@ -1706,7 +1706,7 @@ tbox_from_wkb(const uint8_t *wkb, size_t size)
 TBox *
 tbox_from_hexwkb(const char *hexwkb)
 {
-  assert(hexwkb);
+  ensure_not_null((void *) hexwkb);
   size_t size = strlen(hexwkb);
   return DatumGetTboxP(datum_from_hexwkb(hexwkb, size, T_TBOX));
 }
@@ -1722,7 +1722,7 @@ tbox_from_hexwkb(const char *hexwkb)
 STBox *
 stbox_from_wkb(const uint8_t *wkb, size_t size)
 {
-  assert(wkb);
+  ensure_not_null((void *) wkb);
   return DatumGetSTboxP(datum_from_wkb(wkb, size, T_STBOX));
 }
 
@@ -1735,7 +1735,7 @@ stbox_from_wkb(const uint8_t *wkb, size_t size)
 STBox *
 stbox_from_hexwkb(const char *hexwkb)
 {
-  assert(hexwkb);
+  ensure_not_null((void *) hexwkb);
   size_t size = strlen(hexwkb);
   return DatumGetSTboxP(datum_from_hexwkb(hexwkb, size, T_STBOX));
 }
@@ -1752,7 +1752,7 @@ stbox_from_hexwkb(const char *hexwkb)
 Temporal *
 temporal_from_wkb(const uint8_t *wkb, size_t size)
 {
-  assert(wkb);
+  ensure_not_null((void *) wkb);
   /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(datum_from_wkb(wkb, size, T_TINT));
 }
@@ -1766,7 +1766,7 @@ temporal_from_wkb(const uint8_t *wkb, size_t size)
 Temporal *
 temporal_from_hexwkb(const char *hexwkb)
 {
-  assert(hexwkb);
+  ensure_not_null((void *) hexwkb);
   size_t size = strlen(hexwkb);
   /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(datum_from_hexwkb(hexwkb, size, T_TINT));

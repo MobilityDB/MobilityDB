@@ -484,7 +484,7 @@ Temporal *
 tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  assert(temp); assert(gs);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   return tinterrel_tpoint_geo(temp, gs, TDISJOINT, restr, atvalue);
 }
@@ -499,7 +499,7 @@ Temporal *
 tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  assert(temp); assert(gs);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   return tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr, atvalue);
 }
@@ -1090,7 +1090,7 @@ Temporal *
 tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
-  assert(temp); assert(gs);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return NULL;
@@ -1135,7 +1135,7 @@ Temporal *
 ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  assert(temp); assert(gs);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return NULL;
@@ -1175,7 +1175,7 @@ Temporal *
 tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool restr, bool atvalue)
 {
-  assert(temp); assert(gs);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return NULL;
@@ -1311,7 +1311,7 @@ Temporal *
 tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   double dist, bool restr, bool atvalue)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_tgeo_type(temp1->temptype);
   ensure_tgeo_type(temp2->temptype);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));

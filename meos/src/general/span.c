@@ -301,7 +301,7 @@ span_in(const char *str, meosType spantype)
 Span *
 intspan_in(const char *str)
 {
-  assert(str);
+  ensure_not_null((void *) str);
   return span_in(str, T_INTSPAN);
 }
 
@@ -312,7 +312,7 @@ intspan_in(const char *str)
 Span *
 bigintspan_in(const char *str)
 {
-  assert(str);
+  ensure_not_null((void *) str);
   return span_in(str, T_BIGINTSPAN);
 }
 
@@ -323,7 +323,7 @@ bigintspan_in(const char *str)
 Span *
 floatspan_in(const char *str)
 {
-  assert(str);
+  ensure_not_null((void *) str);
   return span_in(str, T_FLOATSPAN);
 }
 
@@ -334,7 +334,7 @@ floatspan_in(const char *str)
 Span *
 period_in(const char *str)
 {
-  assert(str);
+  ensure_not_null((void *) str);
   return span_in(str, T_TSTZSPAN);
 }
 #endif /* MEOS */
@@ -369,7 +369,7 @@ span_out(const Span *s, int maxdd)
 {
   /* Ensure validity of the arguments */
   assert(s);
-  ensure_non_negative(maxdd);
+  assert(maxdd >= 0);
 
   char *lower = unquote(basetype_out(s->lower, s->basetype, maxdd));
   char *upper = unquote(basetype_out(s->upper, s->basetype, maxdd));
@@ -389,7 +389,7 @@ span_out(const Span *s, int maxdd)
 char *
 intspan_out(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_INTSPAN);
   return span_out(s, 0);
 }
@@ -401,7 +401,7 @@ intspan_out(const Span *s)
 char *
 bigintspan_out(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_BIGINTSPAN);
   return span_out(s, 0);
 }
@@ -413,7 +413,7 @@ bigintspan_out(const Span *s)
 char *
 floatspan_out(const Span *s, int maxdd)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_FLOATSPAN);
   return span_out(s, maxdd);
 }
@@ -425,7 +425,7 @@ floatspan_out(const Span *s, int maxdd)
 char *
 period_out(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_TSTZSPAN);
   return span_out(s, 0);
 }
@@ -582,7 +582,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 Span *
 span_copy(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   Span *result = palloc(sizeof(Span));
   memcpy((char *) result, (char *) s, sizeof(Span));
   return result;
@@ -684,7 +684,7 @@ timestamp_to_period(TimestampTz t)
 int
 intspan_lower(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_INTSPAN);
   return DatumGetInt32(s->lower);
 }
@@ -697,7 +697,7 @@ intspan_lower(const Span *s)
 int
 bigintspan_lower(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_BIGINTSPAN);
   return DatumGetInt64(s->lower);
 }
@@ -710,7 +710,7 @@ bigintspan_lower(const Span *s)
 double
 floatspan_lower(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_FLOATSPAN);
   return DatumGetFloat8(s->lower);
 }
@@ -723,7 +723,7 @@ floatspan_lower(const Span *s)
 TimestampTz
 period_lower(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_TSTZSPAN);
   return TimestampTzGetDatum(s->lower);
 }
@@ -736,7 +736,7 @@ period_lower(const Span *s)
 int
 intspan_upper(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_INTSPAN);
   return Int32GetDatum(s->upper);
 }
@@ -749,7 +749,7 @@ intspan_upper(const Span *s)
 int
 bigintspan_upper(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_BIGINTSPAN);
   return Int64GetDatum(s->upper);
 }
@@ -762,7 +762,7 @@ bigintspan_upper(const Span *s)
 double
 floatspan_upper(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_FLOATSPAN);
   return DatumGetFloat8(s->upper);
 }
@@ -775,7 +775,7 @@ floatspan_upper(const Span *s)
 TimestampTz
 period_upper(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_TSTZSPAN);
   return TimestampTzGetDatum(s->upper);
 }
@@ -788,7 +788,7 @@ period_upper(const Span *s)
 bool
 span_lower_inc(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   return s->lower_inc;
 }
 
@@ -800,7 +800,7 @@ span_lower_inc(const Span *s)
 bool
 span_upper_inc(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   return s->upper_inc;
 }
 #endif /* MEOS */
@@ -813,7 +813,7 @@ span_upper_inc(const Span *s)
 double
 span_width(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   return distance_value_value(s->lower, s->upper, s->basetype);
 }
 
@@ -825,7 +825,7 @@ span_width(const Span *s)
 Interval *
 period_duration(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_TSTZSPAN);
   return pg_timestamp_mi(s->upper, s->lower);
 }
@@ -858,7 +858,7 @@ Span *
 floatspan_round(const Span *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_FLOATSPAN);
   ensure_non_negative(maxdd);
 
@@ -877,7 +877,7 @@ floatspan_round(const Span *s, int maxdd)
 Span *
 intspan_floatspan(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_INTSPAN);
   Span *result = malloc(sizeof(Span));
   intspan_set_floatspan(s, result);
@@ -891,7 +891,7 @@ intspan_floatspan(const Span *s)
 Span *
 floatspan_intspan(const Span *s)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_FLOATSPAN);
   Span *result = malloc(sizeof(Span));
   floatspan_set_intspan(s, result);
@@ -941,7 +941,7 @@ floatspan_set_intspan(const Span *s1, Span *s2)
 void
 span_expand(const Span *s1, Span *s2)
 {
-  assert(s1); assert(s2);
+  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
   ensure_same_span_type(s1, s2);
   int cmp1 = datum_cmp(s2->lower, s1->lower, s1->basetype);
   int cmp2 = datum_cmp(s2->upper, s1->upper, s1->basetype);
@@ -1004,7 +1004,7 @@ lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
 void
 period_delta_scale(Span *s, TimestampTz origin, TimestampTz delta, double scale)
 {
-  assert(s);
+  ensure_not_null((void *) s);
   TimestampTz lower = DatumGetTimestampTz(s->lower);
   TimestampTz upper = DatumGetTimestampTz(s->upper);
   /* The default value when there is not shift is 0 */
@@ -1064,6 +1064,7 @@ Span *
 period_shift_tscale(const Span *s, const Interval *shift,
   const Interval *duration)
 {
+  ensure_not_null((void *) s);
   ensure_span_has_type(s, T_TSTZSPAN);
   assert(shift || duration);
   if (duration)
@@ -1093,7 +1094,7 @@ period_shift_tscale(const Span *s, const Interval *shift,
 bool
 span_eq(const Span *s1, const Span *s2)
 {
-  assert(s1); assert(s2);
+  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
   ensure_same_span_type(s1, s2);
   if (s1->lower != s2->lower || s1->upper != s2->upper ||
     s1->lower_inc != s2->lower_inc || s1->upper_inc != s2->upper_inc)
@@ -1124,7 +1125,7 @@ span_ne(const Span *s1, const Span *s2)
 int
 span_cmp(const Span *s1, const Span *s2)
 {
-  assert(s1); assert(s2);
+  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
   ensure_same_span_type(s1, s2);
   int cmp = datum_cmp(s1->lower, s2->lower, s1->basetype);
   if (cmp != 0)
@@ -1199,6 +1200,7 @@ span_gt(const Span *s1, const Span *s2)
 uint32
 span_hash(const Span *s)
 {
+  ensure_not_null((void *) s);
   /* Create flags from the lower_inc and upper_inc values */
   char flags = '\0';
   if (s->lower_inc)
@@ -1233,6 +1235,7 @@ span_hash(const Span *s)
 uint64
 span_hash_extended(const Span *s, uint64 seed)
 {
+  ensure_not_null((void *) s);
   uint64 result;
   char flags = '\0';
   uint64 type_hash;

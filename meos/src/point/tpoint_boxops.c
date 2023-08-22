@@ -242,7 +242,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 STBox *
 tpoint_stboxes(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
+  ensure_not_null((void *) temp); ensure_not_null((void *) count);
   ensure_tgeo_type(temp->temptype);
 
   STBox *result = NULL;

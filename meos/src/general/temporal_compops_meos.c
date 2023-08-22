@@ -52,7 +52,7 @@
 Temporal *
 teq_bool_tbool(bool b, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_BOOL);
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_eq,
     INVERT);
@@ -66,7 +66,7 @@ teq_bool_tbool(bool b, const Temporal *temp)
 Temporal *
 teq_int_tint(int i, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_eq,
     INVERT);
@@ -80,7 +80,7 @@ teq_int_tint(int i, const Temporal *temp)
 Temporal *
 teq_float_tfloat(double d, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_eq,
     INVERT);
@@ -94,7 +94,7 @@ teq_float_tfloat(double d, const Temporal *temp)
 Temporal *
 teq_text_ttext(const text *txt, const Temporal *temp)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_eq,
     INVERT);
@@ -108,7 +108,7 @@ teq_text_ttext(const text *txt, const Temporal *temp)
 Temporal *
 teq_tbool_bool(const Temporal *temp, bool b)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_BOOL);
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_eq,
     INVERT_NO);
@@ -122,7 +122,7 @@ teq_tbool_bool(const Temporal *temp, bool b)
 Temporal *
 teq_tint_int(const Temporal *temp, int i)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_eq,
     INVERT_NO);
@@ -136,7 +136,7 @@ teq_tint_int(const Temporal *temp, int i)
 Temporal *
 teq_tfloat_float(const Temporal *temp, double d)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_eq,
     INVERT_NO);
@@ -150,6 +150,7 @@ teq_tfloat_float(const Temporal *temp, double d)
 Temporal *
 teq_ttext_text(const Temporal *temp, const text *txt)
 {
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   assert(temp); assert(txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_eq,
@@ -164,7 +165,7 @@ teq_ttext_text(const Temporal *temp, const text *txt)
 Temporal *
 teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
 }
@@ -181,6 +182,7 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tne_bool_tbool(bool b, const Temporal *temp)
 {
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_BOOL);
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_ne,
     INVERT);
@@ -194,7 +196,7 @@ tne_bool_tbool(bool b, const Temporal *temp)
 Temporal *
 tne_int_tint(int i, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ne,
     INVERT);
@@ -208,7 +210,7 @@ tne_int_tint(int i, const Temporal *temp)
 Temporal *
 tne_float_tfloat(double d, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ne,
     INVERT);
@@ -222,7 +224,7 @@ tne_float_tfloat(double d, const Temporal *temp)
 Temporal *
 tne_text_ttext(const text *txt, const Temporal *temp)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ne,
     INVERT);
@@ -236,7 +238,7 @@ tne_text_ttext(const text *txt, const Temporal *temp)
 Temporal *
 tne_tbool_bool(const Temporal *temp, bool b)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_BOOL);
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_ne,
     INVERT_NO);
@@ -250,7 +252,7 @@ tne_tbool_bool(const Temporal *temp, bool b)
 Temporal *
 tne_tint_int(const Temporal *temp, int i)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ne,
     INVERT_NO);
@@ -264,7 +266,7 @@ tne_tint_int(const Temporal *temp, int i)
 Temporal *
 tne_tfloat_float(const Temporal *temp, double d)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ne,
     INVERT_NO);
@@ -278,7 +280,7 @@ tne_tfloat_float(const Temporal *temp, double d)
 Temporal *
 tne_ttext_text(const Temporal *temp, const text *txt)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ne,
     INVERT_NO);
@@ -286,13 +288,14 @@ tne_ttext_text(const Temporal *temp, const text *txt)
 
 /**
  * @ingroup libmeos_temporal_comp
+>>>>>>> Stashed changes
  * @brief Return the temporal inequality of the temporal values.
  * @sqlop @p #<>
  */
 Temporal *
 tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
 }
@@ -309,7 +312,7 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tlt_int_tint(int i, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_lt,
     INVERT);
@@ -323,7 +326,7 @@ tlt_int_tint(int i, const Temporal *temp)
 Temporal *
 tlt_float_tfloat(double d, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_lt,
     INVERT);
@@ -337,7 +340,7 @@ tlt_float_tfloat(double d, const Temporal *temp)
 Temporal *
 tlt_text_ttext(const text *txt, const Temporal *temp)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_lt,
     INVERT);
@@ -351,7 +354,7 @@ tlt_text_ttext(const text *txt, const Temporal *temp)
 Temporal *
 tlt_tint_int(const Temporal *temp, int i)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_lt,
     INVERT_NO);
@@ -365,7 +368,7 @@ tlt_tint_int(const Temporal *temp, int i)
 Temporal *
 tlt_tfloat_float(const Temporal *temp, double d)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_lt,
     INVERT_NO);
@@ -379,7 +382,7 @@ tlt_tfloat_float(const Temporal *temp, double d)
 Temporal *
 tlt_ttext_text(const Temporal *temp, const text *txt)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_lt,
     INVERT_NO);
@@ -393,7 +396,7 @@ tlt_ttext_text(const Temporal *temp, const text *txt)
 Temporal *
 tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
 }
@@ -411,7 +414,7 @@ tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tle_int_tint(int i, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_le,
     INVERT);
@@ -426,7 +429,7 @@ tle_int_tint(int i, const Temporal *temp)
 Temporal *
 tle_float_tfloat(double d, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_le,
     INVERT);
@@ -441,7 +444,7 @@ tle_float_tfloat(double d, const Temporal *temp)
 Temporal *
 tle_text_ttext(const text *txt, const Temporal *temp)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_le,
     INVERT);
@@ -456,7 +459,7 @@ tle_text_ttext(const text *txt, const Temporal *temp)
 Temporal *
 tle_tint_int(const Temporal *temp, int i)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_le,
     INVERT_NO);
@@ -471,7 +474,7 @@ tle_tint_int(const Temporal *temp, int i)
 Temporal *
 tle_tfloat_float(const Temporal *temp, double d)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_le,
     INVERT_NO);
@@ -486,7 +489,7 @@ tle_tfloat_float(const Temporal *temp, double d)
 Temporal *
 tle_ttext_text(const Temporal *temp, const text *txt)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_le,
     INVERT_NO);
@@ -500,7 +503,7 @@ tle_ttext_text(const Temporal *temp, const text *txt)
 Temporal *
 tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
 }
@@ -517,7 +520,7 @@ tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tgt_int_tint(int i, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_gt,
     INVERT);
@@ -531,7 +534,7 @@ tgt_int_tint(int i, const Temporal *temp)
 Temporal *
 tgt_float_tfloat(double d, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_gt,
     INVERT);
@@ -545,7 +548,7 @@ tgt_float_tfloat(double d, const Temporal *temp)
 Temporal *
 tgt_text_ttext(const text *txt, const Temporal *temp)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_gt,
     INVERT);
@@ -559,7 +562,7 @@ tgt_text_ttext(const text *txt, const Temporal *temp)
 Temporal *
 tgt_tint_int(const Temporal *temp, int i)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_gt,
     INVERT_NO);
@@ -573,7 +576,7 @@ tgt_tint_int(const Temporal *temp, int i)
 Temporal *
 tgt_tfloat_float(const Temporal *temp, double d)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_gt,
     INVERT_NO);
@@ -587,7 +590,7 @@ tgt_tfloat_float(const Temporal *temp, double d)
 Temporal *
 tgt_ttext_text(const Temporal *temp, const text *txt)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_gt,
     INVERT_NO);
@@ -601,7 +604,7 @@ tgt_ttext_text(const Temporal *temp, const text *txt)
 Temporal *
 tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
 }
@@ -619,7 +622,7 @@ tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tge_int_tint(int i, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ge,
     INVERT);
@@ -634,7 +637,7 @@ tge_int_tint(int i, const Temporal *temp)
 Temporal *
 tge_float_tfloat(double d, const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ge,
     INVERT);
@@ -649,7 +652,7 @@ tge_float_tfloat(double d, const Temporal *temp)
 Temporal *
 tge_text_ttext(const text *txt, const Temporal *temp)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ge,
     INVERT);
@@ -664,7 +667,7 @@ tge_text_ttext(const text *txt, const Temporal *temp)
 Temporal *
 tge_tint_int(const Temporal *temp, int i)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ge,
     INVERT_NO);
@@ -679,7 +682,7 @@ tge_tint_int(const Temporal *temp, int i)
 Temporal *
 tge_tfloat_float(const Temporal *temp, double d)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ge,
     INVERT_NO);
@@ -694,7 +697,7 @@ tge_tfloat_float(const Temporal *temp, double d)
 Temporal *
 tge_ttext_text(const Temporal *temp, const text *txt)
 {
-  assert(temp); assert(txt);
+  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
   ensure_same_temporal_basetype(temp, T_TEXT);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ge,
     INVERT_NO);
@@ -708,7 +711,7 @@ tge_ttext_text(const Temporal *temp, const text *txt)
 Temporal *
 tge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_same_temporal_type(temp1, temp2);
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
 }

@@ -353,6 +353,7 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 extern bool temptype_subtype(int16 subtype);
 extern bool temptype_subtype_all(int16 subtype);
+extern void ensure_not_null(void *ptr);
 extern void ensure_valid_interpolation(meosType temptype, interpType interp);
 extern void ensure_continuous(const Temporal *temp);
 extern void ensure_continuous_interpolation(int16 flags);
@@ -365,6 +366,7 @@ extern void ensure_same_temporal_type(const Temporal *temp1,
 extern void ensure_same_temporal_basetype(const Temporal *temp,
   meosType basetype);
 extern void ensure_non_negative(int i);
+extern void ensure_positive(int i);
 extern void ensure_positive_datum(Datum size, meosType basetype);
 extern void ensure_valid_duration(const Interval *duration);
 

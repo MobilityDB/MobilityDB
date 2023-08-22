@@ -745,7 +745,7 @@ tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal point is ever equal to a point.
  * @see tpointinst_ever_eq
  * @see tpointseq_ever_eq
@@ -782,10 +782,9 @@ tpoint_ever_eq(const Temporal *temp, Datum value)
  */
 bool tgeompoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 {
-  assert(temp); assert(gs);
-  ensure_tgeo_type(temp->temptype);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
+  ensure_same_temporal_basetype(temp, T_GEOMETRY);
   return tpoint_ever_eq(temp, PointerGetDatum(gs));
-
 }
 
 /**
@@ -795,8 +794,8 @@ bool tgeompoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
  */
 bool tgeogpoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 {
-  assert(temp); assert(gs);
-  ensure_tgeo_type(temp->temptype);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
+  ensure_same_temporal_basetype(temp, T_GEOGRAPHY);
   return tpoint_ever_eq(temp, PointerGetDatum(gs));
 }
 #endif /* MEOS */
@@ -896,8 +895,8 @@ tpoint_always_eq(const Temporal *temp, Datum value)
  */
 bool tgeompoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
 {
-  assert(temp); assert(gs);
-  ensure_tgeo_type(temp->temptype);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
+  ensure_same_temporal_basetype(temp, T_GEOMETRY);
   return tpoint_always_eq(temp, PointerGetDatum(gs));
 }
 
@@ -908,8 +907,8 @@ bool tgeompoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
  */
 bool tgeogpoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
 {
-  assert(temp); assert(gs);
-  ensure_tgeo_type(temp->temptype);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
+  ensure_same_temporal_basetype(temp, T_GEOGRAPHY);
   return tpoint_always_eq(temp, PointerGetDatum(gs));
 }
 #endif /* MEOS */
@@ -1125,11 +1124,11 @@ GSERIALIZED *
 gspoint_make(double x, double y, double z, bool hasz, bool geodetic,
   int32 srid)
 {
-  LWPOINT *lwpoint = hasz ?
+  LWPOINT *point = hasz ?
     lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
-  FLAGS_SET_GEODETIC(lwpoint->flags, geodetic);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoint);
-  lwpoint_free(lwpoint);
+  FLAGS_SET_GEODETIC(point->flags, geodetic);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) point);
+  lwpoint_free(point);
   return result;
 }
 
@@ -1539,23 +1538,23 @@ lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
  * @note The function does not remove duplicate points, that is, repeated
  * points in a multipoint or consecutive equal points in a line string. This
  * should be done in the calling function.
- * @param[in] lwpoints Array of points
+ * @param[in] points Array of points
  * @param[in] count Number of elements in the input array
  * @param[in] interp Interpolation
  */
 LWGEOM *
-lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, interpType interp)
+lwpointarr_make_trajectory(LWGEOM **points, int count, interpType interp)
 {
   if (count == 1)
-    return lwpoint_as_lwgeom(lwpoint_clone(lwgeom_as_lwpoint(lwpoints[0])));
+    return lwpoint_as_lwgeom(lwpoint_clone(lwgeom_as_lwpoint(points[0])));
 
   LWGEOM *result = (interp == LINEAR) ?
-    (LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid, (uint32_t) count,
-      lwpoints) :
-    (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, lwpoints[0]->srid,
-      NULL, (uint32_t) count, lwpoints);
-  FLAGS_SET_Z(result->flags, FLAGS_GET_Z(lwpoints[0]->flags));
-  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(lwpoints[0]->flags));
+    (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, (uint32_t) count,
+      points) :
+    (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid,
+      NULL, (uint32_t) count, points);
+  FLAGS_SET_Z(result->flags, FLAGS_GET_Z(points[0]->flags));
+  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(points[0]->flags));
   return result;
 }
 
@@ -1629,10 +1628,10 @@ tpointseq_cont_trajectory(const TSequence *seq)
   {
     value = tinstant_value(TSEQUENCE_INST_N(seq, i));
     gs = DatumGetGserializedP(value);
-    LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+    LWPOINT *point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
     /* Remove two consecutive points if they are equal */
-    if (! lwpoint_same(lwpoint, (LWPOINT *) points[npoints - 1]))
-      points[npoints++] = (LWGEOM *) lwpoint;
+    if (! lwpoint_same(point, (LWPOINT *) points[npoints - 1]))
+      points[npoints++] = (LWGEOM *) point;
   }
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   LWGEOM *lwresult = lwpointarr_make_trajectory(points, npoints, interp);
@@ -1667,7 +1666,7 @@ tpointseq_trajectory(const TSequence *seq)
 
   GSERIALIZED *result = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
     tpointseq_disc_trajectory(seq) :  tpointseq_cont_trajectory(seq);
-  return result; 
+  return result;
 }
 
 /**
@@ -1762,22 +1761,22 @@ tpointseqset_trajectory(const TSequenceSet *ss)
     GSERIALIZED *gs = DatumGetGserializedP(value);
     /* npoints is the current number of points so far, k is the number of
      * additional points from the current sequence */
-    LWGEOM *lwpoint1 = lwgeom_from_gserialized(gs);
-    points[npoints] = lwpoint1;
+    LWGEOM *point1 = lwgeom_from_gserialized(gs);
+    points[npoints] = point1;
     int k = 1;
     for (int j = 1; j < seq->count; j++)
     {
       value = tinstant_value(TSEQUENCE_INST_N(seq, j));
       gs = DatumGetGserializedP(value);
       /* Do not add the point if it is equal to the previous ones */
-      LWGEOM *lwpoint2 = lwgeom_from_gserialized(gs);
-      if (! lwpoint_same((LWPOINT *) lwpoint1, (LWPOINT *) lwpoint2))
+      LWGEOM *point2 = lwgeom_from_gserialized(gs);
+      if (! lwpoint_same((LWPOINT *) point1, (LWPOINT *) point2))
       {
-        points[npoints + k++] = lwpoint2;
-        lwpoint1 = lwpoint2;
+        points[npoints + k++] = point2;
+        point1 = point2;
       }
       else
-        lwgeom_free(lwpoint2);
+        lwgeom_free(point2);
     }
     if (linear && k > 1)
     {
@@ -1809,7 +1808,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
 GSERIALIZED *
 tpoint_trajectory(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   GSERIALIZED *result;
   assert(temptype_subtype(temp->subtype));
@@ -1878,7 +1877,7 @@ tpointseqset_srid(const TSequenceSet *ss)
 int
 tpoint_srid(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   int result;
   assert(temptype_subtype(temp->subtype));
@@ -1977,7 +1976,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
 Temporal *
 tpoint_set_srid(const Temporal *temp, int32 srid)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   Temporal *result;
   if (temp->subtype == TINSTANT)
@@ -2031,24 +2030,24 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
   assert(inst);
   assert(tgeo_type(inst->temptype));
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
   /* Short circuit functions gserialized_geog_from_geom and
      gserialized_geom_from_geog since we know it is a point */
-  if ((int) lwgeom->srid <= 0)
-    lwgeom->srid = SRID_DEFAULT;
+  if ((int) geom->srid <= 0)
+    geom->srid = SRID_DEFAULT;
   if (oper == GEOM_TO_GEOG)
   {
     /* We cannot test the following without access to PROJ */
-    // srid_check_latlong(lwgeom->srid);
+    // srid_check_latlong(geom->srid);
     /* Coerce the coordinate values into [-180 -90, 180 90] for GEOGRAPHY */
-    pt_force_geodetic((LWPOINT *) lwgeom);
-    lwgeom_set_geodetic(lwgeom, true);
+    pt_force_geodetic((LWPOINT *) geom);
+    lwgeom_set_geodetic(geom, true);
   }
   else
   {
-    lwgeom_set_geodetic(lwgeom, false);
+    lwgeom_set_geodetic(geom, false);
   }
-  GSERIALIZED *newgs = geo_serialize(lwgeom);
+  GSERIALIZED *newgs = geo_serialize(geom);
   TInstant *result = tinstant_make(PointerGetDatum(newgs),
     (oper == GEOM_TO_GEOG) ? T_TGEOGPOINT : T_TGEOMPOINT, inst->t);
   pfree(newgs);
@@ -2114,7 +2113,7 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
 Temporal *
 tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -2167,10 +2166,10 @@ datum_round_point(GSERIALIZED *gs, Datum size)
   assert(gserialized_get_type(gs) == POINTTYPE);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-  round_point(lwpoint->point, 0, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoint);
-  pfree(lwpoint);
+  LWPOINT *point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  round_point(point->point, 0, size, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) point);
+  pfree(point);
   return PointerGetDatum(result);
 }
 
@@ -2178,11 +2177,11 @@ datum_round_point(GSERIALIZED *gs, Datum size)
  * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_linestring(LWLINE *lwline, Datum size, bool hasz, bool hasm)
+round_linestring(LWLINE *line, Datum size, bool hasz, bool hasm)
 {
-  int npoints = lwline->points->npoints;
+  int npoints = line->points->npoints;
   for (int i = 0; i < npoints; i++)
-    round_point(lwline->points, i, size, hasz, hasm);
+    round_point(line->points, i, size, hasz, hasm);
   return;
 }
 
@@ -2195,10 +2194,10 @@ datum_round_linestring(GSERIALIZED *gs, Datum size)
   assert(gserialized_get_type(gs) == LINETYPE);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
-  round_linestring(lwline, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwline);
-  lwfree(lwline);
+  LWLINE *line = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
+  round_linestring(line, size, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) line);
+  lwfree(line);
   return PointerGetDatum(result);
 }
 
@@ -2206,11 +2205,11 @@ datum_round_linestring(GSERIALIZED *gs, Datum size)
  * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_triangle(LWTRIANGLE *lwtriangle, Datum size, bool hasz, bool hasm)
+round_triangle(LWTRIANGLE *triangle, Datum size, bool hasz, bool hasm)
 {
-  int npoints = lwtriangle->points->npoints;
+  int npoints = triangle->points->npoints;
   for (int i = 0; i < npoints; i++)
-    round_point(lwtriangle->points, i, size, hasz, hasm);
+    round_point(triangle->points, i, size, hasz, hasm);
   return;
 }
 
@@ -2223,10 +2222,10 @@ datum_round_triangle(GSERIALIZED *gs, Datum size)
   assert(gserialized_get_type(gs) == TRIANGLETYPE);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWTRIANGLE *lwtriangle = lwgeom_as_lwtriangle(lwgeom_from_gserialized(gs));
-  round_triangle(lwtriangle, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwtriangle);
-  lwfree(lwtriangle);
+  LWTRIANGLE *triangle = lwgeom_as_lwtriangle(lwgeom_from_gserialized(gs));
+  round_triangle(triangle, size, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) triangle);
+  lwfree(triangle);
   return PointerGetDatum(result);
 }
 
@@ -2234,12 +2233,12 @@ datum_round_triangle(GSERIALIZED *gs, Datum size)
  * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_circularstring(LWCIRCSTRING *lwcircstring, Datum size, bool hasz,
+round_circularstring(LWCIRCSTRING *circstring, Datum size, bool hasz,
   bool hasm)
 {
-  int npoints = lwcircstring->points->npoints;
+  int npoints = circstring->points->npoints;
   for (int i = 0; i < npoints; i++)
-    round_point(lwcircstring->points, i, size, hasz, hasm);
+    round_point(circstring->points, i, size, hasz, hasm);
   return;
 }
 
@@ -2252,10 +2251,10 @@ datum_round_circularstring(GSERIALIZED *gs, Datum size)
   assert(gserialized_get_type(gs) == CIRCSTRINGTYPE);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWCIRCSTRING *lwcircstring = lwgeom_as_lwcircstring(lwgeom_from_gserialized(gs));
-  round_circularstring(lwcircstring, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwcircstring);
-  lwfree(lwcircstring);
+  LWCIRCSTRING *circstring = lwgeom_as_lwcircstring(lwgeom_from_gserialized(gs));
+  round_circularstring(circstring, size, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) circstring);
+  lwfree(circstring);
   return PointerGetDatum(result);
 }
 
@@ -2263,12 +2262,12 @@ datum_round_circularstring(GSERIALIZED *gs, Datum size)
  * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_polygon(LWPOLY *lwpoly, Datum size, bool hasz, bool hasm)
+round_polygon(LWPOLY *poly, Datum size, bool hasz, bool hasm)
 {
-  int nrings = lwpoly->nrings;
+  int nrings = poly->nrings;
   for (int i = 0; i < nrings; i++)
   {
-    POINTARRAY *points = lwpoly->rings[i];
+    POINTARRAY *points = poly->rings[i];
     int npoints = points->npoints;
     for (int j = 0; j < npoints; j++)
       round_point(points, j, size, hasz, hasm);
@@ -2285,10 +2284,10 @@ datum_round_polygon(GSERIALIZED *gs, Datum size)
   assert(gserialized_get_type(gs) == POLYGONTYPE);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWPOLY *lwpoly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs));
-  round_polygon(lwpoly, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoly);
-  lwfree(lwpoly);
+  LWPOLY *poly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs));
+  round_polygon(poly, size, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) poly);
+  lwfree(poly);
   return PointerGetDatum(result);
 }
 
@@ -2296,13 +2295,13 @@ datum_round_polygon(GSERIALIZED *gs, Datum size)
  * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_multipoint(LWMPOINT *lwmpoint, Datum size, bool hasz, bool hasm)
+round_multipoint(LWMPOINT *mpoint, Datum size, bool hasz, bool hasm)
 {
-  int ngeoms = lwmpoint->ngeoms;
+  int ngeoms = mpoint->ngeoms;
   for (int i = 0; i < ngeoms; i++)
   {
-    LWPOINT *lwpoint = lwmpoint->geoms[i];
-    round_point(lwpoint->point, 0, size, hasz, hasm);
+    LWPOINT *point = mpoint->geoms[i];
+    round_point(point->point, 0, size, hasz, hasm);
   }
   return;
 }
@@ -2316,10 +2315,10 @@ datum_round_multipoint(GSERIALIZED *gs, Datum size)
   assert(gserialized_get_type(gs) == MULTIPOINTTYPE);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWMPOINT *lwmpoint =  lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
-  round_multipoint(lwmpoint, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoint);
-  lwfree(lwmpoint);
+  LWMPOINT *mpoint =  lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+  round_multipoint(mpoint, size, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) mpoint);
+  lwfree(mpoint);
   return PointerGetDatum(result);
 }
 
@@ -2327,15 +2326,15 @@ datum_round_multipoint(GSERIALIZED *gs, Datum size)
  * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_multilinestring(LWMLINE *lwmline, Datum size, bool hasz, bool hasm)
+round_multilinestring(LWMLINE *mline, Datum size, bool hasz, bool hasm)
 {
-  int ngeoms = lwmline->ngeoms;
+  int ngeoms = mline->ngeoms;
   for (int i = 0; i < ngeoms; i++)
   {
-    LWLINE *lwline = lwmline->geoms[i];
-    int npoints = lwline->points->npoints;
+    LWLINE *line = mline->geoms[i];
+    int npoints = line->points->npoints;
     for (int j = 0; j < npoints; j++)
-      round_point(lwline->points, j, size, hasz, hasm);
+      round_point(line->points, j, size, hasz, hasm);
   }
   return;
 }
@@ -2349,10 +2348,10 @@ datum_round_multilinestring(GSERIALIZED *gs, Datum size)
   assert(gserialized_get_type(gs) == MULTILINETYPE);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWMLINE *lwmline = lwgeom_as_lwmline(lwgeom_from_gserialized(gs));
-  round_multilinestring(lwmline, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmline);
-  lwfree(lwmline);
+  LWMLINE *mline = lwgeom_as_lwmline(lwgeom_from_gserialized(gs));
+  round_multilinestring(mline, size, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) mline);
+  lwfree(mline);
   return PointerGetDatum(result);
 }
 
@@ -2360,13 +2359,13 @@ datum_round_multilinestring(GSERIALIZED *gs, Datum size)
  * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
-round_multipolygon(LWMPOLY *lwmpoly, Datum size, bool hasz, bool hasm)
+round_multipolygon(LWMPOLY *mpoly, Datum size, bool hasz, bool hasm)
 {
-  int ngeoms = lwmpoly->ngeoms;
+  int ngeoms = mpoly->ngeoms;
   for (int i = 0; i < ngeoms; i++)
   {
-    LWPOLY *lwpoly = lwmpoly->geoms[i];
-    round_polygon(lwpoly, size, hasz, hasm);
+    LWPOLY *poly = mpoly->geoms[i];
+    round_polygon(poly, size, hasz, hasm);
   }
   return;
 }
@@ -2380,10 +2379,10 @@ datum_round_multipolygon(GSERIALIZED *gs, Datum size)
   assert(gserialized_get_type(gs) == MULTIPOLYGONTYPE);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWMPOLY *lwmpoly = lwgeom_as_lwmpoly(lwgeom_from_gserialized(gs));
-  round_multipolygon(lwmpoly, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoly);
-  lwfree(lwmpoly);
+  LWMPOLY *mpoly = lwgeom_as_lwmpoly(lwgeom_from_gserialized(gs));
+  round_multipolygon(mpoly, size, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) mpoly);
+  lwfree(mpoly);
   return PointerGetDatum(result);
 }
 
@@ -2394,34 +2393,34 @@ static Datum
 datum_round_geometrycollection(GSERIALIZED *gs, Datum size)
 {
   assert(gserialized_get_type(gs) == COLLECTIONTYPE);
-  LWCOLLECTION *lwcol = lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
-  int ngeoms = lwcol->ngeoms;
+  LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
+  int ngeoms = coll->ngeoms;
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool hasm = (bool) FLAGS_GET_M(gs->gflags);
   for (int i = 0; i < ngeoms; i++)
   {
-    LWGEOM *lwgeom = lwcol->geoms[i];
-    if (lwgeom->type == POINTTYPE)
-      round_point((lwgeom_as_lwpoint(lwgeom))->point, 0, size, hasz, hasm);
-    else if (lwgeom->type == LINETYPE)
-      round_linestring(lwgeom_as_lwline(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == TRIANGLETYPE)
-      round_triangle(lwgeom_as_lwtriangle(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == CIRCSTRINGTYPE)
-      round_circularstring(lwgeom_as_lwcircstring(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == POLYGONTYPE)
-      round_polygon(lwgeom_as_lwpoly(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == MULTIPOINTTYPE)
-      round_multipoint(lwgeom_as_lwmpoint(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == MULTILINETYPE)
-      round_multilinestring(lwgeom_as_lwmline(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == MULTIPOLYGONTYPE)
-      round_multipolygon(lwgeom_as_lwmpoly(lwgeom), size, hasz, hasm);
+    LWGEOM *geom = coll->geoms[i];
+    if (geom->type == POINTTYPE)
+      round_point((lwgeom_as_lwpoint(geom))->point, 0, size, hasz, hasm);
+    else if (geom->type == LINETYPE)
+      round_linestring(lwgeom_as_lwline(geom), size, hasz, hasm);
+    else if (geom->type == TRIANGLETYPE)
+      round_triangle(lwgeom_as_lwtriangle(geom), size, hasz, hasm);
+    else if (geom->type == CIRCSTRINGTYPE)
+      round_circularstring(lwgeom_as_lwcircstring(geom), size, hasz, hasm);
+    else if (geom->type == POLYGONTYPE)
+      round_polygon(lwgeom_as_lwpoly(geom), size, hasz, hasm);
+    else if (geom->type == MULTIPOINTTYPE)
+      round_multipoint(lwgeom_as_lwmpoint(geom), size, hasz, hasm);
+    else if (geom->type == MULTILINETYPE)
+      round_multilinestring(lwgeom_as_lwmline(geom), size, hasz, hasm);
+    else if (geom->type == MULTIPOLYGONTYPE)
+      round_multipolygon(lwgeom_as_lwmpoly(geom), size, hasz, hasm);
     else
       elog(ERROR, "Unsupported geometry type");
   }
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwcol);
-  lwfree(lwcol);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) coll);
+  lwfree(coll);
   return PointerGetDatum(result);
 }
 
@@ -2589,7 +2588,7 @@ tpointseqset_length(const TSequenceSet *ss)
 double
 tpoint_length(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   double result = 0.0;
   assert(temptype_subtype(temp->subtype));
@@ -2681,7 +2680,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
 Temporal *
 tpoint_cumulative_length(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -2704,7 +2703,7 @@ tpoint_cumulative_length(const Temporal *temp)
 GSERIALIZED *
 tpoint_convex_hull(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   GSERIALIZED *traj = tpoint_trajectory(temp);
   GSERIALIZED *result = gserialized_convex_hull(traj);
@@ -2790,7 +2789,7 @@ tpointseqset_speed(const TSequenceSet *ss)
 Temporal *
 tpoint_speed(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
@@ -2911,7 +2910,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 GSERIALIZED *
 tpoint_twcentroid(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   GSERIALIZED *result;
   assert(temptype_subtype(temp->subtype));
@@ -2949,13 +2948,13 @@ geog_azimuth(Datum geog1, Datum geog2)
 {
   const GSERIALIZED *g1 = DatumGetGserializedP(geog1);
   const GSERIALIZED *g2 = DatumGetGserializedP(geog2);
-  const LWGEOM *lwgeom1 = lwgeom_from_gserialized(g1);
-  const LWGEOM *lwgeom2 = lwgeom_from_gserialized(g2);
+  const LWGEOM *geom1 = lwgeom_from_gserialized(g1);
+  const LWGEOM *geom2 = lwgeom_from_gserialized(g2);
 
   SPHEROID s;
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-  double result = lwgeom_azumith_spheroid(lwgeom_as_lwpoint(lwgeom1),
-    lwgeom_as_lwpoint(lwgeom2), &s);
+  double result = lwgeom_azumith_spheroid(lwgeom_as_lwpoint(geom1),
+    lwgeom_as_lwpoint(geom2), &s);
   return Float8GetDatum(result);
 }
 
@@ -3037,7 +3036,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
 bool
 tpoint_direction(const Temporal *temp, double *result)
 {
-  assert(temp); assert(result);
+  ensure_not_null((void *) temp); ensure_not_null((void *) result);
   ensure_tgeo_type(temp->temptype);
   bool found = false;
   assert(temptype_subtype(temp->subtype));
@@ -3168,7 +3167,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
 Temporal *
 tpoint_azimuth(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
@@ -3189,7 +3188,7 @@ tpoint_azimuth(const Temporal *temp)
 Temporal *
 tpoint_angular_difference(const Temporal *temp)
 {
-  assert(temp);
+  ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
   Temporal *tazimuth = tpoint_azimuth(temp);
   Temporal *result = NULL;
@@ -3434,18 +3433,18 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
  * @sqlfunc bearing()
  */
 bool
-bearing_point_point(const GSERIALIZED *geo1, const GSERIALIZED *geo2,
+bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double *result)
 {
-  assert(geo1); assert(geo2);
-  ensure_point_type(geo1); ensure_point_type(geo2);
-  ensure_same_srid(gserialized_get_srid(geo1), gserialized_get_srid(geo2));
-  ensure_same_dimensionality_gs(geo1, geo2);
-  if (gserialized_is_empty(geo1) || gserialized_is_empty(geo2))
+  ensure_not_null((void *) gs1); ensure_not_null((void *) gs2);
+  ensure_point_type(gs1); ensure_point_type(gs2);
+  ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2));
+  ensure_same_dimensionality_gs(gs1, gs2);
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
-  *result = FLAGS_GET_GEODETIC(geo1->gflags) ?
-    DatumGetFloat8(geog_bearing(PointerGetDatum(geo1), PointerGetDatum(geo2))) :
-    DatumGetFloat8(geom_bearing(PointerGetDatum(geo1), PointerGetDatum(geo2)));
+  *result = FLAGS_GET_GEODETIC(gs1->gflags) ?
+    DatumGetFloat8(geog_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2))) :
+    DatumGetFloat8(geom_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2)));
   return true;
 }
 
@@ -3458,7 +3457,7 @@ bearing_point_point(const GSERIALIZED *geo1, const GSERIALIZED *geo2,
 Temporal *
 bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 {
-  assert(temp); assert(gs);
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   if (gserialized_is_empty(gs))
     return NULL;
   ensure_tgeo_type(temp->temptype);
@@ -3490,7 +3489,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 Temporal *
 bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_tgeo_type(temp1->temptype);
   ensure_same_temporal_type(temp1, temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));

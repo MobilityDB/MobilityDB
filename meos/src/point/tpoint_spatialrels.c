@@ -334,7 +334,7 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 int
 econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
-  assert(temp); assert(gs); 
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
@@ -414,7 +414,7 @@ edisjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
 int
 edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(temp); assert(gs); 
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
@@ -444,7 +444,7 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_tgeo_type(temp1->temptype);
   ensure_tgeo_type(temp2->temptype);
   if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
@@ -467,7 +467,7 @@ edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 int
 eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(temp); assert(gs); 
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
@@ -487,7 +487,7 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_tgeo_type(temp1->temptype);
   ensure_tgeo_type(temp2->temptype);
   if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
@@ -512,7 +512,7 @@ eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 int
 etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(temp); assert(gs); 
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
@@ -556,7 +556,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  assert(temp); assert(gs); 
+  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   if (gserialized_is_empty(gs))
     return -1;
@@ -736,7 +736,7 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 int
 edwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist)
 {
-  assert(temp1); assert(temp2);
+  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_tgeo_type(temp1->temptype);
   ensure_tgeo_type(temp2->temptype);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));

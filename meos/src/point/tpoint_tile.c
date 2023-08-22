@@ -571,6 +571,7 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   int **no_cells)
 {
   /* Get input parameters */
+  ensure_not_null((void *) bounds); ensure_not_null((void *) no_cells);
   ensure_has_X_stbox(bounds);
   ensure_not_geodetic(bounds->flags);
   ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
