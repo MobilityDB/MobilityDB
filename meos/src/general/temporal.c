@@ -970,10 +970,7 @@ temporal_merge_array(Temporal **temparr, int count)
   assert(temparr);
   assert(count > 0);
   if (count == 1)
-  {
-    Temporal *result = temporal_copy(temparr[0]);
-    return result;
-  }
+    return temporal_copy(temparr[0]);
 
   /* Ensure all values have the same interpolation and, if they are spatial,
    * have the same SRID and dimensionality, and determine subtype of the

@@ -1606,7 +1606,7 @@ tint_value_time_split(Temporal *temp, int size, int vorigin,
   Interval *duration, TimestampTz torigin, int *newcount)
 {
   assert(temp); assert(newcount);
-  ensure_temporal_has_type(temp, T_INT4);
+  ensure_temporal_has_type(temp, T_TINT);
   Datum *value_buckets;
   TimestampTz *time_buckets;
   return temporal_value_time_split1(temp, Int32GetDatum(size), duration,
@@ -1631,7 +1631,7 @@ tfloat_value_time_split(Temporal *temp, double size, double vorigin,
   Interval *duration, TimestampTz torigin, int *newcount)
 {
   assert(temp); assert(newcount);
-  ensure_temporal_has_type(temp, T_FLOAT8);
+  ensure_temporal_has_type(temp, T_TFLOAT);
   Datum *value_buckets;
   TimestampTz *time_buckets;
   return temporal_value_time_split1(temp, Float8GetDatum(size), duration,
