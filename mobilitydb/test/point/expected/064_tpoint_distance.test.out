@@ -141,28 +141,28 @@ SELECT round(geometry 'Point Z empty' <-> tgeompoint '{[Point(2 2 2)@2000-01-01,
  
 (1 row)
 
-SELECT round(geography 'Point(1 1)' <-> tgeogpoint 'Point(0 -45)@2000-01-01', 6);
-                    round                    
----------------------------------------------
- 5096479.207284@Sat Jan 01 00:00:00 2000 PST
+SELECT round(geography 'Point(-45 0)' <-> tgeogpoint 'Point(0 -45)@2000-01-01', 6);
+                   round                    
+--------------------------------------------
+ 6662472.71821@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT round(geography 'Point(1 1)' <-> tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}', 6);
-                                                                  round                                                                  
------------------------------------------------------------------------------------------------------------------------------------------
- {5096479.207284@Sat Jan 01 00:00:00 2000 PST, 4875364.521961@Sun Jan 02 00:00:00 2000 PST, 5096479.207284@Mon Jan 03 00:00:00 2000 PST}
+SELECT round(geography 'Point(-45 0)' <-> tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}', 6);
+                                                                round                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------
+ {6662472.71821@Sat Jan 01 00:00:00 2000 PST, 6662472.71821@Sun Jan 02 00:00:00 2000 PST, 6662472.71821@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT round(geography 'Point(1 1)' <-> tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]', 6);
-                                                                                                                     round                                                                                                                     
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [5096479.207284@Sat Jan 01 00:00:00 2000 PST, 111178.142466@Sat Jan 01 12:16:00.146205 2000 PST, 4875364.521961@Sun Jan 02 00:00:00 2000 PST, 111178.142466@Sun Jan 02 11:43:59.853794 2000 PST, 5096479.207284@Mon Jan 03 00:00:00 2000 PST]
+SELECT round(geography 'Point(-45 0)' <-> tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]', 6);
+                                                                                                             round                                                                                                              
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [6662472.71821@Sat Jan 01 00:00:00 2000 PST, 5003778.588058@Sat Jan 01 12:00:00 2000 PST, 6662472.71821@Sun Jan 02 00:00:00 2000 PST, 5003778.588058@Sun Jan 02 12:00:00 2000 PST, 6662472.71821@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT round(geography 'Point(1 1)' <-> tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', 6);
-                                                                                                                                                                    round                                                                                                                                                                    
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[5096479.207284@Sat Jan 01 00:00:00 2000 PST, 111178.142466@Sat Jan 01 12:16:00.146205 2000 PST, 4875364.521961@Sun Jan 02 00:00:00 2000 PST, 111178.142466@Sun Jan 02 11:43:59.853794 2000 PST, 5096479.207284@Mon Jan 03 00:00:00 2000 PST], [6507885.516566@Tue Jan 04 00:00:00 2000 PST, 6507885.516566@Wed Jan 05 00:00:00 2000 PST]}
+SELECT round(geography 'Point(-45 0)' <-> tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', 6);
+                                                                                                                                                             round                                                                                                                                                              
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[6662472.71821@Sat Jan 01 00:00:00 2000 PST, 5003778.588058@Sat Jan 01 12:00:00 2000 PST, 6662472.71821@Sun Jan 02 00:00:00 2000 PST, 5003778.588058@Sun Jan 02 12:00:00 2000 PST, 6662472.71821@Mon Jan 03 00:00:00 2000 PST], [10010386.361038@Tue Jan 04 00:00:00 2000 PST, 10010386.361038@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
 SELECT round(geography 'Point empty' <-> tgeogpoint 'Point(0 -45)@2000-01-01', 6);
@@ -189,27 +189,27 @@ SELECT round(geography 'Point empty' <-> tgeogpoint '{[Point(0 -45)@2000-01-01, 
  
 (1 row)
 
-SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint 'Point(0 -45 100)@2000-01-01', 6);
-                    round                    
----------------------------------------------
- 5096479.207284@Sat Jan 01 00:00:00 2000 PST
+SELECT round(geography 'Point(-45 0 100)' <-> tgeogpoint 'Point(0 -45 100)@2000-01-01', 6);
+                   round                    
+--------------------------------------------
+ 6662472.71821@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}', 6);
-                                                                  round                                                                  
------------------------------------------------------------------------------------------------------------------------------------------
- {5096479.207284@Sat Jan 01 00:00:00 2000 PST, 4875364.521961@Sun Jan 02 00:00:00 2000 PST, 5096479.207284@Mon Jan 03 00:00:00 2000 PST}
+SELECT round(geography 'Point(-45 0 100)' <-> tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}', 6);
+                                                                round                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------
+ {6662472.71821@Sat Jan 01 00:00:00 2000 PST, 6662472.71821@Sun Jan 02 00:00:00 2000 PST, 6662472.71821@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]', 6);
-                                                                                                                     round                                                                                                                     
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [5096479.207284@Sat Jan 01 00:00:00 2000 PST, 111178.186544@Sat Jan 01 12:16:00.146205 2000 PST, 4875364.521961@Sun Jan 02 00:00:00 2000 PST, 111178.186544@Sun Jan 02 11:43:59.853794 2000 PST, 5096479.207284@Mon Jan 03 00:00:00 2000 PST]
+SELECT round(geography 'Point(-45 0 100)' <-> tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]', 6);
+                                                                                                             round                                                                                                              
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [6662472.71821@Sat Jan 01 00:00:00 2000 PST, 5003778.588058@Sat Jan 01 12:00:00 2000 PST, 6662472.71821@Sun Jan 02 00:00:00 2000 PST, 5003778.588058@Sun Jan 02 12:00:00 2000 PST, 6662472.71821@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', 6);
+SELECT round(geography 'Point(-45 0 100)' <-> tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', 6);
 ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesis
-LINE 1: ...ECT round(geography 'Point(1 1 1)' <-> tgeogpoint '{[Point(0...
+LINE 1: ...round(geography 'Point(-45 0 100)' <-> tgeogpoint '{[Point(0...
                                                              ^
 SELECT round(geography 'Point Z empty' <-> tgeogpoint 'Point(0 -45 100)@2000-01-01', 6);
  round 
@@ -329,28 +329,28 @@ SELECT round(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
  
 (1 row)
 
-SELECT round(tgeogpoint 'Point(-45 0)@2000-01-01' <-> geography 'Point(1 1)', 6);
-                    round                    
----------------------------------------------
- 5121620.194072@Sat Jan 01 00:00:00 2000 PST
+SELECT round(tgeogpoint 'Point(-45 0)@2000-01-01' <-> geography 'Point(-45 0)', 6);
+             round              
+--------------------------------
+ 0@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT round(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' <-> geography 'Point(1 1)', 6);
-                                                                  round                                                                  
------------------------------------------------------------------------------------------------------------------------------------------
- {5121620.194072@Sat Jan 01 00:00:00 2000 PST, 4899048.234644@Sun Jan 02 00:00:00 2000 PST, 5121620.194072@Mon Jan 03 00:00:00 2000 PST}
+SELECT round(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' <-> geography 'Point(-45 0)', 6);
+                                                     round                                                      
+----------------------------------------------------------------------------------------------------------------
+ {0@Sat Jan 01 00:00:00 2000 PST, 10018754.171395@Sun Jan 02 00:00:00 2000 PST, 0@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT round(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' <-> geography 'Point(1 1)', 6);
-                                                                                                              round                                                                                                              
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [5121620.194072@Sat Jan 01 00:00:00 2000 PST, 111195.079735@Sat Jan 01 12:16:00 2000 PST, 4899048.234644@Sun Jan 02 00:00:00 2000 PST, 111195.079735@Sun Jan 02 11:44:00 2000 PST, 5121620.194072@Mon Jan 03 00:00:00 2000 PST]
+SELECT round(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' <-> geography 'Point(-45 0)', 6);
+                                                     round                                                      
+----------------------------------------------------------------------------------------------------------------
+ [0@Sat Jan 01 00:00:00 2000 PST, 10018754.171395@Sun Jan 02 00:00:00 2000 PST, 0@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT round(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' <-> geography 'Point(1 1)', 6);
-                                                                                                                                                             round                                                                                                                                                             
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[5121620.194072@Sat Jan 01 00:00:00 2000 PST, 111195.079735@Sat Jan 01 12:16:00 2000 PST, 4899048.234644@Sun Jan 02 00:00:00 2000 PST, 111195.079735@Sun Jan 02 11:44:00 2000 PST, 5121620.194072@Mon Jan 03 00:00:00 2000 PST], [6507885.516566@Tue Jan 04 00:00:00 2000 PST, 6507885.516566@Wed Jan 05 00:00:00 2000 PST]}
+SELECT round(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' <-> geography 'Point(-45 0)', 6);
+                                                                                                     round                                                                                                      
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[0@Sat Jan 01 00:00:00 2000 PST, 10018754.171395@Sun Jan 02 00:00:00 2000 PST, 0@Mon Jan 03 00:00:00 2000 PST], [10010386.361038@Tue Jan 04 00:00:00 2000 PST, 10010386.361038@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
 SELECT round(tgeogpoint 'Point(-45 0)@2000-01-01' <-> geography 'Point empty', 6);
@@ -377,25 +377,25 @@ SELECT round(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Poin
  
 (1 row)
 
-SELECT round(tgeogpoint 'Point(-45 0 100)@2000-01-01' <-> geography 'Point(1 1 1)', 6);
-                    round                    
----------------------------------------------
- 5121620.194072@Sat Jan 01 00:00:00 2000 PST
+SELECT round(tgeogpoint 'Point(-45 0 100)@2000-01-01' <-> geography 'Point(-45 0 100)', 6);
+             round              
+--------------------------------
+ 0@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT round(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' <-> geography 'Point(1 1 1)', 6);
-                                                                  round                                                                  
------------------------------------------------------------------------------------------------------------------------------------------
- {5121620.194072@Sat Jan 01 00:00:00 2000 PST, 4899048.234644@Sun Jan 02 00:00:00 2000 PST, 5121620.194072@Mon Jan 03 00:00:00 2000 PST}
+SELECT round(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' <-> geography 'Point(-45 0 100)', 6);
+                                                     round                                                      
+----------------------------------------------------------------------------------------------------------------
+ {0@Sat Jan 01 00:00:00 2000 PST, 10018754.171395@Sun Jan 02 00:00:00 2000 PST, 0@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT round(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' <-> geography 'Point(1 1 1)', 6);
-                                                                                                              round                                                                                                              
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [5121620.194072@Sat Jan 01 00:00:00 2000 PST, 111195.123806@Sat Jan 01 12:16:00 2000 PST, 4899048.234644@Sun Jan 02 00:00:00 2000 PST, 111195.123806@Sun Jan 02 11:44:00 2000 PST, 5121620.194072@Mon Jan 03 00:00:00 2000 PST]
+SELECT round(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' <-> geography 'Point(-45 0 100)', 6);
+                                                     round                                                      
+----------------------------------------------------------------------------------------------------------------
+ [0@Sat Jan 01 00:00:00 2000 PST, 10018754.171395@Sun Jan 02 00:00:00 2000 PST, 0@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT round(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' <-> geography 'Point(1 1 1)', 6);
+SELECT round(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' <-> geography 'Point(-45 0 100)', 6);
 ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesis
 LINE 1: SELECT round(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Poin...
                                 ^
@@ -875,40 +875,40 @@ SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(1
  POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring(0 0,3 3)'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring(0 0,45 45)'),6));
                   astext                   
 -------------------------------------------
  POINT(-45 0)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring(0 0,3 3)'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring(0 0,45 45)'),6));
                   astext                  
 ------------------------------------------
  POINT(45 0)@Sun Jan 02 00:00:00 2000 PST
 (1 row)
 
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,3 3)'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,45 45)'),6));
                  astext                  
 -----------------------------------------
  POINT(0 0)@Sat Jan 01 12:00:00 2000 PST
 (1 row)
 
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,3 3)'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,45 45)'),6));
                  astext                  
 -----------------------------------------
  POINT(0 0)@Sat Jan 01 12:00:00 2000 PST
 (1 row)
 
-SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,3 3)'));
+SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,45 45)'));
                   astext                  
 ------------------------------------------
  POINT(45 0)@Sun Jan 02 00:00:00 2000 PST
 (1 row)
 
-SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,3 3)'));
-                  astext                  
-------------------------------------------
- POINT(45 0)@Sun Jan 02 00:00:00 2000 PST
+SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,45 45)'));
+                  astext                   
+-------------------------------------------
+ POINT(45 45)@Tue Jan 04 00:00:00 2000 PST
 (1 row)
 
 SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring empty'),6));
@@ -995,25 +995,25 @@ SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeompoint '{[
  
 (1 row)
 
-SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(-45 0)@2000-01-01'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,45 45)', tgeogpoint 'Point(-45 0)@2000-01-01'));
                   astext                   
 -------------------------------------------
  POINT(-45 0)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,45 45)', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}'));
                   astext                  
 ------------------------------------------
  POINT(45 0)@Sun Jan 02 00:00:00 2000 PST
 (1 row)
 
-SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,45 45)', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]'));
                            astext                            
 -------------------------------------------------------------
  POINT(0 2.480781363304357e-15)@Sat Jan 01 12:00:00 2000 PST
 (1 row)
 
-SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,45 45)', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'));
                            astext                            
 -------------------------------------------------------------
  POINT(0 2.480781363304357e-15)@Sat Jan 01 12:00:00 2000 PST
@@ -1582,25 +1582,25 @@ SELECT round(NearestApproachDistance(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000
       
 (1 row)
 
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring(0 0,45 45)')::numeric, 6);
      round      
 ----------------
  5009377.085697
 (1 row)
 
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring(0 0,45 45)')::numeric, 6);
      round      
 ----------------
- 4684973.910333
+ 3914794.677542
 (1 row)
 
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,45 45)')::numeric, 6);
   round   
 ----------
  0.000000
 (1 row)
 
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,45 45)')::numeric, 6);
   round   
 ----------
  0.000000
@@ -1630,25 +1630,25 @@ SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0)@2000-01-01, Poin
       
 (1 row)
 
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0 100)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0 100)@2000-01-01', geography 'Linestring(0 0 0,45 45 100)')::numeric, 6);
      round      
 ----------------
  5009377.085697
 (1 row)
 
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', geography 'Linestring(0 0 0,45 45 100)')::numeric, 6);
      round      
 ----------------
- 4684973.910333
+ 3914794.677542
 (1 row)
 
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', geography 'Linestring(0 0 0,45 45 100)')::numeric, 6);
   round   
 ----------
  0.000000
 (1 row)
 
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', geography 'Linestring(0 0 0,45 45 100)')::numeric, 6);
 ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesis
 LINE 1: SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45...
                                                         ^
@@ -1770,25 +1770,25 @@ SELECT round(NearestApproachDistance(geometry 'Linestring Z empty', tgeompoint '
       
 (1 row)
 
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(-45 0)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0,45 45)', tgeogpoint 'Point(-45 0)@2000-01-01')::numeric, 6);
      round      
 ----------------
  5009377.085697
 (1 row)
 
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0,45 45)', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}')::numeric, 6);
      round      
 ----------------
- 4684973.910333
+ 3914794.677542
 (1 row)
 
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0,45 45)', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]')::numeric, 6);
   round   
 ----------
  0.000000
 (1 row)
 
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0,45 45)', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
   round   
 ----------
  0.000000
@@ -1818,27 +1818,27 @@ SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeogpoint '{
       
 (1 row)
 
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(-45 0 100)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,45 45 100)', tgeogpoint 'Point(-45 0 100)@2000-01-01')::numeric, 6);
      round      
 ----------------
  5009377.085697
 (1 row)
 
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,45 45 100)', tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}')::numeric, 6);
      round      
 ----------------
- 4684973.910333
+ 3914794.677542
 (1 row)
 
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,45 45 100)', tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]')::numeric, 6);
   round   
 ----------
  0.000000
 (1 row)
 
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,45 45 100)', tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
 ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesis
-LINE 1: ...e(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{[Point(-...
+LINE 1: ...ography 'Linestring(0 0 0,45 45 100)', tgeogpoint '{[Point(-...
                                                              ^
 SELECT round(NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint 'Point(-45 0 100)@2000-01-01')::numeric, 6);
  round 
@@ -2432,25 +2432,25 @@ SELECT round((tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
       
 (1 row)
 
-SELECT round((tgeogpoint 'Point(-45 0)@2000-01-01' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0)@2000-01-01' |=| geography 'Linestring(0 0,45 45)')::numeric, 6);
      round      
 ----------------
  5009377.085697
 (1 row)
 
-SELECT round((tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' |=| geography 'Linestring(0 0,45 45)')::numeric, 6);
      round      
 ----------------
- 4684973.910333
+ 3914794.677542
 (1 row)
 
-SELECT round((tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' |=| geography 'Linestring(0 0,45 45)')::numeric, 6);
   round   
 ----------
  0.000000
 (1 row)
 
-SELECT round((tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' |=| geography 'Linestring(0 0,45 45)')::numeric, 6);
   round   
 ----------
  0.000000
@@ -2480,25 +2480,25 @@ SELECT round((tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Poi
       
 (1 row)
 
-SELECT round((tgeogpoint 'Point(-45 0 100)@2000-01-01' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0 100)@2000-01-01' |=| geography 'Linestring(0 0 0,45 45 100)')::numeric, 6);
      round      
 ----------------
  5009377.085697
 (1 row)
 
-SELECT round((tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' |=| geography 'Linestring(0 0 0,45 45 100)')::numeric, 6);
      round      
 ----------------
- 4684973.910333
+ 3914794.677542
 (1 row)
 
-SELECT round((tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' |=| geography 'Linestring(0 0 0,45 45 100)')::numeric, 6);
   round   
 ----------
  0.000000
 (1 row)
 
-SELECT round((tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' |=| geography 'Linestring(0 0 0,45 45 100)')::numeric, 6);
 ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesis
 LINE 1: SELECT round((tgeogpoint '{[Point(-45 0 100)@2000-01-01, Poi...
                                  ^
@@ -2620,25 +2620,25 @@ SELECT round((geometry 'Linestring Z empty' |=| tgeompoint '{[Point(1 1 1)@2000-
       
 (1 row)
 
-SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint 'Point(-45 0)@2000-01-01')::numeric, 6);
+SELECT round((geography 'Linestring(0 0,45 45)' |=| tgeogpoint 'Point(-45 0)@2000-01-01')::numeric, 6);
      round      
 ----------------
  5009377.085697
 (1 row)
 
-SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}')::numeric, 6);
+SELECT round((geography 'Linestring(0 0,45 45)' |=| tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}')::numeric, 6);
      round      
 ----------------
- 4684973.910333
+ 3914794.677542
 (1 row)
 
-SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]')::numeric, 6);
+SELECT round((geography 'Linestring(0 0,45 45)' |=| tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]')::numeric, 6);
   round   
 ----------
  0.000000
 (1 row)
 
-SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
+SELECT round((geography 'Linestring(0 0,45 45)' |=| tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
   round   
 ----------
  0.000000
@@ -2668,27 +2668,27 @@ SELECT round((geography 'Linestring empty' |=| tgeogpoint '{[Point(-45 0)@2000-0
       
 (1 row)
 
-SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint 'Point(-45 0 100)@2000-01-01')::numeric, 6);
+SELECT round((geography 'Linestring(0 0 0,45 45 100)' |=| tgeogpoint 'Point(-45 0 100)@2000-01-01')::numeric, 6);
      round      
 ----------------
  5009377.085697
 (1 row)
 
-SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}')::numeric, 6);
+SELECT round((geography 'Linestring(0 0 0,45 45 100)' |=| tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}')::numeric, 6);
      round      
 ----------------
- 4684973.910333
+ 3914794.677542
 (1 row)
 
-SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]')::numeric, 6);
+SELECT round((geography 'Linestring(0 0 0,45 45 100)' |=| tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]')::numeric, 6);
   round   
 ----------
  0.000000
 (1 row)
 
-SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
+SELECT round((geography 'Linestring(0 0 0,45 45 100)' |=| tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
 ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesis
-LINE 1: ...eography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '{[Point(-...
+LINE 1: ...aphy 'Linestring(0 0 0,45 45 100)' |=| tgeogpoint '{[Point(-...
                                                              ^
 SELECT round((geography 'Linestring Z empty' |=| tgeogpoint 'Point(-45 0 100)@2000-01-01')::numeric, 6);
  round 
@@ -3191,28 +3191,28 @@ SELECT ST_AsTexT(shortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
  
 (1 row)
 
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring(0 0,3 3)'), 1);
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring(0 0,45 45)'), 1);
        st_astext       
 -----------------------
  LINESTRING(-45 0,0 0)
 (1 row)
 
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring(0 0,3 3)'), 1);
-      st_astext       
-----------------------
- LINESTRING(45 0,3 3)
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring(0 0,45 45)'), 1);
+         st_astext          
+----------------------------
+ LINESTRING(45 0,18.4 24.1)
 (1 row)
 
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,3 3)'), 1);
-            st_astext            
----------------------------------
- LINESTRING(2.4e-16 0,2.4e-16 0)
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,45 45)'), 1);
+             st_astext             
+-----------------------------------
+ LINESTRING(-2.2e-15 0,-2.2e-15 0)
 (1 row)
 
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,3 3)'), 1);
-            st_astext            
----------------------------------
- LINESTRING(2.4e-16 0,2.4e-16 0)
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,45 45)'), 1);
+             st_astext             
+-----------------------------------
+ LINESTRING(-2.2e-15 0,-2.2e-15 0)
 (1 row)
 
 SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring empty'));
@@ -3335,28 +3335,28 @@ SELECT ST_AsTexT(shortestLine(geometry 'Linestring Z empty', tgeompoint '{[Point
  
 (1 row)
 
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(-45 0)@2000-01-01'), 1);
+SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,45 45)', tgeogpoint 'Point(-45 0)@2000-01-01'), 1);
        st_astext       
 -----------------------
  LINESTRING(-45 0,0 0)
 (1 row)
 
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}'), 1);
-      st_astext       
-----------------------
- LINESTRING(45 0,3 3)
+SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,45 45)', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}'), 1);
+         st_astext          
+----------------------------
+ LINESTRING(45 0,18.4 24.1)
 (1 row)
 
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]'), 1);
-            st_astext            
----------------------------------
- LINESTRING(2.4e-16 0,2.4e-16 0)
+SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,45 45)', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]'), 1);
+             st_astext             
+-----------------------------------
+ LINESTRING(-2.2e-15 0,-2.2e-15 0)
 (1 row)
 
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'), 1);
-            st_astext            
----------------------------------
- LINESTRING(2.4e-16 0,2.4e-16 0)
+SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,45 45)', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'), 1);
+             st_astext             
+-----------------------------------
+ LINESTRING(-2.2e-15 0,-2.2e-15 0)
 (1 row)
 
 SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeogpoint 'Point(-45 0)@2000-01-01'), 1);
@@ -3820,7 +3820,7 @@ SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Po
 ERROR:  Operation on mixed SRID
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
 ERROR:  The arguments must be of the same dimensionality
-SELECT shortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(-45 0 100)@2000-01-01');
+SELECT shortestLine(geography 'Linestring(0 0 0,45 45 100)', tgeogpoint 'Point(-45 0 100)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
-SELECT shortestLine(tgeogpoint 'Point(-45 0 100)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)');
+SELECT shortestLine(tgeogpoint 'Point(-45 0 100)@2000-01-01', geography 'Linestring(0 0 0,45 45 100)');
 ERROR:  The geometry cannot have Z dimension
