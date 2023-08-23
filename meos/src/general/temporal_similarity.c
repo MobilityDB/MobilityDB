@@ -175,6 +175,7 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
 double
 temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   return temporal_similarity(temp1, temp2, FRECHET);
 }
@@ -188,6 +189,7 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 double
 temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   return temporal_similarity(temp1, temp2, DYNTIMEWARP);
 }
@@ -420,6 +422,7 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
 Match *
 temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_not_null((void *) count);
   return temporal_similarity_path(temp1, temp2, count, FRECHET);
@@ -436,6 +439,7 @@ Match *
 temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
   int *count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_not_null((void *) count);
   return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);
@@ -503,8 +507,10 @@ tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
 double
 temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_same_temporal_type(temp1, temp2);
+
   double result;
   int count1, count2;
   const TInstant **instants1 = temporal_instants(temp1, &count1);

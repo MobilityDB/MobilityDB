@@ -380,6 +380,7 @@ tfloatinst_make(double d, TimestampTz t)
 TInstant *
 ttextinst_make(const text *txt, TimestampTz t)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) txt);
   return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
 }
@@ -392,6 +393,7 @@ ttextinst_make(const text *txt, TimestampTz t)
 TInstant *
 tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) gs);
   return tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, t);
 }
@@ -403,6 +405,7 @@ tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t)
 TInstant *
 tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) gs);
   return tinstant_make(PointerGetDatum(gs), T_TGEOGPOINT, t);
 }

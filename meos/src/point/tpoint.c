@@ -79,6 +79,7 @@ gserialized_copy(const GSERIALIZED *g)
 STBox *
 tpoint_to_stbox(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   STBox *result = palloc(sizeof(STBox));
   temporal_set_bbox(temp, result);
@@ -98,7 +99,9 @@ tpoint_to_stbox(const Temporal *temp)
 STBox *
 geo_expand_space(const GSERIALIZED *gs, double d)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) gs);
+
   if (gserialized_is_empty(gs))
     return NULL;
   STBox box;
@@ -116,9 +119,11 @@ geo_expand_space(const GSERIALIZED *gs, double d)
 STBox *
 tpoint_expand_space(const Temporal *temp, double d)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   /* This function is also called for tnpoint */
-  assert(tspatial_type(temp->temptype));
+  ensure_tspatial_type(temp->temptype);
+
   STBox box;
   temporal_set_bbox(temp, &box);
   STBox *result = stbox_expand_space(&box, d);
@@ -157,6 +162,7 @@ tcomp_tpoint_point_int(const Temporal *temp, const GSERIALIZED *gs,
 Temporal *
 teq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   ensure_same_temporal_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
@@ -171,6 +177,7 @@ teq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 Temporal *
 teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   ensure_same_temporal_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
@@ -185,6 +192,7 @@ teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   ensure_same_temporal_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);
@@ -199,6 +207,7 @@ tne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 Temporal *
 tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   ensure_same_temporal_basetype(temp, geodetic ? T_GEOGRAPHY : T_GEOMETRY);

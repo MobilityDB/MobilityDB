@@ -107,6 +107,7 @@ distance_tnumber_number(const Temporal *temp, Datum value, meosType valuetype,
 Temporal *
 distance_tint_int(const Temporal *temp, int i)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   return distance_tnumber_number(temp, Int32GetDatum(i), T_INT4, T_TINT);
@@ -120,6 +121,7 @@ distance_tint_int(const Temporal *temp, int i)
 Temporal *
 distance_tfloat_float(const Temporal *temp, double d)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return distance_tnumber_number(temp, Int32GetDatum(d), T_FLOAT8, T_TFLOAT);
@@ -156,9 +158,11 @@ tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 Temporal *
 distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  assert(temp1->temptype == temp2->temptype);
-  assert(tnumber_type(temp1->temptype));
+  ensure_same_temporal_type(temp1, temp2);
+  ensure_tnumber_type(temp1->temptype);
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &number_distance;
@@ -207,6 +211,7 @@ nad_tnumber_number(const Temporal *temp, Datum value, meosType basetype)
 int
 nad_tint_int(const Temporal *temp, int i)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_INT4);
   double result = nad_tnumber_number(temp, Int32GetDatum(i), T_INT4);
@@ -222,6 +227,7 @@ nad_tint_int(const Temporal *temp, int i)
 double
 nad_tfloat_float(const Temporal *temp, double d)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_same_temporal_basetype(temp, T_FLOAT8);
   return nad_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8);
@@ -262,6 +268,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   ensure_not_null((void *) temp); ensure_not_null((void *) box);
   ensure_has_X_tbox(box);
   ensure_same_temporal_basetype(temp, box->span.basetype);
+
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   Span p, inter;
   if (hast)
@@ -319,6 +326,7 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 int
 nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_same_temporal_type(temp1, temp2);
   ensure_tnumber_type(temp1->temptype);
@@ -334,6 +342,7 @@ nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_same_temporal_type(temp1, temp2);
   ensure_tnumber_type(temp1->temptype);

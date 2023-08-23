@@ -454,7 +454,9 @@ gserialized_boundary(const GSERIALIZED *geom1)
 GSERIALIZED *
 gserialized_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
+  /* Ensure validity of the arguments */
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
+
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
   LWGEOM *theline = lwgeom_closest_line(lwgeom1, lwgeom2);
@@ -475,7 +477,9 @@ gserialized_shortestline2d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 GSERIALIZED *
 gserialized_shortestline3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
+  /* Ensure validity of the arguments */
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
+
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
   LWGEOM *theline = lwgeom_closest_line_3d(lwgeom1, lwgeom2);
@@ -496,7 +500,9 @@ gserialized_shortestline3d(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 double
 gserialized_distance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
+  /* Ensure validity of the arguments */
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
+
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
   double mindist = lwgeom_mindistance2d(lwgeom1, lwgeom2);
@@ -516,7 +522,9 @@ gserialized_distance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 double
 gserialized_3Ddistance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
+  /* Ensure validity of the arguments */
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
+
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
   double mindist = lwgeom_mindistance3d(lwgeom1, lwgeom2);
@@ -536,7 +544,9 @@ gserialized_3Ddistance(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 bool
 gserialized_3Dintersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
+  /* Ensure validity of the arguments */
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
+
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
   double mindist = lwgeom_mindistance3d_tolerance(lwgeom1, lwgeom2, 0.0);
@@ -782,24 +792,24 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
  */
 static char
 meos_call_geos2(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
-  char (*func)(const GEOSGeometry *g1, const GEOSGeometry *g2))
+  char (*func)(const GEOSGeometry *gs1, const GEOSGeometry *gs2))
 {
   initGEOS(lwnotice, lwgeom_geos_error);
 
-  GEOSGeometry *g1 = POSTGIS2GEOS(geom1);
-  if (!g1)
+  GEOSGeometry *gs1 = POSTGIS2GEOS(geom1);
+  if (!gs1)
     elog(ERROR, "First argument geometry could not be converted to GEOS");
-  GEOSGeometry *g2 = POSTGIS2GEOS(geom2);
-  if (!g2)
+  GEOSGeometry *gs2 = POSTGIS2GEOS(geom2);
+  if (!gs2)
   {
-    GEOSGeom_destroy(g1);
+    GEOSGeom_destroy(gs1);
     elog(ERROR, "Second argument geometry could not be converted to GEOS");
   }
 
-  char result = func(g1, g2);
+  char result = func(gs1, gs2);
 
-  GEOSGeom_destroy(g1);
-  GEOSGeom_destroy(g2);
+  GEOSGeom_destroy(gs1);
+  GEOSGeom_destroy(gs2);
 
   if (result == 2)
     elog(ERROR, "GEOS returned error");
@@ -819,6 +829,7 @@ bool
 gserialized_spatialrel(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   spatialRel rel)
 {
+  /* Ensure validity of the arguments */
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
 
   /* A.Intersects(Empty) == FALSE */
@@ -875,19 +886,20 @@ bool
 gserialized_relate_pattern(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   char *patt)
 {
+  /* Ensure validity of the arguments */
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
 
   /* TODO handle empty */
 
   initGEOS(lwnotice, lwgeom_geos_error);
 
-  GEOSGeometry *g1 = POSTGIS2GEOS(geom1);
-  if (!g1)
+  GEOSGeometry *gs1 = POSTGIS2GEOS(geom1);
+  if (!gs1)
     elog(ERROR, "First argument geometry could not be converted to GEOS");
-  GEOSGeometry *g2 = POSTGIS2GEOS(geom2);
-  if (!g2)
+  GEOSGeometry *gs2 = POSTGIS2GEOS(geom2);
+  if (!gs2)
   {
-    GEOSGeom_destroy(g1);
+    GEOSGeom_destroy(gs1);
     elog(ERROR, "Second argument geometry could not be converted to GEOS");
   }
 
@@ -900,9 +912,9 @@ gserialized_relate_pattern(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
     if ( patt[i] == 'f' ) patt[i] = 'F';
   }
 
-  char result = GEOSRelatePattern(g1, g2, patt);
-  GEOSGeom_destroy(g1);
-  GEOSGeom_destroy(g2);
+  char result = GEOSRelatePattern(gs1, gs2, patt);
+  GEOSGeom_destroy(gs1);
+  GEOSGeom_destroy(gs2);
 
   if (result == 2)
     elog(ERROR, "GEOSRelatePattern returned error");
@@ -1051,12 +1063,12 @@ gserialized_convex_hull(const GSERIALIZED *geom)
 
   initGEOS(lwnotice, lwgeom_geos_error);
 
-  GEOSGeometry *g1 = POSTGIS2GEOS(geom);
-  if (!g1)
+  GEOSGeometry *gs1 = POSTGIS2GEOS(geom);
+  if (!gs1)
     elog(ERROR, "First argument geometry could not be converted to GEOS");
 
-  GEOSGeometry *g3 = GEOSConvexHull(g1);
-  GEOSGeom_destroy(g1);
+  GEOSGeometry *g3 = GEOSConvexHull(gs1);
+  GEOSGeom_destroy(gs1);
 
   if (!g3)
     elog(ERROR,"GEOS convexhull() threw an error !");
@@ -1145,18 +1157,20 @@ gserialized_geog_length(GSERIALIZED *g, bool use_spheroid)
  * where we use the WGS84 spheroid
  */
 bool
-gserialized_geog_dwithin(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance,
+gserialized_geog_dwithin(GSERIALIZED *gs1, GSERIALIZED *gs2, double tolerance,
   bool use_spheroid)
 {
-  ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
+  /* Ensure validity of the arguments */
+  ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2));
+
   /* Return FALSE on empty arguments. */
-  if (gserialized_is_empty(g1) || gserialized_is_empty(g2))
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
 
   /* Initialize spheroid */
   /* We currently cannot use the following statement since PROJ4 API is not
    * available directly to MobilityDB. */
-  // spheroid_init_from_srid(gserialized_get_srid(g1), &s);
+  // spheroid_init_from_srid(gserialized_get_srid(gs1), &s);
   SPHEROID s;
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
@@ -1164,8 +1178,8 @@ gserialized_geog_dwithin(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance,
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
 
-  LWGEOM *lwgeom1 = lwgeom_from_gserialized(g1);
-  LWGEOM *lwgeom2 = lwgeom_from_gserialized(g2);
+  LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *lwgeom2 = lwgeom_from_gserialized(gs2);
   double distance = lwgeom_distance_spheroid(lwgeom1, lwgeom2, &s, tolerance);
 
   /* Clean up */
@@ -1193,11 +1207,13 @@ gserialized_geog_dwithin(GSERIALIZED *g1, GSERIALIZED *g2, double tolerance,
  * @note Errors return -1 to replace return NULL
  */
 double
-gserialized_geog_distance(const GSERIALIZED *g1, const GSERIALIZED *g2)
+gserialized_geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g1));
+  /* Ensure validity of the arguments */
+  ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs1));
+
   /* Return NULL on empty arguments. */
-  if (gserialized_is_empty(g1) || gserialized_is_empty(g2) )
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2) )
     return -1;
 
   double tolerance = PGIS_FP_TOLERANCE;
@@ -1214,8 +1230,8 @@ gserialized_geog_distance(const GSERIALIZED *g1, const GSERIALIZED *g2)
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
 
-  LWGEOM *lwgeom1 = lwgeom_from_gserialized(g1);
-  LWGEOM *lwgeom2 = lwgeom_from_gserialized(g2);
+  LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *lwgeom2 = lwgeom_from_gserialized(gs2);
 
   /* Make sure we have boxes attached */
   lwgeom_add_bbox_deep(lwgeom1, NULL);

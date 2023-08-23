@@ -201,6 +201,7 @@ set_in(const char *str, meosType settype)
 Set *
 intset_in(const char *str)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) str);
   return set_parse(&str, T_INTSET);
 }
@@ -212,6 +213,7 @@ intset_in(const char *str)
 Set *
 bigintset_in(const char *str)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) str);
   return set_parse(&str, T_BIGINTSET);
 }
@@ -223,6 +225,7 @@ bigintset_in(const char *str)
 Set *
 floatset_in(const char *str)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) str);
   return set_parse(&str, T_FLOATSET);
 }
@@ -234,6 +237,7 @@ floatset_in(const char *str)
 Set *
 textset_in(const char *str)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) str);
   return set_parse(&str, T_TEXTSET);
 }
@@ -245,6 +249,7 @@ textset_in(const char *str)
 Set *
 timestampset_in(const char *str)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) str);
   return set_parse(&str, T_TSTZSET);
 }
@@ -256,6 +261,7 @@ timestampset_in(const char *str)
 Set *
 geomset_in(const char *str)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) str);
   return set_parse(&str, T_GEOMSET);
 }
@@ -267,6 +273,7 @@ geomset_in(const char *str)
 Set *
 geogset_in(const char *str)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) str);
   return set_parse(&str, T_GEOGSET);
 }
@@ -327,6 +334,7 @@ set_out(const Set *s, int maxdd)
 char *
 intset_out(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_INTSET);
   return set_out(s, 0);
@@ -339,6 +347,7 @@ intset_out(const Set *s)
 char *
 bigintset_out(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_BIGINTSET);
   return set_out(s, 0);
@@ -351,6 +360,7 @@ bigintset_out(const Set *s)
 char *
 floatset_out(const Set *s, int maxdd)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_FLOATSET);
   return set_out(s, maxdd);
@@ -363,6 +373,7 @@ floatset_out(const Set *s, int maxdd)
 char *
 textset_out(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_TEXTSET);
   return set_out(s, 0);
@@ -375,6 +386,7 @@ textset_out(const Set *s)
 char *
 timestampset_out(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_TSTZSET);
   return set_out(s, 0);
@@ -387,6 +399,7 @@ timestampset_out(const Set *s)
 char *
 geoset_out(const Set *s, int maxdd)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_geoset_type(s->settype);
   return set_out(s, maxdd);
@@ -401,6 +414,7 @@ geoset_out(const Set *s, int maxdd)
 char *
 geoset_as_text(const Set *s, int maxdd)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_geoset_type(s->settype);
   return set_out_fn(s, maxdd, &wkt_out);
@@ -414,6 +428,7 @@ geoset_as_text(const Set *s, int maxdd)
 char *
 geoset_as_ewkt(const Set *s, int maxdd)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_geoset_type(s->settype);
   return set_out_fn(s, maxdd, &ewkt_out);
@@ -702,8 +717,10 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 Set *
 intset_make(const int *values, int count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) values);
   ensure_positive(count);
+
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = Int32GetDatum(values[i]);
@@ -717,8 +734,10 @@ intset_make(const int *values, int count)
 Set *
 bigintset_make(const int64 *values, int count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) values);
   ensure_positive(count);
+
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = Int64GetDatum(values[i]);
@@ -732,8 +751,10 @@ bigintset_make(const int64 *values, int count)
 Set *
 floatset_make(const double *values, int count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) values);
   ensure_positive(count);
+
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = Float8GetDatum(values[i]);
@@ -747,8 +768,10 @@ floatset_make(const double *values, int count)
 Set *
 textset_make(const text **values, int count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) values);
   ensure_positive(count);
+
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = PointerGetDatum(values[i]);
@@ -762,8 +785,10 @@ textset_make(const text **values, int count)
 Set *
 timestampset_make(const TimestampTz *values, int count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) values);
   ensure_positive(count);
+
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = TimestampTzGetDatum(values[i]);
@@ -777,8 +802,10 @@ timestampset_make(const TimestampTz *values, int count)
 Set *
 geoset_make(const GSERIALIZED **values, int count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) values);
   ensure_positive(count);
+
   bool geodetic = (bool) FLAGS_GET_GEODETIC(values[0]->gflags);
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
@@ -817,6 +844,7 @@ set_make_free(Datum *values, int count, meosType basetype, bool ordered)
 Set *
 set_copy(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   Set *result = palloc(VARSIZE(s));
   memcpy(result, s, VARSIZE(s));
@@ -883,6 +911,7 @@ float_to_floatset(double d)
 Set *
 text_to_textset(text *txt)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) txt);
   Datum v = PointerGetDatum(txt);
   return set_make(&v, 1, T_TEXT, ORDERED);
@@ -908,6 +937,7 @@ timestamp_to_tstzset(TimestampTz t)
 Set *
 geom_to_geomset(GSERIALIZED *gs)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) gs);
   Datum v = PointerGetDatum(gs);
   return set_make(&v, 1, T_GEOMETRY, ORDERED);
@@ -921,6 +951,7 @@ geom_to_geomset(GSERIALIZED *gs)
 Set *
 geog_to_geogset(GSERIALIZED *gs)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) gs);
   Datum v = PointerGetDatum(gs);
   return set_make(&v, 1, T_GEOGRAPHY, ORDERED);
@@ -952,8 +983,10 @@ set_set_span(const Set *set, Span *s)
 STBox *
 spatialset_stbox(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_spatialset_type(s->settype);
+
   STBox *result = palloc(sizeof(STBox));
   spatialset_set_stbox(s, result);
   return result;
@@ -1001,8 +1034,10 @@ set_mem_size(const Set *s)
 Span *
 set_span(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_spantype(s->settype);
+
   Span *result = palloc(sizeof(Span));
   set_set_span(s, result);
   return result;
@@ -1016,6 +1051,7 @@ set_span(const Set *s)
 int
 set_num_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   return s->count;
 }
@@ -1041,6 +1077,7 @@ set_start_value(const Set *s)
 int
 intset_start_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_INTSET);
   int result = DatumGetInt32(SET_VAL_N(s, 0));
@@ -1055,6 +1092,7 @@ intset_start_value(const Set *s)
 int64
 bigintset_start_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_BIGINTSET);
   int64 result = DatumGetInt64(SET_VAL_N(s, 0));
@@ -1069,6 +1107,7 @@ bigintset_start_value(const Set *s)
 double
 floatset_start_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_FLOATSET);
   double result = DatumGetFloat8(SET_VAL_N(s, 0));
@@ -1083,6 +1122,7 @@ floatset_start_value(const Set *s)
 text *
 textset_start_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_TEXTSET);
   text *result = DatumGetTextP(SET_VAL_N(s, 0));
@@ -1097,6 +1137,7 @@ textset_start_value(const Set *s)
 TimestampTz
 timestampset_start_timestamp(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_TSTZSET);
   TimestampTz result = DatumGetTimestampTz(SET_VAL_N(s, 0));
@@ -1111,6 +1152,7 @@ timestampset_start_timestamp(const Set *s)
 GSERIALIZED *
 geoset_start_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_geoset_type(s->settype);
   GSERIALIZED *result = DatumGetGserializedP(SET_VAL_N(s, 0));
@@ -1139,6 +1181,7 @@ set_end_value(const Set *s)
 int
 intset_end_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_INTSET);
   int result = DatumGetInt32(SET_VAL_N(s, 0));
@@ -1153,6 +1196,7 @@ intset_end_value(const Set *s)
 int64
 bigintset_end_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_BIGINTSET);
   int64 result = DatumGetInt64(SET_VAL_N(s, s->count - 1));
@@ -1167,6 +1211,7 @@ bigintset_end_value(const Set *s)
 double
 floatset_end_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_FLOATSET);
   double result = DatumGetFloat8(SET_VAL_N(s, s->count - 1));
@@ -1181,6 +1226,7 @@ floatset_end_value(const Set *s)
 text *
 textset_end_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_TEXTSET);
   text *result = DatumGetTextP(SET_VAL_N(s, s->count - 1));
@@ -1195,6 +1241,7 @@ textset_end_value(const Set *s)
 TimestampTz
 timestampset_end_timestamp(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_TSTZSET);
   TimestampTz result = DatumGetTimestampTz(SET_VAL_N(s, s->count - 1));
@@ -1209,6 +1256,7 @@ timestampset_end_timestamp(const Set *s)
 GSERIALIZED *
 geoset_end_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_geoset_type(s->settype);
   GSERIALIZED *result = DatumGetGserializedP(SET_VAL_N(s, s->count - 1));
@@ -1250,6 +1298,7 @@ set_value_n(const Set *s, int n, Datum *result)
 bool
 intset_value_n(const Set *s, int n, int *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) result);
   ensure_set_has_type(s, T_INTSET);
   if (n < 1 || n > s->count)
@@ -1271,6 +1320,7 @@ intset_value_n(const Set *s, int n, int *result)
 bool
 bigintset_value_n(const Set *s, int n, int64 *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) result);
   ensure_set_has_type(s, T_BIGINTSET);
   if (n < 1 || n > s->count)
@@ -1292,6 +1342,7 @@ bigintset_value_n(const Set *s, int n, int64 *result)
 bool
 floatset_value_n(const Set *s, int n, double *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) result);
   ensure_set_has_type(s, T_FLOATSET);
   if (n < 1 || n > s->count)
@@ -1313,6 +1364,7 @@ floatset_value_n(const Set *s, int n, double *result)
 bool
 textset_value_n(const Set *s, int n, text **result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) result);
   ensure_set_has_type(s, T_TEXTSET);
   if (n < 1 || n > s->count)
@@ -1334,6 +1386,7 @@ textset_value_n(const Set *s, int n, text **result)
 bool
 timestampset_timestamp_n(const Set *s, int n, TimestampTz *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) result);
   ensure_set_has_type(s, T_TSTZSET);
   if (n < 1 || n > s->count)
@@ -1355,6 +1408,7 @@ timestampset_timestamp_n(const Set *s, int n, TimestampTz *result)
 bool
 geoset_value_n(const Set *s, int n, GSERIALIZED **result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) result);
   ensure_geoset_type(s->settype);
   if (n < 1 || n > s->count)
@@ -1388,8 +1442,10 @@ set_values(const Set *s)
 int *
 intset_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_INTSET);
+
   int *result = palloc(sizeof(int) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetInt32(SET_VAL_N(s, i));
@@ -1404,8 +1460,10 @@ intset_values(const Set *s)
 int64 *
 bigintset_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_BIGINTSET);
+
   int64 *result = palloc(sizeof(int64) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetInt64(SET_VAL_N(s, i));
@@ -1420,8 +1478,10 @@ bigintset_values(const Set *s)
 double *
 floatset_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_FLOATSET);
+
   double *result = palloc(sizeof(double) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetFloat8(SET_VAL_N(s, i));
@@ -1436,8 +1496,10 @@ floatset_values(const Set *s)
 text **
 textset_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_TEXTSET);
+
   text **result = palloc(sizeof(text *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetTextP(SET_VAL_N(s, i));
@@ -1452,8 +1514,10 @@ textset_values(const Set *s)
 TimestampTz *
 timestampset_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_set_has_type(s, T_TSTZSET);
+
   TimestampTz *result = palloc(sizeof(TimestampTz) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetTimestampTz(SET_VAL_N(s, i));
@@ -1468,8 +1532,10 @@ timestampset_values(const Set *s)
 GSERIALIZED **
 geoset_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_geoset_type(s->settype);
+
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetGserializedP(SET_VAL_N(s, i));
@@ -1485,8 +1551,10 @@ geoset_values(const Set *s)
 int
 geoset_srid(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_geoset_type(s->settype);
+
   GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(s, 0));
   return gserialized_get_srid(gs);
 }
@@ -1567,13 +1635,14 @@ Set *
 timestampset_shift_tscale(const Set *s, const Interval *shift,
   const Interval *duration)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
-  assert(shift || duration);
+  ensure_one_not_null((void *) shift, (void *) duration);
   if (duration)
     ensure_valid_duration(duration);
   ensure_set_has_type(s, T_TSTZSET);
+  
   Set *result = set_copy(s);
-
   /* Set the first and last instants */
   TimestampTz lower, lower1, upper, upper1;
   lower = lower1 = DatumGetTimestampTz(SET_VAL_N(s, 0));
@@ -1615,8 +1684,10 @@ timestampset_shift_tscale(const Set *s, const Interval *shift,
 bool
 set_eq(const Set *s1, const Set *s2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s1); ensure_not_null((void *) s2);
   ensure_same_set_type(s1, s2);
+
   if (s1->count != s2->count)
     return false;
   /* s1 and s2 have the same number of values */
@@ -1654,8 +1725,10 @@ set_ne(const Set *s1, const Set *s2)
 int
 set_cmp(const Set *s1, const Set *s2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s1); ensure_not_null((void *) s2);
   ensure_same_set_type(s1, s2);
+
   int count = Min(s1->count, s2->count);
   int result = 0;
   for (int i = 0; i < count; i++)
@@ -1739,7 +1812,9 @@ set_gt(const Set *s1, const Set *s2)
 uint32
 set_hash(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
+
   uint32 result = 1;
   for (int i = 0; i < s->count; i++)
   {
@@ -1758,7 +1833,9 @@ set_hash(const Set *s)
 uint64
 set_hash_extended(const Set *s, uint64 seed)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
+
   uint64 result = 1;
   for (int i = 0; i < s->count; i++)
   {

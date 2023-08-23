@@ -246,8 +246,10 @@ datum_upper(Datum value)
 Temporal *
 textfunc_ttext(const Temporal *temp, Datum (*func)(Datum value))
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) func);
   assert(temp->temptype == T_TTEXT);
+
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -266,8 +268,10 @@ Temporal *
 textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func,
   bool invert)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   assert(temp->temptype == T_TTEXT);
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;

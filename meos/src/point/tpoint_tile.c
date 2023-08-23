@@ -570,7 +570,7 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
   int **no_cells)
 {
-  /* Get input parameters */
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) bounds); ensure_not_null((void *) no_cells);
   ensure_has_X_stbox(bounds);
   ensure_not_geodetic(bounds->flags);
@@ -578,6 +578,7 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
   if (MEOS_FLAGS_GET_Z(bounds->flags))
     ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
+
   int64 tunits = 0; /* make compiler quiet */
   /* If time arguments are given */
   if (duration)

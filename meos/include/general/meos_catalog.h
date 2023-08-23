@@ -254,6 +254,7 @@ extern bool tnumber_settype(meosType settype);
 extern bool tnumber_spantype(meosType settype);
 extern bool tnumber_spansettype(meosType spansettype);
 extern bool tspatial_type(meosType temptype);
+extern void ensure_tspatial_type(meosType temptype);
 extern bool tspatial_basetype(meosType basetype);
 extern bool tgeo_type(meosType type);
 extern void ensure_tgeo_type(meosType type);

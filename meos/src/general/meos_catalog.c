@@ -881,6 +881,18 @@ tspatial_type(meosType type)
 }
 
 /**
+ * @brief Ensure that a temporal value is a temporal point or network point
+ */
+void
+ensure_tspatial_type(meosType type)
+{
+  if (! tspatial_type(type))
+    elog(ERROR, "The temporal value must be a temporal point point");
+  return;
+}
+
+
+/**
  * @brief Return true if the type is a base type of a spatiotemporal type
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBox

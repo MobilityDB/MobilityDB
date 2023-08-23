@@ -324,6 +324,7 @@ tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
 TSequenceSet *
 tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) sequences);
   ensure_positive(count);
   return tsequenceset_make_exp(sequences, count, count, normalize);
@@ -448,8 +449,10 @@ TSequenceSet *
 tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
   Interval *maxt, double maxdist)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) instants);
   ensure_positive(count);
+
   TSequence *seq;
   TSequenceSet *result;
 
@@ -588,6 +591,7 @@ tsequenceset_from_base_periodset(Datum value, meosType temptype,
 TSequenceSet *
 tboolseqset_from_base_periodset(bool b, const SpanSet *ps)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) ps);
   return tsequenceset_from_base_periodset(BoolGetDatum(b), T_TBOOL, ps, STEP);
 }
@@ -600,6 +604,7 @@ tboolseqset_from_base_periodset(bool b, const SpanSet *ps)
 TSequenceSet *
 tintseqset_from_base_periodset(int i, const SpanSet *ps)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) ps);
   return tsequenceset_from_base_periodset(Int32GetDatum(i), T_TINT, ps, STEP);
 }
@@ -611,6 +616,7 @@ tintseqset_from_base_periodset(int i, const SpanSet *ps)
 TSequenceSet *
 tfloatseqset_from_base_periodset(double d, const SpanSet *ps, interpType interp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) ps);
   return tsequenceset_from_base_periodset(Float8GetDatum(d), T_TFLOAT, ps,
     interp);
@@ -623,6 +629,7 @@ tfloatseqset_from_base_periodset(double d, const SpanSet *ps, interpType interp)
 TSequenceSet *
 ttextseqset_from_base_periodset(const text *txt, const SpanSet *ps)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) txt); ensure_not_null((void *) ps);
   return tsequenceset_from_base_periodset(PointerGetDatum(txt), T_TTEXT, ps,
     STEP);
@@ -637,6 +644,7 @@ TSequenceSet *
 tgeompointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ps,
   interpType interp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) gs); ensure_not_null((void *) ps);
   return tsequenceset_from_base_periodset(PointerGetDatum(gs), T_TGEOMPOINT,
     ps, interp);
@@ -651,6 +659,7 @@ TSequenceSet *
 tgeogpointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ps,
   interpType interp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) gs); ensure_not_null((void *) ps);
   return tsequenceset_from_base_periodset(PointerGetDatum(gs), T_TGEOGPOINT,
     ps, interp);

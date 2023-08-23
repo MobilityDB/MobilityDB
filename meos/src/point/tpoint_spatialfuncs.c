@@ -782,6 +782,7 @@ tpoint_ever_eq(const Temporal *temp, Datum value)
  */
 bool tgeompoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_same_temporal_basetype(temp, T_GEOMETRY);
   return tpoint_ever_eq(temp, PointerGetDatum(gs));
@@ -794,6 +795,7 @@ bool tgeompoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
  */
 bool tgeogpoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_same_temporal_basetype(temp, T_GEOGRAPHY);
   return tpoint_ever_eq(temp, PointerGetDatum(gs));
@@ -895,6 +897,7 @@ tpoint_always_eq(const Temporal *temp, Datum value)
  */
 bool tgeompoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_same_temporal_basetype(temp, T_GEOMETRY);
   return tpoint_always_eq(temp, PointerGetDatum(gs));
@@ -907,6 +910,7 @@ bool tgeompoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
  */
 bool tgeogpoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_same_temporal_basetype(temp, T_GEOGRAPHY);
   return tpoint_always_eq(temp, PointerGetDatum(gs));
@@ -1808,8 +1812,10 @@ tpointseqset_trajectory(const TSequenceSet *ss)
 GSERIALIZED *
 tpoint_trajectory(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   GSERIALIZED *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1877,8 +1883,10 @@ tpointseqset_srid(const TSequenceSet *ss)
 int
 tpoint_srid(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   int result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1976,8 +1984,10 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
 Temporal *
 tpoint_set_srid(const Temporal *temp, int32 srid)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   Temporal *result;
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_set_srid((TInstant *) temp, srid);
@@ -2113,8 +2123,10 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
 Temporal *
 tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2588,8 +2600,10 @@ tpointseqset_length(const TSequenceSet *ss)
 double
 tpoint_length(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   double result = 0.0;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
@@ -2680,8 +2694,10 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
 Temporal *
 tpoint_cumulative_length(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
@@ -2703,8 +2719,10 @@ tpoint_cumulative_length(const Temporal *temp)
 GSERIALIZED *
 tpoint_convex_hull(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   GSERIALIZED *traj = tpoint_trajectory(temp);
   GSERIALIZED *result = gserialized_convex_hull(traj);
   pfree(traj);
@@ -2789,8 +2807,10 @@ tpointseqset_speed(const TSequenceSet *ss)
 Temporal *
 tpoint_speed(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
@@ -2910,8 +2930,10 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 GSERIALIZED *
 tpoint_twcentroid(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   GSERIALIZED *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -3036,8 +3058,10 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
 bool
 tpoint_direction(const Temporal *temp, double *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) result);
   ensure_tgeo_type(temp->temptype);
+
   bool found = false;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -3167,8 +3191,10 @@ tpointseqset_azimuth(const TSequenceSet *ss)
 Temporal *
 tpoint_azimuth(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
@@ -3188,8 +3214,10 @@ tpoint_azimuth(const Temporal *temp)
 Temporal *
 tpoint_angular_difference(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   Temporal *tazimuth = tpoint_azimuth(temp);
   Temporal *result = NULL;
   if (tazimuth)
@@ -3436,10 +3464,12 @@ bool
 bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) gs1); ensure_not_null((void *) gs2);
   ensure_point_type(gs1); ensure_point_type(gs2);
   ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2));
   ensure_same_dimensionality_gs(gs1, gs2);
+
   if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
   *result = FLAGS_GET_GEODETIC(gs1->gflags) ?
@@ -3457,6 +3487,7 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 Temporal *
 bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   if (gserialized_is_empty(gs))
     return NULL;
@@ -3489,11 +3520,13 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 Temporal *
 bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
   ensure_tgeo_type(temp1->temptype);
   ensure_same_temporal_type(temp1, temp2);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
+
   datum_func2 func = get_bearing_fn(temp1->flags);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

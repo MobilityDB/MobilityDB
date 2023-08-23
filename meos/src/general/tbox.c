@@ -104,6 +104,7 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
 TBox *
 tbox_in(const char *str)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) str);
   return tbox_parse(&str);
 }
@@ -202,7 +203,9 @@ tbox_set(const Span *s, const Span *p, TBox *box)
 TBox *
 tbox_copy(const TBox *box)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box);
+
   TBox *result = palloc(sizeof(TBox));
   memcpy(result, box, sizeof(TBox));
   return result;
@@ -272,6 +275,7 @@ number_period_to_tbox(Datum d, meosType basetype, const Span *s)
 TBox *
 int_period_to_tbox(int i, const Span *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   return number_period_to_tbox(Int32GetDatum(i), T_INT4, s);
 }
@@ -284,6 +288,7 @@ int_period_to_tbox(int i, const Span *s)
 TBox *
 float_period_to_tbox(double d, const Span *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   return number_period_to_tbox(Float8GetDatum(d), T_FLOAT8, s);
 }
@@ -297,8 +302,10 @@ float_period_to_tbox(double d, const Span *s)
 TBox *
 span_timestamp_to_tbox(const Span *s, TimestampTz t)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   ensure_numspan_type(s->spantype);
+
   Datum dt = TimestampTzGetDatum(t);
   Span p;
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
@@ -313,10 +320,10 @@ span_timestamp_to_tbox(const Span *s, TimestampTz t)
 TBox *
 span_period_to_tbox(const Span *s, const Span *p)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) p);
   ensure_numspan_type(s->spantype);
   ensure_span_has_type(p, T_TSTZSPAN);
-  assert(p->basetype == T_TIMESTAMPTZ);
   return tbox_make(s, p);
 }
 
@@ -447,7 +454,9 @@ numset_set_tbox(const Set *s, TBox *box)
 TBox *
 numset_to_tbox(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
+
   TBox *result = palloc(sizeof(TBox));
   numset_set_tbox(s, result);
   return result;
@@ -478,7 +487,9 @@ timestampset_set_tbox(const Set *s, TBox *box)
 TBox *
 timestampset_to_tbox(const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
+
   TBox *result = palloc(sizeof(TBox));
   timestampset_set_tbox(s, result);
   return result;
@@ -507,7 +518,9 @@ numspan_set_tbox(const Span *s, TBox *box)
 TBox *
 numspan_to_tbox(const Span *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
+
   TBox *result = palloc(sizeof(TBox));
   numspan_set_tbox(s, result);
   return result;
@@ -536,7 +549,9 @@ period_set_tbox(const Span *s, TBox *box)
 TBox *
 period_to_tbox(const Span *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
+
   TBox *result = palloc(sizeof(TBox));
   period_set_tbox(s, result);
   return result;
@@ -564,7 +579,9 @@ numspanset_set_tbox(const SpanSet *ss, TBox *box)
 TBox *
 numspanset_to_tbox(const SpanSet *ss)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) ss);
+
   TBox *result = palloc(sizeof(TBox));
   numspanset_set_tbox(ss, result);
   return result;
@@ -591,7 +608,9 @@ periodset_set_tbox(const SpanSet *ss, TBox *box)
 TBox *
 periodset_to_tbox(const SpanSet *ss)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) ss);
+
   TBox *result = palloc(sizeof(TBox));
   periodset_set_tbox(ss, result);
   return result;
@@ -608,7 +627,9 @@ periodset_to_tbox(const SpanSet *ss)
 Span *
 tbox_to_floatspan(const TBox *box)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box);
+
   if (! MEOS_FLAGS_GET_X(box->flags))
     return NULL;
   if (box->span.basetype == T_FLOAT8)
@@ -627,7 +648,9 @@ tbox_to_floatspan(const TBox *box)
 Span *
 tbox_to_period(const TBox *box)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box);
+
   if (! MEOS_FLAGS_GET_T(box->flags))
     return NULL;
   return span_copy(&box->period);
@@ -645,6 +668,7 @@ tbox_to_period(const TBox *box)
 bool
 tbox_hasx(const TBox *box)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box);
   bool result = MEOS_FLAGS_GET_X(box->flags);
   return result;
@@ -658,6 +682,7 @@ tbox_hasx(const TBox *box)
 bool
 tbox_hast(const TBox *box)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box);
   bool result = MEOS_FLAGS_GET_T(box->flags);
   return result;
@@ -673,7 +698,9 @@ tbox_hast(const TBox *box)
 bool
 tbox_xmin(const TBox *box, double *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box); ensure_not_null((void *) result);
+
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = datum_double(box->span.lower, box->span.basetype);
@@ -690,7 +717,9 @@ tbox_xmin(const TBox *box, double *result)
 bool
 tbox_xmin_inc(const TBox *box, bool *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box); ensure_not_null((void *) result);
+
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetBool(box->span.lower_inc);
@@ -707,7 +736,9 @@ tbox_xmin_inc(const TBox *box, bool *result)
 bool
 tbox_xmax(const TBox *box, double *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box); ensure_not_null((void *) result);
+
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   if (box->span.basetype == T_INT4)
@@ -728,7 +759,9 @@ tbox_xmax(const TBox *box, double *result)
 bool
 tbox_xmax_inc(const TBox *box, bool *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box); ensure_not_null((void *) result);
+
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetBool(box->span.upper_inc);
@@ -745,7 +778,9 @@ tbox_xmax_inc(const TBox *box, bool *result)
 bool
 tbox_tmin(const TBox *box, TimestampTz *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box); ensure_not_null((void *) result);
+
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.lower);
@@ -762,7 +797,9 @@ tbox_tmin(const TBox *box, TimestampTz *result)
 bool
 tbox_tmin_inc(const TBox *box, bool *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box); ensure_not_null((void *) result);
+
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetBool(box->period.lower_inc);
@@ -779,7 +816,9 @@ tbox_tmin_inc(const TBox *box, bool *result)
 bool
 tbox_tmax(const TBox *box, TimestampTz *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box); ensure_not_null((void *) result);
+
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.upper);
@@ -796,7 +835,9 @@ tbox_tmax(const TBox *box, TimestampTz *result)
 bool
 tbox_tmax_inc(const TBox *box, bool *result)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box); ensure_not_null((void *) result);
+
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetBool(box->period.upper_inc);
@@ -830,8 +871,10 @@ tbox_expand(const TBox *box1, TBox *box2)
 TBox *
 tbox_expand_value(const TBox *box, const double d)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box);
   ensure_has_X_tbox(box);
+
   TBox *result = tbox_copy(box);
   result->span.lower = Float8GetDatum(DatumGetFloat8(result->span.lower) - d);
   result->span.upper = Float8GetDatum(DatumGetFloat8(result->span.upper) + d);
@@ -846,8 +889,10 @@ tbox_expand_value(const TBox *box, const double d)
 TBox *
 tbox_expand_time(const TBox *box, const Interval *interval)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box); ensure_not_null((void *) interval);
   ensure_has_T_tbox(box);
+
   TBox *result = tbox_copy(box);
   TimestampTz tmin = pg_timestamp_mi_interval(DatumGetTimestampTz(
     box->period.lower), interval);
@@ -922,7 +967,9 @@ topo_tbox_tbox_init(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 bool
 contains_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
+
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   if (hasx && ! contains_span_span(&box1->span, &box2->span))
@@ -951,7 +998,9 @@ contained_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
+
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   if (hasx && ! overlaps_span_span(&box1->span, &box2->span))
@@ -969,7 +1018,9 @@ overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 same_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
+
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   if (hasx && ! span_eq(&box1->span, &box2->span))
@@ -987,7 +1038,9 @@ same_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
+
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   /* Boxes are adjacent if they are adjacent in at least one dimension */
@@ -1012,6 +1065,7 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 left_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
@@ -1027,6 +1081,7 @@ left_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 overleft_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
@@ -1042,6 +1097,7 @@ overleft_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 right_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
@@ -1057,6 +1113,7 @@ right_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 overright_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
@@ -1072,6 +1129,7 @@ overright_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 before_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
@@ -1087,6 +1145,7 @@ before_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
@@ -1102,6 +1161,7 @@ overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 after_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
@@ -1117,6 +1177,7 @@ after_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 overafter_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
@@ -1135,8 +1196,10 @@ overafter_tbox_tbox(const TBox *box1, const TBox *box2)
 TBox *
 union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
   ensure_same_dimensionality_tbox(box1, box2);
+
   /* The union of boxes that do not intersect cannot be represented by a box */
   if (strict && ! overlaps_tbox_tbox(box1, box2))
     elog(ERROR, "Result of box union would not be contiguous");
@@ -1189,7 +1252,9 @@ inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)
 TBox *
 intersection_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
+
   TBox *result = palloc(sizeof(TBox));
   if (! inter_tbox_tbox(box1, box2, result))
   {
@@ -1212,7 +1277,9 @@ intersection_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 tbox_eq(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
+
   if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
     MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
       return false;
@@ -1246,7 +1313,9 @@ tbox_ne(const TBox *box1, const TBox *box2)
 int
 tbox_cmp(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box1); ensure_not_null((void *) box2);
+
   bool hasx, hast;
   tbox_tbox_flags(box1, box2, &hasx, &hast);
   int cmp;

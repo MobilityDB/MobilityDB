@@ -1020,6 +1020,7 @@ TSequence *
 tsequence_make_exp(const TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) instants);
   ensure_positive(count);
   tsequence_make_valid(instants, count, lower_inc, upper_inc, interp);
@@ -1041,6 +1042,7 @@ TSequence *
 tsequence_make(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, bool normalize)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) instants);
   ensure_positive(count);
   return tsequence_make_exp(instants, count, count, lower_inc, upper_inc,
@@ -1173,6 +1175,7 @@ tsequence_from_base_timestampset(Datum value, meosType temptype, const Set *s)
 TSequence *
 tboolseq_from_base_timestampset(bool b, const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   return tsequence_from_base_timestampset(BoolGetDatum(b), T_TBOOL, s);
 }
@@ -1185,6 +1188,7 @@ tboolseq_from_base_timestampset(bool b, const Set *s)
 TSequence *
 tintseq_from_base_timestampset(int i, const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   return tsequence_from_base_timestampset(Int32GetDatum(i), T_TINT, s);
 }
@@ -1197,6 +1201,7 @@ tintseq_from_base_timestampset(int i, const Set *s)
 TSequence *
 tfloatseq_from_base_timestampset(double d, const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   return tsequence_from_base_timestampset(Float8GetDatum(d), T_TFLOAT, s);
 }
@@ -1209,6 +1214,7 @@ tfloatseq_from_base_timestampset(double d, const Set *s)
 TSequence *
 ttextseq_from_base_timestampset(const text *txt, const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) txt);
   return tsequence_from_base_timestampset(PointerGetDatum(txt), T_TTEXT, s);
 }
@@ -1221,6 +1227,7 @@ ttextseq_from_base_timestampset(const text *txt, const Set *s)
 TSequence *
 tgeompointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) gs);
   return tsequence_from_base_timestampset(PointerGetDatum(gs), T_TGEOMPOINT, s);
 }
@@ -1233,6 +1240,7 @@ tgeompointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *s)
 TSequence *
 tgeogpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) gs);
   return tsequence_from_base_timestampset(PointerGetDatum(gs), T_TGEOGPOINT, s);
 }
@@ -1277,6 +1285,7 @@ tsequence_from_base_period(Datum value, meosType temptype, const Span *s,
 TSequence *
 tboolseq_from_base_period(bool b, const Span *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   return tsequence_from_base_period(BoolGetDatum(b), T_TBOOL, s, STEP);
 }
@@ -1288,6 +1297,7 @@ tboolseq_from_base_period(bool b, const Span *s)
 TSequence *
 tintseq_from_base_period(int i, const Span *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   return tsequence_from_base_period(Int32GetDatum(i), T_TINT, s, STEP);
 }
@@ -1299,6 +1309,7 @@ tintseq_from_base_period(int i, const Span *s)
 TSequence *
 tfloatseq_from_base_period(double d, const Span *s, interpType interp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s);
   return tsequence_from_base_period(Float8GetDatum(d), T_TFLOAT, s, interp);
 }
@@ -1310,6 +1321,7 @@ tfloatseq_from_base_period(double d, const Span *s, interpType interp)
 TSequence *
 ttextseq_from_base_period(const text *txt, const Span *s)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) txt); ensure_not_null((void *) s);
   return tsequence_from_base_period(PointerGetDatum(txt), T_TTEXT, s, STEP);
 }
@@ -1323,6 +1335,7 @@ TSequence *
 tgeompointseq_from_base_period(const GSERIALIZED *gs, const Span *s,
   interpType interp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) gs); ensure_not_null((void *) s);
   return tsequence_from_base_period(PointerGetDatum(gs), T_TGEOMPOINT, s,
     interp);
@@ -1337,6 +1350,7 @@ TSequence *
 tgeogpointseq_from_base_period(const GSERIALIZED *gs, const Span *s,
   interpType interp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) gs); ensure_not_null((void *) s);
   return tsequence_from_base_period(PointerGetDatum(gs), T_TGEOGPOINT, s,
     interp);
@@ -5368,8 +5382,10 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
 Temporal *
 tsequence_insert(const TSequence *seq1, const TSequence *seq2, bool connect)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) seq1); ensure_not_null((void *) seq2);
-  assert(seq1->temptype == seq2->temptype);
+  ensure_same_temporal_type((Temporal *) seq1, (Temporal *) seq2);
+
   if (MEOS_FLAGS_GET_DISCRETE(seq1->flags) || ! connect)
     return (Temporal *) tsequence_merge(seq1, seq2);
   else
@@ -5438,7 +5454,9 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
 Temporal *
 tsequence_delete_timestamp(const TSequence *seq, TimestampTz t, bool connect)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) seq);
+
   Temporal *result;
   if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
     result = (Temporal *) tdiscseq_minus_timestamp(seq, t);
@@ -5546,7 +5564,9 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *s)
 Temporal *
 tsequence_delete_timestampset(const TSequence *seq, const Set *s, bool connect)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) seq); ensure_not_null((void *) s);
+
   Temporal *result;
   if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
     result = (Temporal *) tdiscseq_restrict_timestampset(seq, s, REST_MINUS);
@@ -5612,7 +5632,9 @@ tcontseq_delete_period(const TSequence *seq, const Span *s)
 Temporal *
 tsequence_delete_period(const TSequence *seq, const Span *s, bool connect)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) seq); ensure_not_null((void *) s);
+
   Temporal *result;
   if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
     result = (Temporal *) tdiscseq_restrict_period(seq, s, REST_MINUS);
@@ -5688,7 +5710,9 @@ Temporal *
 tsequence_delete_periodset(const TSequence *seq, const SpanSet *ss,
   bool connect)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) seq); ensure_not_null((void *) ss);
+
   Temporal *result;
   if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
     result = (Temporal *) tdiscseq_restrict_periodset(seq, ss, REST_MINUS);

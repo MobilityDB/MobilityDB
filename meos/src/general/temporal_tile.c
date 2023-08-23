@@ -151,7 +151,9 @@ span_bucket_state_next(SpanBucketState *state)
 int
 int_bucket(int value, int size, int origin)
 {
+  /* Ensure validity of the arguments */
   ensure_positive(size);
+
   if (origin != 0)
   {
     /*
@@ -199,6 +201,7 @@ double
 float_bucket(double value, double size, double origin)
 {
   ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
+
   if (origin != 0)
   {
     /*
@@ -285,6 +288,7 @@ timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
 TimestampTz
 timestamptz_bucket(TimestampTz t, const Interval *duration, TimestampTz origin)
 {
+  /* Ensure validity of the arguments */
   ensure_valid_duration(duration);
   int64 size = interval_units(duration);
   return timestamptz_bucket1(t, size, origin);
@@ -300,6 +304,7 @@ timestamptz_bucket(TimestampTz t, const Interval *duration, TimestampTz origin)
 Datum
 datum_bucket(Datum value, Datum size, Datum origin, meosType basetype)
 {
+  /* Ensure validity of the arguments */
   ensure_positive_datum(size, basetype);
   assert(span_basetype(basetype));
   if (basetype == T_INT4)
@@ -351,6 +356,7 @@ span_bucket_list(const Span *s, Datum size, Datum origin, int count)
 Span *
 intspan_bucket_list(const Span *s, int size, int origin, int *count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) count);
   *count = ceil((DatumGetInt32(s->upper) - DatumGetInt32(s->lower)) / size);
   return span_bucket_list(s, Int32GetDatum(size), Int32GetDatum(origin),
@@ -368,6 +374,7 @@ intspan_bucket_list(const Span *s, int size, int origin, int *count)
 Span *
 floatspan_bucket_list(const Span *s, double size, double origin, int *count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) count);
   *count = ceil((DatumGetFloat8(s->upper) - DatumGetFloat8(s->lower)) / size);
   return span_bucket_list(s, Float8GetDatum(size), Float8GetDatum(origin),
@@ -386,8 +393,10 @@ Span *
 period_bucket_list(const Span *s, const Interval *duration, TimestampTz origin,
   int *count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) s); ensure_not_null((void *) count);
   ensure_valid_duration(duration);
+
   int64 size = interval_units(duration);
   *count = ceil((DatumGetTimestampTz(s->upper) -
     DatumGetTimestampTz(s->lower)) / size);
@@ -518,11 +527,13 @@ TBox *
 tbox_tile_list(const TBox *box, double xsize, const Interval *duration,
   double xorigin, TimestampTz torigin, int *rows, int *columns)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) box); ensure_not_null((void *) rows);
   ensure_not_null((void *) columns);
   // TODO: generalize for intspan
   ensure_positive_datum(Float8GetDatum(xsize), box->span.basetype);
   ensure_valid_duration(duration);
+
   int64 tsize = interval_units(duration);
   TboxGridState *state = tbox_tile_state_make(box, xsize, duration,
     xorigin, torigin);
@@ -1550,6 +1561,7 @@ temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
 Temporal **
 tint_value_split(Temporal *temp, int size, int origin, int *newcount)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) newcount);
   ensure_temporal_has_type(temp, T_TINT);
   Datum *value_buckets;
@@ -1569,6 +1581,7 @@ tint_value_split(Temporal *temp, int size, int origin, int *newcount)
 Temporal **
 tfloat_value_split(Temporal *temp, double size, double origin, int *newcount)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) newcount);
   assert(temp); assert(newcount);
   ensure_temporal_has_type(temp, T_TFLOAT);
@@ -1590,6 +1603,7 @@ Temporal **
 temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
   int *newcount)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) newcount);
   TimestampTz *time_buckets;
   return temporal_value_time_split1(temp, Float8GetDatum(0), duration,
@@ -1612,6 +1626,7 @@ Temporal **
 tint_value_time_split(Temporal *temp, int size, int vorigin,
   Interval *duration, TimestampTz torigin, int *newcount)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) newcount);
   ensure_temporal_has_type(temp, T_TINT);
   Datum *value_buckets;
@@ -1637,6 +1652,7 @@ Temporal **
 tfloat_value_time_split(Temporal *temp, double size, double vorigin,
   Interval *duration, TimestampTz torigin, int *newcount)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) newcount);
   ensure_temporal_has_type(temp, T_TFLOAT);
   Datum *value_buckets;

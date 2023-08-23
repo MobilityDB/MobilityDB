@@ -77,9 +77,11 @@ point_force2d(Datum point, Datum srid)
 static Temporal *
 tpoint_force2d(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   assert(tgeo_type(temp->temptype));
   assert(MEOS_FLAGS_GET_Z(temp->flags));
+
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -514,8 +516,10 @@ tpointseqset_is_simple(const TSequenceSet *ss)
 bool
 tpoint_is_simple(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   ensure_tgeo_type(temp->temptype);
+
   bool result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -715,8 +719,10 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 Temporal **
 tpoint_make_simple(const Temporal *temp, int *count)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) count);
   ensure_tgeo_type(temp->temptype);
+
   Temporal **result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -779,10 +785,12 @@ point_get_z(Datum point)
 Temporal *
 tpoint_get_coord(const Temporal *temp, int coord)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp);
   assert(tgeo_type(temp->temptype));
   if (coord == 2)
     ensure_has_Z(temp->flags);
+
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1611,6 +1619,7 @@ Temporal *
 tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_AT);
@@ -1625,6 +1634,7 @@ Temporal *
 tpoint_minus_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) gs);
   ensure_tgeo_type(temp->temptype);
   return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_MINUS);
@@ -2482,6 +2492,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 Temporal *
 tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) box);
   ensure_tgeo_type(temp->temptype);
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_AT);
@@ -2496,6 +2507,7 @@ tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 Temporal *
 tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
+  /* Ensure validity of the arguments */
   ensure_not_null((void *) temp); ensure_not_null((void *) box);
   ensure_tgeo_type(temp->temptype);
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);
