@@ -66,25 +66,25 @@ SELECT round(geometry 'Point Z empty' <-> tgeompoint '{Point(2 2 2)@2000-01-01, 
 SELECT round(geometry 'Point Z empty' <-> tgeompoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]', 6);
 SELECT round(geometry 'Point Z empty' <-> tgeompoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 6);
 
-SELECT round(geography 'Point(1 1)' <-> tgeogpoint 'Point(2.5 2.5)@2000-01-01', 6);
-SELECT round(geography 'Point(1 1)' <-> tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}', 6);
-SELECT round(geography 'Point(1 1)' <-> tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]', 6);
-SELECT round(geography 'Point(1 1)' <-> tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 6);
+SELECT round(geography 'Point(1 1)' <-> tgeogpoint 'Point(0 -45)@2000-01-01', 6);
+SELECT round(geography 'Point(1 1)' <-> tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}', 6);
+SELECT round(geography 'Point(1 1)' <-> tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]', 6);
+SELECT round(geography 'Point(1 1)' <-> tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', 6);
 
-SELECT round(geography 'Point empty' <-> tgeogpoint 'Point(2.5 2.5)@2000-01-01', 6);
-SELECT round(geography 'Point empty' <-> tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}', 6);
-SELECT round(geography 'Point empty' <-> tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]', 6);
-SELECT round(geography 'Point empty' <-> tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 6);
+SELECT round(geography 'Point empty' <-> tgeogpoint 'Point(0 -45)@2000-01-01', 6);
+SELECT round(geography 'Point empty' <-> tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}', 6);
+SELECT round(geography 'Point empty' <-> tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]', 6);
+SELECT round(geography 'Point empty' <-> tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', 6);
 
-SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01', 6);
-SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}', 6);
-SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]', 6);
-SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 6);
+SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint 'Point(0 -45 100)@2000-01-01', 6);
+SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}', 6);
+SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]', 6);
+SELECT round(geography 'Point(1 1 1)' <-> tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', 6);
 
-SELECT round(geography 'Point Z empty' <-> tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01', 6);
-SELECT round(geography 'Point Z empty' <-> tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}', 6);
-SELECT round(geography 'Point Z empty' <-> tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]', 6);
-SELECT round(geography 'Point Z empty' <-> tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 6);
+SELECT round(geography 'Point Z empty' <-> tgeogpoint 'Point(0 -45 100)@2000-01-01', 6);
+SELECT round(geography 'Point Z empty' <-> tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}', 6);
+SELECT round(geography 'Point Z empty' <-> tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]', 6);
+SELECT round(geography 'Point Z empty' <-> tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', 6);
 
 SELECT round(tgeompoint 'Point(1 1)@2000-01-01' <-> geometry 'Point(1 1)', 6);
 SELECT round(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <-> geometry 'Point(1 1)', 6);
@@ -106,25 +106,25 @@ SELECT round(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poin
 SELECT round(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <-> geometry 'Point Z empty', 6);
 SELECT round(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <-> geometry 'Point Z empty', 6);
 
-SELECT round(tgeogpoint 'Point(1.5 1.5)@2000-01-01' <-> geography 'Point(1 1)', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <-> geography 'Point(1 1)', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <-> geography 'Point(1 1)', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <-> geography 'Point(1 1)', 6);
+SELECT round(tgeogpoint 'Point(-45 0)@2000-01-01' <-> geography 'Point(1 1)', 6);
+SELECT round(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' <-> geography 'Point(1 1)', 6);
+SELECT round(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' <-> geography 'Point(1 1)', 6);
+SELECT round(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' <-> geography 'Point(1 1)', 6);
 
-SELECT round(tgeogpoint 'Point(1.5 1.5)@2000-01-01' <-> geography 'Point empty', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <-> geography 'Point empty', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <-> geography 'Point empty', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <-> geography 'Point empty', 6);
+SELECT round(tgeogpoint 'Point(-45 0)@2000-01-01' <-> geography 'Point empty', 6);
+SELECT round(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' <-> geography 'Point empty', 6);
+SELECT round(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' <-> geography 'Point empty', 6);
+SELECT round(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' <-> geography 'Point empty', 6);
 
-SELECT round(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' <-> geography 'Point(1 1 1)', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' <-> geography 'Point(1 1 1)', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' <-> geography 'Point(1 1 1)', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' <-> geography 'Point(1 1 1)', 6);
+SELECT round(tgeogpoint 'Point(-45 0 100)@2000-01-01' <-> geography 'Point(1 1 1)', 6);
+SELECT round(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' <-> geography 'Point(1 1 1)', 6);
+SELECT round(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' <-> geography 'Point(1 1 1)', 6);
+SELECT round(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' <-> geography 'Point(1 1 1)', 6);
 
-SELECT round(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' <-> geography 'Point Z empty', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' <-> geography 'Point Z empty', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' <-> geography 'Point Z empty', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' <-> geography 'Point Z empty', 6);
+SELECT round(tgeogpoint 'Point(-45 0 100)@2000-01-01' <-> geography 'Point Z empty', 6);
+SELECT round(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' <-> geography 'Point Z empty', 6);
+SELECT round(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' <-> geography 'Point Z empty', 6);
+SELECT round(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' <-> geography 'Point Z empty', 6);
 
 SELECT round(tgeompoint 'Point(1 1)@2000-01-01' <-> tgeompoint 'Point(2 2)@2000-01-01', 6);
 SELECT round(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <-> tgeompoint 'Point(2 2)@2000-01-01', 6);
@@ -162,39 +162,39 @@ SELECT round(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 
 SELECT round(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' <-> tgeompoint 'Interp=Step;[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]', 6);
 
-SELECT round(tgeogpoint 'Point(1.5 1.5)@2000-01-01' <-> tgeogpoint 'Point(2.5 2.5)@2000-01-01', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <-> tgeogpoint 'Point(2.5 2.5)@2000-01-01', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <-> tgeogpoint 'Point(2.5 2.5)@2000-01-01', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <-> tgeogpoint 'Point(2.5 2.5)@2000-01-01', 6);
-SELECT round(tgeogpoint 'Point(1.5 1.5)@2000-01-01' <-> tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <-> tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <-> tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <-> tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}', 6);
-SELECT round(tgeogpoint 'Point(1.5 1.5)@2000-01-01' <-> tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <-> tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <-> tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <-> tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]', 6);
-SELECT round(tgeogpoint 'Point(1.5 1.5)@2000-01-01' <-> tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <-> tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <-> tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <-> tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 6);
+SELECT round(tgeogpoint 'Point(-45 0)@2000-01-01' <-> tgeogpoint 'Point(0 -45)@2000-01-01', 6);
+SELECT round(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' <-> tgeogpoint 'Point(0 -45)@2000-01-01', 6);
+SELECT round(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' <-> tgeogpoint 'Point(0 -45)@2000-01-01', 6);
+SELECT round(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' <-> tgeogpoint 'Point(0 -45)@2000-01-01', 6);
+SELECT round(tgeogpoint 'Point(-45 0)@2000-01-01' <-> tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}', 6);
+SELECT round(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' <-> tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}', 6);
+SELECT round(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' <-> tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}', 6);
+SELECT round(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' <-> tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}', 6);
+SELECT round(tgeogpoint 'Point(-45 0)@2000-01-01' <-> tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]', 6);
+SELECT round(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' <-> tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]', 6);
+SELECT round(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' <-> tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]', 6);
+SELECT round(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' <-> tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]', 6);
+SELECT round(tgeogpoint 'Point(-45 0)@2000-01-01' <-> tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', 6);
+SELECT round(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' <-> tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', 6);
+SELECT round(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' <-> tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', 6);
+SELECT round(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' <-> tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', 6);
 
-SELECT round(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' <-> tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' <-> tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' <-> tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' <-> tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01', 6);
-SELECT round(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' <-> tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' <-> tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' <-> tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' <-> tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}', 6);
-SELECT round(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' <-> tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' <-> tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' <-> tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' <-> tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]', 6);
-SELECT round(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' <-> tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 6);
-SELECT round(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' <-> tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 6);
-SELECT round(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' <-> tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 6);
-SELECT round(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' <-> tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 6);
+SELECT round(tgeogpoint 'Point(-45 0 100)@2000-01-01' <-> tgeogpoint 'Point(0 -45 100)@2000-01-01', 6);
+SELECT round(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' <-> tgeogpoint 'Point(0 -45 100)@2000-01-01', 6);
+SELECT round(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' <-> tgeogpoint 'Point(0 -45 100)@2000-01-01', 6);
+SELECT round(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' <-> tgeogpoint 'Point(0 -45 100)@2000-01-01', 6);
+SELECT round(tgeogpoint 'Point(-45 0 100)@2000-01-01' <-> tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}', 6);
+SELECT round(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' <-> tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}', 6);
+SELECT round(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' <-> tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}', 6);
+SELECT round(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' <-> tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}', 6);
+SELECT round(tgeogpoint 'Point(-45 0 100)@2000-01-01' <-> tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]', 6);
+SELECT round(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' <-> tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]', 6);
+SELECT round(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' <-> tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]', 6);
+SELECT round(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' <-> tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]', 6);
+SELECT round(tgeogpoint 'Point(-45 0 100)@2000-01-01' <-> tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', 6);
+SELECT round(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' <-> tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', 6);
+SELECT round(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' <-> tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', 6);
+SELECT round(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' <-> tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', 6);
 
 -------------------------------------------------------------------------------
 
@@ -213,18 +213,18 @@ SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Step;{[Point(1 1)@2000-0
 
 SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Linestring(1 1,3 3)'));
 
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Linestring(0 0,3 3)'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geography 'Linestring(0 0,3 3)'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geography 'Linestring(0 0,3 3)'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geography 'Linestring(0 0,3 3)'),6));
-SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geography 'Linestring(0 0,3 3)'));
-SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geography 'Linestring(0 0,3 3)'));
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Linestring empty'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geography 'Linestring empty'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geography 'Linestring empty'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geography 'Linestring empty'),6));
-SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geography 'Linestring empty'));
-SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geography 'Linestring empty'));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring(0 0,3 3)'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring(0 0,3 3)'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,3 3)'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,3 3)'),6));
+SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,3 3)'));
+SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,3 3)'));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring empty'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring empty'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring empty'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring empty'),6));
+SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring empty'));
+SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Step;{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring empty'));
 
 SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeompoint 'Point(1 1)@2000-01-01'));
 SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
@@ -236,15 +236,15 @@ SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeompoint '{P
 SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
 SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 
-SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
-SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
-SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
-SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(-45 0)@2000-01-01'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]'));
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'));
 
-SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
-SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
-SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
-SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
+SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint 'Point(-45 0)@2000-01-01'));
+SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}'));
+SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]'));
+SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'));
 
 SELECT asText(NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-01'));
 SELECT asText(NearestApproachInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(2 2)@2000-01-01'));
@@ -283,39 +283,39 @@ SELECT asText(NearestApproachInstant(tgeompoint '{Point(1 1 1)@2000-01-01, Point
 SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
 SELECT asText(NearestApproachInstant(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
 
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(2.5 2.5)@2000-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(2.5 2.5)@2000-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint 'Point(2.5 2.5)@2000-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(2.5 2.5)@2000-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint 'Point(0 -45)@2000-01-01'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint 'Point(0 -45)@2000-01-01'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint 'Point(0 -45)@2000-01-01'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint 'Point(0 -45)@2000-01-01'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'),6));
 
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'),6));
-SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint 'Point(0 -45 100)@2000-01-01'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint 'Point(0 -45 100)@2000-01-01'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint 'Point(0 -45 100)@2000-01-01'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint 'Point(0 -45 100)@2000-01-01'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}'),6));
+SELECT asText(round(NearestApproachInstant(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}'),6));
 
 /* Errors */
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
@@ -355,25 +355,25 @@ SELECT round(NearestApproachDistance(tgeompoint '{[Point(1 1 1)@2000-01-01, Poin
 SELECT round(NearestApproachDistance(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring Z empty')::numeric, 6);
 SELECT round(NearestApproachDistance(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring Z empty')::numeric, 6);
 
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Linestring(0 0,3 3)')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geography 'Linestring(0 0,3 3)')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geography 'Linestring(0 0,3 3)')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,3 3)')::numeric, 6);
 
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Linestring empty')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geography 'Linestring empty')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geography 'Linestring empty')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geography 'Linestring empty')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring empty')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring empty')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring empty')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring empty')::numeric, 6);
 
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0 100)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
 
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', geography 'Linestring Z empty')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', geography 'Linestring Z empty')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', geography 'Linestring Z empty')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', geography 'Linestring Z empty')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0 100)@2000-01-01', geography 'Linestring Z empty')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', geography 'Linestring Z empty')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', geography 'Linestring Z empty')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', geography 'Linestring Z empty')::numeric, 6);
 
 SELECT round(NearestApproachDistance(geometry 'Linestring(0 0,3 3)', tgeompoint 'Point(1 1)@2000-01-01')::numeric, 6);
 SELECT round(NearestApproachDistance(geometry 'Linestring(0 0,3 3)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}')::numeric, 6);
@@ -395,25 +395,25 @@ SELECT round(NearestApproachDistance(geometry 'Linestring Z empty', tgeompoint '
 SELECT round(NearestApproachDistance(geometry 'Linestring Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]')::numeric, 6);
 SELECT round(NearestApproachDistance(geometry 'Linestring Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}')::numeric, 6);
 
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(1.5 1.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(-45 0)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
 
-SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeogpoint 'Point(-45 0)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring empty', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
 
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(-45 0 100)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
 
-SELECT round(NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint 'Point(-45 0 100)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
 
 SELECT round(NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-01')::numeric, 6);
 SELECT round(NearestApproachDistance(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(2 2)@2000-01-01')::numeric, 6);
@@ -449,39 +449,39 @@ SELECT round(NearestApproachDistance(tgeompoint '{Point(1 1 1)@2000-01-01, Point
 SELECT round(NearestApproachDistance(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}')::numeric, 6);
 SELECT round(NearestApproachDistance(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}')::numeric, 6);
 
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint 'Point(2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint 'Point(0 -45)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint 'Point(0 -45)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint 'Point(0 -45)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint 'Point(0 -45)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
 
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'::numeric, 6));
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint 'Point(0 -45 100)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint 'Point(0 -45 100)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint 'Point(0 -45 100)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint 'Point(0 -45 100)@2000-01-01')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]'::numeric, 6));
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
+SELECT round(NearestApproachDistance(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
 
 SELECT round((stbox 'STBOX XT(((0,0),(1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX XT(((2,2),(2,3)),[2000-01-01,2000-01-02])')::numeric, 6);
 SELECT round((stbox 'STBOX XT(((0,0),(1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX XT(((2,2),(3,3)),[2000-01-03,2000-01-04])')::numeric, 6);
@@ -533,25 +533,25 @@ SELECT round((tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 SELECT round((tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |=| geometry 'Linestring Z empty')::numeric, 6);
 SELECT round((tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |=| geometry 'Linestring Z empty')::numeric, 6);
 
-SELECT round((tgeogpoint 'Point(1.5 1.5)@2000-01-01' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0)@2000-01-01' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' |=| geography 'Linestring(0 0,3 3)')::numeric, 6);
 
-SELECT round((tgeogpoint 'Point(1.5 1.5)@2000-01-01' |=| geography 'Linestring empty')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' |=| geography 'Linestring empty')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' |=| geography 'Linestring empty')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' |=| geography 'Linestring empty')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0)@2000-01-01' |=| geography 'Linestring empty')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' |=| geography 'Linestring empty')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' |=| geography 'Linestring empty')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' |=| geography 'Linestring empty')::numeric, 6);
 
-SELECT round((tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0 100)@2000-01-01' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' |=| geography 'Linestring(0 0 0,3 3 3)')::numeric, 6);
 
-SELECT round((tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' |=| geography 'Linestring Z empty')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' |=| geography 'Linestring Z empty')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' |=| geography 'Linestring Z empty')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' |=| geography 'Linestring Z empty')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0 100)@2000-01-01' |=| geography 'Linestring Z empty')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' |=| geography 'Linestring Z empty')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' |=| geography 'Linestring Z empty')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' |=| geography 'Linestring Z empty')::numeric, 6);
 
 SELECT round((geometry 'Linestring(0 0,3 3)' |=| tgeompoint 'Point(1 1)@2000-01-01')::numeric, 6);
 SELECT round((geometry 'Linestring(0 0,3 3)' |=| tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}')::numeric, 6);
@@ -573,25 +573,25 @@ SELECT round((geometry 'Linestring Z empty' |=| tgeompoint '{Point(1 1 1)@2000-0
 SELECT round((geometry 'Linestring Z empty' |=| tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]')::numeric, 6);
 SELECT round((geometry 'Linestring Z empty' |=| tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}')::numeric, 6);
 
-SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint 'Point(1.5 1.5)@2000-01-01')::numeric, 6);
-SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}')::numeric, 6);
-SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]')::numeric, 6);
-SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint 'Point(-45 0)@2000-01-01')::numeric, 6);
+SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}')::numeric, 6);
+SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]')::numeric, 6);
+SELECT round((geography 'Linestring(0 0,3 3)' |=| tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
 
-SELECT round((geography 'Linestring empty' |=| tgeogpoint 'Point(1.5 1.5)@2000-01-01')::numeric, 6);
-SELECT round((geography 'Linestring empty' |=| tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}')::numeric, 6);
-SELECT round((geography 'Linestring empty' |=| tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]')::numeric, 6);
-SELECT round((geography 'Linestring empty' |=| tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round((geography 'Linestring empty' |=| tgeogpoint 'Point(-45 0)@2000-01-01')::numeric, 6);
+SELECT round((geography 'Linestring empty' |=| tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}')::numeric, 6);
+SELECT round((geography 'Linestring empty' |=| tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]')::numeric, 6);
+SELECT round((geography 'Linestring empty' |=| tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
 
-SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01')::numeric, 6);
-SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}')::numeric, 6);
-SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]')::numeric, 6);
-SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint 'Point(-45 0 100)@2000-01-01')::numeric, 6);
+SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}')::numeric, 6);
+SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]')::numeric, 6);
+SELECT round((geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
 
-SELECT round((geography 'Linestring Z empty' |=| tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01')::numeric, 6);
-SELECT round((geography 'Linestring Z empty' |=| tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}')::numeric, 6);
-SELECT round((geography 'Linestring Z empty' |=| tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]')::numeric, 6);
-SELECT round((geography 'Linestring Z empty' |=| tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round((geography 'Linestring Z empty' |=| tgeogpoint 'Point(-45 0 100)@2000-01-01')::numeric, 6);
+SELECT round((geography 'Linestring Z empty' |=| tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}')::numeric, 6);
+SELECT round((geography 'Linestring Z empty' |=| tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]')::numeric, 6);
+SELECT round((geography 'Linestring Z empty' |=| tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
 
 SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| tgeompoint 'Point(2 2)@2000-01-01')::numeric, 6);
 SELECT round((tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' |=| tgeompoint 'Point(2 2)@2000-01-01')::numeric, 6);
@@ -627,39 +627,39 @@ SELECT round((tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 SELECT round((tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |=| tgeompoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}')::numeric, 6);
 SELECT round((tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |=| tgeompoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}')::numeric, 6);
 
-SELECT round((tgeogpoint 'Point(1.5 1.5)@2000-01-01' |=| tgeogpoint 'Point(2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' |=| tgeogpoint 'Point(2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' |=| tgeogpoint 'Point(2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' |=| tgeogpoint 'Point(2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round((tgeogpoint 'Point(1.5 1.5)@2000-01-01' |=| tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' |=| tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' |=| tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' |=| tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round((tgeogpoint 'Point(1.5 1.5)@2000-01-01' |=| tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' |=| tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' |=| tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' |=| tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round((tgeogpoint 'Point(1.5 1.5)@2000-01-01' |=| tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' |=| tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' |=| tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' |=| tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0)@2000-01-01' |=| tgeogpoint 'Point(0 -45)@2000-01-01')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' |=| tgeogpoint 'Point(0 -45)@2000-01-01')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' |=| tgeogpoint 'Point(0 -45)@2000-01-01')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' |=| tgeogpoint 'Point(0 -45)@2000-01-01')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0)@2000-01-01' |=| tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' |=| tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' |=| tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' |=| tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0)@2000-01-01' |=| tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' |=| tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' |=| tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' |=| tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0)@2000-01-01' |=| tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}' |=| tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]' |=| tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}' |=| tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}')::numeric, 6);
 
-SELECT round((tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' |=| tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' |=| tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' |=| tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' |=| tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01')::numeric, 6);
-SELECT round((tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' |=| tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' |=| tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' |=| tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' |=| tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}')::numeric, 6);
-SELECT round((tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' |=| tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' |=| tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' |=| tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' |=| tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]')::numeric, 6);
-SELECT round((tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01' |=| tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round((tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}' |=| tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round((tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]' |=| tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
-SELECT round((tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' |=| tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0 100)@2000-01-01' |=| tgeogpoint 'Point(0 -45 100)@2000-01-01')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' |=| tgeogpoint 'Point(0 -45 100)@2000-01-01')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' |=| tgeogpoint 'Point(0 -45 100)@2000-01-01')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' |=| tgeogpoint 'Point(0 -45 100)@2000-01-01')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0 100)@2000-01-01' |=| tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' |=| tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' |=| tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' |=| tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0 100)@2000-01-01' |=| tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' |=| tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' |=| tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' |=| tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]')::numeric, 6);
+SELECT round((tgeogpoint 'Point(-45 0 100)@2000-01-01' |=| tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
+SELECT round((tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}' |=| tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
+SELECT round((tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]' |=| tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
+SELECT round((tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}' |=| tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}')::numeric, 6);
 
 /* Errors */
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
@@ -691,15 +691,15 @@ SELECT ST_AsTexT(shortestLine(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)
 SELECT ST_AsTexT(shortestLine(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring Z empty'));
 SELECT ST_AsTexT(shortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring Z empty'));
 
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Linestring(0 0,3 3)'), 1);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geography 'Linestring(0 0,3 3)'), 1);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geography 'Linestring(0 0,3 3)'), 1);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geography 'Linestring(0 0,3 3)'), 1);
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring(0 0,3 3)'), 1);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring(0 0,3 3)'), 1);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring(0 0,3 3)'), 1);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring(0 0,3 3)'), 1);
 
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Linestring empty'));
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geography 'Linestring empty'));
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geography 'Linestring empty'));
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geography 'Linestring empty'));
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0)@2000-01-01', geography 'Linestring empty'));
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', geography 'Linestring empty'));
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', geography 'Linestring empty'));
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', geography 'Linestring empty'));
 
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring(0 0,3 3)', tgeompoint 'Point(1 1)@2000-01-01'));
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring(0 0,3 3)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
@@ -721,15 +721,15 @@ SELECT ST_AsTexT(shortestLine(geometry 'Linestring Z empty', tgeompoint '{Point(
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'));
 SELECT ST_AsTexT(shortestLine(geometry 'Linestring Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
 
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(1.5 1.5)@2000-01-01'), 1);
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'), 1);
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 1);
-SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 1);
+SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(-45 0)@2000-01-01'), 1);
+SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}'), 1);
+SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]'), 1);
+SELECT ST_AsTexT(shortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'), 1);
 
-SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01'), 1);
-SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'), 1);
-SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 1);
-SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 1);
+SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeogpoint 'Point(-45 0)@2000-01-01'), 1);
+SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}'), 1);
+SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]'), 1);
+SELECT ST_AsTexT(shortestLine(geography 'Linestring empty', tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'), 1);
 
 SELECT ST_AsTexT(shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-01'));
 SELECT ST_AsTexT(shortestLine(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(2 2)@2000-01-01'));
@@ -765,39 +765,39 @@ SELECT ST_AsTexT(shortestLine(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)
 SELECT ST_AsTexT(shortestLine(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
 SELECT ST_AsTexT(shortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
 
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(2.5 2.5)@2000-01-01'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(2.5 2.5)@2000-01-01'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint 'Point(2.5 2.5)@2000-01-01'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(2.5 2.5)@2000-01-01'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint 'Point(0 -45)@2000-01-01'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint 'Point(0 -45)@2000-01-01'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint 'Point(0 -45)@2000-01-01'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint 'Point(0 -45)@2000-01-01'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint '{Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint '[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03]'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0)@2000-01-01', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03}', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03]', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0)@2000-01-01, Point(45 0)@2000-01-02, Point(-45 0)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}', tgeogpoint '{[Point(0 -45)@2000-01-01, Point(0 45)@2000-01-02, Point(0 -45)@2000-01-03],[Point(45 45)@2000-01-04, Point(45 45)@2000-01-05]}'), 6);
 
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
-SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint 'Point(0 -45 100)@2000-01-01'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint 'Point(0 -45 100)@2000-01-01'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint 'Point(0 -45 100)@2000-01-01'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint 'Point(0 -45 100)@2000-01-01'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint '{Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint '[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03]'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint 'Point(-45 0 100)@2000-01-01', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03}', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03]', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}'), 6);
+SELECT ST_AsTexT(shortestLine(tgeogpoint '{[Point(-45 0 100)@2000-01-01, Point(45 0 100)@2000-01-02, Point(-45 0 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}', tgeogpoint '{[Point(0 -45 100)@2000-01-01, Point(0 45 100)@2000-01-02, Point(0 -45 100)@2000-01-03],Point(45 45 100)@2000-01-04, Point(45 45 100)@2000-01-05}'), 6);
 
 SELECT ST_AsTexT(shortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02], (Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(3 3)@2000-01-01, Point(3 3)@2000-01-02], (Point(2 2)@2000-01-04, Point(3 3)@2000-01-05]}'));
 SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Step;[Point(0 0)@2000-01-01, Point(2 0)@2000-01-02]','[Point(1 1)@2000-01-01,Point(1 1)@2000-01-02]'));
@@ -816,7 +816,7 @@ SELECT shortestLine(geometry 'SRID=5676;Linestring(1 1,2 2)', tgeompoint 'Point(
 SELECT shortestLine(geometry 'Linestring(1 1 1,2 2 2)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
-SELECT shortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
-SELECT shortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)');
+SELECT shortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(-45 0 100)@2000-01-01');
+SELECT shortestLine(tgeogpoint 'Point(-45 0 100)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)');
 
 --------------------------------------------------------
