@@ -649,6 +649,21 @@ tdiscseq_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
 }
 
 /**
+ * @brief Construct a temporal discrete sequence from a base value and a
+ * timestamp set.
+ */
+TSequence *
+tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
+{
+  assert(seq);
+  TSequence *result = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
+    tdiscseq_from_base_temp(value, temptype, seq) :
+    tsequence_from_base_period(value, temptype, &seq->period,
+      temptype_continuous(temptype) ? LINEAR : STEP);
+  return result;
+}
+
+/**
  * @brief Construct a temporal sequence set from a base value and the time
  * frame of another temporal sequence set. The interpolation of the result is
  * step or linear depending on whether the base type is continous or not.
@@ -689,12 +704,8 @@ temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp)
     result = (Temporal *) tinstant_make(value, temptype,
       ((TInstant *) temp)->t);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tdiscseq_from_base_temp(value, temptype,
-        (TSequence *) temp) :
-      (Temporal *) tsequence_from_base_period(value, temptype,
-        &((TSequence *) temp)->period,
-        temptype_continuous(temptype) ? LINEAR : STEP);
+    result = (Temporal *) tsequence_from_base_temp(value, temptype,
+      (TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_from_base_temp(value, temptype,
       (TSequenceSet *) temp);

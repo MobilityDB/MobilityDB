@@ -416,6 +416,21 @@ tnumberseq_linear_abs(const TSequence *seq)
  * @brief Get the absolute value of a temporal number
  * @sqlfunc abs()
  */
+TSequence *
+tnumberseq_abs(const TSequence *seq)
+{
+  assert(seq);
+  assert(tnumber_type(seq->temptype));
+  TSequence *result = MEOS_FLAGS_GET_LINEAR(seq->flags) ?
+    tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_math
+ * @brief Get the absolute value of a temporal number
+ * @sqlfunc abs()
+ */
 TSequenceSet *
 tnumberseqset_abs(const TSequenceSet *ss)
 {
@@ -446,9 +461,7 @@ tnumber_abs(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnumberinst_abs((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_LINEAR(temp->flags) ?
-      (Temporal *) tnumberseq_linear_abs((TSequence *) temp) :
-      (Temporal *) tnumberseq_iter_abs((TSequence *) temp);
+    result = (Temporal *) tnumberseq_abs((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tnumberseqset_abs((TSequenceSet *) temp);
   return result;
