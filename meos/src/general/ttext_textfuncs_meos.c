@@ -52,8 +52,10 @@ Temporal *
 textcat_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
+
   Temporal *result = textfunc_ttext_text(temp, PointerGetDatum(txt),
     &datum_textcat, INVERT);
   return result;
@@ -68,8 +70,10 @@ Temporal *
 textcat_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
+
   Temporal *result = textfunc_ttext_text(temp, PointerGetDatum(txt),
     &datum_textcat, INVERT_NO);
   return result;
@@ -84,8 +88,10 @@ Temporal *
 textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
+
   Temporal *result = textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
   return result;
 }
@@ -101,8 +107,10 @@ Temporal *
 ttext_upper(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return NULL;
+
   Temporal *result = textfunc_ttext(temp, &datum_upper);
   return result;
 }
@@ -116,8 +124,10 @@ Temporal *
 ttext_lower(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return NULL;
+
   Temporal *result = textfunc_ttext(temp, &datum_lower);
   return result;
 }

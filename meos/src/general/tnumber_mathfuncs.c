@@ -235,13 +235,19 @@ arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
     if (invert)
     {
       if (temporal_ever_eq(temp, Float8GetDatum(0.0)))
-        elog(ERROR, "Division by zero");
+      {
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
+        return NULL;
+      }
     }
     else
     {
       double d = datum_double(value, basetype);
       if (fabs(d) < MEOS_EPSILON)
-        elog(ERROR, "Division by zero");
+      {
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
+        return NULL;
+      }
     }
   }
 
@@ -290,7 +296,10 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
     if (projtemp2 == NULL)
       return NULL;
     if (temporal_ever_eq(projtemp2, Float8GetDatum(0.0)))
-      elog(ERROR, "Division by zero");
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
+      return NULL;
+    }
   }
 
   LiftedFunctionInfo lfinfo;
@@ -454,8 +463,10 @@ tnumberseqset_abs(const TSequenceSet *ss)
 Temporal *
 tnumber_abs(const Temporal *temp)
 {
-  ensure_not_null((void *) temp);
-  ensure_tnumber_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -561,8 +572,10 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
 Temporal *
 tnumber_delta_value(const Temporal *temp)
 {
-  ensure_not_null((void *) temp);
-  ensure_tnumber_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -674,8 +687,10 @@ tnumberseqset_angular_difference(const TSequenceSet *ss)
 Temporal *
 tnumber_angular_difference(const Temporal *temp)
 {
-  ensure_not_null((void *) temp);
-  ensure_tnumber_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -700,9 +715,10 @@ Temporal *
 tfloat_round(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
-  ensure_non_negative(maxdd);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT) ||
+      ! ensure_non_negative(maxdd))
+    return NULL;
 
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -728,8 +744,11 @@ tfloat_round(const Temporal *temp, int maxdd)
 Temporal *
 tfloat_degrees(const Temporal *temp, bool normalize)
 {
-  ensure_not_null((void *) temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
+
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -753,8 +772,11 @@ tfloat_degrees(const Temporal *temp, bool normalize)
 Temporal *
 tfloat_radians(const Temporal *temp)
 {
-  ensure_not_null((void *) temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
+
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -849,8 +871,11 @@ tfloatseqset_derivative(const TSequenceSet *ss)
 Temporal *
 tfloat_derivative(const Temporal *temp)
 {
-  ensure_not_null((void *) temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
+
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))

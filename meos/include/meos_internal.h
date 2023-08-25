@@ -755,8 +755,6 @@ extern bool tinstant_always_lt(const TInstant *inst, Datum value);
 extern bool tinstant_ever_eq(const TInstant *inst, Datum value);
 extern bool tinstant_ever_le(const TInstant *inst, Datum value);
 extern bool tinstant_ever_lt(const TInstant *inst, Datum value);
-extern bool tpoint_always_eq(const Temporal *temp, Datum value);
-extern bool tpoint_ever_eq(const Temporal *temp, Datum value);
 extern bool tpointinst_always_eq(const TInstant *inst, Datum value);
 extern bool tpointinst_ever_eq(const TInstant *inst, Datum value);
 extern bool tpointseq_always_eq(const TSequence *seq, Datum value);

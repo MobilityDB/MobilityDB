@@ -152,30 +152,21 @@ store_fcinfo(FunctionCallInfo fcinfo)
  * @brief Ensure that the array is not empty
  * @note Used for the constructor functions
  */
-void
+bool
 ensure_non_empty_array(ArrayType *array)
 {
   if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
+  {
     ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
       errmsg("The input array cannot be empty")));
-  return;
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************
  * Typmod functions
  *****************************************************************************/
-
-/**
- * @brief Array storing the string representation of the concrete subtypes of
- * temporal types
- */
-static char *tempsubtypeName[] =
-{
-  "AnyDuration",
-  "Instant",
-  "Sequence",
-  "SequenceSet"
-};
 
 /**
  * @brief Array storing the mapping between the string representation of the
@@ -188,16 +179,6 @@ struct tempsubtype_struct tempsubtype_struct_array[] =
   {"SEQUENCE", TSEQUENCE},
   {"SEQUENCESET", TSEQUENCESET},
 };
-
-/**
- * @brief Return the string representation of the subtype of the temporal type
- * corresponding to the enum value
- */
-const char *
-tempsubtype_name(int16 subtype)
-{
-  return tempsubtypeName[subtype];
-}
 
 /**
  * @brief Return the enum value corresponding to the string representation
@@ -984,7 +965,7 @@ PG_FUNCTION_INFO_V1(Tinstant_get_value);
 Datum
 Tinstant_get_value(PG_FUNCTION_ARGS)
 {
-   TInstant *inst = PG_GETARG_TINSTANT_P(0);
+  TInstant *inst = PG_GETARG_TINSTANT_P(0);
   if (inst->subtype != TINSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal value must be of subtype instant")));

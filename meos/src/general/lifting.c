@@ -111,8 +111,11 @@
  *     resvalue = (*lfinfo->func)(temporalinst_value(inst), lfinfo->param[0]);
  *     resvalue = (*lfinfo->func)(temporalinst_value(inst), lfinfo->param[0]);
  *   else
- *     elog(ERROR, "Number of function parameters not supported: %u",
- *       lfinfo->numparam);
+ *   {
+ *     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+ *       "Number of function parameters not supported: %u", lfinfo->numparam);
+ *     return NULL;
+ *   }
  *   TInstant *result = tinstant_make(resvalue, lfinfo->restype, inst->t);
  *   DATUM_FREE(resvalue, temptype_basetype(lfinfo->restype));
  *   return result;

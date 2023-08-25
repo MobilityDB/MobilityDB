@@ -289,7 +289,7 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3],
 int main(void)
 {
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  meos_initialize(NULL, NULL);
 
   /* Read communes file */
   read_communes();

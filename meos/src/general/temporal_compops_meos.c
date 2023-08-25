@@ -53,8 +53,9 @@ Temporal *
 teq_bool_tbool(bool b, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_BOOL);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_BOOL))
+    return NULL;
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_eq,
     INVERT);
 }
@@ -68,8 +69,9 @@ Temporal *
 teq_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_eq,
     INVERT);
 }
@@ -83,8 +85,9 @@ Temporal *
 teq_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_eq,
     INVERT);
 }
@@ -98,8 +101,9 @@ Temporal *
 teq_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_eq,
     INVERT);
 }
@@ -113,8 +117,9 @@ Temporal *
 teq_tbool_bool(const Temporal *temp, bool b)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_BOOL);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_BOOL))
+    return NULL;
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_eq,
     INVERT_NO);
 }
@@ -128,8 +133,9 @@ Temporal *
 teq_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_eq,
     INVERT_NO);
 }
@@ -143,8 +149,9 @@ Temporal *
 teq_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_eq,
     INVERT_NO);
 }
@@ -158,9 +165,9 @@ Temporal *
 teq_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  assert(temp); assert(txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_eq,
     INVERT_NO);
 }
@@ -174,8 +181,9 @@ Temporal *
 teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
 }
 
@@ -192,8 +200,9 @@ Temporal *
 tne_bool_tbool(bool b, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_BOOL);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_BOOL))
+    return NULL;
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_ne,
     INVERT);
 }
@@ -207,8 +216,9 @@ Temporal *
 tne_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ne,
     INVERT);
 }
@@ -222,8 +232,9 @@ Temporal *
 tne_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ne,
     INVERT);
 }
@@ -237,8 +248,9 @@ Temporal *
 tne_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ne,
     INVERT);
 }
@@ -252,8 +264,9 @@ Temporal *
 tne_tbool_bool(const Temporal *temp, bool b)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_BOOL);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_BOOL))
+    return NULL;
   return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_ne,
     INVERT_NO);
 }
@@ -267,8 +280,9 @@ Temporal *
 tne_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ne,
     INVERT_NO);
 }
@@ -282,8 +296,9 @@ Temporal *
 tne_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ne,
     INVERT_NO);
 }
@@ -297,8 +312,9 @@ Temporal *
 tne_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ne,
     INVERT_NO);
 }
@@ -313,8 +329,9 @@ Temporal *
 tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
 }
 
@@ -331,8 +348,9 @@ Temporal *
 tlt_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_lt,
     INVERT);
 }
@@ -346,8 +364,9 @@ Temporal *
 tlt_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_lt,
     INVERT);
 }
@@ -361,8 +380,9 @@ Temporal *
 tlt_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_lt,
     INVERT);
 }
@@ -376,8 +396,9 @@ Temporal *
 tlt_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_lt,
     INVERT_NO);
 }
@@ -391,8 +412,9 @@ Temporal *
 tlt_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_lt,
     INVERT_NO);
 }
@@ -406,8 +428,9 @@ Temporal *
 tlt_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_lt,
     INVERT_NO);
 }
@@ -421,8 +444,9 @@ Temporal *
 tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
 }
 
@@ -440,8 +464,9 @@ Temporal *
 tle_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_le,
     INVERT);
 }
@@ -456,8 +481,9 @@ Temporal *
 tle_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_le,
     INVERT);
 }
@@ -472,8 +498,9 @@ Temporal *
 tle_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_le,
     INVERT);
 }
@@ -488,8 +515,9 @@ Temporal *
 tle_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_le,
     INVERT_NO);
 }
@@ -504,8 +532,9 @@ Temporal *
 tle_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_le,
     INVERT_NO);
 }
@@ -520,8 +549,9 @@ Temporal *
 tle_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_le,
     INVERT_NO);
 }
@@ -535,8 +565,9 @@ Temporal *
 tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
 }
 
@@ -553,8 +584,9 @@ Temporal *
 tgt_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_gt,
     INVERT);
 }
@@ -568,8 +600,9 @@ Temporal *
 tgt_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_gt,
     INVERT);
 }
@@ -583,8 +616,9 @@ Temporal *
 tgt_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_gt,
     INVERT);
 }
@@ -598,8 +632,9 @@ Temporal *
 tgt_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_gt,
     INVERT_NO);
 }
@@ -613,8 +648,9 @@ Temporal *
 tgt_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_gt,
     INVERT_NO);
 }
@@ -628,8 +664,9 @@ Temporal *
 tgt_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_gt,
     INVERT_NO);
 }
@@ -643,8 +680,9 @@ Temporal *
 tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
 }
 
@@ -662,8 +700,9 @@ Temporal *
 tge_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ge,
     INVERT);
 }
@@ -678,8 +717,9 @@ Temporal *
 tge_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ge,
     INVERT);
 }
@@ -694,8 +734,9 @@ Temporal *
 tge_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ge,
     INVERT);
 }
@@ -710,8 +751,9 @@ Temporal *
 tge_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_INT4);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_INT4))
+    return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ge,
     INVERT_NO);
 }
@@ -726,8 +768,9 @@ Temporal *
 tge_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_same_temporal_basetype(temp, T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ge,
     INVERT_NO);
 }
@@ -742,8 +785,9 @@ Temporal *
 tge_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) txt);
-  ensure_same_temporal_basetype(temp, T_TEXT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_temporal_basetype(temp, T_TEXT))
+    return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ge,
     INVERT_NO);
 }
@@ -757,8 +801,9 @@ Temporal *
 tge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
 }
 

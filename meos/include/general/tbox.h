@@ -52,9 +52,9 @@
 
 /* Parameter tests */
 
-extern void ensure_has_X_tbox(const TBox *box);
-extern void ensure_has_T_tbox(const TBox *box);
-extern void ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2);
+extern bool ensure_has_X_tbox(const TBox *box);
+extern bool ensure_has_T_tbox(const TBox *box);
+extern bool ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2);
 
 /* Casting */
 

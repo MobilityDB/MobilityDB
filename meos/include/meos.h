@@ -281,7 +281,14 @@ typedef struct
  * Initialization of the MEOS library
  *****************************************************************************/
 
-extern void meos_initialize(const char *tz_str);
+/* Definition of error handler function */
+typedef void (*error_handler_fn)(int, int, char *);
+
+extern void meos_initialize_timezone(const char *name);
+extern void meos_initialize_error_handler(error_handler_fn err_handler);
+extern void meos_finalize_timezone(void);
+
+extern void meos_initialize(const char *tz_str, error_handler_fn err_handler);
 extern void meos_finalize(void);
 
 /*****************************************************************************
@@ -321,19 +328,19 @@ extern DateADT pg_to_date(text *date_txt, text *fmt);
 
 extern GSERIALIZED *geography_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geometry_from_hexewkb(const char *wkt);
-extern bytea *gserialized_as_ewkb(const GSERIALIZED *geom, char *type);
-extern char *gserialized_as_ewkt(const GSERIALIZED *geom, int precision);
-extern char *gserialized_as_geojson(const GSERIALIZED *geom, int option, int precision, char *srs);
-extern char *gserialized_as_hexewkb(const GSERIALIZED *geom, const char *type);
-extern char *gserialized_as_text(const GSERIALIZED *geom, int precision);
+extern bytea *gserialized_as_ewkb(const GSERIALIZED *gs, char *type);
+extern char *gserialized_as_ewkt(const GSERIALIZED *gs, int precision);
+extern char *gserialized_as_geojson(const GSERIALIZED *gs, int option, int precision, char *srs);
+extern char *gserialized_as_hexewkb(const GSERIALIZED *gs, const char *type);
+extern char *gserialized_as_text(const GSERIALIZED *gs, int precision);
 extern GSERIALIZED *gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid);
 extern GSERIALIZED *gserialized_from_geojson(const char *geojson);
+extern char *gserialized_out(const GSERIALIZED *gs);
 extern GSERIALIZED *geometry_from_text(char *wkt, int srid);
 extern GSERIALIZED *geography_from_text(char *wkt, int srid);
 extern GSERIALIZED *pgis_geography_in(char *input, int32 geom_typmod);
 extern GSERIALIZED *pgis_geometry_in(char *input, int32 geom_typmod);
-extern char *gserialized_out(const GSERIALIZED *geom);
-extern bool pgis_gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2);
+extern bool pgis_gserialized_same(const GSERIALIZED *gs1, const GSERIALIZED *geom2);
 
 /*****************************************************************************
  * Functions for set and span types
@@ -418,8 +425,7 @@ extern SpanSet *bigint_to_bigintspanset(int i);
 extern Set *float_to_floatset(double d);
 extern Span *float_to_floatspan(double d);
 extern SpanSet *float_to_floatspanset(double d);
-extern Set *geog_to_geogset(GSERIALIZED *gs);
-extern Set *geom_to_geomset(GSERIALIZED *gs);
+extern Set *geo_to_geoset(GSERIALIZED *gs);
 extern Set *int_to_intset(int i);
 extern Span *int_to_intspan(int i);
 extern SpanSet *int_to_intspanset(int i);
@@ -992,21 +998,16 @@ extern TInstant *tfloatinst_make(double d, TimestampTz t);
 extern TSequence *tfloatseq_from_base_period(double d, const Span *p, interpType interp);
 extern TSequence *tfloatseq_from_base_timestampset(double d, const Set *ts);
 extern TSequenceSet *tfloatseqset_from_base_periodset(double d, const SpanSet *ps, interpType interp);
-extern Temporal *tgeogpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp);
-extern TInstant *tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t);
-extern TSequence *tgeogpointseq_from_base_period(const GSERIALIZED *gs, const Span *p, interpType interp);
-extern TSequence *tgeogpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *ts);
-extern TSequenceSet *tgeogpointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ps, interpType interp);
-extern Temporal *tgeompoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp);
-extern TInstant *tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t);
-extern TSequence *tgeompointseq_from_base_period(const GSERIALIZED *gs, const Span *p, interpType interp);
-extern TSequence *tgeompointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *ts);
-extern TSequenceSet *tgeompointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ps, interpType interp);
 extern Temporal *tint_from_base_temp(int i, const Temporal *temp);
 extern TInstant *tintinst_make(int i, TimestampTz t);
 extern TSequence *tintseq_from_base_period(int i, const Span *p);
 extern TSequence *tintseq_from_base_timestampset(int i, const Set *ts);
 extern TSequenceSet *tintseqset_from_base_periodset(int i, const SpanSet *ps);
+extern Temporal *tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp);
+extern TInstant *tpointinst_make(const GSERIALIZED *gs, TimestampTz t);
+extern TSequence *tpointseq_from_base_period(const GSERIALIZED *gs, const Span *p, interpType interp);
+extern TSequence *tpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *ts);
+extern TSequenceSet *tpointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ps, interpType interp);
 extern TSequence *tsequence_make(const TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *tsequence_make_exp(const TInstant **instants, int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tsequenceset_make(const TSequence **sequences, int count, bool normalize);
@@ -1244,16 +1245,14 @@ extern bool tfloat_always_lt(const Temporal *temp, double d);
 extern bool tfloat_ever_eq(const Temporal *temp, double d);
 extern bool tfloat_ever_le(const Temporal *temp, double d);
 extern bool tfloat_ever_lt(const Temporal *temp, double d);
-extern bool tgeogpoint_always_eq(const Temporal *temp, GSERIALIZED *gs);;
-extern bool tgeogpoint_ever_eq(const Temporal *temp, GSERIALIZED *gs);;
-extern bool tgeompoint_always_eq(const Temporal *temp, GSERIALIZED *gs);
-extern bool tgeompoint_ever_eq(const Temporal *temp, GSERIALIZED *gs);;
 extern bool tint_always_eq(const Temporal *temp, int i);
 extern bool tint_always_le(const Temporal *temp, int i);
 extern bool tint_always_lt(const Temporal *temp, int i);
 extern bool tint_ever_eq(const Temporal *temp, int i);
 extern bool tint_ever_le(const Temporal *temp, int i);
 extern bool tint_ever_lt(const Temporal *temp, int i);
+extern bool tpoint_always_eq(const Temporal *temp, const GSERIALIZED *gs);;
+extern bool tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs);;
 extern bool ttext_always_eq(const Temporal *temp, text *txt);
 extern bool ttext_always_le(const Temporal *temp, text *txt);
 extern bool ttext_always_lt(const Temporal *temp, text *txt);

@@ -106,9 +106,6 @@ extern double gserialized_geog_distance(const GSERIALIZED *g1,
 
 /* Functions adapted from geography_inout.c */
 
-extern GSERIALIZED *gserialized_geog_in(char *str, int32 geog_typmod);
-extern char *gserialized_geog_out(GSERIALIZED *g);
-
 extern GSERIALIZED *gserialized_geog_from_geom(GSERIALIZED *geom);
 extern GSERIALIZED *gserialized_geom_from_geog(GSERIALIZED *g_ser);
 

@@ -244,8 +244,9 @@ STBox *
 tpoint_stboxes(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) count);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   STBox *result = NULL;
   assert(temptype_subtype(temp->subtype));

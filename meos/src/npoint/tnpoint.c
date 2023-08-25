@@ -36,6 +36,7 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -223,7 +224,9 @@ tgeompoint_tnpoint(const Temporal *temp)
 {
   int32_t srid_tpoint = tpoint_srid(temp);
   int32_t srid_ways = get_srid_ways();
-  ensure_same_srid(srid_tpoint, srid_ways);
+  if (! ensure_same_srid(srid_tpoint, srid_ways))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -401,8 +404,11 @@ int64
 tnpoint_route(const Temporal *temp)
 {
   if ( temp->subtype != TINSTANT && MEOS_FLAGS_GET_DISCRETE(temp->flags) )
-    elog(ERROR, "Input must be a temporal instant or a temporal sequence with continuous interpolation");
-
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Input must be a temporal instant or a temporal sequence with continuous interpolation");
+    return INT_MAX;
+  }
   const TInstant *inst = (temp->subtype == TINSTANT) ?
     (const TInstant *) temp : TSEQUENCE_INST_N((const TSequence *) temp, 0);
   Npoint *np = DatumGetNpointP(tinstant_value(inst));

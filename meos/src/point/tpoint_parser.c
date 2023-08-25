@@ -91,7 +91,11 @@ stbox_parse(const char **str)
       srid = 4326;
   }
   else
-    elog(ERROR, "Could not parse spatiotemporal box");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse spatiotemporal box");
+    return NULL;
+  }
 
   /* Determine whether the box has X, Z, and/or T dimensions */
   if (pg_strncasecmp(*str, "ZT", 2) == 0)
@@ -120,24 +124,31 @@ stbox_parse(const char **str)
     hast = true;
   }
   else
-    elog(ERROR, "Could not parse spatiotemporal box: Missing dimension information");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse spatiotemporal box: Missing dimension information");
+    return NULL;
+  }
 
   /* Parse external opening parenthesis (if both space and time dimensions) */
   if (hast)
   {
     p_whitespace(str);
-    ensure_oparen(str, "spatiotemporal box");
+    if (! ensure_oparen(str, "spatiotemporal box"))
+      return NULL;
   }
 
   if (hasx)
   {
     /* Parse enclosing opening parenthesis */
     p_whitespace(str);
-    ensure_oparen(str, "spatiotemporal box");
+    if (! ensure_oparen(str, "spatiotemporal box"))
+      return NULL;
 
     /* Parse lower bounds */
     p_whitespace(str);
-    ensure_oparen(str, "spatiotemporal box");
+    if (! ensure_oparen(str, "spatiotemporal box"))
+      return NULL;
     /* xmin */
     xmin = double_parse(str);
     /* ymin */
@@ -154,7 +165,8 @@ stbox_parse(const char **str)
       zmin = double_parse(str);
     }
     p_whitespace(str);
-    ensure_cparen(str, "spatiotemporal box");
+    if (! ensure_cparen(str, "spatiotemporal box"))
+      return NULL;
 
     /* Parse optional comma */
     p_whitespace(str);
@@ -162,7 +174,8 @@ stbox_parse(const char **str)
 
     /* Parse upper bounds */
     p_whitespace(str);
-    ensure_oparen(str, "spatiotemporal box");
+    if (! ensure_oparen(str, "spatiotemporal box"))
+      return NULL;
     /* xmax */
     xmax = double_parse(str);
     /* ymax */
@@ -179,11 +192,13 @@ stbox_parse(const char **str)
       zmax = double_parse(str);
     }
     p_whitespace(str);
-    ensure_cparen(str, "spatiotemporal box");
+    if (! ensure_cparen(str, "spatiotemporal box"))
+      return NULL;
 
     /* Parse enclosing closing parenthesis */
     p_whitespace(str);
-    ensure_cparen(str, "spatiotemporal box");
+    if (! ensure_cparen(str, "spatiotemporal box"))
+      return NULL;
 
     if (hast)
     {
@@ -204,11 +219,13 @@ stbox_parse(const char **str)
   if (hast)
   {
     p_whitespace(str);
-    ensure_cparen(str, "spatiotemporal box");
+    if (! ensure_cparen(str, "spatiotemporal box"))
+      return NULL;
   }
 
   /* Ensure there is no more input */
-  ensure_end_input(str, true, "spatiotemporal box");
+  if (! ensure_end_input(str, true, "spatiotemporal box"))
+    return NULL;
 
   return stbox_make(hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin,
     zmax, hast ? &period : NULL);
@@ -234,9 +251,9 @@ tpointinst_parse(const char **str, meosType temptype, bool end, bool make,
   /* The next instruction will throw an exception if it fails */
   Datum geo = temporal_basetype_parse(str, basetype);
   GSERIALIZED *gs = DatumGetGserializedP(geo);
-  ensure_point_type(gs);
-  ensure_non_empty(gs);
-  ensure_has_not_M_gs(gs);
+  if (! ensure_point_type(gs) || ! ensure_non_empty(gs) ||
+      ! ensure_has_not_M_gs(gs))
+    return NULL;
   /* If one of the SRID of the temporal point and of the geometry
    * is SRID_UNKNOWN and the other not, copy the SRID */
   int geo_srid = gserialized_get_srid(gs);
@@ -247,11 +264,16 @@ tpointinst_parse(const char **str, meosType temptype, bool end, bool make,
   /* If the SRID of the temporal point and of the geometry do not match */
   else if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN &&
     *tpoint_srid != geo_srid)
-    elog(ERROR, "Geometry SRID (%d) does not match temporal type SRID (%d)",
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Geometry SRID (%d) does not match temporal type SRID (%d)",
       geo_srid, *tpoint_srid);
-  /* The next instruction will throw an exception if it fails */
+      return NULL;
+  }
+/* The next instruction will throw an exception if it fails */
   TimestampTz t = timestamp_parse(str);
-  ensure_end_input(str, end, "temporal point");
+  if (! ensure_end_input(str, end, "temporal point"))
+    return NULL;
   TInstant *result = make ?
     tinstant_make(PointerGetDatum(gs), temptype, t) : NULL;
   pfree(gs);
@@ -282,8 +304,13 @@ tpointseq_disc_parse(const char **str, meosType temptype, int *tpoint_srid)
     tpointinst_parse(str, temptype, false, false, tpoint_srid);
   }
   if (!p_cbrace(str))
-    elog(ERROR, "Could not parse temporal point value: Missing closing brace");
-  ensure_end_input(str, true, "temporal point");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse temporal point value: Missing closing brace");
+    return NULL;
+  }
+  if (! ensure_end_input(str, true, "temporal point"))
+    return NULL;
 
   /* Second parsing */
   *str = bak;
@@ -335,9 +362,14 @@ tpointseq_cont_parse(const char **str, meosType temptype, interpType interp,
   else if (p_cparen(str))
     upper_inc = false;
   else
-    elog(ERROR, "Could not parse temporal point value: Missing closing bracket/parenthesis");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse temporal point value: Missing closing bracket/parenthesis");
+    return NULL;
+  }
   /* Ensure there is no more input */
-  ensure_end_input(str, end, "temporal point");
+  if (! ensure_end_input(str, end, "temporal point"))
+    return NULL;
   if (! make)
     return NULL;
 
@@ -381,8 +413,13 @@ tpointseqset_parse(const char **str, meosType temptype, interpType interp,
     tpointseq_cont_parse(str, temptype, interp, false, false, tpoint_srid);
   }
   if (!p_cbrace(str))
-    elog(ERROR, "Could not parse temporal point value: Missing closing brace");
-  ensure_end_input(str, true, "temporal point");
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Could not parse temporal point value: Missing closing brace");
+    return NULL;
+  }
+  if (! ensure_end_input(str, true, "temporal point"))
+    return NULL;
 
   /* Second parsing */
   *str = bak;
@@ -490,7 +527,8 @@ Temporal *
 tgeompoint_in(const char *str)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) str);
+  if (! ensure_not_null((void *) str))
+    return NULL;
   return tpoint_parse(&str, T_TGEOMPOINT);
 }
 /**
@@ -502,7 +540,8 @@ Temporal *
 tgeogpoint_in(const char *str)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) str);
+  if (! ensure_not_null((void *) str))
+    return NULL;
   return tpoint_parse(&str, T_TGEOGPOINT);
 }
 #endif /* MEOS */

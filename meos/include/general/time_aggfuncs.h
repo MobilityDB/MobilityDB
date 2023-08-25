@@ -42,7 +42,7 @@
 
 extern Datum datum_sum_int32(Datum l, Datum r);
 
-extern void ensure_same_timetype_skiplist(SkipList *state, uint8 subtype);
+extern bool ensure_same_timetype_skiplist(SkipList *state, uint8 subtype);
 
 /*****************************************************************************/
 

@@ -75,11 +75,11 @@ Temporal *
 tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType))
 {
-  if (tgeo_type(temp1->temptype))
-  {
-    ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
-    ensure_same_dimensionality(temp1->flags, temp2->flags);
-  }
+  if (tgeo_type(temp1->temptype) &&
+       (! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+        ! ensure_same_dimensionality(temp1->flags, temp2->flags)))
+    return NULL;
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;

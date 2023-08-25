@@ -75,9 +75,8 @@ double2_make(double a, double b)
 char *
 double2_out(const double2 *d, int maxdd)
 {
-  /* Ensure validity of the arguments */
   assert(d != NULL);
-  ensure_non_negative(maxdd);
+  assert(maxdd >= 0);
 
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
@@ -160,9 +159,8 @@ double3_make(double a, double b, double c)
 char *
 double3_out(const double3 *d, int maxdd)
 {
-  /* Ensure validity of the arguments */
   assert(d != NULL);
-  ensure_non_negative(maxdd);
+  assert(maxdd >= 0);
 
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
@@ -253,9 +251,8 @@ double4_make(double a, double b, double c, double d)
 char *
 double4_out(const double4 *d, int maxdd)
 {
-  /* Ensure validity of the arguments */
   assert(d != NULL);
-  ensure_non_negative(maxdd);
+  assert(maxdd >= 0);
 
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);

@@ -78,9 +78,9 @@ static Temporal *
 tpoint_force2d(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  assert(tgeo_type(temp->temptype));
-  assert(MEOS_FLAGS_GET_Z(temp->flags));
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_has_Z(temp->flags))
+    return NULL;
 
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -517,8 +517,8 @@ bool
 tpoint_is_simple(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return false;
 
   bool result;
   assert(temptype_subtype(temp->subtype));
@@ -720,8 +720,9 @@ Temporal **
 tpoint_make_simple(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) count);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   Temporal **result;
   assert(temptype_subtype(temp->subtype));
@@ -786,10 +787,9 @@ Temporal *
 tpoint_get_coord(const Temporal *temp, int coord)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  assert(tgeo_type(temp->temptype));
-  if (coord == 2)
-    ensure_has_Z(temp->flags);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
+      (coord == 2 && ! ensure_has_Z(temp->flags)))
+     return NULL;
 
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -1099,7 +1099,8 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
     inst1 = inst2;
   }
   /* We should never arrive here */
-  elog(ERROR, "The value has not been found due to roundoff errors");
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+    "The value has not been found due to roundoff errors");
   return false;
 }
 
@@ -1565,11 +1566,11 @@ Temporal *
 tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
-  /* Parameter test */
   assert(temp); assert(gs);
   assert(tgeo_type(temp->temptype));
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
+  /* Ensure validity of the arguments */
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   if (zspan)
@@ -1620,8 +1621,9 @@ tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
   return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_AT);
 }
 
@@ -1635,8 +1637,9 @@ tpoint_minus_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
   return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_MINUS);
 }
 #endif /* MEOS */
@@ -2453,14 +2456,19 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
+  /* Ensure validity of the arguments */
+  if (! ensure_same_geodetic(temp->flags, box->flags) ||
+      ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box)))
+    return NULL;
 
   /* Short-circuit restriction to only T dimension */
   if (hast && ! hasx)
     return temporal_restrict_period(temp, &box->period, atfunc);
 
   /* Parameter test */
-  ensure_same_srid(tpoint_srid(temp), stbox_srid(box));
-  ensure_same_geodetic(temp->flags, box->flags);
+  assert(tpoint_srid(temp) == stbox_srid(box));
+  assert(MEOS_FLAGS_GET_GEODETIC(temp->flags) ==
+    MEOS_FLAGS_GET_GEODETIC(box->flags));
 
   /* Bounding box test */
   STBox box1;
@@ -2493,8 +2501,9 @@ Temporal *
 tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) box);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_AT);
   return result;
 }
@@ -2508,8 +2517,9 @@ Temporal *
 tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) box);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);
   return result;
 }

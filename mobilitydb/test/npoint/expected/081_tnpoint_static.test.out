@@ -36,7 +36,7 @@ ERROR:  The relative position must be a real number between 0 and 1
 LINE 1: SELECT npoint 'npoint(1,1.5)';
                       ^
 SELECT npoint 'npoint(1,0.5)xxx';
-ERROR:  Could not parse network point value
+ERROR:  Could not parse network point value: Extraneous characters at the end
 LINE 1: SELECT npoint 'npoint(1,0.5)xxx';
                       ^
 SELECT nsegment 'nsegment(1,0.5,0.7)';
@@ -79,7 +79,7 @@ ERROR:  The relative position must be a real number between 0 and 1
 LINE 1: SELECT nsegment 'nsegment(1,1.5,0.7)';
                         ^
 SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
-ERROR:  Could not parse network segment value
+ERROR:  Could not parse network segment value: Extraneous characters at the end
 LINE 1: SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
                         ^
 SELECT nsegment 'NSegment(1, 1, 1.5)';

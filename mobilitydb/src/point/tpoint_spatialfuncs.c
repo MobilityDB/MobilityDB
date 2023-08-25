@@ -62,17 +62,16 @@
 
 /**
  * @brief Generic function for the temporal ever/always comparison operators
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
 static Datum
 tpoint_ev_al_comp_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, Datum))
+  bool (*func)(const Temporal *, const GSERIALIZED *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  bool result = func(temp, PointerGetDatum(gs));
+  bool result = func(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_BOOL(result);

@@ -199,8 +199,8 @@ bool
 contains_intset_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return false;
   return contains_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -213,8 +213,8 @@ bool
 contains_bigintset_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return false;
   return contains_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -227,8 +227,8 @@ bool
 contains_floatset_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
   return contains_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -241,8 +241,8 @@ bool
 contains_textset_text(const Set *s, text *t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
   return contains_set_value(s, PointerGetDatum(t), T_TEXT);
 }
 
@@ -255,8 +255,9 @@ bool
 contains_timestampset_timestamp(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return contains_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -270,8 +271,10 @@ bool
 contains_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
-  ensure_same_set_type(s1, s2);
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return false;
+
   /* Bounding box test */
   if (! bbox_contains_set_set(s1, s2))
     return false;
@@ -318,8 +321,8 @@ bool
 contained_int_intset(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return false;
   return contained_value_set(Int32GetDatum(i), T_INT4, s);
 }
 
@@ -332,8 +335,8 @@ bool
 contained_bigint_bigintset(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return false;
   return contained_value_set(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -346,8 +349,8 @@ bool
 contained_float_floatset(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
   return contained_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -360,8 +363,8 @@ bool
 contained_text_textset(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
   return contained_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
@@ -374,8 +377,9 @@ bool
 contained_timestamp_timestampset(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return contains_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -404,8 +408,9 @@ bool
 overlaps_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
-  ensure_same_set_type(s1, s2);
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return false;
 
   /* Bounding box test */
   if (! bbox_overlaps_set_set(s1, s2))
@@ -453,8 +458,8 @@ bool
 left_int_intset(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return false;
   return left_value_set(Int32GetDatum(i), T_INT4, s);
 }
 
@@ -467,8 +472,8 @@ bool
 left_bigint_bigintset(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return false;
   return left_value_set(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -481,8 +486,8 @@ bool
 left_float_floatset(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
   return left_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -495,8 +500,9 @@ bool
 left_text_textset(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) txt);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
   return left_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
@@ -509,8 +515,9 @@ bool
 before_timestamp_timestampset(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return left_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
@@ -537,8 +544,8 @@ bool
 left_intset_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return false;
   return left_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -552,8 +559,8 @@ bool
 left_bigintset_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return false;
   return left_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -566,8 +573,8 @@ bool
 left_floatset_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
   return left_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -580,8 +587,9 @@ bool
 left_textset_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) txt);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
   return left_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -594,8 +602,9 @@ bool
 before_timestampset_timestamp(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return left_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -609,8 +618,9 @@ bool
 left_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
-  ensure_same_set_type(s1, s2);
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return false;
   Datum d1 = SET_VAL_N(s1, s1->count - 1);
   Datum d2 = SET_VAL_N(s2, 0);
   return (datum_lt(d1, d2, s1->basetype));
@@ -640,8 +650,8 @@ bool
 right_int_intset(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return false;
   return left_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -655,8 +665,8 @@ bool
 right_bigint_bigintset(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return false;
   return left_set_value(s, Int64GetDatum(i), T_INT4);
 }
 
@@ -669,8 +679,8 @@ bool
 right_float_floatset(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
   return left_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -683,8 +693,9 @@ bool
 right_text_textset(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) txt); ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) txt) || ! ensure_not_null((void *) s) ||
+      !ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return left_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -697,8 +708,9 @@ bool
 after_timestamp_timestampset(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return left_set_value(s, TimestampTzGetDatum(t), T_TEXT);
 }
 #endif /* MEOS */
@@ -724,8 +736,8 @@ bool
 right_intset_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) && ! ensure_same_set_basetype(s, T_INT4))
+    return false;
   return right_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -739,8 +751,8 @@ bool
 right_bigintset_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return false;
   return right_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -753,8 +765,8 @@ bool
 right_floatset_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
   return right_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -767,8 +779,9 @@ bool
 right_textset_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) txt);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
   return right_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -781,8 +794,9 @@ bool
 after_timestampset_timestamp(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return right_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -797,8 +811,9 @@ bool
 right_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
-  ensure_same_set_type(s1, s2);
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return false;
   return left_set_set(s2, s1);
 }
 
@@ -828,8 +843,8 @@ bool
 overleft_int_intset(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return false;
   return overleft_value_set(Int32GetDatum(i), T_INT4, s);
 }
 
@@ -843,8 +858,8 @@ bool
 overleft_bigint_bigintset(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return false;
   return overleft_value_set(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -857,8 +872,8 @@ bool
 overleft_float_floatset(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
   return overleft_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -871,8 +886,9 @@ bool
 overleft_text_textset(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) txt); ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) txt) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
   return overleft_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
@@ -885,8 +901,9 @@ bool
 overbefore_timestamp_timestampset(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return overleft_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
@@ -914,8 +931,8 @@ bool
 overleft_intset_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return false;
   return overleft_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -929,8 +946,8 @@ bool
 overleft_bigintset_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return false;
   return overleft_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -943,8 +960,8 @@ bool
 overleft_floatset_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
   return overleft_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -957,8 +974,9 @@ bool
 overleft_textset_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) txt);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
   return overleft_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -971,8 +989,9 @@ bool
 overbefore_timestampset_timestamp(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return overleft_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -987,8 +1006,9 @@ bool
 overleft_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
-  ensure_same_set_type(s1, s2);
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return false;
   Datum d1 = SET_VAL_N(s1, s1->count - 1);
   Datum d2 = SET_VAL_N(s2, s2->count - 1);
   return datum_le(d1, d2, s1->basetype);
@@ -1021,8 +1041,8 @@ bool
 overright_int_intset(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return false;
   return overright_value_set(Int32GetDatum(i), T_INT4, s);
 }
 
@@ -1036,8 +1056,8 @@ bool
 overright_bigint_bigintset(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) && ! ensure_same_set_basetype(s, T_INT8))
+    return false;
   return overright_value_set(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -1051,8 +1071,8 @@ bool
 overright_float_floatset(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
   return overright_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -1065,8 +1085,9 @@ bool
 overafter_timestamp_timestampset(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return overright_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
@@ -1094,8 +1115,8 @@ bool
 overright_intset_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return false;
   return overright_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -1109,8 +1130,8 @@ bool
 overright_bigintset_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return false;
   return overright_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -1123,8 +1144,8 @@ bool
 overright_floatset_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
   return overright_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1137,8 +1158,8 @@ bool
 overright_textset_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
   return overright_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -1151,8 +1172,9 @@ bool
 overafter_timestampset_timestamp(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
   return overright_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -1167,8 +1189,10 @@ bool
 overright_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
-  ensure_same_set_type(s1, s2);
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return false;
+
   Datum d1 = SET_VAL_N(s1, 0);
   Datum d2 = SET_VAL_N(s2, 0);
   return datum_ge(d1, d2, s1->basetype);
@@ -1220,8 +1244,8 @@ Set *
 union_intset_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return NULL;
   return union_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -1234,8 +1258,8 @@ Set *
 union_bigintset_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return NULL;
   return union_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -1248,8 +1272,8 @@ Set *
 union_floatset_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return NULL;
   return union_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1262,8 +1286,9 @@ Set *
 union_textset_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) txt);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
+    return NULL;
   return union_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -1276,8 +1301,9 @@ Set *
 union_timestampset_timestamp(const Set *s, const TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return NULL;
   return union_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -1291,8 +1317,9 @@ Set *
 union_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
-  ensure_same_set_type(s1, s2);
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return NULL;
   return setop_set_set(s1, s2, UNION);
 }
 
@@ -1326,8 +1353,10 @@ bool
 intersection_intset_int(const Set *s, int i, int *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) result);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_set_basetype(s, T_INT4))
+    return false;
+
   Datum v;
   bool found = intersection_set_value(s, Int32GetDatum(i), T_INT4, &v);
   *result = DatumGetInt32(v);
@@ -1344,8 +1373,10 @@ bool
 intersection_bigintset_bigint(const Set *s, int64 i, int64 *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) result);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_set_basetype(s, T_INT8))
+    return false;
+
   Datum v;
   bool found = intersection_set_value(s, Int64GetDatum(i), T_INT8, &v);
   *result = DatumGetInt64(v);
@@ -1362,8 +1393,10 @@ bool
 intersection_floatset_float(const Set *s, double d, double *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) result);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
+
   Datum v;
   bool found = intersection_set_value(s, Float8GetDatum(d), T_FLOAT8, &v);
   *result = DatumGetInt32(v);
@@ -1379,8 +1412,10 @@ bool
 intersection_textset_text(const Set *s, const text *txt, text **result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) result);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
+
   Datum v;
   bool found = intersection_set_value(s, PointerGetDatum(txt), T_TEXT, &v);
   *result = DatumGetTextP(v);
@@ -1398,8 +1433,10 @@ intersection_timestampset_timestamp(const Set *s, TimestampTz t,
   TimestampTz *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) result);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
+
   Datum v;
   bool found = intersection_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ,
     &v);
@@ -1417,8 +1454,9 @@ Set *
 intersection_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
-  ensure_same_set_type(s1, s2);
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return NULL;
   return setop_set_set(s1, s2, INTER);
 }
 
@@ -1453,8 +1491,10 @@ bool
 minus_int_intset(int i, const Set *s, int *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) result);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_set_basetype(s, T_INT4))
+    return false;
+
   Datum v;
   bool found = minus_value_set(Int32GetDatum(i), T_INT4, s, &v);
   *result = DatumGetInt32(v);
@@ -1471,8 +1511,10 @@ bool
 minus_bigint_bigintset(int64 i, const Set *s, int64 *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) result);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_set_basetype(s, T_INT8))
+    return false;
+
   Datum v;
   bool found = minus_value_set(Int64GetDatum(i), T_INT8, s, &v);
   *result = DatumGetInt64(v);
@@ -1488,8 +1530,10 @@ bool
 minus_float_floatset(double d, const Set *s, double *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) result);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_set_basetype(s, T_FLOAT8))
+    return false;
+
   Datum v;
   bool found = minus_value_set(Float8GetDatum(d), T_FLOAT8, s, &v);
   *result = DatumGetFloat8(v);
@@ -1505,8 +1549,10 @@ bool
 minus_text_textset(const text *txt, const Set *s, text **result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) result);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
+
   Datum v;
   bool found = minus_value_set(PointerGetDatum(txt), T_TEXT, s, &v);
   *result = DatumGetTextP(v);
@@ -1549,8 +1595,8 @@ Set *
 minus_intset_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return NULL;
   return minus_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -1563,8 +1609,8 @@ Set *
 minus_bigintset_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return NULL;
   return minus_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -1577,8 +1623,8 @@ Set *
 minus_floatset_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return NULL;
   return minus_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1591,8 +1637,9 @@ Set *
 minus_textset_text(const Set *s, const text *txt)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) txt);
-  ensure_same_set_basetype(s, T_TEXT);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
+    return NULL;
   return minus_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
@@ -1605,8 +1652,9 @@ Set *
 minus_timestampset_timestamp(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return NULL;
 
   /* Bounding box test */
   Span s1;
@@ -1636,8 +1684,9 @@ Set *
 minus_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
-  ensure_same_set_type(s1, s2);
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return NULL;
   return setop_set_set(s1, s2, MINUS);
 }
 
@@ -1669,8 +1718,8 @@ double
 distance_intset_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT4);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+    return -1.0;
   return distance_set_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -1684,8 +1733,8 @@ double
 distance_bigintset_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_INT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+    return -1.0;
   return distance_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -1698,8 +1747,8 @@ double
 distance_floatset_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_FLOAT8);
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+    return -1.0;
   return distance_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1712,8 +1761,9 @@ double
 distance_timestampset_timestamp(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s);
-  ensure_same_set_basetype(s, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return -1.0;
   return distance_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
@@ -1726,8 +1776,9 @@ double
 distance_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s1); ensure_not_null((void *) s2);
-  ensure_same_set_type(s1, s2);
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return -1.0;
 
   Span sp1, sp2;
   set_set_span(s1, &sp1);

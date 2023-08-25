@@ -44,7 +44,7 @@
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize();
+  meos_initialize(NULL, NULL);
 
   /* Input geometries in WKT format */
   char *point_wkt = "POINT(1 1)";

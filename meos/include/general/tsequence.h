@@ -46,7 +46,7 @@
 
 extern int tcontseq_find_timestamp(const TSequence *seq, TimestampTz t);
 extern int tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t);
-extern void tsequence_make_valid1(const TInstant **instants, int count,
+extern bool tsequence_make_valid1(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp);
 extern TSequence *tsequence_make1_exp(const TInstant **instants, int count,
   int maxcount, bool lower_inc, bool upper_inc, interpType interp,
@@ -102,10 +102,10 @@ extern char *tsequence_to_string(const TSequence *seq, int maxdd,
 
 /* Constructor functions */
 
-extern void ensure_increasing_timestamps(const TInstant *inst1,
+extern bool ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
 extern void bbox_expand(const void *box1, void *box2, meosType temptype);
-extern void ensure_valid_tinstarr(const TInstant **instants, int count,
+extern bool ensure_valid_tinstarr(const TInstant **instants, int count,
   bool merge, interpType interp);
 
 /* Transformation functions */

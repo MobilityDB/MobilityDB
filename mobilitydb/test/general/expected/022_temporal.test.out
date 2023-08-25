@@ -76,7 +76,7 @@ ERROR:  Could not parse element value
 LINE 1: SELECT tfloat '25';
                       ^
 SELECT tfloat '2@2012-01-01 08:00:00,';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal value: Extraneous characters at the end
 LINE 1: SELECT tfloat '2@2012-01-01 08:00:00,';
                       ^
 SELECT tbool ' { true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 } ';
@@ -149,7 +149,7 @@ ERROR:  Could not parse temporal value: Missing closing brace
 LINE 1: SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03';
                     ^
 SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03},';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal value: Extraneous characters at the end
 LINE 1: SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03},';
                     ^
 SELECT tbool ' [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ] ';
@@ -230,7 +230,7 @@ ERROR:  Could not parse temporal value: Missing closing bracket/parenthesis
 LINE 1: SELECT tbool '[true@2001-01-01, true@2001-01-02';
                      ^
 SELECT tbool '[true@2001-01-01, true@2001-01-02],';
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal value: Extraneous characters at the end
 LINE 1: SELECT tbool '[true@2001-01-01, true@2001-01-02],';
                      ^
 SELECT tbool '  { [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ],
@@ -325,7 +325,7 @@ ERROR:  Could not parse temporal value: Missing closing brace
 LINE 1: SELECT tfloat_seqset(tfloat '{[1@2000-01-01, 2@2000-01-03], ...
                                     ^
 SELECT tfloat_seqset(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]},');
-ERROR:  Could not parse temporal value
+ERROR:  Could not parse temporal value: Extraneous characters at the end
 LINE 1: SELECT tfloat_seqset(tfloat '{[1@2000-01-01, 2@2000-01-03], ...
                                     ^
 SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tfloat') t;
@@ -1997,7 +1997,7 @@ ERROR:  Timestamps for temporal value must be increasing: Sun Jan 02 00:00:00 20
 SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02]', '2@2000-01-02');
 ERROR:  The temporal values have different value at their common timestamp Sun Jan 02 00:00:00 2000 PST
 SELECT appendInstant(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '[1@2000-01-04, 1@2000-01-05]');
-ERROR:  The second argument must be of instant subtype
+ERROR:  The temporal value must be of subtype Instant
 SELECT appendInstant(tfloat '{[1@2000-01-01, 1@2000-01-02]}', '2@2000-01-02');
 ERROR:  The temporal values have different value at their common timestamp Sun Jan 02 00:00:00 2000 PST
 SELECT appendInstant(tfloat '[1@2000-01-01, 2@2000-01-03]', '1@2000-01-02');
@@ -2020,7 +2020,7 @@ ERROR:  Timestamps for temporal value must be increasing: Mon Jan 03 00:00:00 20
 SELECT appendSequence(tfloat '[1@2000-01-01, 2@2000-01-02]', tfloat '[1@2000-01-02]');
 ERROR:  The temporal values have different value at their common timestamp Sun Jan 02 00:00:00 2000 PST
 SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-02)}', tfloat '2@2000-01-02');
-ERROR:  The second argument must be of sequence subtype
+ERROR:  The temporal value must be of subtype Sequence
 SELECT appendSequence(tfloat '{1@2000-01-01, 2@2000-01-02}', tfloat '[2@2000-01-01]');
 ERROR:  The temporal values must have the same interpolation
 SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-03]}', tfloat '[2@2000-01-02]');

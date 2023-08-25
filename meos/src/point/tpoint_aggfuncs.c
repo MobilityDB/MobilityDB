@@ -62,9 +62,11 @@ geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
     return;
   struct GeoAggregateState *extra = state->extra;
   if (extra && extra->srid != srid)
-    elog(ERROR, "Geometries must have the same SRID for temporal aggregation");
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Geometries must have the same SRID for temporal aggregation");
   if (extra && extra->hasz != hasz)
-    elog(ERROR, "Geometries must have the same dimensionality for temporal aggregation");
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Geometries must have the same dimensionality for temporal aggregation");
   return;
 }
 
@@ -263,9 +265,11 @@ tpoint_extent_transfn(STBox *box, const Temporal *temp)
   }
 
   /* Both box and temporal are not null */
-  ensure_same_srid(tpoint_srid(temp), stbox_srid(box));
-  ensure_same_dimensionality(temp->flags, box->flags);
-  ensure_same_geodetic(temp->flags, box->flags);
+  if (! ensure_same_srid(tpoint_srid(temp), stbox_srid(box)) ||
+      ! ensure_same_dimensionality(temp->flags, box->flags) ||
+      ! ensure_same_geodetic(temp->flags, box->flags))
+    return NULL;
+    
   temporal_set_bbox(temp, result);
   stbox_expand(box, result);
   return result;

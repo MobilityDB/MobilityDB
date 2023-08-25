@@ -107,14 +107,14 @@ geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2,
  * second input geography in 2D
  */
 GSERIALIZED *
-geography_shortestline_internal(const GSERIALIZED *g1, const GSERIALIZED *g2,
+geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   bool use_spheroid)
 {
   SPHEROID s;
-  ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
+  assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
 
   /* Return NULL on empty arguments. */
-  if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
+  if ( gserialized_is_empty(gs1) || gserialized_is_empty(gs2) )
     return NULL;
 
   /* Initialize spheroid */
@@ -127,7 +127,7 @@ geography_shortestline_internal(const GSERIALIZED *g1, const GSERIALIZED *g2,
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
 
-  LWGEOM *line = geography_tree_shortestline(g1, g2, FP_TOLERANCE, &s);
+  LWGEOM *line = geography_tree_shortestline(gs1, gs2, FP_TOLERANCE, &s);
 
 #if ! MEOS
   GSERIALIZED *result = geography_serialize(line);

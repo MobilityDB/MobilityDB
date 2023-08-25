@@ -496,13 +496,15 @@ tpoint_to_geo_meas(const Temporal *tpoint, const Temporal *meas,
   bool segmentize, GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) tpoint); ensure_not_null((void *) result);
-  assert(tgeo_type(tpoint->temptype));
+  if (! ensure_not_null((void *) tpoint) || ! ensure_not_null((void *) result) ||
+      ! ensure_tgeo_type(tpoint->temptype))
+    return false;
 
   Temporal *sync1, *sync2;
   if (meas)
   {
-    ensure_tnumber_type(meas->temptype);
+    if (! ensure_tnumber_type(meas->temptype))
+      return false;
     /* Return false if the temporal values do not intersect in time
      * The operation is synchronization without adding crossings */
     if (! intersection_temporal_temporal(tpoint, meas, SYNCHRONIZE_NOCROSS,
@@ -599,7 +601,7 @@ geo_to_tpointinst(const LWGEOM *geom)
  * function lwgeom_is_trajectory causes discrepancies with regression tests
  * due to the error message that varies across PostGIS versions.
  */
-static void
+static bool
 ensure_valid_trajectory(const LWGEOM *geom, bool hasz, bool discrete)
 {
   assert(geom->type != MULTIPOINTTYPE || geom->type != MULTILINETYPE);
@@ -634,11 +636,13 @@ ensure_valid_trajectory(const LWGEOM *geom, bool hasz, bool discrete)
     }
     if (m1 >= m2)
     {
-      elog(ERROR, "Trajectory must be valid");
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Trajectory must be valid");
+      return false;
     }
     m1 = m2;
   }
-  return;
+  return true;
 }
 
 /**
@@ -650,7 +654,8 @@ static TSequence *
 geo_to_tpointseq_disc(const LWGEOM *geom, bool hasz)
 {
   /* Verify that the trajectory is valid */
-  ensure_valid_trajectory(geom, hasz, true);
+  if (! ensure_valid_trajectory(geom, hasz, true))
+    return NULL;
   /* Geometry is a MULTIPOINT */
   LWCOLLECTION *coll = lwgeom_as_lwcollection(geom);
   uint32_t npoints = coll->ngeoms;
@@ -672,7 +677,8 @@ static TSequence *
 geo_to_tpointseq_linear(const LWGEOM *geom, bool hasz, bool geodetic)
 {
   /* Verify that the trajectory is valid */
-  ensure_valid_trajectory(geom, hasz, false);
+  if (! ensure_valid_trajectory(geom, hasz, false))
+    return NULL;
   /* Geometry is a LINESTRING */
   LWLINE *lwline = lwgeom_as_lwline(geom);
   uint32_t npoints = lwline->points->npoints;
@@ -715,7 +721,9 @@ geo_to_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
     if (geom1->type != POINTTYPE && geom1->type != MULTIPOINTTYPE &&
         geom1->type != LINETYPE && geom1->type != MULTILINETYPE)
     {
-      elog(ERROR, "Component geometry/geography must be of type (Multi)Point(Z)M or (Multi)Linestring(Z)M");
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Component geometry/geography must be of type (Multi)Point(Z)M or (Multi)Linestring(Z)M");
+      return NULL;
     }
     if (geom1->type == POINTTYPE || geom1->type == LINETYPE)
       totalgeoms++;
@@ -773,9 +781,9 @@ Temporal *
 geo_to_tpoint(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) gs);
-  ensure_non_empty(gs);
-  ensure_has_M_gs(gs);
+  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs) ||
+      ! ensure_has_M_gs(gs))
+    return NULL;
 
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
@@ -790,7 +798,8 @@ geo_to_tpoint(const GSERIALIZED *gs)
   else if (geom->type == MULTILINETYPE || geom->type == COLLECTIONTYPE)
     result = (Temporal *) geo_to_tpointseqset(geom, hasz, geodetic);
   else
-    elog(ERROR, "Invalid geometry type for trajectory");
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Invalid geometry type for trajectory");
   lwgeom_free(geom);
   return result;
 }
@@ -877,9 +886,10 @@ Temporal *
 temporal_simplify_min_dist(const Temporal *temp, double dist)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
-  ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
+    return NULL;
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -974,9 +984,10 @@ Temporal *
 temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) mint);
-  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
-  ensure_valid_duration(mint);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) mint) ||
+      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_valid_duration(mint))
+    return NULL;
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -1309,8 +1320,9 @@ Temporal *
 temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tnumber_tgeo_type(temp->temptype))
+    return NULL;
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -1459,8 +1471,9 @@ Temporal *
 temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tnumber_tgeo_type(temp->temptype))
+    return NULL;
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -2058,15 +2071,23 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int *count)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) bounds);
-  ensure_not_null((void *) gsarr); ensure_not_null((void *) timesarr);
-  ensure_not_null((void *) count);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) bounds) ||
+      ! ensure_not_null((void *) gsarr) || ! ensure_not_null((void *) timesarr) ||
+      ! ensure_not_null((void *) count) || ! ensure_tgeo_type(temp->temptype))
+    return false;
 
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
-    elog(ERROR, "%s: Geometric bounds are too small", __func__);
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "%s: Geometric bounds are too small", __func__);
+    return false;
+  }
   if (extent <= 0)
-    elog(ERROR, "%s: Extent must be greater than 0", __func__);
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "%s: Extent must be greater than 0", __func__);
+    return false;
+  }
 
   /* Contrary to what is done in PostGIS we do not use the following filter
    * to enable the visualization of temporal points with instant subtype.

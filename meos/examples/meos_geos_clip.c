@@ -33,16 +33,16 @@
 static void
 geos_message_handler(const char* fmt, ...)
 {
-    va_list ap;
-    va_start(ap, fmt);
-    vprintf (fmt, ap);
-    va_end(ap);
+  va_list ap;
+  va_start(ap, fmt);
+  vprintf(fmt, ap);
+  va_end(ap);
 }
 
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  meos_initialize(NULL, NULL);
 
   /* Send notice and error messages to our stdout handler */
   initGEOS(geos_message_handler, geos_message_handler);

@@ -40,6 +40,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -152,7 +153,8 @@ int
 int_bucket(int value, int size, int origin)
 {
   /* Ensure validity of the arguments */
-  ensure_positive(size);
+  if (! ensure_positive(size))
+    return INT_MAX;
 
   if (origin != 0)
   {
@@ -166,7 +168,8 @@ int_bucket(int value, int size, int origin)
     if ((origin > 0 && value < PG_INT32_MIN + origin) ||
       (origin < 0 && value > PG_INT32_MAX + origin))
     {
-      elog(ERROR, "number out of span");
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
+      return INT_MAX;
     }
     value -= origin;
   }
@@ -181,7 +184,8 @@ int_bucket(int value, int size, int origin)
      */
     if (result < PG_INT32_MIN + size)
     {
-      elog(ERROR, "number out of span");
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
+      return INT_MAX;
     }
     else
       result -= size;
@@ -200,7 +204,9 @@ int_bucket(int value, int size, int origin)
 double
 float_bucket(double value, double size, double origin)
 {
-  ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
+  /* Ensure validity of the arguments */
+  if (! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8))
+    return DBL_MAX;
 
   if (origin != 0)
   {
@@ -213,7 +219,10 @@ float_bucket(double value, double size, double origin)
     origin = fmod(origin, size);
     if ((origin > 0 && value < -1 * DBL_MAX + origin) ||
       (origin < 0 && value > DBL_MAX + origin))
-      elog(ERROR, "number out of span");
+    {
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
+      return DBL_MAX;
+    }
     value -= origin;
   }
   double result = floor(value / size) * size;
@@ -243,7 +252,10 @@ TimestampTz
 timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
 {
   if (TIMESTAMP_NOT_FINITE(t))
-    elog(ERROR, "timestamp out of span");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of span");
+    return DT_NOEND;
+  }
   if (origin != 0)
   {
     /*
@@ -255,7 +267,11 @@ timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
     origin = origin % size;
     if ((origin > 0 && t < DT_NOBEGIN + origin) ||
       (origin < 0 && t > DT_NOEND + origin))
-      elog(ERROR, "timestamp out of span");
+    {
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of span");
+      return DT_NOEND;
+    }
+
     t -= origin;
   }
   TimestampTz result = (t / size) * size;
@@ -269,7 +285,8 @@ timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
      */
     if (result < DT_NOBEGIN + size)
     {
-      elog(ERROR, "timestamp out of span");
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of span");
+      return DT_NOEND;
     }
     else
       result -= size;
@@ -289,7 +306,8 @@ TimestampTz
 timestamptz_bucket(TimestampTz t, const Interval *duration, TimestampTz origin)
 {
   /* Ensure validity of the arguments */
-  ensure_valid_duration(duration);
+  if (! ensure_valid_duration(duration))
+    return DT_NOEND;
   int64 size = interval_units(duration);
   return timestamptz_bucket1(t, size, origin);
 }
@@ -304,8 +322,10 @@ timestamptz_bucket(TimestampTz t, const Interval *duration, TimestampTz origin)
 Datum
 datum_bucket(Datum value, Datum size, Datum origin, meosType basetype)
 {
-  /* Ensure validity of the arguments */
-  ensure_positive_datum(size, basetype);
+  /* This function is called directly by the MobilityDB APID */
+  if (! ensure_positive_datum(size, basetype))
+    return 0;
+
   assert(span_basetype(basetype));
   if (basetype == T_INT4)
     return Int32GetDatum(int_bucket(DatumGetInt32(value),
@@ -316,7 +336,9 @@ datum_bucket(Datum value, Datum size, Datum origin, meosType basetype)
   else if(basetype == T_TIMESTAMPTZ)
     return TimestampTzGetDatum(timestamptz_bucket1(DatumGetTimestampTz(value),
       DatumGetInt64(size), DatumGetTimestampTz(origin)));
-  elog(ERROR, "Unknown type for function datum_bucket: %d", basetype);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "Unknown type for function datum_bucket: %d", basetype);
+  return 0;
 }
 
 /*****************************************************************************
@@ -357,7 +379,8 @@ Span *
 intspan_bucket_list(const Span *s, int size, int origin, int *count)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) count);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count))
+    return NULL;
   *count = ceil((DatumGetInt32(s->upper) - DatumGetInt32(s->lower)) / size);
   return span_bucket_list(s, Int32GetDatum(size), Int32GetDatum(origin),
     *count);
@@ -375,7 +398,8 @@ Span *
 floatspan_bucket_list(const Span *s, double size, double origin, int *count)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) count);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count))
+    return NULL;
   *count = ceil((DatumGetFloat8(s->upper) - DatumGetFloat8(s->lower)) / size);
   return span_bucket_list(s, Float8GetDatum(size), Float8GetDatum(origin),
     *count);
@@ -394,8 +418,9 @@ period_bucket_list(const Span *s, const Interval *duration, TimestampTz origin,
   int *count)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) count);
-  ensure_valid_duration(duration);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
+      ! ensure_valid_duration(duration))
+    return NULL;
 
   int64 size = interval_units(duration);
   *count = ceil((DatumGetTimestampTz(s->upper) -
@@ -528,11 +553,12 @@ tbox_tile_list(const TBox *box, double xsize, const Interval *duration,
   double xorigin, TimestampTz torigin, int *rows, int *columns)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) box); ensure_not_null((void *) rows);
-  ensure_not_null((void *) columns);
-  // TODO: generalize for intspan
-  ensure_positive_datum(Float8GetDatum(xsize), box->span.basetype);
-  ensure_valid_duration(duration);
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) rows) ||
+      ! ensure_not_null((void *) columns) ||
+      // TODO: generalize for intspan
+      ! ensure_positive_datum(Float8GetDatum(xsize), box->span.basetype) ||
+      ! ensure_valid_duration(duration))
+    return NULL;
 
   int64 tsize = interval_units(duration);
   TboxGridState *state = tbox_tile_state_make(box, xsize, duration,
@@ -1445,10 +1471,10 @@ temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
   meosType basetype = temptype_basetype(temp->temptype);
   int64 tunits = 0;
   if (valuesplit)
-    ensure_positive_datum(size, basetype);
+    assert(positive_datum(size, basetype));
   if (timesplit)
   {
-    ensure_valid_duration(duration);
+    assert(valid_duration(duration));
     tunits = interval_units(duration);
   }
 
@@ -1562,8 +1588,9 @@ Temporal **
 tint_value_split(Temporal *temp, int size, int origin, int *newcount)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) newcount);
-  ensure_temporal_has_type(temp, T_TINT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return NULL;
   Datum *value_buckets;
   return temporal_value_time_split1(temp, Int32GetDatum(size), NULL,
     Int32GetDatum(origin), 0, true, false, &value_buckets, NULL, newcount);
@@ -1582,9 +1609,9 @@ Temporal **
 tfloat_value_split(Temporal *temp, double size, double origin, int *newcount)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) newcount);
-  assert(temp); assert(newcount);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
   Datum *value_buckets;
   return temporal_value_time_split1(temp, Float8GetDatum(size), NULL,
     Float8GetDatum(origin), 0, true, false, &value_buckets, NULL, newcount);
@@ -1604,7 +1631,8 @@ temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
   int *newcount)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) newcount);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount))
+    return NULL;
   TimestampTz *time_buckets;
   return temporal_value_time_split1(temp, Float8GetDatum(0), duration,
     Float8GetDatum(0), torigin, false, true, NULL, &time_buckets, newcount);
@@ -1627,8 +1655,9 @@ tint_value_time_split(Temporal *temp, int size, int vorigin,
   Interval *duration, TimestampTz torigin, int *newcount)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) newcount);
-  ensure_temporal_has_type(temp, T_TINT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return NULL;
   Datum *value_buckets;
   TimestampTz *time_buckets;
   return temporal_value_time_split1(temp, Int32GetDatum(size), duration,
@@ -1653,8 +1682,9 @@ tfloat_value_time_split(Temporal *temp, double size, double vorigin,
   Interval *duration, TimestampTz torigin, int *newcount)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) newcount);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
   Datum *value_buckets;
   TimestampTz *time_buckets;
   return temporal_value_time_split1(temp, Float8GetDatum(size), duration,

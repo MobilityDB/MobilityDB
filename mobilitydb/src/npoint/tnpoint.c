@@ -168,8 +168,8 @@ PGDLLEXPORT Datum Tnpoint_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_round);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Set the precision of the fraction of the temporal network point to the
- * number of decimal places.
+ * @brief Set the precision of the fraction of the temporal network point to
+ * the number of decimal places.
  * @sqlfunc round()
  */
 Datum
@@ -186,7 +186,7 @@ PGDLLEXPORT Datum Npointset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npointset_round);
 /**
  * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Sets the precision of the coordinates of the geometry set
+ * @brief Set the precision of the coordinates of the geometry set
  * @sqlfunc round()
  */
 Datum

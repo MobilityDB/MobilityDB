@@ -99,7 +99,7 @@ typedef struct
 int main(void)
 {
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  meos_initialize(NULL, NULL);
 
   /* Get start time */
   clock_t t;
@@ -151,7 +151,7 @@ int main(void)
     /* Transform the string representing the timestamp into a timestamp value */
     rec.t = pg_timestamp_in(timestamp_buffer, -1);
     /* Transform the string representing the trip into a temporal value */
-    TInstant *inst = tgeompointinst_make(rec.point, rec.t);
+    TInstant *inst = tpointinst_make(rec.point, rec.t);
 
     if (read == 6)
     {

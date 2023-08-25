@@ -81,29 +81,32 @@ extern Datum geom_intersection2d(Datum geom1, Datum geom2);
 
 /* Parameter tests */
 
-extern void ensure_spatial_validity(const Temporal *temp1,
+extern bool ensure_spatial_validity(const Temporal *temp1,
   const Temporal *temp2);
-extern void ensure_not_geodetic(int16 flags);
-extern void ensure_same_geodetic(int16 flags1, int16 flags2);
-extern void ensure_same_srid(int32_t srid1, int32_t srid2);
-extern void ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs);
-extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
-extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
-extern void ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2);
-extern void ensure_same_dimensionality_gs(const GSERIALIZED *gs1,
+extern bool ensure_not_geodetic(int16 flags);
+extern bool ensure_same_geodetic(int16 flags1, int16 flags2);
+extern bool ensure_same_srid(int32_t srid1, int32_t srid2);
+extern bool ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs);
+extern bool ensure_same_dimensionality(int16 flags1, int16 flags2);
+extern bool same_spatial_dimensionality(int16 flags1, int16 flags2);
+extern bool ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
+extern bool ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2);
+extern bool ensure_same_dimensionality_gs(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
-extern void ensure_same_dimensionality_tpoint_gs(const Temporal *temp,
+extern bool same_dimensionality_tpoint_gs(const Temporal *temp,
   const GSERIALIZED *gs);
-extern void ensure_same_spatial_dimensionality_stbox_gs(const STBox *box,
+extern bool ensure_same_dimensionality_tpoint_gs(const Temporal *temp,
   const GSERIALIZED *gs);
-extern void ensure_has_Z(int16 flags);
-extern void ensure_has_not_Z(int16 flags);
-extern void ensure_has_Z_gs(const GSERIALIZED *gs);
-extern void ensure_has_not_Z_gs(const GSERIALIZED *gs);
-extern void ensure_has_M_gs(const GSERIALIZED *gs);
-extern void ensure_has_not_M_gs(const GSERIALIZED *gs);
-extern void ensure_point_type(const GSERIALIZED *gs);
-extern void ensure_non_empty(const GSERIALIZED *gs);
+extern bool ensure_same_spatial_dimensionality_stbox_gs(const STBox *box,
+  const GSERIALIZED *gs);
+extern bool ensure_has_Z(int16 flags);
+extern bool ensure_has_not_Z(int16 flags);
+extern bool ensure_has_Z_gs(const GSERIALIZED *gs);
+extern bool ensure_has_not_Z_gs(const GSERIALIZED *gs);
+extern bool ensure_has_M_gs(const GSERIALIZED *gs);
+extern bool ensure_has_not_M_gs(const GSERIALIZED *gs);
+extern bool ensure_point_type(const GSERIALIZED *gs);
+extern bool ensure_non_empty(const GSERIALIZED *gs);
 
 /* Functions derived from PostGIS to increase floating-point precision */
 

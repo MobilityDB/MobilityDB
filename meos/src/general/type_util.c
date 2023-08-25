@@ -36,6 +36,7 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/float.h>
@@ -105,8 +106,9 @@ datum_cmp(Datum l, Datum r, meosType type)
   if (type == T_NPOINT)
     return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
-  elog(ERROR, "unknown compare function for base type: %d", type);
-  return 0; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+    "unknown compare function for base type: %d", type);
+  return INT_MAX;
 }
 
 /**
@@ -141,8 +143,9 @@ datum_eq(Datum l, Datum r, meosType type)
   if (type == T_NPOINT)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
-  elog(ERROR, "unknown datum_eq2 function for base type: %d", type);
-  return false; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+    "unknown datum_eq2 function for base type: %d", type);
+  return false;
 }
 
 /**
@@ -265,7 +268,8 @@ datum_add(Datum l, Datum r, meosType type)
   else if (type == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
   else
-    elog(ERROR, "unknown add function for base type: %d", type);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+      "unknown add function for base type: %d", type);
   return result;
 }
 
@@ -283,7 +287,8 @@ datum_sub(Datum l, Datum r, meosType type)
   else if (type == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
   else
-    elog(ERROR, "unknown sub function for base type: %d", type);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+      "unknown sub function for base type: %d", type);
   return result;
 }
 
@@ -301,7 +306,8 @@ datum_mult(Datum l, Datum r, meosType type)
   else if (type == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
   else
-    elog(ERROR, "unknown mul function for base type: %d", type);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+      "unknown mul function for base type: %d", type);
   return result;
 }
 
@@ -311,7 +317,7 @@ datum_mult(Datum l, Datum r, meosType type)
 Datum
 datum_div(Datum l, Datum r, meosType type)
 {
-  Datum result;
+  Datum result = 0;
   if (type == T_INT4)
     result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
   else if (type == T_INT8)
@@ -319,7 +325,8 @@ datum_div(Datum l, Datum r, meosType type)
   else if (type == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
   else
-    elog(ERROR, "unknown mul function for base type: %d", type);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+      "unknown mul function for base type: %d", type);
   return result;
 }
 
@@ -353,8 +360,9 @@ datum_hash(Datum d, meosType type)
   else if (type == T_NPOINT)
     return npoint_hash(DatumGetNpointP(d));
 #endif
-  elog(ERROR, "unknown hash function for base type: %d", type);
-  return (uint32) 0; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+      "unknown hash function for base type: %d", type);
+  return INT_MAX;
 }
 
 /**
@@ -384,8 +392,9 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
   else if (type == T_NPOINT)
     return npoint_hash_extended(DatumGetNpointP(d), seed);
 #endif
-  elog(ERROR, "unknown extended hash function for base type: %d", type);
-  return (uint64) 0; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+    "unknown extended hash function for base type: %d", type);
+  return INT_MAX;
 }
 
 /*****************************************************************************
@@ -615,6 +624,10 @@ bstring2bytea(const uint8_t *wkb, size_t size)
 text *
 cstring2text(const char *cstring)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cstring))
+    return NULL;
+
   size_t len = strlen(cstring);
   text *result = palloc(len + VARHDRSZ);
   SET_VARSIZE(result, len + VARHDRSZ);
@@ -631,6 +644,10 @@ cstring2text(const char *cstring)
 char *
 text2cstring(const text *textptr)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) textptr))
+    return NULL;
+
   size_t size = VARSIZE_ANY_EXHDR(textptr);
   char *str = palloc(size + 1);
   memcpy(str, VARDATA(textptr), size);
@@ -906,8 +923,9 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
       return PointerGetDatum(npoint_parse(&str, end));
 #endif
     default: /* Error! */
-      elog(ERROR, "Unknown base type: %d", basetype);
-      return Int32GetDatum(0); /* make compiler quiet */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+        "Unknown base type: %d", basetype);
+      return Int32GetDatum(0);
   }
 }
 
@@ -917,9 +935,8 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
 char *
 basetype_out(Datum value, meosType basetype, int maxdd)
 {
-  /* Ensure validity of the arguments */
   assert(meos_basetype(basetype));
-  ensure_non_negative(maxdd);
+  assert(maxdd >= 0);
 
   switch (basetype)
   {
@@ -950,16 +967,16 @@ basetype_out(Datum value, meosType basetype, int maxdd)
       return double4_out(DatumGetDouble4P(value), maxdd);
 #endif
     case T_GEOMETRY:
-      return gserialized_out(DatumGetGserializedP(value));
     case T_GEOGRAPHY:
-      return gserialized_geog_out(DatumGetGserializedP(value));
+      return gserialized_out(DatumGetGserializedP(value));
 #if NPOINT
     case T_NPOINT:
       return npoint_out(DatumGetNpointP(value), maxdd);
 #endif
     default: /* Error! */
-      elog(ERROR, "Unknown base type: %d", basetype);
-      return NULL; /* make compiler quiet */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+        "Unknown base type: %d", basetype);
+      return NULL;
   }
 }
 

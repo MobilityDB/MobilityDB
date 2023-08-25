@@ -35,6 +35,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -413,7 +414,8 @@ bbox_mfjson_size(meosType temptype, bool hasz, int precision)
       size = stbox_mfjson_size(hasz, precision);
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", temptype);
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, 
+        "Unknown temporal type in MFJSON output: %d", temptype);
       return 0; /* make compiler quiet */
   }
   return size;
@@ -439,7 +441,8 @@ bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
     case T_TGEOGPOINT:
       return stbox_mfjson_buf(output, (STBox *) bbox, hasz, precision);
     default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", temptype);
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, 
+        "Unknown temporal type in MFJSON output: %d", temptype);
       return 0; /* make compiler quiet */
   }
 }
@@ -474,7 +477,8 @@ temptype_mfjson_size(meosType temptype)
       size = sizeof("{'type':'MovingGeogPoint',");
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", temptype);
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, 
+        "Unknown temporal type in MFJSON output: %d", temptype);
       size = 0; /* make compiler quiet */
       break;
   }
@@ -510,7 +514,8 @@ temptype_mfjson_buf(char *output, meosType temptype)
       ptr += sprintf(ptr, "{\"type\":\"MovingGeogPoint\",");
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", temptype);
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, 
+        "Unknown temporal type in MFJSON output: %d", temptype);
       break;
   }
   return (ptr - output);
@@ -981,7 +986,8 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   int precision, char *srs)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
+  if (! ensure_not_null((void *) temp))
+    return NULL;
 
   char *result;
   assert(temptype_subtype(temp->subtype));
@@ -1013,10 +1019,9 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
 char **
 temporalarr_out(const Temporal **temparr, int count, int maxdd)
 {
-  /* Ensure validity of the arguments */
   assert(temparr);
   assert(count > 0);
-  ensure_non_negative(maxdd);
+  assert(maxdd >=0);
 
   char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
@@ -1073,7 +1078,8 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
       return MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE;
 #endif /* NPOINT */
     default: /* Error! */
-      elog(ERROR, "Unknown temporal base type: %d", basetype);
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, 
+        "Unknown temporal base type in MFJSON output: %d", basetype);
       return 0; /* make compiler quiet */
   }
 }
@@ -1394,8 +1400,9 @@ datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
   if (temporal_type(type))
     return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
   /* Error! */
-  elog(ERROR, "Unknown WKB type: %d", type);
-  return 0; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+    "Unknown type in WKB output: %d", type);
+  return SIZE_MAX;
 }
 
 /*****************************************************************************
@@ -1484,8 +1491,11 @@ static uint8_t *
 bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(bool) != MEOS_WKB_BYTE_SIZE)
-    elog(ERROR, "Machine bool size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+      "Machine bool size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
+    return NULL;
+  }
   char *bptr = (char *)(&b);
   return bytes_to_wkb_buf(bptr, MEOS_WKB_BYTE_SIZE, buf, variant);
 }
@@ -1497,8 +1507,11 @@ static uint8_t *
 uint8_to_wkb_buf(const uint8_t i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int8) != MEOS_WKB_BYTE_SIZE)
-    elog(ERROR, "Machine int8 size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+      "Machine int8 size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
+    return NULL;
+  }
   char *iptr = (char *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_BYTE_SIZE, buf, variant);
 }
@@ -1510,8 +1523,11 @@ static uint8_t *
 int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int16) != MEOS_WKB_INT2_SIZE)
-    elog(ERROR, "Machine int16 size is not %d bytes!", MEOS_WKB_INT2_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+      "Machine int16 size is not %d bytes!", MEOS_WKB_INT2_SIZE);
+    return NULL;
+  }
   char *iptr = (char *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_INT2_SIZE, buf, variant);
 }
@@ -1523,8 +1539,11 @@ uint8_t *
 int32_to_wkb_buf(const int i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int) != MEOS_WKB_INT4_SIZE)
-    elog(ERROR, "Machine int32 size is not %d bytes!", MEOS_WKB_INT4_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+      "Machine int32 size is not %d bytes!", MEOS_WKB_INT4_SIZE);
+    return NULL;
+  }
   char *iptr = (char *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_INT4_SIZE, buf, variant);
 }
@@ -1536,8 +1555,11 @@ uint8_t *
 int64_to_wkb_buf(const int64 i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int64) != MEOS_WKB_INT8_SIZE)
-    elog(ERROR, "Machine int64 size is not %d bytes!", MEOS_WKB_INT8_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+      "Machine int64 size is not %d bytes!", MEOS_WKB_INT8_SIZE);
+    return NULL;
+  }
   char *iptr = (char *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_INT8_SIZE, buf, variant);
 }
@@ -1549,8 +1571,11 @@ uint8_t*
 double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(double) != MEOS_WKB_DOUBLE_SIZE)
-    elog(ERROR, "Machine double size is not %d bytes!", MEOS_WKB_DOUBLE_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+      "Machine double size is not %d bytes!", MEOS_WKB_DOUBLE_SIZE);
+    return NULL;
+  }
   char *dptr = (char *)(&d);
   return bytes_to_wkb_buf(dptr, MEOS_WKB_DOUBLE_SIZE, buf, variant);
 }
@@ -1563,9 +1588,11 @@ uint8_t *
 timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(TimestampTz) != MEOS_WKB_TIMESTAMP_SIZE)
-    elog(ERROR, "Machine timestamp size is not %d bytes!",
-      MEOS_WKB_TIMESTAMP_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+      "Machine timestamp size is not %d bytes!", MEOS_WKB_TIMESTAMP_SIZE);
+    return NULL;
+  }
   char *tptr = (char *)(&t);
   return bytes_to_wkb_buf(tptr, MEOS_WKB_TIMESTAMP_SIZE, buf, variant);
 }
@@ -1663,8 +1690,8 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
       break;
 #endif /* NPOINT */
     default: /* Error! */
-      elog(ERROR, "unknown basetype for function basevalue_to_wkb_buf: %d",
-        basetype);
+      meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+        "unknown basetype in WKB output: %d", basetype);
   }
   return buf;
 }
@@ -2178,7 +2205,8 @@ datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
     buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,
       variant);
   else /* Error! */
-    elog(ERROR, "Unknown WKB type: %d", type);
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Unknown type in WKB output: %d", type);
 
   return buf;
 }
@@ -2211,7 +2239,8 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   buf_size = datum_to_wkb_size(value, type, variant);
   if (buf_size == 0)
   {
-    elog(ERROR, "Error calculating output WKB buffer size.");
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+      "Error calculating output WKB buffer size.");
     return NULL;
   }
 
@@ -2233,8 +2262,8 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   buf = palloc(buf_size);
   if (buf == NULL)
   {
-    elog(ERROR, "Unable to allocate " UINT64_FORMAT
-      " bytes for WKB output buffer.", buf_size);
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, "Unable to allocate "
+      UINT64_FORMAT " bytes for WKB output buffer.", buf_size);
     return NULL;
   }
 
@@ -2254,7 +2283,8 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   /* The buffer pointer should now land at the end of the allocated buffer space. Let's check. */
   if (buf_size != (size_t) (buf - wkb_out))
   {
-    elog(ERROR, "Output WKB is not the same size as the allocated buffer.");
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+      "Output WKB is not the same size as the allocated buffer.");
     pfree(wkb_out);
     return NULL;
   }
@@ -2291,7 +2321,8 @@ uint8_t *
 span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->spantype, variant,
     size_out);
   return result;
@@ -2307,7 +2338,8 @@ char *
 span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->spantype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2325,7 +2357,8 @@ uint8_t *
 set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->settype, variant,
     size_out);
   return result;
@@ -2341,7 +2374,8 @@ char *
 set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->settype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2359,7 +2393,8 @@ uint8_t *
 spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(ss), ss->spansettype, variant,
     size_out);
   return result;
@@ -2375,7 +2410,8 @@ char *
 spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(ss), ss->spansettype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2393,7 +2429,8 @@ uint8_t *
 tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) box); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_TBOX, variant,
     size_out);
   return result;
@@ -2409,7 +2446,8 @@ char *
 tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) box); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_TBOX,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2427,7 +2465,8 @@ uint8_t *
 stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) box); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_STBOX, variant,
     size_out);
   return result;
@@ -2443,7 +2482,8 @@ char *
 stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) box); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2461,7 +2501,8 @@ uint8_t *
 temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant, size_out);
   return result;
@@ -2477,7 +2518,8 @@ char *
 temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) size_out);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;

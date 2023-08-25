@@ -790,7 +790,9 @@ Stbox_set_srid(PG_FUNCTION_ARGS)
 static STBox *
 stbox_transform(const STBox *box, int32 srid)
 {
+  /* Ensure validity of the arguments */
   ensure_has_X_stbox(box);
+
   STBox *result = stbox_copy(box);
   result->srid = DatumGetInt32(srid);
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);

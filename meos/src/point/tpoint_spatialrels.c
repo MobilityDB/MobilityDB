@@ -263,12 +263,17 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  * @param[in] numparam Number of parameters of the functions
  * @param[in] invert True if the arguments should be inverted
  */
-bool
+static int
 espatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   Datum (*func)(Datum, ...), int numparam, bool invert)
 {
   /* Ensure validity of the arguments */
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
+      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
+    return -1;
+    
+  assert(tpoint_srid(temp) == gserialized_get_srid(gs));
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
   Datum traj = PointerGetDatum(tpoint_trajectory(temp));
@@ -278,7 +283,7 @@ espatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   else /* numparam == 3 */
     result = invert ? func(geo, traj, param) : func(traj, geo, param);
   pfree(DatumGetPointer(traj));
-  return DatumGetBool(result);
+  return result ? 1 : 0;
 }
 
 /*****************************************************************************/
@@ -293,9 +298,14 @@ int
 espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum))
 {
-  assert(temp1); assert(temp2);
-  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_tgeo_type(temp1->temptype) ||
+      ! ensure_tgeo_type(temp2->temptype) ||
+      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+      ! ensure_same_dimensionality(temp1->flags, temp2->flags))
+    return -1;
+
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -336,12 +346,11 @@ int
 econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_tgeo_type(temp->temptype);
-  if (gserialized_is_empty(gs))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
+      ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags) ||
+      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
     return -1;
-  ensure_has_not_Z_gs(gs);
-  ensure_has_not_Z(temp->flags);
   GSERIALIZED *traj = tpoint_trajectory(temp);
   bool result = gserialized_relate_pattern(gs, traj, "T********");
   return result ? 1 : 0;
@@ -417,11 +426,10 @@ int
 edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_tgeo_type(temp->temptype);
-  if (gserialized_is_empty(gs))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
+      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
     return -1;
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
 
   varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, gs->gflags);
   bool result;
@@ -442,16 +450,12 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if the temporal points are ever disjoint, 0 if not, and
- * -1 if the temporal points do not intersect in time
+ * -1 on error or if the temporal points do not intersect in time
  * @sqlfunc disjoint()
  */
 int
 edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_tgeo_type(temp1->temptype);
-  ensure_tgeo_type(temp2->temptype);
   if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
     return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_nsame);
   else
@@ -466,38 +470,28 @@ edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a geometry and a temporal point ever intersect,
- * 0 if not, and -1 if the geometry is empty.
+ * 0 if not, and -1 on error or if the geometry is empty.
  * @sqlfunc intersects()
  */
 int
 eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_tgeo_type(temp->temptype);
-  if (gserialized_is_empty(gs))
-    return -1;
-
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
-  bool result = espatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func,
+  int result = espatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func,
     2, INVERT_NO);
-  return result ? 1 : 0;
+  return result;
 }
 
 #if MEOS
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if the temporal points ever intersect, 0 if not, and
- * -1 if the temporal points do not intersect in time
+ * -1 on error or if the temporal points do not intersect in time
  * @sqlfunc intersects()
  */
 int
 eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_tgeo_type(temp1->temptype);
-  ensure_tgeo_type(temp2->temptype);
   if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
     return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_same);
   else
@@ -514,18 +508,17 @@ eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a temporal point and a geometry ever touch, 0 if not, and
- * -1 if the geometry is empty
+ * -1 on error or if the geometry is empty
  * @sqlfunc touches()
  */
 int
 etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_tgeo_type(temp->temptype);
-  if (gserialized_is_empty(gs))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
+      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
     return -1;
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
 
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
@@ -560,22 +553,16 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a geometry and a temporal point are ever within the
- * given distance, 0 if not, -1 if a geometry is empty
+ * given distance, 0 if not, -1 on error or if a geometry is empty
  * @sqlfunc dwithin()
  */
 int
 edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_tgeo_type(temp->temptype);
-
-  if (gserialized_is_empty(gs))
-    return -1;
   datum_func3 func = get_dwithin_fn_gs(temp->flags, gs->gflags);
-  bool result = espatialrel_tpoint_geo(temp, gs, Float8GetDatum(dist),
+  int result = espatialrel_tpoint_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) func, 3, INVERT_NO);
-  return result ? 1 : 0;
+  return result;
 }
 
 /*****************************************************************************/
@@ -742,17 +729,18 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if the temporal points are ever within the given distance,
- * 0 if not, -1 if the temporal points do not intersect on time
+ * 0 if not, -1 on error or if the temporal points do not intersect on time
  * @sqlfunc dwithin()
  */
 int
 edwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_tgeo_type(temp1->temptype);
-  ensure_tgeo_type(temp2->temptype);
-  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_tgeo_type(temp1->temptype) ||
+      ! ensure_tgeo_type(temp2->temptype) ||
+      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)))
+    return -1;
 
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time

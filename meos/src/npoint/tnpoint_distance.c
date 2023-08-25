@@ -75,9 +75,11 @@ npoint_distance(Datum np1, Datum np2)
 Temporal *
 distance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      gserialized_is_empty(gs) || ! ensure_point_type(gs))
     return NULL;
-  ensure_point_type(gs);
+
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo((const Temporal *) tempgeom, gs);
   pfree(tempgeom);

@@ -61,8 +61,9 @@ timestamp_tprecision(TimestampTz t, const Interval *duration,
   TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) duration);
-  ensure_valid_duration(duration);
+  if (! ensure_not_null((void *) duration) ||
+      ! ensure_valid_duration(duration))
+    return DT_NOEND;
   TimestampTz result = timestamptz_bucket(t, duration, torigin);
   return result;
 }
@@ -78,9 +79,9 @@ Span *
 period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) s); ensure_not_null((void *) duration);
-  assert(s->basetype == T_TIMESTAMPTZ);
-  ensure_valid_duration(duration);
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
+      ! ensure_span_has_type(s, T_TSTZSPAN) || !ensure_valid_duration(duration))
+    return NULL;
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(s->lower);
@@ -106,9 +107,10 @@ periodset_tprecision(const SpanSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) duration);
-  assert(ss->basetype == T_TIMESTAMPTZ);
-  ensure_valid_duration(duration);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) duration) ||
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET) ||
+      ! ensure_valid_duration(duration))
+    return NULL;
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(ss->span.lower);
@@ -173,8 +175,9 @@ bool
 contains_intspanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
   return contains_spanset_value(ss, Int32GetDatum(i), T_INT4);
 }
 
@@ -187,8 +190,9 @@ bool
 contains_bigintspanset_bigint(const SpanSet *ss, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
   return contains_spanset_value(ss, Int64GetDatum(i), T_INT8);
 }
 
@@ -201,8 +205,9 @@ bool
 contains_floatspanset_float(const SpanSet *ss, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
   return contains_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
@@ -216,8 +221,9 @@ bool
 contains_periodset_timestamp(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
   return contains_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
@@ -230,8 +236,9 @@ bool
 contains_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return false;
 
   /* Bounding box test */
   if (! contains_span_span(&ss->span, s))
@@ -263,8 +270,9 @@ bool
 contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
-  ensure_same_spanset_type(ss1, ss2);
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
+      ! ensure_same_spanset_type(ss1, ss2))
+    return false;
 
   /* Bounding box test */
   if (! contains_span_span(&ss1->span, &ss2->span))
@@ -324,8 +332,9 @@ bool
 contained_int_intspanset(int i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
   return contained_value_spanset(Int32GetDatum(i), T_INT4, ss);
 }
 
@@ -338,8 +347,9 @@ bool
 contained_bigint_bigintspanset(int64 i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
   return contained_value_spanset(Int64GetDatum(i), T_INT8, ss);
 }
 
@@ -352,8 +362,9 @@ bool
 contained_float_floatspanset(double d, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
   return contained_value_spanset(Float8GetDatum(d), T_FLOAT8, ss);
 }
 
@@ -366,8 +377,9 @@ bool
 contained_timestamp_periodset(TimestampTz t, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
   return contained_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ss);
 }
 #endif /* MEOS */
@@ -418,8 +430,9 @@ bool
 overlaps_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return false;
 
   /* Bounding box test */
   if (! overlaps_span_span(s, &ss->span))
@@ -448,8 +461,9 @@ bool
 overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
-  ensure_same_spanset_type(ss1, ss2);
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
+      ! ensure_same_spanset_type(ss1, ss2))
+    return false;
 
   /* Bounding box test */
   if (! overlaps_span_span(&ss1->span, &ss2->span))
@@ -507,8 +521,9 @@ bool
 adjacent_intspanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
   return adjacent_spanset_value(ss, Int32GetDatum(i), T_INT4);
 }
 
@@ -521,8 +536,9 @@ bool
 adjacent_bigintspanset_bigint(const SpanSet *ss, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
   return adjacent_spanset_value(ss, Int64GetDatum(i), T_INT8);
 }
 
@@ -535,8 +551,9 @@ bool
 adjacent_floatspanset_float(const SpanSet *ss, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
   return adjacent_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -549,8 +566,9 @@ bool
 adjacent_periodset_timestamp(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
   return adjacent_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -564,8 +582,9 @@ bool
 adjacent_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return false;
 
   const Span *s1 = spanset_sp_n(ss, 0);
   const Span *s2 = spanset_sp_n(ss, ss->count - 1);
@@ -586,8 +605,9 @@ bool
 adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
-  ensure_same_spanset_type(ss1, ss2);
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
+      ! ensure_same_spanset_type(ss1, ss2))
+    return false;
 
   const Span *startps1 = spanset_sp_n(ss1, 0);
   const Span *endps1 = spanset_sp_n(ss1, ss1->count - 1);
@@ -627,8 +647,9 @@ bool
 left_int_intspanset(int i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
   return left_value_spanset(Int32GetDatum(i), T_INT4, ss);
 }
 
@@ -642,8 +663,9 @@ bool
 left_bigint_bigintspanset(int64 i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
   return left_value_spanset(Int64GetDatum(i), T_INT8, ss);
 }
 
@@ -656,8 +678,9 @@ bool
 left_float_floatspanset(double d, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
   return left_value_spanset(Float8GetDatum(d), T_FLOAT8, ss);
 }
 
@@ -670,8 +693,9 @@ bool
 before_timestamp_periodset(TimestampTz t, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
   return left_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ss);
 }
 #endif /* MEOS */
@@ -685,8 +709,9 @@ bool
 left_span_spanset(const Span *s, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return false;
 
   const Span *s1 = spanset_sp_n(ss, 0);
   return left_span_span(s, s1);
@@ -715,8 +740,9 @@ bool
 left_intspanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
   return left_spanset_value(ss, Int32GetDatum(i), T_INT4);
 }
 
@@ -730,8 +756,9 @@ bool
 left_bigintspanset_bigint(const SpanSet *ss, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
   return left_spanset_value(ss, Int64GetDatum(i), T_INT8);
 }
 
@@ -744,8 +771,9 @@ bool
 left_floatspanset_float(const SpanSet *ss, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
   return left_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -758,8 +786,9 @@ bool
 before_periodset_timestamp(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
   return left_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -773,8 +802,10 @@ bool
 left_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return false;
+
   const Span *s1 = spanset_sp_n(ss, ss->count - 1);
   return left_span_span(s1, s);
 }
@@ -789,8 +820,10 @@ bool
 left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
-  ensure_same_spanset_type(ss1, ss2);
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
+      ! ensure_same_spanset_type(ss1, ss2))
+    return false;
+
   const Span *s1 = spanset_sp_n(ss1, ss1->count - 1);
   const Span *s2 = spanset_sp_n(ss2, 0);
   return left_span_span(s1, s2);
@@ -976,8 +1009,9 @@ bool
 overleft_intspanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
   return overleft_spanset_value(ss, Int32GetDatum(i), T_INT4);
 }
 
@@ -991,8 +1025,9 @@ bool
 overleft_bigintspanset_bigint(const SpanSet *ss, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
   return overleft_spanset_value(ss, Int64GetDatum(i), T_INT8);
 }
 
@@ -1006,8 +1041,9 @@ bool
 overleft_floatspanset_float(const SpanSet *ss, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
   return overleft_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1020,8 +1056,9 @@ bool
 overbefore_periodset_timestamp(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
   return overleft_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -1049,8 +1086,9 @@ bool
 overleft_int_intspanset(int i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
   return overleft_value_spanset(Int32GetDatum(i), T_INT4, ss);
 }
 
@@ -1064,8 +1102,9 @@ bool
 overleft_bigint_bigintspanset(int64 i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
   return overleft_value_spanset(Int64GetDatum(i), T_INT8, ss);
 }
 
@@ -1078,8 +1117,9 @@ bool
 overleft_float_floatspanset(double d, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
   return overleft_value_spanset(Float8GetDatum(d), T_FLOAT8, ss);
 }
 
@@ -1092,8 +1132,9 @@ bool
 overbefore_timestamp_periodset(TimestampTz t, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
   return overleft_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ss);
 }
 #endif /* MEOS */
@@ -1107,8 +1148,10 @@ bool
 overleft_span_spanset(const Span *s, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return false;
+
   const Span *s1 = spanset_sp_n(ss, ss->count - 1);
   return overleft_span_span(s, s1);
 }
@@ -1122,8 +1165,10 @@ bool
 overleft_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return false;
+
   const Span *s1 = spanset_sp_n(ss, ss->count - 1);
   return overleft_span_span(s1, s);
 }
@@ -1138,8 +1183,9 @@ bool
 overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
-  ensure_same_spanset_type(ss1, ss2);
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
+      ! ensure_same_spanset_type(ss1, ss2))
+    return false;
 
   const Span *s1 = spanset_sp_n(ss1, ss1->count - 1);
   const Span *s2 = spanset_sp_n(ss2, ss2->count - 1);
@@ -1173,8 +1219,9 @@ bool
 overright_int_intspanset(int i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
   return overright_value_spanset(Int32GetDatum(i), T_INT4, ss);
 }
 
@@ -1188,8 +1235,9 @@ bool
 overright_bigint_bigintspanset(int64 i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
   return overright_value_spanset(Int64GetDatum(i), T_INT8, ss);
 }
 
@@ -1202,8 +1250,9 @@ bool
 overright_float_floatspanset(double d, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
   return overright_value_spanset(Float8GetDatum(d), T_FLOAT8, ss);
 }
 
@@ -1216,8 +1265,9 @@ bool
 overafter_timestamp_periodset(TimestampTz t, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
   return overright_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ss);
 }
 #endif /* MEOS */
@@ -1231,8 +1281,10 @@ bool
 overright_span_spanset(const Span *s, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return false;
+
   const Span *s1 = spanset_sp_n(ss, 0);
   return overright_span_span(s, s1);
 }
@@ -1260,8 +1312,9 @@ bool
 overright_intspanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
   return overright_spanset_value(ss, Int32GetDatum(i), T_INT4);
 }
 
@@ -1275,8 +1328,9 @@ bool
 overright_bigintspanset_bigint(const SpanSet *ss, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
   return overright_spanset_value(ss, Int64GetDatum(i), T_INT8);
 }
 
@@ -1289,8 +1343,9 @@ bool
 overright_floatspanset_float(const SpanSet *ss, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
   return overright_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1303,8 +1358,9 @@ bool
 overafter_periodset_timestamp(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
   return overright_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -1318,8 +1374,10 @@ bool
 overright_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return false;
+
   const Span *s1 = spanset_sp_n(ss, 0);
   return overright_span_span(s1, s);
 }
@@ -1334,8 +1392,10 @@ bool
 overright_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
-  ensure_same_spanset_type(ss1, ss2);
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
+      ! ensure_same_spanset_type(ss1, ss2))
+    return false;
+
   const Span *s1 = spanset_sp_n(ss1, 0);
   const Span *s2 = spanset_sp_n(ss2, 0);
   return overright_span_span(s1, s2);
@@ -1369,8 +1429,9 @@ SpanSet *
 union_intspanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return NULL;
   return union_spanset_value(ss, Int32GetDatum(i), T_INT4);
 }
 
@@ -1383,8 +1444,9 @@ SpanSet *
 union_bigintspanset_bigint(const SpanSet *ss, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return NULL;
   return union_spanset_value(ss, Int64GetDatum(i), T_INT8);
 }
 
@@ -1397,8 +1459,9 @@ SpanSet *
 union_floatspanset_float(const SpanSet *ss, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return NULL;
   return union_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1411,8 +1474,9 @@ SpanSet *
 union_periodset_timestamp(SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return NULL;
   return union_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -1426,8 +1490,9 @@ SpanSet *
 union_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return NULL;
 
   /* Transform the span into a span set */
   SpanSet *ss1 = span_to_spanset(s);
@@ -1446,8 +1511,9 @@ SpanSet *
 union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
-  ensure_same_spanset_type(ss1, ss2);
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
+      ! ensure_same_spanset_type(ss1, ss2))
+    return NULL;
 
   Span *spans = palloc(sizeof(Span) * (ss1->count + ss2->count));
   int i = 0, j = 0, nspans = 0;
@@ -1565,8 +1631,9 @@ bool
 intersection_intspanset_int(const SpanSet *ss, int i, int *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) result);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
 
   if (! contains_spanset_value(ss, Int32GetDatum(i), T_INT4))
     return false;
@@ -1583,8 +1650,9 @@ bool
 intersection_bigintspanset_bigint(const SpanSet *ss, int64 i, int64 *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) result);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
 
   if (! contains_spanset_value(ss, Int64GetDatum(i), T_INT8))
     return false;
@@ -1602,8 +1670,9 @@ bool
 intersection_floatspanset_float(const SpanSet *ss, double d, double *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) result);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
 
   if (! contains_spanset_value(ss, Float8GetDatum(d), T_FLOAT8))
     return false;
@@ -1622,8 +1691,9 @@ intersection_periodset_timestamp(const SpanSet *ss, TimestampTz t,
   TimestampTz *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) result);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
 
   if (! contains_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
     return false;
@@ -1641,8 +1711,9 @@ SpanSet *
 intersection_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return NULL;
 
   /* Bounding box test */
   if (! overlaps_span_span(s, &ss->span))
@@ -1682,8 +1753,9 @@ SpanSet *
 intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
-  ensure_same_spanset_type(ss1, ss2);
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
+      ! ensure_same_spanset_type(ss1, ss2))
+    return NULL;
 
   /* Bounding box test */
   Span s;
@@ -1751,8 +1823,9 @@ bool
 minus_int_intspanset(int i, const SpanSet *ss, int *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return false;
 
   Datum v;
   bool found = minus_value_spanset(Int32GetDatum(i), T_INT4, ss, &v);
@@ -1770,8 +1843,9 @@ bool
 minus_bigint_bigintspanset(int64 i, const SpanSet *ss, int64 *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) result);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return false;
 
   Datum v;
   bool found = minus_value_spanset(Int64GetDatum(i), T_INT8, ss, &v);
@@ -1789,8 +1863,9 @@ bool
 minus_float_floatspanset(double d, const SpanSet *ss, double *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) result);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return false;
 
   Datum v;
   bool found = minus_value_spanset(Float8GetDatum(d), T_FLOAT8, ss, &v);
@@ -1809,8 +1884,9 @@ minus_timestamp_periodset(TimestampTz t, const SpanSet *ss,
   TimestampTz *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) result);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return false;
 
   Datum v;
   bool res = minus_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ss,
@@ -1871,8 +1947,9 @@ SpanSet *
 minus_span_spanset(const Span *s, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return NULL;
 
   /* Bounding box test */
   if (! overlaps_span_span(s, &ss->span))
@@ -1926,8 +2003,9 @@ SpanSet *
 minus_intspanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return NULL;
   return minus_spanset_value(ss, Int32GetDatum(i), T_INT4);
 }
 
@@ -1940,8 +2018,9 @@ SpanSet *
 minus_bigintspanset_bigint(const SpanSet *ss, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return NULL;
   return minus_spanset_value(ss, Int64GetDatum(i), T_INT8);
 }
 
@@ -1954,8 +2033,9 @@ SpanSet *
 minus_floatspanset_float(const SpanSet *ss, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return NULL;
   return minus_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1968,8 +2048,9 @@ SpanSet *
 minus_periodset_timestamp(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return NULL;
   return minus_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -1983,8 +2064,9 @@ SpanSet *
 minus_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss); ensure_not_null((void *) s);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return NULL;
 
   /* Bounding box test */
   if (! overlaps_span_span(&ss->span, s))
@@ -2015,8 +2097,9 @@ SpanSet *
 minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
-  ensure_same_spanset_type(ss1, ss2);
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
+      ! ensure_same_spanset_type(ss1, ss2))
+    return NULL;
 
   /* Bounding box test */
   if (! overlaps_span_span(&ss1->span, &ss2->span))
@@ -2093,8 +2176,9 @@ double
 distance_intspanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT4);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT4))
+    return -1.0;
   return distance_spanset_value(ss, Int32GetDatum(i), T_INT4);
 }
 
@@ -2108,8 +2192,9 @@ double
 distance_bigintspanset_bigint(const SpanSet *ss, int64 i)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_INT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_INT8))
+    return -1.0;
   return distance_spanset_value(ss, Int64GetDatum(i), T_INT8);
 }
 
@@ -2122,8 +2207,9 @@ double
 distance_floatspanset_float(const SpanSet *ss, double d)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_FLOAT8);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_FLOAT8))
+    return -1.0;
   return distance_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -2137,8 +2223,9 @@ double
 distance_periodset_timestamp(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_TIMESTAMPTZ))
+    return -1.0;
   return distance_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -2152,8 +2239,9 @@ double
 distance_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss);
-  ensure_same_spanset_spantype(ss, s);
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_spantype(ss, s))
+    return -1.0;
   return distance_span_span(&ss->span, s);
 }
 
@@ -2166,8 +2254,9 @@ double
 distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) ss1); ensure_not_null((void *) ss2);
-  ensure_same_spanset_type(ss1, ss2);
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
+      ! ensure_same_spanset_type(ss1, ss2))
+    return -1.0;
   return distance_span_span(&ss1->span, &ss2->span);
 }
 

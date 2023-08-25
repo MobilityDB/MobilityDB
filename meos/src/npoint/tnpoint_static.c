@@ -80,13 +80,19 @@ get_srid_ways()
     SPITupleTable *tuptable = SPI_tuptable;
     Datum value = SPI_getbinval(tuptable->vals[0], tuptable->tupdesc, 1, &isNull);
     if (isNull)
-      elog(ERROR, "Cannot determine SRID of the ways table");
-
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Cannot determine SRID of the ways table");
+      return SRID_INVALID;
+    }
     srid_ways = DatumGetInt32(value);
   }
   else
-    elog(ERROR, "Cannot determine SRID of the ways table");
-
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Cannot determine SRID of the ways table");
+    return SRID_INVALID;
+  }
   SPI_finish();
   return srid_ways;
 }
@@ -251,8 +257,8 @@ char *
 npoint_out(const Npoint *np, int maxdd)
 {
   /* Ensure validity of the arguments */
-  assert(np != NULL);
-  ensure_non_negative(maxdd);
+  if (! ensure_not_null((void *) np) || ! ensure_non_negative(maxdd))
+    return NULL;
 
   char *result = palloc(MAXNPOINTLEN);
   char *rid = int8_out(np->rid);
@@ -280,8 +286,8 @@ char *
 nsegment_out(const Nsegment *ns, int maxdd)
 {
   /* Ensure validity of the arguments */
-  assert(ns != NULL);
-  ensure_non_negative(maxdd);
+  if (! ensure_not_null((void *) ns) || ! ensure_non_negative(maxdd))
+    return NULL;
 
   char *result = palloc(MAXNPOINTLEN);
   char *rid = int8_out(ns->rid);
@@ -315,10 +321,17 @@ void
 npoint_set(int64 rid, double pos, Npoint *np)
 {
   if (!route_exists(rid))
-    elog(ERROR, "There is no route with gid value %ld in table ways", rid);
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "There is no route with gid value %ld in table ways", rid);
+    return;
+  }
   if (pos < 0 || pos > 1)
-    elog(ERROR, "The relative position must be a real number between 0 and 1");
-
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The relative position must be a real number between 0 and 1");
+    return;
+  }
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(np, 0, sizeof(Npoint));
   /* Fill in the network point */
@@ -345,10 +358,17 @@ void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 {
   if (! route_exists(rid))
-    elog(ERROR, "There is no route with gid value %ld in table ways", rid);
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "There is no route with gid value %ld in table ways", rid);
+    return;
+  }
   if (pos1 < 0 || pos1 > 1 || pos2 < 0 || pos2 > 1)
-    elog(ERROR, "The relative position of a network segment must be a real number between 0 and 1");
-
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The relative position of a network segment must be a real number between 0 and 1");
+    return;
+  }
   ns->rid = rid;
   ns->pos1 = Min(pos1, pos2);
   ns->pos2 = Max(pos1, pos2);
@@ -466,8 +486,11 @@ route_length(int64 rid)
   SPI_finish();
 
   if (isNull)
-    elog(ERROR, "Cannot get the length for route %ld", rid);
-
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot get the length for route %ld", rid);
+    return 0;
+  }
   return result;
 }
 
@@ -500,9 +523,14 @@ route_geom(int64 rid)
   SPI_finish();
 
   if (isNull)
-    elog(ERROR, "Cannot get the geometry for route %ld", rid);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot get the geometry for route %ld", rid);
 
-  ensure_non_empty(result);
+  if (! ensure_non_empty(result))
+  {
+    pfree(result);
+    return NULL;
+  }
 
   return result;
 }
@@ -531,7 +559,8 @@ rid_from_geom(Datum geom)
   }
   SPI_finish();
   if (isNull)
-    elog(ERROR, "Cannot get route identifier from geometry point");
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot get route identifier from geometry point");
 
   return result;
 }
@@ -555,12 +584,14 @@ npoint_geom(const Npoint *np)
 Npoint *
 geom_npoint(const GSERIALIZED *gs)
 {
-  /* Ensure validity of operation */
-  ensure_non_empty(gs);
-  ensure_point_type(gs);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs) || 
+      ! ensure_point_type(gs))
+    return NULL;
   int32_t srid_geom = gserialized_get_srid(gs);
   int32_t srid_ways = get_srid_ways();
-  ensure_same_srid(srid_geom, srid_ways);
+  if (srid_ways == SRID_INVALID || ! ensure_same_srid(srid_geom, srid_ways))
+    return NULL;
 
   char *geomstr = ewkt_out(PointerGetDatum(gs), 0, OUT_DEFAULT_DECIMAL_DIGITS);
   char sql[512];
@@ -616,11 +647,13 @@ nsegment_geom(const Nsegment *ns)
 Nsegment *
 geom_nsegment(const GSERIALIZED *gs)
 {
-  /* Ensure validity of operation */
-  ensure_non_empty(gs);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs))
+    return NULL;
   int geomtype = gserialized_get_type(gs);
   if (geomtype != POINTTYPE && geomtype != LINETYPE)
-    elog(ERROR, "Only point or line geometries accepted");
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only point or line geometries accepted");
 
   Npoint **points;
   Npoint *np;

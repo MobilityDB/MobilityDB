@@ -417,27 +417,18 @@ pg_tzset_offset(long gmtoffset)
  * Initialize timezone cache
  */
 void
-meos_timezone_initialize(const char *name)
-{
-  session_timezone = pg_tzset(name);
-  if (! session_timezone)
-    elog(ERROR, "Failed to initialize local timezone");
-  return;
-}
-
-/*
- * Initialize timezone library
- */
-void
-meos_initialize(const char *tz_str)
+meos_initialize_timezone(const char *tz_str)
 {
   if (tz_str == NULL || strlen(tz_str) == 0)
     /* fetch local timezone */
     tz_str = select_default_timezone(NULL);
   if (tz_str == NULL)
-    meos_timezone_initialize("GMT");
-  else
-    meos_timezone_initialize(tz_str);
+    /* default timezone */
+    tz_str = "GMT";
+
+  session_timezone = pg_tzset(tz_str);
+  if (! session_timezone)
+    elog(ERROR, "Failed to initialize local timezone");
   return;
 }
 
@@ -445,9 +436,10 @@ meos_initialize(const char *tz_str)
  * Free the timezone cache
  */
 void
-meos_finalize(void)
+meos_finalize_timezone(void)
 {
   if (session_timezone)
     tzcache_destroy(timezone_cache);
   return;
 }
+/*****************************************************************************/

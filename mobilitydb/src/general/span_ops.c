@@ -613,10 +613,8 @@ Distance_value_value(PG_FUNCTION_ARGS)
 {
   Datum d1 = PG_GETARG_DATUM(0);
   Datum d2 = PG_GETARG_DATUM(1);
-  meosType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  meosType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  assert(basetype1 == basetype2);
-  double result = distance_value_value(d1, d2, basetype1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  double result = distance_value_value(d1, d2, basetype);
   PG_RETURN_FLOAT8(result);
 }
 

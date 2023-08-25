@@ -87,7 +87,7 @@ int main(void)
   int i = 0, j;
 
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  meos_initialize(NULL, NULL);
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("trips.csv", "r");

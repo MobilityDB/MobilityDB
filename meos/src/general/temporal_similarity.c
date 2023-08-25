@@ -152,7 +152,7 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
   SimFunc simfunc)
 {
   assert(temp1); assert(temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  assert(temp1->temptype == temp2->temptype);
   double result;
   int count1, count2;
   const TInstant **instants1 = temporal_instants(temp1, &count1);
@@ -176,7 +176,8 @@ double
 temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+    return DBL_MAX;
   return temporal_similarity(temp1, temp2, FRECHET);
 }
 
@@ -190,7 +191,8 @@ double
 temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+    return DBL_MAX;
   return temporal_similarity(temp1, temp2, DYNTIMEWARP);
 }
 #endif
@@ -229,7 +231,7 @@ matrix_print(double *dist, int count1, int count2)
   for (j = 0; j < count2; j++)
     len += sprintf(buf+len, "    %2d    ", j);
   sprintf(buf+len, "\n"); /* make Codacy quiet by removing last assignment */
-  elog(WARNING, "MATRIX:\n%s", buf);
+  meos_error(WARNING, 0, "MATRIX:\n%s", buf);
   return;
 }
 
@@ -244,7 +246,7 @@ path_print(Match *path, int count)
   int i, k = 0;
   for (i = count - 1; i >= 0; i--)
     len += sprintf(buf+len, "%d: (%2d,%2d)\n", k++, path[i].i, path[i].j);
-  elog(WARNING, "PATH:\n%s", buf);
+  meos_error(WARNING, 0, "PATH:\n%s", buf);
   return;
 }
 #endif
@@ -397,7 +399,7 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
   int *count, SimFunc simfunc)
 {
   assert(temp1); assert(temp2); assert(count);
-  ensure_same_temporal_type(temp1, temp2);
+  assert(temp1->temptype == temp2->temptype);
   int count1, count2;
   const TInstant **instants1 = temporal_instants(temp1, &count1);
   const TInstant **instants2 = temporal_instants(temp2, &count2);
@@ -423,8 +425,9 @@ Match *
 temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_not_null((void *) count);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_not_null((void *) count))
+    return NULL;
   return temporal_similarity_path(temp1, temp2, count, FRECHET);
 }
 
@@ -440,8 +443,9 @@ temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
   int *count)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_not_null((void *) count);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_not_null((void *) count))
+    return NULL;
   return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);
 }
 #endif
@@ -508,8 +512,9 @@ double
 temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return -1.0;
 
   double result;
   int count1, count2;

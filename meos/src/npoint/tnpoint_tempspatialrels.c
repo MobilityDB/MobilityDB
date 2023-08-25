@@ -56,7 +56,10 @@ Temporal *
 tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
   bool restr, bool atvalue)
 {
-  ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
+  /* Ensure validity of the arguments */
+  if (! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
+    return NULL;
+
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
   /* Result depends on whether we are computing tintersects or tdisjoint */
@@ -75,9 +78,12 @@ Temporal *
 tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   bool restr, bool atvalue)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      gserialized_is_empty(gs) ||
+      ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
     return NULL;
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
+
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(tempgeom, gs, tinter, restr,
@@ -112,9 +118,11 @@ Temporal *
 ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (gserialized_is_empty(gs) ||
+      ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
     return NULL;
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
+
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = ttouches_tpoint_geo(tempgeom, gs, restr, atvalue);
@@ -141,7 +149,10 @@ Temporal *
 ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
   bool atvalue)
 {
-  ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
+  /* Ensure validity of the arguments */
+  if (! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
+    return NULL;
+
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
   /* Result depends on whether we are computing tintersects or tdisjoint */

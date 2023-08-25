@@ -324,230 +324,325 @@ geom_intersection2d(Datum geom1, Datum geom2)
  * @brief Ensure that the spatial constraints required for operating on two
  * temporal geometries are satisfied
  */
-void
+bool
 ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 {
-  if (tgeo_type(temp1->temptype))
-  {
-    ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
-    ensure_same_dimensionality(temp1->flags, temp2->flags);
-  }
-  return;
+  if (tgeo_type(temp1->temptype) &&
+      (! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+       ! ensure_same_dimensionality(temp1->flags, temp2->flags)))
+    return false;
+  return true;
 }
 
 /**
  * @brief Ensure that the spatiotemporal argument has planar coordinates
  */
-void
+bool
 ensure_not_geodetic(int16 flags)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags))
-    elog(ERROR, "Only planar coordinates supported");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only planar coordinates supported");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that the spatiotemporal argument have the same type of
  * coordinates, either planar or geodetic
  */
-void
+bool
 ensure_same_geodetic(int16 flags1, int16 flags2)
 {
   if (MEOS_FLAGS_GET_X(flags1) && MEOS_FLAGS_GET_X(flags2) &&
     MEOS_FLAGS_GET_GEODETIC(flags1) != MEOS_FLAGS_GET_GEODETIC(flags2))
-    elog(ERROR, "Operation on mixed planar and geodetic coordinates");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed planar and geodetic coordinates");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that the two spatial "objects" have the same SRID
  */
-void
+bool
 ensure_same_srid(int32_t srid1, int32_t srid2)
 {
   if (srid1 != srid2)
-    elog(ERROR, "Operation on mixed SRID");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed SRID");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that a temporal point and a geometry/geography have the same
  * SRID
  */
-void
+bool
 ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 {
   if (box->srid != gserialized_get_srid(gs))
-    elog(ERROR, "Operation on mixed SRID");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed SRID");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that two temporal points have the same dimensionality as given
  * by their flags
  */
-void
+bool
 ensure_same_dimensionality(int16 flags1, int16 flags2)
 {
   if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
-    MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2) ||
-    MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
-    elog(ERROR, "The arguments must be of the same dimensionality");
-  return;
+      MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2) ||
+      MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The arguments must be of the same dimensionality");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if the two temporal points have the same spatial
+ * dimensionality as given by their flags
+ */
+bool
+same_spatial_dimensionality(int16 flags1, int16 flags2)
+{
+  if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
+      MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2))
+    return false;
+  return true;
 }
 
 /**
  * @brief Ensure that two temporal points have the same spatial dimensionality
  * as given by their flags
  */
-void
+bool
 ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
-    MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2))
-    elog(ERROR, "Operation on mixed 2D/3D dimensions");
-  return;
+  if (! same_spatial_dimensionality(flags1, flags2))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed 2D/3D dimensions");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that a temporal point and a spatiotemporal box have the same
  * spatial dimensionality as given by their flags
  */
-void
+bool
 ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2)
 {
   if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
       /* Geodetic boxes are always in 3D */
       (! MEOS_FLAGS_GET_GEODETIC(flags2) &&
       MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2)))
-    elog(ERROR, "Operation on mixed 2D/3D dimensions");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed 2D/3D dimensions");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that two geometries/geographies have the same dimensionality
  */
-void
+bool
 ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   if (FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags))
-    elog(ERROR, "Operation on mixed 2D/3D dimensions");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed 2D/3D dimensions");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if a temporal point and a geometry/geography have the 
+ * same dimensionality
+ */
+bool
+same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
+{
+  if (MEOS_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->gflags))
+    return false;
+  return true;
 }
 
 /**
  * @brief Ensure that a temporal point and a geometry/geography have the same
  * dimensionality
  */
-void
+bool
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (MEOS_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->gflags))
-    elog(ERROR, "Operation on mixed 2D/3D dimensions");
-  return;
+  if (! same_dimensionality_tpoint_gs(temp, gs))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed 2D/3D dimensions");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that the spatiotemporal boxes have the same spatial
  * dimensionality
  */
-void
+bool
 ensure_same_spatial_dimensionality_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 {
   if (! MEOS_FLAGS_GET_X(box->flags) ||
       /* Geodetic boxes are always in 3D */
      (! MEOS_FLAGS_GET_GEODETIC(box->flags) &&
         MEOS_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->gflags)))
-    elog(ERROR, "The spatiotemporal box and the geometry must be of the same dimensionality");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The spatiotemporal box and the geometry must be of the same dimensionality");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that a temporal point has Z dimension
  */
-void
+bool
 ensure_has_Z(int16 flags)
 {
   if (! MEOS_FLAGS_GET_Z(flags))
-    elog(ERROR, "The temporal point must have Z dimension");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal point must have Z dimension");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that a temporal point has not Z dimension
  */
-void
+bool
 ensure_has_not_Z(int16 flags)
 {
   if (MEOS_FLAGS_GET_Z(flags))
-    elog(ERROR, "The temporal point cannot have Z dimension");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal point cannot have Z dimension");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that the geometry/geography has not Z dimension
  */
-void
+bool
 ensure_has_Z_gs(const GSERIALIZED *gs)
 {
   if (! FLAGS_GET_Z(gs->gflags))
-    elog(ERROR, "The geometry must have Z dimension");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The geometry must have Z dimension");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that the geometry/geography has not Z dimension
  */
-void
+bool
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
 {
   if (FLAGS_GET_Z(gs->gflags))
-    elog(ERROR, "The geometry cannot have Z dimension");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The geometry cannot have Z dimension");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that the geometry/geography has M dimension
  */
-void
+bool
 ensure_has_M_gs(const GSERIALIZED *gs)
 {
   if (! FLAGS_GET_M(gs->gflags))
-    elog(ERROR, "Only geometries with M dimension accepted");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only geometries with M dimension accepted");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that the geometry/geography has not M dimension
  */
-void
+bool
 ensure_has_not_M_gs(const GSERIALIZED *gs)
 {
   if (FLAGS_GET_M(gs->gflags))
-    elog(ERROR, "Only geometries without M dimension accepted");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only geometries without M dimension accepted");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that the geometry/geography is a point
  */
-void
+bool
 ensure_point_type(const GSERIALIZED *gs)
 {
   if (gserialized_get_type(gs) != POINTTYPE)
-    elog(ERROR, "Only point geometries accepted");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only point geometries accepted");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that the geometry/geography is not empty
  */
-void
+bool
 ensure_non_empty(const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
-    elog(ERROR, "Only non-empty geometries accepted");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only non-empty geometries accepted");
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************
@@ -745,24 +840,27 @@ tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal point is ever equal to a point.
  * @see tpointinst_ever_eq
  * @see tpointseq_ever_eq
  * @see tpointseqset_ever_eq
  */
 bool
-tpoint_ever_eq(const Temporal *temp, Datum value)
+tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(temp);
-  ensure_tgeo_type(temp->temptype);
-  GSERIALIZED *gs = DatumGetGserializedP(value);
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs))
     return false;
-  ensure_point_type(gs);
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  if (! ensure_same_temporal_basetype(temp, geotype) ||
+      ! ensure_point_type(gs) ||
+      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_same_dimensionality_tpoint_gs(temp, gs))
+    return false;
 
+  Datum value = PointerGetDatum(gs);
   bool result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -773,34 +871,6 @@ tpoint_ever_eq(const Temporal *temp, Datum value)
     result = tpointseqset_ever_eq((TSequenceSet *) temp, value);
   return result;
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_ever
- * @brief Return true if a temporal geometric point is ever equal to a point.
- * @sqlop @p ?=
- */
-bool tgeompoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_same_temporal_basetype(temp, T_GEOMETRY);
-  return tpoint_ever_eq(temp, PointerGetDatum(gs));
-}
-
-/**
- * @ingroup libmeos_temporal_ever
- * @brief Return true if a temporal geographic point is ever equal to a point.
- * @sqlop @p ?=
- */
-bool tgeogpoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_same_temporal_basetype(temp, T_GEOGRAPHY);
-  return tpoint_ever_eq(temp, PointerGetDatum(gs));
-}
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -867,17 +937,20 @@ tpointseqset_always_eq(const TSequenceSet *ss, Datum value)
  * @sqlop @p %=
  */
 bool
-tpoint_always_eq(const Temporal *temp, Datum value)
+tpoint_always_eq(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(temp);
-  assert(tgeo_type(temp->temptype));
-  GSERIALIZED *gs = DatumGetGserializedP(value);
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs))
     return false;
-  ensure_point_type(gs);
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  if (! ensure_same_temporal_basetype(temp, geotype) ||
+      ! ensure_point_type(gs) ||
+      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_same_dimensionality_tpoint_gs(temp, gs))
+    return false;
 
+  Datum value = PointerGetDatum(gs);
   bool result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -888,34 +961,6 @@ tpoint_always_eq(const Temporal *temp, Datum value)
     result = tpointseqset_always_eq((TSequenceSet *) temp, value);
   return result;
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_ever
- * @brief Return true if a temporal geometric point is always equal to a point.
- * @sqlop @p %=
- */
-bool tgeompoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_same_temporal_basetype(temp, T_GEOMETRY);
-  return tpoint_always_eq(temp, PointerGetDatum(gs));
-}
-
-/**
- * @ingroup libmeos_temporal_ever
- * @brief Return true if a temporal geographic point is always equal to a point.
- * @sqlop @p %=
- */
-bool tgeogpoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  ensure_same_temporal_basetype(temp, T_GEOGRAPHY);
-  return tpoint_always_eq(temp, PointerGetDatum(gs));
-}
-#endif /* MEOS */
 
 /*****************************************************************************
  * Functions derived from PostGIS to increase floating-point precision
@@ -1813,8 +1858,8 @@ GSERIALIZED *
 tpoint_trajectory(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   GSERIALIZED *result;
   assert(temptype_subtype(temp->subtype));
@@ -1884,8 +1929,8 @@ int
 tpoint_srid(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return SRID_INVALID;
 
   int result;
   assert(temptype_subtype(temp->subtype));
@@ -1985,8 +2030,8 @@ Temporal *
 tpoint_set_srid(const Temporal *temp, int32 srid)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   Temporal *result;
   if (temp->subtype == TINSTANT)
@@ -2124,8 +2169,8 @@ Temporal *
 tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -2429,7 +2474,11 @@ datum_round_geometrycollection(GSERIALIZED *gs, Datum size)
     else if (geom->type == MULTIPOLYGONTYPE)
       round_multipolygon(lwgeom_as_lwmpoly(geom), size, hasz, hasm);
     else
-      elog(ERROR, "Unsupported geometry type");
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Unsupported geometry type");
+      return PointerGetDatum(NULL);
+    }
   }
   GSERIALIZED *result = geo_serialize((LWGEOM *) coll);
   lwfree(coll);
@@ -2466,12 +2515,13 @@ datum_round_geo(Datum value, Datum size)
     return datum_round_multipolygon(gs, size);
   if (type == COLLECTIONTYPE)
     return datum_round_geometrycollection(gs, size);
-  elog(ERROR, "Unsupported geometry type");
-  return Float8GetDatum(0); /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unsupported geometry type");
+  return Float8GetDatum(0);
 }
 
 /**
- * @ingroup mobilitydb_temporal_spatial_transf
+ * @ingroup meos_temporal_spatial_transf
  * @brief Set the precision of the coordinates of a temporal point to a
  * number of decimal places.
  * @sqlfunc round()
@@ -2480,9 +2530,9 @@ Temporal *
 tpoint_round(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  assert(temp != NULL);
-  assert(temp->temptype == T_TGEOMPOINT || temp->temptype == T_TGEOGPOINT);
-  ensure_non_negative(maxdd);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_non_negative(maxdd))
+    return NULL;
 
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -2601,8 +2651,8 @@ double
 tpoint_length(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return -1.0;
 
   double result = 0.0;
   assert(temptype_subtype(temp->subtype));
@@ -2695,8 +2745,8 @@ Temporal *
 tpoint_cumulative_length(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -2720,8 +2770,8 @@ GSERIALIZED *
 tpoint_convex_hull(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   GSERIALIZED *traj = tpoint_trajectory(temp);
   GSERIALIZED *result = gserialized_convex_hull(traj);
@@ -2808,8 +2858,8 @@ Temporal *
 tpoint_speed(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
@@ -2931,8 +2981,8 @@ GSERIALIZED *
 tpoint_twcentroid(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   GSERIALIZED *result;
   assert(temptype_subtype(temp->subtype));
@@ -3059,8 +3109,9 @@ bool
 tpoint_direction(const Temporal *temp, double *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) result);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return false;
 
   bool found = false;
   assert(temptype_subtype(temp->subtype));
@@ -3192,8 +3243,8 @@ Temporal *
 tpoint_azimuth(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
@@ -3215,8 +3266,8 @@ Temporal *
 tpoint_angular_difference(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp);
-  ensure_tgeo_type(temp->temptype);
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   Temporal *tazimuth = tpoint_azimuth(temp);
   Temporal *result = NULL;
@@ -3465,10 +3516,11 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double *result)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) gs1); ensure_not_null((void *) gs2);
-  ensure_point_type(gs1); ensure_point_type(gs2);
-  ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2));
-  ensure_same_dimensionality_gs(gs1, gs2);
+  if (! ensure_not_null((void *) gs1) || ! ensure_not_null((void *) gs2) ||
+      ! ensure_point_type(gs1) || ! ensure_point_type(gs2) ||
+      ! ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2)) ||
+      ! ensure_same_dimensionality_gs(gs1, gs2))
+    return false;
 
   if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
@@ -3488,13 +3540,12 @@ Temporal *
 bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp); ensure_not_null((void *) gs);
-  if (gserialized_is_empty(gs))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      gserialized_is_empty(gs) ||
+      ! ensure_tgeo_type(temp->temptype) || ! ensure_point_type(gs) ||
+      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return NULL;
-  ensure_tgeo_type(temp->temptype);
-  ensure_point_type(gs);
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -3521,11 +3572,12 @@ Temporal *
 bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  ensure_not_null((void *) temp1); ensure_not_null((void *) temp2);
-  ensure_tgeo_type(temp1->temptype);
-  ensure_same_temporal_type(temp1, temp2);
-  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_tgeo_type(temp1->temptype) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+      ! ensure_same_dimensionality(temp1->flags, temp2->flags) )
+    return NULL;
 
   datum_func2 func = get_bearing_fn(temp1->flags);
   LiftedFunctionInfo lfinfo;
@@ -3639,7 +3691,9 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
         GEOSGeom_destroy(pt2);
         break;
       default:
-        elog(ERROR, "Invalid geometry type for Minimum Rotated Rectangle");
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Invalid geometry type for Minimum Rotated Rectangle");
+        return -1;
     }
   }
   return result;
@@ -3665,7 +3719,11 @@ multipoint_make(const TSequence *seq, int start, int end)
         tinstant_value(TSEQUENCE_INST_N(seq, start + i))));
 #endif
     else
-      elog(ERROR, "Sequence must have a spatial base type");
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Sequence must have a spatial base type");
+      return NULL;
+    }
     const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
     geoms[i] = GEOSGeom_createPointFromXY(pt->x, pt->y);
   }
@@ -3688,7 +3746,11 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
     gs = npoint_geom(DatumGetNpointP(tinstant_value(inst)));
 #endif
   else
-    elog(ERROR, "Instant must have a spatial base type");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Instant must have a spatial base type");
+    return NULL;
+  }
   const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
   GEOSGeometry *geom1 = GEOSGeom_createPointFromXY(pt->x, pt->y);
   GEOSGeometry *result = GEOSUnion(geom, geom1);
