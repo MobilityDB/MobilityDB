@@ -818,7 +818,7 @@ static void
 tpointseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
-  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
     tcontseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
   else
     tdiscseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);

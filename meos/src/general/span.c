@@ -951,7 +951,6 @@ floatspan_intspan(const Span *s)
 }
 #endif /* MEOS */
 
-
 /**
  * @ingroup libmeos_internal_setspan_transf
  * @brief Set the second span with the first one transformed to a float span

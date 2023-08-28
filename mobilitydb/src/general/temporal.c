@@ -1780,13 +1780,32 @@ PG_FUNCTION_INFO_V1(Temporal_to_tsequence);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal sequence
+ * @note The SQL function is not strict
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq()
  */
 Datum
 Temporal_to_tsequence(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_to_tsequence(temp);
+  interpType interp;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+  {
+    text *interp_txt = PG_GETARG_TEXT_P(1);
+    char *interp_str = text2cstring(interp_txt);
+    interp = interp_from_string(interp_str);
+    pfree(interp_str);
+  }
+  else
+  {
+    if (temp->subtype == TSEQUENCE)
+      interp = MEOS_FLAGS_GET_INTERP(temp->flags);
+    else
+      interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
+  }
+  Temporal *result = temporal_to_tsequence(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1796,13 +1815,31 @@ PG_FUNCTION_INFO_V1(Temporal_to_tsequenceset);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal sequence set
+ * @note The SQL function is not strict
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset()
  */
 Datum
 Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_to_tsequenceset(temp);
+  interpType interp;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+  {
+    text *interp_txt = PG_GETARG_TEXT_P(1);
+    char *interp_str = text2cstring(interp_txt);
+    interp = interp_from_string(interp_str);
+    pfree(interp_str);
+  }
+  else
+  {
+    interp = MEOS_FLAGS_GET_INTERP(temp->flags);
+    if (interp == INTERP_NONE || interp == DISCRETE)
+      interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
+  }
+  Temporal *result = temporal_to_tsequenceset(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

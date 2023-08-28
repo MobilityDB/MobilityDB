@@ -60,7 +60,7 @@ npoint_parse(const char **str, bool end)
 
   *str += 6;
   p_whitespace(str);
-  
+
   /* Parse opening parenthesis */
   if (! ensure_oparen(str, type_str))
     return NULL;

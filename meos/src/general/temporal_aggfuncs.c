@@ -217,6 +217,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
  * @param[in] crossings True if turning points are added in the segments
  * @param[out] result Array on which the pointers of the newly constructed
  * ranges are stored
+ * @return On error return -1
  * @note Return new sequences that must be freed by the calling function
  */
 static int
@@ -559,7 +560,7 @@ temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
   if (temp->subtype == TINSTANT)
     result =  tinstant_tagg_transfn(state, (TInstant *) temp, func);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
       tdiscseq_tagg_transfn(state, (TSequence *) temp, func) :
       tcontseq_tagg_transfn(state, (TSequence *) temp, func, crossings);
   else /* temp->subtype == TSEQUENCESET */
@@ -605,7 +606,7 @@ temporal_tagg_combinefn(SkipList *state1, SkipList *state2, datum_func2 func,
 Temporal *
 temporal_tagg_finalfn(SkipList *state)
 {
-  if (state == NULL || state->length == 0)
+  if (! state || state->length == 0)
     return NULL;
   /* A copy of the values is needed for switching from aggregate context */
   Temporal **values = skiplist_temporal_values(state);
@@ -630,6 +631,12 @@ temporal_tagg_finalfn(SkipList *state)
 SkipList *
 tbool_tand_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_has_type(temp, T_TBOOL))
+    return NULL;
   return temporal_tagg_transfn(state, temp, &datum_and, CROSSINGS_NO);
 }
 
@@ -641,6 +648,12 @@ tbool_tand_transfn(SkipList *state, const Temporal *temp)
 SkipList *
 tbool_tor_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_has_type(temp, T_TBOOL))
+    return NULL;
   return temporal_tagg_transfn(state, temp, &datum_or, CROSSINGS_NO);
 }
 
@@ -652,6 +665,12 @@ tbool_tor_transfn(SkipList *state, const Temporal *temp)
 SkipList *
 tint_tmin_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_has_type(temp, T_TINT))
+    return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_int32, CROSSINGS_NO);
 }
 
@@ -663,6 +682,12 @@ tint_tmin_transfn(SkipList *state, const Temporal *temp)
 SkipList *
 tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_float8, CROSSINGS);
 }
 
@@ -674,6 +699,12 @@ tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
 SkipList *
 tint_tmax_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_has_type(temp, T_TINT))
+    return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_int32, CROSSINGS_NO);
 }
 
@@ -685,6 +716,12 @@ tint_tmax_transfn(SkipList *state, const Temporal *temp)
 SkipList *
 tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_float8, CROSSINGS);
 }
 
@@ -696,6 +733,12 @@ tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
 SkipList *
 tint_tsum_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_has_type(temp, T_TINT))
+    return NULL;
   return temporal_tagg_transfn(state, temp, &datum_sum_int32, CROSSINGS_NO);
 }
 
@@ -707,6 +750,12 @@ tint_tsum_transfn(SkipList *state, const Temporal *temp)
 SkipList *
 tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
   return temporal_tagg_transfn(state, temp, &datum_sum_float8, CROSSINGS_NO);
 }
 
@@ -718,6 +767,12 @@ tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
 SkipList *
 tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_tnumber_type(temp->temptype))
+    return NULL;
   return temporal_tagg_transform_transfn(state, temp, &datum_sum_double2,
     CROSSINGS_NO, &tnumberinst_transform_tavg);
 }
@@ -730,6 +785,12 @@ tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
 SkipList *
 ttext_tmin_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_has_type(temp, T_TTEXT))
+    return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_text, CROSSINGS_NO);
 }
 
@@ -741,6 +802,12 @@ ttext_tmin_transfn(SkipList *state, const Temporal *temp)
 SkipList *
 ttext_tmax_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_has_type(temp, T_TTEXT))
+    return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_text, CROSSINGS_NO);
 }
 
@@ -818,7 +885,7 @@ temporal_transform_tagg(const Temporal *temp, int *count,
   }
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
+    if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
     {
       result = (Temporal **) tdiscseq_transform_tagg((TSequence *) temp,
         func);
@@ -958,7 +1025,7 @@ temporal_transform_tcount(const Temporal *temp, int *count)
   }
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
+    if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
     {
       result = (Temporal **) tdiscseq_transform_tcount((TSequence *) temp);
       *count = ((TSequence *) temp)->count;
@@ -986,8 +1053,12 @@ temporal_transform_tcount(const Temporal *temp, int *count)
 SkipList *
 temporal_tcount_transfn(SkipList *state, const Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
   int count;
   Temporal **temparr = temporal_transform_tcount(temp, &count);
+  /* Null state: create a new state */
   if (! state)
     state = skiplist_make((void **) temparr, count);
   else
@@ -1067,7 +1138,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
 Temporal *
 tnumber_tavg_finalfn(SkipList *state)
 {
-  if (state->length == 0)
+  if (! state || state->length == 0)
     return NULL;
 
   Temporal **values = (Temporal **) skiplist_values(state);
@@ -1091,13 +1162,13 @@ tnumber_tavg_finalfn(SkipList *state)
  * @brief Transition function for temporal extent aggregate of temporal values
  */
 Span *
-temporal_extent_transfn(Span *p, const Temporal *temp)
+temporal_extent_transfn(Span *s, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
-  if (! p && ! temp)
+  if (! s && ! temp)
     return NULL;
   /* Null period and non-null temporal, return the bbox of the temporal */
-  if (! p)
+  if (! s)
   {
     Span *result = palloc0(sizeof(Span));
     temporal_set_period(temp, result);
@@ -1105,12 +1176,12 @@ temporal_extent_transfn(Span *p, const Temporal *temp)
   }
   /* Non-null period and null temporal, return the period */
   if (! temp)
-    return p;
+    return s;
 
-  Span p1;
-  temporal_set_period(temp, &p1);
-  span_expand(&p1, p);
-  return p;
+  Span s1;
+  temporal_set_period(temp, &s1);
+  span_expand(&s1, s);
+  return s;
 }
 
 /**
@@ -1121,7 +1192,7 @@ TBox *
 tnumber_extent_transfn(TBox *box, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
-  if (!box && !temp)
+  if (! box && ! temp)
     return NULL;
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (! box)
@@ -1133,6 +1204,10 @@ tnumber_extent_transfn(TBox *box, const Temporal *temp)
   /* Non-null box and null temporal, return the box */
   if (! temp)
     return box;
+
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tnumber_tbox(temp, box))
+    return NULL;
 
   /* Both box and temporal are not null */
   TBox b;

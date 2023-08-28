@@ -1,5 +1,4 @@
 add_library(general OBJECT
-  basetype_inout.c
   doublen.c
   error.c
   lifting.c

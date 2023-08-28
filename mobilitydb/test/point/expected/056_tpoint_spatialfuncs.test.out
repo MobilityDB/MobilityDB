@@ -10,12 +10,9 @@ SELECT srid(stbox 'SRID=4326;STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,
  4326
 (1 row)
 
+/* Errors */
 SELECT srid(stbox 'STBOX T([2000-01-01,2000-01-02])');
- srid 
-------
-    0
-(1 row)
-
+ERROR:  The box must have space dimension
 SELECT setSRID(stbox 'STBOX X((1,1),(2,2))', 5676);
             setsrid             
 --------------------------------
@@ -40,12 +37,6 @@ SELECT setSRID(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 5676
  SRID=5676;STBOX ZT(((1,1,1),(2,2,2)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
-SELECT setSRID(stbox 'STBOX T([2000-01-01,2000-01-02])', 5676);
-                                setsrid                                
------------------------------------------------------------------------
- STBOX T([Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
-(1 row)
-
 SELECT setSRID(stbox 'GEODSTBOX Z((1,1,1),(2,2,2))', 4326);
                 setsrid                 
 ----------------------------------------
@@ -58,12 +49,11 @@ SELECT setSRID(stbox 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 
  SRID=4326;GEODSTBOX ZT(((1,1,1),(2,2,2)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
+/* Errors */
+SELECT setSRID(stbox 'STBOX T([2000-01-01,2000-01-02])', 5676);
+ERROR:  The box must have space dimension
 SELECT setSRID(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])', 4326);
-                                  setsrid                                  
----------------------------------------------------------------------------
- GEODSTBOX T([Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
-(1 row)
-
+ERROR:  The box must have space dimension
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 5676), 4326), 1);
              round              
 --------------------------------

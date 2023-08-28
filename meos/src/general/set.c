@@ -381,7 +381,8 @@ char *
 floatset_out(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_FLOATSET))
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_FLOATSET) ||
+      ! ensure_non_negative(maxdd))
     return NULL;
   return set_out(s, maxdd);
 }
@@ -420,7 +421,8 @@ char *
 geoset_out(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
+      ! ensure_non_negative(maxdd))
     return NULL;
   return set_out(s, maxdd);
 }
@@ -435,7 +437,8 @@ char *
 geoset_as_text(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
+      ! ensure_non_negative(maxdd))
     return NULL;
   return set_out_fn(s, maxdd, &wkt_out);
 }
@@ -449,7 +452,8 @@ char *
 geoset_as_ewkt(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
+      ! ensure_non_negative(maxdd))
     return NULL;
   return set_out_fn(s, maxdd, &ewkt_out);
 }
@@ -460,6 +464,7 @@ geoset_as_ewkt(const Set *s, int maxdd)
 
 /**
  * @brief Return the size of a bounding box of a temporal type
+ * @return On error return SIZE_MAX
  */
 static size_t
 set_bbox_size(meosType settype)
@@ -485,19 +490,27 @@ void
 valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   void *box)
 {
-  /* Currently, only geo set types have bounding box */
+  /* Currently, only geoset types have bounding box */
   assert(set_basetype(basetype));
   assert(! alphanum_basetype(basetype));
   if (geo_basetype(basetype))
+  {
     geoarr_set_stbox(values, count, (STBox *) box);
+    return;
+  }
 #if NPOINT
   else if (basetype == T_NPOINT)
-   npointarr_set_stbox(values, count, (STBox *) box);
+  {
+    npointarr_set_stbox(values, count, (STBox *) box);
+    return;
+  }
 #endif
   else
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "unknown set type for computing bounding box: %d", basetype);
-  return;
+    return;
+  }
 }
 
 #ifdef DEBUG_BUILD
@@ -584,8 +597,10 @@ Set *
 set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   bool ordered)
 {
-  assert(values);
-  assert(maxcount >= count);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) values) || ! ensure_positive(count) ||
+      ! ensure_less_equal(count, maxcount))
+    return NULL;
 
   bool hasz = false;
   bool geodetic = false;
@@ -603,7 +618,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
       GSERIALIZED *gs2 = DatumGetGserializedP(values[i]);
       if (! ensure_point_type(gs2) ||
           ! ensure_same_srid(srid, gserialized_get_srid(gs2)) ||
-          ! ensure_same_dimensionality_gs(gs1, gs2) || 
+          ! ensure_same_dimensionality_gs(gs1, gs2) ||
           ! ensure_non_empty(gs2))
         return NULL;
     }
@@ -747,7 +762,7 @@ intset_make(const int *values, int count)
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = Int32GetDatum(values[i]);
-  return set_make(datums, count, T_INT4, ORDERED);
+  return set_make_free(datums, count, T_INT4, ORDERED);
 }
 
 /**
@@ -764,7 +779,7 @@ bigintset_make(const int64 *values, int count)
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = Int64GetDatum(values[i]);
-  return set_make(datums, count, T_INT8, ORDERED);
+  return set_make_free(datums, count, T_INT8, ORDERED);
 }
 
 /**
@@ -781,7 +796,7 @@ floatset_make(const double *values, int count)
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = Float8GetDatum(values[i]);
-  return set_make(datums, count, T_FLOAT8, ORDERED);
+  return set_make_free(datums, count, T_FLOAT8, ORDERED);
 }
 
 /**
@@ -798,7 +813,7 @@ textset_make(const text **values, int count)
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = PointerGetDatum(values[i]);
-  return set_make(datums, count, T_TEXT, ORDERED);
+  return set_make_free(datums, count, T_TEXT, ORDERED);
 }
 
 /**
@@ -815,7 +830,7 @@ timestampset_make(const TimestampTz *values, int count)
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = TimestampTzGetDatum(values[i]);
-  return set_make(datums, count, T_TIMESTAMPTZ, ORDERED);
+  return set_make_free(datums, count, T_TIMESTAMPTZ, ORDERED);
 }
 
 /**
@@ -834,7 +849,7 @@ geoset_make(const GSERIALIZED **values, int count)
     datums[i] = PointerGetDatum(values[i]);
   meosType geotype = FLAGS_GET_GEODETIC(values[0]->gflags) ?
     T_GEOMETRY : T_GEOGRAPHY;
-  return set_make(datums, count, geotype, ORDERED);
+  return set_make_free(datums, count, geotype, ORDERED);
 }
 #endif /* MEOS */
 
@@ -1571,6 +1586,27 @@ geoset_srid(const Set *s)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Return a copy of a set ordered, without duplicates, and with no
+ * additional free space.
+ */
+Set *
+set_compact(const Set *s)
+{
+  assert(s);
+  /* Collect the values which may be UNSORTED */
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = SET_VAL_N(s, i);
+
+  Set *result = set_make_exp(values, s->count, s->count, s->basetype, ORDERED);
+  pfree(values);
+  return result;
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_transf

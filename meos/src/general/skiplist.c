@@ -128,6 +128,7 @@ random_level()
 
 /**
  * @brief Return the position to store an additional element in the skiplist
+ * @return On error return INT_MAX
  */
 static int
 skiplist_alloc(SkipList *list)
@@ -461,8 +462,8 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
       "Cannot aggregate temporal values of different type");
     return;
   }
-  if (MEOS_FLAGS_GET_LINEAR(temp1->flags) !=
-      MEOS_FLAGS_GET_LINEAR(temp2->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) !=
+      MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
   {
     meos_error(ERROR, MEOS_ERR_AGGREGATION_ERROR,
       "Cannot aggregate temporal values of different interpolation");

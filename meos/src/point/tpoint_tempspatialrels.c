@@ -379,7 +379,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
   TSequence **allseqs;
 
   /* Step interpolation */
-  if (! MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (! MEOS_FLAGS_LINEAR_INTERP(ss->flags))
   {
     allseqs = palloc(sizeof(TSequence *) * ss->count);
     for (int i = 0; i < ss->count; i++)
@@ -457,7 +457,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
     result = (Temporal *) tinterrel_tpointinst_geom((TInstant *) temp,
       PointerGetDatum(gs), tinter, func);
   else if (temp->subtype == TSEQUENCE)
-    result = ! MEOS_FLAGS_GET_LINEAR(temp->flags) ?
+    result = ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
       (Temporal *) tinterrel_tpointseq_discstep_geom((TSequence *) temp,
         PointerGetDatum(gs), tinter, func) :
       (Temporal *) tinterrel_tpointseq_cont_geom((TSequence *) temp,
@@ -837,8 +837,8 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
   }
 
   int nseqs = 0;
-  bool linear1 = MEOS_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MEOS_FLAGS_GET_LINEAR(seq2->flags);
+  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
+  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
   Datum sv1 = tinstant_value(start1);
   Datum sv2 = tinstant_value(start2);
@@ -978,7 +978,7 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
   }
 
   int nseqs = 0;
-  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   TimestampTz lower = start->t;
   bool lower_inc = seq->period.lower_inc;
@@ -1206,7 +1206,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   }
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MEOS_FLAGS_GET_LINEAR(temp->flags))
+    if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
       result = (Temporal *) tdwithin_tpointseq_point((TSequence *) temp,
           PointerGetDatum(gs), Float8GetDatum(dist), func);
     else

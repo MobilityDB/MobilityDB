@@ -317,8 +317,8 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
-    MEOS_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   int result = efunc_temporal_temporal(temp1, temp2, &lfinfo);
@@ -530,7 +530,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (gsbound && ! gserialized_is_empty(gsbound))
     result = func(PointerGetDatum(gsbound), PointerGetDatum(traj));
   /* TODO */
-  // else if (MEOS_FLAGS_GET_LINEAR(temp->flags))
+  // else if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
   // {
     // /* The geometry is a point or a multipoint -> the boundary is empty */
     // GSERIALIZED *tempbound = gserialized_boundary(traj);
@@ -628,8 +628,8 @@ edwithin_tpointseq_tpointseq_cont(const TSequence *seq1, const TSequence *seq2,
   Datum sv1 = tinstant_value(start1);
   Datum sv2 = tinstant_value(start2);
 
-  bool linear1 = MEOS_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MEOS_FLAGS_GET_LINEAR(seq2->flags);
+  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
+  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
   TimestampTz lower = start1->t;
   bool lower_inc = seq1->period.lower_inc;
@@ -681,8 +681,8 @@ static bool
 edwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
   const TSequenceSet *ss2, double dist, datum_func3 func)
 {
-  bool linear = MEOS_FLAGS_GET_LINEAR(ss1->flags) ||
-    MEOS_FLAGS_GET_LINEAR(ss2->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(ss2->flags);
   for (int i = 0; i < ss1->count; i++)
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
@@ -714,8 +714,8 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
     result = edwithin_tpointinst_tpointinst((TInstant *) sync1,
       (TInstant *) sync2, dist, func);
   else if (sync1->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_LINEAR(sync1->flags) ||
-        MEOS_FLAGS_GET_LINEAR(sync2->flags) ?
+    result = MEOS_FLAGS_LINEAR_INTERP(sync1->flags) ||
+        MEOS_FLAGS_LINEAR_INTERP(sync2->flags) ?
       edwithin_tpointseq_tpointseq_cont((TSequence *) sync1,
         (TSequence *) sync2, dist, func) :
       edwithin_tpointseq_tpointseq_discstep((TSequence *) sync1,

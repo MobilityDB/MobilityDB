@@ -146,7 +146,7 @@ tnpoint_tgeompoint(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
       (Temporal *) tnpointdiscseq_tgeompointdiscseq((TSequence *) temp) :
       (Temporal *) tnpointcontseq_tgeompointcontseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -301,7 +301,7 @@ tnpointseq_linear_positions(const TSequence *seq)
 Nsegment **
 tnpointseq_positions(const TSequence *seq, int *count)
 {
-  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
   {
     Nsegment **result = palloc(sizeof(Nsegment *));
     result[0] = tnpointseq_linear_positions(seq);
@@ -359,7 +359,7 @@ Nsegment **
 tnpointseqset_positions(const TSequenceSet *ss, int *count)
 {
   Nsegment **result;
-  result = (MEOS_FLAGS_GET_LINEAR(ss->flags)) ?
+  result = (MEOS_FLAGS_LINEAR_INTERP(ss->flags)) ?
     tnpointseqset_linear_positions(ss, count) :
     tnpointseqset_step_positions(ss, count);
   return result;
@@ -399,11 +399,12 @@ tnpointinst_route(const TInstant *inst)
 
 /**
  * @brief Return the single route of a temporal network point.
+ * @return On error return INT_MAX
  */
 int64
 tnpoint_route(const Temporal *temp)
 {
-  if ( temp->subtype != TINSTANT && MEOS_FLAGS_GET_DISCRETE(temp->flags) )
+  if ( temp->subtype != TINSTANT && MEOS_FLAGS_DISCRETE_INTERP(temp->flags) )
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Input must be a temporal instant or a temporal sequence with continuous interpolation");
@@ -490,7 +491,7 @@ tnpoint_routes(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tnpointinst_routes((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
       tnpointdiscseq_routes((TSequence *) temp) :
       tnpointcontseq_routes((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */

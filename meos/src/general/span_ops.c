@@ -851,7 +851,7 @@ bool
 overleft_floatspan_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) && ! ensure_same_span_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
     return false;
   return overleft_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -1640,6 +1640,7 @@ minus_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between two values as a double
+ * @return On error return DBL_MAX
  */
 double
 distance_value_value(Datum l, Datum r, meosType type)

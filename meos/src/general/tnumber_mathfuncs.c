@@ -284,8 +284,8 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 {
   assert(tnumber_type(temp1->temptype));
   assert(temp1->temptype == temp2->temptype);
-  bool linear1 = MEOS_FLAGS_GET_LINEAR(temp1->flags);
-  bool linear2 = MEOS_FLAGS_GET_LINEAR(temp2->flags);
+  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(temp1->flags);
+  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
 
   /* If division test whether the denominator will ever be zero during
    * the common timespan */
@@ -430,7 +430,7 @@ tnumberseq_abs(const TSequence *seq)
 {
   assert(seq);
   assert(tnumber_type(seq->temptype));
-  TSequence *result = MEOS_FLAGS_GET_LINEAR(seq->flags) ?
+  TSequence *result = MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
     tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
   return result;
 }
@@ -449,7 +449,7 @@ tnumberseqset_abs(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = MEOS_FLAGS_GET_LINEAR(ss->flags) ?
+    sequences[i] = MEOS_FLAGS_LINEAR_INTERP(ss->flags) ?
       tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
@@ -464,7 +464,8 @@ Temporal *
 tnumber_abs(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tnumber_type(temp->temptype))
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_tnumber_type(temp->temptype))
     return NULL;
 
   Temporal *result = NULL;
@@ -526,7 +527,7 @@ tnumberseq_delta_value(const TSequence *seq)
   }
   instants[seq->count - 1] = tinstant_make(delta, seq->temptype, inst1->t);
   /* Resulting sequence has discrete or step interpolation */
-  interpType interp = MEOS_FLAGS_GET_DISCRETE(seq->flags) ? DISCRETE : STEP;
+  interpType interp = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ? DISCRETE : STEP;
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     interp == DISCRETE ? true : false, interp, NORMALIZE);
 }
@@ -573,7 +574,8 @@ Temporal *
 tnumber_delta_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tnumber_type(temp->temptype))
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tnumber_type(temp->temptype))
     return NULL;
 
   Temporal *result = NULL;
@@ -688,7 +690,8 @@ Temporal *
 tnumber_angular_difference(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tnumber_type(temp->temptype))
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tnumber_type(temp->temptype))
     return NULL;
 
   Temporal *result = NULL;
@@ -805,7 +808,7 @@ tfloatseq_derivative(const TSequence *seq)
 {
   assert(seq);
   assert(seq->temptype == T_TFLOAT);
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -878,7 +881,7 @@ tfloat_derivative(const Temporal *temp)
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tfloatseq_derivative((TSequence *) temp);

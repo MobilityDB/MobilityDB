@@ -153,7 +153,9 @@ ensure_has_T_stbox(const STBox *box)
 STBox *
 stbox_in(const char *str)
 {
-  assert(str);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
   return stbox_parse(&str);
 }
 
@@ -251,11 +253,11 @@ stbox_out(const STBox *box, int maxdd)
 STBox *
 stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
-  const Span *p)
+  const Span *s)
 {
   /* Note: zero-fill is done in function stbox_set */
   STBox *result = palloc(sizeof(STBox));
-  stbox_set(hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin, zmax, p,
+  stbox_set(hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin, zmax, s,
     result);
   return result;
 }
@@ -269,7 +271,7 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 void
 stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
-  const Span *p, STBox *box)
+  const Span *s, STBox *box)
 {
   assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -279,10 +281,10 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   MEOS_FLAGS_SET_GEODETIC(box->flags, geodetic);
   box->srid = srid;
 
-  if (p)
+  if (s)
   {
     /* Process T min/max */
-    memcpy(&box->period, p, sizeof(Span));
+    memcpy(&box->period, s, sizeof(Span));
     MEOS_FLAGS_SET_T(box->flags, true);
   }
   if (hasx)
@@ -348,17 +350,18 @@ geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
  * @sqlfunc stbox()
  */
 STBox *
-geo_period_to_stbox(const GSERIALIZED *gs, const Span *p)
+geo_period_to_stbox(const GSERIALIZED *gs, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) p))
+  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||  
+      ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
 
   if (gserialized_is_empty(gs))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
   geo_set_stbox(gs, result);
-  memcpy(&result->period, p, sizeof(Span));
+  memcpy(&result->period, s, sizeof(Span));
   MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
@@ -492,10 +495,7 @@ Span *
 stbox_to_period(const STBox *box)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return NULL;
-
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! ensure_not_null((void *) box) || ! ensure_has_T_stbox(box))
     return NULL;
   return span_copy(&box->period);
 }
@@ -596,7 +596,7 @@ STBox *
 geo_to_stbox(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs))
+  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));
@@ -685,7 +685,9 @@ timestampset_set_stbox(const Set *s, STBox *box)
 STBox *
 timestampset_to_stbox(const Set *s)
 {
-  assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
+    return NULL;
   STBox *result = palloc(sizeof(STBox));
   timestampset_set_stbox(s, result);
   return result;
@@ -717,7 +719,9 @@ period_set_stbox(const Span *s, STBox *box)
 STBox *
 period_to_stbox(const Span *s)
 {
-  assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
+    return NULL;
   STBox *result = palloc(sizeof(STBox));
   period_set_stbox(s, result);
   return result;
@@ -749,7 +753,11 @@ periodset_set_stbox(const SpanSet *ss, STBox *box)
 STBox *
 periodset_to_stbox(const SpanSet *ss)
 {
-  assert(ss);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+    return NULL;
+
   STBox *result = palloc(sizeof(STBox));
   periodset_set_stbox(ss, result);
   return result;
@@ -1035,7 +1043,7 @@ int32
 stbox_srid(const STBox *box)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box))
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
     return SRID_INVALID;
   return box->srid;
 }
@@ -1049,7 +1057,7 @@ STBox *
 stbox_set_srid(const STBox *box, int32 srid)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box))
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
     return NULL;
   STBox *result = stbox_copy(box);
   result->srid = srid;
@@ -1634,7 +1642,7 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_same_geodetic(box1->flags, box2->flags) ||
       ! ensure_same_dimensionality(box1->flags, box2->flags) ||
-      ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2)))
+      ! ensure_same_srid_stbox(box1, box2))
     return NULL;
   /* If the strict parameter is true, we need to ensure that the boxes
    * intersect, otherwise their union cannot be represented by a box */
@@ -1676,7 +1684,7 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
 
   if (hasx)
   {
-    assert(MEOS_FLAGS_GET_GEODETIC(box1->flags) == 
+    assert(MEOS_FLAGS_GET_GEODETIC(box1->flags) ==
       MEOS_FLAGS_GET_GEODETIC(box2->flags));
     assert(stbox_srid(box1) == stbox_srid(box2));
   }
@@ -1715,7 +1723,7 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_same_geodetic(box1->flags, box2->flags) ||
       // ! ensure_same_dimensionality(box1->flags, box2->flags) ||
-      ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2)))
+      ! ensure_same_srid_stbox(box1, box2))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));

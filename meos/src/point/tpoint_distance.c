@@ -455,7 +455,7 @@ distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = lfinfo.reslinear ?
@@ -486,8 +486,8 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   lfinfo.func = (varfunc) pt_distance_fn(temp1->flags);
   lfinfo.numparam = 0;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
-    MEOS_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
@@ -737,11 +737,11 @@ nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (temp->subtype == TINSTANT)
     result = tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_LINEAR(temp->flags) ?
+    result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
       nai_tpointseq_linear_geo((TSequence *) temp, geo) :
       nai_tpointseq_discstep_geo((TSequence *) temp, geo);
   else /* temp->subtype == TSEQUENCESET */
-    result = MEOS_FLAGS_GET_LINEAR(temp->flags) ?
+    result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
       nai_tpointseqset_linear_geo((TSequenceSet *) temp, geo) :
       nai_tpointseqset_step_geo((TSequenceSet *) temp, geo);
   lwgeom_free(geo);

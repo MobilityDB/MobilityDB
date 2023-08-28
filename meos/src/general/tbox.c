@@ -42,6 +42,7 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/set.h"
+#include "general/spanset.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
@@ -116,6 +117,7 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
  * TBOX T([2001-01-01, 2001-01-02]) -> only time
  * @endcode
  * where the commas are optional.
+ * @return On error return NULL
  */
 TBox *
 tbox_in(const char *str)
@@ -129,6 +131,7 @@ tbox_in(const char *str)
 /**
  * @ingroup libmeos_box_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal box.
+ * @return On error return NULL
  */
 char *
 tbox_out(const TBox *box, int maxdd)
@@ -175,11 +178,14 @@ tbox_out(const TBox *box, int maxdd)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from a number span and a period.
+ * @return On error return NULL
  * @sqlfunc tbox()
  */
 TBox *
 tbox_make(const Span *s, const Span *p)
 {
+  if (! ensure_one_not_null((void *) s, (void *) p))
+    return NULL;
   /* Note: zero-fill is done in function tbox_set */
   TBox *result = palloc(sizeof(TBox));
   tbox_set(s, p, result);
@@ -243,7 +249,7 @@ number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
   span_set(d, d, true, true, basetype, &s);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
-  return tbox_make(&s, &p);;
+  return tbox_make(&s, &p);
 }
 
 #if MEOS
@@ -294,7 +300,7 @@ TBox *
 int_period_to_tbox(int i, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
   return number_period_to_tbox(Int32GetDatum(i), T_INT4, s);
 }
@@ -308,7 +314,7 @@ TBox *
 float_period_to_tbox(double d, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
   return number_period_to_tbox(Float8GetDatum(d), T_FLOAT8, s);
 }
@@ -468,7 +474,7 @@ numset_set_tbox(const Set *s, TBox *box)
 #if MEOS
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast a set to a temporal box.
+ * @brief Cast a number set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -476,7 +482,7 @@ TBox *
 numset_to_tbox(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) s) || ! ensure_numset_type(s->settype))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
@@ -510,7 +516,7 @@ TBox *
 timestampset_to_tbox(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
@@ -542,7 +548,7 @@ TBox *
 numspan_to_tbox(const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) s) || ! ensure_numspan_type(s->spantype))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
@@ -574,7 +580,8 @@ TBox *
 period_to_tbox(const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) s) || 
+      ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
@@ -605,7 +612,8 @@ TBox *
 numspanset_to_tbox(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss))
+  if (! ensure_not_null((void *) ss) || 
+      ! ensure_numspan_type(ss->spantype))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
@@ -635,7 +643,8 @@ TBox *
 periodset_to_tbox(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss))
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
@@ -989,15 +998,17 @@ tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hast Boolean variables
  */
-static void
+static bool
 topo_tbox_tbox_init(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 {
   assert(box1); assert(box2); assert(hasx); assert(hast);
   if (! ensure_common_dimension(box1->flags, box2->flags))
-    return;
+    return false;
   *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
   *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  return;
+  if (*hasx && ! ensure_same_span_type(&box1->span, &box2->span))
+    return false;
+  return true;
 }
 
 /**
@@ -1008,12 +1019,12 @@ topo_tbox_tbox_init(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 bool
 contains_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  bool hasx, hast;
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
     return false;
 
-  bool hasx, hast;
-  topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   if (hasx && ! contains_span_span(&box1->span, &box2->span))
     return false;
   if (hast && ! contains_span_span(&box1->period, &box2->period))
@@ -1040,12 +1051,12 @@ contained_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  bool hasx, hast;
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box1) && ! ensure_not_null((void *) box2))
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
     return false;
 
-  bool hasx, hast;
-  topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   if (hasx && ! overlaps_span_span(&box1->span, &box2->span))
     return false;
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
@@ -1061,12 +1072,12 @@ overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 same_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  bool hasx, hast;
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
     return false;
 
-  bool hasx, hast;
-  topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   if (hasx && ! span_eq(&box1->span, &box2->span))
     return false;
   if (hast && ! span_eq(&box1->period, &box2->period))
@@ -1082,12 +1093,12 @@ same_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  bool hasx, hast;
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
     return false;
 
-  bool hasx, hast;
-  topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   /* Boxes are adjacent if they are adjacent in at least one dimension */
   bool adjx = false, adjt = false;
   if (hasx)
@@ -1112,7 +1123,8 @@ left_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2))
+      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
+      ! ensure_same_span_type(&box1->span, &box2->span))
     return false;
   return left_span_span(&box1->span, &box2->span);
 }
@@ -1128,7 +1140,8 @@ overleft_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2))
+      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
+      ! ensure_same_span_type(&box1->span, &box2->span))
     return false;
   return overleft_span_span(&box1->span, &box2->span);
 }
@@ -1144,7 +1157,8 @@ right_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2))
+      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
+      ! ensure_same_span_type(&box1->span, &box2->span))
     return false;
   return right_span_span(&box1->span, &box2->span);
 }
@@ -1160,7 +1174,8 @@ overright_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2))
+      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
+      ! ensure_same_span_type(&box1->span, &box2->span))
     return false;
 
   return overright_span_span(&box1->span, &box2->span);
@@ -1244,7 +1259,9 @@ union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_same_dimensionality_tbox(box1, box2))
+      ! ensure_same_dimensionality_tbox(box1, box2) ||
+      (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
+        ! ensure_same_span_type(&box1->span, &box2->span)))
     return NULL;
 
   /* The union of boxes that do not intersect cannot be represented by a box */
@@ -1304,7 +1321,9 @@ TBox *
 intersection_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
+        ! ensure_same_span_type(&box1->span, &box2->span)))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));

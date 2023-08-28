@@ -80,7 +80,8 @@ STBox *
 tpoint_to_stbox(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp))
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_tspatial_type(temp->temptype))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
   temporal_set_bbox(temp, result);

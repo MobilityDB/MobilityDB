@@ -627,7 +627,7 @@ tfunc_temporal_base(const Temporal *temp, Datum value,
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp, value, lfinfo);
   else if (temp->subtype == TSEQUENCE)
-    result = ! MEOS_FLAGS_GET_LINEAR(temp->flags) ?
+    result = ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
       (Temporal *) tfunc_tsequence_base((TSequence *) temp, value, lfinfo) :
       (Temporal *) tfunc_tlinearseq_base((TSequence *) temp, value, lfinfo);
   else /* temp->subtype == TSEQUENCESET */
@@ -1378,8 +1378,8 @@ tfunc_tcontseq_tcontseq_dispatch(const TSequence *seq1, const TSequence *seq2,
   if (lfinfo->discont)
     return tfunc_tcontseq_tcontseq_discfn(seq1, seq2, lfinfo, &inter, result);
 
-  bool linear1 = MEOS_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MEOS_FLAGS_GET_LINEAR(seq2->flags);
+  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
+  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
   if (linear1 == linear2)
     return tfunc_tcontseq_tcontseq_single(seq1, seq2, lfinfo, &inter, result);
   else
@@ -1398,7 +1398,7 @@ tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
     count = (seq1->count + seq2->count) * 3;
   else
   {
-    if (MEOS_FLAGS_GET_LINEAR(seq1->flags) == MEOS_FLAGS_GET_LINEAR(seq2->flags))
+    if (MEOS_FLAGS_LINEAR_INTERP(seq1->flags) == MEOS_FLAGS_LINEAR_INTERP(seq2->flags))
       count = 1;
     else
       count = (seq1->count + seq2->count) * 2;
@@ -1448,7 +1448,7 @@ tfunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
     count = (ss->totalcount + seq->count) * 3;
   else
   {
-    if (MEOS_FLAGS_GET_LINEAR(ss->flags) == MEOS_FLAGS_GET_LINEAR(seq->flags))
+    if (MEOS_FLAGS_LINEAR_INTERP(ss->flags) == MEOS_FLAGS_LINEAR_INTERP(seq->flags))
       count = ss->count - loc;
     else
       count = (ss->totalcount + seq->count) * 2;
@@ -1498,7 +1498,7 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
     count *= 3;
   else
   {
-    if (MEOS_FLAGS_GET_LINEAR(ss1->flags) != MEOS_FLAGS_GET_LINEAR(ss2->flags))
+    if (MEOS_FLAGS_LINEAR_INTERP(ss1->flags) != MEOS_FLAGS_LINEAR_INTERP(ss2->flags))
       count *= 2;
   }
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
@@ -1559,7 +1559,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
       result = (Temporal *) tfunc_tinstant_tinstant(
         (TInstant *) temp1, (TInstant *) temp2, lfinfo);
     else if (temp2->subtype == TSEQUENCE)
-      result = MEOS_FLAGS_GET_DISCRETE(temp2->flags) ?
+      result = MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
         (Temporal *) tfunc_tinstant_tdiscseq(
           (TInstant *) temp1, (TSequence *) temp2, lfinfo) :
         (Temporal *) tfunc_tinstant_tcontseq(
@@ -1592,7 +1592,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
         result = (Temporal *) tfunc_tcontseq_tcontseq(seq1, seq2, lfinfo);
     }
     else /* temp2->subtype == TSEQUENCESET */
-      result = MEOS_FLAGS_GET_DISCRETE(temp1->flags) ?
+      result = MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
         (Temporal *) tfunc_tdiscseq_tsequenceset(
           (TSequence *) temp1, (TSequenceSet *) temp2, lfinfo) :
         (Temporal *) tfunc_tcontseq_tsequenceset(
@@ -1604,7 +1604,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
       result = (Temporal *) tfunc_tsequenceset_tinstant(
         (TSequenceSet *) temp1, (TInstant *) temp2, lfinfo);
     else if (temp2->subtype == TSEQUENCE)
-      result = MEOS_FLAGS_GET_DISCRETE(temp2->flags) ?
+      result = MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
         (Temporal *) tfunc_tsequenceset_tdiscseq(
           (TSequenceSet *) temp1, (TSequence *) temp2, lfinfo) :
         (Temporal *) tfunc_tsequenceset_tcontseq(
@@ -2133,7 +2133,7 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
       result = efunc_tinstant_tinstant((TInstant *) temp1,
         (TInstant *) temp2, lfinfo);
     else if (temp2->subtype == TSEQUENCE)
-      result = MEOS_FLAGS_GET_DISCRETE(temp2->flags) ?
+      result = MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
         efunc_tinstant_tdiscseq((TInstant *) temp1,
           (TSequence *) temp2, lfinfo) :
         efunc_tinstant_tcontseq((TInstant *) temp1,
@@ -2145,7 +2145,7 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   else if (temp1->subtype == TSEQUENCE)
   {
     if (temp2->subtype == TINSTANT)
-      result =  MEOS_FLAGS_GET_DISCRETE(temp1->flags) ?
+      result =  MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
         efunc_tdiscseq_tinstant((TSequence *) temp1,
           (TInstant *) temp2, lfinfo) :
         efunc_tcontseq_tinstant((TSequence *) temp1,
@@ -2168,7 +2168,7 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
           (TSequence *) temp2, lfinfo);
     }
     else /* temp2->subtype == TSEQUENCESET */
-      result = MEOS_FLAGS_GET_DISCRETE(temp1->flags) ?
+      result = MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
         efunc_tdiscseq_tsequenceset((TSequence *) temp1,
           (TSequenceSet *) temp2, lfinfo) :
         efunc_tsequence_tsequenceset((TSequence *) temp1,
@@ -2180,7 +2180,7 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
       result = efunc_tsequenceset_tinstant((TSequenceSet *) temp1,
         (TInstant *) temp2, lfinfo);
     else if (temp2->subtype == TSEQUENCE)
-      result = MEOS_FLAGS_GET_DISCRETE(temp2->flags) ?
+      result = MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
         efunc_tsequenceset_tdiscseq((TSequenceSet *) temp1,
           (TSequence *) temp2, lfinfo) :
         efunc_tsequenceset_tcontseq((TSequenceSet *) temp1,

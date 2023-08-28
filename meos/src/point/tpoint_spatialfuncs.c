@@ -386,6 +386,23 @@ ensure_same_srid(int32_t srid1, int32_t srid2)
  * SRID
  */
 bool
+ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
+{
+  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) && 
+      box1->srid != box2->srid)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed SRID");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that a temporal point and a geometry/geography have the same
+ * SRID
+ */
+bool
 ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 {
   if (box->srid != gserialized_get_srid(gs))
@@ -479,7 +496,7 @@ ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @brief Return true if a temporal point and a geometry/geography have the 
+ * @brief Return true if a temporal point and a geometry/geography have the
  * same dimensionality
  */
 bool
@@ -774,7 +791,7 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
     return false;
 
   /* Step interpolation or instantaneous sequence */
-  if (! MEOS_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
+  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
     {
@@ -1713,7 +1730,7 @@ tpointseq_trajectory(const TSequence *seq)
   if (seq->count == 1)
     return DatumGetGserializedP(tinstant_value_copy(TSEQUENCE_INST_N(seq, 0)));
 
-  GSERIALIZED *result = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
+  GSERIALIZED *result = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
     tpointseq_disc_trajectory(seq) :  tpointseq_cont_trajectory(seq);
   return result;
 }
@@ -1796,7 +1813,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
     return tpointseq_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
 
   int32 srid = tpointseqset_srid(ss);
-  bool linear = MEOS_FLAGS_GET_LINEAR(ss->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
@@ -2517,7 +2534,7 @@ datum_round_geo(Datum value, Datum size)
     return datum_round_geometrycollection(gs, size);
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Unsupported geometry type");
-  return Float8GetDatum(0);
+  return PointerGetDatum(NULL);
 }
 
 /**
@@ -2606,7 +2623,7 @@ tpointseq_length(const TSequence *seq)
 {
   assert(seq);
   assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   if (seq->count == 1)
     return 0;
 
@@ -2635,7 +2652,7 @@ tpointseqset_length(const TSequenceSet *ss)
 {
   assert(ss);
   assert(tgeo_type(ss->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   double result = 0;
   for (int i = 0; i < ss->count; i++)
     result += tpointseq_length(TSEQUENCESET_SEQ_N(ss, i));
@@ -2656,7 +2673,7 @@ tpoint_length(const Temporal *temp)
 
   double result = 0.0;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_length((TSequence *) temp);
@@ -2678,7 +2695,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
   assert(seq);
   assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   const TInstant *inst1;
 
   /* Instantaneous sequence */
@@ -2722,7 +2739,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
 {
   assert(ss);
   assert(tgeo_type(ss->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   double length = 0;
   for (int i = 0; i < ss->count; i++)
@@ -2750,7 +2767,7 @@ tpoint_cumulative_length(const Temporal *temp)
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     result = temporal_from_base_temp(Float8GetDatum(0.0), T_TFLOAT, temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_cumulative_length((TSequence *) temp, 0);
@@ -2794,7 +2811,7 @@ tpointseq_speed(const TSequence *seq)
 {
   assert(seq);
   assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -2836,7 +2853,7 @@ tpointseqset_speed(const TSequenceSet *ss)
 {
   assert(ss);
   assert(tgeo_type(ss->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
@@ -2863,7 +2880,7 @@ tpoint_speed(const Temporal *temp)
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_speed((TSequence *) temp);
@@ -3248,7 +3265,7 @@ tpoint_azimuth(const Temporal *temp)
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_azimuth((TSequence *) temp);
@@ -3554,7 +3571,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
   lfinfo.args = true;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = &tpoint_geo_min_bearing_at_timestamp;
@@ -3588,8 +3605,8 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
   lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
-    MEOS_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
@@ -3642,6 +3659,7 @@ geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 /**
  * @brief Calculate the length of the diagonal of the minimum rotated rectangle
  * of the input GEOS geometry.
+ * @return On error return -1.0
  * @note The computation is always done in 2D
  */
 static double
@@ -3693,7 +3711,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
       default:
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Invalid geometry type for Minimum Rotated Rectangle");
-        return -1;
+        return -1.0;
     }
   }
   return result;

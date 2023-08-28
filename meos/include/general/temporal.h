@@ -359,8 +359,8 @@ extern bool ensure_not_null(void *ptr);
 extern bool ensure_one_not_null(void *ptr1, void *ptr2);
 extern bool ensure_valid_interpolation(meosType temptype, interpType interp);
 extern bool ensure_continuous(const Temporal *temp);
-extern bool ensure_continuous_interpolation(int16 flags);
-extern bool ensure_discrete_interpolation(int16 flags);
+extern bool ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2);
+extern bool ensure_same_continuous_interpolation(int16 flags1, int16 flags2);
 extern bool ensure_nonlinear_interpolation(int16 flags);
 extern bool ensure_common_dimension(int16 flags1, int16 flags2);
 extern bool ensure_temporal_has_type(const Temporal *temp, meosType temptype);
@@ -368,8 +368,12 @@ extern bool ensure_same_temporal_type(const Temporal *temp1,
   const Temporal *temp2);
 extern bool ensure_same_temporal_basetype(const Temporal *temp,
   meosType basetype);
+extern bool ensure_valid_tnumber_span(const Temporal *temp, const Span *s);
+extern bool ensure_valid_tnumber_spanset(const Temporal *temp, const SpanSet *ss);
+extern bool ensure_valid_tnumber_tbox(const Temporal *temp, const TBox *box);
 extern bool ensure_non_negative(int i);
 extern bool ensure_positive(int i);
+extern bool ensure_less_equal(int i, int j);
 extern bool positive_datum(Datum size, meosType basetype);
 extern bool ensure_positive_datum(Datum size, meosType basetype);
 extern bool valid_duration(const Interval *duration);

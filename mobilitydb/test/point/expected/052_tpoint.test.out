@@ -1287,6 +1287,7 @@ SELECT asEWKT(setInterp(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT asEWKT(tgeompoint_seq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 ERROR:  Cannot transform input value to a temporal sequence
+CONTEXT:  SQL function "tgeompoint_seq" statement 1
 SELECT asEWKT(tgeogpoint_inst(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
                         asewkt                         
 -------------------------------------------------------
@@ -1354,6 +1355,7 @@ SELECT asEWKT(setInterp(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT asEWKT(tgeogpoint_seq(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 ERROR:  Cannot transform input value to a temporal sequence
+CONTEXT:  SQL function "tgeogpoint_seq" statement 1
 SELECT asText(setInterp(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01]', 'linear'));
                    astext                    
 ---------------------------------------------
@@ -1623,25 +1625,25 @@ ERROR:  The temporal values have different value at their overlapping instant Mo
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
 ERROR:  The temporal values have different value at their overlapping instant Mon Jan 03 00:00:00 2000 PST
 SELECT merge(tgeompoint 'SRID=5676;{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
-ERROR:  The temporal values have different value at their overlapping instant Mon Jan 03 00:00:00 2000 PST
+ERROR:  Operation on mixed SRID
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05}');
-ERROR:  The temporal values have different value at their overlapping instant Mon Jan 03 00:00:00 2000 PST
+ERROR:  The arguments must be of the same dimensionality
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]');
 ERROR:  The temporal values cannot overlap on time: Mon Jan 03 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
 ERROR:  The temporal values have different value at their common instant Mon Jan 03 00:00:00 2000 PST
 SELECT merge(tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
-ERROR:  The temporal values have different value at their common instant Mon Jan 03 00:00:00 2000 PST
+ERROR:  Operation on mixed SRID
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05]');
-ERROR:  The temporal values have different value at their common instant Mon Jan 03 00:00:00 2000 PST
+ERROR:  The arguments must be of the same dimensionality
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-04, Point(2 2)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
 ERROR:  The temporal values cannot overlap on time: Wed Jan 05 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
 ERROR:  The temporal values have different value at their common instant Wed Jan 05 00:00:00 2000 PST
 SELECT merge(tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
-ERROR:  The temporal values have different value at their common instant Wed Jan 05 00:00:00 2000 PST
+ERROR:  Operation on mixed SRID
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}');
-ERROR:  The temporal values have different value at their common instant Wed Jan 05 00:00:00 2000 PST
+ERROR:  The arguments must be of the same dimensionality
 SELECT asText(merge(ARRAY[tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-02']));
                                        astext                                       
 ------------------------------------------------------------------------------------

@@ -181,7 +181,7 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
   }
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
+    if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
     {
       result = (Temporal **) tpointseq_disc_transform_tcentroid((TSequence *) temp);
       *count = ((TSequence *) temp)->count;
