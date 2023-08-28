@@ -53,7 +53,7 @@ SELECT nsegment '  nsegment  (  1  ,  0.5  ,  0.7 ) ';
 
 /* Errors */
 SELECT nsegment 'Nsegment 1, 1.1)';
-ERROR:  Could not parse network point: Missing opening parenthesis
+ERROR:  Could not parse network segment: Missing opening parenthesis
 LINE 2: SELECT nsegment 'Nsegment 1, 1.1)';
                         ^
 SELECT nsegment(1, 1.1);
@@ -63,7 +63,7 @@ ERROR:  Could not parse network segment
 LINE 1: SELECT nsegment 'segment(1,0.5,0.7)';
                         ^
 SELECT nsegment 'nsegment(1,0.5,0.7';
-ERROR:  Could not parse network point: Missing closing parenthesis
+ERROR:  Could not parse network segment: Missing closing parenthesis
 LINE 1: SELECT nsegment 'nsegment(1,0.5,0.7';
                         ^
 SELECT nsegment 'nsegment(1 0.5 0.7)';

@@ -1,10 +1,10 @@
 /* Errors */
 SELECT tstzset '2000-01-01, 2000-01-02';
-ERROR:  Could not parse set: Missing open brace
+ERROR:  Could not parse set value: Missing opening brace
 LINE 2: SELECT tstzset '2000-01-01, 2000-01-02';
                        ^
 SELECT tstzset '{2000-01-01, 2000-01-02';
-ERROR:  Could not parse set: Missing closing brace
+ERROR:  Could not parse set value: Missing closing brace
 LINE 1: SELECT tstzset '{2000-01-01, 2000-01-02';
                        ^
 SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);

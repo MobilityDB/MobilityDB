@@ -49,8 +49,8 @@
 Npoint *
 npoint_parse(const char **str, bool end)
 {
+  const char *type_str = "network point";
   p_whitespace(str);
-
   if (pg_strncasecmp(*str, "NPOINT", 6) != 0)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
@@ -60,14 +60,10 @@ npoint_parse(const char **str, bool end)
 
   *str += 6;
   p_whitespace(str);
-
+  
   /* Parse opening parenthesis */
-  if (! p_oparen(str))
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse network point: Missing opening parenthesis");
+  if (! ensure_oparen(str, type_str))
     return NULL;
-  }
 
   /* Parse rid */
   p_whitespace(str);
@@ -84,15 +80,8 @@ npoint_parse(const char **str, bool end)
 
   /* Parse closing parenthesis */
   p_whitespace(str);
-  if (! p_cparen(str))
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse network point: Missing closing parenthesis");
-    return NULL;
-  }
-
-  /* Ensure there is no more input */
-  if (! ensure_end_input(str, end, "network point"))
+  if (! ensure_cparen(str, type_str) ||
+        (end && ! ensure_end_input(str, type_str)))
     return NULL;
 
   return npoint_make(rid, pos);
@@ -104,6 +93,7 @@ npoint_parse(const char **str, bool end)
 Nsegment *
 nsegment_parse(const char **str)
 {
+  const char *type_str = "network segment";
   p_whitespace(str);
 
   if (pg_strncasecmp(*str, "NSEGMENT", 8) != 0)
@@ -117,12 +107,8 @@ nsegment_parse(const char **str)
   p_whitespace(str);
 
   /* Parse opening parenthesis */
-  if (! p_oparen(str))
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse network point: Missing opening parenthesis");
+  if (! ensure_oparen(str, type_str))
     return NULL;
-  }
 
   /* Parse rid */
   p_whitespace(str);
@@ -148,15 +134,7 @@ nsegment_parse(const char **str)
 
   /* Parse closing parenthesis */
   p_whitespace(str);
-  if (! p_cparen(str))
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse network point: Missing closing parenthesis");
-    return NULL;
-  }
-
-  /* Ensure there is no more input */
-  if (! ensure_end_input(str, true, "network segment"))
+  if (! ensure_cparen(str, type_str) || ! ensure_end_input(str, type_str))
     return NULL;
 
   return nsegment_make(rid, pos1, pos2);

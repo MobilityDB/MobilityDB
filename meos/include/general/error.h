@@ -44,8 +44,11 @@ typedef enum
   MEOS_ERR_INTERNAL_ERROR       = 1,  // Unspecified internal error
   MEOS_ERR_INTERNAL_TYPE_ERROR  = 2,  // Internal type error
   MEOS_ERR_VALUE_OUT_OF_RANGE   = 3,  // Internal out of range error
-  MEOS_ERR_MEMORY_ALLOC_ERROR   = 4,  // Internal malloc error
-  MEOS_ERR_AGGREGATION_ERROR    = 5,  // Internal aggregation error
+  MEOS_ERR_DIVISION_BY_ZERO     = 4,  // Internal division by zero error
+  MEOS_ERR_MEMORY_ALLOC_ERROR   = 5,  // Internal malloc error
+  MEOS_ERR_AGGREGATION_ERROR    = 6,  // Internal aggregation error
+  MEOS_ERR_DIRECTORY_ERROR      = 7,  // Internal directory error
+  MEOS_ERR_FILE_ERROR           = 8,  // Internal file error
 
   MEOS_ERR_INVALID_ARG          = 10, // Invalid argument
   MEOS_ERR_INVALID_ARG_TYPE     = 11, // Invalid argument type
