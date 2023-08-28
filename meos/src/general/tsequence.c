@@ -1043,6 +1043,7 @@ tsequence_make_exp(const TInstant **instants, int count, int maxcount,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) instants) || ! ensure_positive(count) ||
+      ! ensure_less_equal(count, maxcount) ||
       ! tsequence_make_valid(instants, count, lower_inc, upper_inc, interp))
     return NULL;
   return tsequence_make1_exp(instants, count, maxcount, lower_inc, upper_inc,
@@ -1256,7 +1257,7 @@ tpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *s)
   if (! ensure_not_null((void *) gs) || gserialized_is_empty(gs) ||
       ! ensure_not_null((void *) s))
     return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ? 
+  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
   return tsequence_from_base_timestampset(PointerGetDatum(gs), temptype, s);
 }

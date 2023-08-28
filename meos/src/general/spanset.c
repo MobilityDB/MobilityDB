@@ -341,7 +341,7 @@ periodset_out(const SpanSet *ss)
  ****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Construct a span set from an array of disjoint spans enabling the
  * data structure to expand.
  *
@@ -366,8 +366,10 @@ SpanSet *
 spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
   bool ordered)
 {
-  assert(spans);
-  assert(maxcount >= count);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) spans) || ! ensure_positive(count) ||
+      ! ensure_less_equal(count, maxcount))
+    return NULL;
   /* Test the validity of the spans */
   if (ordered)
   {
@@ -570,6 +572,58 @@ span_to_spanset(const Span *s)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Transition function for set aggregate of values
+ */
+SpanSet *
+spanset_compact(SpanSet *ss)
+{
+  assert(ss);
+  /* Create the final value reusing the array of spans in the span set */
+  SpanSet *result = spanset_make_exp((Span *) &ss->elems, ss->count,
+    ss->count, NORMALIZE, ORDERED_NO);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform an integer span set to a float span set
+ */
+SpanSet *
+intspanset_floatspanset(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_INTSPANSET))
+    return NULL;
+  Span *spans = malloc(sizeof(Span *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    intspan_set_floatspan(&ss->elems[i], &spans[i]);
+  SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a float span set to an integer span set
+ */
+SpanSet *
+floatspanset_intspanset(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_FLOATSPANSET))
+    return NULL;
+  Span *spans = malloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    floatspan_set_intspan(&ss->elems[i], &spans[i]);
+  SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
+  return result;
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_transf

@@ -370,6 +370,7 @@ extern bool ensure_same_temporal_basetype(const Temporal *temp,
   meosType basetype);
 extern bool ensure_non_negative(int i);
 extern bool ensure_positive(int i);
+extern bool ensure_less_equal(int i, int j);
 extern bool positive_datum(Datum size, meosType basetype);
 extern bool ensure_positive_datum(Datum size, meosType basetype);
 extern bool valid_duration(const Interval *duration);

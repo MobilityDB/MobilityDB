@@ -1388,8 +1388,8 @@ from_char_parse_int_len(int *dest, const char **src, const int len, FormatNode *
    * for next from_char_parse_int_len( ) call
    * and chars >n are not removed from str
    */
-  copy = palloc(DCH_MAX_ITEM_SIZ + 1); 
-  memcpy(copy, *src, len); 
+  copy = palloc(DCH_MAX_ITEM_SIZ + 1);
+  memcpy(copy, *src, len);
   copy[len] = '\0';
   used = strlen(*src);
 
@@ -3074,6 +3074,10 @@ datetime_to_char_body(TmToChar *tmtc, text *fmt, bool is_interval, Oid collid)
  * TIMESTAMP to_char()
  * -------------------
  */
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Output a timestamp as text.
+ */
 text *
 pg_timestamp_to_char(Timestamp dt, text *fmt)
 {
@@ -3101,6 +3105,10 @@ pg_timestamp_to_char(Timestamp dt, text *fmt)
   return res;
 }
 
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Output a timestamptz as text.
+ */
 text *
 pg_timestamptz_to_char(TimestampTz dt, text *fmt)
 {
@@ -3134,6 +3142,10 @@ pg_timestamptz_to_char(TimestampTz dt, text *fmt)
  * INTERVAL to_char()
  * -------------------
  */
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Output an interval as text.
+ */
 text *
 pg_interval_to_char(Interval *it, text *fmt)
 {
@@ -3165,6 +3177,10 @@ pg_interval_to_char(Interval *it, text *fmt)
  * Make Timestamp from date_str which is formatted at argument 'fmt'
  * ( to_timestamp is reverse to_char() )
  * ---------------------
+ */
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Input a timestamp from date text.
  */
 TimestampTz
 pg_to_timestamp(text *date_txt, text *fmt)
@@ -3204,6 +3220,10 @@ pg_to_timestamp(text *date_txt, text *fmt)
  * TO_DATE
  *  Make Date from date_str which is formatted at argument 'fmt'
  * ----------
+ */
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Input a date from text.
  */
 DateADT
 pg_to_date(text *date_txt, text *fmt)
@@ -3537,7 +3557,7 @@ do_to_timestamp(text *date_txt, text *fmt, Oid collid, bool std,
     {
       RETURN_ERROR(DateTimeParseError(DTERR_TZDISP_OVERFLOW, date_str, "timestamp"));
     }
-    sprintf(tz, "%c%02d:%02d\0", tmfc.tzsign > 0 ? '+' : '-', tmfc.tzh, tmfc.tzm); 
+    sprintf(tz, "%c%02d:%02d\0", tmfc.tzsign > 0 ? '+' : '-', tmfc.tzh, tmfc.tzm);
 
     tm->tm_zone = tz;
   }

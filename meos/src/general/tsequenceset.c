@@ -248,10 +248,11 @@ TSequenceSet *
 tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
   bool normalize)
 {
-  assert(count > 0);
-  assert(maxcount >= count);
   /* Ensure validity of the arguments */
-  ensure_valid_tseqarr(sequences, count);
+  if (! ensure_not_null((void *) sequences) || ! ensure_positive(count) ||
+      ! ensure_less_equal(count, maxcount) ||
+      ! ensure_valid_tseqarr(sequences, count))
+    return NULL;
 
   /* Normalize the array of sequences */
   TSequence **normseqs = (TSequence **) sequences;

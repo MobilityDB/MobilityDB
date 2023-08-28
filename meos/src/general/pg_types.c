@@ -892,6 +892,10 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
 Interval *
 pg_interval_in(const char *str, int32 typmod)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+
   Interval *result;
   fsec_t fsec;
   struct pg_tm tt, *tm = &tt;
@@ -949,7 +953,7 @@ pg_interval_in(const char *str, int32 typmod)
       break;
 
     default:
-      meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "unexpected dtype %d while parsing interval \"%s\"", dtype, str);
       pfree(result);
       return NULL;
@@ -1000,6 +1004,10 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
 char *
 pg_interval_out(const Interval *span)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) span))
+    return NULL;
+
   char *result;
   struct pg_tm tt, *tm = &tt;
   fsec_t fsec;
@@ -1026,6 +1034,10 @@ pg_interval_out(const Interval *span)
 Interval *
 pg_interval_mul(const Interval *span, double factor)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) span))
+    return NULL;
+
   double month_remainder_days, sec_remainder, result_double;
   int32 orig_month = span->month,
     orig_day = span->day;
@@ -1112,6 +1124,10 @@ pg_interval_mul(const Interval *span, double factor)
 Interval *
 pg_interval_pl(const Interval *span1, const Interval *span2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) span1) || ! ensure_not_null((void *) span2))
+    return NULL;
+
   Interval *result = palloc(sizeof(Interval));
 
   result->month = span1->month + span2->month;
@@ -1120,6 +1136,7 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
     ! SAMESIGN(result->month, span1->month))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    pfree(result);
     return NULL;
   }
 
@@ -1128,6 +1145,7 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
     ! SAMESIGN(result->day, span1->day))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    pfree(result);
     return NULL;
   }
 
@@ -1136,6 +1154,7 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
     ! SAMESIGN(result->time, span1->time))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    pfree(result);
     return NULL;
   }
 
@@ -1158,6 +1177,10 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
 TimestampTz
 pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) span))
+    return DT_NOEND;
+
   Timestamp result;
 
   if (TIMESTAMP_NOT_FINITE(timestamp))
@@ -1250,6 +1273,10 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
 TimestampTz
 pg_timestamp_mi_interval(TimestampTz timestamp, const Interval *span)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) span))
+    return DT_NOEND;
+
   Interval tspan;
   tspan.month = -span->month;
   tspan.day = -span->day;

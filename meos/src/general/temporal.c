@@ -361,6 +361,22 @@ ensure_positive(int i)
 }
 
 /**
+ * @brief Ensure that the first value is less or equal than the second one
+ */
+bool
+ensure_less_equal(int i, int j)
+{
+  if (i > j)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The first value must be less or equal than the second one: %d, %d",
+      i, j);
+    return false;
+  }
+  return true;
+}
+
+/**
  * @brief Return true if the number is strictly positive
  */
 bool
@@ -977,7 +993,7 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
       ! ensure_same_interpolation(temp, (Temporal *) seq) ||
       ! ensure_spatial_validity(temp, (Temporal *) seq))
     return NULL;
-  
+
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
@@ -1407,7 +1423,7 @@ temporal_restart(Temporal *temp, int count)
   assert(count > 0);
   assert(temptype_subtype(temp->subtype));
   assert(temp->subtype != TINSTANT);
-  
+
   if (temp->subtype == TSEQUENCE)
     tsequence_restart((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
@@ -3639,8 +3655,8 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
   if (tgeo_type(temp->temptype))
   {
     GSERIALIZED *gs = DatumGetGserializedP(value);
-    if (! ensure_point_type(gs) || 
-        ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) || 
+    if (! ensure_point_type(gs) ||
+        ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
         ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return NULL;
   }

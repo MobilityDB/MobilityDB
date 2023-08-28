@@ -226,12 +226,18 @@ extern char *spanset_out(const SpanSet *ss, int maxdd);
 
 /* Constructor functions for set and span types */
 
+extern Set *set_compact(const Set *s);
 extern Set *set_make(const Datum *values, int count, meosType basetype, bool ordered);
 extern Set *set_make_exp(const Datum *values, int count, int maxcount, meosType basetype, bool ordered);
 extern Set *set_make_free(Datum *values, int count, meosType basetype, bool ordered);
+extern char *set_out(const Set *s, int maxdd);
 extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype);
+extern char *span_out(const Span *s, int maxdd);
 extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype, Span *s);
+extern SpanSet *spanset_compact(SpanSet *ss);
+extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool ordered);
 extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize);
+extern char *spanset_out(const SpanSet *ss, int maxdd);
 
 /*****************************************************************************/
 
@@ -264,6 +270,7 @@ extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern void numspan_set_floatspan(const Span *s1, Span *s2);
+extern Set *set_compact(const Set *s);
 extern Set *set_shift(const Set *s, Datum shift);
 extern void span_expand(const Span *s1, Span *s2);
 extern void span_shift(Span *s, Datum value);
@@ -544,12 +551,14 @@ extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, meosType temptype, TimestampTz t);
 extern TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32 srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *tsequence_from_base_timestampset(Datum value, meosType temptype, const Set *ss);
+extern TSequence *tsequence_make_exp(const TInstant **instants, int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *tsequence_compact(const TSequence *seq);
 extern void tsequence_restart(TSequence *seq, int last);
 extern TSequence *tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc, bool upper_inc);
 extern TSequence *tsequence_copy(const TSequence *seq);
 extern TSequence *tsequence_from_base_period(Datum value, meosType temptype, const Span *p, interpType interp);
 extern TSequence *tsequence_make_free(TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
+extern TSequenceSet *tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount, bool normalize);
 extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 extern TSequenceSet *tsequenceset_make_free(TSequence **sequences, int count, bool normalize);
 extern void tsequenceset_restart(TSequenceSet *ss, int last);
