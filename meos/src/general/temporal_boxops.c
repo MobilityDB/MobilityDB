@@ -47,6 +47,7 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MEOS */
@@ -74,23 +75,12 @@ bbox_type(meosType bboxtype)
 }
 
 /**
- * @brief Ensure that the type corresponds to a bounding box type
- */
-void
-ensure_bbox_type(meosType bboxtype)
-{
-  if (! bbox_type(bboxtype))
-    elog(ERROR, "unknown bounding box type: %d", bboxtype);
-  return;
-}
-
-/**
  * @brief Return the size of a bounding box type
  */
 size_t
 bbox_get_size(meosType bboxtype)
 {
-  ensure_bbox_type(bboxtype);
+  assert(bbox_type(bboxtype));
   if (bboxtype == T_TSTZSPAN)
     return sizeof(Span);
   if (bboxtype == T_TBOX)
@@ -105,7 +95,7 @@ bbox_get_size(meosType bboxtype)
 int
 bbox_max_dims(meosType bboxtype)
 {
-  ensure_bbox_type(bboxtype);
+  assert(bbox_type(bboxtype));
   if (bboxtype == T_TSTZSPAN)
     return 1;
   if (bboxtype == T_TBOX)
@@ -135,8 +125,9 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
     // Look for temp != merge in that file for 2 other cases where
     // a problem still remains (result != 0) even with the _cmp function
     return stbox_cmp((STBox *) box1, (STBox *) box2) == 0;
-  elog(ERROR, "unknown temporal type for bounding box function: %d", temptype);
-  return false; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "unknown temporal type for bounding box function: %d", temptype);
+  return false;
 }
 
 /**
@@ -155,8 +146,9 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
     return tbox_cmp((TBox *) box1, (TBox *) box2);
   if (tspatial_type(temptype))
     return stbox_cmp((STBox *) box1, (STBox *) box2);
-  elog(ERROR, "unknown temporal type for bounding box function: %d", temptype);
-  return 0; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "unknown temporal type for bounding box function: %d", temptype);
+  return INT_MAX;
 }
 
 /*****************************************************************************
@@ -175,8 +167,9 @@ temporal_bbox_size(meosType temptype)
     return sizeof(TBox);
   if (tspatial_type(temptype))
     return sizeof(STBox);
-  elog(ERROR, "unknown temporal type for bounding box function: %d", temptype);
-  return 0; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "unknown temporal type for bounding box function: %d", temptype);
+  return SIZE_MAX; /* make compiler quiet */
 }
 
 /**
@@ -213,8 +206,8 @@ tinstant_set_bbox(const TInstant *inst, void *box)
     tnpointinst_set_stbox(inst, (STBox *) box);
 #endif
   else
-    elog(ERROR, "unknown temporal type for bounding box function: %d",
-      inst->temptype);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "unknown temporal type for bounding box function: %d", inst->temptype);
   return;
 }
 
@@ -309,8 +302,11 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
     tnpointinstarr_set_stbox(instants, count, interp, (STBox *) box);
 #endif
   else
-    elog(ERROR, "unknown temporal type for bounding box function: %d",
-      temptype);
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "unknown temporal type for bounding box function: %d", temptype);
+    return;
+  }
   /* Set the lower_inc and upper_inc bounds of the period at the beginning
    * of the bounding box */
   Span *p = (Span *) box;
@@ -355,8 +351,8 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
     tnpointseq_expand_stbox(seq, inst);
 #endif
   else
-    elog(ERROR, "unknown temporal type for bounding box function: %d",
-      seq->temptype);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "unknown temporal type for bounding box function: %d", seq->temptype);
   return;
 }
 
@@ -380,8 +376,8 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
     stbox_expand((STBox *) TSEQUENCE_BBOX_PTR(seq),
       (STBox *) TSEQUENCE_BBOX_PTR(ss));
   else
-    elog(ERROR, "unknown temporal type for bounding box function: %d",
-      ss->temptype);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "unknown temporal type for bounding box function: %d", ss->temptype);
   return;
 }
 
@@ -433,7 +429,8 @@ tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
   else if (tspatial_type(sequences[0]->temptype))
     tpointseqarr_set_stbox(sequences, count, (STBox *) box);
   else
-    elog(ERROR, "unknown temporal type for bounding box function: %d",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "unknown temporal type for bounding box function: %d",
       sequences[0]->temptype);
   return;
 }

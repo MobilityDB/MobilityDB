@@ -508,7 +508,7 @@ tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = tcomp_tpoint_point(temp, gs, func, true);
+  Temporal *result = tcomp_tpoint_point_int(temp, gs, func, true);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -525,7 +525,7 @@ tcomp_tpoint_point_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = tcomp_tpoint_point(temp, gs, func, false);
+  Temporal *result = tcomp_tpoint_point_int(temp, gs, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)

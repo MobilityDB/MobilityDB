@@ -48,7 +48,7 @@
 /* Functions on generic bounding boxes of temporal types */
 
 extern bool bbox_type(meosType bboxtype);
-extern void ensure_bbox_type(meosType bboxtype);
+extern bool ensure_bbox_type(meosType bboxtype);
 extern size_t bbox_get_size(meosType bboxtype);
 extern int bbox_max_dims(meosType bboxtype);
 extern size_t temporal_max_header_size(void);

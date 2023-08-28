@@ -124,7 +124,10 @@ pg_dsin(float8 arg1)
   errno = 0;
   result = sin(arg1);
   if (errno != 0 || isinf(arg1))
-    elog(ERROR, "input is out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "input is out of range");
+    return DBL_MAX;
+  }
   if (unlikely(isinf(result)))
     float_overflow_error();
 
@@ -162,7 +165,10 @@ pg_dcos(float8 arg1)
   errno = 0;
   result = cos(arg1);
   if (errno != 0 || isinf(arg1))
-    elog(ERROR, "input is out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "input is out of range");
+    return DBL_MAX;
+  }
   if (unlikely(isinf(result)))
     float_overflow_error();
 
@@ -231,6 +237,10 @@ pg_datan2(float8 arg1, float8 arg2)
 DateADT
 pg_date_in(const char *str)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return DATEVAL_NOEND;
+
   DateADT date;
   fsec_t fsec;
   struct pg_tm tt, *tm = &tt;
@@ -285,13 +295,21 @@ pg_date_in(const char *str)
 
   /* Prevent overflow in Julian-day routines */
   if (!IS_VALID_JULIAN(tm->tm_year, tm->tm_mon, tm->tm_mday))
-    elog(ERROR, "date out of range: \"%s\"", str);
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "date out of range: \"%s\"", str);
+    return DATEVAL_NOEND;
+  }
 
   date = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) - POSTGRES_EPOCH_JDATE;
 
   /* Now check for just-out-of-range dates */
   if (!IS_VALID_DATE(date))
-    elog(ERROR, "date out of range: \"%s\"", str);
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "date out of range: \"%s\"", str);
+    return DATEVAL_NOEND;
+  }
 
   return date;
 }
@@ -379,6 +397,10 @@ MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
 TimeADT
 pg_time_in(const char *str, int32 typmod)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return DT_NOEND;
+
   TimeADT result;
   fsec_t fsec;
   struct pg_tm tt, *tm = &tt;
@@ -434,7 +456,6 @@ pg_time_out(TimeADT time)
 
 #if ! MEOS
 /**
- * @ingroup libmeos_pg_types
  * @brief Convert a string into a timestamp with timezone.
  * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
  */
@@ -486,8 +507,10 @@ MEOSAdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
         return false;
       }
 
-      elog(ERROR, "timestamp(%d) precision must be between %d and %d",
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+        "timestamp(%d) precision must be between %d and %d",
               typmod, 0, MAX_TIMESTAMP_PRECISION);
+      return false;
     }
 
     if (*time >= INT64CONST(0))
@@ -519,6 +542,10 @@ MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 TimestampTz
 timestamp_in_common(const char *str, int32 typmod, bool withtz)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return DT_NOEND;
+
   TimestampTz result;
   fsec_t    fsec;
   struct pg_tm tt,
@@ -563,7 +590,11 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
         tm2timestamp(tm, fsec, &tz, &result) :
         tm2timestamp(tm, fsec, NULL, &result);
       if (status != 0)
-        elog(ERROR, "timestamp out of range: \"%s\"", str);
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range: \"%s\"", str);
+        return DT_NOEND;
+      }
       break;
     }
     case DTK_EPOCH:
@@ -579,7 +610,8 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
       break;
 
     default:
-      elog(ERROR, "unexpected dtype %d while parsing timestamp%s \"%s\"",
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "unexpected dtype %d while parsing timestamp%s \"%s\"",
         dtype, (withtz) ? "tz" : "", str);
       TIMESTAMP_NOEND(result);
   }
@@ -614,7 +646,6 @@ pg_timestamp_in(const char *str, int32 typmod)
 
 #if ! MEOS
 /**
- * @ingroup libmeos_pg_types
  * @brief Convert a timestamp with timezone to a string.
  * @note PostgreSQL function: Datum timestamptz_out(PG_FUNCTION_ARGS)
  */
@@ -647,7 +678,10 @@ timestamp_out_common(TimestampTz dt, bool withtz)
   else if (! withtz && timestamp2tm(dt, NULL, tm, &fsec, NULL, NULL) == 0)
     EncodeDateTime(tm, fsec, false, 0, NULL, DateStyle, buf);
   else
-    elog(ERROR, "timestamp out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of range");
+    return NULL;
+  }
 
   result = pstrdup(buf);
   return result;
@@ -818,14 +852,19 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
       /* fractional-second rounding will be dealt with below */
     }
     else
-      elog(ERROR, "unrecognized interval typmod: %d", typmod);
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "unrecognized interval typmod: %d", typmod);
 
     /* Need to adjust sub-second precision? */
     if (precision != INTERVAL_FULL_PRECISION)
     {
       if (precision < 0 || precision > MAX_INTERVAL_PRECISION)
-        elog(ERROR, "interval(%d) precision must be between %d and %d",
-                precision, 0, MAX_INTERVAL_PRECISION);
+      {
+        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+          "interval(%d) precision must be between %d and %d",
+          precision, 0, MAX_INTERVAL_PRECISION);
+        return;
+      }
 
       if (interval->time >= INT64CONST(0))
       {
@@ -903,12 +942,17 @@ pg_interval_in(const char *str, int32 typmod)
   {
     case DTK_DELTA:
       if (tm2interval(tm, fsec, result) != 0)
-        elog(ERROR, "interval out of range");
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "interval out of range");
+        pfree(result);
+        return NULL;
       break;
 
     default:
-      elog(ERROR, "unexpected dtype %d while parsing interval \"%s\"",
-         dtype, str);
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+        "unexpected dtype %d while parsing interval \"%s\"", dtype, str);
+      pfree(result);
+      return NULL;
   }
 
   AdjustIntervalForTypmod(result, typmod);
@@ -932,7 +976,10 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
    * inputs as well, but it's not entirely clear what limits to apply.
    */
   if (isinf(secs) || isnan(secs))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
 
   result = (Interval *) palloc(sizeof(Interval));
   result->month = years * MONTHS_PER_YEAR + months;
@@ -959,7 +1006,11 @@ pg_interval_out(const Interval *span)
   char buf[MAXDATELEN + 1];
 
   if (interval2tm(*span, tm, &fsec) != 0)
-    elog(ERROR, "could not convert interval to tm");
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not convert interval to tm");
+    return NULL;
+  }
 
   EncodeInterval(tm, fsec, IntervalStyle, buf);
 
@@ -985,13 +1036,19 @@ pg_interval_mul(const Interval *span, double factor)
   result_double = span->month * factor;
   if (isnan(result_double) ||
     result_double > INT_MAX || result_double < INT_MIN)
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
   result->month = (int32) result_double;
 
   result_double = span->day * factor;
   if (isnan(result_double) ||
     result_double > INT_MAX || result_double < INT_MIN)
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
   result->day = (int32) result_double;
 
   /*
@@ -1033,7 +1090,10 @@ pg_interval_mul(const Interval *span, double factor)
   result->day += (int32) month_remainder_days;
   result_double = rint(span->time * factor + sec_remainder * USECS_PER_SEC);
   if (isnan(result_double) || !FLOAT8_FITS_IN_INT64(result_double))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
   result->time = (int64) result_double;
 
   return result;
@@ -1058,17 +1118,26 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
   /* overflow check copied from int4pl */
   if (SAMESIGN(span1->month, span2->month) &&
     ! SAMESIGN(result->month, span1->month))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
 
   result->day = span1->day + span2->day;
   if (SAMESIGN(span1->day, span2->day) &&
     ! SAMESIGN(result->day, span1->day))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
 
   result->time = span1->time + span2->time;
   if (SAMESIGN(span1->time, span2->time) &&
     ! SAMESIGN(result->time, span1->time))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
 
   return result;
 }
@@ -1102,7 +1171,11 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
       fsec_t    fsec;
 
       if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) != 0)
-        elog(ERROR, "timestamp out of range");
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return DT_NOEND;
+      }
 
       tm->tm_mon += span->month;
       if (tm->tm_mon > MONTHS_PER_YEAR)
@@ -1121,7 +1194,11 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
         tm->tm_mday = (day_tab[isleap(tm->tm_year)][tm->tm_mon - 1]);
 
       if (tm2timestamp(tm, fsec, NULL, &timestamp) != 0)
-        elog(ERROR, "timestamp out of range");
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return DT_NOEND;
+      }
     }
 
     if (span->day != 0)
@@ -1132,20 +1209,32 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
       int      julian;
 
       if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) != 0)
-        elog(ERROR, "timestamp out of range");
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return DT_NOEND;
+      }
 
       /* Add days by converting to and from Julian */
       julian = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) + span->day;
       j2date(julian, &tm->tm_year, &tm->tm_mon, &tm->tm_mday);
 
       if (tm2timestamp(tm, fsec, NULL, &timestamp) != 0)
-        elog(ERROR, "timestamp out of range");
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return DT_NOEND;
+      }
     }
 
     timestamp += span->time;
 
     if (!IS_VALID_TIMESTAMP(timestamp))
-      elog(ERROR, "timestamp out of range");
+    {
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+        "timestamp out of range");
+      return DT_NOEND;
+    }
 
     result = timestamp;
   }
@@ -1212,8 +1301,13 @@ pg_interval_justify_hours(const Interval *span)
 Interval *
 pg_timestamp_mi(TimestampTz dt1, TimestampTz dt2)
 {
+  /* Ensure validity of the arguments */
   if (TIMESTAMP_NOT_FINITE(dt1) || TIMESTAMP_NOT_FINITE(dt2))
-    elog(ERROR, "cannot subtract infinite timestamps");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "cannot subtract infinite timestamps");
+    return NULL;
+  }
 
   Interval interval;
   interval.time = dt1 - dt2;
@@ -1263,6 +1357,11 @@ interval_cmp_value(const Interval *interval)
 int
 pg_interval_cmp(const Interval *interval1, const Interval *interval2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) interval1) ||
+      ! ensure_not_null((void *) interval2))
+    return INT_MAX;
+
   INT128 span1 = interval_cmp_value(interval1);
   INT128 span2 = interval_cmp_value(interval2);
   return int128_compare(span1, span2);

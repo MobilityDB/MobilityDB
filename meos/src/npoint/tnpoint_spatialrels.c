@@ -41,6 +41,8 @@
 
 #include "npoint/tnpoint_spatialrels.h"
 
+/* C */
+#include <assert.h>
 /* MEOS */
 #include <meos_internal.h>
 #include "general/lifting.h"
@@ -95,7 +97,8 @@ int
 espatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum))
 {
-  ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));
+  assert(tnpoint_srid(temp1) == tnpoint_srid(temp2));
+
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time */
   if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
@@ -179,7 +182,10 @@ int
 edwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
-  ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));
+  /* Ensure validity of the arguments */
+  if (! ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2)))
+    return -1;
+
   Temporal *sync1, *sync2;
   /* Return -1 if the temporal points do not intersect in time */
   if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,

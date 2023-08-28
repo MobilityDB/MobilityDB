@@ -138,13 +138,17 @@ periodset_transform_tcount(const SpanSet *ps)
   return result;
 }
 
-void
+bool
 ensure_same_timetype_skiplist(SkipList *state, uint8 subtype)
 {
   Temporal *head = (Temporal *) skiplist_headval(state);
   if (head->subtype != subtype)
-    elog(ERROR, "Cannot aggregate temporal values of different duration");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot aggregate temporal values of different duration");
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************/
@@ -163,7 +167,8 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t)
   }
   else
   {
-    ensure_same_timetype_skiplist(state, TINSTANT);
+    if (! ensure_same_timetype_skiplist(state, TINSTANT))
+      return NULL;
     skiplist_splice(state, (void **) instants, 1, &datum_sum_int32,
       CROSSINGS_NO);
   }
@@ -181,12 +186,11 @@ timestampset_tcount_transfn(SkipList *state, const Set *ts)
 {
   TInstant **instants = timestampset_transform_tcount(ts);
   if (! state)
-  {
     state = skiplist_make((void **) instants, ts->count);
-  }
   else
   {
-    ensure_same_timetype_skiplist(state, TINSTANT);
+    if (! ensure_same_timetype_skiplist(state, TINSTANT))
+      return NULL;
     skiplist_splice(state, (void **) instants, ts->count, &datum_sum_int32,
       CROSSINGS_NO);
   }
@@ -204,12 +208,11 @@ period_tcount_transfn(SkipList *state, const Span *p)
 {
   TSequence *seq = period_transform_tcount(p);
   if (! state)
-  {
     state = skiplist_make((void **) &seq, 1);
-  }
   else
   {
-    ensure_same_timetype_skiplist(state, TSEQUENCE);
+    if (! ensure_same_timetype_skiplist(state, TSEQUENCE))
+      return NULL;
     skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32,
       CROSSINGS_NO);
   }
@@ -233,7 +236,10 @@ periodset_tcount_transfn(SkipList *state, const SpanSet *ps)
     start++;
   }
   else
-    ensure_same_timetype_skiplist(state, TSEQUENCE);
+  {
+    if (! ensure_same_timetype_skiplist(state, TSEQUENCE))
+      return NULL;
+  }
   for (int i = start; i < ps->count; i++)
   {
     skiplist_splice(state, (void **) &sequences[i], 1, &datum_sum_int32,

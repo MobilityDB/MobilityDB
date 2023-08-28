@@ -242,9 +242,8 @@ tgeogpointinst_in(const char *str)
 char *
 tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
 {
-  /* Ensure validity of the arguments */
   assert(inst);
-  ensure_non_negative(maxdd);
+  assert(maxdd >= 0);
 
   char *t = pg_timestamptz_out(inst->t);
   meosType basetype = temptype_basetype(inst->temptype);
@@ -322,7 +321,7 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
   /* Initialize fixed-size values */
   result->temptype = temptype;
   result->subtype = TINSTANT;
-  result->t = t;
+    result->t = t;
   SET_VARSIZE(result, size);
   MEOS_FLAGS_SET_BYVAL(result->flags, typbyval);
   MEOS_FLAGS_SET_CONTINUOUS(result->flags, temptype_continuous(temptype));
@@ -380,28 +379,26 @@ tfloatinst_make(double d, TimestampTz t)
 TInstant *
 ttextinst_make(const text *txt, TimestampTz t)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) txt))
+    return NULL;
   return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
 }
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant geometric point from the arguments.
+ * @brief Construct a temporal instant point from the arguments.
  * @sqlfunc tgeompoint_inst()
  */
 TInstant *
-tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t)
+tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
-  return tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, t);
-}
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant geographic point from the arguments.
- * @sqlfunc tgeogpoint_inst().
- */
-TInstant *
-tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t)
-{
-  return tinstant_make(PointerGetDatum(gs), T_TGEOGPOINT, t);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || gserialized_is_empty(gs))
+    return NULL;
+  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+    T_TGEOGPOINT : T_TGEOMPOINT;
+  return tinstant_make(PointerGetDatum(gs), temptype, t);
 }
 #endif /* MEOS */
 
@@ -412,6 +409,7 @@ tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 TInstant *
 tinstant_copy(const TInstant *inst)
 {
+  assert(inst);
   TInstant *result = palloc0(VARSIZE(inst));
   memcpy(result, inst, VARSIZE(inst));
   return result;
@@ -543,8 +541,11 @@ tsequence_to_tinstant(const TSequence *seq)
 {
   assert(seq);
   if (seq->count != 1)
-    elog(ERROR, "Cannot transform input value to a temporal instant");
-
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot transform input value to a temporal instant");
+    return NULL;
+  }
   return tinstant_copy(TSEQUENCE_INST_N(seq, 0));
 }
 
@@ -558,7 +559,11 @@ tsequenceset_to_tinstant(const TSequenceSet *ss)
 {
   assert(ss);
   if (ss->totalcount != 1)
-    elog(ERROR, "Cannot transform input value to a temporal instant");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot transform input value to a temporal instant");
+    return NULL;
+  }
   return tinstant_copy(TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0));
 }
 
@@ -916,7 +921,8 @@ tinstant_merge_array(const TInstant **instants, int count)
   assert(count > 1);
   tinstarr_sort((TInstant **) instants, count);
   /* Ensure validity of the arguments and compute the bounding box */
-  ensure_valid_tinstarr(instants, count, MERGE, DISCRETE);
+  if (! ensure_valid_tinstarr(instants, count, MERGE, DISCRETE))
+    return NULL;
   const TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   memcpy(newinstants, instants, sizeof(TInstant *) * count);
   int newcount = tinstarr_remove_duplicates(newinstants, count);

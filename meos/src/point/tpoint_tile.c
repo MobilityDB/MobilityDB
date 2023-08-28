@@ -570,31 +570,36 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
   int **no_cells)
 {
-  /* Get input parameters */
-  ensure_has_X_stbox(bounds);
-  ensure_not_geodetic(bounds->flags);
-  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
-  ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
-  if (MEOS_FLAGS_GET_Z(bounds->flags))
-    ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) bounds) ||
+      ! ensure_not_null((void *) no_cells) || ! ensure_has_X_stbox(bounds) ||
+      ! ensure_not_geodetic(bounds->flags) ||
+      ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
+      ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
+      (MEOS_FLAGS_GET_Z(bounds->flags) &&
+        ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)))
+    return NULL;
+
   int64 tunits = 0; /* make compiler quiet */
   /* If time arguments are given */
   if (duration)
   {
-    ensure_has_T_stbox(bounds);
-    ensure_valid_duration(duration);
+    if (! ensure_has_T_stbox(bounds) || ! ensure_valid_duration(duration) )
+      return NULL;
     tunits = interval_units(duration);
   }
-  ensure_non_empty(sorigin);
-  ensure_point_type(sorigin);
   /* Since we pass by default Point(0 0 0) as origin independently of the input
    * STBox, we test the same spatial dimensionality only for STBox Z */
-  if (MEOS_FLAGS_GET_Z(bounds->flags))
-    ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
+  if (! ensure_not_null((void *) bounds) ||
+      ! ensure_non_empty(sorigin) || ! ensure_point_type(sorigin) ||
+      (MEOS_FLAGS_GET_Z(bounds->flags) &&
+        ! ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin)))
+    return NULL;
   int32 srid = bounds->srid;
   int32 gs_srid = gserialized_get_srid(sorigin);
-  if (gs_srid != SRID_UNKNOWN)
-    ensure_same_srid(srid, gs_srid);
+  if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
+    return NULL;
+
   POINT3DZ pt;
   memset(&pt, 0, sizeof(POINT3DZ));
   if (FLAGS_GET_Z(sorigin->gflags))

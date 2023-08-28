@@ -236,14 +236,17 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup libmeos_temporal_spatial_accessor
- * @brief Return an array of spatiotemporal boxes from a temporal point
+ * @brief Return an array of spatiotemporal boxes from the segments of a
+ * temporal point
  * @sqlfunc stboxes()
  */
 STBox *
 tpoint_stboxes(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
-  ensure_tgeo_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
 
   STBox *result = NULL;
   assert(temptype_subtype(temp->subtype));

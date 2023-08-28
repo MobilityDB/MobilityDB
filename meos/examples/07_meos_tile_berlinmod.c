@@ -88,7 +88,7 @@ int main(void)
   int i, j, k;
 
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  meos_initialize(NULL, NULL);
 
   /* Compute the spatial tiles for trips */
   int no_rows, no_cols, *no_cells;

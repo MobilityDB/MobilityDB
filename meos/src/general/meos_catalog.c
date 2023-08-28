@@ -37,6 +37,7 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
 #if POSTGRESQL_VERSION_NUMBER >= 130000
@@ -194,8 +195,9 @@ temptype_basetype(meosType temptype)
       return _temptype_catalog[i].basetype;
   }
   /* We only arrive here on error */
-  elog(ERROR, "type %u is not a temporal type", temptype);
-  return T_UNKNOWN; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %u is not a temporal type", temptype);
+  return T_UNKNOWN;
 }
 
 /**
@@ -211,8 +213,9 @@ spantype_basetype(meosType spantype)
       return _spantype_catalog[i].basetype;
   }
   /* We only arrive here on error */
-  elog(ERROR, "type %u is not a span type", spantype);
-  return T_UNKNOWN; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %u is not a span type", spantype);
+  return T_UNKNOWN;
 }
 
 /**
@@ -228,8 +231,9 @@ spansettype_spantype(meosType spansettype)
       return _spansettype_catalog[i].spantype;
   }
   /* We only arrive here on error */
-  elog(ERROR, "type %u is not a span set type", spansettype);
-  return T_UNKNOWN; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %u is not a span set type", spansettype);
+  return T_UNKNOWN;
 }
 
 /**
@@ -245,8 +249,9 @@ basetype_spantype(meosType basetype)
       return _spantype_catalog[i].spantype;
   }
   /* We only arrive here on error */
-  elog(ERROR, "type %u is not a span type", basetype);
-  return T_UNKNOWN; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %u is not a span type", basetype);
+  return T_UNKNOWN;
 }
 
 /**
@@ -262,8 +267,9 @@ spantype_spansettype(meosType spantype)
       return _spansettype_catalog[i].spansettype;
   }
   /* We only arrive here on error */
-  elog(ERROR, "type %u is not a span type", spantype);
-  return T_UNKNOWN; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %u is not a span type", spantype);
+  return T_UNKNOWN;
 }
 
 /**
@@ -279,8 +285,9 @@ settype_basetype(meosType settype)
       return _settype_catalog[i].basetype;
   }
   /* We only arrive here on error */
-  elog(ERROR, "type %u is not a set type", settype);
-  return T_UNKNOWN; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %u is not a set type", settype);
+  return T_UNKNOWN;
 }
 
 /**
@@ -296,8 +303,9 @@ basetype_settype(meosType basetype)
       return _settype_catalog[i].settype;
   }
   /* We only arrive here on error */
-  elog(ERROR, "type %u is not a set type", basetype);
-  return T_UNKNOWN; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %u is not a set type", basetype);
+  return T_UNKNOWN;
 }
 
 /*****************************************************************************
@@ -384,8 +392,9 @@ basetype_length(meosType type)
   if (type == T_NPOINT)
     return sizeof(Npoint);
 #endif
-  elog(ERROR, "unknown base type: %d", type);
-  return 0; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "unknown base type: %d", type);
+  return SHRT_MAX; /* make compiler quiet */
 }
 
 #ifdef DEBUG_BUILD
@@ -507,12 +516,16 @@ set_spantype(meosType type)
 /**
  * @brief Ensure that a set value is a set type with a span as a bounding box
  */
-void
+bool
 ensure_set_spantype(meosType type)
 {
   if (! set_spantype(type))
-    elog(ERROR, "The set value must be a number or timestamp set");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The set value must be a number or timestamp set");
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -541,12 +554,16 @@ geoset_type(meosType type)
 /**
  * @brief Ensure that a set value is a geo set
  */
-void
+bool
 ensure_geoset_type(meosType type)
 {
   if (! geoset_type(type))
-    elog(ERROR, "The set value must be a geo set");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The set value must be a geo set");
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -564,12 +581,16 @@ spatialset_type(meosType type)
 /**
  * @brief Ensure that a temporal value is a temporal number
  */
-void
+bool
 ensure_spatialset_type(meosType type)
 {
   if (! spatialset_type(type))
-    elog(ERROR, "The set value must be a spatial set");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The set value must be a spatial set");
+    return false;
+  }
+  return true;
 }
 #endif /* MEOS */
 
@@ -650,12 +671,16 @@ numspan_type(meosType type)
 /**
  * @brief Ensure that a span is a numeric span type
  */
-void
+bool
 ensure_numspan_type(meosType type)
 {
   if (! numspan_type(type))
-    elog(ERROR, "The span value must be a numeric span type");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The span value must be a numeric span type");
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -818,12 +843,16 @@ tnumber_type(meosType type)
 /**
  * @brief Ensure that a temporal value is a temporal number
  */
-void
+bool
 ensure_tnumber_type(meosType type)
 {
   if (! tnumber_type(type))
-    elog(ERROR, "The temporal value must be a temporal number");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be a temporal number");
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -881,6 +910,22 @@ tspatial_type(meosType type)
 }
 
 /**
+ * @brief Ensure that a temporal value is a temporal point or network point
+ */
+bool
+ensure_tspatial_type(meosType type)
+{
+  if (! tspatial_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be a temporal point type");
+    return false;
+  }
+  return true;
+}
+
+
+/**
  * @brief Return true if the type is a base type of a spatiotemporal type
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBox
@@ -911,12 +956,31 @@ tgeo_type(meosType type)
 /**
  * @brief Ensure that a temporal value is a temporal point type
  */
-void
+bool
 ensure_tgeo_type(meosType type)
 {
   if (! tgeo_type(type))
-    elog(ERROR, "The temporal value must be a temporal point type");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be a temporal point type");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that a temporal value is a temporal point type
+ */
+bool
+ensure_tnumber_tgeo_type(meosType type)
+{
+  if (! tnumber_type(type) && ! tgeo_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be a temporal number or a temporal point type");
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************/

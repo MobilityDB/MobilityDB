@@ -423,8 +423,10 @@ Temporal *
 tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   bool restr, bool atvalue)
 {
+  assert(temp); assert(gs);
   if (gserialized_is_empty(gs))
     return NULL;
+  /* Ensure validity of the arguments */
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);
 
@@ -484,8 +486,10 @@ Temporal *
 tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  assert(temp); assert(gs);
-  ensure_tgeo_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
   return tinterrel_tpoint_geo(temp, gs, TDISJOINT, restr, atvalue);
 }
 
@@ -499,8 +503,10 @@ Temporal *
 tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  assert(temp); assert(gs);
-  ensure_tgeo_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
   return tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr, atvalue);
 }
 #endif /* MEOS */
@@ -1090,8 +1096,11 @@ Temporal *
 tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
-  assert(temp); assert(gs);
-  ensure_tgeo_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+
   if (gserialized_is_empty(gs))
     return NULL;
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr,
@@ -1135,12 +1144,13 @@ Temporal *
 ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  assert(temp); assert(gs);
-  ensure_tgeo_type(temp->temptype);
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
+      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_has_not_Z(temp->flags) || ! ensure_has_not_Z_gs(gs))
     return NULL;
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);
+
   GSERIALIZED *gsbound = gserialized_boundary(gs);
   Temporal *result;
   if (! gserialized_is_empty(gsbound))
@@ -1175,12 +1185,13 @@ Temporal *
 tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool restr, bool atvalue)
 {
-  assert(temp); assert(gs);
-  ensure_tgeo_type(temp->temptype);
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
+      ! ensure_point_type(gs) ||
+      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
     return NULL;
-  ensure_point_type(gs);
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+
   datum_func3 func =
     /* 3D only if both arguments are 3D */
     MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
@@ -1311,10 +1322,13 @@ Temporal *
 tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   double dist, bool restr, bool atvalue)
 {
-  assert(temp1); assert(temp2);
-  ensure_tgeo_type(temp1->temptype);
-  ensure_tgeo_type(temp2->temptype);
-  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_tgeo_type(temp1->temptype) ||
+      ! ensure_tgeo_type(temp2->temptype) ||
+      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)))
+    return NULL;
+
   Temporal *sync1, *sync2;
   /* Return false if the temporal points do not intersect in time
    * The operation is synchronization without adding crossings */

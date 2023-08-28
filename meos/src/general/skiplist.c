@@ -41,6 +41,7 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -150,7 +151,11 @@ skiplist_alloc(SkipList *list)
      * fit within MaxAllocSize. If this maximum has been previously reached
      * and more capacity is required, an error is generated. */
     if (list->capacity == (int) floor(MaxAllocSize / sizeof(SkipListElem)))
-      elog(ERROR, "No more memory available to compute the aggregation");
+    {
+      meos_error(ERROR, MEOS_ERR_MEMORY_ALLOC_ERROR,
+        "No more memory available to compute the aggregation");
+      return INT_MAX;
+    }
     if (sizeof(SkipListElem) * (list->capacity << 2) > MaxAllocSize)
       list->capacity = (int) floor(MaxAllocSize / sizeof(SkipListElem));
     else
@@ -272,7 +277,7 @@ skiplist_print(const SkipList *list)
     cur = e->next[0];
   }
   sprintf(buf+len, "}\n");
-  elog(WARNING, "SKIPLIST: %s", buf);
+  meos_error(WARNING, 0, "SKIPLIST: %s", buf);
 }
 #endif
 
@@ -451,10 +456,18 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   Temporal *temp1 = (Temporal *) skiplist_headval(list);
   Temporal *temp2 = (Temporal *) values[0];
   if (temp1->subtype != temp2->subtype)
-    elog(ERROR, "Cannot aggregate temporal values of different type");
+  {
+    meos_error(ERROR, MEOS_ERR_AGGREGATION_ERROR,
+      "Cannot aggregate temporal values of different type");
+    return;
+  }
   if (MEOS_FLAGS_GET_LINEAR(temp1->flags) !=
       MEOS_FLAGS_GET_LINEAR(temp2->flags))
-    elog(ERROR, "Cannot aggregate temporal values of different interpolation");
+  {
+    meos_error(ERROR, MEOS_ERR_AGGREGATION_ERROR,
+      "Cannot aggregate temporal values of different interpolation");
+    return;
+  }
 
   /* Compute the span of the new values */
   Span p;

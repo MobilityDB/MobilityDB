@@ -88,7 +88,7 @@ int main(void)
   int curr_inst[MAX_NO_TRIPS];
 
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  meos_initialize(NULL, NULL);
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("trips.csv", "r");

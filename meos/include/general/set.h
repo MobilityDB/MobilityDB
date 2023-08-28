@@ -80,9 +80,9 @@ typedef struct
 
 /* General functions */
 
-extern void ensure_set_has_type(const Set *s, meosType settype);
-extern void ensure_same_set_type(const Set *s1, const Set *s2);
-extern void ensure_same_set_basetype(const Set *s, meosType basetype);
+extern bool ensure_set_has_type(const Set *s, meosType settype);
+extern bool ensure_same_set_type(const Set *s1, const Set *s2);
+extern bool ensure_same_set_basetype(const Set *s, meosType basetype);
 extern bool set_find_value(const Set *s, Datum, int *loc);
 
 /*****************************************************************************/

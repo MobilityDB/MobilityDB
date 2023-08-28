@@ -57,13 +57,16 @@
 /**
  * @brief Ensure that a temporal network point and a STBox have the same SRID
  */
-void
+bool
 ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
 {
-  if (MEOS_FLAGS_GET_X(box->flags) &&
-    tnpoint_srid(temp) != box->srid)
-    elog(ERROR, "The temporal network point and the box must be in the same SRID");
-  return;
+  if (MEOS_FLAGS_GET_X(box->flags) && tnpoint_srid(temp) != box->srid)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal network point and the box must be in the same SRID");
+    return false;
+  }
+  return true;
 }
 #endif /* not used */
 
@@ -71,12 +74,16 @@ ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
  * @brief Ensure that two temporal network point instants have the same route
  * identifier
  */
-void
+bool
 ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
 {
   if (tnpointinst_route(inst1) != tnpointinst_route(inst2))
-    elog(ERROR, "All network points composing a temporal sequence must have same route identifier");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "All network points composing a temporal sequence must have same route identifier");
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************
@@ -768,21 +775,26 @@ tnpoint_azimuth(const Temporal *temp)
  * @brief Restrict a temporal network point to (the complement of) a geometry
  */
 Temporal *
-tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *geo,
+tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(geo));
-  if (gserialized_is_empty(geo))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
+    return NULL;
+
+  if (gserialized_is_empty(gs))
   {
     Temporal *result = atfunc ? NULL : temporal_copy(temp);
     if (atfunc)
       return NULL;
     return result;
   }
-  ensure_has_not_Z_gs(geo);
+  if (! ensure_has_not_Z_gs(gs))
+    return NULL;
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *resultgeom = tpoint_restrict_geom_time(tempgeom, geo, zspan,
+  Temporal *resultgeom = tpoint_restrict_geom_time(tempgeom, gs, zspan,
     period, atfunc);
   Temporal *result = NULL;
   if (resultgeom != NULL)

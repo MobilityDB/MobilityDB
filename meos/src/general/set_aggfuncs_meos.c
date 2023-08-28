@@ -77,7 +77,8 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
   }
 #endif
   else
-    elog(ERROR, "unknown set type for expanding bounding box: %d", basetype);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "unknown set type for expanding bounding box: %d", basetype);
   return;
 }
 

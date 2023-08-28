@@ -308,7 +308,8 @@ type_oid(meosType type)
     populate_operoid_cache();
   Oid result = _type_oids[type];
   if (! result)
-    elog(ERROR, "Unknown MEOS type; %d", type);
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("Unknown MEOS type; %d", type)));
   return result;
 }
 
@@ -374,8 +375,8 @@ oper_oid(meosOper oper, meosType lt, meosType rt)
     populate_operoid_cache();
   Oid result = _oper_oid[oper][lt][rt];
   if (! result)
-    elog(ERROR, "Unknown MEOS operator: %d, ltype; %d, rtype; %d",
-      oper, lt, rt);
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("Unknown MEOS operator: %d, ltype; %d, rtype; %d", oper, lt, rt)));
   return _oper_oid[oper][lt][rt];
 }
 

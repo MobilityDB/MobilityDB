@@ -203,8 +203,9 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
     return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
       DatumGetNpointP(value3), ratio);
 #endif
-  elog(ERROR, "unknown collinear operation for base type: %d", basetype);
-  return false; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "unknown collinear operation for base type: %d", basetype);
+  return false;
 }
 
 /*****************************************************************************
@@ -698,9 +699,8 @@ char *
 tsequence_to_string(const TSequence *seq, int maxdd, bool component,
   outfunc value_out)
 {
-  /* Ensure validity of the arguments */
   assert(seq);
-  ensure_non_negative(maxdd);
+  assert(maxdd >= 0);
 
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
@@ -898,24 +898,29 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
  * temporal instant. Moreover, ensures that the values are the same
  * if the timestamps are equal
  */
-void
+bool
 ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
   bool merge)
 {
-  if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
+  if ((merge && inst1->t > inst2->t) || (! merge && inst1->t >= inst2->t))
   {
     char *t1 = pg_timestamptz_out(inst1->t);
     char *t2 = pg_timestamptz_out(inst2->t);
-    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
+    return false;
   }
   if (merge && inst1->t == inst2->t &&
     ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
         temptype_basetype(inst1->temptype)))
   {
     char *t1 = pg_timestamptz_out(inst1->t);
-    elog(ERROR, "The temporal values have different value at their overlapping instant %s", t1);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal values have different value at their overlapping instant %s",
+      t1);
+    return false;
   }
-  return;
+  return true;
 }
 
 /**
@@ -933,7 +938,8 @@ bbox_expand(const void *box1, void *box2, meosType temptype)
   else if (tspatial_type(temptype))
     stbox_expand((STBox *) box1, (STBox *) box2);
   else
-    elog(ERROR, "Undefined temporal type for bounding box operation");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Undefined temporal type for bounding box operation");
   return;
 }
 
@@ -950,59 +956,74 @@ bbox_expand(const void *box1, void *box2, meosType temptype)
  * consecutive instants may be equal
  * @param[in] interp Interpolation
  */
-void
+bool
 ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
   interpType interp __attribute__((unused)))
 {
   for (int i = 0; i < count; i++)
   {
     if (instants[i]->subtype != TINSTANT)
-      elog(ERROR, "Input values must be temporal instants");
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Input values must be temporal instants");
+      return false;
+    }
     if (i > 0)
     {
-      ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
-      ensure_spatial_validity((Temporal *) instants[i - 1],
-        (Temporal *) instants[i]);
+      if (! ensure_increasing_timestamps(instants[i - 1], instants[i], merge) ||
+          ! ensure_spatial_validity((Temporal *) instants[i - 1],
+            (Temporal *) instants[i]))
+        return false;
 #if NPOINT
-      if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT)
-        ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
+      if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT &&
+          ! ensure_same_rid_tnpointinst(instants[i - 1], instants[i]))
+        return false;
 #endif /* NPOINT */
     }
   }
-  return;
+  return true;
 }
 
 /**
  * @brief Ensure the validity of the arguments when creating a temporal sequence
  */
-void
+bool
 tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp)
 {
-  assert(instants);
-  assert(count > 0);
+  assert(instants); assert(count > 0);
   /* Test the validity of the instants */
-  ensure_valid_interpolation(instants[0]->temptype, interp);
+  if (! ensure_valid_interpolation(instants[0]->temptype, interp))
+    return false;
   if (count == 1 && (! lower_inc || ! upper_inc))
-    elog(ERROR, "Instant sequence must have inclusive bounds");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Instant sequence must have inclusive bounds");
+    return false;
+  }
   meosType basetype = temptype_basetype(instants[0]->temptype);
   if (interp == STEP && count > 1 && ! upper_inc &&
     datum_ne(tinstant_value(instants[count - 1]),
       tinstant_value(instants[count - 2]), basetype))
-    elog(ERROR, "Invalid end value for temporal sequence with step interpolation");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Invalid end value for temporal sequence with step interpolation");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure the validity of the arguments when creating a temporal sequence
  */
-static void
+static bool
 tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp)
 {
-  tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
-  ensure_valid_tinstarr(instants, count, MERGE_NO, interp);
-  return;
+  if (! tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp) ||
+      ! ensure_valid_tinstarr(instants, count, MERGE_NO, interp))
+    return false;
+  return true;
 }
 
 /**
@@ -1020,7 +1041,10 @@ TSequence *
 tsequence_make_exp(const TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
-  tsequence_make_valid(instants, count, lower_inc, upper_inc, interp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) instants) || ! ensure_positive(count) ||
+      ! tsequence_make_valid(instants, count, lower_inc, upper_inc, interp))
+    return NULL;
   return tsequence_make1_exp(instants, count, maxcount, lower_inc, upper_inc,
     interp, normalize, NULL);
 }
@@ -1039,6 +1063,9 @@ TSequence *
 tsequence_make(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, bool normalize)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) instants) || ! ensure_positive(count))
+    return NULL;
   return tsequence_make_exp(instants, count, count, lower_inc, upper_inc,
     interp, normalize);
 }
@@ -1169,6 +1196,9 @@ tsequence_from_base_timestampset(Datum value, meosType temptype, const Set *s)
 TSequence *
 tboolseq_from_base_timestampset(bool b, const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s))
+    return NULL;
   return tsequence_from_base_timestampset(BoolGetDatum(b), T_TBOOL, s);
 }
 
@@ -1180,6 +1210,9 @@ tboolseq_from_base_timestampset(bool b, const Set *s)
 TSequence *
 tintseq_from_base_timestampset(int i, const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s))
+    return NULL;
   return tsequence_from_base_timestampset(Int32GetDatum(i), T_TINT, s);
 }
 
@@ -1191,6 +1224,9 @@ tintseq_from_base_timestampset(int i, const Set *s)
 TSequence *
 tfloatseq_from_base_timestampset(double d, const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s))
+    return NULL;
   return tsequence_from_base_timestampset(Float8GetDatum(d), T_TFLOAT, s);
 }
 
@@ -1202,6 +1238,9 @@ tfloatseq_from_base_timestampset(double d, const Set *s)
 TSequence *
 ttextseq_from_base_timestampset(const text *txt, const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt))
+    return NULL;
   return tsequence_from_base_timestampset(PointerGetDatum(txt), T_TTEXT, s);
 }
 
@@ -1211,20 +1250,15 @@ ttextseq_from_base_timestampset(const text *txt, const Set *s)
  * and a timestamp set.
  */
 TSequence *
-tgeompointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *s)
+tpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *s)
 {
-  return tsequence_from_base_timestampset(PointerGetDatum(gs), T_TGEOMPOINT, s);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geographic point discrete sequence from a point
- * and a timestamp set.
- */
-TSequence *
-tgeogpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *s)
-{
-  return tsequence_from_base_timestampset(PointerGetDatum(gs), T_TGEOGPOINT, s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || gserialized_is_empty(gs) ||
+      ! ensure_not_null((void *) s))
+    return NULL;
+  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ? 
+    T_TGEOGPOINT : T_TGEOMPOINT;
+  return tsequence_from_base_timestampset(PointerGetDatum(gs), temptype, s);
 }
 #endif /* MEOS */
 
@@ -1267,6 +1301,9 @@ tsequence_from_base_period(Datum value, meosType temptype, const Span *s,
 TSequence *
 tboolseq_from_base_period(bool b, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if ( ! ensure_not_null((void *) s))
+    return NULL;
   return tsequence_from_base_period(BoolGetDatum(b), T_TBOOL, s, STEP);
 }
 
@@ -1277,6 +1314,9 @@ tboolseq_from_base_period(bool b, const Span *s)
 TSequence *
 tintseq_from_base_period(int i, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if ( ! ensure_not_null((void *) s))
+    return NULL;
   return tsequence_from_base_period(Int32GetDatum(i), T_TINT, s, STEP);
 }
 
@@ -1287,6 +1327,9 @@ tintseq_from_base_period(int i, const Span *s)
 TSequence *
 tfloatseq_from_base_period(double d, const Span *s, interpType interp)
 {
+  /* Ensure validity of the arguments */
+  if ( ! ensure_not_null((void *) s))
+    return NULL;
   return tsequence_from_base_period(Float8GetDatum(d), T_TFLOAT, s, interp);
 }
 
@@ -1297,7 +1340,9 @@ tfloatseq_from_base_period(double d, const Span *s, interpType interp)
 TSequence *
 ttextseq_from_base_period(const text *txt, const Span *s)
 {
-  assert(txt);
+  /* Ensure validity of the arguments */
+  if ( ! ensure_not_null((void *) txt) || ! ensure_not_null((void *) s))
+    return NULL;
   return tsequence_from_base_period(PointerGetDatum(txt), T_TTEXT, s, STEP);
 }
 
@@ -1307,26 +1352,16 @@ ttextseq_from_base_period(const text *txt, const Span *s)
  * period.
  */
 TSequence *
-tgeompointseq_from_base_period(const GSERIALIZED *gs, const Span *s,
+tpointseq_from_base_period(const GSERIALIZED *gs, const Span *s,
   interpType interp)
 {
-  assert(gs);
-  return tsequence_from_base_period(PointerGetDatum(gs), T_TGEOMPOINT, s,
-    interp);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geographic point sequence from a point and a
- * period.
- */
-TSequence *
-tgeogpointseq_from_base_period(const GSERIALIZED *gs, const Span *s,
-  interpType interp)
-{
-  assert(gs);
-  return tsequence_from_base_period(PointerGetDatum(gs), T_TGEOGPOINT, s,
-    interp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || gserialized_is_empty(gs) ||
+      ! ensure_not_null((void *) s))
+    return NULL;
+  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+    T_TGEOGPOINT : T_TGEOMPOINT;
+  return tsequence_from_base_period(PointerGetDatum(gs), temptype, s, interp);
 }
 #endif /* MEOS */
 
@@ -1374,7 +1409,6 @@ Temporal *
 tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   const Interval *maxt, bool expand)
 {
-  /* Ensure validity of the arguments */
   assert(seq); assert(inst);
   assert(seq->temptype == inst->temptype);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
@@ -1382,8 +1416,9 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   TInstant *last = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
   int16 flags = seq->flags;
 #if NPOINT
-  if (last->temptype == T_TNPOINT && interp != DISCRETE)
-    ensure_same_rid_tnpointinst(inst, last);
+  if (last->temptype == T_TNPOINT && interp != DISCRETE &&
+      ! ensure_same_rid_tnpointinst(inst, last))
+    return NULL;
 #endif
   /* We cannot call ensure_increasing_timestamps since we must take into
    * account inclusive/exclusive bounds */
@@ -1391,8 +1426,9 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   {
     char *t1 = pg_timestamptz_out(last->t);
     char *t = pg_timestamptz_out(inst->t);
-    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s",
-      t1, t);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Timestamps for temporal value must be increasing: %s, %s", t1, t);
+    return NULL;
   }
 
   Datum value1 = tinstant_value(last);
@@ -1405,7 +1441,10 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
       if (! eqv1v)
       {
         char *t1 = pg_timestamptz_out(last->t);
-        elog(ERROR, "The temporal values have different value at their common timestamp %s", t1);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "The temporal values have different value at their common timestamp %s",
+          t1);
+        return NULL;
       }
       /* Do not add the new instant if sequence is discrete and new instant is
        * equal to be last one */
@@ -1543,7 +1582,6 @@ Temporal *
 tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
   bool expand __attribute__((unused)))
 {
-  /* Ensure validity of the arguments */
   assert(seq1); assert(seq2);
   assert(seq1->temptype == seq2->temptype);
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
@@ -1557,8 +1595,9 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
   {
     t1 = pg_timestamptz_out(inst1->t);
     char *t2 = pg_timestamptz_out(inst2->t);
-    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s",
-      t1, t2);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
+    return NULL;
   }
   else if (inst1->t == inst2->t && seq1->period.upper_inc &&
     seq2->period.lower_inc)
@@ -1569,12 +1608,16 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
     if (! datum_eq(value1, value2, basetype))
     {
       t1 = pg_timestamptz_out(inst1->t);
-      elog(ERROR, "The temporal values have different value at their common timestamp %s", t1);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The temporal values have different value at their common timestamp %s",
+        t1);
+      return NULL;
     }
   }
 #if NPOINT
-  if (inst1->temptype == T_TNPOINT && interp1 != DISCRETE)
-    ensure_same_rid_tnpointinst(inst1, inst2);
+  if (inst1->temptype == T_TNPOINT && interp1 != DISCRETE &&
+      ! ensure_same_rid_tnpointinst(inst1, inst2))
+    return NULL;
 #endif
 
   bool removelast, removefirst;
@@ -1728,7 +1771,9 @@ tsequence_merge_array1(const TSequence **sequences, int count,
       char *t2;
       t1 = pg_timestamptz_out(inst1->t);
       t2 = pg_timestamptz_out(inst2->t);
-      elog(ERROR, "The temporal values cannot overlap on time: %s, %s", t1, t2);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The temporal values cannot overlap on time: %s, %s", t1, t2);
+      return NULL;
     }
     else if (inst1->t == inst2->t && seq1->period.upper_inc &&
       seq2->period.lower_inc)
@@ -1736,7 +1781,10 @@ tsequence_merge_array1(const TSequence **sequences, int count,
       if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
       {
         t1 = pg_timestamptz_out(inst1->t);
-        elog(ERROR, "The temporal values have different value at their common instant %s", t1);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "The temporal values have different value at their common instant %s",
+          t1);
+        return NULL;
       }
     }
     seq1 = seq2;
@@ -1929,7 +1977,11 @@ tcontseq_to_discrete(const TSequence *seq)
   assert(seq);
   assert(! MEOS_FLAGS_GET_DISCRETE(seq->flags));
   if (seq->count != 1)
-    elog(ERROR, "Cannot transform input value to a temporal discrete sequence");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot transform input value to a temporal discrete sequence");
+    return NULL;
+  }
   return tinstant_to_tsequence(TSEQUENCE_INST_N(seq, 0), DISCRETE);
 }
 
@@ -1950,7 +2002,11 @@ tcontseq_to_step(const TSequence *seq)
       (seq->count == 2 && ! datum_eq(
         tinstant_value(TSEQUENCE_INST_N(seq, 0)),
         tinstant_value(TSEQUENCE_INST_N(seq, 1)), basetype)))
-    elog(ERROR, "Cannot transform input value to step interpolation");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot transform input value to step interpolation");
+    return NULL;
+  }
 
   const TInstant *instants[2];
   for (int i = 0; i < seq->count; i++)
@@ -2609,7 +2665,8 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
     return PointerGetDatum(result);
   }
 #endif
-  elog(ERROR, "unknown interpolation function for continuous temporal type: %d",
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "unknown interpolation function for continuous temporal type: %d",
     inst1->temptype);
   return 0; /* make compiler quiet */
 }
@@ -3013,8 +3070,12 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
     result = tnpointsegm_intersection_value(inst1, inst2, value, t);
 #endif
   else
-    elog(ERROR, "unknown intersection function for continuous temporal type: %d",
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "unknown intersection function for continuous temporal type: %d",
       inst1->temptype);
+    return NULL;
+  }
 
   if (result && inter != NULL)
     /* We are sure it is linear interpolation */
@@ -5327,7 +5388,10 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
       basetype))
     {
       char *str = pg_timestamptz_out(instants[0]->t);
-      elog(ERROR, "The temporal values have different value at their common instant %s", str);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The temporal values have different value at their common instant %s",
+        str);
+      return NULL;
     }
   }
   sequences[nseqs++] = (TSequence *) seq2;
@@ -5349,7 +5413,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
 }
 
 /**
- * @ingroup libmeos_temporal_modif
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Insert the second temporal value into the first one.
  */
 Temporal *
@@ -5357,6 +5421,7 @@ tsequence_insert(const TSequence *seq1, const TSequence *seq2, bool connect)
 {
   assert(seq1); assert(seq2);
   assert(seq1->temptype == seq2->temptype);
+
   if (MEOS_FLAGS_GET_DISCRETE(seq1->flags) || ! connect)
     return (Temporal *) tsequence_merge(seq1, seq2);
   else
@@ -5417,7 +5482,7 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_temporal_modif
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a timestamp from a temporal value connecting the instants
  * before and after the given timestamp (if any).
  * @sqlfunc deleteTime
@@ -5426,6 +5491,7 @@ Temporal *
 tsequence_delete_timestamp(const TSequence *seq, TimestampTz t, bool connect)
 {
   assert(seq);
+
   Temporal *result;
   if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
     result = (Temporal *) tdiscseq_minus_timestamp(seq, t);
@@ -5525,7 +5591,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *s)
 }
 
 /**
- * @ingroup libmeos_temporal_modif
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a timestamp set from a temporal value connecting the instants
  * before and after the given timestamp set (if any).
  * @sqlfunc deleteTime
@@ -5533,7 +5599,8 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *s)
 Temporal *
 tsequence_delete_timestampset(const TSequence *seq, const Set *s, bool connect)
 {
-  assert(seq);
+  assert(seq); assert(s);
+
   Temporal *result;
   if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
     result = (Temporal *) tdiscseq_restrict_timestampset(seq, s, REST_MINUS);
@@ -5591,7 +5658,7 @@ tcontseq_delete_period(const TSequence *seq, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_modif
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a period from a temporal value connecting the instants
  * before and after the given period (if any).
  * @sqlfunc deleteTime
@@ -5599,7 +5666,8 @@ tcontseq_delete_period(const TSequence *seq, const Span *s)
 Temporal *
 tsequence_delete_period(const TSequence *seq, const Span *s, bool connect)
 {
-  assert(seq);
+  assert(seq); assert(s);
+
   Temporal *result;
   if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
     result = (Temporal *) tdiscseq_restrict_period(seq, s, REST_MINUS);
@@ -5666,7 +5734,7 @@ tcontseq_delete_periodset(const TSequence *seq, const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_modif
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a period set from a temporal value connecting the instants
  * before and after the given period set (if any).
  * @sqlfunc deleteTime
@@ -5675,7 +5743,8 @@ Temporal *
 tsequence_delete_periodset(const TSequence *seq, const SpanSet *ss,
   bool connect)
 {
-  assert(seq);
+  assert(seq); assert(ss);
+
   Temporal *result;
   if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
     result = (Temporal *) tdiscseq_restrict_periodset(seq, ss, REST_MINUS);
@@ -5686,6 +5755,21 @@ tsequence_delete_periodset(const TSequence *seq, const SpanSet *ss,
   return result;
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_temporal_restrict
+ * @brief Restrict a temporal sequence to (the complement of) a period set.
+ */
+Temporal *
+tsequence_restrict_periodset(const TSequence *seq, const SpanSet *ss,
+  bool atfunc)
+{
+  Temporal *result = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
+      (Temporal *) tdiscseq_restrict_periodset(seq, ss, atfunc) :
+      (Temporal *) tcontseq_restrict_periodset(seq, ss, atfunc);
+  return result;
+}
 
 /*****************************************************************************
  * Local aggregate functions

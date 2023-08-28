@@ -42,17 +42,18 @@
 
 /*****************************************************************************/
 
-extern void ensure_end_input(const char **str, bool end, const char *type);
-
+extern bool ensure_end_input(const char **str, const char *type);
 extern void p_whitespace(const char **str);
 extern bool p_obrace(const char **str);
+extern bool ensure_obrace(const char **str, const char *type);
 extern bool p_cbrace(const char **str);
+extern bool ensure_cbrace(const char **str, const char *type);
 extern bool p_obracket(const char **str);
 extern bool p_cbracket(const char **str);
 extern bool p_oparen(const char **str);
-extern void ensure_oparen(const char **str, const char *type);
+extern bool ensure_oparen(const char **str, const char *type);
 extern bool p_cparen(const char **str);
-extern void ensure_cparen(const char **str, const char *type);
+extern bool ensure_cparen(const char **str, const char *type);
 extern bool p_comma(const char **str);
 extern Datum temporal_basetype_parse(const char **str, meosType basetypid);
 extern double double_parse(const char **str);

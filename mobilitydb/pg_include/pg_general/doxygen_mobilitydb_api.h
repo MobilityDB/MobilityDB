@@ -219,6 +219,10 @@
  * @ingroup mobilitydb_temporal_spatial
  * @brief Spatial relationship functions for temporal point types.
  *
+ * @defgroup mobilitydb_temporal_spatial_route Route functions
+ * @ingroup mobilitydb_temporal_spatial
+ * @brief Route functions for temporal network point types.
+ *
  * @defgroup mobilitydb_temporal_time Time functions
  * @ingroup mobilitydb_temporal
  * @brief Time functions for temporal types.

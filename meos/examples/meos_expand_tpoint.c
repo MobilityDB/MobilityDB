@@ -70,7 +70,7 @@
 int main(void)
 {
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  meos_initialize(NULL, NULL);
 
   /* Get start time */
   clock_t time;

@@ -60,6 +60,7 @@ These projects push the boundaries of MobilityDB and connect it with the Postgre
 
 *   [MobilityDB-AWS](https://github.com/MobilityDB/MobilityDB-AWS): MobilityDB on Amazon Web Services
 *   [MobilityDB-Azure](https://github.com/MobilityDB/MobilityDB-Azure): MobilityDB on Azure
+*   [MobilityDB-GCP](https://github.com/MobilityDB/MobilityDB-GCP): MobilityDB on Google Cloud Platform
 
 ### Visualization
 

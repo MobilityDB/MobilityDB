@@ -181,7 +181,10 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
         if (tinstant_eq(inst1, inst2))
           result[count++] = tinstant_copy(inst1);
         else
-          elog(ERROR, "Unable to merge values");
+        {
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Unable to merge values");
+          return NULL;
+        }
       }
       i++;
       j++;
@@ -311,7 +314,10 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
       if (tinstant_eq(inst1, inst2))
         instants[i] = tinstant_copy(inst1);
       else
-        elog(ERROR, "Unable to merge values");
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Unable to merge values");
+        return -1;
+      }
     }
   }
   sequences[nseqs++] = tsequence_make_free(instants, syncseq1->count,

@@ -36,6 +36,8 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
+#include <limits.h>
 /* POSTGRESQL */
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
@@ -59,8 +61,66 @@
 #endif
 
 /*****************************************************************************
+ * Global variables
+ *****************************************************************************/
+
+#define MEOS_SUBTYPE_STR_MAXLEN 12
+
+/**
+ * @brief Array storing the string representation of the concrete subtypes of
+ * temporal types
+ */
+static char *_tempsubtypeName[] =
+{
+  "Any subtype",
+  "Instant",
+  "Sequence",
+  "SequenceSet"
+};
+
+/**
+ * @brief Return the string representation of the subtype of the temporal type
+ * corresponding to the enum value
+ */
+const char *
+tempsubtype_name(int8 subtype)
+{
+  return _tempsubtypeName[subtype];
+}
+
+/*****************************************************************************
  * Parameter tests
  *****************************************************************************/
+
+/**
+ * @brief Ensure that the pointer is not null
+ */
+bool
+ensure_not_null(void *ptr)
+{
+  if (ptr == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+      "Null pointer not allowed");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that at least one of the pointers is not null
+ */
+bool
+ensure_one_not_null(void *ptr1, void *ptr2)
+{
+  if (ptr1 == NULL && ptr2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+      "At least one pointer must be not null");
+    return false;
+  }
+  return true;
+}
 
 #if DEBUG_BUILD
 /**
@@ -93,23 +153,31 @@ temptype_subtype_all(int16 subtype)
 /**
  * @brief Ensure that a temporal value has discrete interpolation
  */
-void
+bool
 ensure_discrete_interpolation(int16 flags)
 {
   if (! MEOS_FLAGS_GET_DISCRETE(flags))
-    elog(ERROR, "The temporal value must have discrete interpolation");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal value must have discrete interpolation");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that a temporal value has continuous interpolation
  */
-void
+bool
 ensure_continuous_interpolation(int16 flags)
 {
   if (! MEOS_FLAGS_GET_CONTINUOUS(flags))
-    elog(ERROR, "The temporal value must have continuous interpolation");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal value must have continuous interpolation");
+    return false;
+  }
+  return true;
 }
 #endif /* not used */
 
@@ -117,86 +185,129 @@ ensure_continuous_interpolation(int16 flags)
  * @brief Ensure that the interpolation is valid
  * @note Used for the constructor functions
  */
-void
+bool
 ensure_valid_interpolation(meosType temptype, interpType interp)
 {
   if (interp == LINEAR && ! temptype_continuous(temptype))
-    elog(ERROR, "The temporal type cannot have linear interpolation");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal type cannot have linear interpolation");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that the subtype of temporal type is a sequence (set)
  */
-void
+bool
 ensure_continuous(const Temporal *temp)
 {
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || MEOS_FLAGS_GET_DISCRETE(temp->flags))
-    elog(ERROR, "Input must be a temporal continuous sequence (set)");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Input must be a temporal continuous sequence (set)");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that two temporal values have the same interpolation
  * @param[in] temp1,temp2 Input values
  */
-void
+bool
 ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
   interpType interp1 = MEOS_FLAGS_GET_INTERP(temp1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
   if (interp1 != interp2)
-    elog(ERROR, "The temporal values must have the same interpolation");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal values must have the same interpolation");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that a temporal value does not have linear interpolation
  */
-void
+bool
 ensure_nonlinear_interpolation(int16 flags)
 {
   if (MEOS_FLAGS_GET_LINEAR(flags))
-    elog(ERROR, "The temporal value cannot have linear interpolation");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal value cannot have linear interpolation");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that two temporal values have at least one common dimension
  * based on their flags
  */
-void
+bool
 ensure_common_dimension(int16 flags1, int16 flags2)
 {
   if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) &&
-    MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
-    elog(ERROR, "The temporal values must have at least one common dimension");
-  return;
+      MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal values must have at least one common dimension");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that a temporal value is of a temporal type
  */
-void
+bool
 ensure_temporal_has_type(const Temporal *temp, meosType temptype)
 {
   if (temp->temptype != temptype)
-    elog(ERROR, "The temporal value must be of type %s", meostype_name(temptype));
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be of type %s", meostype_name(temptype));
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that two temporal values have the same temporal type
  * @param[in] temp1,temp2 Input values
  */
-void
+bool
 ensure_same_temporal_type(const Temporal *temp1, const Temporal *temp2)
 {
   if (temp1->temptype != temp2->temptype)
-    elog(ERROR, "Operation on mixed temporal types: %s and %s",
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Operation on mixed temporal types: %s and %s",
       meostype_name(temp1->temptype), meostype_name(temp2->temptype));
-  return;
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that a temporal value is of a temporal type
+ */
+bool
+ensure_temporal_has_subtype(const Temporal *temp, uint8 subtype)
+{
+  if (temp->subtype != subtype)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be of subtype %s", tempsubtype_name(subtype));
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -204,71 +315,120 @@ ensure_same_temporal_type(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Input value
  * @param[in] basetype Input base type
  */
-void
+bool
 ensure_same_temporal_basetype(const Temporal *temp, meosType basetype)
 {
   if (temptype_basetype(temp->temptype) != basetype)
-    elog(ERROR, "Operation on mixed temporal type and base type");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Operation on mixed temporal type and base type: %s, %s",
+      meostype_name(temp->temptype), meostype_name(basetype));
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Ensure that the number is positive
+ * @brief Ensure that the number is positive or zero
  */
-void
+bool
 ensure_non_negative(int i)
 {
   if (i < 0)
-    elog(ERROR, "The value cannot be negative: %d", i);
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The value cannot be negative: %d", i);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that the number is positive
+ */
+bool
+ensure_positive(int i)
+{
+  if (i <= 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The value must be strictly positive: %d", i);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if the number is strictly positive
+ */
+bool
+positive_datum(Datum size, meosType basetype)
+{
+  assert(span_basetype(basetype));
+  if (basetype == T_INT4 && DatumGetInt32(size) <= 0)
+    return false;
+  else if (basetype == T_FLOAT8 && DatumGetFloat8(size) <= 0.0)
+    return false;
+  /* basetype == T_TIMESTAMPTZ */
+  else if (DatumGetInt64(size) <= 0)
+    return false;
+  return true;
 }
 
 /**
  * @brief Ensure that the number is strictly positive
  */
-void
+bool
 ensure_positive_datum(Datum size, meosType basetype)
 {
-  assert(span_basetype(basetype));
-  if (basetype == T_INT4)
+  if (! positive_datum(size, basetype))
   {
-    int isize = DatumGetInt32(size);
-    if (isize <= 0)
-      elog(ERROR, "The value must be strictly positive: %d", isize);
+    char str[256];
+    if (basetype == T_INT4)
+      sprintf(str, "%d", DatumGetInt32(size));
+    else if (basetype == T_FLOAT8)
+      sprintf(str, "%f", DatumGetFloat8(size));
+    else /* basetype == T_TIMESTAMPTZ */
+      sprintf(str, INT64_FORMAT, DatumGetInt64(size));
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The value must be strictly positive: %s", str);
+    return false;
   }
-  else if (basetype == T_FLOAT8)
-  {
-    double dsize = DatumGetFloat8(size);
-    if (dsize <= 0.0)
-      elog(ERROR, "The value must be strictly positive: %f", dsize);
-  }
-  else /* basetype == T_TIMESTAMPTZ */
-  {
-    int64 isize = DatumGetInt64(size);
-    if (isize <= 0)
-      elog(ERROR, "The value must be strictly positive: " INT64_FORMAT "", isize);
-  }
-  return;
+  return true;
+}
+
+/**
+ * @brief Return true if the interval is a positive and absolute duration
+ */
+bool
+valid_duration(const Interval *duration)
+{
+  if (duration->month != 0)
+    return false;
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  if (pg_interval_cmp(duration, &intervalzero) <= 0)
+    return false;
+  return true;
 }
 
 /**
  * @brief Ensure that the interval is a positive and absolute duration
  */
-void
+bool
 ensure_valid_duration(const Interval *duration)
 {
+  if (valid_duration(duration))
+    return true;
   if (duration->month != 0)
-  {
-    elog(ERROR, "Interval defined in terms of month, year, century, etc. not supported");
-  }
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = pg_interval_cmp(duration, &intervalzero);
-  if (cmp <= 0)
-    elog(ERROR, "The interval must be positive");
-  return;
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Interval defined in terms of month, year, century, etc. not supported");
+  else
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The interval must be positive");
+  return false;
 }
 
 /*****************************************************************************
@@ -447,7 +607,9 @@ temporal_in(const char *str, meosType temptype)
 Temporal *
 tbool_in(const char *str)
 {
-  assert(str);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
   return temporal_parse(&str, T_TBOOL);
 }
 
@@ -459,7 +621,9 @@ tbool_in(const char *str)
 Temporal *
 tint_in(const char *str)
 {
-  assert(str);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
   return temporal_parse(&str, T_TINT);
 }
 
@@ -470,7 +634,9 @@ tint_in(const char *str)
 Temporal *
 tfloat_in(const char *str)
 {
-  assert(str);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
   return temporal_parse(&str, T_TFLOAT);
 }
 
@@ -481,7 +647,9 @@ tfloat_in(const char *str)
 Temporal *
 ttext_in(const char *str)
 {
-  assert(str);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
   return temporal_parse(&str, T_TTEXT);
 }
 #endif /* MEOS */
@@ -493,9 +661,8 @@ ttext_in(const char *str)
 char *
 temporal_out(const Temporal *temp, int maxdd)
 {
-  /* Ensure validity of the arguments */
   assert(temp);
-  ensure_non_negative(maxdd);
+  assert(maxdd >= 0);
 
   char *result;
   assert(temptype_subtype(temp->subtype));
@@ -517,7 +684,9 @@ temporal_out(const Temporal *temp, int maxdd)
 char *
 tbool_out(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
   return temporal_out(temp, 0);
 }
 
@@ -529,7 +698,9 @@ tbool_out(const Temporal *temp)
 char *
 tint_out(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
   return temporal_out(temp, 0);
 }
 
@@ -540,7 +711,9 @@ tint_out(const Temporal *temp)
 char *
 tfloat_out(const Temporal *temp, int maxdd)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_non_negative(maxdd))
+    return NULL;
   return temporal_out(temp, maxdd);
 }
 
@@ -551,7 +724,9 @@ tfloat_out(const Temporal *temp, int maxdd)
 char *
 ttext_out(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
   return temporal_out(temp, 0);
 }
 
@@ -563,7 +738,9 @@ ttext_out(const Temporal *temp)
 char *
 tpoint_out(const Temporal *temp, int maxdd)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_non_negative(maxdd))
+    return NULL;
   return temporal_out(temp, maxdd);
 }
 #endif /* MEOS */
@@ -579,7 +756,10 @@ tpoint_out(const Temporal *temp, int maxdd)
 Temporal *
 temporal_copy(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   Temporal *result = palloc(VARSIZE(temp));
   memcpy(result, temp, VARSIZE(temp));
   return result;
@@ -598,6 +778,21 @@ tdiscseq_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
     instants[i] = tinstant_make(value, temptype, (TSEQUENCE_INST_N(seq, i))->t);
   return tsequence_make_free(instants, seq->count, true, true, DISCRETE,
     NORMALIZE_NO);
+}
+
+/**
+ * @brief Construct a temporal discrete sequence from a base value and a
+ * timestamp set.
+ */
+TSequence *
+tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
+{
+  assert(seq);
+  TSequence *result = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
+    tdiscseq_from_base_temp(value, temptype, seq) :
+    tsequence_from_base_period(value, temptype, &seq->period,
+      temptype_continuous(temptype) ? LINEAR : STEP);
+  return result;
 }
 
 /**
@@ -641,12 +836,8 @@ temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp)
     result = (Temporal *) tinstant_make(value, temptype,
       ((TInstant *) temp)->t);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tdiscseq_from_base_temp(value, temptype,
-        (TSequence *) temp) :
-      (Temporal *) tsequence_from_base_period(value, temptype,
-        &((TSequence *) temp)->period,
-        temptype_continuous(temptype) ? LINEAR : STEP);
+    result = (Temporal *) tsequence_from_base_temp(value, temptype,
+      (TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_from_base_temp(value, temptype,
       (TSequenceSet *) temp);
@@ -662,7 +853,9 @@ temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp)
 Temporal *
 tbool_from_base_temp(bool b, const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
   return temporal_from_base_temp(BoolGetDatum(b), T_TBOOL, temp);
 }
 
@@ -674,7 +867,9 @@ tbool_from_base_temp(bool b, const Temporal *temp)
 Temporal *
 tint_from_base_temp(int i, const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
   return temporal_from_base_temp(Int32GetDatum(i), T_TINT, temp);
 }
 
@@ -686,7 +881,9 @@ tint_from_base_temp(int i, const Temporal *temp)
 Temporal *
 tfloat_from_base_temp(double d, const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
   return temporal_from_base_temp(Float8GetDatum(d), T_TFLOAT, temp);
 }
 
@@ -698,7 +895,9 @@ tfloat_from_base_temp(double d, const Temporal *temp)
 Temporal *
 ttext_from_base_temp(const text *txt, const Temporal *temp)
 {
-  assert(temp); assert(txt);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt))
+    return NULL;
   return temporal_from_base_temp(PointerGetDatum(txt), T_TTEXT, temp);
 }
 
@@ -708,22 +907,13 @@ ttext_from_base_temp(const text *txt, const Temporal *temp)
  * of another temporal value.
  */
 Temporal *
-tgeompoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
+tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
-  assert(temp); assert(gs);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      gserialized_is_empty(gs))
+    return NULL;
   return temporal_from_base_temp(PointerGetDatum(gs), T_TGEOMPOINT, temp);
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geographic point from a point and the time frame
- * of another temporal value.
- */
-Temporal *
-tgeogpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
-{
-  assert(temp); assert(gs);
-  return temporal_from_base_temp(PointerGetDatum(gs), T_TGEOGPOINT, temp);
 }
 #endif /* MEOS */
 
@@ -746,14 +936,15 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
   Interval *maxt, bool expand)
 {
   /* Validity tests */
-  assert(temp); assert(inst);
-  ensure_same_temporal_type(temp, (Temporal *) inst);
-  if (inst->subtype != TINSTANT)
-    elog(ERROR, "The second argument must be of instant subtype");
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) inst) ||
+      ! ensure_same_temporal_type(temp, (Temporal *) inst) ||
+      ! ensure_temporal_has_subtype((Temporal *) inst, TINSTANT) ||
+      ! ensure_spatial_validity(temp, (const Temporal *) inst))
+    return NULL;
+
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
-  ensure_spatial_validity(temp, (const Temporal *) inst);
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -780,15 +971,16 @@ Temporal *
 temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 {
   /* Validity tests */
-  assert(temp); assert(seq);
-  ensure_same_temporal_type(temp, (Temporal *) seq);
-  if (seq->subtype != TSEQUENCE)
-    elog(ERROR, "The second argument must be of sequence subtype");
-  ensure_same_interpolation(temp, (Temporal *) seq);
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) seq) ||
+      ! ensure_same_temporal_type(temp, (Temporal *) seq) ||
+      ! ensure_temporal_has_subtype((Temporal *) seq, TSEQUENCE) ||
+      ! ensure_same_interpolation(temp, (Temporal *) seq) ||
+      ! ensure_spatial_validity(temp, (Temporal *) seq))
+    return NULL;
+  
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
-  ensure_spatial_validity(temp, (Temporal *) seq);
 
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq->flags);
   Temporal *result;
@@ -891,7 +1083,7 @@ Temporal *
 temporal_merge(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *result;
-  /* Can't do anything with null inputs */
+  /* Cannot do anything with null inputs */
   if (! temp1 && ! temp2)
     return NULL;
   /* One argument is null, return a copy of the other temporal */
@@ -900,8 +1092,11 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
   if (! temp2)
     return temporal_copy(temp1);
 
+  /* Ensure validity of the arguments */
+  if (! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
+
   /* Convert to the same subtype */
-  ensure_same_temporal_type(temp1, temp2);
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -965,13 +1160,12 @@ temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
 Temporal *
 temporal_merge_array(Temporal **temparr, int count)
 {
-  assert(temparr);
-  assert(count > 0);
+  /* Ensure validity of the arguments */
+  if( ! ensure_not_null((void *) temparr) || ! ensure_positive(count))
+    return NULL;
+
   if (count == 1)
-  {
-    Temporal *result = temporal_copy(temparr[0]);
-    return result;
-  }
+    return temporal_copy(temparr[0]);
 
   /* Ensure all values have the same interpolation and, if they are spatial,
    * have the same SRID and dimensionality, and determine subtype of the
@@ -996,8 +1190,8 @@ temporal_merge_array(Temporal **temparr, int count)
       subtype = newsubtype;
       interp |= newinterp;
     }
-    if (spatial)
-      ensure_spatial_validity(temparr[0], temparr[i]);
+    if (spatial && ! ensure_spatial_validity(temparr[0], temparr[i]))
+      return NULL;
   }
   /* Convert all temporal values to a single subtype if needed */
   Temporal **newtemps;
@@ -1052,8 +1246,11 @@ datum_float_to_int(Datum d)
 Temporal *
 tint_to_tfloat(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return NULL;
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_int_to_float;
@@ -1072,10 +1269,16 @@ tint_to_tfloat(const Temporal *temp)
 Temporal *
 tfloat_to_tint(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
   if (MEOS_FLAGS_GET_LINEAR(temp->flags))
-    elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot cast temporal float with linear interpolation to temporal integer");
+    return NULL;
+  }
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1115,7 +1318,10 @@ temporal_set_period(const Temporal *temp, Span *s)
 Span *
 temporal_to_period(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   Span *result = palloc(sizeof(Span));
   temporal_set_period(temp, result);
   return result;
@@ -1154,8 +1360,11 @@ tnumber_set_span(const Temporal *temp, Span *s)
 Span *
 tnumber_to_span(const Temporal *temp)
 {
-  assert(temp);
-  ensure_tnumber_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+
   Span *result = palloc(sizeof(Span));
   tnumber_set_span(temp, result);
   return result;
@@ -1170,8 +1379,11 @@ tnumber_to_span(const Temporal *temp)
 TBox *
 tnumber_to_tbox(const Temporal *temp)
 {
-  assert(temp);
-  ensure_tnumber_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+
   TBox *result = palloc(sizeof(TBox));
   temporal_set_bbox(temp, result);
   return result;
@@ -1194,11 +1406,9 @@ temporal_restart(Temporal *temp, int count)
   assert(temp);
   assert(count > 0);
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-  {
-    elog(ERROR, "Input must be a temporal sequence (set)");
-  }
-  else if (temp->subtype == TSEQUENCE)
+  assert(temp->subtype != TINSTANT);
+  
+  if (temp->subtype == TSEQUENCE)
     tsequence_restart((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
     tsequenceset_restart((TSequenceSet *) temp, count);
@@ -1214,7 +1424,10 @@ temporal_restart(Temporal *temp, int count)
 Temporal *
 temporal_to_tinstant(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1234,7 +1447,10 @@ temporal_to_tinstant(const Temporal *temp)
 Temporal *
 temporal_to_tsequence(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1255,7 +1471,10 @@ temporal_to_tsequence(const Temporal *temp)
 Temporal *
 temporal_to_tsequenceset(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1276,8 +1495,11 @@ temporal_to_tsequenceset(const Temporal *temp)
 Temporal *
 temporal_set_interp(const Temporal *temp, interpType interp)
 {
-  assert(temp);
-  ensure_valid_interpolation(temp->temptype, interp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_valid_interpolation(temp->temptype, interp))
+    return NULL;
+
   Temporal *result;
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, interp);
@@ -1302,10 +1524,11 @@ Temporal *
 temporal_shift_tscale(const Temporal *temp, const Interval *shift,
   const Interval *duration)
 {
-  assert(temp);
-  assert(shift || duration);
-  if (duration)
-    ensure_valid_duration(duration);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_one_not_null((void *) shift, (void *) duration) ||
+      (duration && ! ensure_valid_duration(duration)))
+    return NULL;
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -1330,7 +1553,6 @@ temporal_shift_tscale(const Temporal *temp, const Interval *shift,
 Temporal *
 temporal_shift(const Temporal *temp, const Interval *shift)
 {
-  assert(temp); assert(shift);
   return temporal_shift_tscale(temp, shift, NULL);
 }
 
@@ -1341,7 +1563,6 @@ temporal_shift(const Temporal *temp, const Interval *shift)
 Temporal *
 temporal_tscale(const Temporal *temp, const Interval *duration)
 {
-  assert(temp); assert(duration);
   return temporal_shift_tscale(temp, NULL, duration);
 }
 #endif /* MEOS */
@@ -1361,7 +1582,7 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
   assert(inst); assert(duration);
-  ensure_valid_duration(duration);
+  assert(valid_duration(duration));
   TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
   Datum value = tinstant_value(inst);
   TInstant *result = tinstant_make(value, inst->temptype, lower);
@@ -1378,6 +1599,7 @@ temporal_tprecision_agg_values(const Temporal *temp)
 {
   assert(temp);
   assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
+
   Datum result;
   if (tnumber_type(temp->temptype))
     result = Float8GetDatum(tnumber_twavg(temp));
@@ -1399,7 +1621,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   assert(seq); assert(duration);
   assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
     seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT );
-  ensure_valid_duration(duration);
+  assert(valid_duration(duration));
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
   TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
@@ -1493,7 +1715,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   assert(ss); assert(duration);
-  ensure_valid_duration(duration);
+  assert(valid_duration(duration));
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(ss->period.lower);
   TimestampTz upper = DatumGetTimestampTz(ss->period.upper);
@@ -1539,7 +1761,10 @@ Temporal *
 temporal_tprecision(const Temporal *temp, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(temp); assert(duration);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) duration))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1567,7 +1792,7 @@ tinstant_tsample(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
   assert(inst); assert(duration);
-  ensure_valid_duration(duration);
+  assert(valid_duration(duration));
   TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
   if (timestamp_cmp_internal(lower, inst->t) == 0)
     return tinstant_copy(inst);
@@ -1671,7 +1896,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
   assert(seq); assert(duration);
-  ensure_valid_duration(duration);
+  assert(valid_duration(duration));
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
   TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
@@ -1698,7 +1923,7 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   assert(ss); assert(duration);
-  ensure_valid_duration(duration);
+  assert(valid_duration(duration));
   int64 tunits = interval_units(duration);
   TimestampTz lower = tsequenceset_start_timestamp(ss);
   TimestampTz upper = tsequenceset_end_timestamp(ss);
@@ -1729,7 +1954,10 @@ Temporal *
 temporal_tsample(const Temporal *temp, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(temp); assert(duration);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) duration))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1748,7 +1976,6 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
  * Accessor functions
  *****************************************************************************/
 
-#define MEOS_SUBTYPE_STR_MAXLEN 12
 #define MEOS_INTERP_STR_MAXLEN 9
 
 #if MEOS
@@ -1773,15 +2000,13 @@ temporal_mem_size(const Temporal *temp)
 char *
 temporal_subtype(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   char *result = palloc(sizeof(char) * MEOS_SUBTYPE_STR_MAXLEN);
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    strcpy(result, "Instant");
-  else if (temp->subtype == TSEQUENCE)
-    strcpy(result, "Sequence");
-  else /* temp->subtype == TSEQUENCESET */
-    strcpy(result, "SequenceSet");
+  strcpy(result, _tempsubtypeName[temp->subtype]);
   return result;
 }
 
@@ -1794,7 +2019,10 @@ temporal_subtype(const Temporal *temp)
 char *
 temporal_interp(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   char *result = palloc(sizeof(char) * MEOS_INTERP_STR_MAXLEN);
   assert(temptype_subtype(temp->subtype));
   interpType interp = MEOS_FLAGS_GET_INTERP(temp->flags);
@@ -1832,7 +2060,7 @@ temporal_set_bbox(const Temporal *temp, void *box)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of distinct base values of a temporal value.
  * @sqlfunc values
  */
@@ -1840,6 +2068,7 @@ Datum *
 temporal_values(const Temporal *temp, int *count)
 {
   assert(temp); assert(count);
+
   Datum *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1860,8 +2089,11 @@ temporal_values(const Temporal *temp, int *count)
 bool *
 tbool_values(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
-  ensure_temporal_has_type(temp, T_TBOOL);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_temporal_has_type(temp, T_TBOOL))
+    return NULL;
+
   Datum *datumarr = temporal_values(temp, count);
   bool *result = palloc(sizeof(bool) * *count);
   for (int i = 0; i < *count; i++)
@@ -1878,8 +2110,11 @@ tbool_values(const Temporal *temp, int *count)
 int *
 tint_values(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return NULL;
+
   Datum *datumarr = temporal_values(temp, count);
   int *result = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
@@ -1896,8 +2131,11 @@ tint_values(const Temporal *temp, int *count)
 double *
 tfloat_values(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
+
   Datum *datumarr = temporal_values(temp, count);
   double *result = palloc(sizeof(double) * *count);
   for (int i = 0; i < *count; i++)
@@ -1914,8 +2152,11 @@ tfloat_values(const Temporal *temp, int *count)
 text **
 ttext_values(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return NULL;
+
   Datum *datumarr = temporal_values(temp, count);
   text **result = palloc(sizeof(text *) * *count);
   for (int i = 0; i < *count; i++)
@@ -1932,8 +2173,11 @@ ttext_values(const Temporal *temp, int *count)
 GSERIALIZED **
 tpoint_values(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
-  ensure_tgeo_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+
   Datum *datumarr = temporal_values(temp, count);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);
   for (int i = 0; i < *count; i++)
@@ -1951,8 +2195,11 @@ tpoint_values(const Temporal *temp, int *count)
 SpanSet *
 tnumber_valuespans(const Temporal *temp)
 {
-  assert(temp);
-  ensure_tnumber_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+
   SpanSet *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1972,7 +2219,10 @@ tnumber_valuespans(const Temporal *temp)
 SpanSet *
 temporal_time(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   SpanSet *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2016,8 +2266,10 @@ temporal_start_value(const Temporal *temp)
 bool
 tbool_start_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TBOOL);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TBOOL))
+    return false;
   return DatumGetBool(temporal_start_value(temp));
 }
 
@@ -2029,8 +2281,10 @@ tbool_start_value(const Temporal *temp)
 int
 tint_start_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      !ensure_temporal_has_type(temp, T_TINT))
+    return INT_MAX;
   return DatumGetInt32(temporal_start_value(temp));
 }
 
@@ -2042,8 +2296,10 @@ tint_start_value(const Temporal *temp)
 double
 tfloat_start_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return DBL_MAX;
   return DatumGetFloat8(temporal_start_value(temp));
 }
 
@@ -2055,8 +2311,10 @@ tfloat_start_value(const Temporal *temp)
 text *
 ttext_start_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return NULL;
   return DatumGetTextP(temporal_start_value(temp));
 }
 
@@ -2068,8 +2326,10 @@ ttext_start_value(const Temporal *temp)
 GSERIALIZED *
 tpoint_start_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_tgeo_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
   return DatumGetGserializedP(temporal_start_value(temp));
 }
 #endif /* MEOS */
@@ -2107,8 +2367,10 @@ temporal_end_value(const Temporal *temp)
 bool
 tbool_end_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TBOOL);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TBOOL))
+    return false;
   return DatumGetBool(temporal_end_value(temp));
 }
 
@@ -2120,8 +2382,10 @@ tbool_end_value(const Temporal *temp)
 int
 tint_end_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return INT_MAX;
   return DatumGetInt32(temporal_end_value(temp));
 }
 
@@ -2133,8 +2397,10 @@ tint_end_value(const Temporal *temp)
 double
 tfloat_end_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return DBL_MAX;
   return DatumGetFloat8(temporal_end_value(temp));
 }
 
@@ -2146,8 +2412,10 @@ tfloat_end_value(const Temporal *temp)
 text *
 ttext_end_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return NULL;
   return DatumGetTextP(temporal_end_value(temp));
 }
 
@@ -2159,8 +2427,10 @@ ttext_end_value(const Temporal *temp)
 GSERIALIZED *
 tpoint_end_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_tgeo_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
   return DatumGetGserializedP(temporal_end_value(temp));
 }
 #endif /* MEOS */
@@ -2194,8 +2464,10 @@ temporal_min_value(const Temporal *temp)
 int
 tint_min_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return INT_MAX;
   return DatumGetInt32(temporal_min_value(temp));
 }
 
@@ -2207,8 +2479,10 @@ tint_min_value(const Temporal *temp)
 double
 tfloat_min_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return DBL_MAX;
   return DatumGetFloat8(temporal_min_value(temp));
 }
 
@@ -2220,8 +2494,10 @@ tfloat_min_value(const Temporal *temp)
 text *
 ttext_min_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return NULL;
   return DatumGetTextP(temporal_min_value(temp));
 }
 #endif /* MEOS */
@@ -2256,8 +2532,10 @@ temporal_max_value(const Temporal *temp)
 int
 tint_max_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return INT_MAX;
   return DatumGetInt32(temporal_max_value(temp));
 }
 
@@ -2269,8 +2547,10 @@ tint_max_value(const Temporal *temp)
 double
 tfloat_max_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return DBL_MAX;
   return DatumGetFloat8(temporal_max_value(temp));
 }
 
@@ -2282,8 +2562,10 @@ tfloat_max_value(const Temporal *temp)
 text *
 ttext_max_value(const Temporal *temp)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return NULL;
   return DatumGetTextP(temporal_max_value(temp));
 }
 #endif /* MEOS */
@@ -2302,7 +2584,10 @@ ttext_max_value(const Temporal *temp)
 const TInstant *
 temporal_min_instant(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   const TInstant *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2323,7 +2608,10 @@ temporal_min_instant(const Temporal *temp)
 const TInstant *
 temporal_max_instant(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   const TInstant *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2343,7 +2631,10 @@ temporal_max_instant(const Temporal *temp)
 Interval *
 temporal_duration(const Temporal *temp, bool boundspan)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   Interval *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT ||
@@ -2364,8 +2655,10 @@ temporal_duration(const Temporal *temp, bool boundspan)
 int
 temporal_num_sequences(const Temporal *temp)
 {
-  assert(temp);
-  ensure_continuous(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_continuous(temp))
+    return -1;
+
   int result = 1;
   if (temp->subtype == TSEQUENCESET)
     result = ((TSequenceSet *) temp)->count;
@@ -2380,8 +2673,10 @@ temporal_num_sequences(const Temporal *temp)
 TSequence *
 temporal_start_sequence(const Temporal *temp)
 {
-  assert(temp);
-  ensure_continuous(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_continuous(temp))
+    return NULL;
+
   TSequence *result;
   if (temp->subtype == TSEQUENCE)
     result = tsequence_copy((TSequence *) temp);
@@ -2401,8 +2696,10 @@ temporal_start_sequence(const Temporal *temp)
 TSequence *
 temporal_end_sequence(const Temporal *temp)
 {
-  assert(temp);
-  ensure_continuous(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_continuous(temp))
+    return NULL;
+
   TSequence *result;
   if (temp->subtype == TSEQUENCE)
     result = tsequence_copy((TSequence *) temp);
@@ -2423,8 +2720,10 @@ temporal_end_sequence(const Temporal *temp)
 TSequence *
 temporal_sequence_n(const Temporal *temp, int i)
 {
-  assert(temp);
-  ensure_continuous(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_continuous(temp))
+    return NULL;
+
   TSequence *result = NULL;
   if (temp->subtype == TSEQUENCE)
   {
@@ -2448,9 +2747,12 @@ temporal_sequence_n(const Temporal *temp, int i)
 TSequence **
 temporal_sequences(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_continuous(temp))
+    return NULL;
+
   TSequence **result;
-  ensure_continuous(temp);
   if (temp->subtype == TSEQUENCE)
   {
     result = tsequence_sequences((TSequence *) temp, count);
@@ -2472,9 +2774,15 @@ temporal_sequences(const Temporal *temp, int *count)
 TSequence **
 temporal_segments(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
+    return NULL;
   if (temp->subtype == TINSTANT)
-    elog(ERROR, "The temporal value must be of subtype sequence (set)");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be of subtype sequence (set)");
+    return NULL;
+  }
 
   TSequence **result;
   if (temp->subtype == TSEQUENCE)
@@ -2492,7 +2800,10 @@ temporal_segments(const Temporal *temp, int *count)
 int
 temporal_num_instants(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return -1;
+
   int result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2512,7 +2823,10 @@ temporal_num_instants(const Temporal *temp)
 const TInstant *
 temporal_start_instant(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   const TInstant *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2536,7 +2850,10 @@ temporal_start_instant(const Temporal *temp)
 const TInstant *
 temporal_end_instant(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   const TInstant *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2562,7 +2879,10 @@ temporal_end_instant(const Temporal *temp)
 const TInstant *
 temporal_instant_n(const Temporal *temp, int n)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   const TInstant *result = NULL;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2592,7 +2912,10 @@ temporal_instant_n(const Temporal *temp, int n)
 const TInstant **
 temporal_instants(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
+    return NULL;
+
   const TInstant **result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2618,7 +2941,10 @@ temporal_instants(const Temporal *temp, int *count)
 int
 temporal_num_timestamps(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return -1;
+
   int result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2638,7 +2964,10 @@ temporal_num_timestamps(const Temporal *temp)
 TimestampTz
 temporal_start_timestamp(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return DT_NOEND;
+
   TimestampTz result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2658,7 +2987,10 @@ temporal_start_timestamp(const Temporal *temp)
 TimestampTz
 temporal_end_timestamp(const Temporal *temp)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return DT_NOEND;
+
   TimestampTz result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2680,7 +3012,10 @@ temporal_end_timestamp(const Temporal *temp)
 bool
 temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result)
 {
-  assert(temp); assert(result);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result))
+    return false;
+
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
@@ -2711,7 +3046,10 @@ temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result)
 TimestampTz *
 temporal_timestamps(const Temporal *temp, int *count)
 {
-  assert(temp); assert(count);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
+    return NULL;
+
   TimestampTz *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2742,6 +3080,7 @@ bool
 temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
 {
   assert(temp);
+
   /* Bounding box test */
   if (tnumber_type(temp->temptype))
   {
@@ -2788,6 +3127,7 @@ bool
 temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
 {
   assert(temp);
+
   if (tnumber_type(temp->temptype))
   {
     TBox box;
@@ -2826,10 +3166,13 @@ temporal_ever_eq(const Temporal *temp, Datum value)
  * @brief Return true if a temporal boolean is ever equal to a boolean.
  * @sqlop @p ?=
  */
-bool tbool_ever_eq(const Temporal *temp, bool b)
+bool
+tbool_ever_eq(const Temporal *temp, bool b)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TBOOL);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TBOOL))
+    return false;
   return temporal_ever_eq(temp, BoolGetDatum(b));
 }
 
@@ -2838,10 +3181,13 @@ bool tbool_ever_eq(const Temporal *temp, bool b)
  * @brief Return true if a temporal integer is ever equal to an integer.
  * @sqlop @p ?=
  */
-bool tint_ever_eq(const Temporal *temp, int i)
+bool
+tint_ever_eq(const Temporal *temp, int i)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return false;
   return temporal_ever_eq(temp, Int32GetDatum(i));
 }
 
@@ -2850,9 +3196,13 @@ bool tint_ever_eq(const Temporal *temp, int i)
  * @brief Return true if a temporal float is ever equal to a float.
  * @sqlop @p ?=
  */
-bool tfloat_ever_eq(const Temporal *temp, double d)
+bool
+tfloat_ever_eq(const Temporal *temp, double d)
 {
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return false;
   return temporal_ever_eq(temp, Float8GetDatum(d));
 }
 
@@ -2861,10 +3211,13 @@ bool tfloat_ever_eq(const Temporal *temp, double d)
  * @brief Return true if a temporal text is ever equal to a text.
  * @sqlop @p ?=
  */
-bool ttext_ever_eq(const Temporal *temp, text *txt)
+bool
+ttext_ever_eq(const Temporal *temp, text *txt)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return false;
   return temporal_ever_eq(temp, PointerGetDatum(txt));
 }
 #endif /* MEOS */
@@ -2896,8 +3249,10 @@ temporal_always_eq(const Temporal *temp, Datum value)
  */
 bool tbool_always_eq(const Temporal *temp, bool b)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TBOOL);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TBOOL))
+    return false;
   return temporal_always_eq(temp, BoolGetDatum(b));
 }
 
@@ -2908,8 +3263,10 @@ bool tbool_always_eq(const Temporal *temp, bool b)
  */
 bool tint_always_eq(const Temporal *temp, int i)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return false;
   return temporal_always_eq(temp, Int32GetDatum(i));
 }
 
@@ -2920,8 +3277,10 @@ bool tint_always_eq(const Temporal *temp, int i)
  */
 bool tfloat_always_eq(const Temporal *temp, double d)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) &&
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return false;
   return temporal_always_eq(temp, Float8GetDatum(d));
 }
 
@@ -2932,8 +3291,10 @@ bool tfloat_always_eq(const Temporal *temp, double d)
  */
 bool ttext_always_eq(const Temporal *temp, text *txt)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return false;
   return temporal_always_eq(temp, PointerGetDatum(txt));
 }
 #endif /* MEOS */
@@ -2965,8 +3326,10 @@ temporal_ever_lt(const Temporal *temp, Datum value)
  */
 bool tint_ever_lt(const Temporal *temp, int i)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return false;
   return temporal_ever_lt(temp, Int32GetDatum(i));
 }
 
@@ -2977,8 +3340,10 @@ bool tint_ever_lt(const Temporal *temp, int i)
  */
 bool tfloat_ever_lt(const Temporal *temp, double d)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return false;
   return temporal_ever_lt(temp, Float8GetDatum(d));
 }
 
@@ -2989,8 +3354,10 @@ bool tfloat_ever_lt(const Temporal *temp, double d)
  */
 bool ttext_ever_lt(const Temporal *temp, text *txt)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return false;
   return temporal_ever_lt(temp, PointerGetDatum(txt));
 }
 #endif /* MEOS */
@@ -3020,10 +3387,13 @@ temporal_always_lt(const Temporal *temp, Datum value)
  * @brief Return true if a temporal integer is always less than an integer.
  * @sqlop @p %<
  */
-bool tint_always_lt(const Temporal *temp, int i)
+bool
+tint_always_lt(const Temporal *temp, int i)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return false;
   return temporal_always_lt(temp, Int32GetDatum(i));
 }
 
@@ -3032,10 +3402,13 @@ bool tint_always_lt(const Temporal *temp, int i)
  * @brief Return true if a temporal float is always less than  a float.
  * @sqlop @p %<
  */
-bool tfloat_always_lt(const Temporal *temp, double d)
+bool
+tfloat_always_lt(const Temporal *temp, double d)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return false;
   return temporal_always_lt(temp, Float8GetDatum(d));
 }
 
@@ -3044,10 +3417,13 @@ bool tfloat_always_lt(const Temporal *temp, double d)
  * @brief Return true if a temporal text is always less than  a text.
  * @sqlop @p %<
  */
-bool ttext_always_lt(const Temporal *temp, text *txt)
+bool
+ttext_always_lt(const Temporal *temp, text *txt)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return false;
   return temporal_always_lt(temp, PointerGetDatum(txt));
 }
 #endif /* MEOS */
@@ -3078,10 +3454,13 @@ temporal_ever_le(const Temporal *temp, Datum value)
  * @brief Return true if a temporal integer is ever less than or equal to an integer.
  * @sqlop @p ?<=
  */
-bool tint_ever_le(const Temporal *temp, int i)
+bool
+tint_ever_le(const Temporal *temp, int i)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return false;
   return temporal_ever_le(temp, Int32GetDatum(i));
 }
 
@@ -3090,10 +3469,13 @@ bool tint_ever_le(const Temporal *temp, int i)
  * @brief Return true if a temporal float is ever less than or equal to a float.
  * @sqlop @p ?<=
  */
-bool tfloat_ever_le(const Temporal *temp, double d)
+bool
+tfloat_ever_le(const Temporal *temp, double d)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return false;
   return temporal_ever_le(temp, Float8GetDatum(d));
 }
 
@@ -3102,10 +3484,13 @@ bool tfloat_ever_le(const Temporal *temp, double d)
  * @brief Return true if a temporal text is ever less than or equal to a text.
  * @sqlop @p ?<=
  */
-bool ttext_ever_le(const Temporal *temp, text *txt)
+bool
+ttext_ever_le(const Temporal *temp, text *txt)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return false;
   return temporal_ever_le(temp, PointerGetDatum(txt));
 }
 #endif /* MEOS */
@@ -3136,10 +3521,13 @@ temporal_always_le(const Temporal *temp, Datum value)
  * @brief Return true if a temporal integer is always less than or equal to an integer.
  * @sqlop @p %<=
  */
-bool tint_always_le(const Temporal *temp, int i)
+bool
+tint_always_le(const Temporal *temp, int i)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TINT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return false;
   return temporal_always_le(temp, Int32GetDatum(i));
 }
 
@@ -3148,10 +3536,13 @@ bool tint_always_le(const Temporal *temp, int i)
  * @brief Return true if a temporal float is always less than or equal to a float.
  * @sqlop @p %<=
  */
-bool tfloat_always_le(const Temporal *temp, double d)
+bool
+tfloat_always_le(const Temporal *temp, double d)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TFLOAT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return false;
   return temporal_always_le(temp, Float8GetDatum(d));
 }
 
@@ -3160,10 +3551,13 @@ bool tfloat_always_le(const Temporal *temp, double d)
  * @brief Return true if a temporal text is always less than or equal to a text.
  * @sqlop @p %<=
  */
-bool ttext_always_le(const Temporal *temp, text *txt)
+bool
+ttext_always_le(const Temporal *temp, text *txt)
 {
-  assert(temp);
-  ensure_temporal_has_type(temp, T_TTEXT);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_has_type(temp, T_TTEXT))
+    return false;
   return temporal_always_le(temp, PointerGetDatum(txt));
 }
 #endif /* MEOS */
@@ -3180,6 +3574,7 @@ bool
 temporal_bbox_restrict_value(const Temporal *temp, Datum value)
 {
   assert(temp);
+
   /* Bounding box test */
   if (tnumber_type(temp->temptype))
   {
@@ -3192,9 +3587,9 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
   {
     /* Test that the geometry is not empty */
     GSERIALIZED *gs = DatumGetGserializedP(value);
-    ensure_point_type(gs);
-    ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-    ensure_same_dimensionality_tpoint_gs(temp, gs);
+    assert(gserialized_get_type(gs) == POINTTYPE);
+    assert(tpoint_srid(temp) == gserialized_get_srid(gs));
+    assert(MEOS_FLAGS_GET_Z(temp->flags) == FLAGS_GET_Z(gs->gflags));
     if (gserialized_is_empty(gs))
       return false;
     if (temp->subtype != TINSTANT)
@@ -3216,8 +3611,8 @@ bool
 tnumber_bbox_restrict_span(const Temporal *temp, const Span *s)
 {
   assert(temp); assert(s);
-  /* Bounding box test */
   assert(tnumber_type(temp->temptype));
+  /* Bounding box test */
   TBox box1, box2;
   temporal_set_bbox(temp, &box1);
   numspan_set_tbox(s, &box2);
@@ -3240,6 +3635,16 @@ Temporal *
 temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 {
   assert(temp);
+  /* Ensure validity of the arguments */
+  if (tgeo_type(temp->temptype))
+  {
+    GSERIALIZED *gs = DatumGetGserializedP(value);
+    if (! ensure_point_type(gs) || 
+        ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) || 
+        ! ensure_same_dimensionality_tpoint_gs(temp, gs))
+    return NULL;
+  }
+
   /* Bounding box test */
   interpType interp = MEOS_FLAGS_GET_INTERP(temp->flags);
   if (! temporal_bbox_restrict_value(temp, value))
@@ -3306,11 +3711,10 @@ Temporal *
 temporal_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 {
   assert(temp); assert(s);
-  /* Ensure validity of arguments */
   if (tgeo_type(temp->temptype))
   {
-    ensure_same_srid(tpoint_srid(temp), geoset_srid(s));
-    ensure_same_spatial_dimensionality(temp->flags, s->flags);
+    assert(tpoint_srid(temp) == geoset_srid(s));
+    assert(same_spatial_dimensionality(temp->flags, s->flags));
   }
 
   /* Bounding box test */
@@ -3571,7 +3975,6 @@ temporal_restrict_period(const Temporal *temp, const Span *s, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period set.
- * @sqlfunc atTime, minusTime
  */
 Temporal *
 temporal_restrict_periodset(const Temporal *temp, const SpanSet *ss,
@@ -3584,9 +3987,7 @@ temporal_restrict_periodset(const Temporal *temp, const SpanSet *ss,
     result = (Temporal *) tinstant_restrict_periodset(
       (TInstant *) temp, ss, atfunc);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tdiscseq_restrict_periodset((TSequence *) temp, ss, atfunc) :
-      (Temporal *) tcontseq_restrict_periodset((TSequence *) temp, ss, atfunc);
+    result = tsequence_restrict_periodset((TSequence *) temp, ss, atfunc);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_periodset(
       (TSequenceSet *) temp, ss, atfunc);
@@ -3603,8 +4004,11 @@ temporal_restrict_periodset(const Temporal *temp, const SpanSet *ss,
 Temporal *
 tnumber_at_tbox(const Temporal *temp, const TBox *box)
 {
-  assert(temp); assert(box);
-  ensure_tnumber_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
+      ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+
   /* Bounding box test */
   TBox box1;
   temporal_set_bbox(temp, &box1);
@@ -3647,8 +4051,11 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
 Temporal *
 tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 {
-  assert(temp); assert(box);
-  ensure_tnumber_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
+      ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+
   /* Bounding box test */
   TBox box1;
   temporal_set_bbox(temp, &box1);
@@ -3678,9 +4085,12 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
+
   /* Convert to the same subtype */
-  assert(temp1); assert(temp2);
-  ensure_same_temporal_type(temp1, temp2);
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
@@ -3714,8 +4124,11 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 Temporal *
 temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
-  assert(temp1); assert(temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
+
   SpanSet *ps = temporal_time(temp2);
   Temporal *rest = temporal_restrict_periodset(temp1, ps, REST_MINUS);
   if (! rest)
@@ -3734,7 +4147,10 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 Temporal *
 temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
 {
-  assert(temp);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -3762,7 +4178,10 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
 Temporal *
 temporal_delete_timestampset(const Temporal *temp, const Set *s, bool connect)
 {
-  assert(temp); assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -3790,7 +4209,10 @@ temporal_delete_timestampset(const Temporal *temp, const Set *s, bool connect)
 Temporal *
 temporal_delete_period(const Temporal *temp, const Span *s, bool connect)
 {
-  assert(temp); assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) && ! ensure_not_null((void *) s))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -3819,7 +4241,10 @@ Temporal *
 temporal_delete_periodset(const Temporal *temp, const SpanSet *ss,
   bool connect)
 {
-  assert(temp); assert(ss);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -3991,22 +4416,30 @@ TSequenceSet *
 temporal_stops(const Temporal *temp, double maxdist,
   const Interval *minduration)
 {
-  assert(temp);
-  if (maxdist < 0)
-    elog(ERROR, "The maximum distance must be positive: %f", maxdist);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_positive_datum(Float8GetDatum(maxdist), T_FLOAT8))
+    return NULL;
+
   /* We cannot call #ensure_valid_duration since the duration may be zero */
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
   int cmp = pg_interval_cmp(minduration, &intervalzero);
   if (cmp < 0)
-    elog(ERROR, "The duration must be positive");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The duration must be positive");
+    return NULL;
+  }
   int64 mintunits = interval_units(minduration);
 
   TSequenceSet *result = NULL;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
   {
-    elog(ERROR, "Input must be a temporal sequence (set) with linear interpolation");
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Input must be a temporal sequence (set) with linear interpolation");
+    return NULL;
   }
   else if (temp->subtype == TSEQUENCE)
     result = tsequence_stops((TSequence *) temp, maxdist, mintunits);
@@ -4026,8 +4459,10 @@ temporal_stops(const Temporal *temp, double maxdist,
 double
 tnumber_integral(const Temporal *temp)
 {
-  assert(temp);
-  ensure_tnumber_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_tnumber_type(temp->temptype))
+    return -1.0;
+
   double result = 0.0;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || MEOS_FLAGS_GET_DISCRETE(temp->flags))
@@ -4047,8 +4482,10 @@ tnumber_integral(const Temporal *temp)
 double
 tnumber_twavg(const Temporal *temp)
 {
-  assert(temp);
-  ensure_tnumber_type(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_tnumber_type(temp->temptype))
+    return DBL_MAX;
+
   double result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -4096,14 +4533,16 @@ temporal_compact(const Temporal *temp)
 bool
 temporal_eq(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
-  ensure_same_temporal_type(temp1, temp2);
-  assert(temptype_subtype(temp1->subtype));
-  assert(temptype_subtype(temp2->subtype));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return false;
 
   const TInstant *inst1;
   const TSequence *seq;
   const TSequenceSet *ss;
+  assert(temptype_subtype(temp1->subtype));
+  assert(temptype_subtype(temp2->subtype));
   /* If both are of the same temporal type use the specific equality */
   if (temp1->subtype == temp2->subtype)
   {
@@ -4195,8 +4634,10 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
 int
 temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2);
-  ensure_same_temporal_type(temp1, temp2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return INT_MAX;
 
   /* Compare bounding period
    * We need to compare periods AND bounding boxes since the bounding boxes
@@ -4320,6 +4761,10 @@ temporal_gt(const Temporal *temp1, const Temporal *temp2)
 uint32
 temporal_hash(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return INT_MAX;
+
   uint32 result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)

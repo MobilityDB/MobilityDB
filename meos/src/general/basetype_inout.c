@@ -154,6 +154,10 @@ parse_bool_with_len(const char *value, size_t len, bool *result)
 bool
 bool_in(const char *in_str)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) in_str))
+    return false;
+
   const char *str;
   size_t len;
   bool result;
@@ -172,7 +176,8 @@ bool_in(const char *in_str)
   if (parse_bool_with_len(str, len, &result))
     return result;
 
-  elog(ERROR, "invalid input syntax for type %s: \"%s\"", "boolean", in_str);
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+    "invalid input syntax for type %s: \"%s\"", "boolean", in_str);
 
   /* not reached */
   return false;
@@ -364,8 +369,11 @@ float8_in_opt_error(char *num, const char *type_name, const char *orig_string)
    * strtod() on different platforms.
    */
   if (*num == '\0')
-    elog(ERROR, "invalid input syntax for type %s: \"%s\"", type_name,
-      orig_string);
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "invalid input syntax for type %s: \"%s\"", type_name, orig_string);
+    return 0;
+  }
 
   errno = 0;
   val = strtod(num, &endptr);
@@ -435,16 +443,20 @@ float8_in_opt_error(char *num, const char *type_name, const char *orig_string)
        */
       if (val == 0.0 || val >= HUGE_VAL || val <= -HUGE_VAL)
       {
-        char     *errnumber = strdup(num);
+        char *errnumber = strdup(num);
         errnumber[endptr - num] = '\0';
-        elog(ERROR, "\"%s\" is out of range for type double precision",
-          errnumber);
+        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+          "\"%s\" is out of range for type double precision", errnumber);
         pfree(errnumber);
+        return DBL_MAX;
       }
     }
     else
-      elog(ERROR, "invalid input syntax for type %s: \"%s\"",
-        type_name, orig_string);
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "invalid input syntax for type %s: \"%s\"", type_name, orig_string);
+      return DBL_MAX;
+    }
   }
 
   /* skip trailing whitespace */
@@ -476,8 +488,7 @@ float8_in(const char *num, const char *type_name, const char *orig_string)
 char *
 float8_out(double num, int maxdd)
 {
-  /* Ensure validity of the arguments */
-  ensure_non_negative(maxdd);
+  assert(maxdd >= 0);
 
   char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
   lwprint_double(num, maxdd, ascii);
