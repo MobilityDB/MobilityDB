@@ -102,7 +102,7 @@ ensure_not_null(void *ptr)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG,
       "Null pointer not allowed");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -117,7 +117,7 @@ ensure_one_not_null(void *ptr1, void *ptr2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG,
       "At least one pointer must be not null");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -160,7 +160,7 @@ ensure_discrete_interpolation(int16 flags)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal value must have discrete interpolation");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -175,7 +175,7 @@ ensure_continuous_interpolation(int16 flags)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal value must have continuous interpolation");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -192,7 +192,7 @@ ensure_valid_interpolation(meosType temptype, interpType interp)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal type cannot have linear interpolation");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -208,7 +208,7 @@ ensure_continuous(const Temporal *temp)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Input must be a temporal continuous sequence (set)");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -226,7 +226,7 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal values must have the same interpolation");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -241,7 +241,7 @@ ensure_nonlinear_interpolation(int16 flags)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal value cannot have linear interpolation");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -258,7 +258,7 @@ ensure_common_dimension(int16 flags1, int16 flags2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal values must have at least one common dimension");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -273,7 +273,7 @@ ensure_temporal_has_type(const Temporal *temp, meosType temptype)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The temporal value must be of type %s", meostype_name(temptype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -290,7 +290,7 @@ ensure_same_temporal_type(const Temporal *temp1, const Temporal *temp2)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Operation on mixed temporal types: %s and %s",
       meostype_name(temp1->temptype), meostype_name(temp2->temptype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -305,7 +305,7 @@ ensure_temporal_has_subtype(const Temporal *temp, uint8 subtype)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The temporal value must be of subtype %s", tempsubtype_name(subtype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -323,7 +323,7 @@ ensure_same_temporal_basetype(const Temporal *temp, meosType basetype)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Operation on mixed temporal type and base type: %s, %s",
       meostype_name(temp->temptype), meostype_name(basetype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -340,7 +340,7 @@ ensure_non_negative(int i)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The value cannot be negative: %d", i);
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -355,7 +355,7 @@ ensure_positive(int i)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The value must be strictly positive: %d", i);
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -371,7 +371,7 @@ ensure_less_equal(int i, int j)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The first value must be less or equal than the second one: %d, %d",
       i, j);
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -410,7 +410,7 @@ ensure_positive_datum(Datum size, meosType basetype)
       sprintf(str, INT64_FORMAT, DatumGetInt64(size));
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The value must be strictly positive: %s", str);
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -1293,7 +1293,7 @@ tfloat_to_tint(const Temporal *temp)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot cast temporal float with linear interpolation to temporal integer");
-    return NULL;
+    RETURN(NULL);
   }
 
   LiftedFunctionInfo lfinfo;
@@ -2797,7 +2797,7 @@ temporal_segments(const Temporal *temp, int *count)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The temporal value must be of subtype sequence (set)");
-    return NULL;
+    RETURN(NULL);
   }
 
   TSequence **result;
@@ -4445,7 +4445,7 @@ temporal_stops(const Temporal *temp, double maxdist,
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The duration must be positive");
-    return NULL;
+    RETURN(NULL);
   }
   int64 mintunits = interval_units(minduration);
 
@@ -4455,7 +4455,7 @@ temporal_stops(const Temporal *temp, double maxdist,
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Input must be a temporal sequence (set) with linear interpolation");
-    return NULL;
+    RETURN(NULL);
   }
   else if (temp->subtype == TSEQUENCE)
     result = tsequence_stops((TSequence *) temp, maxdist, mintunits);

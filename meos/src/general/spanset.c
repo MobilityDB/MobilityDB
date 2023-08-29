@@ -66,7 +66,7 @@ ensure_spanset_has_type(const SpanSet *ss, meosType spansettype)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The span set value must be of type %s", meostype_name(spansettype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -81,7 +81,7 @@ ensure_same_spanset_type(const SpanSet *ss1, const SpanSet *ss2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Operation on mixed span set types");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -96,7 +96,7 @@ ensure_same_spanset_spantype(const SpanSet *ss, const Span *s)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Operation on mixed span set and span types");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -111,7 +111,7 @@ ensure_same_spanset_basetype(const SpanSet *ss, meosType basetype)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Operation on mixed span set and base types");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -369,7 +369,7 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) spans) || ! ensure_positive(count) ||
       ! ensure_less_equal(count, maxcount))
-    return NULL;
+    RETURN(NULL);
   /* Test the validity of the spans */
   if (ordered)
   {
@@ -381,7 +381,7 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
       {
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Invalid value for span set");
-        return NULL;
+        RETURN(NULL);
       }
     }
   }

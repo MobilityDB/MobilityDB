@@ -544,7 +544,7 @@ tsequence_to_tinstant(const TSequence *seq)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot transform input value to a temporal instant");
-    return NULL;
+    RETURN(NULL);
   }
   return tinstant_copy(TSEQUENCE_INST_N(seq, 0));
 }
@@ -562,7 +562,7 @@ tsequenceset_to_tinstant(const TSequenceSet *ss)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot transform input value to a temporal instant");
-    return NULL;
+    RETURN(NULL);
   }
   return tinstant_copy(TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0));
 }

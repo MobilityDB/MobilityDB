@@ -237,7 +237,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
       if (temporal_ever_eq(temp, Float8GetDatum(0.0)))
       {
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
-        return NULL;
+        RETURN(NULL);
       }
     }
     else
@@ -246,7 +246,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
       if (fabs(d) < MEOS_EPSILON)
       {
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
-        return NULL;
+        RETURN(NULL);
       }
     }
   }
@@ -298,7 +298,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
     if (temporal_ever_eq(projtemp2, Float8GetDatum(0.0)))
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
-      return NULL;
+      RETURN(NULL);
     }
   }
 

@@ -183,7 +183,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
         else
         {
           meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Unable to merge values");
-          return NULL;
+          RETURN(NULL);
         }
       }
       i++;
@@ -217,6 +217,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
  * @param[in] crossings True if turning points are added in the segments
  * @param[out] result Array on which the pointers of the newly constructed
  * ranges are stored
+ * @return On error return -1
  * @note Return new sequences that must be freed by the calling function
  */
 static int
@@ -316,7 +317,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
       else
       {
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Unable to merge values");
-        return -1;
+        RETURN(-1);
       }
     }
   }

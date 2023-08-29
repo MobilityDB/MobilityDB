@@ -399,6 +399,7 @@ tnpointinst_route(const TInstant *inst)
 
 /**
  * @brief Return the single route of a temporal network point.
+ * @return On error return INT_MAX
  */
 int64
 tnpoint_route(const Temporal *temp)
@@ -407,7 +408,7 @@ tnpoint_route(const Temporal *temp)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Input must be a temporal instant or a temporal sequence with continuous interpolation");
-    return INT_MAX;
+    RETURN(INT_MAX);
   }
   const TInstant *inst = (temp->subtype == TINSTANT) ?
     (const TInstant *) temp : TSEQUENCE_INST_N((const TSequence *) temp, 0);

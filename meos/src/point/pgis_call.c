@@ -622,13 +622,13 @@ gserialized_azimuth(GSERIALIZED *gs1, GSERIALIZED *gs2, double *result)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Arguments must be point geometries");
-    return false;
+    RETURN(false);
   }
   srid = point->srid;
   if (!getPoint2d_p(point->point, 0, &p1))
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error extracting point");
-    return false;
+    RETURN(false);
   }
   lwpoint_free(point);
 
@@ -638,19 +638,19 @@ gserialized_azimuth(GSERIALIZED *gs1, GSERIALIZED *gs2, double *result)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Arguments must be point geometries");
-    return false;
+    RETURN(false);
   }
   if (point->srid != srid)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on mixed SRID geometries");
-    return false;
+    RETURN(false);
   }
   if (! getPoint2d_p(point->point, 0, &p2))
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Error extracting point");
-    return false;
+    RETURN(false);
   }
   lwpoint_free(point);
 
@@ -751,7 +751,7 @@ POSTGIS2GEOS(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "POSTGIS2GEOS: unable to deserialize input");
-    return NULL;
+    RETURN(NULL);
   }
   result = LWGEOM2GEOS(lwgeom, 0);
   lwgeom_free(lwgeom);
@@ -769,7 +769,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "GEOS2LWGEOM returned NULL");
-    return NULL;
+    RETURN(NULL);
   }
 
   if (lwgeom_needs_bbox(lwgeom)) lwgeom_add_bbox(lwgeom);
@@ -795,7 +795,7 @@ meos_call_geos2(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "First argument geometry could not be converted to GEOS");
-    return 2;
+    RETURN(2);
   }
   GEOSGeometry *geos2 = POSTGIS2GEOS(gs2);
   if (! geos2)
@@ -803,7 +803,7 @@ meos_call_geos2(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     GEOSGeom_destroy(geos1);
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Second argument geometry could not be converted to GEOS");
-    return 2;
+    RETURN(2);
   }
 
   char result = func(geos1, geos2);
@@ -897,7 +897,7 @@ gserialized_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "First argument geometry could not be converted to GEOS");
-    return false;
+    RETURN(false);
   }
   GEOSGeometry *geos2 = POSTGIS2GEOS(gs2);
   if (!geos2)
@@ -905,7 +905,7 @@ gserialized_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     GEOSGeom_destroy(geos1);
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Second argument geometry could not be converted to GEOS");
-    return false;
+    RETURN(false);
   }
 
   /*
@@ -1012,7 +1012,7 @@ gserialized_array_union(GSERIALIZED **gsarr, int nelems)
       {
         meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
           "One of the geometries in the set could not be converted to GEOS");
-        return NULL;
+        RETURN(NULL);
       }
 
       geoms[curgeom++] = g;
@@ -1030,7 +1030,7 @@ gserialized_array_union(GSERIALIZED **gsarr, int nelems)
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Could not create GEOS COLLECTION from geometry array");
-      return NULL;
+      RETURN(NULL);
     }
 
     g_union = GEOSUnaryUnion(g);
@@ -1038,7 +1038,7 @@ gserialized_array_union(GSERIALIZED **gsarr, int nelems)
     if (! g_union)
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "GEOSUnaryUnion");
-      return NULL;
+      RETURN(NULL);
     }
 
     GEOSSetSRID(g_union, srid);
@@ -1085,7 +1085,7 @@ gserialized_convex_hull(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "First argument geometry could not be converted to GEOS");
-    return NULL;
+    RETURN(NULL);
   }
 
   GEOSGeometry *geos2 = GEOSConvexHull(geos1);
@@ -1095,7 +1095,7 @@ gserialized_convex_hull(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "GEOS convexhull() threw an error !");
-    return NULL;
+    RETURN(NULL);
   }
 
   GEOSSetSRID(geos2, srid);
@@ -1107,7 +1107,7 @@ gserialized_convex_hull(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "convexhull() failed to convert GEOS geometry to LWGEOM");
-    return NULL; /* never get here */
+    RETURN(NULL);
   }
 
   /* Copy input bbox if any */
@@ -1126,7 +1126,7 @@ gserialized_convex_hull(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "GEOS convexhull() threw an error !");
-    return NULL; /* never get here */
+    RETURN(NULL);
   }
 
   return result;
@@ -1138,6 +1138,7 @@ gserialized_convex_hull(const GSERIALIZED *gs)
 
 /**
  * @brief Return double length in meters
+ * @return On error return DBL_MAX
  * @note PostGIS function: geography_length(PG_FUNCTION_ARGS)
  */
 double
@@ -1171,6 +1172,7 @@ gserialized_geog_length(GSERIALIZED *gs, bool use_spheroid)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "lwgeom_length_spheroid returned length < 0.0");
+    RETURN(DBL_MAX);
   }
 
   /* Clean up */
@@ -1218,7 +1220,7 @@ gserialized_geog_dwithin(GSERIALIZED *gs1, GSERIALIZED *gs2, double tolerance,
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "lwgeom_distance_spheroid returned negative!");
-    return false;
+    RETURN(false);
   }
 
   return (distance <= tolerance);
@@ -1334,7 +1336,7 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Geometry SRID (%d) does not match column SRID (%d)",
       geom_srid, typmod_srid);
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Typmod has a preference for geometry type. */
@@ -1349,7 +1351,7 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Geometry type (%s) does not match column type (%s)",
       lwtype_name(geom_type), lwtype_name(typmod_type));
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Mismatched Z dimensionality. */
@@ -1357,7 +1359,7 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Column has Z dimension but geometry does not");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Mismatched Z dimensionality (other way). */
@@ -1365,7 +1367,7 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Geometry has Z dimension but column does not");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Mismatched M dimensionality. */
@@ -1373,7 +1375,7 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Column has M dimension but geometry does not");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Mismatched M dimensionality (other way). */
@@ -1381,7 +1383,7 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Geometry has M dimension but column does not");
-    return NULL;
+    RETURN(NULL);
   }
 
   return gs;
@@ -1418,7 +1420,7 @@ pgis_geometry_in(char *input, int32 geom_typmod)
   /* Empty string. */
   if ( str[0] == '\0' ) {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT, "parse error - invalid geometry");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Starts with "SRID=" */
@@ -1545,6 +1547,7 @@ gserialized_from_text(char *wkt, int srid, bool geography)
   {
     meos_error(WARNING, MEOS_ERR_TEXT_INPUT,
       "OGC WKT expected, EWKT provided - use GeomFromEWKT() for this");
+    RETURN(NULL);
   }
 
   /* read user-requested SRID if any */
@@ -1698,7 +1701,7 @@ gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid)
   if (!geom)
   {
     meos_error(ERROR, MEOS_ERR_WKB_INPUT, "Unable to parse WKB string");
-    return NULL;
+    RETURN(NULL);
   }
 
   if (srid > 0)
@@ -1765,7 +1768,7 @@ gserialized_from_geojson(const char *geojson)
     /* Shouldn't get here */
     meos_error(ERROR, MEOS_ERR_GEOJSON_INPUT,
       "lwgeom_from_geojson returned NULL");
-    return NULL;
+    RETURN(NULL);
   }
 
   // if (srs)
@@ -1877,6 +1880,7 @@ geography_valid_type(uint8_t type)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Geography type does not support %s", lwtype_name(type));
+    RETURN();
   }
 }
 
@@ -1937,9 +1941,8 @@ pgis_geography_in(char *str, int32 geog_typmod)
   /* Empty string. */
   if ( str[0] == '\0' )
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "parse error - invalid geography");
-    return NULL;
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, "parse error - invalid geography");
+    RETURN(NULL);
   }
 
   /* WKB? Let's find out. */
@@ -1951,9 +1954,8 @@ pgis_geography_in(char *str, int32 geog_typmod)
     /* Error out if something went sideways */
     if ( ! lwgeom )
     {
-      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "parse error - invalid geometry");
-      return NULL;
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT, "parse error - invalid geometry");
+      RETURN(NULL);
     }
   }
   /* WKT then. */
@@ -1997,7 +1999,7 @@ pgis_geography_from_binary(const char *wkb_bytea)
   if ( ! geom )
   {
     meos_error(ERROR, MEOS_ERR_WKB_INPUT, "Unable to parse WKB string");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Error on any SRID != default */
@@ -2037,8 +2039,8 @@ gserialized_geog_from_geom(GSERIALIZED *geom)
   if ( lwgeom_force_geodetic(lwgeom) == LW_TRUE )
   {
     meos_error(NOTICE, MEOS_ERR_TEXT_INPUT,
-      "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY"
-    );
+      "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY");
+    RETURN(NULL);
   }
 
   /* force recalculate of box by dropping */
@@ -2116,14 +2118,14 @@ gserialized_line_interpolate_point(GSERIALIZED *gs, double distance_fraction,
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Second argument is not within [0,1]");
-    return NULL;
+    RETURN(NULL);
   }
 
   if ( gserialized_get_type(gs) != LINETYPE )
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "First argument is not a line");
-    return NULL;
+    RETURN(NULL);
   }
 
   lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
@@ -2158,21 +2160,21 @@ gserialized_line_substring(GSERIALIZED *geom, double from, double to)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Second argument is not within [0,1]");
-    return NULL;
+    RETURN(NULL);
   }
 
   if ( to < 0 || to > 1 )
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Third argument is not within [0,1]");
-    return NULL;
+    RETURN(NULL);
   }
 
   if ( from > to )
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Second argument must be smaller then the third one");
-    return NULL;
+    RETURN(NULL);
   }
 
   if ( type == LINETYPE )
@@ -2279,7 +2281,7 @@ gserialized_line_substring(GSERIALIZED *geom, double from, double to)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "First argument is not a line");
-    return NULL;
+    RETURN(NULL);
   }
 
   ret = geo_serialize(olwgeom);
@@ -2291,6 +2293,10 @@ gserialized_line_substring(GSERIALIZED *geom, double from, double to)
  * Functions adapted from lwgeom_lrs.c
  *****************************************************************************/
 
+/**
+ * @brief Locate a point into a line
+ * @return On error return -1.0
+ */
 double
 gserialized_line_locate_point(GSERIALIZED *gs1, GSERIALIZED *gs2)
 {
@@ -2304,13 +2310,13 @@ gserialized_line_locate_point(GSERIALIZED *gs1, GSERIALIZED *gs2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "First argument is not a line");
-    return -1.0;
+    RETURN(-1.0);
   }
   if ( gserialized_get_type(gs2) != POINTTYPE )
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Second argument is not a point");
-    return -1.0;
+    RETURN(-1.0);
   }
 
   assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
@@ -2377,8 +2383,9 @@ gserialized_pointn_linestring(const GSERIALIZED *gs, int where)
 }
 
 /**
-* numpoints(LINESTRING) -- return the number of points in the
-* linestring, or NULL if it is not a linestring
+ * numpoints(LINESTRING) -- return the number of points in the
+ * linestring, or NULL if it is not a linestring
+ * @return On error return -1.0
 */
 int
 gserialized_numpoints_linestring(const GSERIALIZED *gs)
@@ -2397,7 +2404,7 @@ gserialized_numpoints_linestring(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "Error in computing number of points of a linestring");
-    return -1;
+    RETURN(-1);
   }
 
   return count;

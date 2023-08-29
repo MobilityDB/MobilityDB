@@ -1640,6 +1640,7 @@ minus_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between two values as a double
+ * @return On error return DBL_MAX
  */
 double
 distance_value_value(Datum l, Datum r, meosType type)

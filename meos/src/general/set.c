@@ -71,7 +71,7 @@ ensure_set_has_type(const Set *s, meosType settype)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The set value must be of type %s", meostype_name(settype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -88,7 +88,7 @@ ensure_same_set_type(const Set *s1, const Set *s2)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Operation on mixed set types: %s and %s",
       meostype_name(s1->settype), meostype_name(s2->settype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -107,7 +107,7 @@ ensure_same_set_basetype(const Set *s, meosType basetype)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Operation on mixed set and base types: %s and %s",
       meostype_name(s->settype), meostype_name(basetype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -464,6 +464,7 @@ geoset_as_ewkt(const Set *s, int maxdd)
 
 /**
  * @brief Return the size of a bounding box of a temporal type
+ * @return On error return SIZE_MAX
  */
 static size_t
 set_bbox_size(meosType settype)
@@ -493,15 +494,23 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   assert(set_basetype(basetype));
   assert(! alphanum_basetype(basetype));
   if (geo_basetype(basetype))
+  {
     geoarr_set_stbox(values, count, (STBox *) box);
+    return;
+  }
 #if NPOINT
   else if (basetype == T_NPOINT)
-   npointarr_set_stbox(values, count, (STBox *) box);
+  {
+    npointarr_set_stbox(values, count, (STBox *) box);
+    return;
+  }
 #endif
   else
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "unknown set type for computing bounding box: %d", basetype);
-  return;
+    RETURN();
+  }
 }
 
 #ifdef DEBUG_BUILD

@@ -95,7 +95,7 @@ stbox_parse(const char **str)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse spatiotemporal box");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Determine whether the box has X, Z, and/or T dimensions */
@@ -128,7 +128,7 @@ stbox_parse(const char **str)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse spatiotemporal box: Missing dimension information");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Parse external opening parenthesis (if both space and time dimensions) */
@@ -272,15 +272,15 @@ tpointinst_parse(const char **str, meosType temptype, bool end, bool make,
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Geometry SRID (%d) does not match temporal type SRID (%d)",
       geo_srid, *tpoint_srid);
-    pfree(gs);
-    return NULL;
+    PFREE(gs);
+    RETURN(NULL);
   }
   /* The next instruction will throw an exception if it fails */
   TimestampTz t = timestamp_parse(str);
   if ((end && ! ensure_end_input(str, "temporal point")) || ! make)
   {
-    pfree(gs);
-    return NULL;
+    PFREE(gs);
+    RETURN(NULL);
   }
   TInstant *result = tinstant_make(PointerGetDatum(gs), temptype, t);
   pfree(gs);
@@ -367,7 +367,7 @@ tpointseq_cont_parse(const char **str, meosType temptype, interpType interp,
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse temporal point value: Missing closing bracket/parenthesis");
-    return NULL;
+    RETURN(NULL);
   }
   /* Ensure there is no more input */
   if ((end && ! ensure_end_input(str, "temporal point")) || ! make)

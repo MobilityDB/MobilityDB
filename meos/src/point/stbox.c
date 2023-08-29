@@ -105,7 +105,7 @@ ensure_has_X_stbox(const STBox *box)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The box must have space dimension");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -120,7 +120,7 @@ ensure_has_T_stbox(const STBox *box)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The box must have time dimension");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -1642,7 +1642,7 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Result of box union would not be contiguous");
-    return NULL;
+    RETURN(NULL);
   }
 
   STBox *result = stbox_copy(box1);
@@ -1676,7 +1676,7 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
 
   if (hasx)
   {
-    assert(MEOS_FLAGS_GET_GEODETIC(box1->flags) == 
+    assert(MEOS_FLAGS_GET_GEODETIC(box1->flags) ==
       MEOS_FLAGS_GET_GEODETIC(box2->flags));
     assert(stbox_srid(box1) == stbox_srid(box2));
   }

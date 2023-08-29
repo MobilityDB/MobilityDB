@@ -148,6 +148,7 @@ span_bucket_state_next(SpanBucketState *state)
  * @param[in] value Input value
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
+ * @return On error return INT_MAX
  */
 int
 int_bucket(int value, int size, int origin)
@@ -169,7 +170,7 @@ int_bucket(int value, int size, int origin)
       (origin < 0 && value > PG_INT32_MAX + origin))
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
-      return INT_MAX;
+      RETURN(INT_MAX);
     }
     value -= origin;
   }
@@ -185,7 +186,7 @@ int_bucket(int value, int size, int origin)
     if (result < PG_INT32_MIN + size)
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
-      return INT_MAX;
+      RETURN(INT_MAX);
     }
     else
       result -= size;
@@ -200,6 +201,7 @@ int_bucket(int value, int size, int origin)
  * @param[in] value Input value
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
+ * @return On error return DBL_MAX
  */
 double
 float_bucket(double value, double size, double origin)
@@ -221,7 +223,7 @@ float_bucket(double value, double size, double origin)
       (origin < 0 && value > DBL_MAX + origin))
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
-      return DBL_MAX;
+      RETURN(DBL_MAX);
     }
     value -= origin;
   }
@@ -247,6 +249,7 @@ interval_units(const Interval *interval)
  * @param[in] t Input timestamp
  * @param[in] size Size of the time buckets in PostgreSQL time units
  * @param[in] origin Origin of the buckets
+ * @return On error return DT_NOEND
  */
 TimestampTz
 timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
@@ -254,7 +257,7 @@ timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
   if (TIMESTAMP_NOT_FINITE(t))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of span");
-    return DT_NOEND;
+    RETURN(DT_NOEND);
   }
   if (origin != 0)
   {
@@ -269,7 +272,7 @@ timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
       (origin < 0 && t > DT_NOEND + origin))
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of span");
-      return DT_NOEND;
+      RETURN(DT_NOEND);
     }
 
     t -= origin;
@@ -286,7 +289,7 @@ timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
     if (result < DT_NOBEGIN + size)
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of span");
-      return DT_NOEND;
+      RETURN(DT_NOEND);
     }
     else
       result -= size;

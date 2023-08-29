@@ -344,7 +344,7 @@ ensure_not_geodetic(int16 flags)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Only planar coordinates supported");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -361,7 +361,7 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on mixed planar and geodetic coordinates");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -376,7 +376,7 @@ ensure_same_srid(int32_t srid1, int32_t srid2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on mixed SRID");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -392,7 +392,7 @@ ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on mixed SRID");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -410,7 +410,7 @@ ensure_same_dimensionality(int16 flags1, int16 flags2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The arguments must be of the same dimensionality");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -439,7 +439,7 @@ ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on mixed 2D/3D dimensions");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -458,7 +458,7 @@ ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on mixed 2D/3D dimensions");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -473,13 +473,13 @@ ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on mixed 2D/3D dimensions");
-    return false;
+    RETURN(false);
   }
   return true;
 }
 
 /**
- * @brief Return true if a temporal point and a geometry/geography have the 
+ * @brief Return true if a temporal point and a geometry/geography have the
  * same dimensionality
  */
 bool
@@ -501,7 +501,7 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on mixed 2D/3D dimensions");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -520,7 +520,7 @@ ensure_same_spatial_dimensionality_stbox_gs(const STBox *box, const GSERIALIZED 
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The spatiotemporal box and the geometry must be of the same dimensionality");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -535,7 +535,7 @@ ensure_has_Z(int16 flags)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal point must have Z dimension");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -550,7 +550,7 @@ ensure_has_not_Z(int16 flags)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal point cannot have Z dimension");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -565,7 +565,7 @@ ensure_has_Z_gs(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The geometry must have Z dimension");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -580,7 +580,7 @@ ensure_has_not_Z_gs(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The geometry cannot have Z dimension");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -595,7 +595,7 @@ ensure_has_M_gs(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Only geometries with M dimension accepted");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -610,7 +610,7 @@ ensure_has_not_M_gs(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Only geometries without M dimension accepted");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -625,7 +625,7 @@ ensure_point_type(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Only point geometries accepted");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -640,7 +640,7 @@ ensure_non_empty(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Only non-empty geometries accepted");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -2477,7 +2477,7 @@ datum_round_geometrycollection(GSERIALIZED *gs, Datum size)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Unsupported geometry type");
-      return PointerGetDatum(NULL);
+      RETURN(PointerGetDatum(NULL));
     }
   }
   GSERIALIZED *result = geo_serialize((LWGEOM *) coll);
@@ -2517,7 +2517,7 @@ datum_round_geo(Datum value, Datum size)
     return datum_round_geometrycollection(gs, size);
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Unsupported geometry type");
-  return Float8GetDatum(0);
+  return PointerGetDatum(NULL);
 }
 
 /**
@@ -3642,6 +3642,7 @@ geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 /**
  * @brief Calculate the length of the diagonal of the minimum rotated rectangle
  * of the input GEOS geometry.
+ * @return On error return -1.0
  * @note The computation is always done in 2D
  */
 static double
@@ -3693,7 +3694,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
       default:
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Invalid geometry type for Minimum Rotated Rectangle");
-        return -1;
+        RETURN(-1.0);
     }
   }
   return result;
@@ -3722,7 +3723,7 @@ multipoint_make(const TSequence *seq, int start, int end)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Sequence must have a spatial base type");
-      return NULL;
+      RETURN(NULL);
     }
     const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
     geoms[i] = GEOSGeom_createPointFromXY(pt->x, pt->y);
@@ -3749,7 +3750,7 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Instant must have a spatial base type");
-    return NULL;
+    RETURN(NULL);
   }
   const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
   GEOSGeometry *geom1 = GEOSGeom_createPointFromXY(pt->x, pt->y);

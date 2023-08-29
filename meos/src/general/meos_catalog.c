@@ -371,6 +371,7 @@ basetype_varlength(meosType type)
 
 /**
  * @brief Return the length of a base type
+ * @return On error return SHRT_MAX
  */
 int16
 basetype_length(meosType type)
@@ -394,7 +395,7 @@ basetype_length(meosType type)
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "unknown base type: %d", type);
-  return SHRT_MAX; /* make compiler quiet */
+  return SHRT_MAX;
 }
 
 #ifdef DEBUG_BUILD
@@ -523,7 +524,7 @@ ensure_set_spantype(meosType type)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The set value must be a number or timestamp set");
-    return false;
+      RETURN(false);
   }
   return true;
 }
@@ -561,7 +562,7 @@ ensure_geoset_type(meosType type)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The set value must be a geo set");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -588,7 +589,7 @@ ensure_spatialset_type(meosType type)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The set value must be a spatial set");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -678,7 +679,7 @@ ensure_numspan_type(meosType type)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The span value must be a numeric span type");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -850,7 +851,7 @@ ensure_tnumber_type(meosType type)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The temporal value must be a temporal number");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -919,7 +920,7 @@ ensure_tspatial_type(meosType type)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The temporal value must be a temporal point type");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -963,7 +964,7 @@ ensure_tgeo_type(meosType type)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The temporal value must be a temporal point type");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -978,7 +979,7 @@ ensure_tnumber_tgeo_type(meosType type)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The temporal value must be a temporal number or a temporal point type");
-    return false;
+    RETURN(false);
   }
   return true;
 }

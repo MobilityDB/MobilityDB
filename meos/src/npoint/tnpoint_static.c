@@ -65,7 +65,8 @@
  *****************************************************************************/
 
 /**
- * Return the SRID of the routes in the ways table
+ * @brief Return the SRID of the routes in the ways table
+ * @return On error return SRID_INVALID
  */
 int32_t
 get_srid_ways()
@@ -83,7 +84,7 @@ get_srid_ways()
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Cannot determine SRID of the ways table");
-      return SRID_INVALID;
+      RETURN(SRID_INVALID);
     }
     srid_ways = DatumGetInt32(value);
   }
@@ -91,7 +92,7 @@ get_srid_ways()
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Cannot determine SRID of the ways table");
-    return SRID_INVALID;
+    RETURN(SRID_INVALID);
   }
   SPI_finish();
   return srid_ways;
@@ -155,7 +156,7 @@ nsegmentarr_geom(Nsegment **segments, int count)
 
 #if 0 /* not used */
 /**
- * Comparator functions
+ * @brief Comparator functions
  */
 static int
 npoint_sort_cmp(Npoint **l, Npoint **r)
@@ -172,7 +173,7 @@ npointarr_sort(Npoint **points, int count)
 #endif
 
 /**
- * Comparator function for network segments
+ * @brief Comparator function for network segments
  */
 static int
 nsegment_sort_cmp(Nsegment **l, Nsegment **r)
@@ -181,7 +182,7 @@ nsegment_sort_cmp(Nsegment **l, Nsegment **r)
 }
 
 /**
- * Sort function for network segments
+ * @brief Sort function for network segments
  */
 static void
 nsegmentarr_sort(Nsegment **segments, int count)
@@ -191,7 +192,7 @@ nsegmentarr_sort(Nsegment **segments, int count)
 }
 
 /**
- * Normalize the array of temporal segments
+ * @brief Normalize the array of temporal segments
  */
 Nsegment **
 nsegmentarr_normalize(Nsegment **segments, int *count)
@@ -223,7 +224,7 @@ nsegmentarr_normalize(Nsegment **segments, int *count)
 
 #if 0 /* not used */
 /**
- * Remove duplicates from an array of npoints
+ * @brief Remove duplicates from an array of npoints
  */
 int
 npoint_remove_duplicates(Npoint **values, int count)
@@ -324,13 +325,13 @@ npoint_set(int64 rid, double pos, Npoint *np)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "There is no route with gid value %ld in table ways", rid);
-    return;
+    RETURN();
   }
   if (pos < 0 || pos > 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The relative position must be a real number between 0 and 1");
-    return;
+    RETURN();
   }
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(np, 0, sizeof(Npoint));
@@ -361,13 +362,13 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "There is no route with gid value %ld in table ways", rid);
-    return;
+    RETURN();
   }
   if (pos1 < 0 || pos1 > 1 || pos2 < 0 || pos2 > 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The relative position of a network segment must be a real number between 0 and 1");
-    return;
+    RETURN();
   }
   ns->rid = rid;
   ns->pos1 = Min(pos1, pos2);
@@ -441,7 +442,7 @@ nsegment_end_position(const Nsegment *ns)
  *****************************************************************************/
 
 /**
- * Return true if the edge table contains a route with the route identifier
+ * @brief Return true if the edge table contains a route with the route identifier
  */
 bool
 route_exists(int64 rid)
@@ -464,8 +465,9 @@ route_exists(int64 rid)
 }
 
 /**
- * Access the edge table to return the route length from the corresponding
- * route identifier
+ * @brief Access the edge table to return the route length from the
+ * corresponding route identifier
+ * @brief On error return -1
  */
 double
 route_length(int64 rid)
@@ -489,14 +491,15 @@ route_length(int64 rid)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot get the length for route %ld", rid);
-    return 0;
+    RETURN(-1);
   }
   return result;
 }
 
 /**
- * Access the edge table to get the route geometry from corresponding route
- * identifier
+ * @brief Access the edge table to get the route geometry from corresponding
+ * route identifier
+ * @return On error return NULL
  */
 GSERIALIZED *
 route_geom(int64 rid)
@@ -523,8 +526,11 @@ route_geom(int64 rid)
   SPI_finish();
 
   if (isNull)
+  {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot get the geometry for route %ld", rid);
+    RETURN(NULL);
+  }
 
   if (! ensure_non_empty(result))
   {
@@ -537,7 +543,8 @@ route_geom(int64 rid)
 
 #if 0 /* not used */
 /**
- * Access edge table to get the rid from corresponding geometry
+ * @brief Access edge table to get the rid from corresponding geometry
+ * @return On error return INT_MAX
  */
 int64
 rid_from_geom(Datum geom)
@@ -559,8 +566,11 @@ rid_from_geom(Datum geom)
   }
   SPI_finish();
   if (isNull)
+  {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot get route identifier from geometry point");
+    RETURN(INT_MAX);
+  }
 
   return result;
 }
@@ -585,7 +595,7 @@ Npoint *
 geom_npoint(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs) || 
+  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs) ||
       ! ensure_point_type(gs))
     return NULL;
   int32_t srid_geom = gserialized_get_srid(gs);
@@ -643,6 +653,7 @@ nsegment_geom(const Nsegment *ns)
 
 /**
  * @brief Transforms the geometry into a network segment
+ * @return On error return NULL
  */
 Nsegment *
 geom_nsegment(const GSERIALIZED *gs)
@@ -652,8 +663,11 @@ geom_nsegment(const GSERIALIZED *gs)
     return NULL;
   int geomtype = gserialized_get_type(gs);
   if (geomtype != POINTTYPE && geomtype != LINETYPE)
+  {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Only point or line geometries accepted");
+    RETURN(NULL);
+  }
 
   Npoint **points;
   Npoint *np;

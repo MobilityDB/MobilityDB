@@ -146,7 +146,7 @@ ensure_same_timetype_skiplist(SkipList *state, uint8 subtype)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot aggregate temporal values of different duration");
-    return false;
+    RETURN(false);
   }
   return true;
 }

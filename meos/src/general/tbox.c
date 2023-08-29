@@ -64,7 +64,7 @@ ensure_has_X_tbox(const TBox *box)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The box must have value dimension");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -80,7 +80,7 @@ ensure_has_T_tbox(const TBox *box)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The box must have time dimension");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -96,7 +96,7 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The boxes must be of the same dimensionality");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -1252,7 +1252,7 @@ union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Result of box union would not be contiguous");
-    return NULL;
+    RETURN(NULL);
   }
 
   bool hasx = MEOS_FLAGS_GET_X(box1->flags);

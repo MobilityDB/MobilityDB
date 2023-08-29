@@ -65,7 +65,7 @@ typedef enum
 
 } errorCode;
 
-extern void meos_error(int errlevel, int errcode, char *format, ...); 
+extern void meos_error(int errlevel, int errcode, char *format, ...);
 
 /* Set or read error level */
 

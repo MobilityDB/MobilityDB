@@ -68,7 +68,7 @@ ensure_span_has_type(const Span *s, meosType spantype)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "The span value must be of type %s", meostype_name(spantype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -84,7 +84,7 @@ ensure_same_span_type(const Span *s1, const Span *s2)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Operation on mixed span types: %s and %s",
       meostype_name(s1->spantype), meostype_name(s2->spantype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -100,7 +100,7 @@ ensure_same_span_basetype(const Span *s, meosType basetype)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Operation on mixed span and base types: %s and %s",
       meostype_name(s->spantype), meostype_name(basetype));
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -585,7 +585,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Span lower bound must be less than or equal to span upper bound");
-    return;
+    RETURN();
   }
 
   /* error check: if bounds are equal, and not both inclusive, span is empty */
@@ -593,7 +593,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Span cannot be empty");
-    return;
+    RETURN();
   }
 
   /* Note: zero-fill is required here, just as in heap tuples */

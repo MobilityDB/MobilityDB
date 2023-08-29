@@ -281,6 +281,20 @@ typedef struct
  * Initialization of the MEOS library
  *****************************************************************************/
 
+/**
+ * @brief Macros defined to continue the control flow after an error occurred.
+ * The macros is not activated in MobilityDB since after an error the current
+ * transaction is aborted. In this way, the coverage for MobilityDB does not
+ * decreases when taking care of error messages in MEOS
+ */
+#if MEOS
+#define PFREE(val) pfree((val))
+#define RETURN(val) return (val)
+#else
+#define PFREE(val) do {} while(0)
+#define RETURN(val) do {} while(0)
+#endif /* MEOS */
+
 /* Definition of error handler function */
 typedef void (*error_handler_fn)(int, int, char *);
 

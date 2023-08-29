@@ -908,7 +908,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
     char *t2 = pg_timestamptz_out(inst2->t);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
-    return false;
+    RETURN(false);
   }
   if (merge && inst1->t == inst2->t &&
     ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
@@ -918,7 +918,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal values have different value at their overlapping instant %s",
       t1);
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -966,7 +966,7 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
         "Input values must be temporal instants");
-      return false;
+      RETURN(false);
     }
     if (i > 0)
     {
@@ -999,7 +999,7 @@ tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Instant sequence must have inclusive bounds");
-    return false;
+    RETURN(false);
   }
   meosType basetype = temptype_basetype(instants[0]->temptype);
   if (interp == STEP && count > 1 && ! upper_inc &&
@@ -1008,7 +1008,7 @@ tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Invalid end value for temporal sequence with step interpolation");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -1429,7 +1429,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     char *t = pg_timestamptz_out(inst->t);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Timestamps for temporal value must be increasing: %s, %s", t1, t);
-    return NULL;
+    RETURN(NULL);
   }
 
   Datum value1 = tinstant_value(last);
@@ -1445,7 +1445,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "The temporal values have different value at their common timestamp %s",
           t1);
-        return NULL;
+        RETURN(NULL);
       }
       /* Do not add the new instant if sequence is discrete and new instant is
        * equal to be last one */
@@ -1598,7 +1598,7 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
     char *t2 = pg_timestamptz_out(inst2->t);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
-    return NULL;
+    RETURN(NULL);
   }
   else if (inst1->t == inst2->t && seq1->period.upper_inc &&
     seq2->period.lower_inc)
@@ -1612,7 +1612,7 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "The temporal values have different value at their common timestamp %s",
         t1);
-      return NULL;
+      RETURN(NULL);
     }
   }
 #if NPOINT
@@ -1774,7 +1774,7 @@ tsequence_merge_array1(const TSequence **sequences, int count,
       t2 = pg_timestamptz_out(inst2->t);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "The temporal values cannot overlap on time: %s, %s", t1, t2);
-      return NULL;
+      RETURN(NULL);
     }
     else if (inst1->t == inst2->t && seq1->period.upper_inc &&
       seq2->period.lower_inc)
@@ -1785,7 +1785,7 @@ tsequence_merge_array1(const TSequence **sequences, int count,
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "The temporal values have different value at their common instant %s",
           t1);
-        return NULL;
+        RETURN(NULL);
       }
     }
     seq1 = seq2;
@@ -1981,7 +1981,7 @@ tcontseq_to_discrete(const TSequence *seq)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot transform input value to a temporal discrete sequence");
-    return NULL;
+    RETURN(NULL);
   }
   return tinstant_to_tsequence(TSEQUENCE_INST_N(seq, 0), DISCRETE);
 }
@@ -2006,7 +2006,7 @@ tcontseq_to_step(const TSequence *seq)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot transform input value to step interpolation");
-    return NULL;
+    RETURN(NULL);
   }
 
   const TInstant *instants[2];
@@ -2669,7 +2669,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "unknown interpolation function for continuous temporal type: %d",
     inst1->temptype);
-  return 0; /* make compiler quiet */
+  return 0;
 }
 
 /**
@@ -3075,7 +3075,7 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "unknown intersection function for continuous temporal type: %d",
       inst1->temptype);
-    return NULL;
+    RETURN(NULL);
   }
 
   if (result && inter != NULL)
@@ -5392,7 +5392,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "The temporal values have different value at their common instant %s",
         str);
-      return NULL;
+      RETURN(NULL);
     }
   }
   sequences[nseqs++] = (TSequence *) seq2;

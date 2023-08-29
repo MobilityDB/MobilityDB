@@ -55,12 +55,12 @@ npoint_parse(const char **str, bool end)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse network point");
-    return NULL;
+    RETURN(NULL);
   }
 
   *str += 6;
   p_whitespace(str);
-  
+
   /* Parse opening parenthesis */
   if (! ensure_oparen(str, type_str))
     return NULL;
@@ -75,7 +75,7 @@ npoint_parse(const char **str, bool end)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "The relative position must be a real number between 0 and 1");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Parse closing parenthesis */
@@ -100,7 +100,7 @@ nsegment_parse(const char **str)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse network segment");
-    return NULL;
+    RETURN(NULL);
   }
 
   *str += 8;
@@ -120,7 +120,7 @@ nsegment_parse(const char **str)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "The relative position must be a real number between 0 and 1");
-    return NULL;
+    RETURN(NULL);
   }
   p_comma(str);
   p_whitespace(str);
@@ -129,7 +129,7 @@ nsegment_parse(const char **str)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "The relative position must be a real number between 0 and 1");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Parse closing parenthesis */

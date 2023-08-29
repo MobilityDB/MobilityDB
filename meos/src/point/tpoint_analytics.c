@@ -638,7 +638,7 @@ ensure_valid_trajectory(const LWGEOM *geom, bool hasz, bool discrete)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Trajectory must be valid");
-      return false;
+      RETURN(false);
     }
     m1 = m2;
   }
@@ -723,7 +723,7 @@ geo_to_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
         "Component geometry/geography must be of type (Multi)Point(Z)M or (Multi)Linestring(Z)M");
-      return NULL;
+      RETURN(NULL);
     }
     if (geom1->type == POINTTYPE || geom1->type == LINETYPE)
       totalgeoms++;
@@ -788,7 +788,7 @@ geo_to_tpoint(const GSERIALIZED *gs)
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  Temporal *result = NULL; /* Make compiler quiet */
+  Temporal *result = NULL;
   if (geom->type == POINTTYPE)
     result = (Temporal *) geo_to_tpointinst(geom);
   else if (geom->type == MULTIPOINTTYPE)
@@ -2080,13 +2080,13 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "%s: Geometric bounds are too small", __func__);
-    return false;
+    RETURN(false);
   }
   if (extent <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "%s: Extent must be greater than 0", __func__);
-    return false;
+    RETURN(false);
   }
 
   /* Contrary to what is done in PostGIS we do not use the following filter

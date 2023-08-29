@@ -64,7 +64,7 @@ ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal network point and the box must be in the same SRID");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -81,7 +81,7 @@ ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "All network points composing a temporal sequence must have same route identifier");
-    return false;
+    RETURN(false);
   }
   return true;
 }

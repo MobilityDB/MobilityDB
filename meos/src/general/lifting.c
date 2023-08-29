@@ -114,7 +114,7 @@
  *   {
  *     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
  *       "Number of function parameters not supported: %u", lfinfo->numparam);
- *     return NULL;
+ *     RETURN(NULL);
  *   }
  *   TInstant *result = tinstant_make(resvalue, lfinfo->restype, inst->t);
  *   DATUM_FREE(resvalue, temptype_basetype(lfinfo->restype));

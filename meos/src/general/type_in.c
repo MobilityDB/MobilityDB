@@ -104,7 +104,7 @@ findMemberByName(json_object *poObj, const char *pszName)
     if (json_object_get_object(poTmp)->head == NULL)
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, "Invalid MFJSON string");
-      return NULL;
+      RETURN(NULL);
     }
     for (it.entry = json_object_get_object(poTmp)->head;
         ( it.entry ?
@@ -129,22 +129,22 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
 {
   if (json_type_array != json_object_get_type(poObj))
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid value of the 'coordinates' array in MFJSON string");
-    return 0;
+    RETURN(0);
   }
   int numcoord = (int) json_object_array_length(poObj);
   if (numcoord < 2)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Too few elements in 'coordinates' values in MFJSON string");
-    return 0;
+    RETURN(0);
   }
   if (numcoord > 3)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Too many elements in 'coordinates' values in MFJSON string");
-    return 0;
+    RETURN(0);
   }
 
   double x, y;
@@ -188,22 +188,22 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
   jvalues = findMemberByName(mfjsonTmp, "values");
   if (jvalues == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Unable to find 'values' in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
   if (json_object_get_type(jvalues) != json_type_array)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'values' array in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
   int numvalues = (int) json_object_array_length(jvalues);
   if (numvalues < 1)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid value of 'values' array in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
   Datum *values = palloc(sizeof(Datum) * numvalues);
   for (int i = 0; i < numvalues; ++i)
@@ -215,18 +215,18 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
       case T_TBOOL:
         if (json_object_get_type(jvalue) != json_type_boolean)
         {
-          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
             "Invalid boolean value in 'values' array in MFJSON string");
-          return NULL;
+          RETURN(NULL);
         }
         values[i] = BoolGetDatum(json_object_get_boolean(jvalue));
         break;
       case T_TINT:
         if (json_object_get_type(jvalue) != json_type_int)
         {
-          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
             "Invalid integer value in 'values' array in MFJSON string");
-          return NULL;
+          RETURN(NULL);
         }
         values[i] = Int32GetDatum(json_object_get_int(jvalue));
         break;
@@ -236,16 +236,16 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
       case T_TTEXT:
         if (json_object_get_type(jvalue) != json_type_string)
         {
-          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
             "Invalid string value in 'values' array in MFJSON string");
-          return NULL;
+          RETURN(NULL);
         }
         values[i] = PointerGetDatum(cstring2text(json_object_get_string(jvalue)));
         break;
       default: /* Error! */
-        meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+        meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
           "Unknown temporal type in MFJSON string: %d", temptype);
-        return NULL;
+        RETURN(NULL);
     }
   }
   *count = numvalues;
@@ -267,23 +267,23 @@ parse_mfjson_points(json_object *mfjson, int srid, bool geodetic,
   coordinates = findMemberByName(mfjsonTmp, "coordinates");
   if (coordinates == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Unable to find 'coordinates' in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
   if (json_object_get_type(coordinates) != json_type_array)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'coordinates' array in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
 
   int numpoints = (int) json_object_array_length(coordinates);
   if (numpoints < 1)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid value of 'coordinates' array in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
 
   Datum *values = palloc(sizeof(Datum) * numpoints);
@@ -306,23 +306,23 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
   datetimes = findMemberByName(mfjson, "datetimes");
   if (datetimes == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Unable to find 'datetimes' in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
   if (json_object_get_type(datetimes) != json_type_array)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'datetimes' array in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
 
   int numdates = (int) json_object_array_length(datetimes);
   if (numdates < 1)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid value of 'datetimes' array in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
 
   TimestampTz *times = palloc(sizeof(TimestampTz) * numdates);
@@ -366,9 +366,9 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
     json_object *values = findMemberByName(mfjson, "values");
     if (values == NULL)
     {
-      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
         "Unable to find 'values' in MFJSON string");
-      return NULL;
+      RETURN(NULL);
     }
     json_object *val = json_object_array_get_idx(values, 0);
     switch (temptype)
@@ -376,18 +376,18 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
       case T_TBOOL:
         if (json_object_get_type(val) != json_type_boolean)
         {
-          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
             "Invalid boolean value in 'values' array in MFJSON string");
-          return NULL;
+          RETURN(NULL);
         }
         value = BoolGetDatum(json_object_get_boolean(val));
         break;
       case T_TINT:
         if (json_object_get_type(val) != json_type_int)
         {
-          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
             "Invalid integer value in 'values' array in MFJSON string");
-          return NULL;
+          RETURN(NULL);
         }
         value = Int32GetDatum(json_object_get_int(val));
         break;
@@ -397,16 +397,16 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
       case T_TTEXT:
         if (json_object_get_type(val) != json_type_string)
         {
-          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
             "Invalid string value in 'values' array in MFJSON string");
-          return NULL;
+          RETURN(NULL);
         }
         value = PointerGetDatum(cstring2text(json_object_get_string(val)));
         break;
       default: /* Error! */
-        meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+        meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
           "Unknown temporal type in MFJSON string: %d", temptype);
-        return NULL;
+        RETURN(NULL);
     }
   }
   else
@@ -415,9 +415,9 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
     json_object *coordinates = findMemberByName(mfjson, "coordinates");
     if (coordinates == NULL)
     {
-      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
         "Unable to find 'coordinates' in MFJSON string");
-      return NULL;
+      RETURN(NULL);
     }
     json_object *coords = json_object_array_get_idx(coordinates, 0);
     value = parse_mfjson_coord(coords, srid, geodetic);
@@ -436,9 +436,9 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   const char *strdatetimes = json_object_get_string(datevalue);
   if (strdatetimes == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'datetimes' value in MFJSON string");
-    return NULL; /* make Codacy quiet */
+    RETURN(NULL);
   }
   strcpy(str, strdatetimes);
   /* Replace 'T' by ' ' before converting to timestamptz */
@@ -547,10 +547,10 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
   if (numvalues != numdates)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Distinct number of elements in '%s' and 'datetimes' arrays",
       ! isgeo ? "values" : "coordinates");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Construct the array of temporal instant points */
@@ -587,9 +587,9 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   lowerinc = findMemberByName(mfjson, "lower_inc");
   if (lowerinc == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Unable to find 'lower_inc' in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
   bool lower_inc = (bool) json_object_get_boolean(lowerinc);
 
@@ -598,9 +598,9 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   upperinc = findMemberByName(mfjson, "upper_inc");
   if (upperinc == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Unable to find 'upper_inc' in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
   bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
@@ -701,16 +701,16 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
    * then call this function */
   if (json_object_get_type(seqs) != json_type_array)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'sequences' array in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
   int numseqs = (int) json_object_array_length(seqs);
   if (numseqs < 1)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid value of 'sequences' array in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Construct the temporal point */
@@ -810,9 +810,9 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingFloat") != 0 && strcmp(typestr, "MovingText") != 0 &&
       strcmp(typestr, "MovingGeomPoint") != 0 && strcmp(typestr, "MovingGeogPoint") != 0 )
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string");
-    return false;
+    RETURN(false);
   }
   return true;
 }
@@ -848,9 +848,9 @@ temporal_from_mfjson(const char *mfjson)
       json_tokener_error_desc(jstok->err), jstok->char_offset);
     json_tokener_free(jstok);
     json_object_put(poObj);
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Error while processing MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
   json_tokener_free(jstok);
 
@@ -860,9 +860,9 @@ temporal_from_mfjson(const char *mfjson)
   poObjType = findMemberByName(poObj, "type");
   if (poObjType == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Unable to find 'type' in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
 
   /* Determine the type of temporal type */
@@ -889,9 +889,9 @@ temporal_from_mfjson(const char *mfjson)
   poObjInterp = findMemberByName(poObj, "interpolation");
   if (poObjInterp == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Unable to find 'interpolation' in MFJSON string");
-    return NULL;
+    RETURN(NULL);
   }
 
   bool isgeo = tgeo_type(temptype);
@@ -954,9 +954,9 @@ temporal_from_mfjson(const char *mfjson)
     }
     else
     {
-      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT, 
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
         "Invalid 'interpolation' value in MFJSON string");
-      return NULL;
+      RETURN(NULL);
     }
   }
   return result;
@@ -976,9 +976,9 @@ wkb_parse_state_check(wkb_parse_state *s, size_t next)
 {
   if ((s->pos + next) > (s->wkb + s->wkb_size))
   {
-    meos_error(ERROR, MEOS_ERR_WKB_INPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
       "WKB structure does not match expected size!");
-    return;
+    RETURN();
   }
 }
 
@@ -1212,9 +1212,9 @@ basevalue_from_wkb_state(wkb_parse_state *s)
       return PointerGetDatum(npoint_from_wkb_state(s));
 #endif /* NPOINT */
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_WKB_INPUT, 
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Unknown base type IN WKB string: %d", s->basetype);
-      return 0; /* make compiler quiet */
+      return 0;
   }
 }
 
@@ -1524,7 +1524,7 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
       s->subtype = TSEQUENCESET;
       break;
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_WKB_INPUT, 
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Unknown WKB flags: %d", wkb_flags);
       break;
   }
@@ -1673,9 +1673,9 @@ datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
   char wkb_little_endian = byte_from_wkb_state(&s);
   if (wkb_little_endian != 1 && wkb_little_endian != 0)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_INPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Invalid endian flag value in WKB string.");
-    return 0;
+    RETURN(0);
   }
   /* Check the endianness of our input */
   s.swap_bytes = false;
@@ -1705,7 +1705,7 @@ datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
   if (temporal_type(type))
     return PointerGetDatum(temporal_from_wkb_state(&s));
   /* Error! */
-  meos_error(ERROR, MEOS_ERR_WKB_INPUT, 
+  meos_error(ERROR, MEOS_ERR_WKB_INPUT,
     "Unknown type in WKB string: %d", type);
   return 0;
 }
