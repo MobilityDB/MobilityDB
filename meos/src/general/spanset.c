@@ -599,7 +599,7 @@ intspanset_floatspanset(const SpanSet *ss)
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_has_type(ss, T_INTSPANSET))
     return NULL;
-  Span *spans = malloc(sizeof(Span *) * ss->count);
+  Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     intspan_set_floatspan(&ss->elems[i], &spans[i]);
   SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
@@ -617,7 +617,7 @@ floatspanset_intspanset(const SpanSet *ss)
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_has_type(ss, T_FLOATSPANSET))
     return NULL;
-  Span *spans = malloc(sizeof(Span) * ss->count);
+  Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     floatspan_set_intspan(&ss->elems[i], &spans[i]);
   SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
