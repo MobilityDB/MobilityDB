@@ -44,6 +44,7 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/set.h"
+#include "general/spanset.h"
 #include "general/temporal.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_util.h"
@@ -596,7 +597,8 @@ STBox *
 geo_to_stbox(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs))
+  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs) ||
+      ! ensure_point_type(gs))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));

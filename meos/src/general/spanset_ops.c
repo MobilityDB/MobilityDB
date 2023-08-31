@@ -80,7 +80,8 @@ period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
-      ! ensure_span_has_type(s, T_TSTZSPAN) || !ensure_valid_duration(duration))
+      ! ensure_span_has_type(s, T_TSTZSPAN) ||
+      ! ensure_valid_duration(duration))
     return NULL;
 
   int64 tunits = interval_units(duration);
@@ -237,7 +238,7 @@ contains_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return false;
 
   /* Bounding box test */
@@ -431,7 +432,7 @@ overlaps_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return false;
 
   /* Bounding box test */
@@ -583,7 +584,7 @@ adjacent_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return false;
 
   const Span *s1 = spanset_sp_n(ss, 0);
@@ -710,7 +711,7 @@ left_span_spanset(const Span *s, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return false;
 
   const Span *s1 = spanset_sp_n(ss, 0);
@@ -803,7 +804,7 @@ left_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return false;
 
   const Span *s1 = spanset_sp_n(ss, ss->count - 1);
@@ -1149,7 +1150,7 @@ overleft_span_spanset(const Span *s, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return false;
 
   const Span *s1 = spanset_sp_n(ss, ss->count - 1);
@@ -1166,7 +1167,7 @@ overleft_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return false;
 
   const Span *s1 = spanset_sp_n(ss, ss->count - 1);
@@ -1282,7 +1283,7 @@ overright_span_spanset(const Span *s, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return false;
 
   const Span *s1 = spanset_sp_n(ss, 0);
@@ -1375,7 +1376,7 @@ overright_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return false;
 
   const Span *s1 = spanset_sp_n(ss, 0);
@@ -1491,7 +1492,7 @@ union_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return NULL;
 
   /* Transform the span into a span set */
@@ -1712,7 +1713,7 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return NULL;
 
   /* Bounding box test */
@@ -1823,7 +1824,7 @@ bool
 minus_int_intspanset(int i, const SpanSet *ss, int *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
       ! ensure_same_spanset_basetype(ss, T_INT4))
     return false;
 
@@ -1948,7 +1949,7 @@ minus_span_spanset(const Span *s, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return NULL;
 
   /* Bounding box test */
@@ -2065,7 +2066,7 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return NULL;
 
   /* Bounding box test */
@@ -2240,7 +2241,7 @@ distance_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_same_spanset_spantype(ss, s))
+      ! ensure_same_spanset_span_type(ss, s))
     return -1.0;
   return distance_span_span(&ss->span, s);
 }

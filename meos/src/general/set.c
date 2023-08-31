@@ -773,7 +773,7 @@ Set *
 bigintset_make(const int64 *values, int count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) values) || !ensure_positive(count))
+  if (! ensure_not_null((void *) values) || ! ensure_positive(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum *) * count);
@@ -979,7 +979,7 @@ Set *
 geo_to_geoset(GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs))
+  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs))
     return NULL;
   Datum v = PointerGetDatum(gs);
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
@@ -1075,6 +1075,7 @@ set_span(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of values of a set.
+ * @return On error return -1
  * @sqlfunc numTimestamps()
  */
 int
@@ -1102,6 +1103,7 @@ set_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of an integer set.
+ * @return On error return INT_MAX
  * @sqlfunc startValue()
  */
 int
@@ -1117,6 +1119,7 @@ intset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a big integer set.
+ * @return On error return INT_MAX
  * @sqlfunc startValue()
  */
 int64
@@ -1132,6 +1135,7 @@ bigintset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a float set.
+ * @return On error return DBL_MAX
  * @sqlfunc startValue()
  */
 double
@@ -1147,6 +1151,7 @@ floatset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a text set.
+ * @return On error return NULL
  * @sqlfunc startValue()
  */
 text *
@@ -1162,6 +1167,7 @@ textset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a timestamp set.
+ * @return On error return DT_NOEND
  * @sqlfunc startTimestamp()
  */
 TimestampTz
@@ -1177,6 +1183,7 @@ timestampset_start_timestamp(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a geo set.
+ * @return On error return NULL
  * @sqlfunc startValue()
  */
 GSERIALIZED *
@@ -1206,6 +1213,7 @@ set_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of an integer set.
+ * @return On error return INT_MAX
  * @sqlfunc endValue()
  */
 int
@@ -1221,6 +1229,7 @@ intset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a big integer set.
+ * @return On error return INT_MAX
  * @sqlfunc endValue()
  */
 int64
@@ -1236,6 +1245,7 @@ bigintset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a float set.
+ * @return On error return DBL_MAX
  * @sqlfunc endValue()
  */
 double
@@ -1251,7 +1261,8 @@ floatset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a text set.
- * @sqlfunc startValue()
+ * @return On error return NULL
+ * @sqlfunc endValue()
  */
 text *
 textset_end_value(const Set *s)
@@ -1266,6 +1277,7 @@ textset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a timestamp set.
+ * @return On error return DT_NOEND
  * @sqlfunc endTimestamp()
  */
 TimestampTz
@@ -1281,7 +1293,8 @@ timestampset_end_timestamp(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a geo set.
- * @sqlfunc startValue()
+ * @return On error return NULL
+ * @sqlfunc endValue()
  */
 GSERIALIZED *
 geoset_end_value(const Set *s)
@@ -1461,6 +1474,7 @@ set_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of an integer set.
+ * @return On error return NULL
  * @sqlfunc values()
  */
 int *
@@ -1479,6 +1493,7 @@ intset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a big integer set.
+ * @return On error return NULL
  * @sqlfunc values()
  */
 int64 *
@@ -1497,6 +1512,7 @@ bigintset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a float set.
+ * @return On error return NULL
  * @sqlfunc values()
  */
 double *
@@ -1515,6 +1531,7 @@ floatset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a text set.
+ * @return On error return NULL
  * @sqlfunc values()
  */
 text **
@@ -1533,6 +1550,7 @@ textset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a timestamp set.
+ * @return On error return NULL
  * @sqlfunc timestamps()
  */
 TimestampTz *
@@ -1551,6 +1569,7 @@ timestampset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a geo set.
+ * @return On error return NULL
  * @sqlfunc values()
  */
 GSERIALIZED **

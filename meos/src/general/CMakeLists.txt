@@ -20,7 +20,6 @@ add_library(general OBJECT
   temporal_compops.c
   temporal_similarity.c
   temporal_tile.c
-  time_aggfuncs.c
   tinstant.c
   tnumber_distance.c
   tnumber_mathfuncs.c

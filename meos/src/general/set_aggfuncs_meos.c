@@ -237,7 +237,8 @@ Set *
 text_union_transfn(Set *state, const text *txt)
 {
   /* Ensure validity of the arguments */
-  if (state && ! ensure_set_has_type(state, T_TEXTSET))
+  if (! ensure_not_null((void *) txt) ||
+      (state && ! ensure_set_has_type(state, T_TEXTSET)))
     return NULL;
   return value_union_transfn(state, PointerGetDatum(txt), T_TEXT);
 }
@@ -249,10 +250,6 @@ text_union_transfn(Set *state, const text *txt)
 Set *
 set_union_transfn(Set *state, Set *set)
 {
-  /* Ensure validity of the arguments */
-  if (state && set && ! ensure_same_set_type(state, set))
-    return NULL;
-
   /* Null set: return state */
   if (! set)
     return state;
@@ -266,6 +263,10 @@ set_union_transfn(Set *state, Set *set)
     /* Arbitrary initialization to 64 elements */
     state = set_make_exp(&d, 1, 64, set->basetype, ORDERED_NO);
   }
+
+  /* Ensure validity of the arguments */
+  if (! ensure_same_set_type(state, set))
+    return NULL;
 
   for (int i = start; i < set->count; i++)
   {

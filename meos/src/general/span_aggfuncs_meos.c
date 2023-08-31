@@ -55,6 +55,7 @@
 static SpanSet *
 spanset_append_span(SpanSet *ss, const Span *span, bool expand)
 {
+  assert(ss); assert(span);
   assert(ss->spantype == span->spantype);
 
   /* Account for expandable structures */
@@ -94,6 +95,7 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
 static SpanSet *
 spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 {
+  assert(ss1); assert(ss2);
   assert(ss1->spantype == ss2->spantype);
 
   /* Account for expandable structures */
@@ -145,6 +147,9 @@ span_union_transfn(SpanSet *state, const Span *span)
     /* Arbitrary initialization to 64 elements */
     return spanset_make_exp((Span *) span, 1, 64, NORMALIZE_NO, ORDERED_NO);
 
+  /* Ensure validity of the arguments */
+  if (! ensure_same_span_type(&state->elems[0], span))
+    return NULL;
   return spanset_append_span(state, span, true);
 }
 
@@ -167,6 +172,9 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
       NORMALIZE_NO, ORDERED_NO);
   }
 
+  /* Ensure validity of the arguments */
+  if (! ensure_same_span_type(&state->elems[0], &ss->elems[0]))
+    return NULL;
   return spanset_append_spanset(state, ss, true);
 }
 

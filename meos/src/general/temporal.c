@@ -333,7 +333,7 @@ ensure_same_temporal_basetype(const Temporal *temp, meosType basetype)
 /**
  * @brief Ensure that a temporal number and a span have the same span type
  * @param[in] temp Temporal value
- * @param[in] box Box value
+ * @param[in] s Span value
  */
 bool
 ensure_valid_tnumber_span(const Temporal *temp, const Span *s)
@@ -351,7 +351,7 @@ ensure_valid_tnumber_span(const Temporal *temp, const Span *s)
 /**
  * @brief Ensure that a temporal number and a span have the same span type
  * @param[in] temp Temporal value
- * @param[in] box Box value
+ * @param[in] ss Span set value
  */
 bool
 ensure_valid_tnumber_spanset(const Temporal *temp, const SpanSet *ss)

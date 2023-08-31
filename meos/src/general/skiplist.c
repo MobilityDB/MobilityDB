@@ -58,7 +58,6 @@
 #include "general/pg_types.h"
 #include "general/span.h"
 #include "general/temporal_aggfuncs.h"
-#include "general/time_aggfuncs.h"
 #include "general/type_util.h"
 
 #if ! MEOS
@@ -85,6 +84,23 @@ typedef enum
   DURING,
   AFTER
 } RelativeTimePos;
+
+/*****************************************************************************
+ * Parameter tests
+ *****************************************************************************/
+
+bool
+ensure_same_skiplist_subtype(SkipList *state, uint8 subtype)
+{
+  Temporal *head = (Temporal *) skiplist_headval(state);
+  if (head->subtype != subtype)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot aggregate temporal values of different subtype");
+    return false;
+  }
+  return true;
+}
 
 /*****************************************************************************
  * Functions manipulating skip lists
@@ -203,13 +219,14 @@ skiplist_delete(SkipList *list, int cur)
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Free the skiplist
  */
 void
 skiplist_free(SkipList *list)
 {
-  assert(list);
+  if (! list)
+    return;
   if (list->extra)
     pfree(list->extra);
   if (list->freed)
@@ -459,7 +476,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   if (temp1->subtype != temp2->subtype)
   {
     meos_error(ERROR, MEOS_ERR_AGGREGATION_ERROR,
-      "Cannot aggregate temporal values of different type");
+      "Cannot aggregate temporal values of different subtype");
     return;
   }
   if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) !=

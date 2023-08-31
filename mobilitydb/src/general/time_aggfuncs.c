@@ -32,7 +32,7 @@
  * @brief Aggregate functions for time types.
  */
 
-#include "general/time_aggfuncs.h"
+#include "general/temporal_aggfuncs.h"
 
 /* PostgreSQL */
 #include <postgres.h>

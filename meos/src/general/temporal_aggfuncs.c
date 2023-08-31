@@ -45,11 +45,11 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/skiplist.h"
+#include "general/spanset.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_tile.h"
 #include "general/tbool_boolops.h"
 #include "general/doublen.h"
-#include "general/time_aggfuncs.h"
 
 /*****************************************************************************
  * Aggregate functions on datums
@@ -107,6 +107,15 @@ Datum
 datum_max_text(Datum l, Datum r)
 {
   return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) > 0 ? l : r;
+}
+
+/**
+ * @brief Return the sum of the two arguments
+ */
+Datum
+datum_sum_int32(Datum l, Datum r)
+{
+  return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
 }
 
 /**
@@ -938,6 +947,81 @@ temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
  *****************************************************************************/
 
 /**
+ * @brief Transform a timestamp value into a temporal integer value for
+ * performing temporal count aggregation
+ */
+static TInstant **
+timestamp_transform_tcount(TimestampTz t)
+{
+  TInstant **result = palloc(sizeof(TInstant *));
+  result[0] = tinstant_make(Int32GetDatum(1), T_TINT, t);
+  return result;
+}
+
+/**
+ * @brief Transform a timestamp set value into a temporal integer value for
+ * performing temporal count aggregation
+ */
+static TInstant **
+timestampset_transform_tcount(const Set *s)
+{
+  TInstant **result = palloc(sizeof(TInstant *) * s->count);
+  for (int i = 0; i < s->count; i++)
+  {
+    TimestampTz t = DatumGetTimestampTz(SET_VAL_N(s, i));
+    result[i] = tinstant_make(Int32GetDatum(1), T_TINT, t);
+  }
+  return result;
+}
+
+/**
+ * @brief Transform a period value into a temporal integer value for
+ * performing temporal count aggregation
+ */
+static TSequence *
+period_transform_tcount(const Span *s)
+{
+  TSequence *result;
+  Datum datum_one = Int32GetDatum(1);
+  TInstant *instants[2];
+  TimestampTz t = s->lower;
+  instants[0] = tinstant_make(datum_one, T_TINT, t);
+  if (s->lower == s->upper)
+  {
+    result = tsequence_make((const TInstant **) instants, 1, s->lower_inc,
+      s->upper_inc, STEP, NORMALIZE_NO);
+  }
+  else
+  {
+    t = s->upper;
+    instants[1] = tinstant_make(datum_one, T_TINT, t);
+    result = tsequence_make((const TInstant **) instants, 2,
+      s->lower_inc, s->upper_inc, STEP, NORMALIZE_NO);
+    pfree(instants[1]);
+  }
+  pfree(instants[0]);
+  return result;
+}
+
+/**
+ * @brief Transform a period set value into a temporal integer value for
+ * performing temporal count aggregation
+ */
+static TSequence **
+periodset_transform_tcount(const SpanSet *ss)
+{
+  TSequence **result = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const Span *s = spanset_sp_n(ss, i);
+    result[i] = period_transform_tcount(s);
+  }
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Transform a temporal instant value into a temporal integer value for
  * performing temporal count aggregation
  */
@@ -1045,6 +1129,120 @@ temporal_transform_tcount(const Temporal *temp, int *count)
   assert(result != NULL);
   return result;
 }
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for temporal count aggregate of timestamps
+ */
+SkipList *
+timestamp_tcount_transfn(SkipList *state, TimestampTz t)
+{
+  TInstant **instants = timestamp_transform_tcount(t);
+  if (! state)
+  {
+    state = skiplist_make((void **) instants, 1);
+  }
+  else
+  {
+    if (! ensure_same_skiplist_subtype(state, TINSTANT))
+      return NULL;
+    skiplist_splice(state, (void **) instants, 1, &datum_sum_int32,
+      CROSSINGS_NO);
+  }
+
+  pfree_array((void **) instants, 1);
+  return state;
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for temporal count aggregate of timestamp sets
+ */
+SkipList *
+timestampset_tcount_transfn(SkipList *state, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
+    return NULL;
+
+  TInstant **instants = timestampset_transform_tcount(s);
+  if (! state)
+    state = skiplist_make((void **) instants, s->count);
+  else
+  {
+    if (! ensure_same_skiplist_subtype(state, TINSTANT))
+      return NULL;
+    skiplist_splice(state, (void **) instants, s->count, &datum_sum_int32,
+      CROSSINGS_NO);
+  }
+
+  pfree_array((void **) instants, s->count);
+  return state;
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for temporal count aggregate of periods
+ */
+SkipList *
+period_tcount_transfn(SkipList *state, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
+    return NULL;
+
+  TSequence *seq = period_transform_tcount(s);
+  if (! state)
+    state = skiplist_make((void **) &seq, 1);
+  else
+  {
+    if (! ensure_same_skiplist_subtype(state, TSEQUENCE))
+      return NULL;
+    skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32,
+      CROSSINGS_NO);
+  }
+
+  pfree(seq);
+  return state;
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for temporal count aggregate of period sets
+ */
+SkipList *
+periodset_tcount_transfn(SkipList *state, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || 
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+    return NULL;
+
+  TSequence **sequences = periodset_transform_tcount(ss);
+  int start = 0;
+  if (! state)
+  {
+    state = skiplist_make((void **) &sequences[0], 1);
+    start++;
+  }
+  else
+  {
+    if (! ensure_same_skiplist_subtype(state, TSEQUENCE))
+      return NULL;
+  }
+  for (int i = start; i < ss->count; i++)
+  {
+    skiplist_splice(state, (void **) &sequences[i], 1, &datum_sum_int32,
+      CROSSINGS_NO);
+  }
+
+  pfree_array((void **) sequences, ss->count);
+  return state;
+}
+
+/*****************************************************************************/
 
 /**
  * @ingroup libmeos_temporal_agg
