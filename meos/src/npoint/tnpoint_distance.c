@@ -69,11 +69,11 @@ npoint_distance(Datum np1, Datum np2)
  *****************************************************************************/
 
 /**
- * @brief Return the temporal distance between the geometry point and the temporal
+ * @brief Return the temporal distance between a geometry point and the temporal
  * network point
  */
 Temporal *
-distance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
@@ -81,7 +81,7 @@ distance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     return NULL;
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_geo((const Temporal *) tempgeom, gs);
+  Temporal *result = distance_tpoint_point((const Temporal *) tempgeom, gs);
   pfree(tempgeom);
   return result;
 }
@@ -95,7 +95,7 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_geo(tempgeom, geom);
+  Temporal *result = distance_tpoint_point(tempgeom, geom);
   pfree(geom);
   return result;
 }

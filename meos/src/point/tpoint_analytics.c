@@ -496,15 +496,15 @@ tpoint_to_geo_meas(const Temporal *tpoint, const Temporal *meas,
   bool segmentize, GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) tpoint) || ! ensure_not_null((void *) result) ||
-      ! ensure_tgeo_type(tpoint->temptype))
+  if (! ensure_not_null((void *) tpoint) ||
+      ! ensure_not_null((void *) result) ||
+      ! ensure_tgeo_type(tpoint->temptype) ||
+      (meas && ! ensure_tnumber_type(meas->temptype)))
     return false;
 
   Temporal *sync1, *sync2;
   if (meas)
   {
-    if (! ensure_tnumber_type(meas->temptype))
-      return false;
     /* Return false if the temporal values do not intersect in time
      * The operation is synchronization without adding crossings */
     if (! intersection_temporal_temporal(tpoint, meas, SYNCHRONIZE_NOCROSS,
@@ -781,7 +781,7 @@ Temporal *
 geo_to_tpoint(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs) ||
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
       ! ensure_has_M_gs(gs))
     return NULL;
 
@@ -1321,7 +1321,8 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype))
+      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
   Temporal *result;
@@ -1472,7 +1473,8 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype))
+      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
   Temporal *result;
@@ -1483,8 +1485,8 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
     result = (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist,
       syncdist, 2);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_simplify_dp((TSequenceSet *) temp,
-      dist, syncdist, 2);
+    result = (Temporal *) tsequenceset_simplify_dp((TSequenceSet *) temp, dist,
+      syncdist, 2);
   return result;
 }
 
@@ -2072,7 +2074,8 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) bounds) ||
-      ! ensure_not_null((void *) gsarr) || ! ensure_not_null((void *) timesarr) ||
+      ! ensure_not_null((void *) gsarr) ||
+      ! ensure_not_null((void *) timesarr) ||
       ! ensure_not_null((void *) count) || ! ensure_tgeo_type(temp->temptype))
     return false;
 

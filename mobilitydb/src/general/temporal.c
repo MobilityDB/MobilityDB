@@ -153,7 +153,7 @@ store_fcinfo(FunctionCallInfo fcinfo)
  * @note Used for the constructor functions
  */
 bool
-ensure_non_empty_array(ArrayType *array)
+ensure_not_empty_array(ArrayType *array)
 {
   if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
   {
@@ -659,7 +659,7 @@ Tsequence_constructor(PG_FUNCTION_ARGS)
     lower_inc = PG_GETARG_BOOL(2);
   if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
     upper_inc = PG_GETARG_BOOL(3);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
   Temporal *result = (Temporal *) tsequence_make((const TInstant **) instants,
@@ -680,7 +680,7 @@ Datum
 Tsequenceset_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   int count;
   TSequence **sequences = (TSequence **) temporalarr_extract(array, &count);
   Temporal *result = (Temporal *) tsequenceset_make(
@@ -706,7 +706,7 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   double maxdist = -1.0;
   Interval *maxt = NULL;
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
@@ -2030,7 +2030,7 @@ Datum
 Temporal_merge_array(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   int count;
   Temporal **temparr = temporalarr_extract(array, &count);
   Temporal *result = temporal_merge_array(temparr, count);

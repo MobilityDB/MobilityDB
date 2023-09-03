@@ -168,7 +168,7 @@ char *
 stbox_out(const STBox *box, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_non_negative(maxdd))
+  if (! ensure_not_null((void *) box) || ! ensure_not_negative(maxdd))
     return NULL;
 
   static size_t size = MAXSTBOXLEN + 1;
@@ -597,7 +597,7 @@ STBox *
 geo_to_stbox(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs) ||
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs))
     return NULL;
 
@@ -1149,7 +1149,7 @@ stbox_round(const STBox *box, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
 
   STBox *result = stbox_copy(box);

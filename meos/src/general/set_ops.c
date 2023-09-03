@@ -273,7 +273,7 @@ contains_geoset_geo(const Set *s, GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-      ! ensure_geoset_type(s->settype) || ! ensure_non_empty(gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs) )
     return false;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
@@ -415,7 +415,7 @@ contained_geo_geoset(GSERIALIZED *gs, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-      ! ensure_geoset_type(s->settype) || ! ensure_non_empty(gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs))
     return false;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
@@ -1359,7 +1359,7 @@ union_geoset_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-      ! ensure_geoset_type(s->settype) || ! ensure_non_empty(gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs))
     return NULL;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
@@ -1518,7 +1518,7 @@ intersection_geoset_geo(const Set *s, const GSERIALIZED *gs,
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
        ! ensure_not_null((void *) result) || ! ensure_geoset_type(s->settype) ||
-       ! ensure_non_empty(gs) || ! ensure_point_type(gs))
+       ! ensure_not_empty(gs) || ! ensure_point_type(gs))
     return false;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
   if (! ensure_same_set_basetype(s, geotype))
@@ -1676,7 +1676,7 @@ minus_geo_geoset(const GSERIALIZED *gs, const Set *s, GSERIALIZED **result)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
       ! ensure_not_null((void *) result) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_non_empty(gs) || ! ensure_point_type(gs) )
+      ! ensure_not_empty(gs) || ! ensure_point_type(gs) )
     return false;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
   if (! ensure_same_set_basetype(s, geotype))
@@ -1813,7 +1813,7 @@ minus_geoset_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-      ! ensure_geoset_type(s->settype) || ! ensure_non_empty(gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs))
     return NULL;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;

@@ -107,7 +107,15 @@ extern bool ensure_has_not_Z_gs(const GSERIALIZED *gs);
 extern bool ensure_has_M_gs(const GSERIALIZED *gs);
 extern bool ensure_has_not_M_gs(const GSERIALIZED *gs);
 extern bool ensure_point_type(const GSERIALIZED *gs);
-extern bool ensure_non_empty(const GSERIALIZED *gs);
+extern bool ensure_not_empty(const GSERIALIZED *gs);
+extern bool ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs);
+extern bool ensure_valid_tpoint_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern bool ensure_valid_spatial_stbox_stbox(const STBox *box1,
+  const STBox *box2);
+extern bool ensure_valid_tpoint_box(const Temporal *temp, const STBox *box);
+extern bool ensure_valid_tpoint_tpoint(const Temporal *temp1,
+  const Temporal *temp2);
 
 /* Functions derived from PostGIS to increase floating-point precision */
 

@@ -315,7 +315,7 @@ char *
 floatspanset_out(const SpanSet *ss, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_non_negative(maxdd) ||
+  if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
       ! ensure_spanset_has_type(ss, T_FLOATSPANSET))
     return NULL;
   return spanset_out(ss, maxdd);
@@ -681,7 +681,7 @@ SpanSet *
 floatspanset_round(const SpanSet *ss, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_non_negative(maxdd) ||
+  if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
       ! ensure_spanset_has_type(ss, T_FLOATSPANSET))
     return NULL;
 

@@ -238,6 +238,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal point
+ * @return On error return NULL
  * @sqlfunc stboxes()
  */
 STBox *

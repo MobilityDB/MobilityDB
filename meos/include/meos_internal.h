@@ -820,6 +820,7 @@ extern TSequenceSet *tpointseqset_speed(const TSequenceSet *ss);
 extern int tpointseqset_srid(const TSequenceSet *ss);
 extern STBox *tpointseqset_stboxes(const TSequenceSet *ss, int *count);
 extern GSERIALIZED *tpointseqset_trajectory(const TSequenceSet *ss);
+extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
 /*****************************************************************************/
 
@@ -828,6 +829,7 @@ extern GSERIALIZED *tpointseqset_trajectory(const TSequenceSet *ss);
 extern TInstant *tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper);
 extern TSequence *tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper);
 extern TSequenceSet *tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper);
+extern Temporal *tgeompoint_tgeogpoint(const Temporal *temp, bool oper);
 extern TInstant *tpointinst_set_srid(const TInstant *inst, int32 srid);
 extern TSequence **tpointseq_make_simple(const TSequence *seq, int *count);
 extern TSequence *tpointseq_set_srid(const TSequence *seq, int32 srid);

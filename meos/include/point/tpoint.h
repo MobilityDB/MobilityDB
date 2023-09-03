@@ -81,6 +81,8 @@ extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
 
 extern Temporal *tcomp_tpoint_point_int(const Temporal *temp,
   const GSERIALIZED *gs, Datum (*func)(Datum, Datum, meosType), bool invert);
+extern Temporal * tcomp_tpoint_tpoint_int(const Temporal *temp1,
+  const Temporal *temp2, Datum (*func)(Datum, Datum, meosType));
 
 /*****************************************************************************/
 

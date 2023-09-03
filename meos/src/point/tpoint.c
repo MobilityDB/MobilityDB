@@ -115,6 +115,7 @@ geo_expand_space(const GSERIALIZED *gs, double d)
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension
+ * @return On error return NULL
  * @sqlfunc expandSpace()
  */
 STBox *
@@ -131,103 +132,5 @@ tpoint_expand_space(const Temporal *temp, double d)
   STBox *result = stbox_expand_space(&box, d);
   return result;
 }
-
-/*****************************************************************************
- * Temporal comparisons
- *****************************************************************************/
-
-/**
- * @brief Return the temporal comparison of a temporal point and a point
- */
-Temporal *
-tcomp_tpoint_point_int(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, meosType), bool invert)
-{
-  assert(temp); assert(gs); assert(func);
-  if (gserialized_is_empty(gs))
-    return NULL;
-  assert(gserialized_get_type(gs) == POINTTYPE);
-  assert(tpoint_srid(temp) == gserialized_get_srid(gs));
-  assert(same_dimensionality_tpoint_gs(temp, gs));
-
-  meosType basetype = temptype_basetype(temp->temptype);
-  Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), basetype,
-    func, invert);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal equality of a point and a temporal point
- * @sqlop @p #=
- */
-Temporal *
-teq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp))
-    return NULL;
-
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_temporal_basetype(temp, geotype))
-    return NULL;
-  return tcomp_tpoint_point_int(temp, gs, &datum2_eq, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal equality of a temporal point and a point
- * @sqlop @p #=
- */
-Temporal *
-teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs))
-    return NULL;
-
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_temporal_basetype(temp, geotype))
-    return NULL;
-  return tcomp_tpoint_point_int(temp, gs, &datum2_eq, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal difference of a point and a temporal point
- * @sqlop @p #<>
- */
-Temporal *
-tne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs))
-    return NULL;
-
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_temporal_basetype(temp, geotype))
-    return NULL;
-  return tcomp_tpoint_point_int(temp, gs, &datum2_ne, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp
- * @brief Return the temporal difference of the temporal point and a point
- * @sqlop @p #<>
- */
-Temporal *
-tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs))
-    return NULL;
-
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_temporal_basetype(temp, geotype))
-    return NULL;
-  return tcomp_tpoint_point_int(temp, gs, &datum2_ne, INVERT_NO);
-}
-#endif /* MEOS */
 
 /*****************************************************************************/

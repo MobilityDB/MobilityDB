@@ -258,7 +258,7 @@ char *
 npoint_out(const Npoint *np, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) np) || ! ensure_non_negative(maxdd))
+  if (! ensure_not_null((void *) np) || ! ensure_not_negative(maxdd))
     return NULL;
 
   char *result = palloc(MAXNPOINTLEN);
@@ -287,7 +287,7 @@ char *
 nsegment_out(const Nsegment *ns, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ns) || ! ensure_non_negative(maxdd))
+  if (! ensure_not_null((void *) ns) || ! ensure_not_negative(maxdd))
     return NULL;
 
   char *result = palloc(MAXNPOINTLEN);
@@ -532,7 +532,7 @@ route_geom(int64 rid)
     return NULL;
   }
 
-  if (! ensure_non_empty(result))
+  if (! ensure_not_empty(result))
   {
     pfree(result);
     return NULL;
@@ -595,7 +595,7 @@ Npoint *
 geom_npoint(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs) ||
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs))
     return NULL;
   int32_t srid_geom = gserialized_get_srid(gs);
@@ -659,7 +659,7 @@ Nsegment *
 geom_nsegment(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs))
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
     return NULL;
   int geomtype = gserialized_get_type(gs);
   if (geomtype != POINTTYPE && geomtype != LINETYPE)

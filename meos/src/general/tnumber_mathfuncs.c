@@ -720,7 +720,7 @@ tfloat_round(const Temporal *temp, int maxdd)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_has_type(temp, T_TFLOAT) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
 
   /* We only need to fill these parameters for tfunc_temporal */

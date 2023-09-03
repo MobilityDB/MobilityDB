@@ -926,7 +926,7 @@ Span *
 floatspan_round(const Span *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_non_negative(maxdd) || 
+  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) || 
       ! ensure_span_has_type(s, T_FLOATSPAN))
     return NULL;
 

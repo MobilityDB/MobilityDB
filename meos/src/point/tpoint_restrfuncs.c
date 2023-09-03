@@ -777,7 +777,7 @@ point_get_z(Datum point)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Get one of the coordinates of a temporal point as a temporal float.
  * @param[in] temp Temporal point
  * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
@@ -788,6 +788,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_not_negative(coord) || 
       (coord == 2 && ! ensure_has_Z(temp->flags)))
      return NULL;
 
@@ -807,6 +808,42 @@ tpoint_get_coord(const Temporal *temp, int coord)
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @brief Get one of the X coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @sqlfunc getX()
+ */
+Temporal *
+tpoint_get_x(const Temporal *temp)
+{
+  return tpoint_get_coord(temp, 0);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @brief Get one of the X coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @sqlfunc getY()
+ */
+Temporal *
+tpoint_get_y(const Temporal *temp)
+{
+  return tpoint_get_coord(temp, 1);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @brief Get one of the X coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @sqlfunc getZ()
+ */
+Temporal *
+tpoint_get_z(const Temporal *temp)
+{
+  return tpoint_get_coord(temp, 2);
 }
 
 /*****************************************************************************
@@ -1621,8 +1658,7 @@ tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_valid_tpoint_geo(temp, gs))
     return NULL;
   return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_AT);
 }
@@ -1637,8 +1673,7 @@ tpoint_minus_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_valid_tpoint_geo(temp, gs))
     return NULL;
   return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_MINUS);
 }
@@ -2502,8 +2537,7 @@ Temporal *
 tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_valid_tpoint_box(temp, box))
     return NULL;
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_AT);
   return result;
@@ -2518,8 +2552,7 @@ Temporal *
 tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_valid_tpoint_box(temp, box))
     return NULL;
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);
   return result;

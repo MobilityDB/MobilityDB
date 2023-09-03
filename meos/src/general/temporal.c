@@ -391,7 +391,7 @@ ensure_valid_tnumber_tbox(const Temporal *temp, const TBox *box)
  * @brief Ensure that the number is positive or zero
  */
 bool
-ensure_non_negative(int i)
+ensure_not_negative(int i)
 {
   if (i < 0)
   {
@@ -428,6 +428,45 @@ ensure_less_equal(int i, int j)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The first value must be less or equal than the second one: %d, %d",
       i, j);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if the number is not negative
+ */
+bool
+not_negative_datum(Datum size, meosType basetype)
+{
+  assert(span_basetype(basetype));
+  if (basetype == T_INT4 && DatumGetInt32(size) < 0)
+    return false;
+  else if (basetype == T_FLOAT8 && DatumGetFloat8(size) < 0.0)
+    return false;
+  /* basetype == T_TIMESTAMPTZ */
+  else if (DatumGetInt64(size) < 0)
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure that the number is not negative
+ */
+bool
+ensure_not_negative_datum(Datum size, meosType basetype)
+{
+  if (! not_negative_datum(size, basetype))
+  {
+    char str[256];
+    if (basetype == T_INT4)
+      sprintf(str, "%d", DatumGetInt32(size));
+    else if (basetype == T_FLOAT8)
+      sprintf(str, "%f", DatumGetFloat8(size));
+    else /* basetype == T_TIMESTAMPTZ */
+      sprintf(str, INT64_FORMAT, DatumGetInt64(size));
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The value cannot be negative: %s", str);
     return false;
   }
   return true;
@@ -787,7 +826,7 @@ char *
 tfloat_out(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_non_negative(maxdd) ||
+  if (! ensure_not_null((void *) temp) || ! ensure_not_negative(maxdd) ||
       ! ensure_temporal_has_type(temp, T_TBOOL))
     return NULL;
   return temporal_out(temp, maxdd);
@@ -816,7 +855,7 @@ char *
 tpoint_out(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_non_negative(maxdd) ||
+  if (! ensure_not_null((void *) temp) || ! ensure_not_negative(maxdd) ||
       ! ensure_tgeo_type(temp->temptype))
     return NULL;
   return temporal_out(temp, maxdd);
@@ -989,7 +1028,7 @@ tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_non_empty(gs) || ! ensure_point_type(gs))
+      ! ensure_not_empty(gs) || ! ensure_point_type(gs))
     return NULL;
   return temporal_from_base_temp(PointerGetDatum(gs), T_TGEOMPOINT, temp);
 }

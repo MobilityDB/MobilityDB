@@ -57,7 +57,8 @@ tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
   bool restr, bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) np) || 
+      ! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
     return NULL;
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);

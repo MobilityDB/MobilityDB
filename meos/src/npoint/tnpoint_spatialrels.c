@@ -183,7 +183,9 @@ edwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2)))
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) || 
+      ! ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2)))
     return -1;
 
   Temporal *sync1, *sync2;

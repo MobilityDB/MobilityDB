@@ -382,7 +382,7 @@ floatset_out(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_FLOATSET) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
   return set_out(s, maxdd);
 }
@@ -422,7 +422,7 @@ geoset_out(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
   return set_out(s, maxdd);
 }
@@ -438,7 +438,7 @@ geoset_as_text(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
   return set_out_fn(s, maxdd, &wkt_out);
 }
@@ -453,7 +453,7 @@ geoset_as_ewkt(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
   return set_out_fn(s, maxdd, &ewkt_out);
 }
@@ -619,7 +619,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
       if (! ensure_point_type(gs2) ||
           ! ensure_same_srid(srid, gserialized_get_srid(gs2)) ||
           ! ensure_same_dimensionality_gs(gs1, gs2) ||
-          ! ensure_non_empty(gs2))
+          ! ensure_not_empty(gs2))
         return NULL;
     }
   }
@@ -979,7 +979,7 @@ Set *
 geo_to_geoset(GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs))
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
     return NULL;
   Datum v = PointerGetDatum(gs);
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
@@ -1636,7 +1636,7 @@ floatset_round(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_FLOATSET) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
 
   Set *result = set_copy(s);
@@ -1655,7 +1655,7 @@ geoset_round(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
 
   Datum *values = palloc(sizeof(Datum) * s->count);

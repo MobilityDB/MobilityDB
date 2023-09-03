@@ -340,7 +340,7 @@ extern GSERIALIZED *gserialized_from_geojson(const char *geojson);
 extern char *gserialized_out(const GSERIALIZED *gs);
 extern GSERIALIZED *pgis_geography_in(char *input, int32 geom_typmod);
 extern GSERIALIZED *pgis_geometry_in(char *input, int32 geom_typmod);
-extern bool pgis_gserialized_same(const GSERIALIZED *gs1, const GSERIALIZED *geom2);
+extern bool pgis_gserialized_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 
 /*****************************************************************************
  * Functions for set and span types
@@ -1223,7 +1223,7 @@ extern Temporal *ttext_lower(const Temporal *temp);
 extern Temporal *distance_tfloat_float(const Temporal *temp, double d);
 extern Temporal *distance_tint_int(const Temporal *temp, int i);
 extern Temporal *distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
-extern Temporal *distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo);
+extern Temporal *distance_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern double nad_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern double nad_stbox_stbox(const STBox *box1, const STBox *box2);
@@ -1288,6 +1288,7 @@ extern Temporal *teq_temporal_temporal(const Temporal *temp1, const Temporal *te
 extern Temporal *teq_text_ttext(const text *txt, const Temporal *temp);
 extern Temporal *teq_tfloat_float(const Temporal *temp, double d);
 extern Temporal *teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *teq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *teq_tint_int(const Temporal *temp, int i);
 extern Temporal *teq_ttext_text(const Temporal *temp, const text *txt);
 extern Temporal *tge_float_tfloat(double d, const Temporal *temp);
@@ -1327,6 +1328,7 @@ extern Temporal *tne_temporal_temporal(const Temporal *temp1, const Temporal *te
 extern Temporal *tne_text_ttext(const text *txt, const Temporal *temp);
 extern Temporal *tne_tfloat_float(const Temporal *temp, double d);
 extern Temporal *tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tne_tint_int(const Temporal *temp, int i);
 extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 
@@ -1336,7 +1338,7 @@ extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 
 /* Spatial accessor functions for temporal point types */
 
-extern bool bearing_point_point(const GSERIALIZED *geo1, const GSERIALIZED *geo2, double *result);
+extern bool bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
 extern Temporal *bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert);
 extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tpoint_angular_difference(const Temporal *temp);
@@ -1344,7 +1346,9 @@ extern Temporal *tpoint_azimuth(const Temporal *temp);
 extern GSERIALIZED *tpoint_convex_hull(const Temporal *temp);
 extern Temporal *tpoint_cumulative_length(const Temporal *temp);
 extern bool tpoint_direction(const Temporal *temp, double *result);
-extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
+extern Temporal *tpoint_get_x(const Temporal *temp);
+extern Temporal *tpoint_get_y(const Temporal *temp);
+extern Temporal *tpoint_get_z(const Temporal *temp);
 extern bool tpoint_is_simple(const Temporal *temp);
 extern double tpoint_length(const Temporal *temp);
 extern Temporal *tpoint_speed(const Temporal *temp);
@@ -1357,8 +1361,9 @@ extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
 /* Spatial transformation functions for temporal point types */
 
 extern STBox *geo_expand_space(const GSERIALIZED *gs, double d);
-extern Temporal *tgeompoint_tgeogpoint(const Temporal *temp, bool oper);
 extern STBox *tpoint_expand_space(const Temporal *temp, double d);
+extern Temporal *tgeompoint_to_tgeogpoint(const Temporal *temp);
+extern Temporal *tgeogpoint_to_tgeompoint(const Temporal *temp);
 extern Temporal *tpoint_round(const Temporal *temp, int maxdd);
 extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
@@ -1367,7 +1372,7 @@ extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
 
 /* Spatial relationship functions for temporal point types */
 
-extern int econtains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp);
+extern int econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp);
 extern int edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern int edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
@@ -1376,10 +1381,10 @@ extern int eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern int etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
-extern Temporal *tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool restr, bool atvalue);
+extern Temporal *tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
 extern Temporal *tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist, bool restr, bool atvalue);
-extern Temporal *tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool restr, bool atvalue);
+extern Temporal *tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
 extern Temporal *ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
 
 /*****************************************************************************/
@@ -1441,12 +1446,12 @@ extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal 
 
 /* Analytics functions for temporal types */
 
-Temporal *geo_to_tpoint(const GSERIALIZED *geo);
+Temporal *geo_to_tpoint(const GSERIALIZED *gs);
 Temporal *temporal_simplify_min_dist(const Temporal *temp, double dist);
 Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint);
 Temporal *temporal_simplify_dp(const Temporal *temp, double eps_dist, bool synchronized);
 Temporal *temporal_simplify_max_dist(const Temporal *temp, double eps_dist, bool synchronized);
-bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr, int *count);
+bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr, int *count);
 bool tpoint_to_geo_meas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
 /*****************************************************************************/

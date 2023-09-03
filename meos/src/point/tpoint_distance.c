@@ -435,17 +435,15 @@ tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between a temporal point and a
- * geometry/geography point
+ * geometry/geography
  * @sqlop @p <->
  */
 Temporal *
-distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+distance_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      gserialized_is_empty(gs) ||
-      ! ensure_tgeo_type(temp->temptype) || ! ensure_point_type(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_point_type(gs) ||
       ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return NULL;
 
@@ -474,10 +472,7 @@ Temporal *
 distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tgeo_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return NULL;
 
@@ -725,9 +720,7 @@ TInstant *
 nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return NULL;
 
@@ -757,10 +750,7 @@ TInstant *
 nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tgeo_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return NULL;
 
@@ -792,9 +782,7 @@ double
 nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return -1.0;
 
@@ -815,8 +803,7 @@ double
 nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) gs) ||
-      gserialized_is_empty(gs) || ! ensure_same_srid_stbox_gs(box, gs) ||
+  if (! ensure_valid_stbox_geo(box, gs) ||
       ! ensure_same_spatial_dimensionality_stbox_gs(box, gs))
     return -1.0;
 
@@ -831,17 +818,15 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between the spatio-temporal
  * boxes.
+ * @return On error return -1.0
  * @sqlop @p |=|
  */
 double
 nad_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X_stbox(box1) || ! ensure_has_X_stbox(box2) ||
-      ! ensure_same_geodetic(box1->flags, box2->flags) ||
-      ! ensure_same_spatial_dimensionality(box1->flags, box2->flags) ||
-      ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2)))
+  if (! ensure_valid_spatial_stbox_stbox(box1, box2) ||
+      ! ensure_same_spatial_dimensionality(box1->flags, box2->flags))
     return -1.0;
 
   /* If the boxes do not intersect in the time dimension return infinity */
@@ -868,17 +853,15 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal point
  * and a spatio-temporal box
+ * @return On error return -1.0
  * @sqlop @p |=|
  */
 double
 nad_tpoint_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tgeo_type(temp->temptype) || ! ensure_has_X_stbox(box) ||
-      ! ensure_same_geodetic(temp->flags, box->flags) ||
-      ! ensure_same_spatial_dimensionality_temp_box(temp->flags, box->flags) ||
-      ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box)))
+  if (! ensure_valid_tpoint_box(temp, box) ||
+      ! ensure_same_spatial_dimensionality_temp_box(temp->flags, box->flags))
     return -1.0;
 
   /* Project the temporal point to the timespan of the box */
@@ -918,10 +901,7 @@ double
 nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tgeo_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return -1.0;
 
@@ -949,10 +929,8 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_not_null((void *) result) || ! ensure_tgeo_type(temp->temptype) ||
-      gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return false;
 
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(temp->flags);
@@ -985,11 +963,8 @@ shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
       ! ensure_not_null((void *) result) ||
-      ! ensure_tgeo_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return false;
 

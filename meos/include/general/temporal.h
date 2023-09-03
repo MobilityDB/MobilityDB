@@ -371,9 +371,11 @@ extern bool ensure_same_temporal_basetype(const Temporal *temp,
 extern bool ensure_valid_tnumber_span(const Temporal *temp, const Span *s);
 extern bool ensure_valid_tnumber_spanset(const Temporal *temp, const SpanSet *ss);
 extern bool ensure_valid_tnumber_tbox(const Temporal *temp, const TBox *box);
-extern bool ensure_non_negative(int i);
+extern bool ensure_not_negative(int i);
 extern bool ensure_positive(int i);
 extern bool ensure_less_equal(int i, int j);
+extern bool not_negative_datum(Datum size, meosType basetype);
+extern bool ensure_not_negative_datum(Datum size, meosType basetype);
 extern bool positive_datum(Datum size, meosType basetype);
 extern bool ensure_positive_datum(Datum size, meosType basetype);
 extern bool valid_duration(const Interval *duration);

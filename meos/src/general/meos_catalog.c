@@ -981,7 +981,8 @@ ensure_tgeo_type(meosType type)
 }
 
 /**
- * @brief Ensure that a temporal value is a temporal point type
+ * @brief Ensure that a temporal value is a temporal number or a temporal point
+ * type
  */
 bool
 ensure_tnumber_tgeo_type(meosType type)

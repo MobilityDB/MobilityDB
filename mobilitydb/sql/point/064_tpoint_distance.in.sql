@@ -36,13 +36,13 @@
  * Distance functions
  *****************************************************************************/
 
-CREATE FUNCTION temporal_distance(geometry, tgeompoint)
+CREATE FUNCTION temporal_distance(geometry(Point), tgeompoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Distance_point_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tgeompoint, geometry)
+CREATE FUNCTION temporal_distance(tgeompoint, geometry(Point))
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Distance_tpoint_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_distance(tgeompoint, tgeompoint)
   RETURNS tfloat
@@ -67,13 +67,13 @@ CREATE OPERATOR <-> (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_distance(geography, tgeogpoint)
+CREATE FUNCTION temporal_distance(geography(Point), tgeogpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Distance_point_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tgeogpoint, geography)
+CREATE FUNCTION temporal_distance(tgeogpoint, geography(Point))
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Distance_tpoint_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_distance(tgeogpoint, tgeogpoint)
   RETURNS tfloat

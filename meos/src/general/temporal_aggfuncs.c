@@ -467,6 +467,7 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
 SkipList *
 tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
 {
+  assert(inst);
   SkipList *result;
   const TInstant **instants = palloc(sizeof(TInstant *));
   instants[0] = inst;
@@ -491,6 +492,7 @@ tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
 SkipList *
 tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
 {
+  assert(seq);
   const TInstant **instants = tsequence_instants(seq);
   SkipList *result;
   if (! state)
@@ -516,6 +518,7 @@ SkipList *
 tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
   datum_func2 func, bool crossings)
 {
+  assert(seq);
   SkipList *result;
   if (! state)
     result = skiplist_make((void **) &seq, 1);
@@ -539,6 +542,7 @@ SkipList *
 tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
   datum_func2 func, bool crossings)
 {
+  assert(ss);
   const TSequence **sequences = tsequenceset_sequences_p(ss);
   SkipList *result;
   if (! state)
@@ -564,6 +568,7 @@ SkipList *
 temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
   bool crossings)
 {
+  assert(temp);
   assert(temptype_subtype(temp->subtype));
   SkipList *result;
   if (temp->subtype == TINSTANT)
@@ -931,6 +936,7 @@ SkipList *
 temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
   datum_func2 func, bool crossings, TInstant *(*transform)(const TInstant *))
 {
+  assert(temp);
   int count;
   Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
   if (! state)
@@ -1141,9 +1147,7 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t)
 {
   TInstant **instants = timestamp_transform_tcount(t);
   if (! state)
-  {
     state = skiplist_make((void **) instants, 1);
-  }
   else
   {
     if (! ensure_same_skiplist_subtype(state, TINSTANT))
@@ -1163,8 +1167,11 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t)
 SkipList *
 timestampset_tcount_transfn(SkipList *state, const Set *s)
 {
+  /* Null set: return state */
+  if (! s)
+    return state;
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
+  if (! ensure_set_has_type(s, T_TSTZSET))
     return NULL;
 
   TInstant **instants = timestampset_transform_tcount(s);
@@ -1189,8 +1196,11 @@ timestampset_tcount_transfn(SkipList *state, const Set *s)
 SkipList *
 period_tcount_transfn(SkipList *state, const Span *s)
 {
+  /* Null span: return state */
+  if (! s)
+    return state;
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
+  if (! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
 
   TSequence *seq = period_transform_tcount(s);
@@ -1200,8 +1210,7 @@ period_tcount_transfn(SkipList *state, const Span *s)
   {
     if (! ensure_same_skiplist_subtype(state, TSEQUENCE))
       return NULL;
-    skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32,
-      CROSSINGS_NO);
+    skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32, CROSSINGS_NO);
   }
 
   pfree(seq);
@@ -1215,9 +1224,11 @@ period_tcount_transfn(SkipList *state, const Span *s)
 SkipList *
 periodset_tcount_transfn(SkipList *state, const SpanSet *ss)
 {
+  /* Null span set: return state */
+  if (! ss)
+    return state;
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || 
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+  if (! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
 
   TSequence **sequences = periodset_transform_tcount(ss);
@@ -1360,26 +1371,26 @@ tnumber_tavg_finalfn(SkipList *state)
  * @brief Transition function for temporal extent aggregate of temporal values
  */
 Span *
-temporal_extent_transfn(Span *s, const Temporal *temp)
+temporal_extent_transfn(Span *state, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
-  if (! s && ! temp)
+  if (! state && ! temp)
     return NULL;
-  /* Null period and non-null temporal, return the bbox of the temporal */
-  if (! s)
+  /* Non-null state and null temporal, return the state */
+  if (! temp)
+    return state;
+  /* Null state and non-null temporal, return the bbox of the temporal */
+  if (! state)
   {
     Span *result = palloc0(sizeof(Span));
     temporal_set_period(temp, result);
     return result;
   }
-  /* Non-null period and null temporal, return the period */
-  if (! temp)
-    return s;
 
-  Span s1;
-  temporal_set_period(temp, &s1);
-  span_expand(&s1, s);
-  return s;
+  Span s;
+  temporal_set_period(temp, &s);
+  span_expand(&s, state);
+  return state;
 }
 
 /**
@@ -1387,31 +1398,31 @@ temporal_extent_transfn(Span *s, const Temporal *temp)
  * @brief Transition function for temporal extent aggregate of temporal numbers
  */
 TBox *
-tnumber_extent_transfn(TBox *box, const Temporal *temp)
+tnumber_extent_transfn(TBox *state, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
-  if (! box && ! temp)
+  if (! state && ! temp)
     return NULL;
-  /* Null box and non-null temporal, return the bbox of the temporal */
-  if (! box)
+  /* Null state and non-null temporal, return the bbox of the temporal */
+  if (! state)
   {
     TBox *result = palloc0(sizeof(TBox));
     temporal_set_bbox(temp, result);
     return result;
   }
-  /* Non-null box and null temporal, return the box */
+  /* Non-null state and null temporal, return the state */
   if (! temp)
-    return box;
+    return state;
 
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tnumber_tbox(temp, box))
+  if (! ensure_valid_tnumber_tbox(temp, state))
     return NULL;
 
-  /* Both box and temporal are not null */
+  /* Both state and temporal are not null */
   TBox b;
   temporal_set_bbox(temp, &b);
-  tbox_expand(&b, box);
-  return box;
+  tbox_expand(&b, state);
+  return state;
 }
 
 /*****************************************************************************/

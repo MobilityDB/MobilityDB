@@ -137,7 +137,7 @@ char *
 tbox_out(const TBox *box, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_non_negative(maxdd))
+  if (! ensure_not_null((void *) box) || ! ensure_not_negative(maxdd))
     return NULL;
 
   static size_t size = MAXTBOXLEN + 1;
@@ -962,7 +962,7 @@ tbox_round(const TBox *box, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
 
   TBox *result = tbox_copy(box);

@@ -262,18 +262,16 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the functions
  * @param[in] invert True if the arguments should be inverted
+ * @return On error return -1
  */
 static int
 espatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   Datum (*func)(Datum, ...), int numparam, bool invert)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
     
-  assert(tpoint_srid(temp) == gserialized_get_srid(gs));
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
   Datum traj = PointerGetDatum(tpoint_trajectory(temp));
@@ -299,10 +297,7 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum))
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tgeo_type(temp1->temptype) ||
-      ! ensure_tgeo_type(temp2->temptype) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return -1;
 
@@ -332,9 +327,8 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a geometry ever contains a temporal point,
- * 0 if not, and -1 if the geometry is empty.
- *
- * The function does not accept 3D or geography since it is based on the
+ * 0 if not, and -1 on error or if the geometry is empty.
+ * @note The function does not accept 3D or geography since it is based on the
  * PostGIS ST_Relate function. The function tests whether the trajectory
  * intersects the interior of the geometry. Please refer to the documentation
  * of the ST_Contains and ST_Relate functions
@@ -346,10 +340,8 @@ int
 econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
-      ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags))
     return -1;
   GSERIALIZED *traj = tpoint_trajectory(temp);
   bool result = gserialized_relate_pattern(gs, traj, "T********");
@@ -417,7 +409,7 @@ edisjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
 /**
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a temporal point and a geometry are ever disjoint,
- * 0 if not, and -1 if the geometry is empty.
+ * 0 if not, and -1 on error or if the geometry is empty.
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @sqlfunc disjoint()
@@ -426,9 +418,7 @@ int
 edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
 
   varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, gs->gflags);
@@ -476,6 +466,10 @@ edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 int
 eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
+    return -1;
+
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
   int result = espatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func,
     2, INVERT_NO);
@@ -515,9 +509,7 @@ int
 etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
 
   /* There is no need to do a bounding box test since this is done in
@@ -559,6 +551,11 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+    return -1;
+
   datum_func3 func = get_dwithin_fn_gs(temp->flags, gs->gflags);
   int result = espatialrel_tpoint_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) func, 3, INVERT_NO);
@@ -736,10 +733,8 @@ int
 edwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tgeo_type(temp1->temptype) ||
-      ! ensure_tgeo_type(temp2->temptype) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)))
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
   Temporal *sync1, *sync2;
