@@ -46,6 +46,7 @@
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_aggfuncs.h"
 #include "npoint/tnpoint.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************/
 
@@ -56,8 +57,14 @@
 SkipList *
 tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
 {
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
+  /* Ensure validity of the arguments */
+  if (! ensure_geoaggstate(state, tnpoint_srid(temp), hasz))
+    return NULL;
   Temporal *temp1 = tnpoint_tgeompoint(temp);
-  geoaggstate_check_temp(state, temp1);
   Datum (*func)(Datum, Datum) = MEOS_FLAGS_GET_Z(temp1->flags) ?
     &datum_sum_double4 : &datum_sum_double3;
 

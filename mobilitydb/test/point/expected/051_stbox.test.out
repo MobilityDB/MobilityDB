@@ -322,18 +322,6 @@ SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::tstzspan;
  [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
-SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))'::tstzspan;
- tstzspan 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::tstzspan;
- tstzspan 
-----------
- 
-(1 row)
-
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
                 st_asewkt                 
 ------------------------------------------
@@ -409,6 +397,10 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01,2000-01
 /* Errors */
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
 ERROR:  The box must have space dimension
+SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))'::tstzspan;
+ERROR:  The box must have time dimension
+SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::tstzspan;
+ERROR:  The box must have time dimension
 SELECT geomset '{"Point(1 1 1)", "Point(2 2 2)", "Point(3 3 3)"}'::stbox;
           stbox           
 --------------------------

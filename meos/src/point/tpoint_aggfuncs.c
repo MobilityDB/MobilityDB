@@ -55,43 +55,39 @@
 /**
  * @brief Check the validity of the temporal point values for aggregation
  */
-void
-geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
+bool
+ensure_geoaggstate(const SkipList *state, int32_t srid, bool hasz)
 {
-  if(! state)
-    return;
+  if (! state)
+    return true;
   struct GeoAggregateState *extra = state->extra;
   if (extra && extra->srid != srid)
+  {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Geometries must have the same SRID for temporal aggregation");
+    return false;
+  }
   if (extra && extra->hasz != hasz)
+  {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Geometries must have the same dimensionality for temporal aggregation");
-  return;
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Check the validity of the temporal point values for aggregation
  */
-void
-geoaggstate_check_state(const SkipList *state1, const SkipList *state2)
+bool
+ensure_geoaggstate_state(const SkipList *state1, const SkipList *state2)
 {
   if(! state2)
-    return;
+    return true;
   struct GeoAggregateState *extra2 = state2->extra;
   if (extra2)
-    geoaggstate_check(state1, extra2->srid, extra2->hasz);
-  return;
-}
-
-/**
- * @brief Check the validity of the temporal point values for aggregation
- */
-void
-geoaggstate_check_temp(const SkipList *state, const Temporal *t)
-{
-  geoaggstate_check(state, tpoint_srid(t), MEOS_FLAGS_GET_Z(t->flags) != 0);
-  return;
+    return ensure_geoaggstate(state1, extra2->srid, extra2->hasz);
+  return true;
 }
 
 /*****************************************************************************/
@@ -181,7 +177,7 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
   }
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
+    if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
     {
       result = (Temporal **) tpointseq_disc_transform_tcentroid((TSequence *) temp);
       *count = ((TSequence *) temp)->count;
@@ -213,8 +209,15 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
 SkipList *
 tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
 {
-  geoaggstate_check_temp(state, temp);
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
   bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
+  /* Ensure validity of the arguments */
+  if (! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_geoaggstate(state, tpoint_srid(temp), hasz))
+    return NULL;
+
   datum_func2 func = hasz ? &datum_sum_double4 : &datum_sum_double3;
 
   int count;

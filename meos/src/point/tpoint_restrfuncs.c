@@ -283,7 +283,7 @@ seg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
 static bool *
 tpointseq_discstep_find_splits(const TSequence *seq, int *count)
 {
-  assert(! MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(! MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   assert(seq->count > 1);
   /* bitarr is an array of bool for collecting the splits */
   bool *bitarr = palloc0(sizeof(bool) * seq->count);
@@ -477,7 +477,7 @@ tpointseq_is_simple(const TSequence *seq)
   if (seq->count == 1)
     return true;
 
-  if (! MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
     return tpointseq_discstep_is_simple(seq);
 
   int numsplits;
@@ -578,7 +578,7 @@ static TSequence **
 tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 2);
-  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TSequence **result = palloc(sizeof(TSequence *) * count);
   /* Create the splits */
@@ -777,7 +777,7 @@ point_get_z(Datum point)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Get one of the coordinates of a temporal point as a temporal float.
  * @param[in] temp Temporal point
  * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
@@ -788,6 +788,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_not_negative(coord) || 
       (coord == 2 && ! ensure_has_Z(temp->flags)))
      return NULL;
 
@@ -807,6 +808,42 @@ tpoint_get_coord(const Temporal *temp, int coord)
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @brief Get one of the X coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @sqlfunc getX()
+ */
+Temporal *
+tpoint_get_x(const Temporal *temp)
+{
+  return tpoint_get_coord(temp, 0);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @brief Get one of the X coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @sqlfunc getY()
+ */
+Temporal *
+tpoint_get_y(const Temporal *temp)
+{
+  return tpoint_get_coord(temp, 1);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @brief Get one of the X coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @sqlfunc getZ()
+ */
+Temporal *
+tpoint_get_z(const Temporal *temp)
+{
+  return tpoint_get_coord(temp, 2);
 }
 
 /*****************************************************************************
@@ -1256,7 +1293,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
 static TSequenceSet *
 tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   TSequenceSet *result;
 
   /* Instantaneous sequence */
@@ -1385,7 +1422,7 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
 {
   assert(seq); ensure_not_null((void *) gs);
   assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   assert(seq->count > 1);
 
   /* Restrict to the temporal dimension */
@@ -1621,8 +1658,7 @@ tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_valid_tpoint_geo(temp, gs))
     return NULL;
   return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_AT);
 }
@@ -1637,8 +1673,7 @@ tpoint_minus_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_valid_tpoint_geo(temp, gs))
     return NULL;
   return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_MINUS);
 }
@@ -2302,7 +2337,7 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
 {
   assert(seq); assert(box);
   assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   assert(seq->count > 1);
 
   /* Restrict to the temporal dimension */
@@ -2458,7 +2493,8 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   assert(hasx || hast);
   /* Ensure validity of the arguments */
   if (! ensure_same_geodetic(temp->flags, box->flags) ||
-      ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box)))
+      (MEOS_FLAGS_GET_X(box->flags) &&
+        ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box))))
     return NULL;
 
   /* Short-circuit restriction to only T dimension */
@@ -2501,8 +2537,7 @@ Temporal *
 tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_valid_tpoint_box(temp, box))
     return NULL;
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_AT);
   return result;
@@ -2517,8 +2552,7 @@ Temporal *
 tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_valid_tpoint_box(temp, box))
     return NULL;
   Temporal *result = tpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);
   return result;

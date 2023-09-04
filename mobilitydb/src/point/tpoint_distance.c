@@ -63,23 +63,23 @@
  * Temporal distance
  *****************************************************************************/
 
-PGDLLEXPORT Datum Distance_geo_tpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_geo_tpoint);
+PGDLLEXPORT Datum Distance_point_tpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_point_tpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
- * @brief Return the temporal distance between a geometry/geography point
- * and a temporal point
+ * @brief Return the temporal distance between a geometry/geography and a 
+ * temporal point
  * @sqlfunc temporal_distance()
  * @sqlop @p <->
  */
 Datum
-Distance_geo_tpoint(PG_FUNCTION_ARGS)
+Distance_point_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = distance_tpoint_geo(temp, gs);
+  Temporal *result = distance_tpoint_point(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -87,23 +87,23 @@ Distance_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Distance_tpoint_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tpoint_geo);
+PGDLLEXPORT Datum Distance_tpoint_point(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_tpoint_point);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between a temporal point and the
- * geometry/geography point
+ * geometry/geography
  * @sqlfunc temporal_distance()
  * @sqlop @p <->
  */
 Datum
-Distance_tpoint_geo(PG_FUNCTION_ARGS)
+Distance_tpoint_point(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = distance_tpoint_geo(temp, gs);
+  Temporal *result = distance_tpoint_point(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)

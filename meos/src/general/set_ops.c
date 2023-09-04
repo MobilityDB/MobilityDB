@@ -41,6 +41,7 @@
 #include <meos_internal.h>
 #include "general/set.h"
 #include "general/type_util.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Generic operations
@@ -238,12 +239,13 @@ contains_floatset_float(const Set *s, double d)
  * @sqlop @p \@>
  */
 bool
-contains_textset_text(const Set *s, text *t)
+contains_textset_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_TEXT))
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
     return false;
-  return contains_set_value(s, PointerGetDatum(t), T_TEXT);
+  return contains_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
@@ -259,6 +261,25 @@ contains_timestampset_timestamp(const Set *s, TimestampTz t)
       ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
     return false;
   return contains_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a geoset contains a geometry/geography.
+ * @sqlop @p \@>
+ */
+bool
+contains_geoset_geo(const Set *s, GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
+      ! ensure_point_type(gs) )
+    return false;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  if (! ensure_same_set_basetype(s, geotype))
+    return false;
+  return contains_set_value(s, PointerGetDatum(gs), geotype);
 }
 #endif /* MEOS */
 
@@ -363,7 +384,8 @@ bool
 contained_text_textset(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_TEXT))
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
     return false;
   return contained_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
@@ -381,6 +403,25 @@ contained_timestamp_timestampset(TimestampTz t, const Set *s)
       ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
     return false;
   return contains_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a geometry/geography is contained in a geoset
+ * @sqlop @p <@
+ */
+bool
+contained_geo_geoset(GSERIALIZED *gs, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
+      ! ensure_point_type(gs))
+    return false;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  if (! ensure_same_set_basetype(s, geotype))
+    return false;
+  return contained_value_set(PointerGetDatum(gs), geotype, s);
 }
 #endif /* MEOS */
 
@@ -693,8 +734,8 @@ bool
 right_text_textset(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) txt) || ! ensure_not_null((void *) s) ||
-      !ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
     return false;
   return left_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
@@ -736,7 +777,7 @@ bool
 right_intset_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) && ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
     return false;
   return right_set_value(s, Int32GetDatum(i), T_INT4);
 }
@@ -886,7 +927,7 @@ bool
 overleft_text_textset(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) txt) || ! ensure_not_null((void *) s) ||
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_same_set_basetype(s, T_TEXT))
     return false;
   return overleft_value_set(PointerGetDatum(txt), T_TEXT, s);
@@ -1056,7 +1097,7 @@ bool
 overright_bigint_bigintset(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) && ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
     return false;
   return overright_value_set(Int64GetDatum(i), T_INT8, s);
 }
@@ -1158,7 +1199,8 @@ bool
 overright_textset_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_TEXT))
+  if (! ensure_not_null((void *) s) ||  ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
     return false;
   return overright_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
@@ -1283,7 +1325,7 @@ union_floatset_float(const Set *s, double d)
  * @sqlop @p +
  */
 Set *
-union_textset_text(const Set *s, text *txt)
+union_textset_text(const Set *s, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -1305,6 +1347,25 @@ union_timestampset_timestamp(const Set *s, const TimestampTz t)
       ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
     return NULL;
   return union_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a geoset and a geometry/geography
+ * @sqlop @p +
+ */
+Set *
+union_geoset_geo(const Set *s, const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
+      ! ensure_point_type(gs))
+    return NULL;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  if (! ensure_same_set_basetype(s, geotype))
+    return NULL;
+  return union_set_value(s, PointerGetDatum(gs), geotype);
 }
 #endif /* MEOS */
 
@@ -1412,8 +1473,9 @@ bool
 intersection_textset_text(const Set *s, const text *txt, text **result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+       ! ensure_not_null((void *) result) ||
+       ! ensure_same_set_basetype(s, T_TEXT))
     return false;
 
   Datum v;
@@ -1441,6 +1503,30 @@ intersection_timestampset_timestamp(const Set *s, TimestampTz t,
   bool found = intersection_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ,
     &v);
   *result = DatumGetTimestampTz(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Compute the intersection of a geoset and a geometry/geography
+ * @sqlop @p *
+ */
+bool
+intersection_geoset_geo(const Set *s, const GSERIALIZED *gs,
+  GSERIALIZED **result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+       ! ensure_not_null((void *) result) || ! ensure_geoset_type(s->settype) ||
+       ! ensure_not_empty(gs) || ! ensure_point_type(gs))
+    return false;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  if (! ensure_same_set_basetype(s, geotype))
+    return false;
+
+  Datum v;
+  bool found = intersection_set_value(s, PointerGetDatum(gs), geotype, &v);
+  *result = DatumGetGserializedP(v);
   return found;
 }
 #endif /* MEOS */
@@ -1546,16 +1632,59 @@ minus_float_floatset(double d, const Set *s, double *result)
  * @sqlop @p -
  */
 bool
-minus_text_textset(const text *txt, const Set *s, text **result)
+minus_timestamp_timestampset(TimestampTz t, const Set *s, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+    return false;
+
+  Datum v;
+  bool found = minus_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s, &v);
+  *result = DatumGetTimestampTz(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Compute the difference of a text and a text set
+ * @sqlop @p -
+ */
+bool
+minus_text_textset(const text *txt, const Set *s, text **result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_not_null((void *) result) ||
       ! ensure_same_set_basetype(s, T_TEXT))
     return false;
 
   Datum v;
   bool found = minus_value_set(PointerGetDatum(txt), T_TEXT, s, &v);
   *result = DatumGetTextP(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Compute the difference of a geo and a geoset
+ * @sqlop @p -
+ */
+bool
+minus_geo_geoset(const GSERIALIZED *gs, const Set *s, GSERIALIZED **result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+      ! ensure_not_null((void *) result) || ! ensure_geoset_type(s->settype) ||
+      ! ensure_not_empty(gs) || ! ensure_point_type(gs) )
+    return false;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  if (! ensure_same_set_basetype(s, geotype))
+    return false;
+
+  Datum v;
+  bool found = minus_value_set(PointerGetDatum(gs), geotype, s, &v);
+  *result = DatumGetGserializedP(v);
   return found;
 }
 #endif /* MEOS */
@@ -1673,6 +1802,25 @@ minus_timestampset_timestamp(const Set *s, TimestampTz t)
   }
   return set_make_free(values, nvals, T_TIMESTAMPTZ, ORDERED);
 }
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a text set and a text
+ * @sqlop @p -
+ */
+Set *
+minus_geoset_geo(const Set *s, const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
+      ! ensure_point_type(gs))
+    return NULL;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  if (! ensure_same_set_basetype(s, geotype))
+    return NULL;
+  return minus_set_value(s, PointerGetDatum(gs), geotype);
+}
 #endif /* MEOS */
 
 /**
@@ -1712,6 +1860,7 @@ distance_set_value(const Set *s, Datum d, meosType basetype)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between an integer set and an integer expressed
  * as a double
+ * @result On error return -1.0
  * @sqlop @p <->
  */
 double
@@ -1727,6 +1876,7 @@ distance_intset_int(const Set *s, int i)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a big integer set and a big integer
  * as a double
+ * @result On error return -1.0
  * @sqlop @p <->
  */
 double
@@ -1741,6 +1891,7 @@ distance_bigintset_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a float set and a float
+ * @result On error return -1.0
  * @sqlop @p <->
  */
 double
@@ -1755,6 +1906,7 @@ distance_floatset_float(const Set *s, double d)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance in seconds between a timestamp set and a timestamp
+ * @result On error return -1.0
  * @sqlop @p <->
  */
 double
@@ -1770,6 +1922,7 @@ distance_timestampset_timestamp(const Set *s, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between two sets as a double
+ * @result On error return -1.0
  * @sqlop @p <->
  */
 double

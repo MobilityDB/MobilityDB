@@ -851,7 +851,7 @@ bool
 overleft_floatspan_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) && ! ensure_same_span_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
     return false;
   return overleft_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -1640,6 +1640,7 @@ minus_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between two values as a double
+ * @return On error return DBL_MAX
  */
 double
 distance_value_value(Datum l, Datum r, meosType type)
@@ -1689,6 +1690,7 @@ distance_span_value(const Span *s, Datum d, meosType basetype)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between an integer span and an integer
  * as a double
+ * @return On error return -1.0
  * @sqlop @p <->
  */
 double
@@ -1704,6 +1706,7 @@ distance_intspan_int(const Span *s, int i)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a big integer span and a big integer
  * as a double
+ * @return On error return -1.0
  * @sqlop @p <->
  */
 double
@@ -1718,6 +1721,7 @@ distance_bigintspan_bigint(const Span *s, int64 i)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a float span and a float.
+ * @return On error return -1.0
  * @sqlop @p <->
  */
 double
@@ -1733,6 +1737,7 @@ distance_floatspan_float(const Span *s, double d)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance in seconds between a period and a timestamp
  * as a double
+ * @return On error return -1.0
  * @sqlop @p <->
  */
 double
@@ -1749,6 +1754,7 @@ distance_period_timestamp(const Span *s, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between two spans as a double
+ * @return On error return -1.0
  * @sqlop @p <->
  */
 double

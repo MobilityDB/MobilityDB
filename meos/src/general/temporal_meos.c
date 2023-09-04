@@ -37,6 +37,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/spanset.h"
+#include "general/temporal.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -55,8 +57,7 @@ tbool_at_value(const Temporal *temp, bool b)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_same_temporal_basetype(temp, T_BOOL))
     return NULL;
-  Temporal *result = temporal_restrict_value(temp, BoolGetDatum(b), REST_AT);
-  return result;
+  return temporal_restrict_value(temp, BoolGetDatum(b), REST_AT);
 }
 
 /**
@@ -71,8 +72,7 @@ tint_at_value(const Temporal *temp, int i)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_same_temporal_basetype(temp, T_INT4))
     return NULL;
-  Temporal *result = temporal_restrict_value(temp, Int32GetDatum(i), REST_AT);
-  return result;
+  return temporal_restrict_value(temp, Int32GetDatum(i), REST_AT);
 }
 
 /**
@@ -87,8 +87,7 @@ tfloat_at_value(const Temporal *temp, double d)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_same_temporal_basetype(temp, T_FLOAT8))
     return NULL;
-  Temporal *result = temporal_restrict_value(temp, Float8GetDatum(d), REST_AT);
-  return result;
+  return temporal_restrict_value(temp, Float8GetDatum(d), REST_AT);
 }
 
 /**
@@ -103,8 +102,7 @@ ttext_at_value(const Temporal *temp, text *txt)
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
       ! ensure_same_temporal_basetype(temp, T_TEXT))
     return NULL;
-  Temporal *result = temporal_restrict_value(temp, PointerGetDatum(txt), REST_AT);
-  return result;
+  return temporal_restrict_value(temp, PointerGetDatum(txt), REST_AT);
 }
 
 /**
@@ -117,10 +115,9 @@ tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || ! ensure_point_type(gs))
+      ! ensure_tgeo_type(temp->temptype))
     return NULL;
-  Temporal *result = temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
-  return result;
+  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
 }
 
 /**
@@ -135,8 +132,7 @@ tbool_minus_value(const Temporal *temp, bool b)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_same_temporal_basetype(temp, T_BOOL))
     return NULL;
-  Temporal *result = temporal_restrict_value(temp, BoolGetDatum(b), REST_MINUS);
-  return result;
+  return temporal_restrict_value(temp, BoolGetDatum(b), REST_MINUS);
 }
 
 /**
@@ -151,8 +147,7 @@ tint_minus_value(const Temporal *temp, int i)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_same_temporal_basetype(temp, T_INT4))
     return NULL;
-  Temporal *result = temporal_restrict_value(temp, Int32GetDatum(i), REST_MINUS);
-  return result;
+  return temporal_restrict_value(temp, Int32GetDatum(i), REST_MINUS);
 }
 
 /**
@@ -167,8 +162,7 @@ tfloat_minus_value(const Temporal *temp, double d)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_same_temporal_basetype(temp, T_FLOAT8))
     return NULL;
-  Temporal *result = temporal_restrict_value(temp, Float8GetDatum(d), REST_MINUS);
-  return result;
+  return temporal_restrict_value(temp, Float8GetDatum(d), REST_MINUS);
 }
 
 /**
@@ -183,8 +177,7 @@ ttext_minus_value(const Temporal *temp, text *txt)
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
       ! ensure_same_temporal_basetype(temp, T_TEXT))
     return NULL;
-  Temporal *result = temporal_restrict_value(temp, PointerGetDatum(txt), REST_MINUS);
-  return result;
+  return temporal_restrict_value(temp, PointerGetDatum(txt), REST_MINUS);
 }
 
 /**
@@ -199,8 +192,7 @@ tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_tgeo_type(temp->temptype))
     return NULL;
-  Temporal *result = temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
-  return result;
+  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -350,8 +342,7 @@ temporal_at_min(const Temporal *temp)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-  Temporal *result = temporal_restrict_minmax(temp, GET_MIN, REST_AT);
-  return result;
+  return temporal_restrict_minmax(temp, GET_MIN, REST_AT);
 }
 
 /**
@@ -365,8 +356,7 @@ temporal_minus_min(const Temporal *temp)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-  Temporal *result = temporal_restrict_minmax(temp, GET_MIN, REST_MINUS);
-  return result;
+  return temporal_restrict_minmax(temp, GET_MIN, REST_MINUS);
 }
 
 /**
@@ -380,8 +370,7 @@ temporal_at_max(const Temporal *temp)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-  Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_AT);
-  return result;
+  return temporal_restrict_minmax(temp, GET_MAX, REST_AT);
 }
 
 /**
@@ -395,8 +384,7 @@ temporal_minus_max(const Temporal *temp)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-  Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
-  return result;
+  return temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -411,10 +399,10 @@ tnumber_at_span(const Temporal *temp, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_tnumber_type(temp->temptype))
+      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_valid_tnumber_span(temp, s))
     return NULL;
-  Temporal *result = tnumber_restrict_span(temp, s, REST_AT);
-  return result;
+  return tnumber_restrict_span(temp, s, REST_AT);
 }
 
 /**
@@ -427,10 +415,10 @@ tnumber_minus_span(const Temporal *temp, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_tnumber_type(temp->temptype))
+      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_valid_tnumber_span(temp, s))
     return NULL;
-  Temporal *result = tnumber_restrict_span(temp, s, REST_MINUS);
-  return result;
+  return tnumber_restrict_span(temp, s, REST_MINUS);
 }
 
 /**
@@ -443,10 +431,10 @@ tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_tnumber_type(temp->temptype))
+      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_valid_tnumber_spanset(temp, ss))
     return NULL;
-  Temporal *result = tnumber_restrict_spanset(temp, ss, REST_AT);
-  return result;
+  return tnumber_restrict_spanset(temp, ss, REST_AT);
 }
 
 /**
@@ -460,10 +448,10 @@ tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_tnumber_type(temp->temptype))
+      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_valid_tnumber_spanset(temp, ss))
     return NULL;
-  Temporal *result = tnumber_restrict_spanset(temp, ss, REST_MINUS);
-  return result;
+  return tnumber_restrict_spanset(temp, ss, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -479,8 +467,7 @@ temporal_at_timestamp(const Temporal *temp, TimestampTz t)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-  Temporal *result = temporal_restrict_timestamp(temp, t, REST_AT);
-  return result;
+  return temporal_restrict_timestamp(temp, t, REST_AT);
 }
 
 /**
@@ -494,8 +481,7 @@ temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-  Temporal *result = temporal_restrict_timestamp(temp, t, REST_MINUS);
-  return result;
+  return temporal_restrict_timestamp(temp, t, REST_MINUS);
 }
 
 /**
@@ -507,10 +493,10 @@ Temporal *
 temporal_at_timestampset(const Temporal *temp, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
+      ! ensure_set_has_type(s, T_TSTZSET))
     return NULL;
-  Temporal *result = temporal_restrict_timestampset(temp, s, REST_AT);
-  return result;
+  return temporal_restrict_timestampset(temp, s, REST_AT);
 }
 
 /**
@@ -522,10 +508,10 @@ Temporal *
 temporal_minus_timestampset(const Temporal *temp, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
+      ! ensure_set_has_type(s, T_TSTZSET))
     return NULL;
-  Temporal *result = temporal_restrict_timestampset(temp, s, REST_MINUS);
-  return result;
+  return temporal_restrict_timestampset(temp, s, REST_MINUS);
 }
 
 /**
@@ -537,10 +523,10 @@ Temporal *
 temporal_at_period(const Temporal *temp, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
+      ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
-  Temporal *result = temporal_restrict_period(temp, s, REST_AT);
-  return result;
+  return temporal_restrict_period(temp, s, REST_AT);
 }
 
 /**
@@ -552,10 +538,10 @@ Temporal *
 temporal_minus_period(const Temporal *temp, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
+      ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
-  Temporal *result = temporal_restrict_period(temp, s, REST_MINUS);
-  return result;
+  return temporal_restrict_period(temp, s, REST_MINUS);
 }
 
 /**
@@ -567,10 +553,10 @@ Temporal *
 temporal_at_periodset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) || 
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
-  Temporal *result = temporal_restrict_periodset(temp, ss, REST_AT);
-  return result;
+  return temporal_restrict_periodset(temp, ss, REST_AT);
 }
 
 /**
@@ -582,10 +568,10 @@ Temporal *
 temporal_minus_periodset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) || 
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
-  Temporal *result = temporal_restrict_periodset(temp, ss, REST_MINUS);
-  return result;
+  return temporal_restrict_periodset(temp, ss, REST_MINUS);
 }
 
 /*****************************************************************************/

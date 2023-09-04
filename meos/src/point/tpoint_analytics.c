@@ -217,7 +217,7 @@ tpointseq_cont_to_geo_meas(const TSequence *seq, const TSequence *meas)
   int32 srid = tpointseq_srid(seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
-  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   LWGEOM **points = palloc(sizeof(LWPOINT *) * seq->count);
   /* Keep the first point */
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
@@ -293,7 +293,7 @@ tpointseqset_to_geo_meas(const TSequenceSet *ss, const TSequenceSet *meas)
   int32 srid = tpointseqset_srid(ss);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
-  bool linear = MEOS_FLAGS_GET_LINEAR(ss->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
   LWGEOM **lines = palloc(sizeof(LWGEOM *) * ss->count);
   int npoints = 0, nlines = 0;
@@ -496,15 +496,15 @@ tpoint_to_geo_meas(const Temporal *tpoint, const Temporal *meas,
   bool segmentize, GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) tpoint) || ! ensure_not_null((void *) result) ||
-      ! ensure_tgeo_type(tpoint->temptype))
+  if (! ensure_not_null((void *) tpoint) ||
+      ! ensure_not_null((void *) result) ||
+      ! ensure_tgeo_type(tpoint->temptype) ||
+      (meas && ! ensure_tnumber_type(meas->temptype)))
     return false;
 
   Temporal *sync1, *sync2;
   if (meas)
   {
-    if (! ensure_tnumber_type(meas->temptype))
-      return false;
     /* Return false if the temporal values do not intersect in time
      * The operation is synchronization without adding crossings */
     if (! intersection_temporal_temporal(tpoint, meas, SYNCHRONIZE_NOCROSS,
@@ -522,7 +522,7 @@ tpoint_to_geo_meas(const Temporal *tpoint, const Temporal *meas,
     *result = tpointinst_to_geo_meas((TInstant *) sync1, (TInstant *) sync2);
   else if (sync1->subtype == TSEQUENCE)
   {
-    if (MEOS_FLAGS_GET_DISCRETE(sync1->flags))
+    if (MEOS_FLAGS_DISCRETE_INTERP(sync1->flags))
       *result = tpointseq_disc_to_geo_meas((TSequence *) sync1,
         (TSequence *) sync2);
     else
@@ -781,14 +781,14 @@ Temporal *
 geo_to_tpoint(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_non_empty(gs) ||
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
       ! ensure_has_M_gs(gs))
     return NULL;
 
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  Temporal *result = NULL; /* Make compiler quiet */
+  Temporal *result = NULL;
   if (geom->type == POINTTYPE)
     result = (Temporal *) geo_to_tpointinst(geom);
   else if (geom->type == MULTIPOINTTYPE)
@@ -893,7 +893,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_min_dist((TSequence *) temp, dist);
@@ -991,7 +991,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_min_tdelta((TSequence *) temp,
@@ -1321,12 +1321,13 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype))
+      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_max_dist((TSequence *) temp, dist,
@@ -1372,7 +1373,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   uint32_t i;
   double d;
 
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
   /* Do not try to simplify really short things */
   if (seq->count < 3)
@@ -1472,19 +1473,20 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype))
+      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist,
       syncdist, 2);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_simplify_dp((TSequenceSet *) temp,
-      dist, syncdist, 2);
+    result = (Temporal *) tsequenceset_simplify_dp((TSequenceSet *) temp, dist,
+      syncdist, 2);
   return result;
 }
 
@@ -2072,7 +2074,8 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) bounds) ||
-      ! ensure_not_null((void *) gsarr) || ! ensure_not_null((void *) timesarr) ||
+      ! ensure_not_null((void *) gsarr) ||
+      ! ensure_not_null((void *) timesarr) ||
       ! ensure_not_null((void *) count) || ! ensure_tgeo_type(temp->temptype))
     return false;
 

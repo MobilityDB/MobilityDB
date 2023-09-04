@@ -99,7 +99,7 @@ tpoint_as_text(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
 
   char *result;
@@ -123,7 +123,8 @@ char *
 tpoint_as_ewkt(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_non_negative(maxdd))
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_not_negative(maxdd))
     return NULL;
 
   int srid = tpoint_srid(temp);

@@ -379,7 +379,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
   TSequence **allseqs;
 
   /* Step interpolation */
-  if (! MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (! MEOS_FLAGS_LINEAR_INTERP(ss->flags))
   {
     allseqs = palloc(sizeof(TSequence *) * ss->count);
     for (int i = 0; i < ss->count; i++)
@@ -414,8 +414,6 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] restr True if the atValue function is applied to the result
  * @param[in] atvalue Value to be used for the atValue function
- * @pre The geometry is NOT empty. This should be ensured by the calling
- * function
  * @note 3D is not supported because there is no 3D intersection function
  * provided by PostGIS
  */
@@ -423,12 +421,10 @@ Temporal *
 tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   bool restr, bool atvalue)
 {
-  assert(temp); assert(gs);
-  if (gserialized_is_empty(gs))
-    return NULL;
   /* Ensure validity of the arguments */
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags)) 
+    return NULL;
 
   /* Bounding box test */
   STBox box1, box2;
@@ -457,7 +453,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
     result = (Temporal *) tinterrel_tpointinst_geom((TInstant *) temp,
       PointerGetDatum(gs), tinter, func);
   else if (temp->subtype == TSEQUENCE)
-    result = ! MEOS_FLAGS_GET_LINEAR(temp->flags) ?
+    result = ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
       (Temporal *) tinterrel_tpointseq_discstep_geom((TSequence *) temp,
         PointerGetDatum(gs), tinter, func) :
       (Temporal *) tinterrel_tpointseq_cont_geom((TSequence *) temp,
@@ -486,10 +482,6 @@ Temporal *
 tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return NULL;
   return tinterrel_tpoint_geo(temp, gs, TDISJOINT, restr, atvalue);
 }
 
@@ -503,10 +495,6 @@ Temporal *
 tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return NULL;
   return tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr, atvalue);
 }
 #endif /* MEOS */
@@ -837,8 +825,8 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
   }
 
   int nseqs = 0;
-  bool linear1 = MEOS_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MEOS_FLAGS_GET_LINEAR(seq2->flags);
+  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
+  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
   Datum sv1 = tinstant_value(start1);
   Datum sv2 = tinstant_value(start2);
@@ -978,7 +966,7 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
   }
 
   int nseqs = 0;
-  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   TimestampTz lower = start->t;
   bool lower_inc = seq->period.lower_inc;
@@ -1097,12 +1085,10 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags))
     return NULL;
 
-  if (gserialized_is_empty(gs))
-    return NULL;
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr,
     atvalue);
   GSERIALIZED *gsbound = gserialized_boundary(gs);
@@ -1145,9 +1131,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_has_not_Z(temp->flags) || ! ensure_has_not_Z_gs(gs))
     return NULL;
 
@@ -1186,10 +1170,9 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool restr, bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_point_type(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)))
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
   datum_func3 func =
@@ -1206,7 +1189,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   }
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MEOS_FLAGS_GET_LINEAR(temp->flags))
+    if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
       result = (Temporal *) tdwithin_tpointseq_point((TSequence *) temp,
           PointerGetDatum(gs), Float8GetDatum(dist), func);
     else
@@ -1323,10 +1306,8 @@ tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   double dist, bool restr, bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tgeo_type(temp1->temptype) ||
-      ! ensure_tgeo_type(temp2->temptype) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)))
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
   Temporal *sync1, *sync2;

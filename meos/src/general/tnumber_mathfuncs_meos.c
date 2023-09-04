@@ -121,6 +121,7 @@ add_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_tnumber_type(temp1->temptype) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
   return arithop_tnumber_tnumber(temp1, temp2, ADD, &datum_add, NULL);
@@ -204,6 +205,7 @@ sub_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_tnumber_type(temp1->temptype) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
   return arithop_tnumber_tnumber(temp1, temp2, SUB, &datum_sub, NULL);
@@ -287,6 +289,7 @@ mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_tnumber_type(temp1->temptype) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
   return arithop_tnumber_tnumber(temp1, temp2, MULT, &datum_mult,
@@ -371,6 +374,7 @@ div_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_tnumber_type(temp1->temptype) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
   return arithop_tnumber_tnumber(temp1, temp2, DIV, &datum_div,

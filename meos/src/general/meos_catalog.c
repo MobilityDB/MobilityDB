@@ -371,6 +371,7 @@ basetype_varlength(meosType type)
 
 /**
  * @brief Return the length of a base type
+ * @return On error return SHRT_MAX
  */
 int16
 basetype_length(meosType type)
@@ -394,7 +395,7 @@ basetype_length(meosType type)
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "unknown base type: %d", type);
-  return SHRT_MAX; /* make compiler quiet */
+  return SHRT_MAX;
 }
 
 #ifdef DEBUG_BUILD
@@ -484,6 +485,17 @@ set_type(meosType type)
  */
 bool
 numset_type(meosType type)
+{
+  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Ensure that the type is a number set type
+ */
+bool
+ensure_numset_type(meosType type)
 {
   if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET)
     return true;
@@ -969,7 +981,8 @@ ensure_tgeo_type(meosType type)
 }
 
 /**
- * @brief Ensure that a temporal value is a temporal point type
+ * @brief Ensure that a temporal value is a temporal number or a temporal point
+ * type
  */
 bool
 ensure_tnumber_tgeo_type(meosType type)

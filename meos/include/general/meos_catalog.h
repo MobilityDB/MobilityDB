@@ -216,6 +216,7 @@ extern bool set_basetype(meosType basetype);
 
 extern bool set_type(meosType type);
 extern bool numset_type(meosType type);
+extern bool ensure_numset_type(meosType type);
 extern bool timeset_type(meosType type);
 extern bool set_spantype(meosType type);
 extern bool ensure_set_spantype(meosType type);

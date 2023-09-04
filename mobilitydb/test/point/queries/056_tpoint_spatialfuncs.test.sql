@@ -32,15 +32,17 @@
 
 SELECT srid(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
 SELECT srid(stbox 'SRID=4326;STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+/* Errors */
 SELECT srid(stbox 'STBOX T([2000-01-01,2000-01-02])');
 
 SELECT setSRID(stbox 'STBOX X((1,1),(2,2))', 5676);
 SELECT setSRID(stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676);
 SELECT setSRID(stbox 'STBOX Z((1,1,1),(2,2,2))', 5676);
 SELECT setSRID(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 5676);
-SELECT setSRID(stbox 'STBOX T([2000-01-01,2000-01-02])', 5676);
 SELECT setSRID(stbox 'GEODSTBOX Z((1,1,1),(2,2,2))', 4326);
 SELECT setSRID(stbox 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 4326);
+/* Errors */
+SELECT setSRID(stbox 'STBOX T([2000-01-01,2000-01-02])', 5676);
 SELECT setSRID(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])', 4326);
 
 -- Tests independent of PROJ version

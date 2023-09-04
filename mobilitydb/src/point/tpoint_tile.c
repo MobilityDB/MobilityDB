@@ -97,7 +97,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
       sorigin = PG_GETARG_GSERIALIZED_P(5);
       torigin = PG_GETARG_TIMESTAMPTZ(6);
     }
-    ensure_non_empty(sorigin);
+    ensure_not_empty(sorigin);
     ensure_point_type(sorigin);
     /* Since we pass by default Point(0 0 0) as origin independently of the input
      * STBox, we test the same spatial dimensionality only for STBox Z */
@@ -181,7 +181,7 @@ Datum
 Stbox_tile(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
-  ensure_non_empty(point);
+  ensure_not_empty(point);
   ensure_point_type(point);
   TimestampTz t = 0; /* make compiler quiet */
   double xsize, ysize, zsize;
@@ -214,7 +214,7 @@ Stbox_tile(PG_FUNCTION_ARGS)
   ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
   ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
   ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
-  ensure_non_empty(sorigin);
+  ensure_not_empty(sorigin);
   ensure_point_type(sorigin);
   int32 srid = gserialized_get_srid(point);
   int32 gs_srid = gserialized_get_srid(sorigin);
@@ -316,7 +316,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
     ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
     ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
-    ensure_non_empty(sorigin);
+    ensure_not_empty(sorigin);
     ensure_point_type(sorigin);
     ensure_same_geodetic(temp->flags, sorigin->gflags);
     int32 srid = bounds.srid;

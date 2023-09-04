@@ -386,6 +386,23 @@ ensure_same_srid(int32_t srid1, int32_t srid2)
  * SRID
  */
 bool
+ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
+{
+  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) && 
+      box1->srid != box2->srid)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed SRID");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that a temporal point and a geometry/geography have the same
+ * SRID
+ */
+bool
 ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 {
   if (box->srid != gserialized_get_srid(gs))
@@ -479,7 +496,7 @@ ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @brief Return true if a temporal point and a geometry/geography have the 
+ * @brief Return true if a temporal point and a geometry/geography have the
  * same dimensionality
  */
 bool
@@ -634,7 +651,7 @@ ensure_point_type(const GSERIALIZED *gs)
  * @brief Ensure that the geometry/geography is not empty
  */
 bool
-ensure_non_empty(const GSERIALIZED *gs)
+ensure_not_empty(const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
   {
@@ -642,6 +659,80 @@ ensure_non_empty(const GSERIALIZED *gs)
       "Only non-empty geometries accepted");
     return false;
   }
+  return true;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Ensure the validity of a spatiotemporal box and a geometry 
+ */
+bool 
+ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs)
+{
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) gs) ||
+      gserialized_is_empty(gs) || ! ensure_has_X_stbox(box) ||
+      ! ensure_same_srid_stbox_gs(box, gs))
+    return false;
+  return true;
+}
+ 
+/**
+ * @brief Ensure the validity of a temporal point and a geometry 
+ * @note The geometry can be empty since some functions such atGeometry or
+ * minusGeometry return different result on empty geometries.
+ */
+bool 
+ensure_valid_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_same_temporal_basetype(temp, geotype))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a spatiotemporal boxes
+ */
+bool 
+ensure_valid_spatial_stbox_stbox(const STBox *box1, const STBox *box2)
+{
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! ensure_has_X_stbox(box1) || ! ensure_has_X_stbox(box2) ||
+      ! ensure_same_geodetic(box1->flags, box2->flags) ||
+      ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2)))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a temporal point and a spatial box 
+ */
+bool 
+ensure_valid_tpoint_box(const Temporal *temp, const STBox *box)
+{
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
+      ! ensure_tgeo_type(temp->temptype) || ! ensure_has_X_stbox(box) ||
+      ! ensure_same_geodetic(temp->flags, box->flags) ||
+      ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box)))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of two temporal points
+ */
+bool
+ensure_valid_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_tgeo_type(temp1->temptype) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)))
+    return false;
   return true;
 }
 
@@ -774,7 +865,7 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
     return false;
 
   /* Step interpolation or instantaneous sequence */
-  if (! MEOS_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
+  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
     {
@@ -850,13 +941,8 @@ bool
 tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs))
-    return false;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_temporal_basetype(temp, geotype) ||
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_point_type(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return false;
 
@@ -929,7 +1015,7 @@ tpointseqset_always_eq(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal point is always equal to a point.
  * @see tpointinst_always_eq
  * @see tpointseq_always_eq
@@ -940,13 +1026,8 @@ bool
 tpoint_always_eq(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype) || gserialized_is_empty(gs))
-    return false;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_temporal_basetype(temp, geotype) ||
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_point_type(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return false;
 
@@ -1038,7 +1119,7 @@ closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
   }
 
   /*
-   * Function closest_point2d_on_segment_ratio above explains how r is computed
+   * Function #closest_point2d_on_segment_ratio explains how r is computed
    */
   long double r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +
       (p->z-A->z) * (B->z-A->z) ) /
@@ -1713,7 +1794,7 @@ tpointseq_trajectory(const TSequence *seq)
   if (seq->count == 1)
     return DatumGetGserializedP(tinstant_value_copy(TSEQUENCE_INST_N(seq, 0)));
 
-  GSERIALIZED *result = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
+  GSERIALIZED *result = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
     tpointseq_disc_trajectory(seq) :  tpointseq_cont_trajectory(seq);
   return result;
 }
@@ -1796,7 +1877,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
     return tpointseq_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
 
   int32 srid = tpointseqset_srid(ss);
-  bool linear = MEOS_FLAGS_GET_LINEAR(ss->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
@@ -1923,6 +2004,7 @@ tpointseqset_srid(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the SRID of a temporal point.
+ * @return On error return SRID_INVALID
  * @sqlfunc SRID()
  */
 int
@@ -2021,6 +2103,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
 /**
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the SRID of a temporal point.
+ * @return On error return NULL
  * @see tpointinst_set_srid
  * @see tpointseq_set_srid
  * @see tpointseqset_set_srid
@@ -2088,24 +2171,24 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   /* Short circuit functions gserialized_geog_from_geom and
      gserialized_geom_from_geog since we know it is a point */
-  if ((int) geom->srid <= 0)
-    geom->srid = SRID_DEFAULT;
   if (oper == GEOM_TO_GEOG)
   {
     /* We cannot test the following without access to PROJ */
     // srid_check_latlong(geom->srid);
     /* Coerce the coordinate values into [-180 -90, 180 90] for GEOGRAPHY */
     pt_force_geodetic((LWPOINT *) geom);
+    geom->srid = SRID_DEFAULT;
     lwgeom_set_geodetic(geom, true);
   }
   else
   {
+    geom->srid = 0;
     lwgeom_set_geodetic(geom, false);
   }
-  GSERIALIZED *newgs = geo_serialize(geom);
-  TInstant *result = tinstant_make(PointerGetDatum(newgs),
+  GSERIALIZED *gs1 = geo_serialize(geom);
+  TInstant *result = tinstant_make(PointerGetDatum(gs1),
     (oper == GEOM_TO_GEOG) ? T_TGEOGPOINT : T_TGEOMPOINT, inst->t);
-  pfree(newgs);
+  pfree(gs1);
   return result;
 }
 
@@ -2155,8 +2238,9 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point to a geometry/geography point.
+ * @return On error return NULL
  * @param[in] temp Temporal point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2184,6 +2268,35 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
     result = (Temporal *) tgeompointseqset_tgeogpointseqset(
       (TSequenceSet *) temp, oper);
   return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Convert a temporal geometry point to a temporal geography point.
+ * @sqlop ::
+ */
+Temporal *
+tgeompoint_to_tgeogpoint(const Temporal *temp)
+{
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TGEOMPOINT))
+    return NULL;
+  return tgeompoint_tgeogpoint(temp, GEOM_TO_GEOG);
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Convert a temporal geography point to a temporal geometry point.
+ * @sqlop ::
+ */
+Temporal *
+tgeogpoint_to_tgeompoint(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TGEOGPOINT))
+    return NULL;
+  return tgeompoint_tgeogpoint(temp, GEOG_TO_GEOM);
 }
 
 /*****************************************************************************
@@ -2517,7 +2630,7 @@ datum_round_geo(Datum value, Datum size)
     return datum_round_geometrycollection(gs, size);
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Unsupported geometry type");
-  return Float8GetDatum(0);
+  return PointerGetDatum(NULL);
 }
 
 /**
@@ -2531,7 +2644,7 @@ tpoint_round(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
-      ! ensure_non_negative(maxdd))
+      ! ensure_not_negative(maxdd))
     return NULL;
 
   /* We only need to fill these parameters for tfunc_temporal */
@@ -2606,7 +2719,7 @@ tpointseq_length(const TSequence *seq)
 {
   assert(seq);
   assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   if (seq->count == 1)
     return 0;
 
@@ -2635,7 +2748,7 @@ tpointseqset_length(const TSequenceSet *ss)
 {
   assert(ss);
   assert(tgeo_type(ss->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   double result = 0;
   for (int i = 0; i < ss->count; i++)
     result += tpointseq_length(TSEQUENCESET_SEQ_N(ss, i));
@@ -2645,6 +2758,7 @@ tpointseqset_length(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence (set) point
+ * @return On error return -1.0
  * @sqlfunc length()
  */
 double
@@ -2656,7 +2770,7 @@ tpoint_length(const Temporal *temp)
 
   double result = 0.0;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_length((TSequence *) temp);
@@ -2678,7 +2792,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
   assert(seq);
   assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   const TInstant *inst1;
 
   /* Instantaneous sequence */
@@ -2722,7 +2836,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
 {
   assert(ss);
   assert(tgeo_type(ss->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   double length = 0;
   for (int i = 0; i < ss->count; i++)
@@ -2739,6 +2853,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
+ * @return On error return NULL
  * @sqlfunc cumulativeLength()
  */
 Temporal *
@@ -2750,7 +2865,7 @@ tpoint_cumulative_length(const Temporal *temp)
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     result = temporal_from_base_temp(Float8GetDatum(0.0), T_TFLOAT, temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_cumulative_length((TSequence *) temp, 0);
@@ -2764,6 +2879,7 @@ tpoint_cumulative_length(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the convex hull of a temporal point.
+ * @return On error return NULL
  * @sqlfunc convexHull()
  */
 GSERIALIZED *
@@ -2794,7 +2910,7 @@ tpointseq_speed(const TSequence *seq)
 {
   assert(seq);
   assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -2836,7 +2952,7 @@ tpointseqset_speed(const TSequenceSet *ss)
 {
   assert(ss);
   assert(tgeo_type(ss->temptype));
-  assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
@@ -2852,6 +2968,7 @@ tpointseqset_speed(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the speed of a temporal point
+ * @return On error return NULL
  * @sqlfunc speed()
  */
 Temporal *
@@ -2863,7 +2980,7 @@ tpoint_speed(const Temporal *temp)
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_speed((TSequence *) temp);
@@ -2975,6 +3092,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
+ * @return On error return NULL
  * @sqlfunc twCentroid()
  */
 GSERIALIZED *
@@ -3237,6 +3355,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
+ * @return On error return NULL
  * @sqlfunc azimuth()
  */
 Temporal *
@@ -3248,7 +3367,7 @@ tpoint_azimuth(const Temporal *temp)
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_azimuth((TSequence *) temp);
@@ -3260,7 +3379,7 @@ tpoint_azimuth(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal angular difference of a temporal geometry point.
- * @sqlfunc azimuth()
+ * @sqlfunc angularDifference()
  */
 Temporal *
 tpoint_angular_difference(const Temporal *temp)
@@ -3532,18 +3651,16 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 
 /**
  * @ingroup libmeos_temporal_spatial_accessor
- * @brief Return the temporal bearing between a temporal point and a
- * geometry/geography point.
+ * @brief Return the temporal bearing between a temporal point and a point.
+ * @return On empty geometry or on error return NULL
  * @sqlfunc bearing()
  */
 Temporal *
 bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      gserialized_is_empty(gs) ||
-      ! ensure_tgeo_type(temp->temptype) || ! ensure_point_type(gs) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_point_type(gs) ||
       ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return NULL;
 
@@ -3554,7 +3671,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
   lfinfo.args = true;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = &tpoint_geo_min_bearing_at_timestamp;
@@ -3566,16 +3683,14 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal bearing between two temporal points
+ * @return On error return NULL
  * @sqlfunc bearing()
  */
 Temporal *
 bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tgeo_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags) )
     return NULL;
 
@@ -3588,8 +3703,8 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
   lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
-    MEOS_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
@@ -3642,6 +3757,7 @@ geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 /**
  * @brief Calculate the length of the diagonal of the minimum rotated rectangle
  * of the input GEOS geometry.
+ * @return On error return -1.0
  * @note The computation is always done in 2D
  */
 static double
@@ -3693,7 +3809,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
       default:
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Invalid geometry type for Minimum Rotated Rectangle");
-        return -1;
+        return -1.0;
     }
   }
   return result;

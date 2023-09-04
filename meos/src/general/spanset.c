@@ -57,7 +57,7 @@
  *****************************************************************************/
 
 /**
- * @brief Ensure that a span value is of a span type
+ * @brief Ensure that a spanset value is of a span type
  */
 bool
 ensure_spanset_has_type(const SpanSet *ss, meosType spansettype)
@@ -90,7 +90,7 @@ ensure_same_spanset_type(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Ensure that a span set and a span value have the same span type
  */
 bool
-ensure_same_spanset_spantype(const SpanSet *ss, const Span *s)
+ensure_same_spanset_span_type(const SpanSet *ss, const Span *s)
 {
   if (ss->spantype != s->spantype)
   {
@@ -315,7 +315,7 @@ char *
 floatspanset_out(const SpanSet *ss, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
+  if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
       ! ensure_spanset_has_type(ss, T_FLOATSPANSET))
     return NULL;
   return spanset_out(ss, maxdd);
@@ -341,7 +341,7 @@ periodset_out(const SpanSet *ss)
  ****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Construct a span set from an array of disjoint spans enabling the
  * data structure to expand.
  *
@@ -366,8 +366,10 @@ SpanSet *
 spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
   bool ordered)
 {
-  assert(spans);
-  assert(maxcount >= count);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) spans) || ! ensure_positive(count) ||
+      ! ensure_less_equal(count, maxcount))
+    return NULL;
   /* Test the validity of the spans */
   if (ordered)
   {
@@ -541,7 +543,7 @@ SpanSet *
 set_to_spanset(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
+  if (! ensure_not_null((void *) s) || ! ensure_set_spantype(s->settype))
     return NULL;
 
   Span *spans = palloc(sizeof(Span) * s->count);
@@ -570,6 +572,58 @@ span_to_spanset(const Span *s)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Transition function for set aggregate of values
+ */
+SpanSet *
+spanset_compact(SpanSet *ss)
+{
+  assert(ss);
+  /* Create the final value reusing the array of spans in the span set */
+  SpanSet *result = spanset_make_exp((Span *) &ss->elems, ss->count,
+    ss->count, NORMALIZE, ORDERED_NO);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform an integer span set to a float span set
+ */
+SpanSet *
+intspanset_floatspanset(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_INTSPANSET))
+    return NULL;
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    intspan_set_floatspan(&ss->elems[i], &spans[i]);
+  SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a float span set to an integer span set
+ */
+SpanSet *
+floatspanset_intspanset(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_FLOATSPANSET))
+    return NULL;
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    floatspan_set_intspan(&ss->elems[i], &spans[i]);
+  SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
+  return result;
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_transf
@@ -627,9 +681,8 @@ SpanSet *
 floatspanset_round(const SpanSet *ss, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_has_type(ss, T_FLOATSPANSET) ||
-      ! ensure_non_negative(maxdd))
+  if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
+      ! ensure_spanset_has_type(ss, T_FLOATSPANSET))
     return NULL;
 
   Span *spans = palloc(sizeof(Span) * ss->count);
@@ -680,6 +733,7 @@ spanset_span(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span set
+ * @return On error return INT_MAX
  * @sqlfunc lower()
  */
 int
@@ -695,6 +749,7 @@ intspanset_lower(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span set
+ * @return On error return INT_MAX
  * @sqlfunc lower()
  */
 int
@@ -710,6 +765,7 @@ bigintspanset_lower(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a float span set
+ * @return On error return DBL_MAX
  * @sqlfunc lower()
  */
 double
@@ -725,6 +781,7 @@ floatspanset_lower(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a period set
+ * @return On error return DT_NOEND
  * @sqlfunc lower()
  */
 TimestampTz
@@ -740,6 +797,7 @@ periodset_lower(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span set
+ * @return On error return INT_MAX
  * @sqlfunc upper()
  */
 int
@@ -755,6 +813,7 @@ intspanset_upper(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span set
+ * @return On error return INT_MAX
  * @sqlfunc upper()
  */
 int
@@ -770,6 +829,7 @@ bigintspanset_upper(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a float span set
+ * @return On error return DBL_MAX
  * @sqlfunc upper()
  */
 double
@@ -785,6 +845,7 @@ floatspanset_upper(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a period
+ * @return On error return DT_NOEND
  * @sqlfunc upper()
  */
 TimestampTz
@@ -829,6 +890,7 @@ spanset_upper_inc(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the width of a span set as a double.
+ * @return On error return -1.0
  * @sqlfunc width()
  */
 double
@@ -879,6 +941,7 @@ periodset_duration(const SpanSet *ss, bool boundspan)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of timestamps of a period set
+ * @return On error return -1
  * @sqlfunc numTimestamps()
  */
 int
@@ -920,6 +983,7 @@ periodset_num_timestamps(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start timestamp of a period set.
+ * @return On error return DT_NOEND
  * @sqlfunc startTimestamp()
  */
 TimestampTz
@@ -937,6 +1001,7 @@ periodset_start_timestamp(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end timestamp of a period set.
+ * @return On error return DT_NOEND
  * @sqlfunc endTimestamp()
  */
 TimestampTz
@@ -1013,6 +1078,7 @@ periodset_timestamp_n(const SpanSet *ss, int n, TimestampTz *result)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of timestamps of a period set
+ * @return On error return NULL
  * @sqlfunc timestamps()
  */
 TimestampTz *
@@ -1044,6 +1110,7 @@ periodset_timestamps(const SpanSet *ss, int *count)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of spans of a span set
+ * @return On error return -1
  * @sqlfunc numSpans()
  */
 int
@@ -1058,6 +1125,7 @@ spanset_num_spans(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start span of a span set
+ * @return On error return NULL
  * @sqlfunc startSpan()
  */
 Span *
@@ -1074,6 +1142,7 @@ spanset_start_span(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end span of a span set
+ * @return On error return NULL
  * @sqlfunc endSpan()
  */
 Span *
@@ -1108,6 +1177,7 @@ spanset_span_n(const SpanSet *ss, int i)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the spans of a span set.
+ * @return On error return NULL
  * @sqlfunc spans()
  */
 const Span **
@@ -1171,6 +1241,7 @@ spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span set
  * is less than, equal, or greater than the second one.
+ * @return On error return INT_MAX
  * @note Function used for B-tree comparison
  * @sqlfunc spanset_cmp()
  */
@@ -1262,6 +1333,7 @@ spanset_gt(const SpanSet *ss1, const SpanSet *ss2)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash value of a span set.
+ * @return On error return INT_MAX
  * @sqlfunc spanset_hash()
  */
 uint32
@@ -1284,6 +1356,7 @@ spanset_hash(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash value of a span set using a seed
+ * @return On error return INT_MAX
  * @sqlfunc spanset_hash_extended()
  */
 uint64

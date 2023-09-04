@@ -170,13 +170,15 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
  * @ingroup libmeos_temporal_similarity
  * @brief Compute the Frechet distance between two temporal values.
  * @param[in] temp1,temp2 Temporal values
+ * @return On error return DBL_MAX
  * @sqlfunc frechetDistance()
  */
 double
 temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
     return DBL_MAX;
   return temporal_similarity(temp1, temp2, FRECHET);
 }
@@ -185,13 +187,15 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_similarity
  * @brief Compute the Dynamic Time Warp distance between two temporal values.
  * @param[in] temp1,temp2 Temporal values
+ * @result On error return DBL_MAX
  * @sqlfunc dynamicTimeWarp()
  */
 double
 temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2))
     return DBL_MAX;
   return temporal_similarity(temp1, temp2, DYNTIMEWARP);
 }
@@ -426,7 +430,8 @@ temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_not_null((void *) count))
+      ! ensure_not_null((void *) count) ||
+      ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
   return temporal_similarity_path(temp1, temp2, count, FRECHET);
 }
@@ -444,7 +449,8 @@ temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_not_null((void *) count))
+      ! ensure_not_null((void *) count) ||
+      ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
   return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);
 }
@@ -507,6 +513,7 @@ tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
  * @ingroup libmeos_temporal_similarity
  * @brief Compute the Hausdorf distance between two temporal values.
  * @param[in] temp1,temp2 Temporal values
+ * @return On error return -1.0
  */
 double
 temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)

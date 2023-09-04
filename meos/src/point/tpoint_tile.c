@@ -568,12 +568,12 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
 STBox *
 stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
-  int **no_cells)
+  int **ncells)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) bounds) ||
-      ! ensure_not_null((void *) no_cells) || ! ensure_has_X_stbox(bounds) ||
+  if (! ensure_not_null((void *) bounds) || ! ensure_has_X_stbox(bounds) ||
       ! ensure_not_geodetic(bounds->flags) ||
+      ! ensure_not_null((void *) ncells) ||
       ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
       ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
       (MEOS_FLAGS_GET_Z(bounds->flags) &&
@@ -591,7 +591,7 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   /* Since we pass by default Point(0 0 0) as origin independently of the input
    * STBox, we test the same spatial dimensionality only for STBox Z */
   if (! ensure_not_null((void *) bounds) ||
-      ! ensure_non_empty(sorigin) || ! ensure_point_type(sorigin) ||
+      ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin) ||
       (MEOS_FLAGS_GET_Z(bounds->flags) &&
         ! ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin)))
     return NULL;
@@ -645,7 +645,7 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
       &result[i]);
     stbox_tile_state_next(state);
   }
-  *no_cells = cellcount;
+  *ncells = cellcount;
   return result;
 }
 #endif /* MEOS */
@@ -818,7 +818,7 @@ static void
 tpointseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
-  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
     tcontseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
   else
     tdiscseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);

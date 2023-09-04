@@ -252,7 +252,7 @@ tpointinst_parse(const char **str, meosType temptype, bool end, bool make,
   /* The next instruction will throw an exception if it fails */
   Datum geo = temporal_basetype_parse(str, basetype);
   GSERIALIZED *gs = DatumGetGserializedP(geo);
-  if (! ensure_point_type(gs) || ! ensure_non_empty(gs) ||
+  if (! ensure_point_type(gs) || ! ensure_not_empty(gs) ||
       ! ensure_has_not_M_gs(gs))
   {
     pfree(gs);

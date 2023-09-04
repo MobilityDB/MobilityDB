@@ -111,7 +111,9 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
     (SkipList *) PG_GETARG_POINTER(1);
 
   store_fcinfo(fcinfo);
-  geoaggstate_check_state(state1, state2);
+  if (! ensure_geoaggstate_state(state1, state2))
+    return PointerGetDatum(NULL);
+  
   struct GeoAggregateState *extra = NULL;
   if (state1 && state1->extra)
     extra = state1->extra;

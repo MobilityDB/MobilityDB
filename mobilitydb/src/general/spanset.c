@@ -143,7 +143,7 @@ Datum
 Spanset_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   int count;
   Span *spans = spanarr_extract(array, &count);
   SpanSet *result = spanset_make_free(spans, count, NORMALIZE);

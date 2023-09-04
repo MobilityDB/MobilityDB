@@ -222,6 +222,7 @@ TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index)
 #endif /* DEBUG_BUILD */
 
 /**
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence set from an array of temporal sequences
  *
  * For example, the memory structure of a temporal sequence set with two
@@ -248,10 +249,10 @@ TSequenceSet *
 tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
   bool normalize)
 {
-  assert(count > 0);
-  assert(maxcount >= count);
+  assert(sequences); assert(count > 0); assert(count <= maxcount);
   /* Ensure validity of the arguments */
-  ensure_valid_tseqarr(sequences, count);
+  if (! ensure_valid_tseqarr(sequences, count))
+    return NULL;
 
   /* Normalize the array of sequences */
   TSequence **normseqs = (TSequence **) sequences;
@@ -585,21 +586,21 @@ tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs)
  * @brief Construct a temporal sequence set from a base value and a period set.
  * @param[in] value Base value
  * @param[in] temptype Temporal type
- * @param[in] ps Period set
+ * @param[in] ss Period set
  * @param[in] interp Interpolation
  */
 TSequenceSet *
 tsequenceset_from_base_periodset(Datum value, meosType temptype,
-  const SpanSet *ps, interpType interp)
+  const SpanSet *ss, interpType interp)
 {
-  assert(ps);
-  TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
-  for (int i = 0; i < ps->count; i++)
+  assert(ss);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
   {
-    const Span *p = spanset_sp_n(ps, i);
-    sequences[i] = tsequence_from_base_period(value, temptype, p, interp);
+    const Span *s = spanset_sp_n(ss, i);
+    sequences[i] = tsequence_from_base_period(value, temptype, s, interp);
   }
-  return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 
 #if MEOS
@@ -609,12 +610,13 @@ tsequenceset_from_base_periodset(Datum value, meosType temptype,
  * period set.
  */
 TSequenceSet *
-tboolseqset_from_base_periodset(bool b, const SpanSet *ps)
+tboolseqset_from_base_periodset(bool b, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ps))
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
-  return tsequenceset_from_base_periodset(BoolGetDatum(b), T_TBOOL, ps, STEP);
+  return tsequenceset_from_base_periodset(BoolGetDatum(b), T_TBOOL, ss, STEP);
 }
 
 /**
@@ -623,12 +625,13 @@ tboolseqset_from_base_periodset(bool b, const SpanSet *ps)
  * period set.
  */
 TSequenceSet *
-tintseqset_from_base_periodset(int i, const SpanSet *ps)
+tintseqset_from_base_periodset(int i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ps))
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
-  return tsequenceset_from_base_periodset(Int32GetDatum(i), T_TINT, ps, STEP);
+  return tsequenceset_from_base_periodset(Int32GetDatum(i), T_TINT, ss, STEP);
 }
 
 /**
@@ -636,12 +639,13 @@ tintseqset_from_base_periodset(int i, const SpanSet *ps)
  * @brief Construct a temporal float sequence set from a float and a period set.
  */
 TSequenceSet *
-tfloatseqset_from_base_periodset(double d, const SpanSet *ps, interpType interp)
+tfloatseqset_from_base_periodset(double d, const SpanSet *ss, interpType interp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ps))
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
-  return tsequenceset_from_base_periodset(Float8GetDatum(d), T_TFLOAT, ps,
+  return tsequenceset_from_base_periodset(Float8GetDatum(d), T_TFLOAT, ss,
     interp);
 }
 
@@ -650,12 +654,13 @@ tfloatseqset_from_base_periodset(double d, const SpanSet *ps, interpType interp)
  * @brief Construct a temporal text sequence set from a text and a period set.
  */
 TSequenceSet *
-ttextseqset_from_base_periodset(const text *txt, const SpanSet *ps)
+ttextseqset_from_base_periodset(const text *txt, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) txt) || ! ensure_not_null((void *) ps))
+  if (! ensure_not_null((void *) txt) || ! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
-  return tsequenceset_from_base_periodset(PointerGetDatum(txt), T_TTEXT, ps,
+  return tsequenceset_from_base_periodset(PointerGetDatum(txt), T_TTEXT, ss,
     STEP);
 }
 
@@ -665,16 +670,17 @@ ttextseqset_from_base_periodset(const text *txt, const SpanSet *ps)
  * period set.
  */
 TSequenceSet *
-tpointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ps,
+tpointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ss,
   interpType interp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_null((void *) ps))
+  if (! ensure_not_null((void *) gs) || ensure_not_empty(gs) ||
+      ! ensure_point_type(gs) || ! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
   meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
-  return tsequenceset_from_base_periodset(PointerGetDatum(gs), temptype, ps,
+  return tsequenceset_from_base_periodset(PointerGetDatum(gs), temptype, ss,
     interp);
 }
 #endif /* MEOS */
@@ -727,7 +733,7 @@ tnumberseqset_valuespans(const TSequenceSet *ss)
   meosType basetype = temptype_basetype(ss->temptype);
 
   /* Temporal sequence number with discrete or step interpolation */
-  if (! MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (! MEOS_FLAGS_LINEAR_INTERP(ss->flags))
   {
     Datum *values = tsequenceset_values(ss, &count);
     spans = palloc(sizeof(Span) * count);
@@ -1300,7 +1306,6 @@ tsequenceset_compact(const TSequenceSet *ss)
 void
 tsequenceset_restart(TSequenceSet *ss, int count)
 {
-  /* Ensure validity of arguments */
   assert(ss);
   assert(count > 0 && count < ss->count);
   /* Singleton sequence set */
@@ -1381,12 +1386,45 @@ tsequence_to_tsequenceset(const TSequence *seq)
   assert(seq);
   /* For discrete sequences, each composing instant will be transformed in
    * an instantaneous sequence in the resulting sequence set */
-  if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
   {
     interpType interp = MEOS_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
     return tdiscseq_to_tsequenceset(seq, interp);
   }
   return tsequenceset_make(&seq, 1, NORMALIZE_NO);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal sequence transformed into a temporal sequence set.
+ * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
+ */
+TSequenceSet *
+tsequence_to_tsequenceset_interp(const TSequence *seq, interpType interp)
+{
+  assert(seq);
+  /* For discrete sequences, each composing instant will be transformed in
+   * an instantaneous sequence in the resulting sequence set */
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+    return tdiscseq_to_tsequenceset(seq, interp);
+
+  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp == interp1)
+    return tsequenceset_make(&seq, 1, NORMALIZE_NO);
+  else
+  {
+    Temporal *temp1 = tsequence_set_interp(seq, interp);
+    if (! temp1)
+      return NULL;
+    if (temp1->subtype == TSEQUENCESET)
+      return (TSequenceSet *) temp1;
+    else
+    {
+      TSequenceSet *result =  tsequence_to_tsequenceset((TSequence *) temp1);
+      pfree(temp1);
+      return result;
+    }
+  }
 }
 
 /**
@@ -1452,7 +1490,7 @@ tsequenceset_to_step(const TSequenceSet *ss)
 {
   assert(ss);
   /* If the sequence set has step interpolation return a copy */
-  if (! MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (! MEOS_FLAGS_LINEAR_INTERP(ss->flags))
     return tsequenceset_copy(ss);
 
   /* Test whether it is possible to set the interpolation to step */
@@ -1499,7 +1537,7 @@ tsequenceset_to_linear(const TSequenceSet *ss)
 {
   assert(ss);
   /* If the sequence set has linear interpolation return a copy */
-  if (MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
     return tsequenceset_copy(ss);
 
   /* Singleton sequence set */
@@ -1738,7 +1776,7 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
   /* General case */
   int count = ss->totalcount;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(ss->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int nseqs = 0;
@@ -1823,7 +1861,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *s,
   /* General case */
   int count = ss->totalcount;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(ss->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int nseqs = 0;
@@ -1859,7 +1897,7 @@ tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *sps,
   /* General case */
   int maxcount = ss->totalcount * sps->count;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(ss->flags))
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
   int nseqs = 0;
@@ -2820,7 +2858,7 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
   size_t outlen = 0;
   char prefix[20];
   if (MEOS_FLAGS_GET_CONTINUOUS(ss->flags) &&
-      ! MEOS_FLAGS_GET_LINEAR(ss->flags))
+      ! MEOS_FLAGS_LINEAR_INTERP(ss->flags))
     sprintf(prefix, "Interp=Step;");
   else
     prefix[0] = '\0';

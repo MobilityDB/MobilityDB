@@ -475,7 +475,7 @@ Datum
 create_trip(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   if (ARR_NDIM(array) > 1)
     ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
       errmsg("1-dimensional array needed")));

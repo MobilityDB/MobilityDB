@@ -42,7 +42,6 @@
 #include "general/pg_types.h"
 #include "general/doublen.h"
 #include "general/temporal_aggfuncs.h"
-#include "general/time_aggfuncs.h"
 #include "general/tsequence.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h"
@@ -228,7 +227,7 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
   {
     TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
-    *count = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
+    *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
       tdiscseq_extend(seq, interval, result) :
       tcontseq_extend(seq, interval, min, result);
   }
@@ -371,7 +370,7 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interval,
   {
     TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
-    *count = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    *count = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
       tdiscseq_transform_wcount(seq, interval, result) :
       tcontseq_transform_wcount(seq, interval, result);
   }
@@ -531,7 +530,7 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
   {
     TSequence *seq = (TSequence *) temp;
     result = palloc(sizeof(TSequence *) * seq->count);
-    *count = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
+    *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
       tnumberdiscseq_transform_wavg(seq, interval, result) :
       tintseq_transform_wavg(seq, interval, result);
   }
@@ -592,7 +591,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool min,
   INPUT_AGG_TRANS_STATE_ARG(fcinfo, state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
-  if ( temp->subtype != TINSTANT && ! MEOS_FLAGS_GET_DISCRETE(temp->flags) &&
+  if ( temp->subtype != TINSTANT && ! MEOS_FLAGS_DISCRETE_INTERP(temp->flags) &&
       temp->temptype == T_TFLOAT && func == &datum_sum_float8)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Operation not supported for temporal continuous float sequences")));

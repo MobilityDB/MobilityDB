@@ -43,7 +43,7 @@ SELECT asText(tcentroid(temp)) FROM (VALUES
   (tgeompoint 'Point(0 0)@2000-01-01'),
   (tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'),
   ('Point(2 2 2)@2000-01-01')) t(temp);
-ERROR:  Cannot aggregate temporal values of different type
+ERROR:  Cannot aggregate temporal values of different subtype
 SELECT asText(tcentroid(temp)) FROM (VALUES
   (tgeompoint '[Point(0 0)@2000-01-01]'),
   (tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'),

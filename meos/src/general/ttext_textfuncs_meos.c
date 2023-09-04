@@ -89,6 +89,7 @@ textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_temporal_has_type(temp1, T_TTEXT) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
 

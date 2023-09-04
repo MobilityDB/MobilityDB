@@ -206,7 +206,7 @@ extern void temporal_write(const Temporal *temp, StringInfo buf);
 
 /* Parameter tests */
 
-extern bool ensure_non_empty_array(ArrayType *array);
+extern bool ensure_not_empty_array(ArrayType *array);
 
 /*****************************************************************************/
 

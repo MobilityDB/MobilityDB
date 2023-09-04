@@ -1107,7 +1107,7 @@ gserialized_convex_hull(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "convexhull() failed to convert GEOS geometry to LWGEOM");
-    return NULL; /* never get here */
+    return NULL;
   }
 
   /* Copy input bbox if any */
@@ -1126,7 +1126,7 @@ gserialized_convex_hull(const GSERIALIZED *gs)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "GEOS convexhull() threw an error !");
-    return NULL; /* never get here */
+    return NULL;
   }
 
   return result;
@@ -1138,6 +1138,7 @@ gserialized_convex_hull(const GSERIALIZED *gs)
 
 /**
  * @brief Return double length in meters
+ * @return On error return DBL_MAX
  * @note PostGIS function: geography_length(PG_FUNCTION_ARGS)
  */
 double
@@ -1171,6 +1172,7 @@ gserialized_geog_length(GSERIALIZED *gs, bool use_spheroid)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "lwgeom_length_spheroid returned length < 0.0");
+    return DBL_MAX;
   }
 
   /* Clean up */
@@ -1545,6 +1547,7 @@ gserialized_from_text(char *wkt, int srid, bool geography)
   {
     meos_error(WARNING, MEOS_ERR_TEXT_INPUT,
       "OGC WKT expected, EWKT provided - use GeomFromEWKT() for this");
+    return NULL;
   }
 
   /* read user-requested SRID if any */
@@ -1877,6 +1880,7 @@ geography_valid_type(uint8_t type)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Geography type does not support %s", lwtype_name(type));
+    return;
   }
 }
 
@@ -1937,8 +1941,7 @@ pgis_geography_in(char *str, int32 geog_typmod)
   /* Empty string. */
   if ( str[0] == '\0' )
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "parse error - invalid geography");
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, "parse error - invalid geography");
     return NULL;
   }
 
@@ -1951,8 +1954,7 @@ pgis_geography_in(char *str, int32 geog_typmod)
     /* Error out if something went sideways */
     if ( ! lwgeom )
     {
-      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "parse error - invalid geometry");
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT, "parse error - invalid geometry");
       return NULL;
     }
   }
@@ -2037,8 +2039,8 @@ gserialized_geog_from_geom(GSERIALIZED *geom)
   if ( lwgeom_force_geodetic(lwgeom) == LW_TRUE )
   {
     meos_error(NOTICE, MEOS_ERR_TEXT_INPUT,
-      "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY"
-    );
+      "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY");
+    return NULL;
   }
 
   /* force recalculate of box by dropping */
@@ -2291,6 +2293,10 @@ gserialized_line_substring(GSERIALIZED *geom, double from, double to)
  * Functions adapted from lwgeom_lrs.c
  *****************************************************************************/
 
+/**
+ * @brief Locate a point into a line
+ * @return On error return -1.0
+ */
 double
 gserialized_line_locate_point(GSERIALIZED *gs1, GSERIALIZED *gs2)
 {
@@ -2377,8 +2383,9 @@ gserialized_pointn_linestring(const GSERIALIZED *gs, int where)
 }
 
 /**
-* numpoints(LINESTRING) -- return the number of points in the
-* linestring, or NULL if it is not a linestring
+ * numpoints(LINESTRING) -- return the number of points in the
+ * linestring, or NULL if it is not a linestring
+ * @return On error return -1.0
 */
 int
 gserialized_numpoints_linestring(const GSERIALIZED *gs)

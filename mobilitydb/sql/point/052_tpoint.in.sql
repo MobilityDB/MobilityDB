@@ -230,27 +230,51 @@ CREATE FUNCTION tgeompoint_inst(tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_seq(tgeompoint)
+-- The function is not strict
+CREATE FUNCTION tgeompoint_seq(tgeompoint, text)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_seqset(tgeompoint)
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeompoint_seq(tgeompoint)
+  RETURNS tgeompoint
+  AS 'SELECT @extschema@.tgeompoint_seq($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeompoint_seqset(tgeompoint, text)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeompoint_seqset(tgeompoint)
+  RETURNS tgeompoint
+  AS 'SELECT @extschema@.tgeompoint_seqset($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tgeogpoint_inst(tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seq(tgeogpoint)
+-- The function is not strict
+CREATE FUNCTION tgeogpoint_seq(tgeogpoint, text)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seqset(tgeogpoint)
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeogpoint_seq(tgeogpoint)
+  RETURNS tgeogpoint
+  AS 'SELECT @extschema@.tgeogpoint_seq($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeogpoint_seqset(tgeogpoint, text)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeogpoint_seqset(tgeogpoint)
+  RETURNS tgeogpoint
+  AS 'SELECT @extschema@.tgeogpoint_seqset($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tgeompoint, text)
   RETURNS tgeompoint

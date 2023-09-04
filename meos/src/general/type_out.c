@@ -394,6 +394,7 @@ stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
 /**
  * @brief Return the maximum size in bytes of the bounding box corresponding
  * to the temporal type represented in MF-JSON format
+ * @return On error return SIZE_MAX
  */
 static size_t
 bbox_mfjson_size(meosType temptype, bool hasz, int precision)
@@ -414,9 +415,9 @@ bbox_mfjson_size(meosType temptype, bool hasz, int precision)
       size = stbox_mfjson_size(hasz, precision);
       break;
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, 
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %d", temptype);
-      return 0; /* make compiler quiet */
+      return SIZE_MAX;
   }
   return size;
 }
@@ -424,6 +425,7 @@ bbox_mfjson_size(meosType temptype, bool hasz, int precision)
 /**
  * @brief Write into the buffer the bounding box corresponding to the temporal type
  * represented in MF-JSON format
+ * @return On error return SIZE_MAX
  */
 static size_t
 bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
@@ -441,15 +443,16 @@ bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
     case T_TGEOGPOINT:
       return stbox_mfjson_buf(output, (STBox *) bbox, hasz, precision);
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, 
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %d", temptype);
-      return 0; /* make compiler quiet */
+      return SIZE_MAX;
   }
 }
 
 /**
  * @brief Return the maximum size in bytes of the temporal type represented in
  * MF-JSON format
+ * @return On error return SIZE_MAX
  */
 static size_t
 temptype_mfjson_size(meosType temptype)
@@ -477,9 +480,9 @@ temptype_mfjson_size(meosType temptype)
       size = sizeof("{'type':'MovingGeogPoint',");
       break;
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, 
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %d", temptype);
-      size = 0; /* make compiler quiet */
+      size = SIZE_MAX;
       break;
   }
   return size;
@@ -487,6 +490,7 @@ temptype_mfjson_size(meosType temptype)
 
 /**
  * @brief Write into the buffer the temporal type represented in MF-JSON format
+ * @return On error return SIZE_MAX
  */
 static size_t
 temptype_mfjson_buf(char *output, meosType temptype)
@@ -514,8 +518,9 @@ temptype_mfjson_buf(char *output, meosType temptype)
       ptr += sprintf(ptr, "{\"type\":\"MovingGeogPoint\",");
       break;
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, 
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %d", temptype);
+      return SIZE_MAX;
       break;
   }
   return (ptr - output);
@@ -712,8 +717,8 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
   }
   ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolation\":\"%s\"}",
     seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false",
-    MEOS_FLAGS_GET_DISCRETE(seq->flags) ? "Discrete" :
-    ( MEOS_FLAGS_GET_LINEAR(seq->flags) ? "Linear" : "Step" ) );
+    MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ? "Discrete" :
+    ( MEOS_FLAGS_LINEAR_INTERP(seq->flags) ? "Linear" : "Step" ) );
   return (ptr - output);
 }
 
@@ -878,7 +883,7 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
         "true" : "false");
   }
   ptr += sprintf(ptr, "],\"interpolation\":\"%s\"}",
-    MEOS_FLAGS_GET_LINEAR(ss->flags) ? "Linear" : "Step");
+    MEOS_FLAGS_LINEAR_INTERP(ss->flags) ? "Linear" : "Step");
   return (ptr - output);
 }
 
@@ -1049,6 +1054,7 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
 
 /**
  * @brief Return the size of the WKB representation of a base value.
+ * @return On error return SIZE_MAX
  */
 static size_t
 basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
@@ -1078,9 +1084,9 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
       return MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE;
 #endif /* NPOINT */
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, 
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal base type in MFJSON output: %d", basetype);
-      return 0; /* make compiler quiet */
+      return SIZE_MAX;
   }
 }
 
@@ -1383,6 +1389,7 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 
 /**
  * @brief Return the size of the WKB representation of a value.
+ * @return On error return SIZE_MAX
  */
 static size_t
 datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
@@ -1400,7 +1407,7 @@ datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
   if (temporal_type(type))
     return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
   /* Error! */
-  meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+  meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
     "Unknown type in WKB output: %d", type);
   return SIZE_MAX;
 }
@@ -1492,7 +1499,7 @@ bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(bool) != MEOS_WKB_BYTE_SIZE)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Machine bool size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
     return NULL;
   }
@@ -1508,7 +1515,7 @@ uint8_to_wkb_buf(const uint8_t i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int8) != MEOS_WKB_BYTE_SIZE)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Machine int8 size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
     return NULL;
   }
@@ -1524,7 +1531,7 @@ int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int16) != MEOS_WKB_INT2_SIZE)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Machine int16 size is not %d bytes!", MEOS_WKB_INT2_SIZE);
     return NULL;
   }
@@ -1540,7 +1547,7 @@ int32_to_wkb_buf(const int i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int) != MEOS_WKB_INT4_SIZE)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Machine int32 size is not %d bytes!", MEOS_WKB_INT4_SIZE);
     return NULL;
   }
@@ -1556,7 +1563,7 @@ int64_to_wkb_buf(const int64 i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int64) != MEOS_WKB_INT8_SIZE)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Machine int64 size is not %d bytes!", MEOS_WKB_INT8_SIZE);
     return NULL;
   }
@@ -1572,7 +1579,7 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(double) != MEOS_WKB_DOUBLE_SIZE)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Machine double size is not %d bytes!", MEOS_WKB_DOUBLE_SIZE);
     return NULL;
   }
@@ -1589,7 +1596,7 @@ timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(TimestampTz) != MEOS_WKB_TIMESTAMP_SIZE)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Machine timestamp size is not %d bytes!", MEOS_WKB_TIMESTAMP_SIZE);
     return NULL;
   }
@@ -1690,8 +1697,9 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
       break;
 #endif /* NPOINT */
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+      meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
         "unknown basetype in WKB output: %d", basetype);
+      return NULL;
   }
   return buf;
 }
@@ -2187,6 +2195,7 @@ temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the WKB representation of a value.
+ * @return On error return NULL
  */
 static uint8_t *
 datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
@@ -2205,8 +2214,11 @@ datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
     buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,
       variant);
   else /* Error! */
+  {
     meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Unknown type in WKB output: %d", type);
+    return NULL;
+  }
 
   return buf;
 }
@@ -2239,7 +2251,7 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   buf_size = datum_to_wkb_size(value, type, variant);
   if (buf_size == 0)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Error calculating output WKB buffer size.");
     return NULL;
   }
@@ -2283,7 +2295,7 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   /* The buffer pointer should now land at the end of the allocated buffer space. Let's check. */
   if (buf_size != (size_t) (buf - wkb_out))
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, 
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Output WKB is not the same size as the allocated buffer.");
     pfree(wkb_out);
     return NULL;

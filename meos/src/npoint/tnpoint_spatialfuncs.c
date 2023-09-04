@@ -240,7 +240,7 @@ tnpointseq_geom(const TSequence *seq)
     return tnpointinst_geom(TSEQUENCE_INST_N(seq, 0));
 
   GSERIALIZED *result;
-  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
   {
     Nsegment *segment = tnpointseq_linear_positions(seq);
     result = nsegment_geom(segment);
@@ -270,7 +270,7 @@ tnpointseqset_geom(const TSequenceSet *ss)
 
   int count;
   GSERIALIZED *result;
-  if (MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
   {
     Nsegment **segments = tnpointseqset_positions(ss, &count);
     result = nsegmentarr_geom(segments, count);
@@ -401,7 +401,7 @@ tnpoint_length(const Temporal *temp)
 {
   double result = 0.0;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tnpointseq_length((TSequence *) temp);
@@ -421,7 +421,7 @@ static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
   assert(seq);
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   const TInstant *inst1;
 
   /* Instantaneous sequence */
@@ -480,7 +480,7 @@ tnpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     result = temporal_from_base_temp(Float8GetDatum(0.0), T_TFLOAT, temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
@@ -505,7 +505,7 @@ tnpointseq_speed(const TSequence *seq)
 
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   /* Step interpolation */
-  if (! MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
   {
     Datum length = Float8GetDatum(0.0);
     for (int i = 0; i < seq->count; i++)
@@ -568,7 +568,7 @@ tnpoint_speed(const Temporal *temp)
 {
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MEOS_FLAGS_GET_DISCRETE(temp->flags))
+  if (temp->subtype == TINSTANT || MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_speed((TSequence *) temp);
@@ -758,7 +758,7 @@ tnpoint_azimuth(const Temporal *temp)
 {
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_azimuth((TSequence *) temp);

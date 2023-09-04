@@ -148,6 +148,7 @@ span_bucket_state_next(SpanBucketState *state)
  * @param[in] value Input value
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
+ * @return On error return INT_MAX
  */
 int
 int_bucket(int value, int size, int origin)
@@ -200,6 +201,7 @@ int_bucket(int value, int size, int origin)
  * @param[in] value Input value
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
+ * @return On error return DBL_MAX
  */
 double
 float_bucket(double value, double size, double origin)
@@ -247,6 +249,7 @@ interval_units(const Interval *interval)
  * @param[in] t Input timestamp
  * @param[in] size Size of the time buckets in PostgreSQL time units
  * @param[in] origin Origin of the buckets
+ * @return On error return DT_NOEND
  */
 TimestampTz
 timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
@@ -379,7 +382,8 @@ Span *
 intspan_bucket_list(const Span *s, int size, int origin, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count))
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
+      ! ensure_positive(size))
     return NULL;
   *count = ceil((DatumGetInt32(s->upper) - DatumGetInt32(s->lower)) / size);
   return span_bucket_list(s, Int32GetDatum(size), Int32GetDatum(origin),
@@ -398,7 +402,8 @@ Span *
 floatspan_bucket_list(const Span *s, double size, double origin, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count))
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
+      ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8))
     return NULL;
   *count = ceil((DatumGetFloat8(s->upper) - DatumGetFloat8(s->lower)) / size);
   return span_bucket_list(s, Float8GetDatum(size), Float8GetDatum(origin),
@@ -934,7 +939,7 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
     fragments = (Temporal **) tinstant_time_split((const TInstant *) temp,
       tunits, torigin, buckets, newcount);
   else if (temp->subtype == TSEQUENCE)
-    fragments = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    fragments = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
       (Temporal **) tnumberseq_disc_time_split((const TSequence *) temp,
         start, tunits, count, buckets, newcount) :
       (Temporal **) tsequence_time_split((const TSequence *) temp,
@@ -1084,7 +1089,7 @@ static void
 tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, TSequence **result, int *numseqs, int numcols)
 {
-  assert(! MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(! MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   meosType basetype = temptype_basetype(seq->temptype);
   Datum value, bucket_value;
   int bucket_no, seq_no;
@@ -1158,7 +1163,7 @@ static void
 tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, TSequence **result, int *numseqs, int numcols)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   meosType basetype = temptype_basetype(seq->temptype);
   Datum value1, bucket_value1;
   int bucket_no1, seq_no;
@@ -1397,7 +1402,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    if (MEOS_FLAGS_GET_LINEAR(ss->flags))
+    if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
       tnumberseq_linear_value_split(seq, start_bucket, size, count, bucketseqs,
         numseqs, ss->totalcount);
     else
@@ -1446,7 +1451,7 @@ tnumber_value_split1(const Temporal *temp, Datum start_bucket, Datum size,
     fragments = (Temporal **) tnumberinst_value_split((const TInstant *) temp,
       start_bucket, size, buckets, newcount);
   else if (temp->subtype == TSEQUENCE)
-    fragments = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    fragments = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
       (Temporal **) tnumberseq_disc_value_split((const TSequence *) temp,
         start_bucket, size, count, buckets, newcount) :
       (Temporal **) tnumberseq_value_split((const TSequence *) temp,
@@ -1589,7 +1594,7 @@ tint_value_split(Temporal *temp, int size, int origin, int *newcount)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount) ||
-      ! ensure_temporal_has_type(temp, T_TINT))
+      ! ensure_temporal_has_type(temp, T_TINT) || ! ensure_positive(size))
     return NULL;
   Datum *value_buckets;
   return temporal_value_time_split1(temp, Int32GetDatum(size), NULL,
@@ -1610,7 +1615,8 @@ tfloat_value_split(Temporal *temp, double size, double origin, int *newcount)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount) ||
-      ! ensure_temporal_has_type(temp, T_TFLOAT))
+      ! ensure_temporal_has_type(temp, T_TFLOAT) || 
+      ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8))
     return NULL;
   Datum *value_buckets;
   return temporal_value_time_split1(temp, Float8GetDatum(size), NULL,
@@ -1631,7 +1637,8 @@ temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
   int *newcount)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount))
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount) ||
+      ! ensure_valid_duration(duration))
     return NULL;
   TimestampTz *time_buckets;
   return temporal_value_time_split1(temp, Float8GetDatum(0), duration,
@@ -1656,7 +1663,8 @@ tint_value_time_split(Temporal *temp, int size, int vorigin,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount) ||
-      ! ensure_temporal_has_type(temp, T_TINT))
+      ! ensure_temporal_has_type(temp, T_TINT) || ! ensure_positive(size) ||
+      ! ensure_valid_duration(duration))
     return NULL;
   Datum *value_buckets;
   TimestampTz *time_buckets;
@@ -1683,7 +1691,9 @@ tfloat_value_time_split(Temporal *temp, double size, double vorigin,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) newcount) ||
-      ! ensure_temporal_has_type(temp, T_TFLOAT))
+      ! ensure_temporal_has_type(temp, T_TFLOAT) || 
+      ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8) ||
+      ! ensure_valid_duration(duration))
     return NULL;
   Datum *value_buckets;
   TimestampTz *time_buckets;

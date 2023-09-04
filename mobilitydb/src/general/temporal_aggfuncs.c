@@ -51,8 +51,7 @@
 #include "general/temporaltypes.h"
 #include "general/tbool_boolops.h"
 #include "general/doublen.h"
-#include "general/time_aggfuncs.h"
-/* MobilityDB */
+  /* MobilityDB */
 #include "pg_general/skiplist.h"
 #include "pg_general/temporal.h"
 

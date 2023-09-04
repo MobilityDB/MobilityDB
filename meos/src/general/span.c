@@ -311,6 +311,7 @@ span_in(const char *str, meosType spantype)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
+ * @return On error return NULL
  */
 Span *
 intspan_in(const char *str)
@@ -324,6 +325,7 @@ intspan_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
+ * @return On error return NULL
  */
 Span *
 bigintspan_in(const char *str)
@@ -337,6 +339,7 @@ bigintspan_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a float span from its Well-Known Text (WKT) representation.
+ * @return On error return NULL
  */
 Span *
 floatspan_in(const char *str)
@@ -350,6 +353,7 @@ floatspan_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a period from its Well-Known Text (WKT) representation.
+ * @return On error return NULL
  */
 Span *
 period_in(const char *str)
@@ -406,6 +410,7 @@ span_out(const Span *s, int maxdd)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @return On error return NULL
  */
 char *
 intspan_out(const Span *s)
@@ -419,6 +424,7 @@ intspan_out(const Span *s)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @return On error return NULL
  */
 char *
 bigintspan_out(const Span *s)
@@ -432,6 +438,7 @@ bigintspan_out(const Span *s)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @return On error return NULL
  */
 char *
 floatspan_out(const Span *s, int maxdd)
@@ -445,6 +452,7 @@ floatspan_out(const Span *s, int maxdd)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @return On error return NULL
  */
 char *
 period_out(const Span *s)
@@ -714,6 +722,7 @@ timestamp_to_period(TimestampTz t)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span
+ * @return On error return INT_MAX
  * @sqlfunc lower()
  */
 int
@@ -728,6 +737,7 @@ intspan_lower(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span
+ * @return On error return INT_MAX
  * @sqlfunc lower()
  */
 int
@@ -742,6 +752,7 @@ bigintspan_lower(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a float span
+ * @return On error return DBL_MAX
  * @sqlfunc lower()
  */
 double
@@ -756,6 +767,7 @@ floatspan_lower(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a period
+ * @return On error return DT_NOEND
  * @sqlfunc lower()
  */
 TimestampTz
@@ -770,6 +782,7 @@ period_lower(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span
+ * @return On error return INT_MAX
  * @sqlfunc upper()
  */
 int
@@ -784,6 +797,7 @@ intspan_upper(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span
+ * @return On error return INT_MAX
  * @sqlfunc upper()
  */
 int
@@ -798,6 +812,7 @@ bigintspan_upper(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a float span
+ * @return On error return DBL_MAX
  * @sqlfunc upper()
  */
 double
@@ -812,6 +827,7 @@ floatspan_upper(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a period
+ * @return On error return DT_NOEND
  * @sqlfunc upper()
  */
 TimestampTz
@@ -855,6 +871,7 @@ span_upper_inc(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the width of a span as a double.
+ * @return On error return -1.0
  * @sqlfunc width()
  */
 double
@@ -903,13 +920,14 @@ floatspan_round_int(const Span *s, Datum size, Span *result)
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Set the precision of the float span to the number of decimal places.
+ * @return On error return NULL
  */
 Span *
 floatspan_round(const Span *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_FLOATSPAN) ||
-      ! ensure_non_negative(maxdd))
+  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) || 
+      ! ensure_span_has_type(s, T_FLOATSPAN))
     return NULL;
 
   Span *result = palloc(sizeof(Span));
@@ -923,6 +941,7 @@ floatspan_round(const Span *s, int maxdd)
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Transform an integer span to a float span
+ * @return On error return NULL
  */
 Span *
 intspan_floatspan(const Span *s)
@@ -938,6 +957,7 @@ intspan_floatspan(const Span *s)
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Transform a float span to an integer span
+ * @return On error return NULL
  */
 Span *
 floatspan_intspan(const Span *s)
@@ -950,7 +970,6 @@ floatspan_intspan(const Span *s)
   return result;
 }
 #endif /* MEOS */
-
 
 /**
  * @ingroup libmeos_internal_setspan_transf
@@ -1254,6 +1273,7 @@ span_gt(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash of a span.
+ * @return On error return INT_MAX
  * @sqlfunc intspan_hash(), bigintspan_hash(), floatspan_hash(), period_hash()
  */
 uint32
@@ -1292,6 +1312,7 @@ span_hash(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash of a span using a seed
+ * @return On error return INT_MAX
  * @sqlfunc hash_extended()
  */
 uint64

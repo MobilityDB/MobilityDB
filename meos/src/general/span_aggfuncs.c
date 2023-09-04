@@ -41,6 +41,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/skiplist.h"
+#include "general/spanset.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/temporal_tile.h"
 #include "general/type_util.h"
@@ -76,6 +77,9 @@ spanbase_extent_transfn(Span *s, Datum d, meosType basetype)
 Span *
 int_extent_transfn(Span *s, int i)
 {
+  /* Ensure validity of the arguments */
+  if (s && ! ensure_span_has_type(s, T_INTSPAN))
+    return NULL;
   return spanbase_extent_transfn(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -86,6 +90,9 @@ int_extent_transfn(Span *s, int i)
 Span *
 bigint_extent_transfn(Span *s, int64 i)
 {
+  /* Ensure validity of the arguments */
+  if (s && ! ensure_span_has_type(s, T_BIGINTSPAN))
+    return NULL;
   return spanbase_extent_transfn(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -96,6 +103,9 @@ bigint_extent_transfn(Span *s, int64 i)
 Span *
 float_extent_transfn(Span *s, double d)
 {
+  /* Ensure validity of the arguments */
+  if (s && ! ensure_span_has_type(s, T_FLOATSPAN))
+    return NULL;
   return spanbase_extent_transfn(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -106,6 +116,9 @@ float_extent_transfn(Span *s, double d)
 Span *
 timestamp_extent_transfn(Span *s, TimestampTz t)
 {
+  /* Ensure validity of the arguments */
+  if (s && ! ensure_span_has_type(s, T_TSTZSPAN))
+    return NULL;
   return spanbase_extent_transfn(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
@@ -120,12 +133,17 @@ set_extent_transfn(Span *span, const Set *set)
   /* Can't do anything with null inputs */
   if (! span && ! set)
     return NULL;
-  /* Null period and non-null timestamp set, return the bbox of the timestamp set */
+  /* Null period and non-null set: return the bbox of the timestamp set */
   if (! span)
     return set_span(set);
-  /* Non-null period and null timestamp set, return the period */
+  /* Non-null period and null set: return the period */
   if (! set)
     return span;
+
+  /* Ensure validity of the arguments */
+  if (! ensure_set_spantype(set->settype) ||
+      ! ensure_same_span_basetype(span, set->basetype))
+    return NULL;
 
   Span s;
   set_set_span(set, &s);
@@ -150,6 +168,10 @@ span_extent_transfn(Span *s1, const Span *s2)
   if (! s2)
     return s1;
 
+  /* Ensure validity of the arguments */
+  if (! ensure_same_span_type(s1, s2))
+    return NULL;
+
   span_expand(s2, s1);
   return s1;
 }
@@ -170,6 +192,10 @@ spanset_extent_transfn(Span *s, const SpanSet *ss)
   /* Non-null span and null temporal, return the span */
   if (! ss)
     return s;
+
+  /* Ensure validity of the arguments */
+  if (! ensure_same_spanset_span_type(ss, s))
+    return NULL;
 
   span_expand(&ss->span, s);
   return s;

@@ -187,7 +187,7 @@ Datum
 Set_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   meosType settype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   int count;
   Datum *values = datumarr_extract(array, &count);

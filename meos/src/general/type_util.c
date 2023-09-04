@@ -106,7 +106,7 @@ datum_cmp(Datum l, Datum r, meosType type)
   if (type == T_NPOINT)
     return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "unknown compare function for base type: %d", type);
   return INT_MAX;
 }
@@ -143,7 +143,7 @@ datum_eq(Datum l, Datum r, meosType type)
   if (type == T_NPOINT)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "unknown datum_eq2 function for base type: %d", type);
   return false;
 }
@@ -268,7 +268,7 @@ datum_add(Datum l, Datum r, meosType type)
   else if (type == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
   else
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "unknown add function for base type: %d", type);
   return result;
 }
@@ -287,7 +287,7 @@ datum_sub(Datum l, Datum r, meosType type)
   else if (type == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
   else
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "unknown sub function for base type: %d", type);
   return result;
 }
@@ -306,7 +306,7 @@ datum_mult(Datum l, Datum r, meosType type)
   else if (type == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
   else
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "unknown mul function for base type: %d", type);
   return result;
 }
@@ -325,7 +325,7 @@ datum_div(Datum l, Datum r, meosType type)
   else if (type == T_FLOAT8)
     result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
   else
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "unknown mul function for base type: %d", type);
   return result;
 }
@@ -337,6 +337,7 @@ datum_div(Datum l, Datum r, meosType type)
 /**
  * @ingroup libmeos_internal_typefuncs
  * @brief Return the 32-bit hash of a value.
+ * @return On error return INT_MAX
  */
 uint32
 datum_hash(Datum d, meosType type)
@@ -360,7 +361,7 @@ datum_hash(Datum d, meosType type)
   else if (type == T_NPOINT)
     return npoint_hash(DatumGetNpointP(d));
 #endif
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "unknown hash function for base type: %d", type);
   return INT_MAX;
 }
@@ -368,6 +369,7 @@ datum_hash(Datum d, meosType type)
 /**
  * @ingroup libmeos_internal_typefuncs
  * @brief Return the 64-bit hash of a value using a seed.
+ * @return On error return INT_MAX
  */
 uint64
 datum_hash_extended(Datum d, meosType type, uint64 seed)
@@ -392,7 +394,7 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
   else if (type == T_NPOINT)
     return npoint_hash_extended(DatumGetNpointP(d), seed);
 #endif
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "unknown extended hash function for base type: %d", type);
   return INT_MAX;
 }
@@ -923,7 +925,7 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
       return PointerGetDatum(npoint_parse(&str, end));
 #endif
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown base type: %d", basetype);
       return Int32GetDatum(0);
   }
@@ -931,6 +933,7 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
 
 /**
  * @brief Call output function of the base type
+ * @return On error return NULL
  */
 char *
 basetype_out(Datum value, meosType basetype, int maxdd)
@@ -974,7 +977,7 @@ basetype_out(Datum value, meosType basetype, int maxdd)
       return npoint_out(DatumGetNpointP(value), maxdd);
 #endif
     default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, 
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown base type: %d", basetype);
       return NULL;
   }

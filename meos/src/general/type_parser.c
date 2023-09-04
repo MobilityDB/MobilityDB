@@ -58,7 +58,7 @@ ensure_end_input(const char **str, const char *type)
   p_whitespace(str);
   if (**str != 0)
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse %s value: Extraneous characters at the end", type);
     return false;
   }
@@ -99,7 +99,7 @@ ensure_obrace(const char **str, const char *type)
 {
   if (! p_obrace(str))
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse %s value: Missing opening brace", type);
     return false;
   }
@@ -129,7 +129,7 @@ ensure_cbrace(const char **str, const char *type)
 {
   if (! p_cbrace(str))
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse %s value: Missing closing brace", type);
     return false;
   }
@@ -189,7 +189,7 @@ ensure_oparen(const char **str, const char *type)
 {
   if (!p_oparen(str))
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "Could not parse %s: Missing opening parenthesis", type);
     return false;
   }
@@ -219,7 +219,7 @@ ensure_cparen(const char **str, const char *type)
 {
   if (!p_cparen(str))
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse %s: Missing closing parenthesis", type);
     return false;
   }
@@ -253,7 +253,7 @@ double_parse(const char **str)
   double result = strtod(*str, &nextstr);
   if (*str == nextstr)
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Invalid input syntax for type double");
     return DBL_MAX;
   }
@@ -285,7 +285,7 @@ temporal_basetype_parse(const char **str, meosType basetype)
   }
   if ((*str)[delim] == '\0')
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse element value");
     return 0;
   }
@@ -311,7 +311,7 @@ tbox_parse(const char **str)
   Span span;
   Span period;
   const char *type_str = "temporal box";
-  
+
   p_whitespace(str);
   /* By default the span type is float span */
   meosType spantype = T_FLOATSPAN;
@@ -333,7 +333,7 @@ tbox_parse(const char **str)
   }
   else
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse temporal box");
     return NULL;
   }
@@ -358,7 +358,7 @@ tbox_parse(const char **str)
   }
   else
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse temporal box: Missing dimension information");
     return NULL;
   }
@@ -520,7 +520,7 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
     lower_inc = false;
   else
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse span: Missing opening bracket/parenthesis");
     return;
   }
@@ -536,7 +536,7 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
     upper_inc = false;
   else
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse span: Missing closing bracket/parenthesis");
     return;
   }
@@ -687,7 +687,7 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp, bool end,
     upper_inc = false;
   else
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse temporal value: Missing closing bracket/parenthesis");
       return NULL;
   }
