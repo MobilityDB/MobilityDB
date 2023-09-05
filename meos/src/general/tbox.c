@@ -897,6 +897,32 @@ tbox_tmax_inc(const TBox *box, bool *result)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_box_transf
+ * @brief Shift and/or scale the period of a temporal box by the intervals.
+ * @sqlfunc shift(), tscale(), shiftTscale()
+ */
+TBox *
+tbox_shift_tscale(const TBox *box, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_T_tbox(box) ||
+      ! ensure_one_not_null((void *) shift, (void *) duration) ||
+      (duration && ! ensure_valid_duration(duration)))
+    return NULL;
+
+  /* Copy the input period to the result */
+  TBox *result = tbox_copy(box);
+  /* Shift and/or scale the resulting period */
+  TimestampTz lower = DatumGetTimestampTz(box->period.lower);
+  TimestampTz upper = DatumGetTimestampTz(box->period.upper);
+  lower_upper_shift_tscale(shift, duration, &lower, &upper);
+  result->period.lower = TimestampTzGetDatum(lower);
+  result->period.upper = TimestampTzGetDatum(upper);
+  return result;
+}
+
+/**
  * @ingroup libmeos_internal_box_transf
  * @brief Expand the second temporal box with the first one
  */

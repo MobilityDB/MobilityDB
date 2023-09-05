@@ -850,6 +850,55 @@ Stbox_transform(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_shift(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_shift);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift the period of the spatiotemporal box by the interval
+ * @sqlfunc shift()
+ */
+Datum
+Stbox_shift(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  STBox *result = stbox_shift_tscale(box, shift, NULL);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Stbox_tscale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_tscale);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Scale the period of the spatiotemporal box by the interval
+ * @sqlfunc tscale()
+ */
+Datum
+Stbox_tscale(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  STBox *result = stbox_shift_tscale(box, NULL, duration);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Stbox_shift_tscale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_shift_tscale);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift and scale the period of the spatiotemporal box by the interval
+ * @sqlfunc shiftTscale()
+ */
+Datum
+Stbox_shift_tscale(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  Interval *duration = PG_GETARG_INTERVAL_P(2);
+  STBox *result = stbox_shift_tscale(box, shift, duration);
+  PG_RETURN_POINTER(result);
+}
+
 PGDLLEXPORT Datum Stbox_get_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_get_space);
 /**

@@ -156,36 +156,51 @@ CREATE FUNCTION intspansetFromBinary(bytea)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Spanset_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intspansetFromHexWKB(text)
-  RETURNS intspanset
-  AS 'MODULE_PATHNAME', 'Spanset_from_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION bigintspansetFromBinary(bytea)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Spanset_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatspansetFromBinary(bytea)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Spanset_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tstzspansetFromBinary(bytea)
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Spanset_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION intspansetFromHexWKB(text)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Spanset_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintspansetFromHexWKB(text)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Spanset_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION floatspansetFromBinary(bytea)
-  RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Spanset_from_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspansetFromHexWKB(text)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Spanset_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tstzspansetFromBinary(bytea)
-  RETURNS tstzspanset
-  AS 'MODULE_PATHNAME', 'Spanset_from_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tstzspansetFromHexWKB(text)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Spanset_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(intspanset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spanset_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(bigintspanset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spanset_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(floatspanset, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spanset_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(tstzspanset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spanset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(intspanset, endianenconding text DEFAULT '')

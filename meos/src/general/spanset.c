@@ -262,9 +262,10 @@ periodset_in(const char *str)
 char *
 spanset_out(const SpanSet *ss, int maxdd)
 {
-  /* Ensure validity of the arguments */
   assert(ss);
-  assert(maxdd >= 0);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_negative(maxdd))
+    return NULL;
 
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;

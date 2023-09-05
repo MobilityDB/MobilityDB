@@ -112,6 +112,10 @@
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="setspan_asText"><varname>asText</varname></link>: Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="setspan_asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
 				</listitem>
 
@@ -369,6 +373,10 @@
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="box_asText"><varname>asText</varname></link>: Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="box_asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
 				</listitem>
 
@@ -454,6 +462,18 @@
 		<sect2>
 			<title>Transformaciones</title>
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_shift"><varname>shift</varname></link>: Desplazar el período del cuadro delimitador con un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_tscale"><varname>tscale</varname></link>: Escalar el período del cuadro delimitador a un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalar el período del cuadro delimitador con los intervalos</para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="getSpace"><varname>getSpace</varname></link>: Obtener la dimensión espacial del cuadro delimitador, eliminando la dimensión temporal, si existe</para>
 					</listitem>
@@ -596,7 +616,7 @@
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="temporal_asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación Moving Features JSON (MF-JSON)</para>
+					<para><link linkend="temporal_asText"><varname>asText</varname></link>: Obtener la representación Well-Known Text (WKT)</para>
 				</listitem>
 
 				<listitem>
@@ -608,7 +628,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Obtener a partir de la representación Moving Features JSON (MF-JSON)</para>
+					<para><link linkend="temporal_asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación Moving Features JSON (MF-JSON)</para>
 				</listitem>
 
 				<listitem>
@@ -617,6 +637,10 @@
 
 				<listitem>
 					<para><link linkend="temporal_FromHexWKB"><varname>ttypeFromHexWKB</varname></link>: Obtener a partir de la representación Hexadecimal Well-Known Binary (HexWKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Obtener a partir de la representación Moving Features JSON (MF-JSON)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

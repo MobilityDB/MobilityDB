@@ -674,7 +674,7 @@ tpointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ss,
   interpType interp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ensure_not_empty(gs) ||
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs) || ! ensure_not_null((void *) ss) ||
       ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;

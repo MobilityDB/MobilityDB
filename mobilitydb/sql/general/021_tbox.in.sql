@@ -267,8 +267,23 @@ CREATE FUNCTION Tmax_inc(tbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Modification functions
+ * Transformation functions
  *****************************************************************************/
+
+CREATE FUNCTION shift(tbox, interval)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tscale(tbox, interval)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTscale(tbox, interval, interval)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_shift_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION expandValue(tbox, float)
   RETURNS tbox

@@ -155,8 +155,6 @@ Tbox_as_text(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Number_timestamp_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Number_timestamp_to_tbox);
 /**
@@ -562,6 +560,55 @@ Tbox_tmax_inc(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+PGDLLEXPORT Datum Tbox_shift(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_shift);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift the period of the temporal box by the interval
+ * @sqlfunc shift()
+ */
+Datum
+Tbox_shift(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  TBox *result = tbox_shift_tscale(box, shift, NULL);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tbox_tscale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_tscale);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Scale the period of the temporal box by the interval
+ * @sqlfunc tscale()
+ */
+Datum
+Tbox_tscale(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TBox *result = tbox_shift_tscale(box, NULL, duration);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tbox_shift_tscale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_shift_tscale);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift and scale the period of the temporal box by the interval
+ * @sqlfunc shiftTscale()
+ */
+Datum
+Tbox_shift_tscale(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  Interval *duration = PG_GETARG_INTERVAL_P(2);
+  TBox *result = tbox_shift_tscale(box, shift, duration);
+  PG_RETURN_POINTER(result);
+}
 
 PGDLLEXPORT Datum Tbox_expand_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_expand_value);

@@ -165,10 +165,23 @@ SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 </programlisting>
 
 		<para>
-			We give next the functions for input and output of set and span types in Well-Known Binary format.
+			We give next the functions for input and output of set and span types in Well-Known Text and Well-Known Binary format. The default output format of all set and span types is the Well-Known Text format. The function <varname>asText</varname> given next enables to determine the output of floating point values.
 		</para>
 
 		<itemizedlist>
+			<listitem id="setspan_asText">
+				<indexterm><primary><varname>asText</varname></primary></indexterm>
+				<para>Get the Well-Known Text (WKT) representation</para>
+				<para><varname>asText({floatset,floatspans},maxdecdigits=15) → text</varname></para>
+					<para>The <varname>maxdecdigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asText(floatset '{1.123456789,2.123456789}', 3);
+-- {1.123, 2.123}
+SELECT asText(floatspanset '{[1.55,2.55],[4,5]}',0);
+-- {[2, 3], [4, 5]}
+</programlisting>
+			</listitem>
+
 			<listitem id="setspan_asBinary">
 				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
 				<para>Get the Well-Known Binary (WKB) representation</para>
@@ -661,12 +674,12 @@ SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 				<para>Shift the time value by an interval</para>
 				<para><varname>shift({tstzset,tstzspan,tstzspanset},interval) → {tstzset,tstzspan,tstzspanset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT shift(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day'::interval);
+SELECT shift(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', interval '1 day');
 -- {2001-01-02, 2001-01-04, 2001-01-06}
-SELECT shift(tstzspan '[2001-01-01, 2001-01-03]', '1 day'::interval);
+SELECT shift(tstzspan '[2001-01-01, 2001-01-03]', interval '1 day');
 -- [2001-01-02, 2001-01-04]
 SELECT shift(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
-  '1 day'::interval);
+  interval '1 day');
 -- {[2001-01-02, 2001-01-04], [2001-01-05, 2001-01-06]}
 </programlisting>
 			</listitem>

@@ -167,8 +167,17 @@ SELECT MIN(tmin(b)) FROM tbl_tboxfloat;
 SELECT MAX(tmax(b)) FROM tbl_tboxfloat;
 
 -------------------------------------------------------------------------------
--- Modification functions
+-- Transformation functions
 -------------------------------------------------------------------------------
+
+SELECT shift(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 day');
+SELECT shift(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-1 day');
+
+SELECT tscale(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 day');
+SELECT tscale(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 hour');
+
+SELECT shiftTscale(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 day', '1 hour');
+SELECT shiftTscale(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-1 day', '1 hour');
 
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2);
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '1 day');

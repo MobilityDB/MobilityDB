@@ -316,6 +316,21 @@ CREATE FUNCTION Tmax_inc(stbox)
  * Transformation functions
  *****************************************************************************/
 
+CREATE FUNCTION shift(stbox, interval)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tscale(stbox, interval)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTscale(stbox, interval, interval)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_shift_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION getSpace(stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_get_space'

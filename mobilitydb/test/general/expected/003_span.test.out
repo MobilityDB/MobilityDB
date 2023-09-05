@@ -19,24 +19,15 @@ SELECT tstzspan '[2000-01-01, 2000-01-02';
 ERROR:  Could not parse span: Missing closing bracket/parenthesis
 LINE 1: SELECT tstzspan '[2000-01-01, 2000-01-02';
                         ^
-SELECT asText(intspan '[1, 2]');
- astext 
---------
- [1, 3)
-(1 row)
-
 SELECT asText(floatspan '[1.12345678, 2.123456789]', 6);
         astext        
 ----------------------
  [1.123457, 2.123457]
 (1 row)
 
-SELECT asText(tstzspan '[2000-01-01, 2000-01-03]');
-                            astext                            
---------------------------------------------------------------
- [Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]
-(1 row)
-
+/* Errors */
+SELECT asText(floatspan '[1.12345678, 2.123456789]', -6);
+ERROR:  The value cannot be negative: -6
 SELECT span(timestamptz '2000-01-01', '2000-01-02');
                              span                             
 --------------------------------------------------------------

@@ -88,6 +88,48 @@ tempsubtype_name(int8 subtype)
   return _tempsubtypeName[subtype];
 }
 
+/**
+ * @brief Global array containing the interpolation names corresponding to the
+ * enumeration interpType defined in file meos_catalog.h.
+ */
+char * _interpType_names[] =
+{
+  [INTERP_NONE] = "none",
+  [DISCRETE] = "discrete",
+  [STEP] = "step",
+  [LINEAR] = "linear"
+};
+
+#define INTERP_STR_MAX_LEN 8
+
+/**
+ * @brief Return the string representation of the subtype of the temporal type
+ * corresponding to the enum value
+ */
+const char *
+interptype_name(int8 interpType)
+{
+  return _interpType_names[interpType];
+}
+
+/**
+ * @brief Get the interpolation type from the interpolation string
+ */
+interpType
+interptype_from_string(const char *interp_str)
+{
+  int n = sizeof(_interpType_names) / sizeof(char *);
+  for (int i = 0; i < n; i++)
+  {
+    if (pg_strncasecmp(interp_str, _interpType_names[i], INTERP_STR_MAX_LEN) == 0)
+      return i;
+  }
+  /* Error */
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown interpolation type: %s", interp_str);
+  return INTERP_NONE; /* make compiler quiet */
+}
+
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/
@@ -774,7 +816,8 @@ char *
 temporal_out(const Temporal *temp, int maxdd)
 {
   assert(temp);
-  assert(maxdd >= 0);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
 
   char *result;
   assert(temptype_subtype(temp->subtype));
@@ -826,8 +869,8 @@ char *
 tfloat_out(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_negative(maxdd) ||
-      ! ensure_temporal_has_type(temp, T_TBOOL))
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
     return NULL;
   return temporal_out(temp, maxdd);
 }
@@ -855,7 +898,7 @@ char *
 tpoint_out(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_negative(maxdd) ||
+  if (! ensure_not_null((void *) temp) ||
       ! ensure_tgeo_type(temp->temptype))
     return NULL;
   return temporal_out(temp, maxdd);
@@ -1030,7 +1073,9 @@ tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_not_empty(gs) || ! ensure_point_type(gs))
     return NULL;
-  return temporal_from_base_temp(PointerGetDatum(gs), T_TGEOMPOINT, temp);
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_TGEOGPOINT : 
+    T_TGEOMPOINT;
+  return temporal_from_base_temp(PointerGetDatum(gs), geotype, temp);
 }
 #endif /* MEOS */
 
@@ -1577,7 +1622,18 @@ temporal_to_tsequence(const Temporal *temp, interpType interp)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, interp);
   else if (temp->subtype == TSEQUENCE)
+  {
+    interpType interp1 = MEOS_FLAGS_GET_INTERP(temp->flags);
+    if (interp1 == DISCRETE && interp != DISCRETE && 
+      ((TSequence *) temp)->count > 1)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Cannot transform input value to a temporal sequence with %s interpolation",
+        interptype_name(interp));
+      return NULL;
+    }
     result = (Temporal *) tsequence_set_interp((TSequence *) temp, interp);
+  }
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_to_tsequence((TSequenceSet *) temp);
   return result;

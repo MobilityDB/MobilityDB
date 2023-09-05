@@ -527,6 +527,12 @@ SELECT tfloat_inst(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
 SELECT tfloat_inst(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 SELECT tfloat_seq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 
+-- With interpolation
+SELECT tfloat_seq(tfloat '{1@2000-01-01}', 'Linear');
+SELECT tfloat_seqset(tfloat '{1@2000-01-01, 2@2000-01-02}', 'Linear');
+/* Errors */
+SELECT tfloat_seq(tfloat '{1@2000-01-01, 2@2000-01-02}', 'Linear');
+
 SELECT ttext_inst(ttext 'AAA@2000-01-01');
 SELECT ttext_seq(ttext 'AAA@2000-01-01');
 SELECT ttext_seq(ttext '{AAA@2000-01-01}');

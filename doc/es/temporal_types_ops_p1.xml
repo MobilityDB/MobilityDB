@@ -272,44 +272,18 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 </programlisting>
 
 		<para>
-			Damos a continuación las funciones de entrada y salida en formato Moving Features JSON (MF-JSON) y binario conocido (WKB) para los tipos alfanuméricos temporales. Las funciones correspondientes para los puntos temporales se detallan en la <xref linkend="tpoint_inout" />.
+			Damos a continuación las funciones de entrada y salida en formato textual (Well-Known Text o WKT), binario (Well-Known Binary o WKB) y Moving Features JSON (MF-JSON) para los tipos alfanuméricos temporales. Las funciones correspondientes para los puntos temporales se detallan en la <xref linkend="tpoint_inout" />. El formato de salida predeterminado de todos los tipos alfanuméricos temporales es el formato de texto conocido. La función <varname>asText</varname> que se da a continuación permite determinar la salida de valores temporales de punto flotante.
 		</para>
 
 		<itemizedlist>
-			<listitem id="temporal_asMFJSON">
-				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
-				<para>Obtener la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
-				<para><varname>asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea</varname></para>
-				<para>El argumento <varname>options</varname> puede usarse para agregar un cuadro delimitador en la salida MFJSON:</para>
-				<itemizedlist>
-						<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>
-						<listitem><para>1: cuadro delimitador MFJSON</para></listitem>
-				</itemizedlist>
-				<para>El argumento <varname>flags</varname> puede usarse para personalizar la salida JSON, por ejemplo, para producir una salida JSON fácil de leer (para lectores humanos). Consulte la documentación de la biblioteca <varname>json-c</varname> para conocer los valores possible. Los valores típicos son los siguientes:</para>
-				<itemizedlist>
-					<listitem><para>0: means no option (default value)</para></listitem>
-					<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>
-					<listitem><para>2: JSON_C_TO_STRING_PRETTY</para></listitem>
-				</itemizedlist>
+			<listitem id="temporal_asText">
+				<indexterm><primary><varname>asText</varname></primary></indexterm>
+				<para>Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+				<para><varname>asText(tfloat,maxdecdigits=15) → text</varname></para>
 				<para>El argumento <varname>maxdecdigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asMFJSON(tbool 't@2019-01-01 18:00:00', 1);
-/* {"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
-  "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
-  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"} */
-SELECT asMFJSON(tint '{10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}', 1);
-/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
-   "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
-   "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
-   "interpolation":"Discrete"} */
-SELECT asMFJSON(tfloat '[10.5@2019-01-01 18:00:00+02, 25.5@2019-01-01 18:10:00+02]');
-/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
-  "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"} */
-SELECT asMFJSON(ttext '{[walking@2019-01-01 18:00:00+02,
-  driving@2019-01-01 18:10:00+02]}');
-/* {"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
-  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
+SELECT asText(tfloat '[10.55@2000-01-01, 25.55@2000-01-02]', 0);
+-- [11@2000-01-01, 26@2000-01-02]
 </programlisting>
 			</listitem>
 
@@ -347,33 +321,40 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 </programlisting>
 			</listitem>
 
-			<listitem id="temporal_FromMFJSON">
-				<indexterm><primary><varname>ttypeFromMFJSON</varname></primary></indexterm>
-				<para>Input a temporal value from its Moving Features JSON (MF-JSON) representation</para>
-				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the examples below.</para>
-				<para><varname>ttypeFromMFJSON(bytea) → ttype</varname></para>
+			<listitem id="temporal_asMFJSON">
+				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
+				<para>Obtener la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
+				<para><varname>asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea</varname></para>
+				<para>El argumento <varname>options</varname> puede usarse para agregar un cuadro delimitador en la salida MFJSON:</para>
+				<itemizedlist>
+						<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>
+						<listitem><para>1: cuadro delimitador MFJSON</para></listitem>
+				</itemizedlist>
+				<para>El argumento <varname>flags</varname> puede usarse para personalizar la salida JSON, por ejemplo, para producir una salida JSON fácil de leer (para lectores humanos). Consulte la documentación de la biblioteca <varname>json-c</varname> para conocer los valores possible. Los valores típicos son los siguientes:</para>
+				<itemizedlist>
+					<listitem><para>0: means no option (default value)</para></listitem>
+					<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>
+					<listitem><para>2: JSON_C_TO_STRING_PRETTY</para></listitem>
+				</itemizedlist>
+				<para>El argumento <varname>maxdecdigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tboolFromMFJSON(text
-  '{"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
+SELECT asMFJSON(tbool 't@2019-01-01 18:00:00', 1);
+/* {"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
   "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
-  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"}');
--- t@2019-01-01 18:00:00
-SELECT tintFromMFJSON(text
-  '{"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
+  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"} */
+SELECT asMFJSON(tint '{10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}', 1);
+/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
    "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
    "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
-   "interpolation":"Discrete"}');
--- {10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}
-SELECT tfloatFromMFJSON(text
-  '{"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
-   "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,
-   "interpolation":"Linear"}');
--- [10.5@2019-01-01 18:00:00, 25.5@2019-01-01 18:10:00]'
-SELECT ttextFromMFJSON(text
-  '{"type":"MovingText","sequences":[{"values":["walking","driving"],
+   "interpolation":"Discrete"} */
+SELECT asMFJSON(tfloat '[10.5@2019-01-01 18:00:00+02, 25.5@2019-01-01 18:10:00+02]');
+/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
+  "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"} */
+SELECT asMFJSON(ttext '{[walking@2019-01-01 18:00:00+02,
+  driving@2019-01-01 18:10:00+02]}');
+/* {"type":"MovingText","sequences":[{"values":["walking","driving"],
   "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
-  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"}');
--- {["walking"@2019-01-01 18:00:00, "driving"@2019-01-01 18:10:00]}');
+  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
 </programlisting>
 			</listitem>
 
@@ -408,6 +389,36 @@ SELECT tfloatFromHexWKB('01130081000000000000F83F009C57D3C11C0000');
 -- 1.5@2001-01-01
 SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 -- "AAA"@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="temporal_FromMFJSON">
+				<indexterm><primary><varname>ttypeFromMFJSON</varname></primary></indexterm>
+				<para>Input a temporal value from its Moving Features JSON (MF-JSON) representation</para>
+				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the examples below.</para>
+				<para><varname>ttypeFromMFJSON(bytea) → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tboolFromMFJSON(text
+  '{"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
+  "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
+  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"}');
+-- t@2019-01-01 18:00:00
+SELECT tintFromMFJSON(text
+  '{"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
+   "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
+   "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
+   "interpolation":"Discrete"}');
+-- {10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}
+SELECT tfloatFromMFJSON(text
+  '{"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
+   "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,
+   "interpolation":"Linear"}');
+-- [10.5@2019-01-01 18:00:00, 25.5@2019-01-01 18:10:00]'
+SELECT ttextFromMFJSON(text
+  '{"type":"MovingText","sequences":[{"values":["walking","driving"],
+  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
+  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"}');
+-- {["walking"@2019-01-01 18:00:00, "driving"@2019-01-01 18:10:00]}');
 </programlisting>
 			</listitem>
 		</itemizedlist>

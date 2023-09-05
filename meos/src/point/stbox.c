@@ -597,8 +597,7 @@ STBox *
 geo_to_stbox(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
-      ! ensure_point_type(gs))
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));
@@ -1069,6 +1068,32 @@ stbox_set_srid(const STBox *box, int32 srid)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Shift and/or scale the period of a spatiotemporal box by the intervals.
+ * @sqlfunc shift(), tscale(), shiftTscale()
+ */
+STBox *
+stbox_shift_tscale(const STBox *box, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_T_stbox(box) ||
+      ! ensure_one_not_null((void *) shift, (void *) duration) ||
+      (duration && ! ensure_valid_duration(duration)))
+    return NULL;
+
+  /* Copy the input period to the result */
+  STBox *result = stbox_copy(box);
+  /* Shift and/or scale the resulting period */
+  TimestampTz lower = DatumGetTimestampTz(box->period.lower);
+  TimestampTz upper = DatumGetTimestampTz(box->period.upper);
+  lower_upper_shift_tscale(shift, duration, &lower, &upper);
+  result->period.lower = TimestampTzGetDatum(lower);
+  result->period.upper = TimestampTzGetDatum(upper);
+  return result;
+}
 
 /**
  * @ingroup libmeos_box_transf

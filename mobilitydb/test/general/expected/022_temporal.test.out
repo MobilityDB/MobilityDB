@@ -1604,6 +1604,21 @@ ERROR:  Cannot transform input value to a temporal instant
 SELECT tfloat_seq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 ERROR:  Cannot transform input value to a temporal sequence
 CONTEXT:  SQL function "tfloat_seq" statement 1
+SELECT tfloat_seq(tfloat '{1@2000-01-01}', 'Linear');
+            tfloat_seq            
+----------------------------------
+ [1@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT tfloat_seqset(tfloat '{1@2000-01-01, 2@2000-01-02}', 'Linear');
+                            tfloat_seqset                             
+----------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST], [2@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+/* Errors */
+SELECT tfloat_seq(tfloat '{1@2000-01-01, 2@2000-01-02}', 'Linear');
+ERROR:  Cannot transform input value to a temporal sequence with linear interpolation
 SELECT ttext_inst(ttext 'AAA@2000-01-01');
              ttext_inst             
 ------------------------------------

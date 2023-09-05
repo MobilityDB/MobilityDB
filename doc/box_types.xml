@@ -38,7 +38,7 @@ SELECT tbox 'TBOX T((2000-01-01,2000-01-02))';
 </programlisting>
 		</para>
 
-		<para>An <varname>stbox</varname> is composed of a spatial and/or time dimensions, where the coordinates of the spatial dimension may be 2D or 3D. For the temporal dimension a <varname>tstzspan</varname> is given and for the spatial dimension minimum and maximum coordinate values are given, where the latter may be Cartesian (planar) or geodetic (spherical). The SRID of the coordinates may be specified; if it is not the case, a value of 0 (unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for planar and geodetic boxes. Geodetic boxes always have a Z dimension to account for the curvature of the underlying sphere or spheroid. Examples of input of <varname>stbox</varname> values are as follows:
+		<para>An <varname>stbox</varname> is composed of a spatial and/or time dimensions, where the coordinates of the spatial dimension may be 2D or 3D. For the time dimension a <varname>tstzspan</varname> is given and for the spatial dimension minimum and maximum coordinate values are given, where the latter may be Cartesian (planar) or geodetic (spherical). The SRID of the coordinates may be specified; if it is not the case, a value of 0 (unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for planar and geodetic boxes. Geodetic boxes always have a Z dimension to account for the curvature of the underlying sphere or spheroid. Examples of input of <varname>stbox</varname> values are as follows:
 			<programlisting language="sql" xml:space="preserve">
 -- Only value dimension with X and Y coordinates
 SELECT stbox 'STBOX X((1.0,2.0),(1.0,2.0))';
@@ -67,6 +67,19 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 			</para>
 
 			<itemizedlist>
+				<listitem id="box_asText">
+					<indexterm><primary><varname>asText</varname></primary></indexterm>
+					<para>Get the Well-Known Text (WKT) representation</para>
+					<para><varname>asText(box,maxdecdigits=15) → text</varname></para>
+					<para>The <varname>maxdecdigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2000-01-01,2000-01-02))', 3);
+-- TBOXFLOAT XT([1.123, 2.123),[2000-01-01 00:00:00+01, 2000-01-02 00:00:00+01))
+SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
+-- STBOX Z((2,2,2),(3,3,3))
+</programlisting>
+				</listitem>
+
 				<listitem id="box_asBinary">
 					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
 					<para>Get the Well-Known Binary (WKB) representation</para>
@@ -172,14 +185,15 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 				<indexterm><primary><varname>geodstbox_t</varname></primary></indexterm>
 				<indexterm><primary><varname>geodstbox_zt</varname></primary></indexterm>
 				<para>Constructor for <varname>stbox</varname></para>
-				<para><varname>stbox_x(float,float,float,float,integer) → stbox</varname></para>
-				<para><varname>stbox_z(float,float,float,float,float,float,integer) → stbox</varname></para>
+				<para><varname>stbox_x(float,float,float,float,srid=0) → stbox</varname></para>
+				<para><varname>stbox_z(float,float,float,float,float,float,srid=0) → stbox</varname></para>
 				<para><varname>stbox_t(time) → stbox</varname></para>
-				<para><varname>stbox_xt(float,float,float,float,{timestamptz,tstzspan},integer) → stbox</varname></para>
-				<para><varname>stbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},integer) → stbox</varname></para>
-				<para><varname>geodstbox_z(float,float,float,float,float,float,integer) → stbox</varname></para>
+				<para><varname>stbox_xt(float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
+				<para><varname>stbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
+				<para><varname>geodstbox_z(float,float,float,float,float,float,srid=4326) → stbox</varname></para>
 				<para><varname>geodstbox_t(time) → stbox</varname></para>
-				<para><varname>geodstbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},integer) → stbox</varname></para>
+				<para><varname>geodstbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},srid=4326)</varname></para>
+				<para><varname>  → stbox</varname></para>
 				<para><varname>stbox(geo) → stbox</varname></para>
 				<para><varname>stbox(geo,time) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -391,76 +405,118 @@ SELECT Tmax_inc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 	</sect1>
 
 	<sect1 id ="box_types_transformations">
-			<title>Transformations</title>
+		<title>Transformations</title>
 
-			<itemizedlist>
-				<listitem id="getSpace">
-					<indexterm><primary><varname>getSpace</varname></primary></indexterm>
-					<para>Get the spatial dimension of the bounding box, removing the temporal dimension if any</para>
-					<para><varname>getSpace(stbox) → stbox</varname></para>
-					<programlisting language="sql" xml:space="preserve">
+		<itemizedlist>
+			<listitem id="box_shift">
+				<indexterm><primary><varname>shift</varname></primary></indexterm>
+				<para>Shift the period of the bounding box by an interval</para>
+				<para><varname>shift(box,interval) → box</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT shift(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', interval '1 day');
+-- TBOXFLOAT XT([1.5, 2.5],[2001-01-02, 2001-01-03])
+SELECT shift(stbox 'STBOX T([2001-01-01,2001-01-02])', interval '-1 day');
+-- STBOX T([2000-12-31, 2001-01-01])
+SELECT shift(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
+  interval '1 day');
+-- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-02, 2001-01-03])
+</programlisting>
+			</listitem>
+
+			<listitem id="box_tscale">
+				<indexterm><primary><varname>tscale</varname></primary></indexterm>
+				<para>Scale the period of the bounding box to an interval. If the time span of the period is zero (that is, the lower and upper bound are equal), the result is the box. The given interval must be strictly greater than zero.</para>
+				<para><varname>tscale(box,interval) → box</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tscale(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', interval '2 days');
+-- TBOXFLOAT XT([1.5, 2.5],[2001-01-01, 2001-01-03])
+SELECT tscale(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '1 hour');
+-- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 00:00:00, 2001-01-01 01:00:00])
+SELECT tscale(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '-1 day');
+-- ERROR:  The duration must be a positive interval: -1 days
+</programlisting>
+			</listitem>
+
+			<listitem id="box_shiftTscale">
+				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
+				<para>Shift and scale the period of the bounding box to the two intervals. This function combines in a single step the functions <link linkend="box_shift"><varname>shift</varname></link> and <link linkend="box_tscale"><varname>tscale</varname></link>.</para>
+				<para><varname>shiftTscale(box,interval,interval) → box</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT shiftTscale(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 
+  interval '1 day', interval '3 days');
+-- TBOXFLOAT XT([1.5, 2.5],[2001-01-02, 2001-01-05])
+SELECT shiftTscale(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 
+  interval '1 hour', interval '3 hours');
+-- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 01:00:00, 2001-01-01 04:00:00])
+</programlisting>
+			</listitem>
+
+			<listitem id="getSpace">
+				<indexterm><primary><varname>getSpace</varname></primary></indexterm>
+				<para>Get the spatial dimension of the bounding box, removing the temporal dimension if any</para>
+				<para><varname>getSpace(stbox) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve">
 SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 -- STBOX Z((1,1,1),(2,2,2))
 </programlisting>
-				</listitem>
-			</itemizedlist>
+			</listitem>
+		</itemizedlist>
 
-			<para>
-				The functions given next expand the bounding boxes on the value and the time dimension or set the precision of the value dimension. These functions raise an error if the corresponding dimension is not present.
-			</para>
-			<itemizedlist>
-				<listitem id="expandValue">
-					<indexterm><primary><varname>expandValue</varname></primary></indexterm>
-					<para>Expand the numeric dimension of the bounding box by a float value</para>
-					<para><varname>expandValue(tbox,float) → tbox</varname></para>
-					<programlisting language="sql" xml:space="preserve">
+		<para>
+			The functions given next expand the bounding boxes on the value and the time dimension or set the precision of the value dimension. These functions raise an error if the corresponding dimension is not present.
+		</para>
+		<itemizedlist>
+			<listitem id="expandValue">
+				<indexterm><primary><varname>expandValue</varname></primary></indexterm>
+				<para>Expand the numeric dimension of the bounding box by a float value</para>
+				<para><varname>expandValue(tbox,float) → tbox</varname></para>
+				<programlisting language="sql" xml:space="preserve">
 SELECT expandValue(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', 1);
 -- TBOXFLOAT XT((0,3),[2001-01-01,2001-01-03])
 SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have value dimension
 </programlisting>
-				</listitem>
+			</listitem>
 
-				<listitem id="expandSpace">
-					<indexterm><primary><varname>expandSpace</varname></primary></indexterm>
-					<para>Expand the spatial dimension of the bounding box by a float value</para>
-					<para><varname>expandSpace(stbox,float) → stbox</varname></para>
-					<programlisting language="sql" xml:space="preserve">
+			<listitem id="expandSpace">
+				<indexterm><primary><varname>expandSpace</varname></primary></indexterm>
+				<para>Expand the spatial dimension of the bounding box by a float value</para>
+				<para><varname>expandSpace(stbox,float) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve">
 SELECT expandSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])', 1);
 -- STBOX ZT(((0,0,0),(3,3,3)),[2001-01-01,2001-01-03])
 SELECT expandSpace(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have XY(Z) dimension
 </programlisting>
-				</listitem>
+			</listitem>
 
-				<listitem id="expandTime">
-					<indexterm><primary><varname>expandTime</varname></primary></indexterm>
-					<para>Expand the temporal dimension of the bounding box by a time interval</para>
-					<para><varname>expandTime(box,interval) → box</varname></para>
-					<programlisting language="sql" xml:space="preserve">
+			<listitem id="expandTime">
+				<indexterm><primary><varname>expandTime</varname></primary></indexterm>
+				<para>Expand the temporal dimension of the bounding box by a time interval</para>
+				<para><varname>expandTime(box,interval) → box</varname></para>
+				<programlisting language="sql" xml:space="preserve">
 SELECT expandTime(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', interval '1 day');
 -- TBOXFLOAT XT((1,2),[2011-12-31,2001-01-04])
 SELECT expandTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])',
   interval '1 day');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2011-12-31,2001-01-04])
 </programlisting>
-				</listitem>
+			</listitem>
 
-				<listitem id="box_round">
-					<indexterm><primary><varname>round</varname></primary></indexterm>
-					<para>Round the value or the coordinates of the bounding box to a number of decimal places</para>
-					<para><varname>round(box,integer) → box</varname></para>
-					<programlisting language="sql" xml:space="preserve">
+			<listitem id="box_round">
+				<indexterm><primary><varname>round</varname></primary></indexterm>
+				<para>Round the value or the coordinates of the bounding box to a number of decimal places</para>
+				<para><varname>round(box,integer) → box</varname></para>
+				<programlisting language="sql" xml:space="preserve">
 SELECT round(tbox 'TBOXFLOAT XT((1.12345,2.12345),[2000-01-01,2000-01-02])', 2);
 -- TBOXFLOAT XT((1.12,2.12),[2000-01-01, 2000-01-02])
 SELECT round(stbox 'STBOX XT(((1.12345, 1.12345),(2.12345, 2.12345)),
 	[2000-01-01,2000-01-02])', 2);
 -- STBOX XT(((1.12,1.12),(2.12,2.12)),[2000-01-01, 2000-01-02])
 </programlisting>
-				</listitem>
-
-			</itemizedlist>
-		</sect1>
+			</listitem>
+		</itemizedlist>
+	</sect1>
 
 	<sect1 id ="box_types_srid">
 		<title>Spatial Reference System</title>

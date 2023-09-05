@@ -1407,10 +1407,12 @@ pg_interval_in(const char *str, int32 typmod)
   {
     case DTK_DELTA:
       if (tm2interval(tm, fsec, result) != 0)
+      {
         meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
           "interval out of range");
         pfree(result);
         return NULL;
+      }
       break;
 
     default:

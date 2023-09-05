@@ -394,7 +394,9 @@ char *
 span_out(const Span *s, int maxdd)
 {
   assert(s);
-  assert(maxdd >= 0);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_negative(maxdd))
+    return NULL;
 
   char *lower = unquote(basetype_out(s->lower, s->basetype, maxdd));
   char *upper = unquote(basetype_out(s->upper, s->basetype, maxdd));

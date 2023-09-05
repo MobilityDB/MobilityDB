@@ -110,6 +110,23 @@ teq_text_ttext(const text *txt, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_comp
+ * @brief Return the temporal equality of a point and a temporal point.
+ * @sqlop @p #=
+ */
+Temporal *
+teq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  return tcomp_temporal_base(temp, PointerGetDatum(gs), geotype, &datum2_eq,
+    INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal equality of a temporal boolean and a boolean.
  * @sqlop @p #=
  */
@@ -169,6 +186,23 @@ teq_ttext_text(const Temporal *temp, const text *txt)
       ! ensure_same_temporal_basetype(temp, T_TEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_eq,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
+ * @brief Return the temporal equality of a temporal point and a point.
+ * @sqlop @p #=
+ */
+Temporal *
+teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  return tcomp_temporal_base(temp, PointerGetDatum(gs), geotype, &datum2_eq,
     INVERT_NO);
 }
 
@@ -257,6 +291,23 @@ tne_text_ttext(const text *txt, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_comp
+ * @brief Return the temporal inequality of a point and a temporal point.
+ * @sqlop @p #<>
+ */
+Temporal *
+tne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  return tcomp_temporal_base(temp, PointerGetDatum(gs), geotype, &datum2_ne,
+    INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal inequality of a temporal boolean and a boolean.
  * @sqlop @p #<>
  */
@@ -321,7 +372,23 @@ tne_ttext_text(const Temporal *temp, const text *txt)
 
 /**
  * @ingroup libmeos_temporal_comp
->>>>>>> Stashed changes
+ * @brief Return the temporal equality of a temporal point and a point.
+ * @sqlop @p #<>
+ */
+Temporal *
+tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  return tcomp_temporal_base(temp, PointerGetDatum(gs), geotype, &datum2_ne,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal inequality of the temporal values.
  * @sqlop @p #<>
  */

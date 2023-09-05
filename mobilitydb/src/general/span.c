@@ -132,7 +132,7 @@ PGDLLEXPORT Datum Span_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output function for periods
+ * @brief Output function for spans
  * @sqlfunc asText()
  */
 Datum
@@ -410,7 +410,7 @@ PGDLLEXPORT Datum Period_tscale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_tscale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift the period  value by the interval
+ * @brief Scale the period value by the interval
  * @sqlfunc tscale()
  */
 Datum
@@ -426,7 +426,7 @@ PGDLLEXPORT Datum Period_shift_tscale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_shift_tscale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift the period value by the interval
+ * @brief Shift and scale the period value by the interval
  * @sqlfunc shiftTscale()
  */
 Datum

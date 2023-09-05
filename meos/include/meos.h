@@ -883,9 +883,11 @@ extern STBox *stbox_expand_time(const STBox *box, const Interval *interval);
 extern STBox *stbox_get_space(const STBox *box);
 extern STBox *stbox_round(const STBox *box, int maxdd);
 extern STBox *stbox_set_srid(const STBox *box, int32 srid);
+extern STBox *stbox_shift_tscale(const STBox *box, const Interval *shift, const Interval *duration);
 extern TBox *tbox_expand_value(const TBox *box, const double d);
 extern TBox *tbox_expand_time(const TBox *box, const Interval *interval);
 extern TBox *tbox_round(const TBox *box, int maxdd);
+extern TBox *tbox_shift_tscale(const TBox *box, const Interval *shift, const Interval *duration);
 
 /*****************************************************************************/
 
@@ -1288,7 +1290,6 @@ extern Temporal *teq_temporal_temporal(const Temporal *temp1, const Temporal *te
 extern Temporal *teq_text_ttext(const text *txt, const Temporal *temp);
 extern Temporal *teq_tfloat_float(const Temporal *temp, double d);
 extern Temporal *teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *teq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *teq_tint_int(const Temporal *temp, int i);
 extern Temporal *teq_ttext_text(const Temporal *temp, const text *txt);
 extern Temporal *tge_float_tfloat(double d, const Temporal *temp);
@@ -1328,7 +1329,6 @@ extern Temporal *tne_temporal_temporal(const Temporal *temp1, const Temporal *te
 extern Temporal *tne_text_ttext(const text *txt, const Temporal *temp);
 extern Temporal *tne_tfloat_float(const Temporal *temp, double d);
 extern Temporal *tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *tne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tne_tint_int(const Temporal *temp, int i);
 extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 

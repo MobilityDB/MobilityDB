@@ -343,6 +343,9 @@ char *
 set_out(const Set *s, int maxdd)
 {
   assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return set_out_fn(s, maxdd, &basetype_out);
 }
 
@@ -421,12 +424,12 @@ char *
 geoset_out(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_not_negative(maxdd))
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
   return set_out(s, maxdd);
 }
 #endif /* MEOS */
+
 
 /**
  * @ingroup libmeos_setspan_inout
@@ -437,8 +440,7 @@ char *
 geoset_as_text(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_not_negative(maxdd))
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
   return set_out_fn(s, maxdd, &wkt_out);
 }
@@ -452,8 +454,7 @@ char *
 geoset_as_ewkt(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_not_negative(maxdd))
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
   return set_out_fn(s, maxdd, &ewkt_out);
 }

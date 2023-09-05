@@ -129,6 +129,30 @@ Spanset_send(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Output in WKT format
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Spanset_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output function for spans
+ * @sqlfunc asText()
+ */
+Datum
+Spanset_as_text(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = spanset_out(ss, Int32GetDatum(dbl_dig_for_wkt));
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
  * Constructor functions
  ****************************************************************************/
 
