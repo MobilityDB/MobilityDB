@@ -70,6 +70,7 @@
   extern Datum timestamp_in(PG_FUNCTION_ARGS);
   extern Datum timestamptz_out(PG_FUNCTION_ARGS);
   extern Datum timestamp_out(PG_FUNCTION_ARGS);
+  extern Datum interval_out(PG_FUNCTION_ARGS);
 #endif /* ! MEOS */
 
 #if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
@@ -1170,7 +1171,21 @@ pg_timestamp_out(Timestamp dt)
 
 /*****************************************************************************/
 
-#if MEOS
+
+#if ! MEOS
+/**
+ * @brief Convert an interval to a string.
+ * @return On error return NULL
+ * @note PostgreSQL function: Datum interval_out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_interval_out(const Interval *interval)
+{
+  Datum d = PointerGetDatum(interval);
+  char *result = DatumGetCString(call_function1(interval_out, d));
+  return result;
+}
+#else /*if MEOS */
 /*
  *  Adjust interval for specified precision, in both YEAR to SECOND
  *  range and sub-second precision.

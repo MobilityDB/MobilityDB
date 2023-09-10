@@ -580,7 +580,7 @@ TBox *
 period_to_tbox(const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || 
+  if (! ensure_not_null((void *) s) ||
       ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
 
@@ -612,7 +612,7 @@ TBox *
 numspanset_to_tbox(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || 
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_numspan_type(ss->spantype))
     return NULL;
 
@@ -898,11 +898,41 @@ tbox_tmax_inc(const TBox *box, bool *result)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Shift and/or scale the period of a temporal box by the intervals.
- * @sqlfunc shift(), tscale(), shiftTscale()
+ * @brief Shift and/or scale the span of a temporal box by the values.
+ * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue()
  */
 TBox *
-tbox_shift_tscale(const TBox *box, const Interval *shift,
+tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
+  bool hasshift, bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box) ||
+      ! ensure_one_shift_width(hasshift, haswidth) ||
+      (width && ! ensure_positive_datum(width, box->span.basetype)))
+    return NULL;
+
+  /* Copy the input box to the result */
+  TBox *result = tbox_copy(box);
+  /* Shift and/or scale the span of the resulting box */
+  Datum lower = box->span.lower;
+  Datum upper = box->span.upper;
+  lower_upper_shift_scale_value(shift, width, box->span.basetype, hasshift,
+    haswidth, &lower, &upper);
+  result->span.lower = lower;
+  result->span.upper = upper;
+  return result;
+}
+
+#if MEOS
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Shift and/or scale the period of a temporal box by the intervals.
+ * @sqlfunc shiftTime(), scaleTime(), shiftScaleTime()
+ */
+TBox *
+tbox_shift_scale_time(const TBox *box, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure validity of the arguments */
@@ -916,7 +946,7 @@ tbox_shift_tscale(const TBox *box, const Interval *shift,
   /* Shift and/or scale the resulting period */
   TimestampTz lower = DatumGetTimestampTz(box->period.lower);
   TimestampTz upper = DatumGetTimestampTz(box->period.upper);
-  lower_upper_shift_tscale(shift, duration, &lower, &upper);
+  lower_upper_shift_scale_time(shift, duration, &lower, &upper);
   result->period.lower = TimestampTzGetDatum(lower);
   result->period.upper = TimestampTzGetDatum(upper);
   return result;

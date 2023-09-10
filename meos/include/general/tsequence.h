@@ -110,7 +110,9 @@ extern bool ensure_valid_tinstarr(const TInstant **instants, int count,
 
 /* Transformation functions */
 
-extern void tsequence_shift_tscale_iter(TSequence *seq, TimestampTz delta,
+extern void tnumseq_shift_scale_value_iter(TSequence *seq, Datum origin,
+  Datum delta, bool hasdelta, double scale);
+extern void tsequence_shift_scale_time_iter(TSequence *seq, TimestampTz delta,
   double scale);
 extern int tstepseq_to_linear_iter(const TSequence *seq, TSequence **result);
 extern TSequenceSet *tstepseq_to_linear(const TSequence *seq);

@@ -388,19 +388,19 @@ CREATE FUNCTION segments(tnpoint)
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION shift(tnpoint, interval)
+CREATE FUNCTION shiftTime(tnpoint, interval)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tscale(tnpoint, interval)
+CREATE FUNCTION scaleTime(tnpoint, interval)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftTscale(tnpoint, interval, interval)
+CREATE FUNCTION shiftScaleTime(tnpoint, interval, interval)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

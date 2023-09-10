@@ -355,38 +355,19 @@ Period_duration(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Floatspan_round);
+PGDLLEXPORT Datum Numspan_shift(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Set the precision of the float span to the number of decimal places
- * @sqlfunc round()
- */
-Datum
-Floatspan_round(PG_FUNCTION_ARGS)
-{
-  Span *span = PG_GETARG_SPAN_P(0);
-  int maxdd = PG_GETARG_INT32(1);
-  Span *result = floatspan_round(span, maxdd);
-  PG_RETURN_POINTER(result);
-}
-
-/******************************************************************************/
-
-PGDLLEXPORT Datum Span_shift(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_shift);
-/**
- * @ingroup mobilitydb_setspan_transf
- * @brief Shift the span by a value
+ * @brief Shift the number span by the value
  * @sqlfunc shift()
  */
 Datum
-Span_shift(PG_FUNCTION_ARGS)
+Numspan_shift(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum shift = PG_GETARG_DATUM(1);
-  Span *result = span_copy(s);
-  span_shift(result, shift);
+  Span *result = numspan_shift_scale(s, shift, 0, true, false);
   PG_RETURN_POINTER(result);
 }
 
@@ -400,42 +381,91 @@ PG_FUNCTION_INFO_V1(Period_shift);
 Datum
 Period_shift(PG_FUNCTION_ARGS)
 {
-  Span *p = PG_GETARG_SPAN_P(0);
+  Span *s = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Span *result = period_shift_tscale(p, shift, NULL);
+  Span *result = period_shift_scale(s, shift, NULL);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Period_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_tscale);
+PGDLLEXPORT Datum Numspan_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_scale);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Scale the number span by the value
+ * @sqlfunc scale()
+ */
+Datum
+Numspan_scale(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum duration = PG_GETARG_DATUM(1);
+  Span *result = numspan_shift_scale(s, 0, duration, false, true);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Period_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Period_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Scale the period value by the interval
- * @sqlfunc tscale()
+ * @sqlfunc scale()
  */
 Datum
-Period_tscale(PG_FUNCTION_ARGS)
+Period_scale(PG_FUNCTION_ARGS)
 {
-  Span *p = PG_GETARG_SPAN_P(0);
+  Span *s = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Span *result = period_shift_tscale(p, NULL, duration);
+  Span *result = period_shift_scale(s, NULL, duration);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Period_shift_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_shift_tscale);
+PGDLLEXPORT Datum Numspan_shift_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift and scale the period value by the interval
- * @sqlfunc shiftTscale()
+ * @brief Shift and scale the number span by the values
+ * @sqlfunc shiftScale()
  */
 Datum
-Period_shift_tscale(PG_FUNCTION_ARGS)
+Numspan_shift_scale(PG_FUNCTION_ARGS)
 {
-  Span *p = PG_GETARG_SPAN_P(0);
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  Datum duration = PG_GETARG_DATUM(2);
+  Span *result = numspan_shift_scale(s, shift, duration, true, true);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Period_shift_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Period_shift_scale);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift and scale the period value by the intervals
+ * @sqlfunc shiftScale()
+ */
+Datum
+Period_shift_scale(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  Span *result = period_shift_tscale(p, shift, duration);
+  Span *result = period_shift_scale(s, shift, duration);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspan_round);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Set the precision of the float span to the number of decimal places
+ * @sqlfunc round()
+ */
+Datum
+Floatspan_round(PG_FUNCTION_ARGS)
+{
+  Span *span = PG_GETARG_SPAN_P(0);
+  int maxdd = PG_GETARG_INT32(1);
+  Span *result = floatspan_round(span, maxdd);
   PG_RETURN_POINTER(result);
 }
 

@@ -190,26 +190,26 @@ SELECT shift(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
  {"Sat Jan 01 00:05:00 2000 PST", "Sun Jan 02 00:05:00 2000 PST", "Mon Jan 03 00:05:00 2000 PST"}
 (1 row)
 
-SELECT tscale(tstzset '{2000-01-01}', '1 hour');
-              tscale              
+SELECT scale(tstzset '{2000-01-01}', '1 hour');
+              scale               
 ----------------------------------
  {"Sat Jan 01 00:00:00 2000 PST"}
 (1 row)
 
-SELECT tscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
-                                              tscale                                              
+SELECT scale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
+                                              scale                                               
 --------------------------------------------------------------------------------------------------
  {"Sat Jan 01 00:00:00 2000 PST", "Sat Jan 01 00:30:00 2000 PST", "Sat Jan 01 01:00:00 2000 PST"}
 (1 row)
 
-SELECT shiftTscale(tstzset '{2000-01-01}', '1 day', '1 hour');
-           shifttscale            
+SELECT shiftScale(tstzset '{2000-01-01}', '1 day', '1 hour');
+            shiftscale            
 ----------------------------------
  {"Sun Jan 02 00:00:00 2000 PST"}
 (1 row)
 
-SELECT shiftTscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
-                                           shifttscale                                            
+SELECT shiftScale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
+                                            shiftscale                                            
 --------------------------------------------------------------------------------------------------
  {"Sun Jan 02 00:00:00 2000 PST", "Sun Jan 02 00:30:00 2000 PST", "Sun Jan 02 01:00:00 2000 PST"}
 (1 row)

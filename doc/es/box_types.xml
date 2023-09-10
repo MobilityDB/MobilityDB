@@ -407,43 +407,56 @@ SELECT Tmax_inc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 
 		<itemizedlist>
 			<listitem id="box_shift">
-				<indexterm><primary><varname>shift</varname></primary></indexterm>
-				<para>Desplazar el período del cuadro delimitador con un intervalo</para>
-				<para><varname>shift(box,interval) → box</varname></para>
+				<indexterm><primary><varname>shiftValue</varname></primary></indexterm>
+				<indexterm><primary><varname>shiftTime</varname></primary></indexterm>
+				<para>Desplazar el rango de valores o el período del cuadro delimitador con un valor o intervalo</para>
+				<para><varname>shiftValue(tbox,{int,float}) → box</varname></para>
+				<para><varname>shiftTime(box,interval) → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT shift(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', interval '1 day');
+SELECT shiftValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 1.0);
+-- TBOXFLOAT XT([2.5, 3.5],[2001-01-01, 2001-01-02])
+SELECT shiftTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
+  interval '1 day');
 -- TBOXFLOAT XT([1.5, 2.5],[2001-01-02, 2001-01-03])
-SELECT shift(stbox 'STBOX T([2001-01-01,2001-01-02])', interval '-1 day');
+SELECT shiftTime(stbox 'STBOX T([2001-01-01,2001-01-02])', interval '-1 day');
 -- STBOX T([2000-12-31, 2001-01-01])
-SELECT shift(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
+SELECT shiftTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
   interval '1 day');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-02, 2001-01-03])
 </programlisting>
 			</listitem>
 
-			<listitem id="box_tscale">
-				<indexterm><primary><varname>tscale</varname></primary></indexterm>
-				<para>Escalar el período del cuadro delimitador a un intervalo. Si el lapso de tiempo del valor de tiempo es cero (es decir, los límites inferior y superior son iguales), el resultado es el cuadro delimitador. El intervalo dado debe ser estrictamente mayor que cero.</para>
-				<para><varname>tscale(box,interval) → box</varname></para>
+			<listitem id="box_scale">
+				<indexterm><primary><varname>scaleValue</varname></primary></indexterm>
+				<indexterm><primary><varname>scaleTime</varname></primary></indexterm>
+				<para>Escalar el rango de valores o el período del cuadro delimitador a un valor o intervalo. Si el ancho o el lapso de tiempo del valor de tiempo es cero (es decir, los límites inferior y superior son iguales), el resultado es el cuadro delimitador. El valor o intervalo dado debe ser estrictamente mayor que cero.</para>
+				<para><varname>scaleValue(box,{int,float}) → box</varname></para>
+				<para><varname>scaleTime(box,interval) → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tscale(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', interval '2 days');
+SELECT scaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0);
+-- TBOXFLOAT XT([1.5, 3.5],[2001-01-01, 2001-01-02])
+SELECT scaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', interval '2 days');
 -- TBOXFLOAT XT([1.5, 2.5],[2001-01-01, 2001-01-03])
-SELECT tscale(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '1 hour');
+SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '1 hour');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 00:00:00, 2001-01-01 01:00:00])
-SELECT tscale(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '-1 day');
+SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '-1 day');
 -- ERROR:  The duration must be a positive interval: -1 days
-</programlisting>
+</programlisting> 
 			</listitem>
 
-			<listitem id="box_shiftTscale">
-				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
-				<para>Desplazar y escalar el período del cuadro delimitador con los intervalos. Esta función combina en un solo paso las funciones <link linkend="box_shift"><varname>shift</varname></link> y <link linkend="box_tscale"><varname>tscale</varname></link>.</para>
-				<para><varname>shiftTscale(box,interval,interval) → box</varname></para>
+			<listitem id="box_shiftScale">
+				<indexterm><primary><varname>shiftScaleValue</varname></primary></indexterm>
+				<indexterm><primary><varname>shiftScaleTime</varname></primary></indexterm>
+				<para>Desplazar y escalar el rango de valores o el período del cuadro delimitador con los valores o intervalos. Estas funciones combinan en un solo paso las funciones <link linkend="box_shift"><varname>shiftValue</varname></link> y <link linkend="box_scale"><varname>scaleValue</varname></link> o <link linkend="box_shift"><varname>shiftTime</varname></link> y <link linkend="box_scale"><varname>scaleTime</varname></link></para>
+				<para><varname>shiftScaleValue(box,{int,float},{int,float}) → box</varname></para>
+				<para><varname>shiftScaleTime(box,interval,interval) → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT shiftTscale(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 
+SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0, 3.0);
+-- TBOXFLOAT XT([3.5, 6.5],[2001-01-01, 2001-01-02])
+SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
   interval '1 day', interval '3 days');
 -- TBOXFLOAT XT([1.5, 2.5],[2001-01-02, 2001-01-05])
-SELECT shiftTscale(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 
+SELECT shiftScaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
   interval '1 hour', interval '3 hours');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 01:00:00, 2001-01-01 04:00:00])
 </programlisting>

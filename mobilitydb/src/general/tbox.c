@@ -561,52 +561,109 @@ Tbox_tmax_inc(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tbox_shift(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_shift);
+PGDLLEXPORT Datum Tbox_shift_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_shift_value);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift the value span of the temporal box by the value
+ * @sqlfunc shiftValue()
+ */
+Datum
+Tbox_shift_value(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  ensure_same_span_basetype(&box->span, basetype);
+  TBox *result = tbox_shift_scale_value(box, shift, 0, true, false);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tbox_shift_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_shift_time);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift the period of the temporal box by the interval
- * @sqlfunc shift()
+ * @sqlfunc shiftTime()
  */
 Datum
-Tbox_shift(PG_FUNCTION_ARGS)
+Tbox_shift_time(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  TBox *result = tbox_shift_tscale(box, shift, NULL);
+  TBox *result = tbox_shift_scale_time(box, shift, NULL);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tbox_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_tscale);
+PGDLLEXPORT Datum Tbox_scale_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_scale_value);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Scale the value span of the temporal box by the value
+ * @sqlfunc scaleValue()
+ */
+Datum
+Tbox_scale_value(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Datum width = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  ensure_same_span_basetype(&box->span, basetype);
+  TBox *result = tbox_shift_scale_value(box, 0, width, false, true);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tbox_scale_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_scale_time);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Scale the period of the temporal box by the interval
- * @sqlfunc tscale()
+ * @sqlfunc scaleTime()
  */
 Datum
-Tbox_tscale(PG_FUNCTION_ARGS)
+Tbox_scale_time(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  TBox *result = tbox_shift_tscale(box, NULL, duration);
+  TBox *result = tbox_shift_scale_time(box, NULL, duration);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tbox_shift_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_shift_tscale);
+PGDLLEXPORT Datum Tbox_shift_scale_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_shift_scale_value);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift and scale the period of the temporal box by the interval
- * @sqlfunc shiftTscale()
+ * @brief Shift and scale the value span of the temporal box by the values
+ * @sqlfunc scaleValue()
  */
 Datum
-Tbox_shift_tscale(PG_FUNCTION_ARGS)
+Tbox_shift_scale_value(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  Datum width = PG_GETARG_DATUM(2);
+  meosType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 2));
+  ensure_same_span_basetype(&box->span, basetype1);
+  ensure_same_span_basetype(&box->span, basetype2);
+  TBox *result = tbox_shift_scale_value(box, shift, width, true, true);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tbox_shift_scale_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_shift_scale_time);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift and scale the period of the temporal box by the intervals
+ * @sqlfunc shiftScaleTime()
+ */
+Datum
+Tbox_shift_scale_time(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  TBox *result = tbox_shift_tscale(box, shift, duration);
+  TBox *result = tbox_shift_scale_time(box, shift, duration);
   PG_RETURN_POINTER(result);
 }
 

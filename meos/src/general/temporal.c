@@ -164,6 +164,21 @@ ensure_one_not_null(void *ptr1, void *ptr2)
   return true;
 }
 
+/**
+ * @brief Ensure that at least one of the pointers is not null
+ */
+bool
+ensure_one_shift_width(bool hasshift, bool haswidth)
+{
+  if (! hasshift && ! haswidth)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+      "At least one of the arguments shift or width must be given");
+    return false;
+  }
+  return true;
+}
+
 #if DEBUG_BUILD
 /**
  * @brief Ensure that the subtype of a temporal value is valid
@@ -576,12 +591,14 @@ ensure_valid_duration(const Interval *duration)
 {
   if (valid_duration(duration))
     return true;
+  char *str = pg_interval_out(duration);
   if (duration->month != 0)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Interval defined in terms of month, year, century, etc. not supported");
+      "Interval defined in terms of month, year, century, etc. not supported: %s", str);
   else
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The interval must be positive");
+      "The interval must be positive: %s", str);
+  pfree(str);
   return false;
 }
 
@@ -1689,6 +1706,139 @@ temporal_set_interp(const Temporal *temp, interpType interp)
   return result;
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal number with the value dimension shifted and/or
+ * scaled by the values.
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shift
+ * @param[in] width Value for scale
+ * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue()
+ */
+Temporal *
+tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width,
+  bool hasshift, bool haswidth)
+{
+  assert(temp);
+  meosType basetype = temptype_basetype(temp->temptype);
+  /* Ensure validity of the arguments */
+  if (! ensure_one_shift_width(hasshift, haswidth) ||
+      (width && ! ensure_positive_datum(width, basetype)))
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+    result = (hasshift) ?
+      (Temporal *) tnuminst_shift_value((TInstant *) temp, shift) :
+      (Temporal *) tinstant_copy((TInstant *) temp);
+  else if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tnumseq_shift_scale_value((TSequence *) temp,
+      shift, width, hasshift, haswidth);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tnumseqset_shift_scale_value((TSequenceSet *) temp,
+      shift, width, hasshift, haswidth);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal integer whose value dimension is shifted by a value.
+ */
+Temporal *
+tint_shift_value(const Temporal *temp, int shift)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return NULL;
+
+  return tnumber_shift_scale_value(temp, Int32GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal integer whose value dimension is shifted by a value.
+ */
+Temporal *
+tfloat_shift_value(const Temporal *temp, double shift)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
+
+  return tnumber_shift_scale_value(temp, Float8GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal number whose value dimension is scaled by a value.
+ */
+Temporal *
+tint_scale_value(const Temporal *temp, int width)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return NULL;
+
+  return tnumber_shift_scale_value(temp, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal number whose value dimension is scaled by a value.
+ */
+Temporal *
+tfloat_scale_value(const Temporal *temp, double width)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
+
+  return tnumber_shift_scale_value(temp, 0, Float8GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal number whose value dimension is scaled by a value.
+ */
+Temporal *
+tint_shift_scale_value(const Temporal *temp, int shift, int width)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TINT))
+    return NULL;
+
+  return tnumber_shift_scale_value(temp, Int32GetDatum(shift),
+    Int32GetDatum(width), true, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal number whose value dimension is scaled by a value.
+ */
+Temporal *
+tfloat_shift_scale_value(const Temporal *temp, double shift, double width)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TFLOAT))
+    return NULL;
+
+  return tnumber_shift_scale_value(temp, Float8GetDatum(shift),
+    Float8GetDatum(width), true, true);
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
+
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value shifted and/or scaled by the intervals.
@@ -1696,10 +1846,10 @@ temporal_set_interp(const Temporal *temp, interpType interp)
  * @param[in] shift Interval for shift
  * @param[in] duration Interval for scale
  * @pre The duration is greater than 0 if is not NULL
- * @sqlfunc shift, scale, shiftTscale
+ * @sqlfunc shiftTime(), scaleTime(), shiftScaleTime()
  */
 Temporal *
-temporal_shift_tscale(const Temporal *temp, const Interval *shift,
+temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure validity of the arguments */
@@ -1712,13 +1862,13 @@ temporal_shift_tscale(const Temporal *temp, const Interval *shift,
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (shift != NULL) ?
-      (Temporal *) tinstant_shift((TInstant *) temp, shift) :
+      (Temporal *) tinstant_shift_time((TInstant *) temp, shift) :
       (Temporal *) tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_shift_tscale((TSequence *) temp,
+    result = (Temporal *) tsequence_shift_scale_time((TSequence *) temp,
       shift, duration);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_shift_tscale((TSequenceSet *) temp,
+    result = (Temporal *) tsequenceset_shift_scale_time((TSequenceSet *) temp,
       shift, duration);
   return result;
 }
@@ -1729,9 +1879,9 @@ temporal_shift_tscale(const Temporal *temp, const Interval *shift,
  * @brief Return a temporal value shifted by the interval.
  */
 Temporal *
-temporal_shift(const Temporal *temp, const Interval *shift)
+temporal_shift_time(const Temporal *temp, const Interval *shift)
 {
-  return temporal_shift_tscale(temp, shift, NULL);
+  return temporal_shift_scale_time(temp, shift, NULL);
 }
 
 /**
@@ -1739,9 +1889,9 @@ temporal_shift(const Temporal *temp, const Interval *shift)
  * @brief Return a temporal value scaled by the interval.
  */
 Temporal *
-temporal_tscale(const Temporal *temp, const Interval *duration)
+temporal_scale_time(const Temporal *temp, const Interval *duration)
 {
-  return temporal_shift_tscale(temp, NULL, duration);
+  return temporal_shift_scale_time(temp, NULL, duration);
 }
 #endif /* MEOS */
 

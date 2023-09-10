@@ -95,12 +95,22 @@ SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tstzset IS NOT NULL;
 -------------------------------------------------------------------------------
 -- Transformation functions
 
-SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
-
 SELECT MIN(startValue(shift(i, 5))) FROM tbl_intset;
 SELECT MIN(startValue(shift(b, 5))) FROM tbl_bigintset;
 SELECT MIN(startValue(shift(f, 5))) FROM tbl_floatset;
 SELECT MIN(startValue(shift(t, '5 min'))) FROM tbl_tstzset;
+
+SELECT MIN(startValue(scale(i, 5))) FROM tbl_intset;
+SELECT MIN(startValue(scale(b, 5))) FROM tbl_bigintset;
+SELECT MIN(startValue(scale(f, 5))) FROM tbl_floatset;
+SELECT MIN(startValue(scale(t, '5 min'))) FROM tbl_tstzset;
+
+SELECT MIN(startValue(shiftScale(i, 5, 5))) FROM tbl_intset;
+SELECT MIN(startValue(shiftScale(b, 5, 5))) FROM tbl_bigintset;
+SELECT MIN(startValue(shiftScale(f, 5, 5))) FROM tbl_floatset;
+SELECT MIN(startValue(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzset;
+
+SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
 
 -------------------------------------------------------------------------------
 -- Accessor functions

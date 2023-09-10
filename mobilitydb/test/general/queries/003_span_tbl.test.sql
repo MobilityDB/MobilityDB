@@ -89,21 +89,30 @@ SELECT MAX(lower(t::tstzspan)) FROM tbl_timestamptz ORDER BY 1;
 -- Transformation Functions
 -------------------------------------------------------------------------------
 
-SELECT SUM(width(i)) FROM tbl_intspan;
-SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;
-
 SELECT MAX(lower(shift(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2;
+SELECT MAX(lower(shift(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2;
 SELECT round(MAX(lower(shift(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2;
 SELECT MAX(lower(shift(p, i))) FROM tbl_tstzspan, tbl_interval;
 
-SELECT MAX(lower(tscale(p, i))) FROM tbl_tstzspan, tbl_interval;
-SELECT MAX(lower(shiftTscale(p, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
+SELECT MAX(lower(scale(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2 WHERE t2.i > 0;
+SELECT MAX(lower(scale(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t2.b > 0;
+SELECT round(MAX(lower(scale(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2 WHERE t2.f > 0;
+SELECT MAX(lower(scale(p, i))) FROM tbl_tstzspan, tbl_interval;
+
+SELECT MAX(lower(shiftScale(t1.i, t2.i, t3.i))) FROM tbl_intspan t1, tbl_int t2, tbl_int t3 WHERE t3.i > 0;
+SELECT MAX(lower(shiftScale(t1.b, t2.b, t3.b))) FROM tbl_bigintspan t1, tbl_bigint t2, tbl_bigint t3 WHERE t3.b > 0;
+SELECT round(MAX(lower(shiftScale(t1.f, t2.f, t3.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2, tbl_float t3 WHERE t3.f > 0;
+SELECT MAX(lower(shiftScale(p, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
 
 SELECT MAX(duration(span(t, t + i))) FROM tbl_timestamptz, tbl_interval;
 SELECT MAX(duration(span(t, t + i, true, true))) FROM tbl_timestamptz, tbl_interval;
 SELECT MAX(duration(span(t, t + i, true, false))) FROM tbl_timestamptz, tbl_interval;
 SELECT MAX(duration(span(t, t + i, false, true))) FROM tbl_timestamptz, tbl_interval;
 SELECT MAX(duration(span(t, t + i, false, false))) FROM tbl_timestamptz, tbl_interval;
+
+SELECT SUM(width(i)) FROM tbl_intspan;
+SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;
+
 
 -------------------------------------------------------------------------------
 -- Accessor Functions

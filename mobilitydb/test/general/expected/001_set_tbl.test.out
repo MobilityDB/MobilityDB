@@ -149,12 +149,6 @@ SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tstzset IS NOT NULL;
     99
 (1 row)
 
-SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
-   min   
----------
- 3.88624
-(1 row)
-
 SELECT MIN(startValue(shift(i, 5))) FROM tbl_intset;
  min 
 -----
@@ -177,6 +171,60 @@ SELECT MIN(startValue(shift(t, '5 min'))) FROM tbl_tstzset;
              min              
 ------------------------------
  Mon Jan 01 17:53:00 2001 PST
+(1 row)
+
+SELECT MIN(startValue(scale(i, 5))) FROM tbl_intset;
+ min 
+-----
+   1
+(1 row)
+
+SELECT MIN(startValue(scale(b, 5))) FROM tbl_bigintset;
+ min 
+-----
+   2
+(1 row)
+
+SELECT MIN(startValue(scale(f, 5))) FROM tbl_floatset;
+        min        
+-------------------
+ 3.886242617199674
+(1 row)
+
+SELECT MIN(startValue(scale(t, '5 min'))) FROM tbl_tstzset;
+             min              
+------------------------------
+ Mon Jan 01 17:48:00 2001 PST
+(1 row)
+
+SELECT MIN(startValue(shiftScale(i, 5, 5))) FROM tbl_intset;
+ min 
+-----
+   6
+(1 row)
+
+SELECT MIN(startValue(shiftScale(b, 5, 5))) FROM tbl_bigintset;
+ min 
+-----
+   7
+(1 row)
+
+SELECT MIN(startValue(shiftScale(f, 5, 5))) FROM tbl_floatset;
+        min        
+-------------------
+ 8.886242617199674
+(1 row)
+
+SELECT MIN(startValue(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzset;
+             min              
+------------------------------
+ Mon Jan 01 17:53:00 2001 PST
+(1 row)
+
+SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
+   min   
+---------
+ 3.88624
 (1 row)
 
 SELECT MAX(memSize(t)) FROM tbl_tstzset;

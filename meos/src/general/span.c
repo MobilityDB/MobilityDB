@@ -928,7 +928,7 @@ Span *
 floatspan_round(const Span *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) || 
+  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
       ! ensure_span_has_type(s, T_FLOATSPAN))
     return NULL;
 
@@ -1043,19 +1043,49 @@ span_shift(Span *s, Datum shift)
 }
 
 /**
+ * @brief Shift and/or scale the span bounds by the values.
+ * @param[in] shift Value to shift the bounds
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
+ * @param[in] type Type of the values
+ * @param[in,out] lower,upper Bounds of the period
+ */
+void
+lower_upper_shift_scale_value(Datum shift, Datum width, meosType type,
+  bool hasshift, bool haswidth, Datum *lower, Datum *upper)
+{
+  assert(hasshift || haswidth);
+  assert(lower && upper);
+  assert(! haswidth || positive_datum(width, type));
+
+  bool instant = datum_eq(*lower, *upper, type);
+  if (hasshift)
+  {
+    *lower = datum_add(*lower, shift, type);
+    if (instant)
+      *upper = *lower;
+    else
+      *upper = datum_add(*upper, shift, type);
+  }
+  if (haswidth && ! instant)
+    *upper = datum_add(*lower, width, type);
+  return;
+}
+
+/**
  * @brief Shift and/or scale period bounds by the intervals.
  * @param[in] shift Interval to shift the bounds
  * @param[in] duration Interval for the duration of the result
  * @param[in,out] lower,upper Bounds of the period
  */
 void
-lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
+lower_upper_shift_scale_time(const Interval *shift, const Interval *duration,
   TimestampTz *lower, TimestampTz *upper)
 {
   assert(shift || duration);
   assert(lower && upper);
-  if (duration && ! ensure_valid_duration(duration))
-    return;
+  assert(! duration || valid_duration(duration));
 
   bool instant = (*lower == *upper);
   if (shift)
@@ -1072,10 +1102,47 @@ lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
 }
 
 /**
+ * @brief Shift and/or scale a span by a delta and a scale
+ */
+void
+numspan_delta_scale_iter(Span *s, Datum origin, Datum delta, bool hasdelta,
+  double scale)
+{
+  assert(s);
+
+  Datum lower = s->lower;
+  Datum upper = s->upper;
+  meosType type = s->basetype;
+  /* The default value when shift is not given is 0 */
+  if (hasdelta)
+  {
+    s->lower = datum_add(s->lower, delta, type);
+    s->upper = datum_add(s->upper, delta, type);
+  }
+  /* Shifted lower and upper */
+  lower = s->lower;
+  upper = s->upper;
+  /* The default value when scale is not given is 1.0 */
+  if (scale != 1.0)
+  {
+    /* The potential shift has been already taken care in the previous if */
+    s->lower = datum_add(origin, double_datum(
+      datum_double(datum_sub(lower, origin, type), type) * scale, type), type);
+    if (datum_eq(lower, upper, type))
+      s->upper = s->lower;
+    else
+      s->upper = datum_add(origin, double_datum(
+        datum_double(datum_sub(upper, origin, type), type) * scale, type), type);
+  }
+  return;
+}
+
+/**
  * @brief Shift and/or scale a period by a delta and a scale
  */
 void
-period_delta_scale(Span *s, TimestampTz origin, TimestampTz delta, double scale)
+period_delta_scale_iter(Span *s, TimestampTz origin, TimestampTz delta,
+  double scale)
 {
   assert(s);
 
@@ -1102,6 +1169,34 @@ period_delta_scale(Span *s, TimestampTz origin, TimestampTz delta, double scale)
       s->upper = TimestampTzGetDatum(
         origin + (TimestampTz) ((upper - origin) * scale));
   }
+  return;
+}
+
+/**
+ * @brief Shift and/or scale a span by the values.
+ * @note Returns the delta and scale of the transformation
+ */
+void
+numspan_shift_scale1(Span *s, Datum shift, Datum width, bool hasshift,
+  bool haswidth, Datum *delta, double *scale)
+{
+  Datum lower = s->lower;
+  Datum upper = s->upper;
+  meosType type = s->basetype;
+  lower_upper_shift_scale_value(shift, width, type, hasshift, haswidth,
+    &lower, &upper);
+  /* Compute delta and scale before overwriting s->lower and s->upper */
+  // *delta = 0;   /* Default value when shift is not given */
+  // *scale = 1.0; /* Default value when width is not given */
+  if (delta != NULL && hasshift)
+    *delta = datum_sub(lower, s->lower, type);
+  /* If the period is instantaneous we cannot scale */
+  if (scale != NULL && haswidth && ! datum_eq(s->lower, s->upper, type))
+    *scale = datum_double(datum_sub(upper, lower, type), type) /
+      datum_double(datum_sub(s->upper, s->lower, type), type);
+  s->lower = lower;
+  s->upper = upper;
+  return;
 }
 
 /**
@@ -1109,12 +1204,12 @@ period_delta_scale(Span *s, TimestampTz origin, TimestampTz delta, double scale)
  * @note Returns the delta and scale of the transformation
  */
 void
-period_shift_tscale1(Span *s, const Interval *shift, const Interval *duration,
+period_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
   TimestampTz *delta, double *scale)
 {
   TimestampTz lower = DatumGetTimestampTz(s->lower);
   TimestampTz upper = DatumGetTimestampTz(s->upper);
-  lower_upper_shift_tscale(shift, duration, &lower, &upper);
+  lower_upper_shift_scale_time(shift, duration, &lower, &upper);
   /* Compute delta and scale before overwriting s->lower and s->upper */
   // *delta = 0;   /* Default value when shift == NULL */
   // *scale = 1.0; /* Default value when duration == NULL */
@@ -1131,11 +1226,90 @@ period_shift_tscale1(Span *s, const Interval *shift, const Interval *duration,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Shift and/or scale a period by the intervals.
- * @sqlfunc shift(), tscale(), shiftTscale()
+ * @brief Shift and/or scale a number span by the values.
+ * @sqlfunc shift(), scale(), shiftScale()
  */
 Span *
-period_shift_tscale(const Span *s, const Interval *shift,
+numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_one_shift_width(hasshift, haswidth) ||
+      (haswidth && ! ensure_positive_datum(width, s->basetype)))
+    return NULL;
+
+  /* Copy the input span to the result */
+  Span *result = span_copy(s);
+  /* Shift and/or scale the resulting span */
+  lower_upper_shift_scale_value(shift, width, s->basetype, hasshift, haswidth,
+    &result->lower, &result->upper);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return an integer span shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+Span *
+intspan_shift_scale(const Span *s, int shift, int width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_span_has_type(s, T_INTSPAN))
+    return NULL;
+
+  return numspan_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),
+    hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a big integer span shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+Span *
+bigintspan_shift_scale(const Span *s, int64 shift, int64 width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_span_has_type(s, T_BIGINTSPAN))
+    return NULL;
+
+  return numspan_shift_scale(s, Int64GetDatum(shift), Int64GetDatum(width),
+    hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a float span shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+Span *
+floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_span_has_type(s, T_FLOATSPAN))
+    return NULL;
+
+  return numspan_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
+    hasshift, haswidth);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Shift and/or scale a period by the intervals.
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+Span *
+period_shift_scale(const Span *s, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure validity of the arguments */
@@ -1149,7 +1323,7 @@ period_shift_tscale(const Span *s, const Interval *shift,
   /* Shift and/or scale the resulting period */
   TimestampTz lower = DatumGetTimestampTz(s->lower);
   TimestampTz upper = DatumGetTimestampTz(s->upper);
-  lower_upper_shift_tscale(shift, duration, &lower, &upper);
+  lower_upper_shift_scale_time(shift, duration, &lower, &upper);
   result->lower = TimestampTzGetDatum(lower);
   result->upper = TimestampTzGetDatum(upper);
   return result;

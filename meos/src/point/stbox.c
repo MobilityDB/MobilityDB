@@ -1072,10 +1072,10 @@ stbox_set_srid(const STBox *box, int32 srid)
 /**
  * @ingroup libmeos_box_transf
  * @brief Shift and/or scale the period of a spatiotemporal box by the intervals.
- * @sqlfunc shift(), tscale(), shiftTscale()
+ * @sqlfunc shiftTime(), scaleTime(), shiftScaleTime()
  */
 STBox *
-stbox_shift_tscale(const STBox *box, const Interval *shift,
+stbox_shift_scale_time(const STBox *box, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure validity of the arguments */
@@ -1089,7 +1089,7 @@ stbox_shift_tscale(const STBox *box, const Interval *shift,
   /* Shift and/or scale the resulting period */
   TimestampTz lower = DatumGetTimestampTz(box->period.lower);
   TimestampTz upper = DatumGetTimestampTz(box->period.upper);
-  lower_upper_shift_tscale(shift, duration, &lower, &upper);
+  lower_upper_shift_scale_time(shift, duration, &lower, &upper);
   result->period.lower = TimestampTzGetDatum(lower);
   result->period.upper = TimestampTzGetDatum(upper);
   return result;

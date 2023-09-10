@@ -233,15 +233,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Shift the time value by an interval</para>
+					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Shift the set or span by a value or interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_tscale"><varname>tscale</varname></link>: Scale the time value to an interval</para>
+					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Scale the set or span by a value or interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time value with the intervals</para>
+					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Shift and scale the set or span by the values or intervals</para>
 				</listitem>
 
 				<listitem>
@@ -462,15 +462,15 @@
 			<title>Transformations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_shift"><varname>shift</varname></link>: Shift the period of the bounding box by an interval</para>
+					<para><link linkend="box_shift"><varname>shiftValue</varname>, <varname>shiftTime</varname></link>: Shift the span or the period of the bounding box by a value or interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_tscale"><varname>tscale</varname></link>: Scale the period of the bounding box to an interval</para>
+					<para><link linkend="box_scale"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Scale the span or the period of the bounding box to a value or interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the period of the bounding box with the intervals</para>
+					<para><link linkend="box_shiftScale"><varname>shiftScaleValue</varname>, <varname>shiftScaleTime</varname></link>: Shift and scale the span or the period of the bounding box with the values or intervals</para>
 				</listitem>
 
 				<listitem>
@@ -798,15 +798,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shift"><varname>shift</varname></link>: Shift the time span of the temporal value by an interval</para>
+					<para><link linkend="shift"><varname>shiftValue</varname>, <varname>shiftTime</varname></link>: Shift the value or time span of the temporal value by a value or interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tscale"><varname>tscale</varname></link>: Scale the time span of the temporal value to an interval</para>
+					<para><link linkend="scale"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Scale the value or time span of the temporal value to a value or interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time span the temporal value with the intervals</para>
+					<para><link linkend="shiftScale"><varname>shiftScaleValue</varname>, <varname>shiftScaleTime</varname></link>: Shift and scale the value or time span the temporal value with the values or intervals</para>
 				</listitem>
 
 				<listitem>

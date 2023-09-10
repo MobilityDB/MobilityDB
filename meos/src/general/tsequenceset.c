@@ -1577,12 +1577,50 @@ tsequenceset_set_interp(const TSequenceSet *ss, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal sequence set shifted and/or scaled by the intervals.
+ * @brief Return a temporal sequence set where the value dimension is shifted
+ * and/or scaled by the values.
  * @pre The duration is greater than 0 if it is not NULL
- * @sqlfunc shift(), tscale(), shiftTscale().
+ * @sqlfunc shiftValues(), scaleValues(), shiftScaleValues().
  */
 TSequenceSet *
-tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
+tnumseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
+  Datum width, bool hasshift, bool haswidth)
+{
+  assert(ss);
+  assert(hasshift || haswidth);
+
+  /* Copy the input sequence set to the result */
+  TSequenceSet *result = tsequenceset_copy(ss);
+
+  /* Shift and  /or scale the bounding span */
+  Datum delta = 0;     /* Default value when shift is not given */
+  double scale = 1.0;  /* Default value when duration is not given */
+  TBox *box = TSEQUENCESET_BBOX_PTR(result);
+  numspan_shift_scale1(&box->span, shift, width, hasshift, haswidth,
+    &delta, &scale);
+  Datum origin = box->span.lower;
+
+  /* Shift and/or scale each composing sequence */
+  for (int i = 0; i < result->count; i++)
+  {
+    TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(result, i);
+    /* Shift and/or scale the bounding span of the sequence */
+    box = TSEQUENCE_BBOX_PTR(seq);
+    numspan_delta_scale_iter(&box->span, origin, delta, hasshift, scale);
+    /* Shift and/or scale each instant of the composing sequence */
+    tnumseq_shift_scale_value_iter(seq, origin, delta, hasshift, scale);
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal sequence set shifted and/or scaled by the intervals.
+ * @pre The duration is greater than 0 if it is not NULL
+ * @sqlfunc shiftTime(), scaleTime(), shiftScaleTime().
+ */
+TSequenceSet *
+tsequenceset_shift_scale_time(const TSequenceSet *ss, const Interval *shift,
   const Interval *duration)
 {
   assert(ss);
@@ -1594,7 +1632,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
   /* Shift and/or scale the bounding period */
   TimestampTz delta = 0; /* Default value when shift == NULL */
   double scale = 1.0;    /* Default value when duration == NULL */
-  period_shift_tscale1(&result->period, shift, duration, &delta, &scale);
+  period_shift_scale1(&result->period, shift, duration, &delta, &scale);
   TimestampTz origin = DatumGetTimestampTz(result->period.lower);
 
   /* Shift and/or scale each composing sequence */
@@ -1602,9 +1640,9 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
   {
     TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(result, i);
     /* Shift and/or scale the bounding period of the sequence */
-    period_delta_scale(&seq->period, origin, delta, scale);
+    period_delta_scale_iter(&seq->period, origin, delta, scale);
     /* Shift and/or scale each instant of the composing sequence */
-    tsequence_shift_tscale_iter(seq, delta, scale);
+    tsequence_shift_scale_time_iter(seq, delta, scale);
   }
   return result;
 }

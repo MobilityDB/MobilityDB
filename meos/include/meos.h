@@ -510,20 +510,26 @@ extern TimestampTz *timestampset_values(const Set *ts);
 
 /* Transformation functions for set and span types */
 
+extern Set *bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift, bool haswidth);
 extern Set *floatset_round(const Set *s, int maxdd);
+extern Set *floatset_shift_scale(const Set *s, double shift, double width, bool hasshift, bool haswidth);
 extern Span *floatspan_intspan(const Span *s);
 extern Span *floatspan_round(const Span *s, int maxdd);
 extern SpanSet *floatspanset_intspanset(const SpanSet *ss);
 extern SpanSet *floatspanset_round(const SpanSet *ss, int maxdd);
 extern Set *geoset_round(const Set *s, int maxdd);
+extern Set *intset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
 extern Span *intspan_floatspan(const Span *s);
 extern SpanSet *intspanset_floatspanset(const SpanSet *ss);
-extern Span *period_shift_tscale(const Span *p, const Interval *shift, const Interval *duration);
+extern Set *numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift, bool haswidth);
+extern Span *numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift, bool haswidth);
+extern SpanSet *numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width, bool hasshift, bool haswidth);
+extern Span *period_shift_scale(const Span *p, const Interval *shift, const Interval *duration);
 extern Span *period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
-extern SpanSet *periodset_shift_tscale(const SpanSet *ps, const Interval *shift, const Interval *duration);
+extern SpanSet *periodset_shift_scale(const SpanSet *ss, const Interval *shift, const Interval *duration);
 extern SpanSet *periodset_tprecision(const SpanSet *ss, const Interval *duration, TimestampTz torigin);
 extern TimestampTz timestamp_tprecision(TimestampTz t, const Interval *duration, TimestampTz torigin);
-extern Set *timestampset_shift_tscale(const Set *ts, const Interval *shift, const Interval *duration);
+extern Set *timestampset_shift_scale(const Set *ts, const Interval *shift, const Interval *duration);
 
 /*****************************************************************************
  * Bounding box functions for set and span types
@@ -883,11 +889,13 @@ extern STBox *stbox_expand_time(const STBox *box, const Interval *interval);
 extern STBox *stbox_get_space(const STBox *box);
 extern STBox *stbox_round(const STBox *box, int maxdd);
 extern STBox *stbox_set_srid(const STBox *box, int32 srid);
-extern STBox *stbox_shift_tscale(const STBox *box, const Interval *shift, const Interval *duration);
+extern STBox *stbox_shift_scale_time(const STBox *box, const Interval *shift, const Interval *duration);
 extern TBox *tbox_expand_value(const TBox *box, const double d);
 extern TBox *tbox_expand_time(const TBox *box, const Interval *interval);
 extern TBox *tbox_round(const TBox *box, int maxdd);
-extern TBox *tbox_shift_tscale(const TBox *box, const Interval *shift, const Interval *duration);
+extern TBox *tbox_shift_scale_int(const TBox *box, int shift, int width, bool hasshift, bool haswidth);
+extern TBox *tbox_shift_scale_float(const TBox *box, double shift, double width, bool hasshift, bool haswidth);
+extern TBox *tbox_shift_scale_time(const TBox *box, const Interval *shift, const Interval *duration);
 
 /*****************************************************************************/
 
@@ -1094,14 +1102,25 @@ extern text **ttext_values(const Temporal *temp, int *count);
 /* Transformation functions for temporal types */
 
 extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
-extern Temporal *temporal_shift(const Temporal *temp, const Interval *shift);
-extern Temporal *temporal_shift_tscale(const Temporal *temp, const Interval *shift, const Interval *duration);
+
+extern Temporal *tfloat_scale_value(const Temporal *temp, double width);
+extern Temporal *tfloat_shift_value(const Temporal *temp, double shift);
+extern Temporal *tfloat_shift_scale_value(const Temporal *temp, double shift, double width);
+
+extern Temporal *tint_scale_value(const Temporal *temp, int width);
+extern Temporal *tint_shift_value(const Temporal *temp, int shift);
+extern Temporal *tint_shift_scale_value(const Temporal *temp, int shift, int width);
+
+extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
+extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift);
+extern Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration);
+
 extern Temporal *temporal_to_tinstant(const Temporal *temp);
 extern Temporal *temporal_to_tsequence(const Temporal *temp, interpType interp);
 extern Temporal *temporal_to_tsequenceset(const Temporal *temp, interpType interp);
 extern Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
 extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin);
-extern Temporal *temporal_tscale(const Temporal *temp, const Interval *duration);
+extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
 
 /*****************************************************************************/
 

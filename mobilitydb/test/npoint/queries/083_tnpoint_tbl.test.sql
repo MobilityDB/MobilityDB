@@ -108,7 +108,7 @@ WITH temp(inst) AS (
   SELECT tnpoint 'Npoint(1, 0.7)@2000-01-07' )
 SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
 
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tnpoint;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tnpoint;
 
 -------------------------------------------------------------------------------
 --  Cast functions
@@ -152,7 +152,7 @@ SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE ever_eq(t1.inst, t
 
 SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE always_eq(t1.inst, t2.np);
 
-SELECT MAX(startTimestamp(shift(t1.temp, t2.i))) FROM tbl_tnpoint t1, tbl_interval t2;
+SELECT MAX(startTimestamp(shiftTime(t1.temp, t2.i))) FROM tbl_tnpoint t1, tbl_interval t2;
 
 SELECT DISTINCT MAX(getPosition(startValue(temp))) FROM tbl_tnpoint;
 

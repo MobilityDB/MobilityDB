@@ -1058,54 +1058,81 @@ SELECT asText(setInterp(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01,
 			</listitem>
 
 			<listitem id="shift">
-				<indexterm><primary><varname>shift</varname></primary></indexterm>
-				<para>Desplazar el intervalo de tiempo de un valor temporal con un intervalo</para>
-				<para><varname>shift(ttype,interval) → ttype</varname></para>
+				<indexterm><primary><varname>shiftValue</varname></primary></indexterm>
+				<indexterm><primary><varname>shiftTime</varname></primary></indexterm>
+				<para>Desplazar el rango de valores or el intervalo de tiempo de un valor temporal con un valor or intervalo</para>
+				<para><varname>shiftValue(tnumber,base) → tnumber</varname></para>
+				<para><varname>shiftTime(ttype,interval) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT shift(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
+SELECT shiftValue(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', 1);
+-- {2@2001-01-02, 3@2001-01-04, 2@2001-01-06}
+SELECT shiftValue(tfloat '{[1@2001-01-01,2@2001-01-02],[3@2001-01-03,4@2001-01-04]}', -1);
+--  {[0@2001-01-01, 1@2001-01-02], [2@2001-01-03, 3@2001-01-04]}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT shiftTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
 -- {1@2001-01-02, 2@2001-01-04, 1@2001-01-06}
-SELECT shift(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
+SELECT shiftTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
 -- [1@2001-01-02, 2@2001-01-04]
-SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
+SELECT asText(shiftTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
   [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
 /* {[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-04],
    [POINT(2 2)@2001-01-05, POINT(1 1)@2001-01-06]} */
 </programlisting>
 			</listitem>
 
-			<listitem id="tscale">
-				<indexterm><primary><varname>tscale</varname></primary></indexterm>
-				<para>Escalear el intervalo de tiempo de un valor temporal a un intervalo. Si el intervalo de tiempo del valor temporal es cero (por ejemplo, para un instante temporal), el resultado es el valor temporal. El intervalo dado debe ser estrictamente mayor que cero.</para>
-				<para><varname>tscale(ttype,interval) → ttype</varname></para>
+			<listitem id="scale">
+				<indexterm><primary><varname>scaleValue</varname></primary></indexterm>
+				<indexterm><primary><varname>scaleTime</varname></primary></indexterm>
+				<para>Escalear el rango de valores o el intervalo de tiempo de un valor temporal a un valor o intervalo. Si el rango de valores o el intervalo de tiempo del valor temporal es cero (por ejemplo, para un instante temporal), el resultado es el valor temporal. El valor o intervalo dado debe ser estrictamente mayor que cero.</para>
+				<para><varname>scaleValue(tnumber,base) → tnumber</varname></para>
+				<para><varname>scaleTime(ttype,interval) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tscale(tint '1@2001-01-01', '1 day');
+SELECT scaleValue(tint '1@2001-01-01', 1);
 -- 1@2001-01-01
-SELECT tscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
+SELECT scaleValue(tfloat '{[1@2001-01-01,2@2001-01-02], [3@2001-01-03,4@2001-01-04]}', 6);
+-- {[1@2001-01-01, 3@2001-01-03], [5@2001-01-05, 7@2001-01-07]}
+SELECT scaleValue(tint '1@2001-01-01', -1);
+-- ERROR:   The value must be strictly positive: -1
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT scaleTime(tint '1@2001-01-01', '1 day');
+-- 1@2001-01-01
+SELECT scaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
 -- {1@2001-01-01 00:00:00+01, 2@2001-01-01 12:00:00+01, 1@2001-01-02 00:00:00+01}
-SELECT tscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
+SELECT scaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
 -- [1@2001-01-01, 2@2001-01-02]
-SELECT asText(tscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+SELECT asText(scaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
 /* {[POINT(1 1)@2001-01-01 00:00:00+01, POINT(2 2)@2001-01-01 06:00:00+01,
    POINT(1 1)@2001-01-01 12:00:00+01], [POINT(2 2) @2001-01-01 18:00:00+01,
    POINT(1 1)@2001-01-02 00:00:00+01]} */
-SELECT tscale(tint '1@2001-01-01', '-1 day');
--- ERROR:  The duration must be a positive interval: -1 days
+SELECT scaleTime(tint '1@2001-01-01', '-1 day');
+-- ERROR:  The interval must be positive: -1 days
 </programlisting>
 			</listitem>
 
-			<listitem id="shiftTscale">
-				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
-				<para>Desplazar y escalear el intervalo de tiempo de un valor temporal a los dos intervalos. Esta función combina en un solo paso las funciones <link linkend="shift"><varname>shift</varname></link> y <link linkend="tscale"><varname>tscale</varname></link>.</para>
-				<para><varname>shiftTscale(ttype,interval,interval) → ttype</varname></para>
+			<listitem id="shiftScale">
+				<indexterm><primary><varname>shiftScaleValue</varname></primary></indexterm>
+				<indexterm><primary><varname>shiftScaleTime</varname></primary></indexterm>
+				<para>Desplazar y escalear el rango de valores o intervalo de tiempo de un valor temporal a los dos valores o intervalos. Esta función combina en un solo paso las funciones <link linkend="shift"><varname>shiftValue</varname></link> y <link linkend="scale"><varname>scaleValue</varname></link> o <link linkend="shift"><varname>shiftTime</varname></link> y <link linkend="scale"><varname>scaleTime</varname></link>.</para>
+				<para><varname>shiftScaleValue(tnumber,base,base) → tnumber</varname></para>
+				<para><varname>shiftScaleTime(ttype,interval,interval) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT shiftTscale(tint '1@2001-01-01', '1 day', '1 day');
+SELECT shiftScaleValue(tint '1@2001-01-01', 1, 1);
+-- 2@2001-01-01
+SELECT shiftScaleValue(tfloat '{[1@2001-01-01,2@2001-01-02],[3@2001-01-03,4@2001-01-04]}',
+  -1, 6);
+--  {[0@2001-01-01, 2@2001-01-02], [4@2001-01-03, 6@2001-01-04]}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT shiftScaleTime(tint '1@2001-01-01', '1 day', '1 day');
 -- 1@2001-01-02
-SELECT shiftTscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day', '1 day');
+SELECT shiftScaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day','1 day');
 -- {1@2001-01-02 00:00:00+01, 2@2001-01-02 12:00:00+01, 1@2001-01-03 00:00:00+01}
-SELECT shiftTscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
+SELECT shiftScaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
 -- [1@2001-01-02, 2@2001-01-03]
-SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+SELECT asText(shiftScaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}',
   '1 day', '1 day'));
 /* {[POINT(1 1)@2001-01-02 00:00:00+01, POINT(2 2)@2001-01-02 06:00:00+01,

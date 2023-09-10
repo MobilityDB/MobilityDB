@@ -398,7 +398,79 @@ SELECT MAX((timestamps(ps))[1]) FROM tbl_tstzspanset;
  Sun Dec 30 04:01:00 2001 PST
 (1 row)
 
-SELECT MAX(startTimestamp(shift(ps, '5 min'))) FROM tbl_tstzspanset;
+SELECT MAX(lower(shift(i, 5))) FROM tbl_intspanset;
+ max 
+-----
+  60
+(1 row)
+
+SELECT MAX(lower(shift(b, 5))) FROM tbl_bigintspanset;
+ max 
+-----
+  54
+(1 row)
+
+SELECT round(MAX(lower(shift(f, 5)))::numeric, 6) FROM tbl_floatspanset;
+   round   
+-----------
+ 52.333306
+(1 row)
+
+SELECT MAX(lower(shift(ps, '5 min'))) FROM tbl_tstzspanset;
+             max              
+------------------------------
+ Sun Dec 30 04:06:00 2001 PST
+(1 row)
+
+SELECT MAX(lower(scale(i, 5))) FROM tbl_intspanset;
+ max 
+-----
+  55
+(1 row)
+
+SELECT MAX(lower(scale(b, 5))) FROM tbl_bigintspanset;
+ max 
+-----
+  49
+(1 row)
+
+SELECT round(MAX(lower(scale(f, 5)))::numeric, 6) FROM tbl_floatspanset;
+   round   
+-----------
+ 47.333306
+(1 row)
+
+SELECT MAX(lower(scale(ps, '5 min'))) FROM tbl_tstzspanset;
+             max              
+------------------------------
+ Sun Dec 30 04:01:00 2001 PST
+(1 row)
+
+SELECT MAX(lower(shiftScale(i, 5, 5))) FROM tbl_intspanset;
+ max 
+-----
+  60
+(1 row)
+
+SELECT MAX(lower(shiftScale(b, 5, 5))) FROM tbl_bigintspanset;
+ max 
+-----
+  54
+(1 row)
+
+SELECT round(MAX(lower(shiftScale(f, 5, 5)))::numeric, 6) FROM tbl_floatspanset;
+   round   
+-----------
+ 52.333306
+(1 row)
+
+SELECT MAX(lower(shiftScale(ps, '5 min', '5 min'))) FROM tbl_tstzspanset;
+             max              
+------------------------------
+ Sun Dec 30 04:06:00 2001 PST
+(1 row)
+
+SELECT MAX(startTimestamp(shiftScale(ps, '5 min', '5 min'))) FROM tbl_tstzspanset;
              max              
 ------------------------------
  Sun Dec 30 04:06:00 2001 PST

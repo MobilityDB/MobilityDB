@@ -1408,69 +1408,76 @@ SELECT timestamps(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT timestamps(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
 -------------------------------------------------------------------------------
--- Shift and tscale functions
+-- Shift and scale functions
 -------------------------------------------------------------------------------
 
-SELECT shift(tbool 't@2000-01-01', '5 min');
-SELECT shift(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', '5 min');
-SELECT shift(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', '5 min');
-SELECT shift(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', '5 min');
-SELECT shift(tint '1@2000-01-01', '5 min');
-SELECT shift(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', '5 min');
-SELECT shift(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', '5 min');
-SELECT shift(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', '5 min');
-SELECT shift(tfloat '1.5@2000-01-01', '5 min');
-SELECT shift(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '5 min');
-SELECT shift(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '5 min');
-SELECT shift(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '5 min');
-SELECT shift(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '5 min');
-SELECT shift(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '5 min');
-SELECT shift(ttext 'AAA@2000-01-01', '5 min');
-SELECT shift(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '5 min');
-SELECT shift(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '5 min');
-SELECT shift(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '5 min');
+SELECT shiftValue(tfloat '{1@2000-01-01}', 1);
+SELECT scaleValue(tfloat '{1@2000-01-01}', 2);
+SELECT shiftScaleValue(tfloat '{1@2000-01-01}', 1, 2);
+SELECT shiftValue(tfloat '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}', 1);
+SELECT scaleValue(tfloat '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}', 2);
+SELECT shiftScaleValue(tfloat '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}', 1, 2);
 
-SELECT tscale(tbool 't@2000-01-01', '1 day');
-SELECT tscale(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', '1 day');
-SELECT tscale(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', '1 day');
-SELECT tscale(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', '1 day');
-SELECT tscale(tint '1@2000-01-01', '1 day');
-SELECT tscale(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', '1 day');
-SELECT tscale(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', '1 day');
-SELECT tscale(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', '1 day');
-SELECT tscale(tfloat '1.5@2000-01-01', '1 day');
-SELECT tscale(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '1 day');
-SELECT tscale(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day');
-SELECT tscale(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day');
-SELECT tscale(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day');
-SELECT tscale(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day');
-SELECT tscale(ttext 'AAA@2000-01-01', '1 day');
-SELECT tscale(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '1 day');
-SELECT tscale(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '1 day');
-SELECT tscale(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '1 day');
+SELECT shiftTime(tbool 't@2000-01-01', '5 min');
+SELECT shiftTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', '5 min');
+SELECT shiftTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', '5 min');
+SELECT shiftTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', '5 min');
+SELECT shiftTime(tint '1@2000-01-01', '5 min');
+SELECT shiftTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', '5 min');
+SELECT shiftTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', '5 min');
+SELECT shiftTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', '5 min');
+SELECT shiftTime(tfloat '1.5@2000-01-01', '5 min');
+SELECT shiftTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '5 min');
+SELECT shiftTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '5 min');
+SELECT shiftTime(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '5 min');
+SELECT shiftTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '5 min');
+SELECT shiftTime(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '5 min');
+SELECT shiftTime(ttext 'AAA@2000-01-01', '5 min');
+SELECT shiftTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '5 min');
+SELECT shiftTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '5 min');
+SELECT shiftTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '5 min');
 
-SELECT shiftTscale(tbool 't@2000-01-01', '1 day', '1 day');
-SELECT shiftTscale(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', '1 day', '1 day');
-SELECT shiftTscale(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', '1 day', '1 day');
-SELECT shiftTscale(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', '1 day', '1 day');
-SELECT shiftTscale(tint '1@2000-01-01', '1 day', '1 day');
-SELECT shiftTscale(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', '1 day', '1 day');
-SELECT shiftTscale(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', '1 day', '1 day');
-SELECT shiftTscale(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', '1 day', '1 day');
-SELECT shiftTscale(tfloat '1.5@2000-01-01', '1 day', '1 day');
-SELECT shiftTscale(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '1 day', '1 day');
-SELECT shiftTscale(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day', '1 day');
-SELECT shiftTscale(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day', '1 day');
-SELECT shiftTscale(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day', '1 day');
-SELECT shiftTscale(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day', '1 day');
-SELECT shiftTscale(ttext 'AAA@2000-01-01', '1 day', '1 day');
-SELECT shiftTscale(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '1 day', '1 day');
-SELECT shiftTscale(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '1 day', '1 day');
-SELECT shiftTscale(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '1 day', '1 day');
+SELECT scaleTime(tbool 't@2000-01-01', '1 day');
+SELECT scaleTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', '1 day');
+SELECT scaleTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', '1 day');
+SELECT scaleTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', '1 day');
+SELECT scaleTime(tint '1@2000-01-01', '1 day');
+SELECT scaleTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', '1 day');
+SELECT scaleTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', '1 day');
+SELECT scaleTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', '1 day');
+SELECT scaleTime(tfloat '1.5@2000-01-01', '1 day');
+SELECT scaleTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '1 day');
+SELECT scaleTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day');
+SELECT scaleTime(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day');
+SELECT scaleTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day');
+SELECT scaleTime(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day');
+SELECT scaleTime(ttext 'AAA@2000-01-01', '1 day');
+SELECT scaleTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '1 day');
+SELECT scaleTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '1 day');
+SELECT scaleTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '1 day');
+
+SELECT shiftScaleTime(tbool 't@2000-01-01', '1 day', '1 day');
+SELECT shiftScaleTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', '1 day', '1 day');
+SELECT shiftScaleTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', '1 day', '1 day');
+SELECT shiftScaleTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', '1 day', '1 day');
+SELECT shiftScaleTime(tint '1@2000-01-01', '1 day', '1 day');
+SELECT shiftScaleTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', '1 day', '1 day');
+SELECT shiftScaleTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', '1 day', '1 day');
+SELECT shiftScaleTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', '1 day', '1 day');
+SELECT shiftScaleTime(tfloat '1.5@2000-01-01', '1 day', '1 day');
+SELECT shiftScaleTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '1 day', '1 day');
+SELECT shiftScaleTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day', '1 day');
+SELECT shiftScaleTime(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day', '1 day');
+SELECT shiftScaleTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day', '1 day');
+SELECT shiftScaleTime(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day', '1 day');
+SELECT shiftScaleTime(ttext 'AAA@2000-01-01', '1 day', '1 day');
+SELECT shiftScaleTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '1 day', '1 day');
+SELECT shiftScaleTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '1 day', '1 day');
+SELECT shiftScaleTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '1 day', '1 day');
 
 /* Errors */
-SELECT tscale(tfloat '1@2000-01-01', '0');
-SELECT tscale(tfloat '1@2000-01-01', '-1 day');
+SELECT scaleTime(tfloat '1@2000-01-01', '0');
+SELECT scaleTime(tfloat '1@2000-01-01', '-1 day');
 
 
 -------------------------------------------------------------------------------

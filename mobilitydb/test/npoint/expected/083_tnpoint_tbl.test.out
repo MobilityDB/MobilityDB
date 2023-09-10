@@ -169,7 +169,7 @@ SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
  {[NPoint(1,0.1)@Sat Jan 01 00:00:00 2000 PST], [NPoint(1,0.2)@Sun Jan 02 00:00:00 2000 PST], [NPoint(1,0.4)@Tue Jan 04 00:00:00 2000 PST], [NPoint(1,0.5)@Wed Jan 05 00:00:00 2000 PST], [NPoint(1,0.7)@Fri Jan 07 00:00:00 2000 PST]}
 (1 row)
 
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tnpoint;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tnpoint;
  max 
 -----
   57
@@ -270,7 +270,7 @@ SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE always_eq(t1.inst,
      0
 (1 row)
 
-SELECT MAX(startTimestamp(shift(t1.temp, t2.i))) FROM tbl_tnpoint t1, tbl_interval t2;
+SELECT MAX(startTimestamp(shiftTime(t1.temp, t2.i))) FROM tbl_tnpoint t1, tbl_interval t2;
              max              
 ------------------------------
  Wed Dec 26 12:38:00 2001 PST

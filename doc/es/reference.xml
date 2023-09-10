@@ -234,15 +234,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar el valor de tiempo con un intervalo</para>
+					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar el conjunto o el rango con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_tscale"><varname>tscale</varname></link>: Escalar el valor de tiempo a un intervalo</para>
+					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Escalar el conjunto o el rango con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalar el valor de tiempo con los intervalos</para>
+					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Desplazar y escalar el conjunto o el rango los valores or intervalos de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -463,15 +463,15 @@
 			<title>Transformaciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_shift"><varname>shift</varname></link>: Desplazar el período del cuadro delimitador con un intervalo</para>
+					<para><link linkend="box_shift"><varname>shiftValue</varname>, <varname>shiftTime</varname></link>: Desplazar el rango de valores o período del cuadro delimitador con un valor o intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_tscale"><varname>tscale</varname></link>: Escalar el período del cuadro delimitador a un intervalo</para>
+					<para><link linkend="box_scale"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Escalar el rango de valores o el período del cuadro delimitador a un valor o intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalar el período del cuadro delimitador con los intervalos</para>
+					<para><link linkend="box_shiftScale"><varname>shiftScaleValue</varname>, <varname>shiftScaleTime</varname></link>: Desplazar y escalar el rango de valores o el período del cuadro delimitador con los valores o intervalos</para>
 				</listitem>
 
 				<listitem>
@@ -798,15 +798,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shift"><varname>shift</varname></link>: Desplazar el intervalo de tiempo del valor temporal con un intervalo</para>
+					<para><link linkend="shift"><varname>shiftValue</varname>, <varname>shiftTime</varname></link>: Desplazar el rango de valores o el intervalo de tiempo del valor temporal con un valor or intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tscale"><varname>tscale</varname></link>: Escalear el intervalo de tiempo del valor temporal a un intervalo</para>
+					<para><link linkend="scale"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Escalear el rango de valores o el intervalo de tiempo del valor temporal a un valor or intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos</para>
+					<para><link linkend="shiftScale"><varname>shiftScaleValue</varname>, <varname>shiftScaleTime</varname></link>: Desplazar y escalear el rango de valores o el intervalo de tiempo del valor temporal a los dos valores or intervalos</para>
 				</listitem>
 
 				<listitem>

@@ -646,11 +646,100 @@ spanset_shift(SpanSet *ss, Datum shift)
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a period set shifted and/or scaled by the intervals.
- * @sqlfunc shift(), tscale(), shiftTscale()
+ * @brief Return a number set shifted and/or scaled by the intervals.
+ * @sqlfunc shift(), scale(), shiftScale()
  */
 SpanSet *
-periodset_shift_tscale(const SpanSet *ss, const Interval *shift,
+numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
+  bool hasshift, bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_numspan_type(ss->spantype) ||
+      ! ensure_one_shift_width(hasshift, haswidth) ||
+      (haswidth && ! ensure_positive_datum(haswidth, ss->basetype)))
+    return NULL;
+
+  /* Copy the input span set to the output span set */
+  SpanSet *result = spanset_copy(ss);
+
+  /* Shift and/or scale the bounding span */
+  Datum delta = 0;     /* Default value when shift is not given */
+  double scale = 1.0;  /* Default value when width is not given */
+  numspan_shift_scale1(&result->span, shift, width, hasshift, haswidth,
+    &delta, &scale);
+  Datum origin = result->span.lower;
+
+  /* Shift and/or scale the periodset */
+  for (int i = 0; i < ss->count; i++)
+    numspan_delta_scale_iter(&result->elems[i], origin, delta, hasshift,
+      scale);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return an integer span shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+SpanSet *
+intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_INTSPANSET))
+    return NULL;
+
+  return numspanset_shift_scale(ss, Int32GetDatum(shift), Int32GetDatum(width),
+    hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a big integer span shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+SpanSet *
+bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width,
+  bool hasshift, bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_BIGINTSPANSET))
+    return NULL;
+
+  return numspanset_shift_scale(ss, Int64GetDatum(shift), Int64GetDatum(width),
+    hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a float span shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+SpanSet *
+floatspanset_shift_scale(const SpanSet *ss, double shift, double width,
+  bool hasshift, bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_FLOATSPANSET))
+    return NULL;
+
+  return numspanset_shift_scale(ss, Float8GetDatum(shift),
+    Float8GetDatum(width), hasshift, haswidth);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a period set shifted and/or scaled by the intervals.
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+SpanSet *
+periodset_shift_scale(const SpanSet *ss, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure validity of the arguments */
@@ -666,11 +755,11 @@ periodset_shift_tscale(const SpanSet *ss, const Interval *shift,
   /* Shift and/or scale the bounding period */
   TimestampTz delta = 0; /* Default value when shift == NULL */
   double scale = 1.0;    /* Default value when duration == NULL */
-  period_shift_tscale1(&result->span, shift, duration, &delta, &scale);
+  period_shift_scale1(&result->span, shift, duration, &delta, &scale);
   TimestampTz origin = DatumGetTimestampTz(result->span.lower);
   /* Shift and/or scale the periodset */
   for (int i = 0; i < ss->count; i++)
-    period_delta_scale(&result->elems[i], origin, delta, scale);
+    period_delta_scale_iter(&result->elems[i], origin, delta, scale);
   return result;
 }
 

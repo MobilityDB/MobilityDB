@@ -355,36 +355,60 @@ CREATE CAST (timestamptz AS tstzset) WITH FUNCTION set(timestamptz);
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION round(floatset, integer DEFAULT 0)
-  RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Floatset_round'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION shift(intset, int)
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Set_shift'
+  AS 'MODULE_PATHNAME', 'Numset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(bigintset, bigint)
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Set_shift'
+  AS 'MODULE_PATHNAME', 'Numset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(floatset, float)
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Set_shift'
+  AS 'MODULE_PATHNAME', 'Numset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(tstzset, interval)
   RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Timestampset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tscale(tstzset, interval)
+CREATE FUNCTION scale(intset, int)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Numset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(bigintset, bigint)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Numset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(floatset, float)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Numset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(tstzset, interval)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Timestampset_tscale'
+  AS 'MODULE_PATHNAME', 'Timestampset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftTscale(tstzset, interval, interval)
+CREATE FUNCTION shiftScale(intset, int, int)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Numset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(bigintset, bigint, bigint)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Numset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(floatset, float, float)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Numset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(tstzset, interval, interval)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Timestampset_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Timestampset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION round(floatset, integer DEFAULT 0)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Floatset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

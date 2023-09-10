@@ -90,17 +90,17 @@ SELECT shift(tstzspan '(2000-01-01,2000-01-02]', '5 min');
 SELECT shift(tstzspan '[2000-01-01,2000-01-02)', '5 min');
 SELECT shift(tstzspan '(2000-01-01,2000-01-02)', '5 min');
 
-SELECT tscale(tstzspan '[2000-01-01,2000-01-01]', '1 hour');
-SELECT tscale(tstzspan '[2000-01-01,2000-01-02]', '1 hour');
-SELECT tscale(tstzspan '(2000-01-01,2000-01-02]', '1 hour');
-SELECT tscale(tstzspan '[2000-01-01,2000-01-02)', '1 hour');
-SELECT tscale(tstzspan '(2000-01-01,2000-01-02)', '1 hour');
+SELECT scale(tstzspan '[2000-01-01,2000-01-01]', '1 hour');
+SELECT scale(tstzspan '[2000-01-01,2000-01-02]', '1 hour');
+SELECT scale(tstzspan '(2000-01-01,2000-01-02]', '1 hour');
+SELECT scale(tstzspan '[2000-01-01,2000-01-02)', '1 hour');
+SELECT scale(tstzspan '(2000-01-01,2000-01-02)', '1 hour');
 
-SELECT shiftTscale(tstzspan '[2000-01-01,2000-01-01]', '5 min', '1 hour');
-SELECT shiftTscale(tstzspan '[2000-01-01,2000-01-02]', '5 min', '1 hour');
-SELECT shiftTscale(tstzspan '(2000-01-01,2000-01-02]', '5 min', '1 hour');
-SELECT shiftTscale(tstzspan '[2000-01-01,2000-01-02)', '5 min', '1 hour');
-SELECT shiftTscale(tstzspan '(2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2000-01-01,2000-01-01]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02)', '5 min', '1 hour');
 
 -------------------------------------------------------------------------------
 -- Accessor functions

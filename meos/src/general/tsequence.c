@@ -2118,14 +2118,48 @@ tsequence_set_interp(const TSequence *seq, interpType interp)
 
 /*****************************************************************************/
 
-
 /**
- * @brief Shift and/or scale the instants of a temporal sequence
+ * @brief Shift and/or scale the values of the instants of a temporal sequence
  * (iterator function).
  * @note This function is called for each sequence of a temporal sequence set.
  */
 void
-tsequence_shift_tscale_iter(TSequence *seq, TimestampTz delta, double scale)
+tnumseq_shift_scale_value_iter(TSequence *seq, Datum origin, Datum delta,
+  bool hasdelta, double scale)
+{
+  meosType basetype = temptype_basetype(seq->temptype);
+  for (int i = 0; i < seq->count; i++)
+  {
+    TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
+    Datum value = tinstant_value(inst);
+    /* The default value when there is not shift is 0 */
+    if (hasdelta)
+    {
+      value = datum_add(value, delta, basetype);
+      tinstant_set(inst, value, inst->t);
+    }
+    /* The default value when there is not scale is 1.0 */
+    if (scale != 1.0)
+    {
+      /* The potential shift has been already taken care in the previous if */
+
+      value = datum_add(origin, double_datum(
+        datum_double(datum_sub(value, origin, basetype), basetype) * scale,
+          basetype), basetype);
+      tinstant_set(inst, value, inst->t);
+    }
+  }
+  return;
+}
+
+/**
+ * @brief Shift and/or scale the timestamps of the instants of a temporal
+ * sequence (iterator function).
+ * @note This function is called for each sequence of a temporal sequence set.
+ */
+void
+tsequence_shift_scale_time_iter(TSequence *seq, TimestampTz delta,
+  double scale)
 {
   /* Set the first instant from the bounding period which has been already
    * shifted and/or scaled */
@@ -2155,12 +2189,42 @@ tsequence_shift_tscale_iter(TSequence *seq, TimestampTz delta, double scale)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal sequence shifted and/or scaled by the intervals.
- * @pre The duration is greater than 0 if it is not NULL
- * @sqlfunc shift(), tscale(), shiftTscale().
+ * @brief Return a temporal sequence whose value dimension is shifted and/or
+ * scaled by the values.
+ * @pre The width is greater than 0 if it is not NULL // TODO
+ * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue().
  */
 TSequence *
-tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
+tnumseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
+  bool hasshift, bool haswidth)
+{
+  assert(seq);
+  assert(hasshift || haswidth);
+
+  /* Copy the input sequence to the result */
+  TSequence *result = tsequence_copy(seq);
+
+  /* Shift and/or scale the bounding period */
+  Datum delta = 0;      /* Default value when shift is not given */
+  double scale = 1.0;   /* Default value when width is not given */
+  TBox *box = TSEQUENCE_BBOX_PTR(result);
+  numspan_shift_scale1(&box->span, shift, width, hasshift, haswidth,
+    &delta, &scale);
+  Datum origin = box->span.lower;
+
+  /* Shift and/or scale the result */
+  tnumseq_shift_scale_value_iter(result, origin, delta, hasshift, scale);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal sequence shifted and/or scaled by the intervals.
+ * @pre The duration is greater than 0 if it is not NULL
+ * @sqlfunc shiftTime(), scaleTime(), shiftScaleTime().
+ */
+TSequence *
+tsequence_shift_scale_time(const TSequence *seq, const Interval *shift,
   const Interval *duration)
 {
   assert(seq);
@@ -2172,10 +2236,10 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
   /* Shift and/or scale the bounding period */
   TimestampTz delta = 0; /* Default value when shift == NULL */
   double scale = 1.0;    /* Default value when duration == NULL */
-  period_shift_tscale1(&result->period, shift, duration, &delta, &scale);
+  period_shift_scale1(&result->period, shift, duration, &delta, &scale);
 
   /* Shift and/or scale the result */
-  tsequence_shift_tscale_iter(result, delta, scale);
+  tsequence_shift_scale_time_iter(result, delta, scale);
   return result;
 }
 
