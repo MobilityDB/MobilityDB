@@ -1101,26 +1101,21 @@ extern text **ttext_values(const Temporal *temp, int *count);
 
 /* Transformation functions for temporal types */
 
-extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
-
-extern Temporal *tfloat_scale_value(const Temporal *temp, double width);
-extern Temporal *tfloat_shift_value(const Temporal *temp, double shift);
-extern Temporal *tfloat_shift_scale_value(const Temporal *temp, double shift, double width);
-
-extern Temporal *tint_scale_value(const Temporal *temp, int width);
-extern Temporal *tint_shift_value(const Temporal *temp, int shift);
-extern Temporal *tint_shift_scale_value(const Temporal *temp, int shift, int width);
-
 extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
-extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift);
+extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
 extern Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration);
-
+extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift);
 extern Temporal *temporal_to_tinstant(const Temporal *temp);
 extern Temporal *temporal_to_tsequence(const Temporal *temp, interpType interp);
 extern Temporal *temporal_to_tsequenceset(const Temporal *temp, interpType interp);
 extern Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
 extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin);
-extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
+extern Temporal *tfloat_scale_value(const Temporal *temp, double width);
+extern Temporal *tfloat_shift_scale_value(const Temporal *temp, double shift, double width);
+extern Temporal *tfloat_shift_value(const Temporal *temp, double shift);
+extern Temporal *tint_scale_value(const Temporal *temp, int width);
+extern Temporal *tint_shift_scale_value(const Temporal *temp, int shift, int width);
+extern Temporal *tint_shift_value(const Temporal *temp, int shift);
 
 /*****************************************************************************/
 

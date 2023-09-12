@@ -905,8 +905,9 @@ TBox *
 tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
   bool hasshift, bool haswidth)
 {
+  assert(box);
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box) ||
+  if (! ensure_has_X_tbox(box) ||
       ! ensure_one_shift_width(hasshift, haswidth) ||
       (width && ! ensure_positive_datum(width, box->span.basetype)))
     return NULL;
@@ -924,6 +925,40 @@ tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
 }
 
 #if MEOS
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Shift and/or scale the span of a temporal box by the values.
+ * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue()
+ */
+TBox *
+tbox_shift_scale_int(const TBox *box, int shift, int width,
+  bool hasshift, bool haswidth)
+{
+  if (! ensure_not_null((void *) box) ||
+      ! ensure_same_span_basetype(&box->span, T_FLOAT8))
+    return NULL;
+
+  return tbox_shift_scale_value(box, Int32GetDatum(shift),
+    Int32GetDatum(width), hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Shift and/or scale the span of a temporal box by the values.
+ * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue()
+ */
+TBox *
+tbox_shift_scale_float(const TBox *box, double shift, double width,
+  bool hasshift, bool haswidth)
+{
+  if (! ensure_not_null((void *) box) ||
+      ! ensure_same_span_basetype(&box->span, T_FLOAT8))
+    return NULL;
+
+  return tbox_shift_scale_value(box, Float8GetDatum(shift),
+    Float8GetDatum(width), hasshift, haswidth);
+}
+
 #endif /* MEOS */
 
 /**

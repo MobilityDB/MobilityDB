@@ -1715,6 +1715,7 @@ temporal_set_interp(const Temporal *temp, interpType interp)
  * @param[in] temp Temporal value
  * @param[in] shift Value for shift
  * @param[in] width Value for scale
+ * @param[in] hasshift, haswidth True when the corresponding argument was given
  * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue()
  */
 Temporal *
