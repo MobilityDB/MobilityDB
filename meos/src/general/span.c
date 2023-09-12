@@ -1069,7 +1069,12 @@ lower_upper_shift_scale_value(Datum shift, Datum width, meosType type,
       *upper = datum_add(*upper, shift, type);
   }
   if (haswidth && ! instant)
+  {
+    /* Integer spans have exclusive upper bound */
+    if (span_canon_basetype(type))
+      width = datum_add(width, 1, type);
     *upper = datum_add(*lower, width, type);
+  }
   return;
 }
 
@@ -1131,8 +1136,21 @@ numspan_delta_scale_iter(Span *s, Datum origin, Datum delta, bool hasdelta,
     if (datum_eq(lower, upper, type))
       s->upper = s->lower;
     else
-      s->upper = datum_add(origin, double_datum(
-        datum_double(datum_sub(upper, origin, type), type) * scale, type), type);
+    {
+      /* Integer spans have exclusive upper bound */
+      Datum upper1;
+      if (span_canon_basetype(type))
+        upper1 = datum_sub(upper, 1, type);
+      else
+        upper1 = upper;
+      s->upper = datum_add(origin, 
+        double_datum(
+          datum_double(datum_sub(upper1, origin, type), type) * scale,
+          type), type);
+      /* Integer spans have exclusive upper bound */
+      if (span_canon_basetype(type))
+        s->upper = datum_add(s->upper, 1, type);
+    }
   }
   return;
 }
@@ -1180,20 +1198,35 @@ void
 numspan_shift_scale1(Span *s, Datum shift, Datum width, bool hasshift,
   bool haswidth, Datum *delta, double *scale)
 {
+  assert(s); assert(delta); assert(scale); 
   Datum lower = s->lower;
   Datum upper = s->upper;
   meosType type = s->basetype;
   lower_upper_shift_scale_value(shift, width, type, hasshift, haswidth,
     &lower, &upper);
   /* Compute delta and scale before overwriting s->lower and s->upper */
-  // *delta = 0;   /* Default value when shift is not given */
-  // *scale = 1.0; /* Default value when width is not given */
-  if (delta != NULL && hasshift)
+  *delta = 0;   /* Default value when shift is not given */
+  *scale = 1.0; /* Default value when width is not given */
+  if (hasshift)
     *delta = datum_sub(lower, s->lower, type);
   /* If the period is instantaneous we cannot scale */
-  if (scale != NULL && haswidth && ! datum_eq(s->lower, s->upper, type))
-    *scale = datum_double(datum_sub(upper, lower, type), type) /
-      datum_double(datum_sub(s->upper, s->lower, type), type);
+  if (haswidth && ! datum_eq(s->lower, s->upper, type))
+  {
+    /* Integer spans have exclusive upper bound */
+    Datum upper1, upper2;
+    if (span_canon_basetype(type))
+    {
+      upper1 = datum_sub(upper, 1, type);
+      upper2 = datum_sub(s->upper, 1, type);
+    }
+    else
+    {
+      upper1 = upper;
+      upper2 = s->upper;
+    }
+    *scale = datum_double(datum_sub(upper1, lower, type), type) /
+      datum_double(datum_sub(upper2, s->lower, type), type);
+  }
   s->lower = lower;
   s->upper = upper;
   return;
@@ -1207,16 +1240,17 @@ void
 period_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
   TimestampTz *delta, double *scale)
 {
+  assert(s); assert(delta); assert(scale); 
   TimestampTz lower = DatumGetTimestampTz(s->lower);
   TimestampTz upper = DatumGetTimestampTz(s->upper);
   lower_upper_shift_scale_time(shift, duration, &lower, &upper);
   /* Compute delta and scale before overwriting s->lower and s->upper */
-  // *delta = 0;   /* Default value when shift == NULL */
-  // *scale = 1.0; /* Default value when duration == NULL */
-  if (delta != NULL && shift != NULL)
+  *delta = 0;   /* Default value when shift == NULL */
+  *scale = 1.0; /* Default value when duration == NULL */
+  if (shift != NULL)
     *delta = lower - DatumGetTimestampTz(s->lower);
   /* If the period is instantaneous we cannot scale */
-  if (scale != NULL && duration != NULL && s->lower != s->upper)
+  if (duration != NULL && s->lower != s->upper)
     *scale = (double) (upper - lower) /
       (double) (DatumGetTimestampTz(s->upper) - DatumGetTimestampTz(s->lower));
   s->lower = TimestampTzGetDatum(lower);

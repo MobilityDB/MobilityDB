@@ -2142,7 +2142,6 @@ tnumseq_shift_scale_value_iter(TSequence *seq, Datum origin, Datum delta,
     if (scale != 1.0)
     {
       /* The potential shift has been already taken care in the previous if */
-
       value = datum_add(origin, double_datum(
         datum_double(datum_sub(value, origin, basetype), basetype) * scale,
           basetype), basetype);
@@ -2205,8 +2204,8 @@ tnumseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
   TSequence *result = tsequence_copy(seq);
 
   /* Shift and/or scale the bounding period */
-  Datum delta = 0;      /* Default value when shift is not given */
-  double scale = 1.0;   /* Default value when width is not given */
+  Datum delta;
+  double scale;
   TBox *box = TSEQUENCE_BBOX_PTR(result);
   numspan_shift_scale1(&box->span, shift, width, hasshift, haswidth,
     &delta, &scale);
@@ -2234,8 +2233,8 @@ tsequence_shift_scale_time(const TSequence *seq, const Interval *shift,
   TSequence *result = tsequence_copy(seq);
 
   /* Shift and/or scale the bounding period */
-  TimestampTz delta = 0; /* Default value when shift == NULL */
-  double scale = 1.0;    /* Default value when duration == NULL */
+  TimestampTz delta;
+  double scale;
   period_shift_scale1(&result->period, shift, duration, &delta, &scale);
 
   /* Shift and/or scale the result */

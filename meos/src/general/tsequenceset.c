@@ -1593,8 +1593,8 @@ tnumseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
   TSequenceSet *result = tsequenceset_copy(ss);
 
   /* Shift and  /or scale the bounding span */
-  Datum delta = 0;     /* Default value when shift is not given */
-  double scale = 1.0;  /* Default value when duration is not given */
+  Datum delta; 
+  double scale;
   TBox *box = TSEQUENCESET_BBOX_PTR(result);
   numspan_shift_scale1(&box->span, shift, width, hasshift, haswidth,
     &delta, &scale);
@@ -1630,8 +1630,8 @@ tsequenceset_shift_scale_time(const TSequenceSet *ss, const Interval *shift,
   TSequenceSet *result = tsequenceset_copy(ss);
 
   /* Shift and/or scale the bounding period */
-  TimestampTz delta = 0; /* Default value when shift == NULL */
-  double scale = 1.0;    /* Default value when duration == NULL */
+  TimestampTz delta;
+  double scale;
   period_shift_scale1(&result->period, shift, duration, &delta, &scale);
   TimestampTz origin = DatumGetTimestampTz(result->period.lower);
 

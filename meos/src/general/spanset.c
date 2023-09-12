@@ -664,8 +664,8 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
   SpanSet *result = spanset_copy(ss);
 
   /* Shift and/or scale the bounding span */
-  Datum delta = 0;     /* Default value when shift is not given */
-  double scale = 1.0;  /* Default value when width is not given */
+  Datum delta;
+  double scale;
   numspan_shift_scale1(&result->span, shift, width, hasshift, haswidth,
     &delta, &scale);
   Datum origin = result->span.lower;
@@ -753,8 +753,8 @@ periodset_shift_scale(const SpanSet *ss, const Interval *shift,
   SpanSet *result = spanset_copy(ss);
 
   /* Shift and/or scale the bounding period */
-  TimestampTz delta = 0; /* Default value when shift == NULL */
-  double scale = 1.0;    /* Default value when duration == NULL */
+  TimestampTz delta;
+  double scale;
   period_shift_scale1(&result->span, shift, duration, &delta, &scale);
   TimestampTz origin = DatumGetTimestampTz(result->span.lower);
   /* Shift and/or scale the periodset */
