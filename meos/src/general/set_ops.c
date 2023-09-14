@@ -708,7 +708,7 @@ right_bigint_bigintset(int64 i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
     return false;
-  return left_set_value(s, Int64GetDatum(i), T_INT4);
+  return left_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
 /**
