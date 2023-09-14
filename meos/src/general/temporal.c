@@ -1951,6 +1951,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
     seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT );
   assert(valid_duration(duration));
+
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
   TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
