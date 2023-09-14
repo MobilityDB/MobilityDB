@@ -32,9 +32,19 @@
 -- File set.c
 -------------------------------------------------------------------------------
 
+SELECT intset '{1,2,3}';
+SELECT bigintset '{1,2,3}';
+SELECT floatset '{1.5,2.5,3.5}';
+SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 /* Errors */
 SELECT tstzset '2000-01-01, 2000-01-02';
 SELECT tstzset '{2000-01-01, 2000-01-02';
+
+-- Output in WKT format
+
+SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
+/* Errors */
+SELECT asText(floatset '{1.12345678, 2.123456789}', -6);
 
 -------------------------------------------------------------------------------
 -- Constructor
@@ -89,11 +99,11 @@ SELECT getValues(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 SELECT shift(tstzset '{2000-01-01}', '5 min');
 SELECT shift(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
 
-SELECT tscale(tstzset '{2000-01-01}', '1 hour');
-SELECT tscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
+SELECT scale(tstzset '{2000-01-01}', '1 hour');
+SELECT scale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
 
-SELECT shiftTscale(tstzset '{2000-01-01}', '1 day', '1 hour');
-SELECT shiftTscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
+SELECT shiftScale(tstzset '{2000-01-01}', '1 day', '1 hour');
+SELECT shiftScale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
 
 SELECT set_cmp(tstzset '{2000-01-01}', tstzset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
 SELECT tstzset '{2000-01-01}' = tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';

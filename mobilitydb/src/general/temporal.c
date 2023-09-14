@@ -70,20 +70,6 @@ extern PGDLLEXPORT Datum interval_cmp(PG_FUNCTION_ARGS);
  */
 PG_MODULE_MAGIC;
 
-/**
- * @brief Global array containing the interpolation names corresponding to the
- * enumeration interpType defined in file meos_catalog.h.
- */
-char * _interpType_names[] =
-{
-  [INTERP_NONE] = "none",
-  [DISCRETE] = "discrete",
-  [STEP] = "step",
-  [LINEAR] = "linear"
-};
-
-#define INTERP_STR_MAX_LEN 8
-
 /*****************************************************************************
  * Initialization function
  *****************************************************************************/
@@ -617,23 +603,6 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/**
- * @brief Get the interpolation type from the interpolation string
- */
-interpType
-interp_from_string(const char *interp_str)
-{
-  int n = sizeof(_interpType_names) / sizeof(char *);
-  for (int i = 0; i < n; i++)
-  {
-    if (pg_strncasecmp(interp_str, _interpType_names[i], INTERP_STR_MAX_LEN) == 0)
-      return i;
-  }
-  /* Error */
-  elog(ERROR, "Unknown interpolation type: %s", interp_str);
-  return INTERP_NONE; /* make compiler quiet */
-}
-
 PGDLLEXPORT Datum Tsequence_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequence_constructor);
 /**
@@ -651,7 +620,7 @@ Tsequence_constructor(PG_FUNCTION_ARGS)
   {
     text *interp_txt = PG_GETARG_TEXT_P(1);
     char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
+    interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
   bool lower_inc = true, upper_inc = true;
@@ -719,7 +688,7 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
   {
     text *interp_txt = PG_GETARG_TEXT_P(3);
     char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
+    interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
   /* Store fcinfo into a global variable */
@@ -774,7 +743,7 @@ Tsequence_from_base_period(PG_FUNCTION_ARGS)
   {
     text *interp_txt = PG_GETARG_TEXT_P(2);
     char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
+    interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
   TSequence *result = tsequence_from_base_period(value, temptype, p, interp);
@@ -800,7 +769,7 @@ Tsequenceset_from_base_periodset(PG_FUNCTION_ARGS)
   {
     text *interp_txt = PG_GETARG_TEXT_P(2);
     char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
+    interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
   TSequenceSet *result = tsequenceset_from_base_periodset(value, temptype, ps,
@@ -1795,7 +1764,7 @@ Temporal_to_tsequence(PG_FUNCTION_ARGS)
   {
     text *interp_txt = PG_GETARG_TEXT_P(1);
     char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
+    interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
   else
@@ -1830,7 +1799,7 @@ Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
   {
     text *interp_txt = PG_GETARG_TEXT_P(1);
     char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
+    interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
   else
@@ -1858,7 +1827,7 @@ Temporal_set_interp(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *interp_txt = PG_GETARG_TEXT_P(1);
   char *interp_str = text2cstring(interp_txt);
-  interpType interp = interp_from_string(interp_str);
+  interpType interp = interptype_from_string(interp_str);
   pfree(interp_str);
   Temporal *result = temporal_set_interp(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
@@ -1867,54 +1836,116 @@ Temporal_set_interp(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Temporal_shift(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_shift);
+PGDLLEXPORT Datum Tnumber_shift_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_shift_value);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value a shifted by an interval
- * @sqlfunc shift()
+ * @sqlfunc shiftValue()
  */
 Datum
-Temporal_shift(PG_FUNCTION_ARGS)
+Tnumber_shift_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Temporal *result = temporal_shift_tscale(temp, shift, NULL);
+  Datum shift = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  ensure_same_temporal_basetype(temp, basetype);
+  Temporal *result = tnumber_shift_scale_value(temp, shift, 0, true, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_tscale);
+PGDLLEXPORT Datum Tnumber_scale_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_scale_value);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value scaled by an interval
- * @sqlfunc tscale()
+ * @sqlfunc scaleValue()
  */
 Datum
-Temporal_tscale(PG_FUNCTION_ARGS)
+Tnumber_scale_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Temporal *result = temporal_shift_tscale(temp, NULL, duration);
+  Datum duration = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  ensure_same_temporal_basetype(temp, basetype);
+  Temporal *result = tnumber_shift_scale_value(temp, 0, duration, false, true);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_shift_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_shift_tscale);
+PGDLLEXPORT Datum Tnumber_shift_scale_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_shift_scale_value);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value shifted and scaled by the intervals
- * @sqlfunc shiftTscale()
+ * @sqlfunc shiftScaleValue()
  */
 Datum
-Temporal_shift_tscale(PG_FUNCTION_ARGS)
+Tnumber_shift_scale_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  Datum duration = PG_GETARG_DATUM(2);
+  meosType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  ensure_same_temporal_basetype(temp, basetype1);
+  meosType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 2));
+  ensure_same_temporal_basetype(temp, basetype2);
+  Temporal *result = tnumber_shift_scale_value(temp, shift, duration, true, true);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Temporal_shift_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_shift_time);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a temporal value a shifted by an interval
+ * @sqlfunc shiftTime()
+ */
+Datum
+Temporal_shift_time(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  Temporal *result = temporal_shift_scale_time(temp, shift, NULL);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Temporal_scale_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_scale_time);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a temporal value scaled by an interval
+ * @sqlfunc scaleTime()
+ */
+Datum
+Temporal_scale_time(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  Temporal *result = temporal_shift_scale_time(temp, NULL, duration);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Temporal_shift_scale_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_shift_scale_time);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a temporal value shifted and scaled by the intervals
+ * @sqlfunc shiftScaleTime()
+ */
+Datum
+Temporal_shift_scale_time(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  Temporal *result = temporal_shift_tscale(temp, shift, duration);
+  Temporal *result = temporal_shift_scale_time(temp, shift, duration);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

@@ -343,6 +343,9 @@ char *
 set_out(const Set *s, int maxdd)
 {
   assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return set_out_fn(s, maxdd, &basetype_out);
 }
 
@@ -421,12 +424,12 @@ char *
 geoset_out(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_not_negative(maxdd))
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
   return set_out(s, maxdd);
 }
 #endif /* MEOS */
+
 
 /**
  * @ingroup libmeos_setspan_inout
@@ -437,8 +440,7 @@ char *
 geoset_as_text(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_not_negative(maxdd))
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
   return set_out_fn(s, maxdd, &wkt_out);
 }
@@ -452,8 +454,7 @@ char *
 geoset_as_ewkt(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_not_negative(maxdd))
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
   return set_out_fn(s, maxdd, &ewkt_out);
 }
@@ -1676,27 +1677,119 @@ geoset_round(const Set *s, int maxdd)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Shift the values of set.
+ * @brief Return a number set shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
  */
 Set *
-set_shift(const Set *s, Datum shift)
+numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
+  bool haswidth)
 {
-  assert(s);
-  assert(MEOS_FLAGS_GET_BYVAL(s->flags));
+  meosType type = s->basetype;
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_numset_type(s->settype) ||
+      ! ensure_one_shift_width(hasshift, haswidth) ||
+      (haswidth && ! ensure_positive_datum(width, type)))
+    return NULL;
+
+  /* Copy the input set to the output set */
   Set *result = set_copy(s);
-  for (int i = 0; i < s->count; i++)
-    (SET_OFFSETS_PTR(result))[i] =
-      datum_add(SET_VAL_N(s, i), shift, s->basetype);
+  
+  /* Set the first and last instants */
+  Datum lower, lower1, upper, upper1;
+  lower = lower1 = SET_VAL_N(s, 0);
+  upper = upper1 = SET_VAL_N(s, s->count - 1);
+  lower_upper_shift_scale_value(shift, width, type, hasshift, haswidth,
+    &lower1, &upper1);
+  (SET_OFFSETS_PTR(result))[0] = lower1;
+  (SET_OFFSETS_PTR(result))[s->count - 1] = upper1;
+  if (s->count > 1)
+  {
+    /* Shift and/or scale from the second to the penultimate values */
+    Datum delta = 0;    /* make compiler quiet */
+    double scale = 1.0; /* make compiler quiet */
+    if (hasshift)
+      delta = datum_sub(lower1, lower, type);
+    if (haswidth)
+      scale = datum_double(datum_sub(upper1, lower1, type), type) /
+              datum_double(datum_sub(upper, lower, type), type);
+    for (int i = 1; i < s->count - 1; i++)
+    {
+      if (hasshift)
+        (SET_OFFSETS_PTR(result))[i] = datum_add((SET_OFFSETS_PTR(result))[i],
+          delta, type);
+      if (haswidth)
+        (SET_OFFSETS_PTR(result))[i] = datum_add(lower1, double_datum(
+          datum_double(datum_sub(SET_VAL_N(result, i), lower1, type), type) *
+          scale, type), type);
+    }
+  }
   return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return an integer set shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+Set *
+intset_shift_scale(const Set *s, int shift, int width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_has_type(s, T_INTSET))
+    return NULL;
+
+  return numset_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),
+    hasshift, haswidth);
 }
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a timestamp set shifted and/or scaled by the intervals
- * @sqlfunc shift(), tscale(), shiftTscale()
+ * @brief Return a big integer set shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
  */
 Set *
-timestampset_shift_tscale(const Set *s, const Interval *shift,
+bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_has_type(s, T_BIGINTSET))
+    return NULL;
+
+  return numset_shift_scale(s, Int64GetDatum(shift), Int64GetDatum(width),
+    hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a float set shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+Set *
+floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_has_type(s, T_FLOATSET))
+    return NULL;
+
+  return numset_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
+    hasshift, haswidth);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a timestamp set shifted and/or scaled by the intervals
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+Set *
+timestampset_shift_scale(const Set *s, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure validity of the arguments */
@@ -1711,7 +1804,7 @@ timestampset_shift_tscale(const Set *s, const Interval *shift,
   TimestampTz lower, lower1, upper, upper1;
   lower = lower1 = DatumGetTimestampTz(SET_VAL_N(s, 0));
   upper = upper1 = DatumGetTimestampTz(SET_VAL_N(s, s->count - 1));
-  lower_upper_shift_tscale(shift, duration, &lower1, &upper1);
+  lower_upper_shift_scale_time(shift, duration, &lower1, &upper1);
   (SET_OFFSETS_PTR(result))[0] = TimestampTzGetDatum(lower1);
   (SET_OFFSETS_PTR(result))[s->count - 1] = TimestampTzGetDatum(upper1);
   if (s->count > 1)

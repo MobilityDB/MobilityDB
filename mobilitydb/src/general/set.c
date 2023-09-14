@@ -128,7 +128,30 @@ Set_send(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(result);
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Output in WKT format
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Set_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation a set.
+ * @sqlfunc asText()
+ */
+Datum
+Set_as_text(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = set_out(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
 
 PGDLLEXPORT Datum Geoset_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_as_text);
@@ -362,19 +385,19 @@ Floatset_round(PG_FUNCTION_ARGS)
 
 /******************************************************************************/
 
-PGDLLEXPORT Datum Set_shift(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Set_shift);
+PGDLLEXPORT Datum Numset_shift(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift the span by a value
+ * @brief Shift the number set by a value
  * @sqlfunc shift()
  */
 Datum
-Set_shift(PG_FUNCTION_ARGS)
+Numset_shift(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Datum shift = PG_GETARG_DATUM(1);
-  Set *result = set_shift(s, shift);
+  Set *result = numset_shift_scale(s, shift, 0, true, false);
   PG_RETURN_POINTER(result);
 }
 
@@ -388,46 +411,79 @@ PG_FUNCTION_INFO_V1(Timestampset_shift);
 Datum
 Timestampset_shift(PG_FUNCTION_ARGS)
 {
-  Set *ts = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Set *result = timestampset_shift_tscale(ts, shift, NULL);
-  PG_FREE_IF_COPY(ts, 0);
+  Set *result = timestampset_shift_scale(s, shift, NULL);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Timestampset_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestampset_tscale);
+PGDLLEXPORT Datum Numset_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numset_scale);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Scale a number set by a value
+ * @sqlfunc scale()
+ */
+Datum
+Numset_scale(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Datum width = PG_GETARG_DATUM(1);
+  Set *result = numset_shift_scale(s, 0, width, false, true);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Timestampset_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestampset_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Scale a timestamp set by an interval
- * @sqlfunc tscale()
+ * @sqlfunc scale()
  */
 Datum
-Timestampset_tscale(PG_FUNCTION_ARGS)
+Timestampset_scale(PG_FUNCTION_ARGS)
 {
-  Set *ts = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  ensure_valid_duration(duration);
-  Set *result = timestampset_shift_tscale(ts, NULL, duration);
-  PG_FREE_IF_COPY(ts, 0);
+  Set *result = timestampset_shift_scale(s, NULL, duration);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Timestampset_shift_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestampset_shift_tscale);
+PGDLLEXPORT Datum Numset_shift_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numset_shift_scale);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift and scale a number set by the values
+ * @sqlfunc shiftScale()
+ */
+Datum
+Numset_shift_scale(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  Datum width = PG_GETARG_DATUM(2);
+  Set *result = numset_shift_scale(s, shift, width, true, true);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Timestampset_shift_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestampset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift and scale a timestamp set by the intervals
- * @sqlfunc shiftTscale()
+ * @sqlfunc shiftScale()
  */
 Datum
-Timestampset_shift_tscale(PG_FUNCTION_ARGS)
+Timestampset_shift_scale(PG_FUNCTION_ARGS)
 {
-  Set *ts = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   ensure_valid_duration(duration);
-  Set *result = timestampset_shift_tscale(ts, shift, duration);
+  Set *result = timestampset_shift_scale(s, shift, duration);
   PG_RETURN_POINTER(result);
 }
 

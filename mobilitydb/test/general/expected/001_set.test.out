@@ -1,3 +1,27 @@
+SELECT intset '{1,2,3}';
+  intset   
+-----------
+ {1, 2, 3}
+(1 row)
+
+SELECT bigintset '{1,2,3}';
+ bigintset 
+-----------
+ {1, 2, 3}
+(1 row)
+
+SELECT floatset '{1.5,2.5,3.5}';
+    floatset     
+-----------------
+ {1.5, 2.5, 3.5}
+(1 row)
+
+SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+                                             tstzset                                              
+--------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST", "Sun Jan 02 00:00:00 2000 PST", "Mon Jan 03 00:00:00 2000 PST"}
+(1 row)
+
 /* Errors */
 SELECT tstzset '2000-01-01, 2000-01-02';
 ERROR:  Could not parse set value: Missing opening brace
@@ -7,6 +31,15 @@ SELECT tstzset '{2000-01-01, 2000-01-02';
 ERROR:  Could not parse set value: Missing closing brace
 LINE 1: SELECT tstzset '{2000-01-01, 2000-01-02';
                        ^
+SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
+        astext        
+----------------------
+ {1.123457, 2.123457}
+(1 row)
+
+/* Errors */
+SELECT asText(floatset '{1.12345678, 2.123456789}', -6);
+ERROR:  The value cannot be negative: -6
 SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
                                                set                                                
 --------------------------------------------------------------------------------------------------
@@ -157,26 +190,26 @@ SELECT shift(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
  {"Sat Jan 01 00:05:00 2000 PST", "Sun Jan 02 00:05:00 2000 PST", "Mon Jan 03 00:05:00 2000 PST"}
 (1 row)
 
-SELECT tscale(tstzset '{2000-01-01}', '1 hour');
-              tscale              
+SELECT scale(tstzset '{2000-01-01}', '1 hour');
+              scale               
 ----------------------------------
  {"Sat Jan 01 00:00:00 2000 PST"}
 (1 row)
 
-SELECT tscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
-                                              tscale                                              
+SELECT scale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
+                                              scale                                               
 --------------------------------------------------------------------------------------------------
  {"Sat Jan 01 00:00:00 2000 PST", "Sat Jan 01 00:30:00 2000 PST", "Sat Jan 01 01:00:00 2000 PST"}
 (1 row)
 
-SELECT shiftTscale(tstzset '{2000-01-01}', '1 day', '1 hour');
-           shifttscale            
+SELECT shiftScale(tstzset '{2000-01-01}', '1 day', '1 hour');
+            shiftscale            
 ----------------------------------
  {"Sun Jan 02 00:00:00 2000 PST"}
 (1 row)
 
-SELECT shiftTscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
-                                           shifttscale                                            
+SELECT shiftScale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
+                                            shiftscale                                            
 --------------------------------------------------------------------------------------------------
  {"Sun Jan 02 00:00:00 2000 PST", "Sun Jan 02 00:30:00 2000 PST", "Sun Jan 02 01:00:00 2000 PST"}
 (1 row)

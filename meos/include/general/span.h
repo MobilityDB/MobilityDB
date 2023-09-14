@@ -90,11 +90,17 @@ extern int span_upper_cmp(const Span *s1, const Span *s2);
 extern Span *spanarr_normalize(Span *spans, int count, bool sort,
   int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
-extern void lower_upper_shift_tscale(const Interval *shift,
+extern void lower_upper_shift_scale_value(Datum shift, Datum width,
+  meosType type, bool hasshift, bool haswidth, Datum *lower, Datum *upper);
+extern void lower_upper_shift_scale_time(const Interval *shift,
   const Interval *duration, TimestampTz *lower, TimestampTz *upper);
-extern void period_delta_scale(Span *p, TimestampTz origin, TimestampTz delta,
-  double scale);
-extern void period_shift_tscale1(Span *p, const Interval *shift,
+extern void numspan_delta_scale_iter(Span *s, Datum origin, Datum delta,
+  bool hasdelta, double scale);
+extern void period_delta_scale_iter(Span *s, TimestampTz origin,
+  TimestampTz delta, double scale);
+extern void numspan_shift_scale1(Span *s, Datum shift, Datum width,
+  bool hasshift, bool haswidth, Datum *delta, double *scale);
+extern void period_shift_scale1(Span *s, const Interval *shift,
   const Interval *duration, TimestampTz *delta, double *scale);
 
 extern size_t span_to_wkb_size(const Span *s);

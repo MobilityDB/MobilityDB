@@ -590,49 +590,49 @@ SELECT DISTINCT tempSubtype(ttext_seqset(ss)) FROM tbl_ttext_seqset;
  SequenceSet
 (2 rows)
 
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tbool;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tbool;
  max 
 -----
   52
 (1 row)
 
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tint;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tint;
  max 
 -----
   45
 (1 row)
 
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tfloat;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tfloat;
  max 
 -----
   53
 (1 row)
 
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_ttext;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_ttext;
  max 
 -----
   59
 (1 row)
 
-select MAX(numinstants(appendSequence(temp, setInterp(shift(endinstant(temp), '5 min'), interp(temp))))) from tbl_tbool;
+select MAX(numinstants(appendSequence(temp, setInterp(shiftTime(endinstant(temp), '5 min'), interp(temp))))) from tbl_tbool;
  max 
 -----
   53
 (1 row)
 
-SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tint;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shiftTime(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tint;
  max 
 -----
   46
 (1 row)
 
-SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tfloat;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shiftTime(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tfloat;
  max 
 -----
   53
 (1 row)
 
-SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_ttext;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shiftTime(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_ttext;
  max 
 -----
   60
@@ -1540,73 +1540,109 @@ SELECT COUNT(*) FROM tbl_ttext t1, test2 t2 WHERE t1.k = t2.k AND t1.temp <> t2.
 
 SELECT COUNT(*) FROM (SELECT k, unnest(temp) AS rec FROM tbl_tfloat) AS T;
 ERROR:  The temporal value cannot have linear interpolation
-SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(shiftValue(temp, i)) FROM tbl_tint, tbl_int;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(shiftValue(temp, f)) FROM tbl_tfloat, tbl_float;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tfloat, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tbool, tbl_interval;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tint, tbl_interval;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(tscale(temp, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tfloat, tbl_interval;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(tscale(temp, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_ttext, tbl_interval;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(tscale(temp, i)) FROM tbl_tfloat, tbl_interval;
+SELECT COUNT(scaleValue(temp, i)) FROM tbl_tint, tbl_int WHERE i > 0;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(tscale(temp, i)) FROM tbl_ttext, tbl_interval;
+SELECT COUNT(scaleValue(temp, f)) FROM tbl_tfloat, tbl_float WHERE f > 0;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tbool, tbl_interval;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tint, tbl_interval;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tfloat, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tfloat, tbl_interval;
  count 
 -------
   9504
 (1 row)
 
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_ttext, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_ttext, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftScaleValue(temp, i, i)) FROM tbl_tint, tbl_int WHERE i > 0;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftScaleValue(temp, f, f)) FROM tbl_tfloat, tbl_float WHERE f > 0;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tbool, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tint, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tfloat, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_ttext, tbl_interval;
  count 
 -------
   9504

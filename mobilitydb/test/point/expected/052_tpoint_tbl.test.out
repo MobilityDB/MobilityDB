@@ -416,13 +416,13 @@ SELECT DISTINCT tempSubtype(tgeogpoint_seqset(ss)) FROM tbl_tgeogpoint3D_seqset;
  SequenceSet
 (1 row)
 
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tgeompoint;
  max 
 -----
   57
 (1 row)
 
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tgeogpoint;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tgeogpoint;
  max 
 -----
   48
@@ -1181,73 +1181,73 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeogpoint3D;
   52
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tgeompoint, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeompoint, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(tscale(temp, i)) FROM tbl_tgeompoint, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeompoint, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(tscale(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(tscale(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(tscale(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeompoint, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeompoint, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeogpoint, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeogpoint, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeompoint3D, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeompoint3D, tbl_interval;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
  count 
 -------
   9900

@@ -43,7 +43,7 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 			<listitem id="asMFJSON">
 				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>Obtener la representación JSON de características móviles (Moving Features JSON o MF-JSON) &Z_support; &geography_support;</para>
-				<para><varname>asMFJSON(tpoint,options=0,flags=0,maxdecdigits=15) → bytea</varname></para>
+				<para><varname>asMFJSON(tpoint,options=0,flags=0,maxdecdigits=15) → text</varname></para>
 				<para>El argumento <varname>options</varname> puede usarse para agregar BBOX y/o CRS en la salida MFJSON:</para>
 				<itemizedlist>
 					<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>

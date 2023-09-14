@@ -63,10 +63,23 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 		</para>
 
 			<para>
-				Damos a continuación las funciones de entrada y salida de tipos de cuadro delimitador en formato binario conocido.
+				Damos a continuación las funciones de entrada y salida de tipos de cuadro delimitador en formato textual (Well-Known Text o WKT) y binario (Well-Known Binary o WKB).
 			</para>
 
 			<itemizedlist>
+				<listitem id="box_asText">
+					<indexterm><primary><varname>asText</varname></primary></indexterm>
+					<para>Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+					<para><varname>asText(box,maxdecdigits=15) → text</varname></para>
+					<para>El argumento <varname>maxdecdigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2000-01-01,2000-01-02))', 3);
+-- TBOXFLOAT XT([1.123, 2.123),[2000-01-01 00:00:00+01, 2000-01-02 00:00:00+01))
+SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
+-- STBOX Z((2,2,2),(3,3,3))
+</programlisting>
+				</listitem>
+
 				<listitem id="box_asBinary">
 					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
 					<para>Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
@@ -172,14 +185,15 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 				<indexterm><primary><varname>geodstbox_t</varname></primary></indexterm>
 				<indexterm><primary><varname>geodstbox_zt</varname></primary></indexterm>
 				<para>Constructor para <varname>stbox</varname></para>
-				<para><varname>stbox_x(float,float,float,float,integer) → stbox</varname></para>
-				<para><varname>stbox_z(float,float,float,float,float,float,integer) → stbox</varname></para>
+				<para><varname>stbox_x(float,float,float,float,srid=0) → stbox</varname></para>
+				<para><varname>stbox_z(float,float,float,float,float,float,srid=0) → stbox</varname></para>
 				<para><varname>stbox_t(time) → stbox</varname></para>
-          <para><varname>stbox_xt(float,float,float,float,{timestamptz,tstzspan},integer) → stbox</varname></para>
-				<para><varname>stbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},integer) → stbox</varname></para>
-				<para><varname>geodstbox_z(float,float,float,float,float,float,integer) → stbox</varname></para>
+          <para><varname>stbox_xt(float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
+				<para><varname>stbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
+				<para><varname>geodstbox_z(float,float,float,float,float,float,srid=4326) → stbox</varname></para>
 				<para><varname>geodstbox_t(time) → stbox</varname></para>
-				<para><varname>geodstbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},integer) → stbox</varname></para>
+				<para><varname>geodstbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},srid=4326)</varname></para>
+				<para><varname>  → stbox</varname></para>
 				<para><varname>stbox(geo) → stbox</varname></para>
 				<para><varname>stbox(geo,time) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -389,19 +403,75 @@ SELECT Tmax_inc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 	</sect1>
 
 	<sect1 id ="box_types_transformations">
-			<title>Transformaciones</title>
+		<title>Transformaciones</title>
 
-			<itemizedlist>
-				<listitem id="getSpace">
-					<indexterm><primary><varname>getSpace</varname></primary></indexterm>
-					<para>Obtener la dimensión espacial del cuadro delimitador, eliminando la dimensión temporal, si existe</para>
-					<para><varname>getSpace(stbox) → stbox</varname></para>
-					<programlisting language="sql" xml:space="preserve">
+		<itemizedlist>
+			<listitem id="box_shift">
+				<indexterm><primary><varname>shiftValue</varname></primary></indexterm>
+				<indexterm><primary><varname>shiftTime</varname></primary></indexterm>
+				<para>Desplazar el rango de valores o el período del cuadro delimitador con un valor o intervalo</para>
+				<para><varname>shiftValue(tbox,{int,float}) → box</varname></para>
+				<para><varname>shiftTime(box,interval) → box</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT shiftValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 1.0);
+-- TBOXFLOAT XT([2.5, 3.5],[2001-01-01, 2001-01-02])
+SELECT shiftTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
+  interval '1 day');
+-- TBOXFLOAT XT([1.5, 2.5],[2001-01-02, 2001-01-03])
+SELECT shiftTime(stbox 'STBOX T([2001-01-01,2001-01-02])', interval '-1 day');
+-- STBOX T([2000-12-31, 2001-01-01])
+SELECT shiftTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
+  interval '1 day');
+-- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-02, 2001-01-03])
+</programlisting>
+			</listitem>
+
+			<listitem id="box_scale">
+				<indexterm><primary><varname>scaleValue</varname></primary></indexterm>
+				<indexterm><primary><varname>scaleTime</varname></primary></indexterm>
+				<para>Escalar el rango de valores o el período del cuadro delimitador a un valor o intervalo. Si el ancho o el lapso de tiempo del valor de tiempo es cero (es decir, los límites inferior y superior son iguales), el resultado es el cuadro delimitador. El valor o intervalo dado debe ser estrictamente mayor que cero.</para>
+				<para><varname>scaleValue(box,{int,float}) → box</varname></para>
+				<para><varname>scaleTime(box,interval) → box</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT scaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0);
+-- TBOXFLOAT XT([1.5, 3.5],[2001-01-01, 2001-01-02])
+SELECT scaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', interval '2 days');
+-- TBOXFLOAT XT([1.5, 2.5],[2001-01-01, 2001-01-03])
+SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '1 hour');
+-- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 00:00:00, 2001-01-01 01:00:00])
+SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '-1 day');
+-- ERROR:  The duration must be a positive interval: -1 days
+</programlisting> 
+			</listitem>
+
+			<listitem id="box_shiftScale">
+				<indexterm><primary><varname>shiftScaleValue</varname></primary></indexterm>
+				<indexterm><primary><varname>shiftScaleTime</varname></primary></indexterm>
+				<para>Desplazar y escalar el rango de valores o el período del cuadro delimitador con los valores o intervalos. Estas funciones combinan en un solo paso las funciones <link linkend="box_shift"><varname>shiftValue</varname></link> y <link linkend="box_scale"><varname>scaleValue</varname></link> o <link linkend="box_shift"><varname>shiftTime</varname></link> y <link linkend="box_scale"><varname>scaleTime</varname></link></para>
+				<para><varname>shiftScaleValue(box,{int,float},{int,float}) → box</varname></para>
+				<para><varname>shiftScaleTime(box,interval,interval) → box</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0, 3.0);
+-- TBOXFLOAT XT([3.5, 6.5],[2001-01-01, 2001-01-02])
+SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
+  interval '1 day', interval '3 days');
+-- TBOXFLOAT XT([1.5, 2.5],[2001-01-02, 2001-01-05])
+SELECT shiftScaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
+  interval '1 hour', interval '3 hours');
+-- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 01:00:00, 2001-01-01 04:00:00])
+</programlisting>
+			</listitem>
+
+			<listitem id="getSpace">
+				<indexterm><primary><varname>getSpace</varname></primary></indexterm>
+				<para>Obtener la dimensión espacial del cuadro delimitador, eliminando la dimensión temporal, si existe</para>
+				<para><varname>getSpace(stbox) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve">
 SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 -- STBOX Z((1,1,1),(2,2,2))
 </programlisting>
-				</listitem>
-			</itemizedlist>
+			</listitem>
+		</itemizedlist>
 
 			<para>
 				Las funciones dadas a continuación expanden los cuadros delimitadores en la dimensión de valor y de tiempo o establecen la precisión de la dimensión de valor. Estas funciones generan un error si la dimensión correspondiente no está presente.

@@ -563,34 +563,34 @@ CREATE FUNCTION segments(tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Shift and tscale functions
+ * Shift and scale functions
  *****************************************************************************/
 
-CREATE FUNCTION shift(tgeompoint, interval)
+CREATE FUNCTION shiftTime(tgeompoint, interval)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(tgeogpoint, interval)
+CREATE FUNCTION shiftTime(tgeogpoint, interval)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tscale(tgeompoint, interval)
+CREATE FUNCTION scaleTime(tgeompoint, interval)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tscale(tgeogpoint, interval)
+CREATE FUNCTION scaleTime(tgeogpoint, interval)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftTscale(tgeompoint, interval, interval)
+CREATE FUNCTION shiftScaleTime(tgeompoint, interval, interval)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftTscale(tgeogpoint, interval, interval)
+CREATE FUNCTION shiftScaleTime(tgeogpoint, interval, interval)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tprecision(tgeompoint, duration interval,

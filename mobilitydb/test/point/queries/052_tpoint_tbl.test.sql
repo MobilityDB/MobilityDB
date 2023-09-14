@@ -141,8 +141,8 @@ SELECT DISTINCT tempSubtype(tgeogpoint_seqset(ss)) FROM tbl_tgeogpoint3D_seqset;
 
 ------------------------------------------------------------------------------
 
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tgeompoint;
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tgeogpoint;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tgeogpoint;
 
 ------------------------------------------------------------------------------
 -- Accessor functions
@@ -306,23 +306,23 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeompoint3D;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeogpoint3D;
 
 -------------------------------------------------------------------------------
--- Shift and tscale functions
+-- Shift and scaleTime functions
 -------------------------------------------------------------------------------
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tgeompoint, tbl_interval;
-SELECT COUNT(shift(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
-SELECT COUNT(shift(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
-SELECT COUNT(shift(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeompoint, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
 
-SELECT COUNT(tscale(temp, i)) FROM tbl_tgeompoint, tbl_interval;
-SELECT COUNT(tscale(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
-SELECT COUNT(tscale(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
-SELECT COUNT(tscale(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeompoint, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
 
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeompoint, tbl_interval;
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeogpoint, tbl_interval;
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeompoint3D, tbl_interval;
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeompoint, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeogpoint, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeompoint3D, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
 
 -------------------------------------------------------------------------------
 -- Granularity modification with tprecision and tsample

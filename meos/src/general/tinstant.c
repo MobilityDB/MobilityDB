@@ -570,11 +570,28 @@ tsequenceset_to_tinstant(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal instant whose value is shifted by a value.
+ * @sqlfunc shift()
+ */
+TInstant *
+tnuminst_shift_value(const TInstant *inst, Datum shift)
+{
+  assert(inst);
+  TInstant *result = tinstant_copy(inst);
+  Datum value = tinstant_value(result);
+  meosType basetype = temptype_basetype(result->temptype);
+  value = datum_add(value, shift, basetype);
+  tinstant_set(result, value, result->t);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal instant shifted by an interval.
  * @sqlfunc shift()
  */
 TInstant *
-tinstant_shift(const TInstant *inst, const Interval *interval)
+tinstant_shift_time(const TInstant *inst, const Interval *interval)
 {
   assert(inst); assert(interval);
   TInstant *result = tinstant_copy(inst);

@@ -426,13 +426,28 @@ datum_copy(Datum value, meosType basetype)
 double
 datum_double(Datum d, meosType basetype)
 {
-  assert(tnumber_basetype(basetype));
+  assert(numspan_basetype(basetype));
   if (basetype == T_INT4)
     return (double) DatumGetInt32(d);
   if (basetype == T_INT8)
     return (double) DatumGetInt64(d);
   else /* basetype == T_FLOAT8 */
     return DatumGetFloat8(d);
+}
+
+/**
+ * @brief Convert a double to a number Datum
+ */
+Datum
+double_datum(double d, meosType basetype)
+{
+  assert(numspan_basetype(basetype));
+  if (basetype == T_INT4)
+    return Int32GetDatum((int) d);
+  if (basetype == T_INT8)
+    return Int64GetDatum((int64) d);
+  else /* basetype == T_FLOAT8 */
+    return Float8GetDatum(d);
 }
 
 /*****************************************************************************

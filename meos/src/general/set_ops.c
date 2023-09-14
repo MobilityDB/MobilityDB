@@ -708,7 +708,7 @@ right_bigint_bigintset(int64 i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
     return false;
-  return left_set_value(s, Int64GetDatum(i), T_INT4);
+  return left_set_value(s, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -752,7 +752,7 @@ after_timestamp_timestampset(TimestampTz t, const Set *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return left_set_value(s, TimestampTzGetDatum(t), T_TEXT);
+  return left_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 

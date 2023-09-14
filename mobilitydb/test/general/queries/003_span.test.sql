@@ -41,9 +41,9 @@ SELECT tstzspan '[2000-01-01, 2000-01-02';
 
 -- Output in WKT format
 
-SELECT asText(intspan '[1, 2]');
 SELECT asText(floatspan '[1.12345678, 2.123456789]', 6);
-SELECT asText(tstzspan '[2000-01-01, 2000-01-03]');
+/* Errors */
+SELECT asText(floatspan '[1.12345678, 2.123456789]', -6);
 
 -------------------------------------------------------------------------------
 -- Constructors
@@ -90,17 +90,17 @@ SELECT shift(tstzspan '(2000-01-01,2000-01-02]', '5 min');
 SELECT shift(tstzspan '[2000-01-01,2000-01-02)', '5 min');
 SELECT shift(tstzspan '(2000-01-01,2000-01-02)', '5 min');
 
-SELECT tscale(tstzspan '[2000-01-01,2000-01-01]', '1 hour');
-SELECT tscale(tstzspan '[2000-01-01,2000-01-02]', '1 hour');
-SELECT tscale(tstzspan '(2000-01-01,2000-01-02]', '1 hour');
-SELECT tscale(tstzspan '[2000-01-01,2000-01-02)', '1 hour');
-SELECT tscale(tstzspan '(2000-01-01,2000-01-02)', '1 hour');
+SELECT scale(tstzspan '[2000-01-01,2000-01-01]', '1 hour');
+SELECT scale(tstzspan '[2000-01-01,2000-01-02]', '1 hour');
+SELECT scale(tstzspan '(2000-01-01,2000-01-02]', '1 hour');
+SELECT scale(tstzspan '[2000-01-01,2000-01-02)', '1 hour');
+SELECT scale(tstzspan '(2000-01-01,2000-01-02)', '1 hour');
 
-SELECT shiftTscale(tstzspan '[2000-01-01,2000-01-01]', '5 min', '1 hour');
-SELECT shiftTscale(tstzspan '[2000-01-01,2000-01-02]', '5 min', '1 hour');
-SELECT shiftTscale(tstzspan '(2000-01-01,2000-01-02]', '5 min', '1 hour');
-SELECT shiftTscale(tstzspan '[2000-01-01,2000-01-02)', '5 min', '1 hour');
-SELECT shiftTscale(tstzspan '(2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2000-01-01,2000-01-01]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02)', '5 min', '1 hour');
 
 -------------------------------------------------------------------------------
 -- Accessor functions
