@@ -1152,60 +1152,6 @@ SELECT asText(shiftScaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@200
 </programlisting>
 			</listitem>
 
-			<listitem id="tsample">
-				<indexterm><primary><varname>tsample</varname></primary></indexterm>
-				<para>Downsample a temporal value with respect to an interval. If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero. Notice that the result is a temporal instant or a temporal sequence with discrete interpolation.</para>
-				<para><varname>tsample(ttype,duration interval,torigin timestamptz='2000-01-03') → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05]', '1 day', '2000-01-01');
--- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04, 5@2000-01-05}
-SELECT asText(tsample(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05]',
-  '2 days', '2000-01-01'));
--- {POINT(1 1)@2000-01-01, POINT(3 3)@2000-01-03, POINT(5 5)@2000-01-05}
-SELECT tsample(tfloat '{1@2000-01-01,5@2000-01-05}', '3 days', '2000-01-01');
--- {1@2000-01-01 00:00:00+01}
-SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05]', '3 days', '2000-01-01');
--- {1@2000-01-01, 4@2000-01-04}
-SELECT asText(tsample(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05]',
-  '3 days', '2000-01-01'));
--- {POINT(1 1)@2000-01-01, POINT(4 4)@2000-01-04, POINT(3 3)@2000-01-07}
-</programlisting>
-			</listitem>
-
-			<listitem id="tprecision">
-				<indexterm><primary><varname>tprecision</varname></primary></indexterm>
-				<para>Reduce the temporal precision of a temporal value with respect to an interval. The function computes the time-weighted average/centroid in each time bucket. If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero.</para>
-				<para><varname>tprecision(ttype,duration interval,torigin timestamptz='2000-01-03') → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','1 days',
-  '2000-01-01');
--- [1.5@2000-01-01, 3.5@2000-01-02, 3@2000-01-03]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','2 days',
-  '2000-01-01');
--- [2@2000-01-01, 4@2000-01-03, 3@2000-01-05]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','2 days',
-  '2000-01-02');
--- [1.5@1999-12-31, 3.5@2000-01-02, 3@2000-01-04]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','3 days',
-  '2000-01-01');
--- [2.5@2000-01-01, 4.3@2000-01-04, 2.2@2000-01-07]
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '1 day', '2000-01-01'));
--- [POINT(1.5 1.5)@2000-01-01, POINT(3.5 3.5)@2000-01-02, POINT(3 3)@2000-01-03]
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '2 days', '2000-01-01'));
--- [POINT(2 2)@2000-01-01, POINT(4 4)@2000-01-03, POINT(3 3)@2000-01-05]
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '2 days', '2000-01-02'));
--- [POINT(1.5 1.5)@1999-12-31, POINT(3.5 3.5)@2000-01-02, POINT(3 3)@2000-01-04]
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '3 days', '2000-01-01'));
--- [POINT(2.5 2.5)@2000-01-01, POINT(4.3 4.3)@2000-01-04, POINT(2.2 2.2)@2000-01-07]
-</programlisting>
-			</listitem>
-
 			<listitem id="stops">
 				<indexterm><primary><varname>stops</varname></primary></indexterm>
 				<para>Extract from a temporal sequence (set) with linear interpolation the subsequences where the objects stays within an area with a specified maximum size (<varname>maxDist</varname>) for at least the given duration (<varname>minDuration</varname>). For spatial types, the size of the area is computed as the diagonal of the minimum rotated rectangle of the points in the subsequence. For scalar types, the size is computed as the width of the enclosing interval. &Z_support; &geography_support;</para>
@@ -1229,7 +1175,7 @@ SELECT asText(stops(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000-01-0
 
 			<listitem id="unnest">
 				<indexterm><primary><varname>unnest</varname></primary></indexterm>
-				<para>Transform a nonlinear temporal value into a set of rows, each one is a pair composed of a base value and a period set during which the temporal value has the base value.</para>
+				<para>Transform a nonlinear temporal value into a set of rows, each one is a pair composed of a base value and a period set during which the temporal value has the base value. &SRF;</para>
 				<para><varname>unnest(ttype) → {(value,time)}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT (un).value, (un).time
@@ -1250,7 +1196,7 @@ FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01,
 --  POINT(2 2) | {[2000-01-02, 2000-01-03)}</programlisting>
 			</listitem>
 
-	</itemizedlist>
+		</itemizedlist>
 	</sect1>
 
 </chapter>

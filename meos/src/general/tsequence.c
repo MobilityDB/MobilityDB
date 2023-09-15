@@ -2124,7 +2124,7 @@ tsequence_set_interp(const TSequence *seq, interpType interp)
  * @note This function is called for each sequence of a temporal sequence set.
  */
 void
-tnumseq_shift_scale_value_iter(TSequence *seq, Datum origin, Datum delta,
+tnumberseq_shift_scale_value_iter(TSequence *seq, Datum origin, Datum delta,
   bool hasdelta, double scale)
 {
   meosType basetype = temptype_basetype(seq->temptype);
@@ -2194,7 +2194,7 @@ tsequence_shift_scale_time_iter(TSequence *seq, TimestampTz delta,
  * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue().
  */
 TSequence *
-tnumseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
+tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
   bool hasshift, bool haswidth)
 {
   assert(seq);
@@ -2212,7 +2212,7 @@ tnumseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
   Datum origin = box->span.lower;
 
   /* Shift and/or scale the result */
-  tnumseq_shift_scale_value_iter(result, origin, delta, hasshift, scale);
+  tnumberseq_shift_scale_value_iter(result, origin, delta, hasshift, scale);
   return result;
 }
 

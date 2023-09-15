@@ -1141,60 +1141,6 @@ SELECT asText(shiftScaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@200
 </programlisting>
 			</listitem>
 
-			<listitem id="tsample">
-				<indexterm><primary><varname>tsample</varname></primary></indexterm>
-				<para>Reducir un valor temporal con respecto a un intervalo. Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero. Nótese que el resultado es un instante temporal o una secuencia temporal con interpolación discreta.</para>
-				<para><varname>tsample(ttype,duration interval,torigin timestamptz='2000-01-03') → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05]', '1 day', '2000-01-01');
--- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04, 5@2000-01-05}
-SELECT asText(tsample(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05]',
-  '2 days', '2000-01-01'));
--- {POINT(1 1)@2000-01-01, POINT(3 3)@2000-01-03, POINT(5 5)@2000-01-05}
-SELECT tsample(tfloat '{1@2000-01-01,5@2000-01-05}', '3 days', '2000-01-01');
--- {1@2000-01-01 00:00:00+01}
-SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05]', '3 days', '2000-01-01');
--- {1@2000-01-01, 4@2000-01-04}
-SELECT asText(tsample(tgeompoint '{[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05],
-  [Point(1 1)@2000-01-06, Point(5 5)@2000-01-08]}', '3 days', '2000-01-01'));
--- {POINT(1 1)@2000-01-01, POINT(4 4)@2000-01-04, POINT(3 3)@2000-01-07}
-</programlisting>
-			</listitem>
-
-			<listitem id="tprecision">
-				<indexterm><primary><varname>tprecision</varname></primary></indexterm>
-				<para>Reducir la precisión temporal de un valor temporal con respecto a un intervalo. La función calcula el promedio/centroide ponderado por el tiempo en cada intervalo de tiempo. Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero.</para>
-				<para><varname>tprecision(ttype,duration interval,torigin timestamptz='2000-01-03') → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','1 days',
-  '2000-01-01');
--- [1.5@2000-01-01, 3.5@2000-01-02, 3@2000-01-03]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','2 days',
-  '2000-01-01');
--- [2@2000-01-01, 4@2000-01-03, 3@2000-01-05]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','2 days',
-  '2000-01-02');
--- [1.5@1999-12-31, 3.5@2000-01-02, 3@2000-01-04]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','3 days',
-  '2000-01-01');
--- [2.5@2000-01-01, 4.3@2000-01-04, 2.2@2000-01-07]
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '1 day', '2000-01-01'));
--- [POINT(1.5 1.5)@2000-01-01, POINT(3.5 3.5)@2000-01-02, POINT(3 3)@2000-01-03]
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '2 days', '2000-01-01'));
--- [POINT(2 2)@2000-01-01, POINT(4 4)@2000-01-03, POINT(3 3)@2000-01-05]
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '2 days', '2000-01-02'));
--- [POINT(1.5 1.5)@1999-12-31, POINT(3.5 3.5)@2000-01-02, POINT(3 3)@2000-01-04]
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '3 days', '2000-01-01'));
--- [POINT(2.5 2.5)@2000-01-01, POINT(4.3 4.3)@2000-01-04, POINT(2.2 2.2)@2000-01-07]
-</programlisting>
-			</listitem>
-
 			<listitem id="stops">
 				<indexterm><primary><varname>stops</varname></primary></indexterm>
 				<para>Extraer de un sequencia o un conjunto de secuencias temporales con interpolación linear los segmentos cuya distancia es menor o igual que el argumento dados y/o cuya duración es mayor o igual que el argumento dado &Z_support; &geography_support;</para>
@@ -1218,7 +1164,7 @@ SELECT asText(stops(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000-01-0
 
 			<listitem id="unnest">
 				<indexterm><primary><varname>unnest</varname></primary></indexterm>
-				<para>Transformar un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base.</para>
+				<para>Transformar un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base. &SRF;</para>
 				<para><varname>unnest(ttype) → {(value,time)}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT (un).value, (un).time

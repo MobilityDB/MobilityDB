@@ -31,27 +31,6 @@ SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2000-01-01,
 </programlisting>
 			</listitem>
 
-
-			<listitem id="sss">
-				<indexterm><primary><varname>minDistSimplify</varname></primary></indexterm>
-				<para>Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain distance apart. &Z_support; &geography_support;</para>
-				<para><varname>minDistSimplify({tfloat,tpoint},mindist float) → {tfloat,tpoint}</varname></para>
-				<para>In the case of temporal points, the distance is specified in the units of the coordinate system. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT minDistSimplify(tfloat '[1@2000-01-01,2@2000-01-02,3@2000-01-04,4@2000-01-05]', 1);
--- [1@2000-01-01, 3@2000-01-04]
-SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-04, Point(5 5 5)@2000-01-05)', sqrt(3)));
--- [POINT Z (1 1 1)@2000-01-01, POINT Z (3 3 3)@2000-01-04, POINT Z (5 5 5)@2000-01-05)
-SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-04, Point(4 4 4)@2000-01-05)', sqrt(3)));
--- [POINT Z (1 1 1)@2000-01-01, POINT Z (3 3 3)@2000-01-04]
-</programlisting>
-			</listitem>
-
-
-
-
 			<listitem id="minTimeDeltaSimplify">
 				<indexterm><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
 				<para>Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain time interval apart. &Z_support; &geography_support;</para>
@@ -112,6 +91,89 @@ SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2000-01-01,
 				<para>A typical use for the <varname>DouglasPeuckerSimplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. If the visualization is static, then the spatial distance should be preferred, if the visualization is dynamic or animated, the synchronized distance should be preferred.</para>
 			</listitem>
 		</itemizedlist>
+	</sect1>
+
+	<sect1 id="temporal_types_reduction">
+		<title>Reduction</title>
+		<itemizedlist>
+			<listitem id="tsample">
+				<indexterm><primary><varname>tsample</varname></primary></indexterm>
+				<para>Sample a temporal value with respect to an interval. If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero. Notice that the result is a temporal instant or a temporal sequence with discrete interpolation.</para>
+				<para><varname>tsample(ttype,duration interval,torigin timestamptz='2000-01-03') → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tsample(tfloat '{1@2000-01-01,5@2000-01-05}', '3 days', '2000-01-01');
+-- {1@2000-01-01}
+SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05]', '1 day', '2000-01-01');
+-- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04, 5@2000-01-05}
+SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05]', '3 days', '2000-01-01');
+-- {1@2000-01-01, 4@2000-01-04}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asText(tsample(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05]',
+  '2 days', '2000-01-01'));
+-- {POINT(1 1)@2000-01-01, POINT(3 3)@2000-01-03, POINT(5 5)@2000-01-05}
+SELECT asText(tsample(tgeompoint '{[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05],
+  [Point(1 1)@2000-01-06, Point(5 5)@2000-01-08]}', '3 days', '2000-01-01'));
+-- {POINT(1 1)@2000-01-01, POINT(4 4)@2000-01-04, POINT(3 3)@2000-01-07}
+</programlisting>
+				<para><xref linkend="fig_tsample" /> illustrates the sampling of temporal floats with various interpolations. As shown in the figure, the sampling operation is best suited for temporal values with continuous interpolation.</para>
+			</listitem>
+		</itemizedlist>
+
+		<figure id="fig_tsample" float="start">
+			<title>Sampling of temporal floats with discrete, step, and linear interpolation.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" scale='75' fileref="images/tsample.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='75' fileref="images/tsample.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='75' fileref="images/tsample.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<itemizedlist>
+			<listitem id="tprecision">
+				<indexterm><primary><varname>tprecision</varname></primary></indexterm>
+				<para>Reduce the temporal precision of a temporal value with respect to an interval. The function computes the time-weighted average/centroid in each time bucket. If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero.</para>
+				<para><varname>tprecision(ttype,duration interval,torigin timestamptz='2000-01-03') → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tprecision(tint '[1@2000-01-01,5@2000-01-05,1@2000-01-09]','1 day',
+  '2000-01-01');
+-- Interp=Step;[1@2000-01-01, 5@2000-01-05, 1@2000-01-09]
+SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-09)','1 day',
+  '2000-01-01');
+-- [1.5@2000-01-01, 4.5@2000-01-04, 4.5@2000-01-05, 1.5@2000-01-08]
+SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-09]','1 day',
+  '2000-01-01');
+-- [1.5@2000-01-01, 4.5@2000-01-04, 4.5@2000-01-05, 1.5@2000-01-08, 1@2000-01-09]
+SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-09)','2 days',
+  '2000-01-01');
+-- [2@2000-01-01, 4@2000-01-03, 4@2000-01-05, 2@2000-01-07]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
+  Point(1 1)@2000-01-09)', '1 day', '2000-01-01'));
+/* [POINT(1.5 1.5)@2000-01-01, POINT(4.5 4.5)@2000-01-04, POINT(4.5 4.5)@2000-01-05,
+   POINT(1.5 1.5)@2000-01-08] */
+SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
+  Point(1 1)@2000-01-09)', '2 days', '2000-01-01'));
+/* [POINT(2 2)@2000-01-01, POINT(4 4)@2000-01-03, POINT(4 4)@2000-01-05,
+   POINT(2 2)@2000-01-07] */
+-- [POINT(1.5 1.5)@1999-12-31, POINT(3.5 3.5)@2000-01-02, POINT(3 3)@2000-01-04]
+SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
+  Point(1 1)@2000-01-09)', '4 days', '2000-01-01'));
+-- [POINT(3 3)@2000-01-01, POINT(3 3)@2000-01-05]
+</programlisting>
+				<para>Changing the temporal precision of a temporal value is akin to changing its <emphasis>temporal granularity</emphasis>, for example, from timestamps to hours or days, although the precision can be set to an arbitrary interval, such as 2 hours and 15 minutes. <xref linkend="fig_tprecision" /> illustrates a change of temporal precision for temporal floats with various interpolations.</para>
+			</listitem>
+		</itemizedlist>
+
+		<figure id="fig_tprecision" float="start">
+			<title>Changing the temporal precision of temporal floats with discrete, step, and linear interpolation.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" scale='75' fileref="images/tprecision.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='75' fileref="images/tprecision.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='75' fileref="images/tprecision.png"/></imageobject>
+			</mediaobject>
+		</figure>
 	</sect1>
 
 	<sect1 id="temporal_types_similarity">

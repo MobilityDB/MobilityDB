@@ -1307,6 +1307,20 @@
 		</sect2>
 
 		<sect2>
+			<title>Reduction</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tsample"><varname>tsample</varname></link>: Sample a temporal value with respect to an interval</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tprecision"><varname>tprecision</varname></link>: Reduce the temporal precision of a temporal value with respect to an interval</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Similarity</title>
 
 			<itemizedlist>

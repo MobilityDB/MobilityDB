@@ -1736,10 +1736,10 @@ tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width,
       (Temporal *) tnuminst_shift_value((TInstant *) temp, shift) :
       (Temporal *) tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnumseq_shift_scale_value((TSequence *) temp,
+    result = (Temporal *) tnumberseq_shift_scale_value((TSequence *) temp,
       shift, width, hasshift, haswidth);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnumseqset_shift_scale_value((TSequenceSet *) temp,
+    result = (Temporal *) tnumberseqset_shift_scale_value((TSequenceSet *) temp,
       shift, width, hasshift, haswidth);
   return result;
 }
@@ -1919,25 +1919,6 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
 }
 
 /**
- * @brief Aggregate the values that are merged due to a temporal granularity
- * change
- * @param[in] temp Temporal value
- */
-static Datum
-temporal_tprecision_agg_values(const Temporal *temp)
-{
-  assert(temp);
-  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
-
-  Datum result;
-  if (tnumber_type(temp->temptype))
-    result = Float8GetDatum(tnumber_twavg(temp));
-  else /* tgeo_type(temp->temptype) */
-    result = PointerGetDatum(tpoint_twcentroid(temp));
-  return result;
-}
-
-/**
  * @brief Set the precision of a temporal value according to period buckets.
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time buckets
@@ -1966,23 +1947,36 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   lower = lower_bucket;
   upper = lower_bucket + tunits;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  meosType temptype_out = (seq->temptype == T_TINT) ? T_TFLOAT : seq->temptype;
+  /* Determine whether we are computing the twAvg or the twCentroid */
+  bool twavg = tnumber_type(seq->temptype);
   /* New instants computing the value at the beginning/end of the bucket */
   TInstant *start = NULL, *end = NULL;
-  // bool tofree = false;
-  TSequence *seq1;
+  /* Sequence for computing the twAvg/twCentroid of each bucket */
+  TSequence *seq1;  
   Datum value;
-  int k = 0; /* Number of instants for computing the twAvg/twCentroid */
-  int l = 0; /* Number of instants of the output sequence */
+  int i = 0;   /* Instant of the input sequence being processed */
+  int k = 0;   /* Number of instants for computing the twAvg/twCentroid */
+  int l = 0;   /* Number of instants of the output sequence */
   /* Loop for each instant of the sequence */
-  for (int i = 0; i < seq->count; i++)
+  while (i < seq->count)
   {
     /* Get the next instant */
     TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
-    /* If the instant is not in the current bucket */
-    if (k > 0 && timestamptz_cmp_internal(inst->t, upper) > 0)
+    int cmp = timestamptz_cmp_internal(inst->t, upper);
+    /* If the instant is in the current bucket consume it */
+    if (cmp <= 0)
     {
+      ininsts[k++] = inst;
+      i++;
+    }
+    /* If we have reached the end of the bucket */
+    if (cmp >= 0)
+    {
+      assert(k > 0);
       /* Compute the value at the end of the bucket if we do not have it */
-      if (timestamptz_cmp_internal(ininsts[k - 1]->t, upper) < 0)
+      if (interp != DISCRETE &&
+          timestamptz_cmp_internal(ininsts[k - 1]->t, upper) < 0)
       {
         tsequence_value_at_timestamp(seq, upper, false, &value);
         ininsts[k++] = end = tinstant_make(value, seq->temptype, upper);
@@ -1990,47 +1984,55 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
         NORMALIZE);
       /* Compute the twAvg/twCentroid for the bucket */
-      value = tnumber_type(seq->temptype) ?
-        Float8GetDatum(tnumberseq_twavg(seq1)) :
+      value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
         PointerGetDatum(tpointseq_twcentroid(seq1));
-      outinsts[l++] = tinstant_make(value, seq->temptype, lower);
+      outinsts[l++] = tinstant_make(value, temptype_out, lower);
       pfree(seq1);
-      if (! tnumber_type(seq->temptype))
+      if (! twavg)
         pfree(DatumGetPointer(value));
       /* Free the instant at the beginning of the bucket if it was generated */
       if (start)
       {
         pfree(start); start = NULL;
       }
-      /* Save the instant at the bucket end as start for the next bucket */
-      ininsts[0] = ininsts[k - 1];
       if (end)
       {
         start = end; end = NULL;
       }
-      k = 1;
+      if (interp != DISCRETE)
+      {
+        /* The instant at the end of the current bucket is the start of the next  
+         * one excepted when the last bucket is empty */
+        if (i < seq->count || seq->period.upper_inc)
+        {
+          ininsts[0] = ininsts[k - 1];
+          k = 1;
+        }
+        else
+          k = 0;
+      }
       lower = upper;
       upper += tunits;
     }
-    ininsts[k++] = inst;
   }
   /* Compute the twAvg/twCentroid of the last bucket */
   if (k > 0)
   {
     seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
       NORMALIZE);
-    value = tnumber_type(seq->temptype) ?
-      Float8GetDatum(tnumberseq_twavg(seq1)) :
+    value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
       PointerGetDatum(tpointseq_twcentroid(seq1));
-    outinsts[l++] = tinstant_make(value, seq->temptype, lower);
-    if (! tnumber_type(seq->temptype))
+    outinsts[l++] = tinstant_make(value, temptype_out, lower);
+    if (! twavg)
       pfree(DatumGetPointer(value));
-    if (start)
-      pfree(start);
   }
+  /* The lower and upper bounds are both true since the tprecision operation 
+   * amounts to a granularity change */
   TSequence *result = tsequence_make_free(outinsts, l, true, true, interp,
     NORMALIZE);
   pfree(ininsts);
+  if (start)
+    pfree(start);
   return result;
 }
 
@@ -2045,7 +2047,10 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   assert(ss); assert(duration);
+  assert(ss->temptype == T_TINT || ss->temptype == T_TFLOAT ||
+    ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT );
   assert(valid_duration(duration));
+
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(ss->period.lower);
   TimestampTz upper = DatumGetTimestampTz(ss->period.upper);
@@ -2055,10 +2060,15 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     tunits;
   /* Number of buckets */
   int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   lower = lower_bucket;
   upper = lower_bucket + tunits;
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
+  meosType temptype_out = (ss->temptype == T_TINT) ? T_TFLOAT : ss->temptype;
+  /* Determine whether we are computing the twAvg or the twCentroid */
+  bool twavg = tnumber_type(ss->temptype);
+  int ninsts = 0;
   int nseqs = 0;
   /* Loop for each bucket */
   for (int i = 0; i < count; i++)
@@ -2066,18 +2076,42 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     Span p;
     span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
       true, false, T_TIMESTAMPTZ, &p);
-    span_set(TimestampTzGetDatum(lower),
-      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &p);
     TSequenceSet *proj = tsequenceset_restrict_period(ss, &p, REST_AT);
     if (proj)
     {
-      Datum value = temporal_tprecision_agg_values((Temporal *) proj);
-      sequences[nseqs++] = tsequence_from_base_period(value, ss->temptype, &p,
-        linear ? LINEAR : STEP);
+      Datum value = twavg ? Float8GetDatum(tnumber_twavg((Temporal *) proj)) :
+        PointerGetDatum(tpoint_twcentroid((Temporal *) proj));
+      /* We keep only the first instant since the tprecision operation amounts
+       * to a granularity change */
+      instants[ninsts++] = tinstant_make(value, temptype_out, lower);
       pfree(proj);
+    }
+    else
+    {
+      /* Close the previous sequence if any and start a new one */
+      if (ninsts > 0)
+      {
+        /* The lower and upper bounds are both true since the tprecision 
+         * operation amounts to a granularity change */
+        sequences[nseqs++] = tsequence_make((const TInstant **) instants,
+          ninsts, true, true, interp, NORMALIZE);
+        for (int j = 0; j < ninsts; j++)
+          pfree(instants[j]);
+        ninsts = 0;
+      }
     }
     lower += tunits;
     upper += tunits;
+  }
+  /* Close the last sequence if any */
+  if (ninsts > 0)
+  {
+    /* The lower and upper bounds are both true since the tprecision 
+     * operation amounts to a granularity change */
+    sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+      true, true, interp, NORMALIZE);
+    for (int j = 0; j < ninsts; j++)
+      pfree(instants[j]);
   }
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }

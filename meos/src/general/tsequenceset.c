@@ -1583,7 +1583,7 @@ tsequenceset_set_interp(const TSequenceSet *ss, interpType interp)
  * @sqlfunc shiftValues(), scaleValues(), shiftScaleValues().
  */
 TSequenceSet *
-tnumseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
+tnumberseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
   Datum width, bool hasshift, bool haswidth)
 {
   assert(ss);
@@ -1608,7 +1608,7 @@ tnumseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
     box = TSEQUENCE_BBOX_PTR(seq);
     numspan_delta_scale_iter(&box->span, origin, delta, hasshift, scale);
     /* Shift and/or scale each instant of the composing sequence */
-    tnumseq_shift_scale_value_iter(seq, origin, delta, hasshift, scale);
+    tnumberseq_shift_scale_value_iter(seq, origin, delta, hasshift, scale);
   }
   return result;
 }
