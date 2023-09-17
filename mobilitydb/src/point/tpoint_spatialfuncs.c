@@ -36,6 +36,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <funcapi.h>
 #include <utils/float.h>
 /* PostGIS */
 #include <liblwgeom.h>
