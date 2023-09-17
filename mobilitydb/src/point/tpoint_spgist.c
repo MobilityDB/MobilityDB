@@ -1410,7 +1410,7 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     out->distances = distances;
     for (i = 0; i < in->norderbys; i++)
     {
-      /* Cast the order by argument to a box and perform the test */
+      /* Convert the order by argument to a box and perform the test */
       if (tpoint_spgist_get_stbox(&in->orderbys[i], &box))
         distances[i] = nad_stbox_stbox(&box, key);
       else

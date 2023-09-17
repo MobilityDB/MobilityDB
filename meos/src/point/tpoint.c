@@ -67,11 +67,11 @@ gserialized_copy(const GSERIALIZED *g)
 }
 
 /*****************************************************************************
- * Accessor functions
+ * Conversion functions
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_box_conversion
  * @brief Return the bounding box of a temporal point
  * @sqlfunc stbox()
  * @sqlop @p ::

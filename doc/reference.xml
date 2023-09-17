@@ -251,6 +251,80 @@
 		</sect2>
 
 		<sect2>
+			<title>Set Operations</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="setspan_union"><varname>+</varname></link>: Union of sets or spans</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_difference"><varname>-</varname></link>: Difference of sets or spans</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_intersection"><varname>*</varname></link>: Intersection of sets or spans</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Bounding Box Operations</title>
+
+			<sect3>
+				<title>Topological Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="setspan_overlaps"><varname>&amp;&amp;</varname></link>: Do the sets or spans overlap (have values in common)?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="setspan_contains"><varname>@&gt;</varname></link>: Does the first set or span contain the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: Is the first set or span contained by the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: Is the first set or span adjacent to the second one?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Position Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="setspan_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;#</varname></link>: Is the first set or span scritly to the left of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="setspan_right"><varname>&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: Is the first set or span strictly to the right of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="setspan_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;#</varname></link>: Is the first set or span not to the right of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="setspan_overright"><varname>&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Is the first set or span not to the left of the second one?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Distance Operations</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="smallest_distance_time"><varname>&lt;-&gt;</varname></link>: Get the smallest distance ever</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Comparisons</title>
 
 			<itemizedlist>
@@ -276,72 +350,6 @@
 
 				<listitem>
 					<para><link linkend="setspan_ge"><varname>&gt;=</varname></link>: Is the first value greater than or equal to the second one?</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Set Operations</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="setspan_union"><varname>+</varname></link>: Union of sets or spans</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_difference"><varname>-</varname></link>: Difference of sets or spans</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_intersection"><varname>*</varname></link>: Intersection of sets or spans</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Topological and Relative Position Operations</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="setspan_overlaps"><varname>&amp;&amp;</varname></link>: Do the sets or spans overlap (have values in common)?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_contains"><varname>@&gt;</varname></link>: Does the first set or span contain the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: Is the first set or span contained by the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: Is the first set or span adjacent to the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;#</varname></link>: Is the first set or span scritly to the left of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_right"><varname>&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: Is the first set or span strictly to the right of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;#</varname></link>: Is the first set or span not to the right of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_overright"><varname>&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Is the first set or span not to the left of the second one?</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Distance Operations</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="smallest_distance_time"><varname>&lt;-&gt;</varname></link>: Get the smallest distance ever</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -515,13 +523,66 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregations</title>
-
+			<title>Set Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_extent"><varname>extent</varname></link>: Bounding box extent</para>
+					<para><link linkend="box_union"><varname>+</varname></link>: Union of bounding boxes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersection of bounding boxes</para>
 				</listitem>
 			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Bounding Box Operations</title>
+
+			<sect3>
+				<title>Topological Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: Do the bounding boxes overlap?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_contains"><varname>@&gt;</varname></link>: Does the first bounding box contain the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: Is the first bounding box contained in the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_same"><varname>~=</varname></link>: Are the bounding boxes equal in their common dimensions?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_adjacent"><varname>-|-</varname></link>: Are the bounding boxes adjacent?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Position Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: Are the X/Y/Z/T values of the first bounding box strictly less than those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_right"><varname>&gt;&gt;</varname>,<varname>|&gt;&gt;</varname>, <varname>/&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: Are the X/Y/Z/T values of the first bounding box strictly greater than those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;|</varname>, <varname>&amp;&lt;/</varname>, <varname>&amp;&lt;#</varname></link>: Are the X/Y/Z/T values of the first bounding box not greater than those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Are the X/Y/Z/T values of the first bounding box not less than those of the second one?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 
 		<sect2>
@@ -554,55 +615,11 @@
 		</sect2>
 
 		<sect2>
-			<title>Set Operations</title>
+			<title>Aggregations</title>
+
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_union"><varname>+</varname></link>: Union of bounding boxes</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersection of bounding boxes</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Topological and Relative Position Operations</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: Do the bounding boxes overlap?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_contains"><varname>@&gt;</varname></link>: Does the first bounding box contain the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: Is the first bounding box contained in the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_same"><varname>~=</varname></link>: Are the bounding boxes equal in their common dimensions?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_adjacent"><varname>-|-</varname></link>: Are the bounding boxes adjacent?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: Are the X/Y/Z/T values of the first bounding box strictly less than those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_right"><varname>&gt;&gt;</varname>,<varname>|&gt;&gt;</varname>, <varname>/&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: Are the X/Y/Z/T values of the first bounding box strictly greater than those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;|</varname>, <varname>&amp;&lt;/</varname>, <varname>&amp;&lt;#</varname></link>: Are the X/Y/Z/T values of the first bounding box not greater than those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Are the X/Y/Z/T values of the first bounding box not less than those of the second one?</para>
+					<para><link linkend="box_extent"><varname>extent</varname></link>: Bounding box extent</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1240,48 +1257,59 @@
 		</sect2>
 
 		<sect2>
-			<title>Ever and Temporal Spatial Relationships</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="econtains"><varname>econtains</varname></link>: Ever contains</para>
-				</listitem>
+			<title>Spatial Relationships</title>
 
-				<listitem>
-					<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Is ever disjoint</para>
-				</listitem>
+			<sect3>
+				<title>Ever Spatial Relationships</title>
 
-				<listitem>
-					<para><link linkend="edwithin"><varname>edwithin</varname></link>: Is ever at distance within</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="econtains"><varname>econtains</varname></link>: Ever contains</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="eintersects"><varname>eintersects</varname></link>: Ever intersects</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Is ever disjoint</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="etouches"><varname>etouches</varname></link>: Ever touches</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Is ever at distance within</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="tcontains"><varname>tcontains</varname></link>: Temporal contains</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Ever intersects</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Temporal disjoint</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Temporal distance within</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tintersects"><varname>tintersects</varname></link>: Temporal intersects</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttouches"><varname>ttouches</varname></link>: Temporal touches</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="etouches"><varname>etouches</varname></link>: Ever touches</para>
+					</listitem>
 				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Temporal Spatial Relationships</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Temporal contains</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Temporal disjoint</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Temporal distance within</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tintersects"><varname>tintersects</varname></link>: Temporal intersects</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Temporal touches</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 	</sect1>
 
@@ -1704,7 +1732,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_relpos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Relative position operators</para>
+						<para><link linkend="tnpoint_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Position operators</para>
 					</listitem>
 
 					<listitem>

@@ -1067,7 +1067,7 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    /* Cast the query to a box and perform the test */
+    /* Convert the query to a box and perform the test */
     if (tnumber_spgist_get_tbox(&in->scankeys[i], &box))
       result = tbox_index_consistent_leaf(key, &box, strategy);
     else
@@ -1085,7 +1085,7 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     out->distances = distances;
     for (i = 0; i < in->norderbys; i++)
     {
-      /* Cast the order by argument to a box and perform the test */
+      /* Convert the order by argument to a box and perform the test */
       tnumber_spgist_get_tbox(&in->orderbys[i], &box);
       distances[i] = nad_tbox_tbox(&box, key);
     }

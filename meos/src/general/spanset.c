@@ -472,12 +472,12 @@ spanset_copy(const SpanSet *ss)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_cast
- * @brief Cast a value as a span set
+ * @ingroup libmeos_internal_setspan_conversion
+ * @brief Convert a value as a span set
  */
 SpanSet *
 value_to_spanset(Datum d, meosType basetype)
@@ -491,8 +491,8 @@ value_to_spanset(Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast an integer as a span set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert an integer as a span set
  * @sqlop @p ::
  */
 SpanSet *
@@ -502,8 +502,8 @@ int_to_intspanset(int i)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a big integer as a span set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a big integer as a span set
  * @sqlop @p ::
  */
 SpanSet *
@@ -513,8 +513,8 @@ bigint_to_bigintspanset(int i)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a float as a span set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a float as a span set
  * @sqlop @p ::
  */
 SpanSet *
@@ -525,8 +525,8 @@ float_to_floatspanset(double d)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a timestamp as a period set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a timestamp as a period set
  * @sqlop @p ::
  */
 SpanSet *
@@ -536,8 +536,8 @@ timestamp_to_periodset(TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a set as a span set.
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a set as a span set.
  * @sqlop @p ::
  */
 SpanSet *
@@ -557,8 +557,8 @@ set_to_spanset(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a period as a period set.
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a period as a period set.
  * @sqlop @p ::
  */
 SpanSet *

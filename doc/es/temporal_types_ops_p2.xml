@@ -845,7 +845,7 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
 
 		<para>Finalmente, cabe destacar que los operadores de cuadro delimitador permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
 
-		<para>Refiérase a la <xref linkend="box_types_topo_rel" /> para los operadores de cuadro delimitador.</para>
+		<para>Refiérase a la <xref linkend="box_types_topo_pos" /> para los operadores de cuadro delimitador.</para>
 	</sect1>
 
 	<sect1 id="temporal_types_miscellaneous">

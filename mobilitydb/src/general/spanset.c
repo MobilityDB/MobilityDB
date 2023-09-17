@@ -176,14 +176,14 @@ Spanset_constructor(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Value_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_to_spanset);
 /**
- * @ingroup mobilitydb_setspan_cast
- * @brief Cast a value as a span set
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a value as a span set
  * @sqlfunc intspanset(), bigintspanset(), floatspanset(), periodset()
  */
 Datum
@@ -198,8 +198,8 @@ Value_to_spanset(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_spanset);
 /**
- * @ingroup mobilitydb_setspan_cast
- * @brief Cast the span value as a span set
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a span value as a span set
  * @sqlfunc instspanset(), floatspanset(), periodset()
  */
 Datum
@@ -213,8 +213,8 @@ Span_to_spanset(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Set_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_to_spanset);
 /**
- * @ingroup mobilitydb_setspan_cast
- * @brief Cast the timestamp set value as a period set
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a timestamp set value as a period set
  * @sqlfunc intspanset(), bigintspanset(), floatspanset(), periodset()
  */
 Datum
@@ -262,7 +262,7 @@ Spanset_span(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Spanset_to_multirange(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_to_multirange);
 /**
- * @ingroup mobilitydb_setspan_cast
+ * @ingroup mobilitydb_setspan_conversion
  * @brief Convert the integer span as a integer range value
  * @sqlfunc int4range(), tstzrange()
  * @sqlop @p ::
@@ -280,7 +280,7 @@ Spanset_to_multirange(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Multirange_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Multirange_to_spanset);
 /**
- * @ingroup mobilitydb_setspan_cast
+ * @ingroup mobilitydb_setspan_conversion
  * @brief Convert the multi range value as a span set
  * @sqlfunc intspanset(), periodset()
  * @sqlop @p ::

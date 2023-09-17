@@ -745,9 +745,9 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.2)@2001-01-04)' &amp;= N
 </programlisting>
 			</listitem>
 
-			<listitem id="tnpoint_relpos">
+			<listitem id="tnpoint_pos">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Operadores de posición relativa</para>
+				<para>Operadores de posición</para>
 				<para><varname>tnpoint &lt;&lt; tnpoint → boolean</varname></para>
 				<para><varname>tnpoint &amp;&lt; tnpoint → boolean</varname></para>
 				<para><varname>tnpoint &gt;&gt; tnpoint → boolean</varname></para>

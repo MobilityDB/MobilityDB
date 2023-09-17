@@ -847,7 +847,7 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
 
 		<para>Finally, it is worth noting that the bounding box operators allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
 
-		<para>We refer to <xref linkend="box_types_topo_rel" /> for the bounding box operators.</para>
+		<para>We refer to <xref linkend="box_types_topo_pos" /> for the bounding box operators.</para>
 	</sect1>
 
 	<sect1 id="temporal_miscellaneous">

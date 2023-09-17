@@ -413,7 +413,7 @@ extern Set *timestampset_make(const TimestampTz *values, int count);
 
 /*****************************************************************************/
 
-/* Cast functions for set and span types */
+/* Conversion functions for set and span types */
 
 extern Set *bigint_to_bigintset(int64 i);
 extern Span *bigint_to_bigintspan(int i);
@@ -821,7 +821,7 @@ extern TBox *tbox_copy(const TBox *box);
 
 /*****************************************************************************/
 
-/* Cast functions for box types */
+/* Conversion functions for box types */
 
 extern TBox *int_to_tbox(int i);
 extern TBox *float_to_tbox(double d);
@@ -1039,7 +1039,7 @@ extern TSequenceSet *ttextseqset_from_base_periodset(const text *txt, const Span
 
 /*****************************************************************************/
 
-/* Cast functions for temporal types */
+/* Conversion functions for temporal types */
 
 extern Span *temporal_to_period(const Temporal *temp);
 extern Temporal *tfloat_to_tint(const Temporal *temp);

@@ -243,7 +243,7 @@ extern char *spanset_out(const SpanSet *ss, int maxdd);
 
 /*****************************************************************************/
 
-/* Cast functions for set and span types */
+/* Conversion functions for set and span types */
 
 extern Set *value_to_set(Datum d, meosType basetype);
 extern Span *value_to_span(Datum d, meosType basetype);
@@ -389,7 +389,7 @@ extern void tbox_set(const Span *s, const Span *p, TBox *box);
 
 /*****************************************************************************/
 
-/* Cast functions for box types */
+/* Conversion functions for box types */
 
 extern void float_set_tbox(double d, TBox *box);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
@@ -571,7 +571,7 @@ extern TSequenceSet *tsequenceset_from_base_periodset(Datum value, meosType temp
 
 /*****************************************************************************/
 
-/* Cast functions for temporal types */
+/* Conversion functions for temporal types */
 
 extern void temporal_set_period(const Temporal *temp, Span *p);
 extern void tinstant_set_period(const TInstant *inst, Span *p);

@@ -779,14 +779,14 @@ Tsequenceset_from_base_periodset(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tint_to_tfloat(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_to_tfloat);
 /**
- * @ingroup mobilitydb_temporal_cast
- * @brief Cast a temporal integer as a temporal float
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal integer as a temporal float
  * @sqlfunc tfloat()
  * @sqlop @p ::
  */
@@ -802,8 +802,8 @@ Tint_to_tfloat(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tfloat_to_tint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_to_tint);
 /**
- * @ingroup mobilitydb_temporal_cast
- * @brief Cast a temporal float as a temporal integer
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal float as a temporal integer
  * @sqlfunc tint()
  * @sqlop @p ::
  */
@@ -819,7 +819,7 @@ Tfloat_to_tint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_to_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_to_period);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding period on which a temporal value is defined
  * @note We cannot detoast only the header since we don't know whether the
  * lower and upper bounds of the period are inclusive or not
@@ -839,7 +839,7 @@ Temporal_to_period(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_to_span);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Return the value span of a temporal integer
  * @sqlfunc span()
  * @sqlop @p ::
@@ -856,7 +856,7 @@ Tnumber_to_span(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding box of a temporal number
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -1555,7 +1555,7 @@ temporal_ev_al_comp_ext(FunctionCallInfo fcinfo,
 PGDLLEXPORT Datum Temporal_ever_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever equal to a base value
  * @sqlfunc ever_eq()
  * @sqlop @p ?=
@@ -1569,7 +1569,7 @@ Temporal_ever_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always equal to the base value
  * @sqlfunc always_eq()
  * @sqlop @p %=
@@ -1583,7 +1583,7 @@ Temporal_always_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ever_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever different from a base value
  * @sqlfunc ever_eq()
  * @sqlop @p ?<>
@@ -1597,7 +1597,7 @@ Temporal_ever_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always different from a base value
  * @sqlfunc always_ne()
  * @sqlop @p %<>
@@ -1613,7 +1613,7 @@ Temporal_always_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ever_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_lt);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than a base value
  * @sqlfunc ever_lt()
  * @sqlop @p ?<
@@ -1627,7 +1627,7 @@ Temporal_ever_lt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_lt);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always less than a base value
  * @sqlfunc always_lt()
  * @sqlop @p %<
@@ -1641,7 +1641,7 @@ Temporal_always_lt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ever_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_le);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than or equal to a base value
  * @sqlfunc ever_le()
  * @sqlop @p ?<=
@@ -1655,7 +1655,7 @@ Temporal_ever_le(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_le);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always less than or equal to a base value
  * @sqlfunc always_le()
  * @sqlop @p %<=
@@ -1669,7 +1669,7 @@ Temporal_always_le(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ever_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_gt);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than a base value
  * @sqlfunc ever_gt()
  * @sqlop @p ?>
@@ -1683,7 +1683,7 @@ Temporal_ever_gt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_gt);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than a base value
  * @sqlfunc always_gt()
  * @sqlop @p %>
@@ -1697,7 +1697,7 @@ Temporal_always_gt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ever_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_ge);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than or equal
  * to a base value
  * @sqlfunc ever_ge()
@@ -1712,7 +1712,7 @@ Temporal_ever_ge(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_ge);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than or equal
  * to a base value
  * @sqlfunc always_ge()
@@ -2712,7 +2712,7 @@ Tnumber_twavg(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_eq);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the temporal values are equal
  * @sqlfunc tbool_eq(), tint_eq(), tfloat_eq(), ttext_eq(),
  * tgeompoint_eq(), tgeogpoint_eq(), tnpoint_eq()
@@ -2732,7 +2732,7 @@ Temporal_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ne);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the temporal values are different
  * @sqlfunc tbool_ne(), tint_ne(), tfloat_ne(), ttext_ne(),
  * tgeompoint_ne(), tgeogpoint_ne(), tnpoint_ne()
@@ -2754,7 +2754,7 @@ Temporal_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_cmp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_cmp);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal value
  * is less than, equal, or greater than the second temporal value
  * @note Function used for B-tree comparison
@@ -2775,7 +2775,7 @@ Temporal_cmp(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_lt);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is less than the second one
  * @sqlfunc tbool_lt(), tint_lt(), tfloat_lt(), ttext_lt(),
  * tgeompoint_lt(), tgeogpoint_lt(), tnpoint_lt()
@@ -2795,7 +2795,7 @@ Temporal_lt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_le);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
  * @sqlfunc tbool_le(), tint_le(), tfloat_le(), ttext_le(),
@@ -2816,7 +2816,7 @@ Temporal_le(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ge);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
  * @sqlfunc tbool_ge(), tint_ge(), tfloat_ge(), ttext_ge(),
@@ -2837,7 +2837,7 @@ Temporal_ge(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_gt);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than the second one
  * @sqlfunc tbool_gt(), tint_gt(), tfloat_gt(), ttext_gt(),
  * tgeompoint_gt(), tgeogpoint_gt(), tnpoint_gt()

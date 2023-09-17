@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Relative position operators for temporal geometry points.
+ * @brief Position operators for temporal geometry points.
  *
  * The following operators are defined for the spatial dimension:
  * `left`, `overleft`, `right`, `overright`, `below`, `overbelow`, `above`,

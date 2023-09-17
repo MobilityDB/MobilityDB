@@ -492,7 +492,7 @@ temporal_sel_period(VariableStatData *vardata, Span *period, meosOper oper)
     oper == LT_OP || oper == LE_OP ||
     oper == GT_OP || oper == GE_OP)
   {
-    /* Cast the period as a span to call the span selectivity functions */
+    /* Convert the period as a span to call the span selectivity functions */
     selec = span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
   }
   else /* Unknown operator */
@@ -567,7 +567,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
       selec *= span_sel_hist(vardata, span, oper, VALUE_SEL);
     /* Selectivity for the time dimension */
     if (period != NULL)
-      /* Cast the period as a span to call the span selectivity functions */
+      /* Convert the period as a span to call the span selectivity functions */
       selec *= span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
   }
   else if (oper == LEFT_OP || oper == RIGHT_OP ||
@@ -582,7 +582,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
   {
     /* Selectivity for the value dimension */
     if (period != NULL)
-      /* Cast the period as a span to call the span selectivity functions */
+      /* Convert the period as a span to call the span selectivity functions */
       selec *= span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
   }
   else /* Unknown operator */

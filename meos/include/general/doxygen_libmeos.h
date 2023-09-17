@@ -71,9 +71,9 @@
  * @ingroup libmeos_setspan
  * @brief Constructor functions for set and span types.
  *
- * @defgroup libmeos_setspan_cast Cast functions
+ * @defgroup libmeos_setspan_conversion Conversion functions
  * @ingroup libmeos_setspan
- * @brief Cast functions for set and span types.
+ * @brief Conversion functions for set and span types.
  *
  * @defgroup libmeos_setspan_accessor Accessor functions
  * @ingroup libmeos_setspan
@@ -82,6 +82,10 @@
  * @defgroup libmeos_setspan_transf Transformation functions
  * @ingroup libmeos_setspan
  * @brief Transformation functions for set and span types.
+ *
+ * @defgroup libmeos_setspan_set Set functions
+ * @ingroup libmeos_setspan
+ * @brief Set functions for set and span types.
  *
  * @defgroup libmeos_setspan_bbox Bounding box functions
  * @ingroup libmeos_setspan
@@ -95,21 +99,17 @@
  * @ingroup libmeos_setspan_bbox
  * @brief Position functions for set and span types.
  *
- * @defgroup libmeos_setspan_set Set functions
- * @ingroup libmeos_setspan
- * @brief Set functions for set and span types.
- *
  * @defgroup libmeos_setspan_dist Distance functions
  * @ingroup libmeos_setspan
  * @brief Distance functions for set and span types.
  *
- * @defgroup libmeos_setspan_agg Aggregate functions
- * @ingroup libmeos_setspan
- * @brief Aggregate functions for set and span types.
- *
  * @defgroup libmeos_setspan_comp Comparison functions
  * @ingroup libmeos_setspan
  * @brief Comparison functions for set and span types.
+ *
+ * @defgroup libmeos_setspan_agg Aggregate functions
+ * @ingroup libmeos_setspan
+ * @brief Aggregate functions for set and span types.
  */
 
 /**
@@ -125,9 +125,9 @@
  * @ingroup libmeos_box
  * @brief Constructor functions for box types.
  *
- * @defgroup libmeos_box_cast Cast functions
+ * @defgroup libmeos_box_conversion Conversion functions
  * @ingroup libmeos_box
- * @brief Cast functions for box types.
+ * @brief Conversion functions for box types.
  *
  * @defgroup libmeos_box_accessor Accessor functions
  * @ingroup libmeos_box
@@ -137,17 +137,21 @@
  * @ingroup libmeos_box
  * @brief Transformation functions for box types.
  *
- * @defgroup libmeos_box_topo Topological functions
- * @ingroup libmeos_box
- * @brief Topological functions for box types.
- *
- * @defgroup libmeos_box_pos Position functions
- * @ingroup libmeos_box
- * @brief Position functions for box types.
- *
  * @defgroup libmeos_box_set Set functions
  * @ingroup libmeos_box
  * @brief Set functions for box types.
+ *
+ * @defgroup libmeos_box_bbox Bounding box functions
+ * @ingroup libmeos_box
+ * @brief Bounding box functions for box types.
+ *
+ * @defgroup libmeos_box_bbox_topo Topological functions
+ * @ingroup libmeos_box_bbox
+ * @brief Topological functions for box types.
+ *
+ * @defgroup libmeos_box_bbox_pos Position functions
+ * @ingroup libmeos_box_bbox
+ * @brief Position functions for box types.
  *
  * @defgroup libmeos_box_comp Comparison functions
  * @ingroup libmeos_box
@@ -167,9 +171,9 @@
  * @ingroup libmeos_temporal
  * @brief Constructor functions for temporal types.
  *
- * @defgroup libmeos_temporal_cast Cast functions
+ * @defgroup libmeos_temporal_conversion Conversion functions
  * @ingroup libmeos_temporal
- * @brief Cast functions for temporal types.
+ * @brief Conversion functions for temporal types.
  *
  * @defgroup libmeos_temporal_accessor Accessor functions
  * @ingroup libmeos_temporal
@@ -179,13 +183,13 @@
  * @ingroup libmeos_temporal
  * @brief Transformation functions for temporal types.
  *
- * @defgroup libmeos_temporal_restrict Restriction functions
- * @ingroup libmeos_temporal
- * @brief Restriction functions for temporal types.
- *
  * @defgroup libmeos_temporal_modif Modification functions
  * @ingroup libmeos_temporal
  * @brief Modification functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_restrict Restriction functions
+ * @ingroup libmeos_temporal
+ * @brief Restriction functions for temporal types.
  *
  * @defgroup libmeos_temporal_bool Boolean functions
  * @ingroup libmeos_temporal
@@ -203,13 +207,21 @@
  * @ingroup libmeos_temporal
  * @brief Distance functions for temporal types.
  *
- * @defgroup libmeos_temporal_ever Ever/always functions
- * @ingroup libmeos_temporal
- * @brief Ever/always functions for temporal types.
- *
  * @defgroup libmeos_temporal_comp Comparison functions
  * @ingroup libmeos_temporal
  * @brief Comparison functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_comp_trad Traditional comparison functions
+ * @ingroup libmeos_temporal_comp
+ * @brief Traditional comparison functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_comp_ever Ever/always functions
+ * @ingroup libmeos_temporal_comp
+ * @brief Ever/always comparison functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_comp_temp Temporal comparison functions
+ * @ingroup libmeos_temporal_comp
+ * @brief Temporal comparison functions for temporal types.
  *
  * @defgroup libmeos_temporal_spatial Spatial functions
  * @ingroup libmeos_temporal
@@ -226,6 +238,14 @@
  * @defgroup libmeos_temporal_spatial_rel Spatial relationship functions
  * @ingroup libmeos_temporal_spatial
  * @brief Spatial relationship functions for temporal point types.
+ *
+ * @defgroup libmeos_temporal_spatial_rel_ever Ever spatial relationship functions
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Ever spatial relationship functions for temporal point types.
+ *
+ * @defgroup libmeos_temporal_spatial_rel_temp Temporal spatial relationship functions
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Temporal spatial relationship functions for temporal point types.
  *
  * @defgroup libmeos_temporal_agg Local and temporal aggregate functions
  * @ingroup libmeos_temporal
@@ -273,9 +293,9 @@
  * @ingroup libmeos_internal_setspan
  * @brief Constructor functions for set and span types.
  *
- * @defgroup libmeos_internal_setspan_cast Cast functions
+ * @defgroup libmeos_internal_setspan_conversion Conversion functions
  * @ingroup libmeos_internal_setspan
- * @brief Cast functions for set and span types.
+ * @brief Conversion functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_accessor Accessor functions
  * @ingroup libmeos_internal_setspan
@@ -284,6 +304,10 @@
  * @defgroup libmeos_internal_setspan_transf Transformation functions
  * @ingroup libmeos_internal_setspan
  * @brief Transformation functions for set and span types.
+ *
+ * @defgroup libmeos_internal_setspan_set Set functions
+ * @ingroup libmeos_internal_setspan
+ * @brief Set functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_bbox Bounding box functions
  * @ingroup libmeos_internal_setspan
@@ -296,10 +320,6 @@
  * @defgroup libmeos_internal_setspan_pos Position functions
  * @ingroup libmeos_internal_setspan_bbox
  * @brief Position functions for set and span types.
- *
- * @defgroup libmeos_internal_setspan_set Set functions
- * @ingroup libmeos_internal_setspan
- * @brief Set functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_dist Distance functions
  * @ingroup libmeos_internal_setspan
@@ -319,9 +339,9 @@
  * @ingroup libmeos_internal_box
  * @brief Constructor functions for box types.
  *
- * @defgroup libmeos_internal_box_cast Cast functions
+ * @defgroup libmeos_internal_box_conversion Conversion functions
  * @ingroup libmeos_internal_box
- * @brief Cast functions for box types.
+ * @brief Conversion functions for box types.
  *
  * @defgroup libmeos_internal_box_set Set functions
  * @ingroup libmeos_internal_box
@@ -341,9 +361,9 @@
  * @ingroup libmeos_internal_temporal
  * @brief Constructor functions for temporal types.
  *
- * @defgroup libmeos_internal_temporal_cast Cast functions
+ * @defgroup libmeos_internal_temporal_conversion Conversion functions
  * @ingroup libmeos_internal_temporal
- * @brief Cast functions for temporal types.
+ * @brief Conversion functions for temporal types.
  *
  * @defgroup libmeos_internal_temporal_accessor Accessor functions
  * @ingroup libmeos_internal_temporal
@@ -365,13 +385,21 @@
  * @ingroup libmeos_internal_temporal
  * @brief Distance functions for temporal types.
  *
- * @defgroup libmeos_internal_temporal_ever Ever/always functions
- * @ingroup libmeos_internal_temporal
- * @brief Ever/always functions for temporal types.
- *
  * @defgroup libmeos_internal_temporal_comp Comparison functions
  * @ingroup libmeos_internal_temporal
  * @brief Comparison functions for temporal types.
+ *
+ * @defgroup libmeos_internal_temporal_comp_trad Traditional comparison functions
+ * @ingroup libmeos_internal_temporal_comp
+ * @brief Tranditional comparison functions for temporal types.
+ *
+ * @defgroup libmeos_internal_temporal_comp_ever Ever/always comparison functions
+ * @ingroup libmeos_internal_temporal_comp
+ * @brief Ever/always comparison functions for temporal types.
+ *
+ * @defgroup libmeos_internal_temporal_comp_temp Temporal comparison functions
+ * @ingroup libmeos_internal_temporal_comp
+ * @brief Temporal comparison functions for temporal types.
  *
  * @defgroup libmeos_internal_temporal_spatial Spatial functions
  * @ingroup libmeos_internal_temporal

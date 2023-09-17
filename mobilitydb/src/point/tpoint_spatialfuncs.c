@@ -81,7 +81,7 @@ tpoint_ev_al_comp_ext(FunctionCallInfo fcinfo,
 PGDLLEXPORT Datum Tpoint_ever_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_ever_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is ever equal to a point
  * @sqlfunc ever_eq()
  */
@@ -94,7 +94,7 @@ Tpoint_ever_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_always_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_always_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is always equal to a point
  * @sqlfunc always_eq()
  */
@@ -107,7 +107,7 @@ Tpoint_always_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_ever_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_ever_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is ever different from a point
  * @sqlfunc ever_ne()
  */
@@ -120,7 +120,7 @@ Tpoint_ever_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_always_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_always_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is always different from a point
  * @sqlfunc always_ne()
  */
@@ -362,13 +362,13 @@ Tpoint_transform(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_to_tgeogpoint);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal geometry point to a temporal geography point
  * @sqlfunc tgeogpoint()
  */
@@ -384,7 +384,7 @@ Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeogpoint_to_tgeompoint);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal geography point to a temporal geometry point
  * @sqlfunc tgeompoint()
  */

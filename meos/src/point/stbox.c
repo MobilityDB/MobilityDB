@@ -368,11 +368,11 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Span *s)
 }
 
 /*****************************************************************************
- * Casting
+ * Conversion functions
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a PostGIS GBOX from a spatiotemporal box.
  * @sqlop @p ::
  */
@@ -400,7 +400,7 @@ stbox_set_gbox(const STBox *box, GBOX *gbox)
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a PostGIS BOX3D from a spatiotemporal box
  * @sqlop @p ::
  */
@@ -427,8 +427,8 @@ stbox_set_box3d(const STBox *box, BOX3D *box3d)
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a spatiotemporal box as a PostGIS geometry
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a spatiotemporal box as a PostGIS geometry
  * @sqlop @p ::
  */
 GSERIALIZED *
@@ -488,8 +488,8 @@ stbox_to_geo(const STBox *box)
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a temporal box as a period
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a temporal box as a period
  * @sqlop @p ::
  */
 Span *
@@ -532,7 +532,7 @@ point_get_coords(const GSERIALIZED *point, bool hasz, double *x, double *y,
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a spatiotemporal box from a geometry/geography.
  */
 bool
@@ -588,8 +588,8 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a geometry/geography to a spatiotemporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a geometry/geography to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
  */
@@ -607,7 +607,7 @@ geo_to_stbox(const GSERIALIZED *gs)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set the spatiotemporal box from an array of geometries/geographies
  * @param[in] values Values
  * @param[in] count Number of elements in the array
@@ -628,7 +628,7 @@ geoarr_set_stbox(const Datum *values, int count, STBox *box)
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a spatiotemporal box from a timestamp.
  */
 void
@@ -647,8 +647,8 @@ timestamp_set_stbox(TimestampTz t, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a timestamp to a spatiotemporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a timestamp to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
  */
@@ -662,7 +662,7 @@ timestamp_to_stbox(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a spatiotemporal box from a timestamp set.
  */
 void
@@ -678,8 +678,8 @@ timestampset_set_stbox(const Set *s, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a timestamp set to a spatiotemporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a timestamp set to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
  */
@@ -696,7 +696,7 @@ timestampset_to_stbox(const Set *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a spatiotemporal box from a period.
  */
 void
@@ -712,8 +712,8 @@ period_set_stbox(const Span *s, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a period to a spatiotemporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a period to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
  */
@@ -730,7 +730,7 @@ period_to_stbox(const Span *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a spatiotemporal box from a period set.
  */
 void
@@ -746,8 +746,8 @@ periodset_set_stbox(const SpanSet *ss, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a period set to a spatiotemporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a period set to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
  */
@@ -1236,7 +1236,7 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the first spatiotemporal box contains the second one.
  * @sqlop @p \@>
  */
@@ -1262,7 +1262,7 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the first spatiotemporal box is contained in the
  * second one
  * @sqlop @p <@
@@ -1274,7 +1274,7 @@ contained_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the spatiotemporal boxes overlap
  * @sqlop @p &&
  */
@@ -1300,7 +1300,7 @@ overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the spatiotemporal boxes are equal in the common
  * dimensions.
  * @sqlop @p ~=
@@ -1326,7 +1326,7 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the spatiotemporal boxes are adjacent.
  * @sqlop @p -|-
  */
@@ -1386,7 +1386,7 @@ pos_stbox_stbox_test(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is strictly to the
  * left of the second one
  * @sqlop @p <<
@@ -1403,7 +1403,7 @@ left_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * right of the second one
  * @sqlop @p &<
@@ -1420,7 +1420,7 @@ overleft_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is strictly to the right
  * of the second one
  * @sqlop @p >>
@@ -1437,7 +1437,7 @@ right_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatio temporal box does not extend to the
  * left of the second one.
  * @sqlop @p &>
@@ -1454,7 +1454,7 @@ overright_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is strictly below of
  * the second one.
  * @sqlop @p <<|
@@ -1471,7 +1471,7 @@ below_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend above of
  * the second one.
  * @sqlop @p &<|
@@ -1488,7 +1488,7 @@ overbelow_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is strictly above of the
  * second one.
  * @sqlop @p |>>
@@ -1505,7 +1505,7 @@ above_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend below of
  * the second one.
  * @sqlop @p |&>
@@ -1522,7 +1522,7 @@ overabove_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is strictly in front of
  * the second one.
  * @sqlop @p <</
@@ -1539,7 +1539,7 @@ front_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * back of the second one.
  * @sqlop @p &</
@@ -1556,7 +1556,7 @@ overfront_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is strictly back of the
  * second one
  * @sqlop @p />>
@@ -1573,7 +1573,7 @@ back_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * front of the second one.
  * @sqlop @p /&>
@@ -1590,7 +1590,7 @@ overback_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is strictly before the
  * second one
  * @sqlop @p <<#
@@ -1606,7 +1606,7 @@ before_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend after the
  * second one
  * @sqlop @p &<#
@@ -1622,7 +1622,7 @@ overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is strictly after
  * the second one.
  * @sqlop @p #>>
@@ -1638,7 +1638,7 @@ after_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend before the
  * second one.
  * @sqlop @p #&>

@@ -47,7 +47,7 @@
 extern Span *span_recv(StringInfo buf);
 extern void span_write(const Span *s, StringInfo buf);
 
-/* Cast functions */
+/* Conversion functions */
 
 extern void range_set_span(RangeType *range, TypeCacheEntry *typcache,
   Span *result);

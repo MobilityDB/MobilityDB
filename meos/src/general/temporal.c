@@ -1399,11 +1399,11 @@ temporal_merge_array(Temporal **temparr, int count)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 /**
- * Transform integer to float
+ * @brief Convert an integer to a float
  */
 static Datum
 datum_int_to_float(Datum d)
@@ -1412,7 +1412,7 @@ datum_int_to_float(Datum d)
 }
 
 /**
- * Transform float to integer
+ * @brief Convert a float to an integer
  */
 static Datum
 datum_float_to_int(Datum d)
@@ -1421,8 +1421,8 @@ datum_float_to_int(Datum d)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal integer to a temporal float.
+ * @ingroup libmeos_temporal_conversion
+ * @brief Convert a temporal integer to a temporal float.
  * @sqlop @p ::
  */
 Temporal *
@@ -1444,8 +1444,8 @@ tint_to_tfloat(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float to a temporal integer.
+ * @ingroup libmeos_temporal_conversion
+ * @brief Convert a temporal float to a temporal integer.
  * @sqlop @p ::
  */
 Temporal *
@@ -1492,7 +1492,7 @@ temporal_set_period(const Temporal *temp, Span *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_cast
+ * @ingroup libmeos_temporal_conversion
  * @brief Return the bounding period of a temporal value.
  * @sqlfunc period
  * @sqlop @p ::
@@ -1535,7 +1535,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
+ * @ingroup libmeos_temporal_conversion
  * @brief Return the value span of a temporal number.
  * @sqlfunc valueSpan
  */
@@ -1554,7 +1554,7 @@ tnumber_to_span(const Temporal *temp)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_box_conversion
  * @brief Return the bounding box of a temporal number.
  * @sqlop @p ::
  */
@@ -3098,7 +3098,7 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever equal to a base value.
  */
 bool
@@ -3118,7 +3118,7 @@ temporal_ever_eq(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal boolean is ever equal to a boolean.
  * @sqlop @p ?=
  */
@@ -3133,7 +3133,7 @@ tbool_ever_eq(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever equal to an integer.
  * @sqlop @p ?=
  */
@@ -3148,7 +3148,7 @@ tint_ever_eq(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is ever equal to a float.
  * @sqlop @p ?=
  */
@@ -3163,7 +3163,7 @@ tfloat_ever_eq(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is ever equal to a text.
  * @sqlop @p ?=
  */
@@ -3179,7 +3179,7 @@ ttext_ever_eq(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always equal to a base value.
  */
 bool
@@ -3199,7 +3199,7 @@ temporal_always_eq(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal boolean is always equal to a boolean.
  * @sqlop @p %=
  */
@@ -3213,7 +3213,7 @@ bool tbool_always_eq(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is always equal to an integer.
  * @sqlop @p %=
  */
@@ -3227,7 +3227,7 @@ bool tint_always_eq(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is always equal to a float.
  * @sqlop @p %=
  */
@@ -3241,7 +3241,7 @@ bool tfloat_always_eq(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is always equal to a text.
  * @sqlop @p %=
  */
@@ -3256,7 +3256,7 @@ bool ttext_always_eq(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than a base value.
  */
 bool
@@ -3276,7 +3276,7 @@ temporal_ever_lt(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than an integer.
  * @sqlop @p ?<
  */
@@ -3290,7 +3290,7 @@ bool tint_ever_lt(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is ever less than a float.
  * @sqlop @p ?<
  */
@@ -3304,7 +3304,7 @@ bool tfloat_ever_lt(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is ever less than a text.
  * @sqlop @p ?<
  */
@@ -3319,7 +3319,7 @@ bool ttext_ever_lt(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always less than a base value.
  */
 bool
@@ -3339,7 +3339,7 @@ temporal_always_lt(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is always less than an integer.
  * @sqlop @p %<
  */
@@ -3354,7 +3354,7 @@ tint_always_lt(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is always less than  a float.
  * @sqlop @p %<
  */
@@ -3369,7 +3369,7 @@ tfloat_always_lt(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is always less than  a text.
  * @sqlop @p %<
  */
@@ -3385,7 +3385,7 @@ ttext_always_lt(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than or equal to a
  * base value.
  */
@@ -3406,7 +3406,7 @@ temporal_ever_le(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than or equal to an integer.
  * @sqlop @p ?<=
  */
@@ -3421,7 +3421,7 @@ tint_ever_le(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is ever less than or equal to a float.
  * @sqlop @p ?<=
  */
@@ -3436,7 +3436,7 @@ tfloat_ever_le(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is ever less than or equal to a text.
  * @sqlop @p ?<=
  */
@@ -3452,7 +3452,7 @@ ttext_ever_le(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always less than or equal to a
  * base value.
  */
@@ -3473,7 +3473,7 @@ temporal_always_le(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is always less than or equal to an integer.
  * @sqlop @p %<=
  */
@@ -3488,7 +3488,7 @@ tint_always_le(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is always less than or equal to a float.
  * @sqlop @p %<=
  */
@@ -3503,7 +3503,7 @@ tfloat_always_le(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is always less than or equal to a text.
  * @sqlop @p %<=
  */
@@ -4489,7 +4489,7 @@ temporal_compact(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the temporal values are equal.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -4575,7 +4575,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the temporal values are different
  * @sqlop @p <>
  */
@@ -4589,7 +4589,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
@@ -4665,7 +4665,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is less than the second one
  * @sqlop @p <
  */
@@ -4677,7 +4677,7 @@ temporal_lt(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
  * @sqlop @p <=
@@ -4690,7 +4690,7 @@ temporal_le(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
  * @sqlop @p >
@@ -4703,7 +4703,7 @@ temporal_ge(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than the second one
  * @sqlop @p >=
  */
