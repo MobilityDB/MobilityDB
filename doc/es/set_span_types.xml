@@ -226,10 +226,10 @@ SELECT asHexWKB(intspanset '{[1, 2], [4, 5]}', 'XDR');
 				<indexterm><primary><varname>spantypeFromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>spansettypeFromBinary</varname></primary></indexterm>
 				<para>Obtener a partir de la representación binaria conocida (WKB)</para>
-				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</para>
 				<para><varname>settypeFromBinary(bytea) → set</varname></para>
 				<para><varname>spantypeFromBinary(bytea) → span</varname></para>
 				<para><varname>spansettypeFromBinary(bytea) → spanset</varname></para>
+				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tstzsetFromBinary('\x01020000000fce0136a58010000bc8f4f92580100');
 -- {2001-01-01, 2001-01-03}
@@ -246,10 +246,10 @@ SELECT tstzspansetFromBinary(
 				<indexterm><primary><varname>spantypeFromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>spansettypeFromHexWKB</varname></primary></indexterm>
 				<para>Obtener a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
-				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</para>
 				<para><varname>settypeFromHexWKB(text) → set</varname></para>
 				<para><varname>spantypeFromHexWKB(text) → span</varname></para>
 				<para><varname>spansettypeFromHexWKB(text) → spanset</varname></para>
+				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tstzsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
 -- {2001-01-01, 2001-01-03}
@@ -690,9 +690,10 @@ SELECT shift(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 
 			<listitem id="setspan_scale">
 				<indexterm><primary><varname>scale</varname></primary></indexterm>
-				<para>Escalear el conjunto o el rango con un valor o intervalo. Si el ancho o el lapso de tiempo del valor de entrada es cero (por ejemplo, para un conjunto de marcas de tiempo único), el resultado es el valor de entrada. El valor o intervalo de tiempo dado debe ser estrictamente mayor que cero.</para>
-				<para><varname>scale({numset,numspans},base) → {numset,numspans}</varname></para>
+				<para>Escalear el conjunto o el rango con un valor o intervalo</para>
+				<para><varname>scale({numset,numspans},width) → {numset,numspans}</varname></para>
 				<para><varname>scale({tstzset,tstzspans},interval) → {tstzset,tstzspans}</varname></para>
+				<para>Si el ancho o el lapso de tiempo del valor de entrada es cero (por ejemplo, para un conjunto de marcas de tiempo único), el resultado es el valor de entrada. El valor o intervalo de tiempo dado debe ser estrictamente mayor que cero.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT scale(tstzset '{2001-01-01}', interval '1 day');
 -- {2001-01-01}
@@ -714,10 +715,11 @@ SELECT scale(tstzset '{2001-01-01}', '-1 day');
 
 			<listitem id="setspan_shiftScale">
 				<indexterm><primary><varname>shiftScale</varname></primary></indexterm>
-				<para>Desplazar y escalear el conjunto o rango con los valores o intervalos. Esta función combina en un solo paso las funciones <link linkend="setspan_shift"><varname>shift</varname></link> y <link linkend="setspan_scale"><varname>scale</varname></link>.</para>
+				<para>Desplazar y escalear el conjunto o rango con los valores o intervalos</para>
 				<para><varname>shiftScale({numset,numspans},base,base) → {numset,numspans}</varname></para>
 				<para><varname>shiftScale({tstzset,tstzspans},interval,interval) →</varname></para>
 				<para><varname>  {tstzset,tstzspans}</varname></para>
+				<para>Estas funciones combinan las funciones <link linkend="setspan_shift"><varname>shift</varname></link> y <link linkend="setspan_scale"><varname>scale</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT shiftScale(tstzset '{2001-01-01}', '1 day', '1 day');
 -- {2001-01-02}
@@ -999,7 +1001,7 @@ SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-
 			</listitem>
 		</itemizedlist>
 
-		<para>Los operadores de posición relativa disponibles para los tipos de conjunto y de rango se dan a continuación. Observe que los operadores para tipos de tiempo tienen un `<varname>#</varname>' adicional para distinguirlos de los operadores para tipos de números.</para>
+		<para>Los operadores de posición relativa disponibles para los tipos de conjunto y de rango se dan a continuación. Observe que los operadores para tipos de tiempo tienen un <varname>#</varname> adicional para distinguirlos de los operadores para tipos de números.</para>
 
 		<itemizedlist>
 			<listitem id="setspan_left">

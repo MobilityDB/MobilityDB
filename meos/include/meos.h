@@ -1108,8 +1108,6 @@ extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift
 extern Temporal *temporal_to_tinstant(const Temporal *temp);
 extern Temporal *temporal_to_tsequence(const Temporal *temp, interpType interp);
 extern Temporal *temporal_to_tsequenceset(const Temporal *temp, interpType interp);
-extern Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
-extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin);
 extern Temporal *tfloat_scale_value(const Temporal *temp, double width);
 extern Temporal *tfloat_shift_scale_value(const Temporal *temp, double shift, double width);
 extern Temporal *tfloat_shift_value(const Temporal *temp, double shift);
@@ -1461,6 +1459,8 @@ extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal 
 /* Analytics functions for temporal types */
 
 Temporal *geo_to_tpoint(const GSERIALIZED *gs);
+extern Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
+extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin);
 Temporal *temporal_simplify_min_dist(const Temporal *temp, double dist);
 Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint);
 Temporal *temporal_simplify_dp(const Temporal *temp, double eps_dist, bool synchronized);

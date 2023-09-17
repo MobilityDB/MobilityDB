@@ -16,9 +16,9 @@ add_library(general OBJECT
   tbox.c
   temporal.c
   temporal_aggfuncs.c
+  temporal_analytics.c
   temporal_boxops.c
   temporal_compops.c
-  temporal_similarity.c
   temporal_tile.c
   tinstant.c
   tnumber_distance.c

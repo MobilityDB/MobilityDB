@@ -235,9 +235,25 @@
  * @ingroup mobilitydb_temporal
  * @brief Tile functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_similarity Similarity functions
+ * @defgroup mobilitydb_temporal_analytics Analytics functions
  * @ingroup mobilitydb_temporal
+ * @brief Analytics functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_analytics_simplify Simplification functions
+ * @ingroup mobilitydb_temporal_analytics
+ * @brief Simplification functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_analytics_reduction Reduction functions
+ * @ingroup mobilitydb_temporal_analytics
+ * @brief Reduction functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_analytics_similarity Similarity functions
+ * @ingroup mobilitydb_temporal_analytics
  * @brief Similarity functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_analytics_tile Tile functions
+ * @ingroup mobilitydb_temporal_analytics
+ * @brief Tile functions for temporal types.
  */
 
 /*****************************************************************************/

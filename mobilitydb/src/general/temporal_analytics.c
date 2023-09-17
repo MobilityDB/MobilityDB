@@ -29,10 +29,10 @@
 
 /**
  * @file
- * @brief Similarity distance for temporal values.
+ * @brief Analytics for temporal values.
  */
 
-#include "general/temporal_similarity.h"
+#include "general/temporal_analytics.h"
 
 /* C */
 #include <assert.h>
@@ -41,10 +41,53 @@
 #include <postgres.h>
 #include <funcapi.h>
 #include <access/htup_details.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 /* MobilityDB */
 #include "pg_point/tpoint_spatialfuncs.h"
+
+/*****************************************************************************
+ Temporal reduction
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Temporal_tprecision(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_tprecision);
+/**
+ * @ingroup mobilitydb_temporal_analytics_reduction
+ * @brief Set the precision of a temporal value according to period buckets.
+ * @sqlfunc tprecision()
+ */
+Datum
+Temporal_tprecision(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  Temporal *result = temporal_tprecision(temp, duration, origin);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Temporal_tsample(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_tsample);
+/**
+ * @ingroup mobilitydb_temporal_analytics_reduction
+ * @brief Sample a temporal value according to period buckets.
+ * @sqlfunc tsample()
+ */
+Datum
+Temporal_tsample(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  Temporal *result = temporal_tsample(temp, duration, origin);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEXT_P(result);
+}
 
 /*****************************************************************************
  * Linear space computation of the similarity distance
@@ -69,7 +112,9 @@ temporal_similarity_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
 PGDLLEXPORT Datum Temporal_frechet_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_frechet_distance);
 /**
+ * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Compute the discrete Frechet distance between two temporal values.
+ * @sqlfunc frechetDistance()
  */
 Datum
 Temporal_frechet_distance(PG_FUNCTION_ARGS)
@@ -80,8 +125,10 @@ Temporal_frechet_distance(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_dynamic_time_warp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp);
 /**
+ * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Compute the Dynamic Time Match (DTW) distance between two temporal
  * values.
+ * @sqlfunc dynamicTimeWarp()
  */
 Datum
 Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
@@ -92,8 +139,10 @@ Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_hausdorff_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_hausdorff_distance);
 /**
- * @brief Compute the Dynamic Time Match (DTW) distance between two temporal
+ * @ingroup mobilitydb_temporal_analytics_similarity
+ * @brief Compute the Hausdorff distance between two temporal
  * values.
+ * @sqlfunc hausdorffDistance()
  */
 Datum
 Temporal_hausdorff_distance(PG_FUNCTION_ARGS)
@@ -218,7 +267,9 @@ temporal_similarity_path_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
 PGDLLEXPORT Datum Temporal_frechet_path(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_frechet_path);
 /**
+ * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Compute the Frechet path between two temporal values.
+ * @sqlfunc frechetDistancePath()
  */
 Datum
 Temporal_frechet_path(PG_FUNCTION_ARGS)
@@ -229,7 +280,9 @@ Temporal_frechet_path(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp_path);
 /**
+ * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Compute the Dynamic Time Warp (DTW) path between two temporal values.
+ * @sqlfunc dynamicTimeWarpPath()
  */
 Datum
 Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)

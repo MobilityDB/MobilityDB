@@ -231,17 +231,25 @@
  * @ingroup libmeos_temporal
  * @brief Local and temporal aggregate functions for temporal types.
  *
- * @defgroup libmeos_temporal_tile Tile functions
- * @ingroup libmeos_temporal
- * @brief Tile functions for temporal types.
- *
- * @defgroup libmeos_temporal_similarity Similarity functions
- * @ingroup libmeos_temporal
- * @brief Similarity functions for temporal types.
- *
  * @defgroup libmeos_temporal_analytics Analytics functions
  * @ingroup libmeos_temporal
  * @brief Analytics functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_analytics_simplify Simplification functions
+ * @ingroup libmeos_temporal_analytics
+ * @brief Simplification functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_analytics_reduction Reduction functions
+ * @ingroup libmeos_temporal_analytics
+ * @brief Reduction functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_analytics_similarity Similarity functions
+ * @ingroup libmeos_temporal_analytics
+ * @brief Similarity functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_analytics_tile Tile functions
+ * @ingroup libmeos_temporal_analytics
+ * @brief Tile functions for temporal types.
  */
 
 /*****************************************************************************

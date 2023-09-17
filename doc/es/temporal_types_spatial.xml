@@ -108,7 +108,7 @@ SELECT asHexEWKB(tgeompoint 'SRID=3812;Point(1 2 3)@2001-01-01');
 			<listitem id="tgeompointFromText">
 				<indexterm><primary><varname>tgeompointFromText</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromText</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación de texto conocido (Well-Known Text o WKT) &Z_support;</para>
+				<para>Entrar un punto temporal en una representación de texto conocido (Well-Known Text o WKT) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromText(text) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromText(text) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -122,7 +122,7 @@ SELECT asEWKT(tgeogpointFromText(text '[POINT(1 2)@2000-01-01, POINT(3 4)@2000-0
 			<listitem id="tgeompointFromEWKT">
 				<indexterm><primary><varname>tgeompointFromEWKT</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromEWKT</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación extendida de texto conocido (Extended Well-Known Text o EWKT) &Z_support;</para>
+				<para>Entrar un punto temporal en una representación extendida de texto conocido (Extended Well-Known Text o EWKT) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromEWKT(text) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromEWKT(text) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -138,7 +138,7 @@ SELECT asEWKT(tgeogpointFromEWKT(text 'SRID=7844;[POINT(1 2)@2000-01-01,
 			<listitem id="tgeompointFromMFJSON">
 				<indexterm><primary><varname>tgeompointFromMFJSON</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromMFJSON</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación JSON de características móviles (Moving Features) &Z_support;</para>
+				<para>Entrar un punto temporal en una representación JSON de características móviles (Moving Features) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromMFJSON(text) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromMFJSON(text) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -156,7 +156,7 @@ SELECT asEWKT(tgeogpointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"na
 			<listitem id="tgeompointFromBinary">
 				<indexterm><primary><varname>tgeompointFromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromBinary</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación binaria conocida (WKB) &Z_support;</para>
+				<para>Entrar un punto temporal en una representación binaria conocida (WKB) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromBinary(bytea) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromBinary(bytea) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -172,7 +172,7 @@ SELECT asEWKT(tgeompointFromBinary(
 			<listitem id="tgeompointFromEWKB">
 				<indexterm><primary><varname>tgeompointFromEWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromEWKB</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación extendida binaria conocida (EWKB) &Z_support;</para>
+				<para>Entrar un punto temporal en una representación extendida binaria conocida (EWKB) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromEWKB(bytea) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromEWKB(bytea) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -188,7 +188,7 @@ SELECT asEWKT(tgeogpointFromEWKB(
 			<listitem id="tgeompointFromHexEWKB">
 				<indexterm><primary><varname>tgeompointFromHexEWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromHexEWKB</varname></primary></indexterm>
-				<para>Entrar un punto temporal geométrico en una representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support;</para>
+				<para>Entrar un punto temporal geométrico en una representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromHexEWKB(text) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromHexEWKB(text) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -432,6 +432,7 @@ SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2000-01-01,
 				<indexterm><primary><varname>bearing</varname></primary></indexterm>
 				<para>Obtener el rumbo temporal &Z_support; &geography_support;</para>
 				<para><varname>bearing({tpoint, point}, {tpoint, point}) → tfloat</varname></para>
+				<para>Nótese que esta función no acepta dos puntos geográficos temporales.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',
   geometry 'Point(2 2)'));
@@ -443,7 +444,6 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]')), 3);
 -- [243.435@2001-01-01, 116.565@2001-01-03]
 </programlisting>
-				<para>Nótese que esta función actualmente no acepta dos puntos geográficos temporales.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -538,9 +538,9 @@ ramp_color(
 
 			<listitem id="asMVTGeom">
 				<indexterm><primary><varname>asMVTGeom</varname></primary></indexterm>
-				<para>Transformar un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile. El resultado es un par compuesto de un valor <varname>geometry</varname> y una matriz de valores de marca de tiempo asociados codificados como época de Unix &Z_support;</para>
-				<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=true) → geom_times</varname></para>
-				<para>Los parámetros son los siguientes:</para>
+				<para>Transformar un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile &Z_support;</para>
+				<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=true) → (geom,times)</varname></para>
+				<para>El resultado es un par compuesto de un valor <varname>geometry</varname> y una matriz de valores de marca de tiempo asociados codificados como época de Unix. Los parámetros son los siguientes:</para>
 				<itemizedlist>
 					<listitem><para><varname>tpoint</varname> es el punto temporal para transformar</para></listitem>
 					<listitem><para><varname>bounds</varname> es un <varname>stbox</varname> que define los límites geométricos del contenido del mosaico sin búfer</para></listitem>

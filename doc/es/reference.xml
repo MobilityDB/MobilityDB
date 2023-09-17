@@ -1303,11 +1303,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por una cierta distancia</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="minTimeDeltaSimplify"><varname>minTimeDeltaSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por un cierto intervalo de tiempo</para>
+					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por una cierta distancia o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -1325,7 +1321,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tprecision"><varname>tprecision</varname></link>: Reducir la precisión temporal de un valor temporal con respecto a un intervalo</para>
+					<para><link linkend="tprecision"><varname>tprecision</varname></link>: Reducir la precisión temporal de un valor temporal con respecto a un intervalo calculando el promedio/centroide ponderado por el tiempo en cada intervalo de tiempo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1364,7 +1360,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre el rango o el período con intervalos de la misma amplitud alineados con el origen</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de intervalos que cubre el rango o el período con intervalos de la misma amplitud alineados con el origen</para>
 					</listitem>
 
 					<listitem>
@@ -1391,7 +1387,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tileList"><varname>tileList</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
+						<para><link linkend="tileList"><varname>tileList</varname></link>: Obtener un conjunto de mosaicos que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
 					</listitem>
 
 					<listitem>
@@ -1427,8 +1423,10 @@
 			</sect3>
 		</sect2>
 
-		<sect2>
-			<title>Agregaciones</title>
+	</sect1>
+
+	<sect1>
+		<title>Tipos temporales: Agregaciones</title>
 
 			<itemizedlist>
 				<listitem>
@@ -1488,7 +1486,6 @@
 				</listitem>
 
 			</itemizedlist>
-		</sect2>
 	</sect1>
 
 	<sect1>

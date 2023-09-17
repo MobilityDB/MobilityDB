@@ -17,7 +17,6 @@
 			<para><varname>box</varname> representa cualquier tipos cuadro delimitador, es decir <varname>tbox</varname> o <varname>stbox</varname>.</para>
 		</listitem>
 	</itemizedlist>
-  <para>A continuación, especificamos con el símbolo &Z_support; que la función admite puntos 3D y con el símbolo &geography_support; que la función está disponible para geografías.</para>
 
 	<sect1 id="box_types_input_output">
 		<title>Entrada y salida</title>
@@ -447,9 +446,10 @@ SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', in
 			<listitem id="box_shiftScale">
 				<indexterm><primary><varname>shiftScaleValue</varname></primary></indexterm>
 				<indexterm><primary><varname>shiftScaleTime</varname></primary></indexterm>
-				<para>Desplazar y escalar el rango de valores o el período del cuadro delimitador con los valores o intervalos. Estas funciones combinan en un solo paso las funciones <link linkend="box_shift"><varname>shiftValue</varname></link> y <link linkend="box_scale"><varname>scaleValue</varname></link> o <link linkend="box_shift"><varname>shiftTime</varname></link> y <link linkend="box_scale"><varname>scaleTime</varname></link></para>
+				<para>Desplazar y escalar el rango de valores o el período del cuadro delimitador con los valores o intervalos</para>
 				<para><varname>shiftScaleValue(box,{int,float},{int,float}) → box</varname></para>
 				<para><varname>shiftScaleTime(box,interval,interval) → box</varname></para>
+				<para>Estas funciones combinan las funciones <link linkend="box_shift"><varname>shiftValue</varname></link> y <link linkend="box_scale"><varname>scaleValue</varname></link> o <link linkend="box_shift"><varname>shiftTime</varname></link> y <link linkend="box_scale"><varname>scaleTime</varname></link></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0, 3.0);
 -- TBOXFLOAT XT([3.5, 6.5],[2001-01-01, 2001-01-02])
@@ -561,7 +561,7 @@ SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
 
 			<listitem id="stbox_transform">
 				<indexterm><primary><varname>transform</varname></primary></indexterm>
-				<para>Transformar a una referencia espacial diferente &Z_support; &geography_support;</para>
+				<para>Transformar a una referencia espacial diferente</para>
 				<para><varname>transform(stbox,integer) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
@@ -579,8 +579,9 @@ SELECT transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
 		<itemizedlist>
 			<listitem id="quadSplit">
 				<indexterm><primary><varname>quadSplit</varname></primary></indexterm>
-				<para>Dividir el cuadro delimitador en cuadrantes u octantes &Z_support; &geography_support; &SRF;</para>
+				<para>Dividir el cuadro delimitador en cuadrantes u octantes &SRF;</para>
 				<para><varname>quadSplit(stbox) → {stbox}</varname></para>
+				<para>Como lo indica el símbolo &SRF;, esta función es una <emphasis>función de retorno de conjuntos</emphasis> (también conocida como <emphasis>función de tabla</emphasis>) ya que normalmente devuelve más de un valor.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT quadSplit(stbox 'STBOX XT(((0,0),(4,4)),[2000-01-01,2000-01-05])');
 /* {"STBOX XT(((0,0),(2,2)),[2000-01-01, 2000-01-05])",

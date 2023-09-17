@@ -1159,11 +1159,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="length"><varname>length</varname></link>: Get the length traversed by the temporal point</para>
+					<para><link linkend="isSimple"><varname>isSimple</varname></link>: Return true if the temporal point does not spatially self-intersect</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="isSimple"><varname>isSimple</varname></link>: Return true if the temporal point does not spatially self-intersect</para>
+					<para><link linkend="length"><varname>length</varname></link>: Get the length traversed by the temporal point</para>
 				</listitem>
 
 				<listitem>
@@ -1293,11 +1293,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname></link>: Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain distance apart</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="minTimeDeltaSimplify"><varname>minTimeDeltaSimplify</varname></link>: Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain time interval apart</para>
+					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain distance or time interval apart</para>
 				</listitem>
 
 				<listitem>
@@ -1315,7 +1311,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tprecision"><varname>tprecision</varname></link>: Reduce the temporal precision of a temporal value with respect to an interval</para>
+					<para><link linkend="tprecision"><varname>tprecision</varname></link>: Reduce the temporal precision of a temporal value with respect to an interval computing the time-weighted average/centroid in each time bucket</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1354,7 +1350,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Return a set of couples (index, bucket) that cover the span or period with buckets of the same width or duration aligned with the origin</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Return a set of buckets that cover the span or period with buckets of the same width or duration aligned with the origin</para>
 					</listitem>
 
 					<listitem>
@@ -1381,7 +1377,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tileList"><varname>tileList</varname></link>: Return a set of couples (index, tile) that covers the box with multidimensional tiles of the same size and duration</para>
+						<para><link linkend="tileList"><varname>tileList</varname></link>: Return a set of tiles that covers the box with multidimensional tiles of the same size and duration</para>
 					</listitem>
 
 					<listitem>

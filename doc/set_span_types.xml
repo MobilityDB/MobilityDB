@@ -220,10 +220,10 @@ SELECT asHexWKB(intspanset '{[1, 2], [4, 5]}', 'XDR');
 				<indexterm><primary><varname>spantypeFromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>spansettypeFromBinary</varname></primary></indexterm>
 				<para>Input from a Well-Known Binary (WKB) representation</para>
-				<para>There is one function per base type, the name of the function has as prefix the name of the set type</para>
 				<para><varname>settypeFromBinary(bytea) → set</varname></para>
 				<para><varname>spantypeFromBinary(bytea) → span</varname></para>
 				<para><varname>spansettypeFromBinary(bytea) → spanset</varname></para>
+				<para>There is one function per set or span (set) type, the name of the function has as prefix the name of the type</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tstzsetFromBinary('\x01020000000fce0136a58010000bc8f4f92580100');
 -- {2001-01-01, 2001-01-03}
@@ -240,10 +240,10 @@ SELECT tstzspansetFromBinary(
 				<indexterm><primary><varname>spantypeFromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>spansettypeFromHexWKB</varname></primary></indexterm>
 				<para>Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
-				<para>There is one function per set type, the name of the function has as prefix the name of the set type.</para>
 				<para><varname>settypeFromHexWKB(text) → set</varname></para>
 				<para><varname>spantypeFromHexWKB(text) → span</varname></para>
 				<para><varname>spansettypeFromHexWKB(text) → spanset</varname></para>
+				<para>There is one function per set or span (set) type, the name of the function has as prefix the name of the type.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tstzsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
 -- {2001-01-01, 2001-01-03}
@@ -694,9 +694,10 @@ SELECT shift(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 
 			<listitem id="setspan_scale">
 				<indexterm><primary><varname>scale</varname></primary></indexterm>
-				<para>Scale the set or span by a value or interval. If the width or time span of the input value is zero (for example, for a singleton timestamp set), the result is the input value. The given value or interval must be strictly greater than zero.</para>
-				<para><varname>scale({numset,numspans},base) → {numset,numspans}</varname></para>
+				<para>Scale the set or span by a value or interval</para>
+				<para><varname>scale({numset,numspans},width) → {numset,numspans}</varname></para>
 				<para><varname>scale({tstzset,tstzspans},interval) → {tstzset,tstzspans}</varname></para>
+				<para>If the width or time span of the input value is zero (for example, for a singleton timestamp set), the result is the input value. The given value or interval must be strictly greater than zero.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT scale(tstzset '{2001-01-01}', '1 day');
 -- {2001-01-01}
@@ -718,10 +719,11 @@ SELECT scale(tstzset '{2001-01-01}', '-1 day');
 
 			<listitem id="setspan_shiftScale">
 				<indexterm><primary><varname>shiftScale</varname></primary></indexterm>
-				<para>Shift and scale the set or span by the values or intervals. This function combines in a single step the functions <link linkend="setspan_shift"><varname>shift</varname></link> and <link linkend="setspan_scale"><varname>scale</varname></link>.</para>
+				<para>Shift and scale the set or span by the values or intervals</para>
 				<para><varname>shiftScale({numset,numspans},base,base) → {numset,numspans}</varname></para>
 				<para><varname>shiftScale({tstzset,tstzspans},interval,interval) →</varname></para>
 				<para><varname>  {tstzset,tstzspans}</varname></para>
+				<para>This function combines the functions <link linkend="setspan_shift"><varname>shift</varname></link> and <link linkend="setspan_scale"><varname>scale</varname></link>.</para>
 			<programlisting language="sql" xml:space="preserve">
 SELECT shiftScale(tstzset '{2001-01-01}', '1 day', '1 day');
 -- {2001-01-02}
@@ -1001,7 +1003,7 @@ SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-
 			</listitem>
 		</itemizedlist>
 
-		<para>The relative position operations available for set and span types are given next. Notice that the operators for time types have an additional `<varname>#</varname>' to distinguish them from the operators for number types.</para>
+		<para>The relative position operations available for set and span types are given next. Notice that the operators for time types have an additional <varname>#</varname> to distinguish them from the operators for number types.</para>
 
 		<itemizedlist>
 			<listitem id="setspan_left">

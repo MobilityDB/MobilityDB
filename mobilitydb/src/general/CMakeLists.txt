@@ -20,13 +20,13 @@ add_library(pg_general OBJECT
   tbox.c
   temporal.c
   temporal_aggfuncs.c
+  temporal_analytics.c
   temporal_analyze.c
   temporal_boxops.c
   temporal_compops.c
   temporal_gist.c
   temporal_posops.c
   temporal_selfuncs.c
-  temporal_similarity.c
   temporal_spgist.c
   temporal_supportfn.c
   temporal_tile.c

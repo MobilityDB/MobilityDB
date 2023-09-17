@@ -27,8 +27,8 @@
  *
  *****************************************************************************/
 
-#ifndef __TEMPORAL_SIMILARITY_H__
-#define __TEMPORAL_SIMILARITY_H__
+#ifndef __TEMPORAL_ANALYTICS_H__
+#define __TEMPORAL_ANALYTICS_H__
 
 /* MEOS */
 #include "temporal.h"
@@ -63,5 +63,5 @@ extern Match *temporal_similarity_path(const Temporal *temp1,
 
 /*****************************************************************************/
 
-#endif /* __TEMPORAL_SIMILARITY_H__ */
+#endif /* __TEMPORAL_ANALYTICS_H__ */
 
