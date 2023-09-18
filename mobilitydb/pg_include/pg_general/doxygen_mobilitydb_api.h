@@ -183,11 +183,11 @@
  * @ingroup mobilitydb_temporal
  * @brief Bounding box functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_topo Topological functions
+ * @defgroup mobilitydb_temporal_bbox_topo Topological functions
  * @ingroup mobilitydb_temporal_bbox
  * @brief Topological functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_pos Position functions
+ * @defgroup mobilitydb_temporal_bbox_pos Position functions
  * @ingroup mobilitydb_temporal_bbox
  * @brief Position functions for temporal types.
  *
@@ -239,17 +239,9 @@
  * @ingroup mobilitydb_temporal_spatial
  * @brief Route functions for temporal network point types.
  *
- * @defgroup mobilitydb_temporal_time Time functions
- * @ingroup mobilitydb_temporal
- * @brief Time functions for temporal types.
- *
  * @defgroup mobilitydb_temporal_agg Local aggregate functions
  * @ingroup mobilitydb_temporal
  * @brief Local aggregate functions for temporal types.
- *
- * @defgroup mobilitydb_temporal_tile Tile functions
- * @ingroup mobilitydb_temporal
- * @brief Tile functions for temporal types.
  *
  * @defgroup mobilitydb_temporal_analytics Analytics functions
  * @ingroup mobilitydb_temporal
