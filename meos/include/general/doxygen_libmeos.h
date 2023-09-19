@@ -247,9 +247,9 @@
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Temporal spatial relationship functions for temporal point types.
  *
- * @defgroup libmeos_temporal_agg Local and temporal aggregate functions
+ * @defgroup libmeos_temporal_agg Aggregate functions
  * @ingroup libmeos_temporal
- * @brief Local and temporal aggregate functions for temporal types.
+ * @brief Aggregate functions for temporal types.
  *
  * @defgroup libmeos_temporal_analytics Analytics functions
  * @ingroup libmeos_temporal
@@ -413,9 +413,9 @@
  * @ingroup libmeos_internal_temporal_spatial
  * @brief Spatial transformation functions for temporal point types.
  *
- * @defgroup libmeos_internal_temporal_agg Local aggregate functions
+ * @defgroup libmeos_internal_temporal_agg Aggregate functions
  * @ingroup libmeos_internal_temporal
- * @brief Local aggregate functions for temporal types.
+ * @brief Aggregate functions for temporal types.
  */
 
 /*****************************************************************************/

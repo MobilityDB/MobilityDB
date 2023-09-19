@@ -744,6 +744,113 @@ ensure_valid_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************
+ * Functions for extracting coordinates
+ *****************************************************************************/
+
+/**
+ * @brief Get the X coordinates of a temporal point
+ */
+static Datum
+point_get_x(Datum point)
+{
+  POINT4D p;
+  datum_point4d(point, &p);
+  return Float8GetDatum(p.x);
+}
+
+/**
+ * @brief Get the Y coordinates of a temporal point
+ */
+static Datum
+point_get_y(Datum point)
+{
+  POINT4D p;
+  datum_point4d(point, &p);
+  return Float8GetDatum(p.y);
+}
+
+/**
+ * @brief Get the Z coordinates of a temporal point
+ */
+static Datum
+point_get_z(Datum point)
+{
+  POINT4D p;
+  datum_point4d(point, &p);
+  return Float8GetDatum(p.z);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @brief Get one of the coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
+ * @sqlfunc getX(), getY(), getZ()
+ */
+Temporal *
+tpoint_get_coord(const Temporal *temp, int coord)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_not_negative(coord) || 
+      (coord == 2 && ! ensure_has_Z(temp->flags)))
+     return NULL;
+
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  assert(coord >= 0 && coord <= 2);
+  if (coord == 0)
+    lfinfo.func = (varfunc) &point_get_x;
+  else if (coord == 1)
+    lfinfo.func = (varfunc) &point_get_y;
+  else /* coord == 2 */
+    lfinfo.func = (varfunc) &point_get_z;
+  lfinfo.numparam = 0;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Get one of the X coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @sqlfunc getX()
+ */
+Temporal *
+tpoint_get_x(const Temporal *temp)
+{
+  return tpoint_get_coord(temp, 0);
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Get one of the X coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @sqlfunc getY()
+ */
+Temporal *
+tpoint_get_y(const Temporal *temp)
+{
+  return tpoint_get_coord(temp, 1);
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Get one of the X coordinates of a temporal point as a temporal float.
+ * @param[in] temp Temporal point
+ * @sqlfunc getZ()
+ */
+Temporal *
+tpoint_get_z(const Temporal *temp)
+{
+  return tpoint_get_coord(temp, 2);
+}
+
+/*****************************************************************************
  * Return true if a point is in a segment (2D, 3D, or geodetic).
  * For 2D/3D points we proceed as follows.
  * If the cross product of (B-A) and (p-A) is 0, then the points A, B,

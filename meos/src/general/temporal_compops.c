@@ -46,6 +46,7 @@
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_internal_temporal_comp_temp
  * @brief Return the temporal comparison of a temporal value and a base value.
  */
 Temporal *
@@ -79,6 +80,7 @@ tcomp_temporal_base(const Temporal *temp, Datum value, meosType basetype,
 }
 
 /**
+ * @ingroup libmeos_internal_temporal_comp_temp
  * @brief Return the temporal comparison of the temporal values.
  */
 Temporal *

@@ -49,10 +49,6 @@
 
 /*****************************************************************************/
 
-/* Functions for extracting coordinates */
-
-extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
-
 /* Restriction functions */
 
 extern TSequence **tpointseq_at_geom(const TSequence *seq,

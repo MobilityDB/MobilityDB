@@ -117,6 +117,10 @@ extern bool ensure_valid_tpoint_box(const Temporal *temp, const STBox *box);
 extern bool ensure_valid_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2);
 
+/* Functions for extracting coordinates */
+
+extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
+
 /* Functions derived from PostGIS to increase floating-point precision */
 
 extern long double closest_point2d_on_segment_ratio(const POINT2D *p,
