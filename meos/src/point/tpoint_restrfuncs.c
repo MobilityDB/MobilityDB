@@ -69,7 +69,6 @@ point_force2d(Datum point, Datum srid)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
  * @brief Force a temporal point to be in 2D.
  * @param[in] temp Temporal point
  * @pre The temporal point has Z dimension

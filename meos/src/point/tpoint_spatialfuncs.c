@@ -2829,7 +2829,7 @@ tpointseqset_to_geo_meas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Construct a geometry/geography with M measure from the temporal
  * point and the arguments. The latter can be
  * - either the temporal float given in the second argument (if any)
@@ -3124,7 +3124,7 @@ geo_to_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Converts the PostGIS trajectory geometry/geography where the M
  * coordinates encode the timestamps in Unix epoch into a temporal point.
  * @sqlfunc tgeompoint(), tgeogpoint()
@@ -3730,7 +3730,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Transform the temporal point to Mapbox Vector Tile format
  * @sqlfunc AsMVTGeom()
  */

@@ -523,6 +523,15 @@
 		</sect2>
 
 		<sect2>
+			<title>Split Functions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="quadSplit"><varname>quadSplit</varname></link>: Split the bounding box in quadrants or octants</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Set Operations</title>
 			<itemizedlist>
 				<listitem>

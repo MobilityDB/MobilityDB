@@ -897,9 +897,8 @@ tbox_tmax_inc(const TBox *box, bool *result)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libmeos_internal_box_transf
  * @brief Shift and/or scale the span of a temporal box by the values.
- * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue()
  */
 TBox *
 tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,

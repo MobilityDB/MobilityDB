@@ -526,6 +526,15 @@
 		</sect2>
 
 		<sect2>
+			<title>Funciones de división</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="quadSplit"><varname>quadSplit</varname></link>: Dividir el cuadro delimitador en cuadrantes u octantes </para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Operaciones de conjuntos</title>
 			<itemizedlist>
 				<listitem>

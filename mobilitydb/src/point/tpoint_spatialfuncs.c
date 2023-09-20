@@ -477,7 +477,7 @@ Tpoint_to_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Geo_to_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_to_tpoint);
 /**
- * @ingroup mobilitydb_temporal_transf
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Convert the PostGIS trajectory geometry or geography where the M
  * coordinates encode the timestamps in Unix epoch into a temporal point.
  */
@@ -493,7 +493,7 @@ Geo_to_tpoint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_to_geo_meas(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_geo_meas);
 /**
- * @ingroup mobilitydb_temporal_transf
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Construct a geometry/geography with M measure from the temporal point
  * and the temporal float
  */
@@ -519,7 +519,7 @@ Tpoint_to_geo_meas(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_AsMVTGeom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_AsMVTGeom);
 /**
- * @ingroup mobilitydb_temporal_transf
+ * @ingroup mobilitydb_temporal_spatial_transf
  * @brief Transform the temporal point to Mapbox Vector Tile format
  */
 Datum

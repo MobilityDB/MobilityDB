@@ -191,6 +191,22 @@
  * @ingroup libmeos_temporal
  * @brief Restriction functions for temporal types.
  *
+ * @defgroup libmeos_temporal_comp Comparison functions
+ * @ingroup libmeos_temporal
+ * @brief Comparison functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_comp_trad Traditional comparison functions
+ * @ingroup libmeos_temporal_comp
+ * @brief Traditional comparison functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_comp_ever Ever/always comparison functions
+ * @ingroup libmeos_temporal_comp
+ * @brief Ever/always comparison functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_comp_temp Temporal comparison functions
+ * @ingroup libmeos_temporal_comp
+ * @brief Temporal comparison functions for temporal types.
+ *
  * @defgroup libmeos_temporal_bool Boolean functions
  * @ingroup libmeos_temporal
  * @brief Boolean functions for temporal types.
@@ -206,22 +222,6 @@
  * @defgroup libmeos_temporal_dist Distance functions
  * @ingroup libmeos_temporal
  * @brief Distance functions for temporal types.
- *
- * @defgroup libmeos_temporal_comp Comparison functions
- * @ingroup libmeos_temporal
- * @brief Comparison functions for temporal types.
- *
- * @defgroup libmeos_temporal_comp_trad Traditional comparison functions
- * @ingroup libmeos_temporal_comp
- * @brief Traditional comparison functions for temporal types.
- *
- * @defgroup libmeos_temporal_comp_ever Ever/always functions
- * @ingroup libmeos_temporal_comp
- * @brief Ever/always comparison functions for temporal types.
- *
- * @defgroup libmeos_temporal_comp_temp Temporal comparison functions
- * @ingroup libmeos_temporal_comp
- * @brief Temporal comparison functions for temporal types.
  *
  * @defgroup libmeos_temporal_spatial Spatial functions
  * @ingroup libmeos_temporal
