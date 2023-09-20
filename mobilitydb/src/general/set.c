@@ -221,14 +221,14 @@ Set_constructor(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Cast function
+ * Conversion function
  *****************************************************************************/
 
 PGDLLEXPORT Datum Value_to_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_to_set);
 /**
- * @ingroup mobilitydb_setspan_cast
- * @brief Cast a value as a set
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a value as a set
  * @sqlfunc tstzset()
  */
 Datum

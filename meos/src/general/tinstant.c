@@ -604,7 +604,7 @@ tinstant_shift_time(const TInstant *inst, const Interval *interval)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal instant is ever equal to a base value.
  * @sqlop @p ?=
  */
@@ -617,7 +617,7 @@ tinstant_ever_eq(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal instant is always equal to a base value.
  * @sqlop @p %=
  */
@@ -630,7 +630,7 @@ tinstant_always_eq(const TInstant *inst, Datum value)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal instant is ever less than a base value.
  * @sqlop @p ?<
  */
@@ -643,7 +643,7 @@ tinstant_ever_lt(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal instant is ever less than or equal to
  * a base value.
  * @sqlop @p ?<=
@@ -657,7 +657,7 @@ tinstant_ever_le(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal instant is always less than a base value.
  * @sqlop @p %<
  */
@@ -670,7 +670,7 @@ tinstant_always_lt(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal instant is always less than or equal to a
  * base value.
  * @sqlop @p %<=
@@ -982,7 +982,7 @@ intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_comp
+ * @ingroup libmeos_internal_temporal_comp_trad
  * @brief Return true if two temporal instants are equal.
  *
  * @pre The arguments are of the same base type
@@ -1006,7 +1006,7 @@ tinstant_eq(const TInstant *inst1, const TInstant *inst2)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp
+ * @ingroup libmeos_internal_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal instant is
  * less than, equal, or greater than the second one.
  *

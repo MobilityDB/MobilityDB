@@ -376,11 +376,11 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 /**
- * @brief Cast a network point as a network segment
+ * @brief Convert a network point as a network segment
  */
 Nsegment *
 npoint_to_nsegment(const Npoint *np)

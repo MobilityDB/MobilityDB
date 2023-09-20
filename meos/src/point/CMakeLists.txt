@@ -4,7 +4,6 @@ add_library(point OBJECT
   stbox.c
   tpoint.c
   tpoint_aggfuncs.c
-  tpoint_analytics.c
   tpoint_boxops.c
   tpoint_distance.c
   tpoint_out.c

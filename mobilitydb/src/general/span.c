@@ -174,14 +174,14 @@ Span_constructor(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Casting
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Value_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_to_span);
 /**
- * @ingroup mobilitydb_setspan_cast
- * @brief Cast a value as a span
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a value as a span
  * @sqlfunc intspan(), bigintspan(), floatspan(), period()
  * @sqlop @p ::
  */
@@ -197,7 +197,7 @@ Value_to_span(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_to_range(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_range);
 /**
- * @ingroup mobilitydb_setspan_cast
+ * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a span as a range value
  * @sqlfunc int4range(), tstzrange()
  * @sqlop @p ::
@@ -240,7 +240,7 @@ range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
 PGDLLEXPORT Datum Range_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Range_to_span);
 /**
- * @ingroup mobilitydb_setspan_cast
+ * @ingroup mobilitydb_setspan_conversion
  * @brief Convert the PostgreSQL range value as a span value
  * @sqlfunc intspan(), period()
  * @sqlop @p ::

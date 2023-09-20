@@ -222,14 +222,14 @@ Span_period_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Casting
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Number_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Number_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
- * @brief Transform the number to a temporal box
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a number to a temporal box
  * @sqlfunc tbox()
  */
 Datum
@@ -245,7 +245,7 @@ Number_to_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Numeric_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numeric_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform the numeric to a temporal box
  * @sqlfunc tbox()
  */
@@ -262,7 +262,7 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Timestamp_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamp_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform the timestamp to a temporal box
  * @sqlfunc tbox()
  */
@@ -278,7 +278,7 @@ Timestamp_to_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Set_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform the set to a temporal box
  * @sqlfunc tbox()
  */
@@ -298,7 +298,7 @@ Set_to_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform the span to a temporal box
  * @sqlfunc tbox()
  */
@@ -338,7 +338,7 @@ spanset_tbox_slice(Datum ssdatum, TBox *box)
 PGDLLEXPORT Datum Spanset_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform the span set to a temporal box
  * @sqlfunc tbox()
  */
@@ -356,8 +356,8 @@ Spanset_to_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_to_floatspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_floatspan);
 /**
- * @ingroup mobilitydb_box_cast
- * @brief Cast a temporal box as a float span
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a temporal box as a float span
  * @sqlfunc floatspan()
  */
 Datum
@@ -373,8 +373,8 @@ Tbox_to_floatspan(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_to_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_period);
 /**
- * @ingroup mobilitydb_box_cast
- * @brief Cast a temporal box as a period
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a temporal box as a period
  * @sqlfunc period()
  */
 Datum
@@ -793,7 +793,7 @@ Adjacent_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Relative position operators
+ * Position operators
  *****************************************************************************/
 
 PGDLLEXPORT Datum Left_tbox_tbox(PG_FUNCTION_ARGS);

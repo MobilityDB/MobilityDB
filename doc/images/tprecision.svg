@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Généré par Microsoft Visio, SVG Export tprecision.svg Page-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		width="8.5in" height="11in" viewBox="0 0 612 792" xml:space="preserve" color-interpolation-filters="sRGB" class="st16">
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#f2f2f2;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st2 {fill:#a5a5a5;stroke:#a5a5a5;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st3 {marker-start:url(#mrkr5-26);stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.25}
+		.st4 {fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:0.1219512195122}
+		.st5 {marker-end:url(#mrkr5-32);stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.25}
+		.st6 {stroke:#000000;stroke-dasharray:1.75,1.25;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.25}
+		.st7 {fill:none;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st8 {fill:#000000;font-family:Cambria;font-size:1.00001em}
+		.st9 {marker-end:url(#mrkr2-53);marker-start:url(#mrkr2-51);stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.25}
+		.st10 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.25}
+		.st11 {fill:#0070c0;stroke:#0070c0;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st12 {fill:#ffffff;stroke:#0070c0;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st13 {stroke:#a5a5a5;stroke-dasharray:1.75,1.25;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.25}
+		.st14 {fill:#ff0000;stroke:#ff0000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st15 {fill:#ffffff;stroke:#a5a5a5;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st16 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<defs id="Markers">
+		<g id="lend5">
+			<path d="M 2 1 L 0 0 L 1.98117 -0.993387 C 1.67173 -0.364515 1.67301 0.372641 1.98465 1.00043 " style="stroke:none"/>
+		</g>
+		<marker id="mrkr5-26" class="st4" refX="12.91" orient="auto" markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend5" transform="scale(8.2) "/>
+		</marker>
+		<marker id="mrkr5-32" class="st4" refX="-14.35" orient="auto" markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend5" transform="scale(-8.2,-8.2) "/>
+		</marker>
+		<g id="lend2">
+			<path d="M 1 1 L 0 0 L 1 -1 L 1 1 " style="stroke:none"/>
+		</g>
+		<marker id="mrkr2-51" class="st4" refX="6.76" orient="auto" markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend2" transform="scale(8.2) "/>
+		</marker>
+		<marker id="mrkr2-53" class="st4" refX="-8.2" orient="auto" markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend2" transform="scale(-8.2,-8.2) "/>
+		</marker>
+	</defs>
+	<g>
+		<title>Page 1</title>
+		<g id="shape633-1" transform="translate(477,-333)">
+			<title>Feuille.633</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape662-3" transform="translate(477,-450)">
+			<title>Feuille.662</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape674-5" transform="translate(497.25,-514.008)">
+			<title>Feuille.674</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape661-7" transform="translate(405,-450)">
+			<title>Feuille.661</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape663-9" transform="translate(333,-450)">
+			<title>Feuille.663</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape632-11" transform="translate(405,-333)">
+			<title>Feuille.632</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape634-13" transform="translate(333,-333)">
+			<title>Feuille.634</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape343-15" transform="translate(144,-216)">
+			<title>Feuille.343</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape347-17" transform="translate(216,-216)">
+			<title>Feuille.347</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape337-19" transform="translate(72,-216)">
+			<title>Feuille.337</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape175-21" transform="translate(864,468) rotate(90)">
+			<title>Feuille.175</title>
+			<path d="M3.23 792 L3.59 792 L112.5 792" class="st3"/>
+		</g>
+		<g id="shape176-27" transform="translate(67.5,-216)">
+			<title>Feuille.176</title>
+			<path d="M0 792 L225.91 792" class="st5"/>
+		</g>
+		<g id="shape178-33" transform="translate(900,472.5) rotate(90)">
+			<title>Feuille.178</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape179-36" transform="translate(31.5,-302.32)">
+			<title>Feuille.179</title>
+			<desc>Value</desc>
+			<rect x="0" y="774.82" width="40.5" height="17.1798" class="st7"/>
+			<text x="5.83" y="787.01" class="st8">Value</text>		</g>
+		<g id="shape180-39" transform="translate(252,-193.5)">
+			<title>Feuille.180</title>
+			<desc>Time</desc>
+			<rect x="0" y="774.82" width="36" height="17.1798" class="st7"/>
+			<text x="4.86" y="787.01" class="st8">Time</text>		</g>
+		<g id="shape181-42" transform="translate(99,-180)">
+			<title>Feuille.181</title>
+			<desc>duration</desc>
+			<rect x="0" y="765" width="54" height="27" class="st7"/>
+			<text x="4.72" y="782.1" class="st8">duration</text>		</g>
+		<g id="shape182-45" transform="translate(108,-207)">
+			<title>Feuille.182</title>
+			<path d="M1.69 792 L2.05 792 L33.95 792" class="st9"/>
+		</g>
+		<g id="shape341-54" transform="translate(936,472.5) rotate(90)">
+			<title>Feuille.341</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape344-57" transform="translate(972,472.5) rotate(90)">
+			<title>Feuille.344</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape345-60" transform="translate(1008,472.5) rotate(90)">
+			<title>Feuille.345</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape348-63" transform="translate(1044,472.5) rotate(90)">
+			<title>Feuille.348</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape349-66" transform="translate(1080,472.5) rotate(90)">
+			<title>Feuille.349</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape177-69" transform="translate(238.34,-256.5)">
+			<title>Feuille.177</title>
+			<path d="M0 766.85 L24.29 752.74 L37.28 792" class="st10"/>
+		</g>
+		<g id="shape183-72" transform="translate(101.351,-231.328)">
+			<title>Feuille.183</title>
+			<path d="M0 792 L53.9 760.08 L73.02 772.45 L123.65 747.7" class="st10"/>
+		</g>
+		<g id="shape185-75" transform="translate(99.4995,-229.359)">
+			<title>Feuille.185</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape186-77" transform="translate(172.49,-249.07)">
+			<title>Feuille.186</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape188-79" transform="translate(236.25,-280.008)">
+			<title>Feuille.188</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape189-81" transform="translate(261,-293.508)">
+			<title>Feuille.189</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape190-83" transform="translate(273.774,-254.812)">
+			<title>Feuille.190</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape187-85" transform="translate(223.312,-273.937)">
+			<title>Feuille.187</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape184-87" transform="translate(153.399,-261.164)">
+			<title>Feuille.184</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape358-89" transform="translate(144,-333)">
+			<title>Feuille.358</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape359-91" transform="translate(216,-333)">
+			<title>Feuille.359</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape360-93" transform="translate(72,-333)">
+			<title>Feuille.360</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape362-95" transform="translate(864,351) rotate(90)">
+			<title>Feuille.362</title>
+			<path d="M3.23 792 L3.59 792 L112.5 792" class="st3"/>
+		</g>
+		<g id="shape363-100" transform="translate(67.5,-333)">
+			<title>Feuille.363</title>
+			<path d="M0 792 L225.91 792" class="st5"/>
+		</g>
+		<g id="shape364-105" transform="translate(900,355.5) rotate(90)">
+			<title>Feuille.364</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape365-108" transform="translate(31.5,-419.32)">
+			<title>Feuille.365</title>
+			<desc>Value</desc>
+			<rect x="0" y="774.82" width="40.5" height="17.1798" class="st7"/>
+			<text x="5.83" y="787.01" class="st8">Value</text>		</g>
+		<g id="shape366-111" transform="translate(936,355.5) rotate(90)">
+			<title>Feuille.366</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape367-114" transform="translate(972,355.5) rotate(90)">
+			<title>Feuille.367</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape368-117" transform="translate(1008,355.5) rotate(90)">
+			<title>Feuille.368</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape369-120" transform="translate(1044,355.5) rotate(90)">
+			<title>Feuille.369</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape370-123" transform="translate(1080,355.5) rotate(90)">
+			<title>Feuille.370</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape378-126" transform="translate(273.774,-371.812)">
+			<title>Feuille.378</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape380-128" transform="translate(222.797,-390.937)">
+			<title>Feuille.380</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape382-130" transform="translate(144,-450)">
+			<title>Feuille.382</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape383-132" transform="translate(216,-450)">
+			<title>Feuille.383</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape384-134" transform="translate(72,-450)">
+			<title>Feuille.384</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape386-136" transform="translate(864,234) rotate(90)">
+			<title>Feuille.386</title>
+			<path d="M3.23 792 L3.59 792 L112.5 792" class="st3"/>
+		</g>
+		<g id="shape387-141" transform="translate(67.5,-450)">
+			<title>Feuille.387</title>
+			<path d="M0 792 L225.91 792" class="st5"/>
+		</g>
+		<g id="shape388-146" transform="translate(900,238.5) rotate(90)">
+			<title>Feuille.388</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape389-149" transform="translate(31.5,-538.57)">
+			<title>Feuille.389</title>
+			<desc>Value</desc>
+			<rect x="0" y="774.82" width="40.5" height="17.1798" class="st7"/>
+			<text x="5.83" y="787.01" class="st8">Value</text>		</g>
+		<g id="shape390-152" transform="translate(936,238.5) rotate(90)">
+			<title>Feuille.390</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape391-155" transform="translate(972,238.5) rotate(90)">
+			<title>Feuille.391</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape392-158" transform="translate(1008,238.5) rotate(90)">
+			<title>Feuille.392</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape393-161" transform="translate(1044,238.5) rotate(90)">
+			<title>Feuille.393</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape394-164" transform="translate(1080,238.5) rotate(90)">
+			<title>Feuille.394</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape398-167" transform="translate(99.4995,-463.359)">
+			<title>Feuille.398</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape399-169" transform="translate(172.49,-483.07)">
+			<title>Feuille.399</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape400-171" transform="translate(237.048,-514.008)">
+			<title>Feuille.400</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape401-173" transform="translate(261,-527.508)">
+			<title>Feuille.401</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape402-175" transform="translate(273.774,-488.812)">
+			<title>Feuille.402</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape404-177" transform="translate(223.313,-507.938)">
+			<title>Feuille.404</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape405-179" transform="translate(153.399,-495.164)">
+			<title>Feuille.405</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape407-181" transform="translate(262.65,-412.477)">
+			<title>Feuille.407</title>
+			<path d="M0 792 L12.23 792" class="st10"/>
+		</g>
+		<g id="shape408-184" transform="translate(272.906,-410.508)">
+			<title>Feuille.408</title>
+			<ellipse cx="1.96875" cy="790.031" rx="1.96875" ry="1.96875" class="st12"/>
+		</g>
+		<g id="shape410-186" transform="translate(238.5,-398.977)">
+			<title>Feuille.410</title>
+			<path d="M0 792 L24.52 792" class="st10"/>
+		</g>
+		<g id="shape411-189" transform="translate(261.047,-397.008)">
+			<title>Feuille.411</title>
+			<ellipse cx="1.96875" cy="790.031" rx="1.96875" ry="1.96875" class="st12"/>
+		</g>
+		<g id="shape413-191" transform="translate(174.375,-368.039)">
+			<title>Feuille.413</title>
+			<path d="M0 792 L50.39 792" class="st10"/>
+		</g>
+		<g id="shape414-194" transform="translate(222.797,-366.07)">
+			<title>Feuille.414</title>
+			<ellipse cx="1.96875" cy="790.031" rx="1.96875" ry="1.96875" class="st12"/>
+		</g>
+		<g id="shape416-196" transform="translate(155.25,-380.133)">
+			<title>Feuille.416</title>
+			<path d="M0 792 L18.69 792" class="st10"/>
+		</g>
+		<g id="shape417-199" transform="translate(171.972,-378.164)">
+			<title>Feuille.417</title>
+			<ellipse cx="1.96875" cy="790.031" rx="1.96875" ry="1.96875" class="st12"/>
+		</g>
+		<g id="shape419-201" transform="translate(101.25,-348.328)">
+			<title>Feuille.419</title>
+			<path d="M0 792 L52.84 792" class="st10"/>
+		</g>
+		<g id="shape420-204" transform="translate(152.121,-346.359)">
+			<title>Feuille.420</title>
+			<ellipse cx="1.96875" cy="790.031" rx="1.96875" ry="1.96875" class="st12"/>
+		</g>
+		<g id="shape376-206" transform="translate(236.25,-397.008)">
+			<title>Feuille.376</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape377-208" transform="translate(261,-410.508)">
+			<title>Feuille.377</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape381-210" transform="translate(153.399,-378.164)">
+			<title>Feuille.381</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape374-212" transform="translate(99.4995,-346.359)">
+			<title>Feuille.374</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape510-214" transform="translate(369,-207)">
+			<title>Feuille.510</title>
+			<path d="M1.69 792 L2.05 792 L33.95 792" class="st9"/>
+		</g>
+		<g id="shape375-221" transform="translate(172.49,-366.07)">
+			<title>Feuille.375</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st11"/>
+		</g>
+		<g id="shape599-223" transform="translate(513,-193.5)">
+			<title>Feuille.599</title>
+			<desc>Time</desc>
+			<rect x="0" y="774.82" width="36" height="17.1798" class="st7"/>
+			<text x="4.86" y="787.01" class="st8">Time</text>		</g>
+		<g id="shape600-226" transform="translate(360,-180)">
+			<title>Feuille.600</title>
+			<desc>duration</desc>
+			<rect x="0" y="765" width="54" height="27" class="st7"/>
+			<text x="4.72" y="782.1" class="st8">duration</text>		</g>
+		<g id="shape611-229" transform="translate(405,-216)">
+			<title>Feuille.611</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape612-231" transform="translate(477,-216)">
+			<title>Feuille.612</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape613-233" transform="translate(333,-216)">
+			<title>Feuille.613</title>
+			<rect x="0" y="693" width="36" height="99" class="st1"/>
+		</g>
+		<g id="shape614-235" transform="translate(1125,468) rotate(90)">
+			<title>Feuille.614</title>
+			<path d="M3.23 792 L3.59 792 L112.5 792" class="st3"/>
+		</g>
+		<g id="shape615-240" transform="translate(328.5,-216)">
+			<title>Feuille.615</title>
+			<path d="M0 792 L225.91 792" class="st5"/>
+		</g>
+		<g id="shape616-245" transform="translate(1161,472.5) rotate(90)">
+			<title>Feuille.616</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape617-248" transform="translate(1197,472.5) rotate(90)">
+			<title>Feuille.617</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape618-251" transform="translate(1233,472.5) rotate(90)">
+			<title>Feuille.618</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape619-254" transform="translate(1269,472.5) rotate(90)">
+			<title>Feuille.619</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape620-257" transform="translate(1305,472.5) rotate(90)">
+			<title>Feuille.620</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape621-260" transform="translate(1341,472.5) rotate(90)">
+			<title>Feuille.621</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape622-263" transform="translate(499.34,-256.5)">
+			<title>Feuille.622</title>
+			<path d="M0 766.85 L24.29 752.74 L37.28 792" class="st13"/>
+		</g>
+		<g id="shape623-266" transform="translate(362.351,-231.328)">
+			<title>Feuille.623</title>
+			<path d="M0 792 L53.9 760.08 L73.02 772.45 L123.65 747.7" class="st13"/>
+		</g>
+		<g id="shape624-269" transform="translate(360.5,-229.359)">
+			<title>Feuille.624</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape625-271" transform="translate(433.49,-249.07)">
+			<title>Feuille.625</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape626-273" transform="translate(497.25,-280.008)">
+			<title>Feuille.626</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape627-275" transform="translate(522,-293.508)">
+			<title>Feuille.627</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape628-277" transform="translate(534.774,-254.812)">
+			<title>Feuille.628</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape629-279" transform="translate(484.312,-273.937)">
+			<title>Feuille.629</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape630-281" transform="translate(414.399,-261.164)">
+			<title>Feuille.630</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape598-283" transform="translate(350.601,-233.437)">
+			<title>Feuille.598</title>
+			<path d="M0 792 L36 779.63 L71.3 771.54 L108.7 762.75 L144 746.44 L180.28 739.97" class="st10"/>
+		</g>
+		<g id="shape586-286" transform="translate(348.75,-231.75)">
+			<title>Feuille.586</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape587-288" transform="translate(384.75,-244.125)">
+			<title>Feuille.587</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape590-290" transform="translate(420.351,-252)">
+			<title>Feuille.590</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape592-292" transform="translate(457.013,-260.674)">
+			<title>Feuille.592</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape595-294" transform="translate(493.548,-277.312)">
+			<title>Feuille.595</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape596-296" transform="translate(529.149,-283.5)">
+			<title>Feuille.596</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape576-298" transform="translate(421.301,-374.062)">
+			<title>Feuille.576</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape536-300" transform="translate(457.301,-366.07)">
+			<title>Feuille.536</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape579-302" transform="translate(493.548,-394.312)">
+			<title>Feuille.579</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape582-304" transform="translate(529.055,-386.859)">
+			<title>Feuille.582</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape635-306" transform="translate(1125,351) rotate(90)">
+			<title>Feuille.635</title>
+			<path d="M3.23 792 L3.59 792 L112.5 792" class="st3"/>
+		</g>
+		<g id="shape636-311" transform="translate(328.5,-333)">
+			<title>Feuille.636</title>
+			<path d="M0 792 L225.91 792" class="st5"/>
+		</g>
+		<g id="shape637-316" transform="translate(1161,355.5) rotate(90)">
+			<title>Feuille.637</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape638-319" transform="translate(1197,355.5) rotate(90)">
+			<title>Feuille.638</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape639-322" transform="translate(1233,355.5) rotate(90)">
+			<title>Feuille.639</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape640-325" transform="translate(1269,355.5) rotate(90)">
+			<title>Feuille.640</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape641-328" transform="translate(1305,355.5) rotate(90)">
+			<title>Feuille.641</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape642-331" transform="translate(1341,355.5) rotate(90)">
+			<title>Feuille.642</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape643-334" transform="translate(534.774,-371.812)">
+			<title>Feuille.643</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape644-336" transform="translate(483.797,-390.937)">
+			<title>Feuille.644</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape645-338" transform="translate(523.65,-412.477)">
+			<title>Feuille.645</title>
+			<path d="M0 792 L12.23 792" class="st13"/>
+		</g>
+		<g id="shape646-341" transform="translate(533.906,-410.508)">
+			<title>Feuille.646</title>
+			<ellipse cx="1.96875" cy="790.031" rx="1.96875" ry="1.96875" class="st15"/>
+		</g>
+		<g id="shape647-343" transform="translate(499.5,-398.977)">
+			<title>Feuille.647</title>
+			<path d="M0 792 L24.52 792" class="st13"/>
+		</g>
+		<g id="shape648-346" transform="translate(522.047,-397.008)">
+			<title>Feuille.648</title>
+			<ellipse cx="1.96875" cy="790.031" rx="1.96875" ry="1.96875" class="st15"/>
+		</g>
+		<g id="shape649-348" transform="translate(435.375,-368.039)">
+			<title>Feuille.649</title>
+			<path d="M0 792 L50.39 792" class="st13"/>
+		</g>
+		<g id="shape650-351" transform="translate(483.797,-366.07)">
+			<title>Feuille.650</title>
+			<ellipse cx="1.96875" cy="790.031" rx="1.96875" ry="1.96875" class="st15"/>
+		</g>
+		<g id="shape651-353" transform="translate(416.25,-380.133)">
+			<title>Feuille.651</title>
+			<path d="M0 792 L18.69 792" class="st13"/>
+		</g>
+		<g id="shape652-356" transform="translate(432.972,-378.164)">
+			<title>Feuille.652</title>
+			<ellipse cx="1.96875" cy="790.031" rx="1.96875" ry="1.96875" class="st15"/>
+		</g>
+		<g id="shape653-358" transform="translate(362.25,-348.328)">
+			<title>Feuille.653</title>
+			<path d="M0 792 L52.84 792" class="st13"/>
+		</g>
+		<g id="shape654-361" transform="translate(413.121,-346.359)">
+			<title>Feuille.654</title>
+			<ellipse cx="1.96875" cy="790.031" rx="1.96875" ry="1.96875" class="st15"/>
+		</g>
+		<g id="shape655-363" transform="translate(497.25,-397.008)">
+			<title>Feuille.655</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape656-365" transform="translate(522,-410.508)">
+			<title>Feuille.656</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape657-367" transform="translate(414.399,-378.164)">
+			<title>Feuille.657</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape658-369" transform="translate(360.5,-346.359)">
+			<title>Feuille.658</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape659-371" transform="translate(433.49,-366.07)">
+			<title>Feuille.659</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape565-373" transform="translate(351.153,-348.328)">
+			<title>Feuille.565</title>
+			<path d="M0 792 L35.85 792" class="st10"/>
+		</g>
+		<g id="shape574-376" transform="translate(349.301,-346.359)">
+			<title>Feuille.574</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape575-378" transform="translate(385.149,-346.359)">
+			<title>Feuille.575</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape550-380" transform="translate(350.345,-463.359)">
+			<title>Feuille.550</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape571-382" transform="translate(422.345,-486)">
+			<title>Feuille.571</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape572-384" transform="translate(493.548,-512.156)">
+			<title>Feuille.572</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape573-386" transform="translate(529.548,-503.578)">
+			<title>Feuille.573</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st14"/>
+		</g>
+		<g id="shape664-388" transform="translate(1125,234) rotate(90)">
+			<title>Feuille.664</title>
+			<path d="M3.23 792 L3.59 792 L112.5 792" class="st3"/>
+		</g>
+		<g id="shape665-393" transform="translate(328.5,-450)">
+			<title>Feuille.665</title>
+			<path d="M0 792 L225.91 792" class="st5"/>
+		</g>
+		<g id="shape666-398" transform="translate(1161,238.5) rotate(90)">
+			<title>Feuille.666</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape667-401" transform="translate(1197,238.5) rotate(90)">
+			<title>Feuille.667</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape668-404" transform="translate(1233,238.5) rotate(90)">
+			<title>Feuille.668</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape669-407" transform="translate(1269,238.5) rotate(90)">
+			<title>Feuille.669</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape670-410" transform="translate(1305,238.5) rotate(90)">
+			<title>Feuille.670</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape671-413" transform="translate(1341,238.5) rotate(90)">
+			<title>Feuille.671</title>
+			<path d="M0 792 L108 792" class="st6"/>
+		</g>
+		<g id="shape672-416" transform="translate(360.5,-463.359)">
+			<title>Feuille.672</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape673-418" transform="translate(433.49,-483.07)">
+			<title>Feuille.673</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape675-420" transform="translate(522,-527.508)">
+			<title>Feuille.675</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape676-422" transform="translate(534.774,-488.813)">
+			<title>Feuille.676</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape677-424" transform="translate(484.313,-507.938)">
+			<title>Feuille.677</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+		<g id="shape678-426" transform="translate(414.399,-495.164)">
+			<title>Feuille.678</title>
+			<ellipse cx="1.85121" cy="790.031" rx="1.85121" ry="1.96875" class="st2"/>
+		</g>
+	</g>
+</svg>

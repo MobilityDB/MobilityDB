@@ -325,7 +325,7 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry ever contains a temporal point,
  * 0 if not, and -1 on error or if the geometry is empty.
  * @note The function does not accept 3D or geography since it is based on the
@@ -407,7 +407,7 @@ edisjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point and a geometry are ever disjoint,
  * 0 if not, and -1 on error or if the geometry is empty.
  * @param[in] temp Temporal point
@@ -438,7 +438,7 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if the temporal points are ever disjoint, 0 if not, and
  * -1 on error or if the temporal points do not intersect in time
  * @sqlfunc disjoint()
@@ -458,7 +458,7 @@ edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry and a temporal point ever intersect,
  * 0 if not, and -1 on error or if the geometry is empty.
  * @sqlfunc intersects()
@@ -478,7 +478,7 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if the temporal points ever intersect, 0 if not, and
  * -1 on error or if the temporal points do not intersect in time
  * @sqlfunc intersects()
@@ -500,7 +500,7 @@ eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point and a geometry ever touch, 0 if not, and
  * -1 on error or if the geometry is empty
  * @sqlfunc touches()
@@ -543,7 +543,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry and a temporal point are ever within the
  * given distance, 0 if not, -1 on error or if a geometry is empty
  * @sqlfunc dwithin()
@@ -724,7 +724,7 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if the temporal points are ever within the given distance,
  * 0 if not, -1 on error or if the temporal points do not intersect on time
  * @sqlfunc dwithin()

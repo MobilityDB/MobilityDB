@@ -108,7 +108,7 @@ SELECT asHexEWKB(tgeompoint 'SRID=3812;Point(1 2 3)@2001-01-01');
 			<listitem id="tgeompointFromText">
 				<indexterm><primary><varname>tgeompointFromText</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromText</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación de texto conocido (Well-Known Text o WKT) &Z_support;</para>
+				<para>Entrar un punto temporal en una representación de texto conocido (Well-Known Text o WKT) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromText(text) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromText(text) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -122,7 +122,7 @@ SELECT asEWKT(tgeogpointFromText(text '[POINT(1 2)@2000-01-01, POINT(3 4)@2000-0
 			<listitem id="tgeompointFromEWKT">
 				<indexterm><primary><varname>tgeompointFromEWKT</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromEWKT</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación extendida de texto conocido (Extended Well-Known Text o EWKT) &Z_support;</para>
+				<para>Entrar un punto temporal en una representación extendida de texto conocido (Extended Well-Known Text o EWKT) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromEWKT(text) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromEWKT(text) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -138,7 +138,7 @@ SELECT asEWKT(tgeogpointFromEWKT(text 'SRID=7844;[POINT(1 2)@2000-01-01,
 			<listitem id="tgeompointFromMFJSON">
 				<indexterm><primary><varname>tgeompointFromMFJSON</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromMFJSON</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación JSON de características móviles (Moving Features) &Z_support;</para>
+				<para>Entrar un punto temporal en una representación JSON de características móviles (Moving Features) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromMFJSON(text) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromMFJSON(text) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -156,7 +156,7 @@ SELECT asEWKT(tgeogpointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"na
 			<listitem id="tgeompointFromBinary">
 				<indexterm><primary><varname>tgeompointFromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromBinary</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación binaria conocida (WKB) &Z_support;</para>
+				<para>Entrar un punto temporal en una representación binaria conocida (WKB) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromBinary(bytea) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromBinary(bytea) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -172,7 +172,7 @@ SELECT asEWKT(tgeompointFromBinary(
 			<listitem id="tgeompointFromEWKB">
 				<indexterm><primary><varname>tgeompointFromEWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromEWKB</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación extendida binaria conocida (EWKB) &Z_support;</para>
+				<para>Entrar un punto temporal en una representación extendida binaria conocida (EWKB) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromEWKB(bytea) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromEWKB(bytea) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -188,7 +188,7 @@ SELECT asEWKT(tgeogpointFromEWKB(
 			<listitem id="tgeompointFromHexEWKB">
 				<indexterm><primary><varname>tgeompointFromHexEWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>tgeogpointFromHexEWKB</varname></primary></indexterm>
-				<para>Entrar un punto temporal geométrico en una representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support;</para>
+				<para>Entrar un punto temporal geométrico en una representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
 				<para><varname>tgeompointFromHexEWKB(text) → tgeompoint</varname></para>
 				<para><varname>tgeogpointFromHexEWKB(text) → tgeogpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -432,6 +432,7 @@ SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2000-01-01,
 				<indexterm><primary><varname>bearing</varname></primary></indexterm>
 				<para>Obtener el rumbo temporal &Z_support; &geography_support;</para>
 				<para><varname>bearing({tpoint, point}, {tpoint, point}) → tfloat</varname></para>
+				<para>Nótese que esta función no acepta dos puntos geográficos temporales.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',
   geometry 'Point(2 2)'));
@@ -443,7 +444,6 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]')), 3);
 -- [243.435@2001-01-01, 116.565@2001-01-03]
 </programlisting>
-				<para>Nótese que esta función actualmente no acepta dos puntos geográficos temporales.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -538,9 +538,9 @@ ramp_color(
 
 			<listitem id="asMVTGeom">
 				<indexterm><primary><varname>asMVTGeom</varname></primary></indexterm>
-				<para>Transformar un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile. El resultado es un par compuesto de un valor <varname>geometry</varname> y una matriz de valores de marca de tiempo asociados codificados como época de Unix &Z_support;</para>
-				<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=true) → geom_times</varname></para>
-				<para>Los parámetros son los siguientes:</para>
+				<para>Transformar un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile &Z_support;</para>
+				<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=true) → (geom,times)</varname></para>
+				<para>El resultado es un par compuesto de un valor <varname>geometry</varname> y una matriz de valores de marca de tiempo asociados codificados como época de Unix. Los parámetros son los siguientes:</para>
 				<itemizedlist>
 					<listitem><para><varname>tpoint</varname> es el punto temporal para transformar</para></listitem>
 					<listitem><para><varname>bounds</varname> es un <varname>stbox</varname> que define los límites geométricos del contenido del mosaico sin búfer</para></listitem>
@@ -692,7 +692,7 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)' &lt;-&gt;
 	</sect1>
 
 	<sect1 id="tpoint_spatial_rel">
-		<title>Relaciones espaciales alguna vez y temporales</title>
+		<title>Relaciones espaciales</title>
 
 		<para>Las relaciones topológicas como <varname>ST_Intersects</varname> y las relaciones de distancia como <varname>ST_DWithin</varname> pueden ser generalizadas a los puntos temporales. Los argumentos de estas funciones generalizadas son un punto temporal y un tipo base (es decir, un <varname>geometry</varname> o un <varname>geography</varname>) o dos puntos temporales. Además, ambos argumentos deben ser del mismo tipo base, es decir, estas funciones no permiten merzclar un punto de geometría temporal (o una geometría) y un punto de geografía temporal (o una geografía).</para>
 
@@ -766,14 +766,17 @@ WHERE eintersects(T.Trip, R.Geom)
 
 		<para>Finalmente, cabe destacar que las relaciónes temporales permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
 
-		<para>Presentamos a continuación las relaciones espaciales alguna vez. Todas estas funciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</para>
-		<itemizedlist>
-			<listitem id="econtains">
-				<indexterm><primary><varname>econtains</varname></primary></indexterm>
-				<para>Contiene alguna vez</para>
-				<para><varname>econtains(geo,tgeompoint) → boolean</varname></para>
-				<para>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> en PostGIS.</para>
-				<programlisting language="sql" xml:space="preserve">
+		<sect2>
+			<title>Relaciones espaciales alguna vez</title>
+			<para>Presentamos a continuación las relaciones espaciales alguna vez. Todas estas funciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</para>
+
+			<itemizedlist>
+				<listitem id="econtains">
+					<indexterm><primary><varname>econtains</varname></primary></indexterm>
+					<para>Contiene alguna vez</para>
+					<para><varname>econtains(geo,tgeompoint) → boolean</varname></para>
+					<para>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> en PostGIS.</para>
+					<programlisting language="sql" xml:space="preserve">
 SELECT econtains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
 -- false
@@ -787,13 +790,13 @@ SELECT econtains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeompoint '[Point(1 4)@2000-01-01, Point(4 1)@2000-01-04]');
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="edisjoint">
-				<indexterm><primary><varname>edisjoint</varname></primary></indexterm>
-				<para>Está disjunto alguna vez &Z_support; &geography_support;</para>
-				<para><varname>edisjoint({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
-					<programlisting language="sql" xml:space="preserve">
+				<listitem id="edisjoint">
+					<indexterm><primary><varname>edisjoint</varname></primary></indexterm>
+					<para>Está disjunto alguna vez &Z_support; &geography_support;</para>
+					<para><varname>edisjoint({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
+						<programlisting language="sql" xml:space="preserve">
 SELECT edisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)');
 -- false
@@ -801,13 +804,13 @@ SELECT edisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 0)@2001-01-03)');
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="edwithin">
-				<indexterm><primary><varname>edwithin</varname></primary></indexterm>
-				<para>Está alguna vez a distancia de &Z_support; &geography_support;</para>
-				<para><varname>edwithin({geo,tpoint},{geo,tpoint},float) → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<listitem id="edwithin">
+					<indexterm><primary><varname>edwithin</varname></primary></indexterm>
+					<para>Está alguna vez a distancia de &Z_support; &geography_support;</para>
+					<para><varname>edwithin({geo,tpoint},{geo,tpoint},float) → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
 SELECT edwithin(geometry 'Point(1 1 1)',
   tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 0)@2000-01-02]', 1);
 -- true
@@ -815,13 +818,13 @@ SELECT edwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 2 2)@2000-01-01,Point(2 2 2)@2000-01-02]', 1);
 -- false
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="eintersects">
-				<indexterm><primary><varname>eintersects</varname></primary></indexterm>
-				<para>Intersecta alguna vez &Z_support; &geography_support;</para>
-				<para><varname>eintersects({geo,tpoint},{geo,tpoint}) → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<listitem id="eintersects">
+					<indexterm><primary><varname>eintersects</varname></primary></indexterm>
+					<para>Intersecta alguna vez &Z_support; &geography_support;</para>
+					<para><varname>eintersects({geo,tpoint},{geo,tpoint}) → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve">
 SELECT eintersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
 -- false
@@ -829,38 +832,43 @@ SELECT eintersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="etouches">
-				<indexterm><primary><varname>etouches</varname></primary></indexterm>
-				<para>Toca alguna vez</para>
-					<para><varname>etouches({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
-					<programlisting language="sql" xml:space="preserve">
+				<listitem id="etouches">
+					<indexterm><primary><varname>etouches</varname></primary></indexterm>
+					<para>Toca alguna vez</para>
+						<para><varname>etouches({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
+						<programlisting language="sql" xml:space="preserve">
 SELECT etouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-03)');
 -- true
 </programlisting>
 			</listitem>
-		</itemizedlist>
+			</itemizedlist>
+		</sect2>
 
-		<para>Presentamos a continuación las relaciones espaciales temporales. Un requisito común con respecto ellas es restringir el resultado de la relación a los instantes en que el valor del resultado es verdadero o falso. Por ejemplo, la siguiente consulta calcula para cada viaje el tiempo dedicado viajando en el municipio de Bruselas.</para>
-				<programlisting language="sql" xml:space="preserve">
+		<sect2>
+			<title>Relaciones espaciales temporales</title>
+
+			<para>Presentamos a continuación las relaciones espaciales temporales. Un requisito común con respecto ellas es restringir el resultado de la relación a los instantes en que el valor del resultado es verdadero o falso. Por ejemplo, la siguiente consulta calcula para cada viaje el tiempo dedicado viajando en el municipio de Bruselas.</para>
+					<programlisting language="sql" xml:space="preserve">
 SELECT TripId, duration(atValue(tintersects(T.trip, M.geom), True))
 FROM Trips T, Municipality M
 WHERE M.Name = "Brussels" AND atValue(tintersects(T.trip, M.geom), True) IS NOT NULL;
 </programlisting>
-		<para>Para simplificar la escritura de consultas, las relaciones espaciales temporales tienen un último parámetro opcional, que si se proporciona aplica la función <varname>atValue</varname> (ver <xref linkend="temporal_types_restrictions" />) al resultado de la relación. De esta forma, la consulta anterior se puede escribir de la siguiente manera.</para>
-				<programlisting language="sql" xml:space="preserve">
+			<para>Para simplificar la escritura de consultas, las relaciones espaciales temporales tienen un último parámetro opcional, que si se proporciona aplica la función <varname>atValue</varname> (ver <xref linkend="temporal_types_restrictions" />) al resultado de la relación. De esta forma, la consulta anterior se puede escribir de la siguiente manera.</para>
+					<programlisting language="sql" xml:space="preserve">
 SELECT TripId, duration(tintersects(T.trip, M.geom, True))
 FROM Trips T, Municipality M
 WHERE M.Name = "Brussels" AND tintersects(T.trip, M.geom, True) IS NOT NULL;
 </programlisting>
-		<itemizedlist>
-			<listitem id="tcontains">
-				<indexterm><primary><varname>tcontains</varname></primary></indexterm>
-				<para>Contiene temporal</para>
-				<para><varname>tcontains(geometry,tgeompoint,atValue boolean=NULL) → tbool</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+
+			<itemizedlist>
+				<listitem id="tcontains">
+					<indexterm><primary><varname>tcontains</varname></primary></indexterm>
+					<para>Contiene temporal</para>
+					<para><varname>tcontains(geometry,tgeompoint,atValue boolean=NULL) → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve">
 SELECT tcontains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
 -- {[f@2000-01-01, f@2000-01-02]}
@@ -874,14 +882,14 @@ SELECT tcontains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeompoint '[Point(1 4)@2000-01-01, Point(4 1)@2000-01-04]');
 -- {[f@2000-01-01, f@2000-01-02], (t@2000-01-02, f@2000-01-03, f@2000-01-04]}
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="tdisjoint">
-				<indexterm><primary><varname>tdisjoint</varname></primary></indexterm>
-				<para>Disjunto temporal &Z_support; &geography_support;</para>
-				<para><varname>tdisjoint({geo,tpoint},{geo,tpoint},atValue boolean=NULL) → tbool</varname></para>
-				<para>La función solo admite 3D o geografías para dos puntos temporales</para>
-				<programlisting language="sql" xml:space="preserve">
+				<listitem id="tdisjoint">
+					<indexterm><primary><varname>tdisjoint</varname></primary></indexterm>
+					<para>Disjunto temporal &Z_support; &geography_support;</para>
+					<para><varname>tdisjoint({geo,tpoint},{geo,tpoint},atValue boolean=NULL) → tbool</varname></para>
+					<para>La función solo admite 3D o geografías para dos puntos temporales</para>
+					<programlisting language="sql" xml:space="preserve">
 SELECT tdisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)');
 -- {[t@2001-01-01, f@2001-01-02, f@2001-01-03], (t@2001-01-03, t@2001-01-04]}
@@ -889,14 +897,14 @@ SELECT tdisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[t@2001-01-01, f@2001-01-03], (t@2001-01-03, t@2001-01-05)}
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="tdwithin">
-				<indexterm><primary><varname>tdwithin</varname></primary></indexterm>
-				<para>Está a distancia de temporal &Z_support;</para>
-				<para><varname>tdwithin({geompoint,tgeompoint},{geompoint,tgeompoint},float,atValue boolean=NULL)</varname></para>
-				<para><varname>  → tbool</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<listitem id="tdwithin">
+					<indexterm><primary><varname>tdwithin</varname></primary></indexterm>
+					<para>Está a distancia de temporal &Z_support;</para>
+					<para><varname>tdwithin({geompoint,tgeompoint},{geompoint,tgeompoint},float,atValue boolean=NULL)</varname></para>
+					<para><varname>  → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve">
 SELECT tdwithin(geometry 'Point(1 1)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)', sqrt(2));
 --  {[t@2001-01-01, t@2001-01-03)}
@@ -904,14 +912,14 @@ SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
   tgeompoint 'Interp=Step;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
 -- {[f@2000-01-01, t@2000-01-02, t@2000-01-04], (f@2000-01-04, t@2000-01-05]}
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="tintersects">
-				<indexterm><primary><varname>tintersects</varname></primary></indexterm>
-				<para>Intersección temporal &Z_support; &geography_support;</para>
-				<para><varname>tintersects({geo,tpoint},{geo,tpoint},atValue boolean=NULL) → tbool</varname></para>
-				<para>La función solo admite 3D o geografías para dos puntos temporales</para>
-				<programlisting language="sql" xml:space="preserve">
+				<listitem id="tintersects">
+					<indexterm><primary><varname>tintersects</varname></primary></indexterm>
+					<para>Intersección temporal &Z_support; &geography_support;</para>
+					<para><varname>tintersects({geo,tpoint},{geo,tpoint},atValue boolean=NULL) → tbool</varname></para>
+					<para>La función solo admite 3D o geografías para dos puntos temporales</para>
+					<programlisting language="sql" xml:space="preserve">
 SELECT tintersects(geometry 'MultiPoint(1 1,2 2)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)');
 /* {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, t@2001-01-03],
@@ -920,19 +928,21 @@ SELECT tintersects(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[f@2001-01-01, t@2001-01-03], (f@2001-01-03, f@2001-01-05)}
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttouches">
-				<indexterm><primary><varname>ttouches</varname></primary></indexterm>
-				<para>Toca temporal</para>
-				<para><varname>ttouches({geo,tgeompoint},{geo,tgeompoint},atValue boolean=NULL) → tbool</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<listitem id="ttouches">
+					<indexterm><primary><varname>ttouches</varname></primary></indexterm>
+					<para>Toca temporal</para>
+					<para><varname>ttouches({geo,tgeompoint},{geo,tgeompoint},atValue boolean=NULL) → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve">
 SELECT ttouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-04)');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
 </programlisting>
-			</listitem>
-		</itemizedlist>
+				</listitem>
+			</itemizedlist>
+
+		</sect2>
 	</sect1>
 </chapter>
 

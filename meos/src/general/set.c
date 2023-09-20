@@ -893,12 +893,12 @@ set_copy(const Set *s)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_cast
- * @brief Cast a value as a set
+ * @ingroup libmeos_internal_setspan_conversion
+ * @brief Convert a value as a set
  * @sqlop @p ::
  */
 Set *
@@ -909,8 +909,8 @@ value_to_set(Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast an integer as a set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert an integer as a set
  * @sqlop @p ::
  */
 Set *
@@ -921,8 +921,8 @@ int_to_intset(int i)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a big integer as a set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a big integer as a set
  * @sqlop @p ::
  */
 Set *
@@ -933,8 +933,8 @@ bigint_to_bigintset(int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a float as a set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a float as a set
  * @sqlop @p ::
  */
 Set *
@@ -945,8 +945,8 @@ float_to_floatset(double d)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a text as a set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a text as a set
  * @sqlop @p ::
  */
 Set *
@@ -960,8 +960,8 @@ text_to_textset(text *txt)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a timestamp as a set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a timestamp as a set
  * @sqlop @p ::
  */
 Set *
@@ -972,8 +972,8 @@ timestamp_to_tstzset(TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a geometry/geograph as a geoset
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a geometry/geograph as a geoset
  * @sqlop @p ::
  */
 Set *

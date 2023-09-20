@@ -1399,11 +1399,11 @@ temporal_merge_array(Temporal **temparr, int count)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 /**
- * Transform integer to float
+ * @brief Convert an integer to a float
  */
 static Datum
 datum_int_to_float(Datum d)
@@ -1412,7 +1412,7 @@ datum_int_to_float(Datum d)
 }
 
 /**
- * Transform float to integer
+ * @brief Convert a float to an integer
  */
 static Datum
 datum_float_to_int(Datum d)
@@ -1421,8 +1421,8 @@ datum_float_to_int(Datum d)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal integer to a temporal float.
+ * @ingroup libmeos_temporal_conversion
+ * @brief Convert a temporal integer to a temporal float.
  * @sqlop @p ::
  */
 Temporal *
@@ -1444,8 +1444,8 @@ tint_to_tfloat(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float to a temporal integer.
+ * @ingroup libmeos_temporal_conversion
+ * @brief Convert a temporal float to a temporal integer.
  * @sqlop @p ::
  */
 Temporal *
@@ -1492,7 +1492,7 @@ temporal_set_period(const Temporal *temp, Span *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_cast
+ * @ingroup libmeos_temporal_conversion
  * @brief Return the bounding period of a temporal value.
  * @sqlfunc period
  * @sqlop @p ::
@@ -1535,7 +1535,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
+ * @ingroup libmeos_temporal_conversion
  * @brief Return the value span of a temporal number.
  * @sqlfunc valueSpan
  */
@@ -1554,7 +1554,7 @@ tnumber_to_span(const Temporal *temp)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_box_conversion
  * @brief Return the bounding box of a temporal number.
  * @sqlop @p ::
  */
@@ -1736,10 +1736,10 @@ tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width,
       (Temporal *) tnuminst_shift_value((TInstant *) temp, shift) :
       (Temporal *) tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnumseq_shift_scale_value((TSequence *) temp,
+    result = (Temporal *) tnumberseq_shift_scale_value((TSequence *) temp,
       shift, width, hasshift, haswidth);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnumseqset_shift_scale_value((TSequenceSet *) temp,
+    result = (Temporal *) tnumberseqset_shift_scale_value((TSequenceSet *) temp,
       shift, width, hasshift, haswidth);
   return result;
 }
@@ -1895,413 +1895,6 @@ temporal_scale_time(const Temporal *temp, const Interval *duration)
   return temporal_shift_scale_time(temp, NULL, duration);
 }
 #endif /* MEOS */
-
-/*****************************************************************************
- * Time precision functions for time values
- *****************************************************************************/
-
-/**
- * @brief Set the precision of a temporal value according to time buckets.
- * @param[in] inst Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
- */
-TInstant *
-tinstant_tprecision(const TInstant *inst, const Interval *duration,
-  TimestampTz torigin)
-{
-  assert(inst); assert(duration);
-  assert(valid_duration(duration));
-  TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
-  Datum value = tinstant_value(inst);
-  TInstant *result = tinstant_make(value, inst->temptype, lower);
-  return result;
-}
-
-/**
- * @brief Aggregate the values that are merged due to a temporal granularity
- * change
- * @param[in] temp Temporal value
- */
-static Datum
-temporal_tprecision_agg_values(const Temporal *temp)
-{
-  assert(temp);
-  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
-
-  Datum result;
-  if (tnumber_type(temp->temptype))
-    result = Float8GetDatum(tnumber_twavg(temp));
-  else /* tgeo_type(temp->temptype) */
-    result = PointerGetDatum(tpoint_twcentroid(temp));
-  return result;
-}
-
-/**
- * @brief Set the precision of a temporal value according to period buckets.
- * @param[in] seq Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
- */
-TSequence *
-tsequence_tprecision(const TSequence *seq, const Interval *duration,
-  TimestampTz torigin)
-{
-  assert(seq); assert(duration);
-  assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
-    seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT );
-  assert(valid_duration(duration));
-  int64 tunits = interval_units(duration);
-  TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
-  TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
-    tunits;
-  /* Number of buckets */
-  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
-  TInstant **ininsts = palloc(sizeof(TInstant *) * seq->count);
-  TInstant **outinsts = palloc(sizeof(TInstant *) * count);
-  lower = lower_bucket;
-  upper = lower_bucket + tunits;
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  /* New instants computing the value at the beginning/end of the bucket */
-  TInstant *start = NULL, *end = NULL;
-  // bool tofree = false;
-  TSequence *seq1;
-  Datum value;
-  int k = 0; /* Number of instants for computing the twAvg/twCentroid */
-  int l = 0; /* Number of instants of the output sequence */
-  /* Loop for each instant of the sequence */
-  for (int i = 0; i < seq->count; i++)
-  {
-    /* Get the next instant */
-    TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
-    /* If the instant is not in the current bucket */
-    if (k > 0 && timestamptz_cmp_internal(inst->t, upper) > 0)
-    {
-      /* Compute the value at the end of the bucket if we do not have it */
-      if (timestamptz_cmp_internal(ininsts[k - 1]->t, upper) < 0)
-      {
-        tsequence_value_at_timestamp(seq, upper, false, &value);
-        ininsts[k++] = end = tinstant_make(value, seq->temptype, upper);
-      }
-      seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
-        NORMALIZE);
-      /* Compute the twAvg/twCentroid for the bucket */
-      value = tnumber_type(seq->temptype) ?
-        Float8GetDatum(tnumberseq_twavg(seq1)) :
-        PointerGetDatum(tpointseq_twcentroid(seq1));
-      outinsts[l++] = tinstant_make(value, seq->temptype, lower);
-      pfree(seq1);
-      if (! tnumber_type(seq->temptype))
-        pfree(DatumGetPointer(value));
-      /* Free the instant at the beginning of the bucket if it was generated */
-      if (start)
-      {
-        pfree(start); start = NULL;
-      }
-      /* Save the instant at the bucket end as start for the next bucket */
-      ininsts[0] = ininsts[k - 1];
-      if (end)
-      {
-        start = end; end = NULL;
-      }
-      k = 1;
-      lower = upper;
-      upper += tunits;
-    }
-    ininsts[k++] = inst;
-  }
-  /* Compute the twAvg/twCentroid of the last bucket */
-  if (k > 0)
-  {
-    seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
-      NORMALIZE);
-    value = tnumber_type(seq->temptype) ?
-      Float8GetDatum(tnumberseq_twavg(seq1)) :
-      PointerGetDatum(tpointseq_twcentroid(seq1));
-    outinsts[l++] = tinstant_make(value, seq->temptype, lower);
-    if (! tnumber_type(seq->temptype))
-      pfree(DatumGetPointer(value));
-    if (start)
-      pfree(start);
-  }
-  TSequence *result = tsequence_make_free(outinsts, l, true, true, interp,
-    NORMALIZE);
-  pfree(ininsts);
-  return result;
-}
-
-/**
- * @brief Set the precision of a temporal value according to period buckets.
- * @param[in] ss Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
- */
-TSequenceSet *
-tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
-  TimestampTz torigin)
-{
-  assert(ss); assert(duration);
-  assert(valid_duration(duration));
-  int64 tunits = interval_units(duration);
-  TimestampTz lower = DatumGetTimestampTz(ss->period.lower);
-  TimestampTz upper = DatumGetTimestampTz(ss->period.upper);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
-    tunits;
-  /* Number of buckets */
-  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
-  TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  lower = lower_bucket;
-  upper = lower_bucket + tunits;
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
-  int nseqs = 0;
-  /* Loop for each bucket */
-  for (int i = 0; i < count; i++)
-  {
-    Span p;
-    span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
-      true, false, T_TIMESTAMPTZ, &p);
-    span_set(TimestampTzGetDatum(lower),
-      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &p);
-    TSequenceSet *proj = tsequenceset_restrict_period(ss, &p, REST_AT);
-    if (proj)
-    {
-      Datum value = temporal_tprecision_agg_values((Temporal *) proj);
-      sequences[nseqs++] = tsequence_from_base_period(value, ss->temptype, &p,
-        linear ? LINEAR : STEP);
-      pfree(proj);
-    }
-    lower += tunits;
-    upper += tunits;
-  }
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
-}
-
-/**
- * @ingroup libmeos_temporal_transf
- * @brief Set the precision of a temporal value according to period buckets.
- * @sqlfunc tprecision;
- */
-Temporal *
-temporal_tprecision(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration))
-    return NULL;
-
-  Temporal *result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_tprecision((TInstant *) temp, duration,
-      torigin);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_tprecision((TSequence *) temp, duration,
-      torigin);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_tprecision((TSequenceSet *) temp,
-      duration, torigin);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Sample the temporal value according to period buckets.
- * @param[in] inst Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
- */
-TInstant *
-tinstant_tsample(const TInstant *inst, const Interval *duration,
-  TimestampTz torigin)
-{
-  assert(inst); assert(duration);
-  assert(valid_duration(duration));
-  TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
-  if (timestamp_cmp_internal(lower, inst->t) == 0)
-    return tinstant_copy(inst);
-  return NULL;
-}
-
-
-/**
- * @brief Sample the temporal value according to period buckets.
- * @param[in] seq Temporal value
- * @param[in] lower_bucket,upper_bucket First and last buckets
- * @param[in] tunits Time size of the tiles in PostgreSQL time units
- * @param[out] result Output array of temporal instants
- * @note The result is an temporal sequence with discrete interpolation
- */
-int
-tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
-  TimestampTz upper_bucket, int64 tunits, TInstant **result)
-{
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  const TInstant *start = TSEQUENCE_INST_N(seq, 0);
-  TimestampTz lower = lower_bucket;
-  int i; /* Current segment of the sequence */
-  int ninsts = 0; /* Number of instants of the result */
-  int cmp1;
-  if (interp == DISCRETE)
-  {
-    i = 0; /* Current instant of the sequence */
-    while (i < seq->count && lower < upper_bucket)
-    {
-      cmp1 = timestamptz_cmp_internal(start->t, lower);
-      /* If the instant is equal to the lower bound of the bucket */
-      if (cmp1 == 0)
-      {
-        result[ninsts++] = tinstant_copy(start);
-        lower += tunits;
-      }
-      /* Advance the bucket if it is after the instant */
-      else if (cmp1 > 0)
-      {
-        int times = ceil((double) (start->t - lower) / tunits);
-        lower +=  times * tunits;
-        continue;
-      }
-      if (cmp1 <= 0)
-      {
-        /* If there are no more segments */
-        if (i == seq->count - 1)
-          break;
-        start = TSEQUENCE_INST_N(seq, ++i);
-      }
-      /* If there are no more segments */
-    }
-  }
-  else
-  {
-    /* Loop for each segment */
-    const TInstant *end = TSEQUENCE_INST_N(seq, 1);
-    bool lower_inc = seq->period.lower_inc;
-    i = 1; /* Current segment of the sequence */
-    while (i < seq->count && lower < upper_bucket)
-    {
-      bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-      cmp1 = timestamptz_cmp_internal(start->t, lower);
-      int cmp2 = timestamptz_cmp_internal(lower, end->t);
-      /* If the segment contains the lower bound of the bucket */
-      if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
-          (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
-      {
-        Datum value = tsegment_value_at_timestamp(start, end, interp, lower);
-        result[ninsts++] = tinstant_make(value, seq->temptype, lower);
-        /* Advance the bucket */
-        lower += tunits;
-      }
-      /* Advance the bucket if it is after the start of the segment */
-      else if (cmp1 >= 0)
-        lower += tunits;
-      /* Advance the segment if it is after the lower bound of the bucket */
-      else if (cmp2 >= 0)
-      {
-        /* If there are no more segments */
-        if (i == seq->count - 1)
-          break;
-        start = end;
-        end = TSEQUENCE_INST_N(seq, ++i);
-      }
-    }
-  }
-  return ninsts;
-}
-
-/**
- * @brief Sample the temporal value according to period buckets.
- * @param[in] seq Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
- * @note The result is an temporal sequence with discrete interpolation
- */
-TSequence *
-tsequence_tsample(const TSequence *seq, const Interval *duration,
-  TimestampTz torigin)
-{
-  assert(seq); assert(duration);
-  assert(valid_duration(duration));
-  int64 tunits = interval_units(duration);
-  TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
-  TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
-    tunits;
-  /* Number of buckets */
-  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  int ninsts = tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
-    &instants[0]);
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
-}
-
-/**
- * @brief Sample the temporal value according to period buckets.
- * @param[in] ss Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
- */
-TSequence *
-tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
-  TimestampTz torigin)
-{
-  assert(ss); assert(duration);
-  assert(valid_duration(duration));
-  int64 tunits = interval_units(duration);
-  TimestampTz lower = tsequenceset_start_timestamp(ss);
-  TimestampTz upper = tsequenceset_end_timestamp(ss);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
-    tunits;
-  /* Number of buckets */
-  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  /* Loop for each segment */
-  int ninsts = 0;
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    ninsts += tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
-      &instants[ninsts]);
-  }
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_transf
- * @brief Sample the temporal value according to period buckets.
- * @sqlfunc tsample
- */
-Temporal *
-temporal_tsample(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration))
-    return NULL;
-
-  Temporal *result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_tsample((TInstant *) temp, duration,
-      torigin);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_tsample((TSequence *) temp, duration,
-      torigin);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_tsample((TSequenceSet *) temp,
-      duration, torigin);
-  return result;
-}
 
 /*****************************************************************************
  * Accessor functions
@@ -3505,7 +3098,7 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever equal to a base value.
  */
 bool
@@ -3525,7 +3118,7 @@ temporal_ever_eq(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal boolean is ever equal to a boolean.
  * @sqlop @p ?=
  */
@@ -3540,7 +3133,7 @@ tbool_ever_eq(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever equal to an integer.
  * @sqlop @p ?=
  */
@@ -3555,7 +3148,7 @@ tint_ever_eq(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is ever equal to a float.
  * @sqlop @p ?=
  */
@@ -3570,7 +3163,7 @@ tfloat_ever_eq(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is ever equal to a text.
  * @sqlop @p ?=
  */
@@ -3586,7 +3179,7 @@ ttext_ever_eq(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always equal to a base value.
  */
 bool
@@ -3606,7 +3199,7 @@ temporal_always_eq(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal boolean is always equal to a boolean.
  * @sqlop @p %=
  */
@@ -3620,7 +3213,7 @@ bool tbool_always_eq(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is always equal to an integer.
  * @sqlop @p %=
  */
@@ -3634,7 +3227,7 @@ bool tint_always_eq(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is always equal to a float.
  * @sqlop @p %=
  */
@@ -3648,7 +3241,7 @@ bool tfloat_always_eq(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is always equal to a text.
  * @sqlop @p %=
  */
@@ -3663,7 +3256,7 @@ bool ttext_always_eq(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than a base value.
  */
 bool
@@ -3683,7 +3276,7 @@ temporal_ever_lt(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than an integer.
  * @sqlop @p ?<
  */
@@ -3697,7 +3290,7 @@ bool tint_ever_lt(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is ever less than a float.
  * @sqlop @p ?<
  */
@@ -3711,7 +3304,7 @@ bool tfloat_ever_lt(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is ever less than a text.
  * @sqlop @p ?<
  */
@@ -3726,7 +3319,7 @@ bool ttext_ever_lt(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always less than a base value.
  */
 bool
@@ -3746,7 +3339,7 @@ temporal_always_lt(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is always less than an integer.
  * @sqlop @p %<
  */
@@ -3761,7 +3354,7 @@ tint_always_lt(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is always less than  a float.
  * @sqlop @p %<
  */
@@ -3776,7 +3369,7 @@ tfloat_always_lt(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is always less than  a text.
  * @sqlop @p %<
  */
@@ -3792,7 +3385,7 @@ ttext_always_lt(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than or equal to a
  * base value.
  */
@@ -3813,7 +3406,7 @@ temporal_ever_le(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than or equal to an integer.
  * @sqlop @p ?<=
  */
@@ -3828,7 +3421,7 @@ tint_ever_le(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is ever less than or equal to a float.
  * @sqlop @p ?<=
  */
@@ -3843,7 +3436,7 @@ tfloat_ever_le(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is ever less than or equal to a text.
  * @sqlop @p ?<=
  */
@@ -3859,7 +3452,7 @@ ttext_ever_le(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always less than or equal to a
  * base value.
  */
@@ -3880,7 +3473,7 @@ temporal_always_le(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is always less than or equal to an integer.
  * @sqlop @p %<=
  */
@@ -3895,7 +3488,7 @@ tint_always_le(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is always less than or equal to a float.
  * @sqlop @p %<=
  */
@@ -3910,7 +3503,7 @@ tfloat_always_le(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is always less than or equal to a text.
  * @sqlop @p %<=
  */
@@ -4896,7 +4489,7 @@ temporal_compact(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the temporal values are equal.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -4982,7 +4575,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the temporal values are different
  * @sqlop @p <>
  */
@@ -4996,7 +4589,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
@@ -5072,7 +4665,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is less than the second one
  * @sqlop @p <
  */
@@ -5084,7 +4677,7 @@ temporal_lt(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
  * @sqlop @p <=
@@ -5097,7 +4690,7 @@ temporal_le(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
  * @sqlop @p >
@@ -5110,7 +4703,7 @@ temporal_ge(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp
+ * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than the second one
  * @sqlop @p >=
  */

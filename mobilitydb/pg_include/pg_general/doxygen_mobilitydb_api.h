@@ -55,9 +55,9 @@
  * @ingroup mobilitydb_setspan
  * @brief Constructor functions for set and span types.
  *
- * @defgroup mobilitydb_setspan_cast Cast functions
+ * @defgroup mobilitydb_setspan_conversion Conversion functions
  * @ingroup mobilitydb_setspan
- * @brief Cast functions for set and span types.
+ * @brief Conversion functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_accessor Accessor functions
  * @ingroup mobilitydb_setspan
@@ -105,9 +105,9 @@
  * @ingroup mobilitydb_box
  * @brief Constructor functions for box types.
  *
- * @defgroup mobilitydb_box_cast Cast functions
+ * @defgroup mobilitydb_box_conversion Conversion functions
  * @ingroup mobilitydb_box
- * @brief Cast functions for box types.
+ * @brief Conversion functions for box types.
  *
  * @defgroup mobilitydb_box_accessor Accessor functions
  * @ingroup mobilitydb_box
@@ -147,9 +147,9 @@
  * @ingroup mobilitydb_temporal
  * @brief Constructor functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_cast Cast functions
+ * @defgroup mobilitydb_temporal_conversion Conversion functions
  * @ingroup mobilitydb_temporal
- * @brief Cast functions for temporal types.
+ * @brief Conversion functions for temporal types.
  *
  * @defgroup mobilitydb_temporal_accessor Accessor functions
  * @ingroup mobilitydb_temporal
@@ -183,11 +183,11 @@
  * @ingroup mobilitydb_temporal
  * @brief Bounding box functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_topo Topological functions
+ * @defgroup mobilitydb_temporal_bbox_topo Topological functions
  * @ingroup mobilitydb_temporal_bbox
  * @brief Topological functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_pos Position functions
+ * @defgroup mobilitydb_temporal_bbox_pos Position functions
  * @ingroup mobilitydb_temporal_bbox
  * @brief Position functions for temporal types.
  *
@@ -195,12 +195,20 @@
  * @ingroup mobilitydb_temporal
  * @brief Distance functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_ever Ever/always functions
- * @ingroup mobilitydb_temporal
- * @brief Ever/always functions for temporal types.
- *
  * @defgroup mobilitydb_temporal_comp Comparison functions
  * @ingroup mobilitydb_temporal
+ * @brief Comparison functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_comp_trad Traditional comparison functions
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Traditional comparison functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_comp_ever Ever/always comparison functions
+ * @ingroup mobilitydb_temporal_comp
+ * @brief Ever/always comparison functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_comp_temp Temporal comparison functions
+ * @ingroup mobilitydb_temporal_comp
  * @brief Comparison functions for temporal types.
  *
  * @defgroup mobilitydb_temporal_spatial Spatial functions
@@ -219,25 +227,41 @@
  * @ingroup mobilitydb_temporal_spatial
  * @brief Spatial relationship functions for temporal point types.
  *
+ * @defgroup mobilitydb_temporal_spatial_rel_ever Ever spatial relationship functions
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Ever spatial relationship functions for temporal point types.
+ *
+ * @defgroup mobilitydb_temporal_spatial_rel_temp Temporal spatial relationship functions
+ * @ingroup mobilitydb_temporal_spatial_rel
+ * @brief Temporal spatial relationship functions for temporal point types.
+ *
  * @defgroup mobilitydb_temporal_spatial_route Route functions
  * @ingroup mobilitydb_temporal_spatial
  * @brief Route functions for temporal network point types.
- *
- * @defgroup mobilitydb_temporal_time Time functions
- * @ingroup mobilitydb_temporal
- * @brief Time functions for temporal types.
  *
  * @defgroup mobilitydb_temporal_agg Local aggregate functions
  * @ingroup mobilitydb_temporal
  * @brief Local aggregate functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_tile Tile functions
+ * @defgroup mobilitydb_temporal_analytics Analytics functions
  * @ingroup mobilitydb_temporal
- * @brief Tile functions for temporal types.
+ * @brief Analytics functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_similarity Similarity functions
- * @ingroup mobilitydb_temporal
+ * @defgroup mobilitydb_temporal_analytics_simplify Simplification functions
+ * @ingroup mobilitydb_temporal_analytics
+ * @brief Simplification functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_analytics_reduction Reduction functions
+ * @ingroup mobilitydb_temporal_analytics
+ * @brief Reduction functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_analytics_similarity Similarity functions
+ * @ingroup mobilitydb_temporal_analytics
  * @brief Similarity functions for temporal types.
+ *
+ * @defgroup mobilitydb_temporal_analytics_tile Tile functions
+ * @ingroup mobilitydb_temporal_analytics
+ * @brief Tile functions for temporal types.
  */
 
 /*****************************************************************************/

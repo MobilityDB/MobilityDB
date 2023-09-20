@@ -634,12 +634,12 @@ span_copy(const Span *s)
 }
 
 /*****************************************************************************
- * Casting
+ * Conversion
  *****************************************************************************/
 
 /**
  * @ingroup libmeos_internal_setspan_accessor
- * @brief Cast a value as a span
+ * @brief Convert a value as a span
  */
 void
 value_set_span(Datum d, meosType basetype, Span *s)
@@ -651,8 +651,8 @@ value_set_span(Datum d, meosType basetype, Span *s)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_cast
- * @brief Cast a value as a span
+ * @ingroup libmeos_internal_setspan_conversion
+ * @brief Convert a value as a span
  */
 Span *
 value_to_span(Datum d, meosType basetype)
@@ -664,8 +664,8 @@ value_to_span(Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a span
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a value as a span
  * @sqlop @p ::
  */
 Span *
@@ -677,8 +677,8 @@ int_to_intspan(int i)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a span
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a value as a span
  * @sqlop @p ::
  */
 Span *
@@ -690,8 +690,8 @@ bigint_to_bigintspan(int i)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a span
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a value as a span
  * @sqlop @p ::
  */
 Span *
@@ -703,8 +703,8 @@ float_to_floatspan(double d)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a timestamp as a period
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a timestamp as a period
  * @sqlop @p ::
  */
 Span *

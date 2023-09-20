@@ -1,7 +1,7 @@
 name: Main Build
 
 # Test for supported PosgreSQL/PostGIS versions
-# 3 (PosgreSQL) * 1 (PostGIS) * 2 (Linux) + 1 (coverage) = 7 jobs are triggered
+# 5 (PosgreSQL) * 1 (PostGIS) * 1 (Linux) + 1 (coverage) = 6 jobs are triggered
 # Allow manual trigger
 
 on:
@@ -19,7 +19,7 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          psql: [12,13,14,15]
+          psql: [12,13,14,15,16]
           postgis: [3]
           os: [ubuntu-latest]
           coverage: [0]

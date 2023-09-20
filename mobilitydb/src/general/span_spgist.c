@@ -1023,7 +1023,7 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     /* Update the recheck flag according to the strategy */
     out->recheck |= span_index_recheck(strategy);
 
-    /* Cast the query to a span and perform the test */
+    /* Convert the query to a span and perform the test */
     span_spgist_get_span(&in->scankeys[i], &span);
     /* All tests are lossy for temporal types */
     if (temporal_type(in->scankeys[i].sk_subtype))
@@ -1044,7 +1044,7 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     out->distances = distances;
     for (i = 0; i < in->norderbys; i++)
     {
-      /* Cast the order by argument to a span and perform the test */
+      /* Convert the order by argument to a span and perform the test */
       span_spgist_get_span(&in->orderbys[i], &span);
       distances[i] = distance_span_span(&span, key);
     }

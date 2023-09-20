@@ -243,7 +243,7 @@ extern char *spanset_out(const SpanSet *ss, int maxdd);
 
 /*****************************************************************************/
 
-/* Cast functions for set and span types */
+/* Conversion functions for set and span types */
 
 extern Set *value_to_set(Datum d, meosType basetype);
 extern Span *value_to_span(Datum d, meosType basetype);
@@ -389,7 +389,7 @@ extern void tbox_set(const Span *s, const Span *p, TBox *box);
 
 /*****************************************************************************/
 
-/* Cast functions for box types */
+/* Conversion functions for box types */
 
 extern void float_set_tbox(double d, TBox *box);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
@@ -571,7 +571,7 @@ extern TSequenceSet *tsequenceset_from_base_periodset(Datum value, meosType temp
 
 /*****************************************************************************/
 
-/* Cast functions for temporal types */
+/* Conversion functions for temporal types */
 
 extern void temporal_set_period(const Temporal *temp, Span *p);
 extern void tinstant_set_period(const TInstant *inst, Span *p);
@@ -667,7 +667,7 @@ extern TSequence *tinstant_to_tsequence(const TInstant *inst, interpType interp)
 extern TSequenceSet *tinstant_to_tsequenceset(const TInstant *inst, interpType interp);
 extern Temporal *tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern TInstant *tnuminst_shift_value(const TInstant *inst, Datum shift);
-extern TSequence *tnumseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width, bool hasshift, bool haswidth);
+extern TSequence *tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern Temporal *tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist, const Interval *maxt, bool expand);
 extern Temporal *tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2, bool expand);
 extern Temporal *tsequence_merge(const TSequence *seq1, const TSequence *seq2);
@@ -684,7 +684,7 @@ extern TSequenceSet *tsequenceset_append_tsequence(TSequenceSet *ss, const TSequ
 extern TSequenceSet *tsequenceset_merge(const TSequenceSet *ss1, const TSequenceSet *ss2);
 extern TSequenceSet *tsequenceset_merge_array(const TSequenceSet **seqsets, int count);
 extern Temporal *tsequenceset_set_interp(const TSequenceSet *ss, interpType interp);
-extern TSequenceSet *tnumseqset_shift_scale_value(const TSequenceSet *ss, Datum start, Datum width, bool hasshift, bool haswidth);
+extern TSequenceSet *tnumberseqset_shift_scale_value(const TSequenceSet *ss, Datum start, Datum width, bool hasshift, bool haswidth);
 extern TSequenceSet *tsequenceset_shift_scale_time(const TSequenceSet *ss, const Interval *start, const Interval *duration);
 extern TInstant *tsequenceset_to_tinstant(const TSequenceSet *ss);
 extern TSequence *tsequenceset_to_discrete(const TSequenceSet *ss);

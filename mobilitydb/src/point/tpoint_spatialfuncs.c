@@ -36,6 +36,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <funcapi.h>
 #include <utils/float.h>
 /* PostGIS */
 #include <liblwgeom.h>
@@ -80,7 +81,7 @@ tpoint_ev_al_comp_ext(FunctionCallInfo fcinfo,
 PGDLLEXPORT Datum Tpoint_ever_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_ever_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is ever equal to a point
  * @sqlfunc ever_eq()
  */
@@ -93,7 +94,7 @@ Tpoint_ever_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_always_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_always_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is always equal to a point
  * @sqlfunc always_eq()
  */
@@ -106,7 +107,7 @@ Tpoint_always_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_ever_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_ever_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is ever different from a point
  * @sqlfunc ever_ne()
  */
@@ -119,7 +120,7 @@ Tpoint_ever_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_always_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_always_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is always different from a point
  * @sqlfunc always_ne()
  */
@@ -361,13 +362,13 @@ Tpoint_transform(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_to_tgeogpoint);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal geometry point to a temporal geography point
  * @sqlfunc tgeogpoint()
  */
@@ -383,7 +384,7 @@ Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeogpoint_to_tgeompoint);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal geography point to a temporal geometry point
  * @sqlfunc tgeompoint()
  */
@@ -450,6 +451,119 @@ Tpoint_round(PG_FUNCTION_ARGS)
   Temporal *result = tpoint_round(temp, size);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Tpoint_to_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_to_geo);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Convert the temporal point into a PostGIS trajectory geometry or
+ * geography where the M coordinates encode the timestamps in number of seconds
+ * since '1970-01-01'
+ */
+Datum
+Tpoint_to_geo(PG_FUNCTION_ARGS)
+{
+  Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
+  bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
+  GSERIALIZED *result;
+  tpoint_to_geo_meas(tpoint, NULL, segmentize, &result);
+  PG_FREE_IF_COPY(tpoint, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Geo_to_tpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_to_tpoint);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert the PostGIS trajectory geometry or geography where the M
+ * coordinates encode the timestamps in Unix epoch into a temporal point.
+ */
+Datum
+Geo_to_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *result = geo_to_tpoint(geo);
+  PG_FREE_IF_COPY(geo, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tpoint_to_geo_meas(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_to_geo_meas);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Construct a geometry/geography with M measure from the temporal point
+ * and the temporal float
+ */
+Datum
+Tpoint_to_geo_meas(PG_FUNCTION_ARGS)
+{
+  Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
+  Temporal *measure = PG_GETARG_TEMPORAL_P(1);
+  bool segmentize = (PG_NARGS() == 3) ? PG_GETARG_BOOL(2) : false;
+  GSERIALIZED *result;
+  bool found = tpoint_to_geo_meas(tpoint, measure, segmentize, &result);
+  PG_FREE_IF_COPY(tpoint, 0);
+  PG_FREE_IF_COPY(measure, 1);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Mapbox Vector Tile functions for temporal points.
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpoint_AsMVTGeom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_AsMVTGeom);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf
+ * @brief Transform the temporal point to Mapbox Vector Tile format
+ */
+Datum
+Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *bounds = PG_GETARG_STBOX_P(1);
+  int32_t extent = PG_GETARG_INT32(2);
+  int32_t buffer = PG_GETARG_INT32(3);
+  bool clip_geom = PG_GETARG_BOOL(4);
+
+  GSERIALIZED *geom;
+  int64 *times; /* Timestamps are returned in Unix time */
+  int count;
+  bool found = tpoint_AsMVTGeom(temp, bounds, extent, buffer, clip_geom,
+    &geom, &times, &count);
+  if (! found)
+  {
+    PG_FREE_IF_COPY(temp, 0);
+    PG_RETURN_NULL();
+  }
+
+  ArrayType *timesarr = int64arr_to_array(times, count);
+
+  /* Build a tuple description for the function output */
+  TupleDesc resultTupleDesc;
+  get_call_result_type(fcinfo, NULL, &resultTupleDesc);
+  BlessTupleDesc(resultTupleDesc);
+
+  /* Construct the result */
+  HeapTuple resultTuple;
+  bool result_is_null[2] = {0,0}; /* needed to say no value is null */
+  Datum result_values[2]; /* used to construct the composite return value */
+  Datum result; /* the actual composite return value */
+  /* Store geometry */
+  result_values[0] = PointerGetDatum(geom);
+  /* Store timestamp array */
+  result_values[1] = PointerGetDatum(timesarr);
+  /* Form tuple and return */
+  resultTuple = heap_form_tuple(resultTupleDesc, result_values, result_is_null);
+  result = HeapTupleGetDatum(resultTuple);
+
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************

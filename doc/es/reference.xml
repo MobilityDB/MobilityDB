@@ -300,41 +300,51 @@
 		</sect2>
 
 		<sect2>
-			<title>Operaciones topológicas y de posición relativa</title>
+			<title>Operaciones de cuadro delimitador</title>
 
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="setspan_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores (tienen valores en común)?</para>
-				</listitem>
+			<sect3>
+				<title>Operaciones topológicas</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="setspan_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores (tienen valores en común)?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer valor el segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="setspan_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer valor el segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor contenido en el segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor contenido en el segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor adyacente al segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor adyacente al segundo?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 
-				<listitem>
-					<para><link linkend="setspan_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;#</varname></link>: ¿Está el primer valor estrictamente a la izquierda del segundo?</para>
-				</listitem>
+			<sect3>
+				<title>Operaciones de posición</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="setspan_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;#</varname></link>: ¿Está el primer valor estrictamente a la izquierda del segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_right"><varname>&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Está el primer valor de rango estrictamente a la izquierda del segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="setspan_right"><varname>&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Está el primer valor de rango estrictamente a la izquierda del segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;#</varname></link>: ¿No está el primer valor a la derecha del segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="setspan_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;#</varname></link>: ¿No está el primer valor a la derecha del segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_overright"><varname>&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No está el primer valor a la izquierda del segundo?</para>
-				</listitem>
-			</itemizedlist>
+					<listitem>
+						<para><link linkend="setspan_overright"><varname>&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No está el primer valor a la izquierda del segundo?</para>
+					</listitem>
+				</itemizedlist>
+
+			</sect3>
+
 		</sect2>
 
 		<sect2>
@@ -516,13 +526,93 @@
 		</sect2>
 
 		<sect2>
-			<title>Agregaciones</title>
-
+			<title>Funciones de división</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_extent"><varname>extent</varname></link>: Extensión del cuadro delimitador</para>
+					<para><link linkend="quadSplit"><varname>quadSplit</varname></link>: Dividir el cuadro delimitador en cuadrantes u octantes </para>
 				</listitem>
 			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operaciones de conjuntos</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_union"><varname>+</varname></link>: Union de los cuadros delimitadores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersección de los cuadros delimitadores</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operaciones de cuadro delimitador</title>
+
+			<sect3>
+				<title>Operaciones topológicas</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: ¿Se superponen los cuadros delimitadores?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer cuadro delimitador el segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: ¿Está el primer cuadro delimitador contenido en el segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_same"><varname>~=</varname></link>: ¿Son los cuadros delimitadores iguales en sus dimensiones comunes?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_adjacent"><varname>-|-</varname></link>: ¿Son los cuadros delimitadores adyacentes?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_right"><varname>&gt;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>/&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;|</varname>, <varname>&amp;&lt;/</varname>, <varname>&amp;&lt;#</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador menores que los del segundo?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de posición</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_right"><varname>&gt;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>/&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;|</varname>, <varname>&amp;&lt;/</varname>, <varname>&amp;&lt;#</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador menores que los del segundo?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 
 		<sect2>
@@ -555,55 +645,11 @@
 		</sect2>
 
 		<sect2>
-			<title>Operaciones de conjuntos</title>
+			<title>Agregaciones</title>
+
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_union"><varname>+</varname></link>: Union de los cuadros delimitadores</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersección de los cuadros delimitadores</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Operaciones topológicas y de posición relativa</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: ¿Se superponen los cuadros delimitadores?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer cuadro delimitador el segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: ¿Está el primer cuadro delimitador contenido en el segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_same"><varname>~=</varname></link>: ¿Son los cuadros delimitadores iguales en sus dimensiones comunes?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_adjacent"><varname>-|-</varname></link>: ¿Son los cuadros delimitadores adyacentes?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_right"><varname>&gt;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>/&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;|</varname>, <varname>&amp;&lt;/</varname>, <varname>&amp;&lt;#</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador mayores que los del segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador menores que los del segundo?</para>
+					<para><link linkend="box_extent"><varname>extent</varname></link>: Extensión del cuadro delimitador</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1250,48 +1296,59 @@
 		</sect2>
 
 		<sect2>
-			<title>Relaciones espaciales alguna vez y temporales</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="econtains"><varname>econtains</varname></link>: Contiene alguna vez</para>
-				</listitem>
+			<title>Relaciones espaciales</title>
 
-				<listitem>
-					<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Es disjunto alguna vez</para>
-				</listitem>
+			<sect3>
+				<title>Relaciones espaciales alguna vez</title>
 
-				<listitem>
-					<para><link linkend="edwithin"><varname>edwithin</varname></link>: Está alguna vez a distancia de</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="econtains"><varname>econtains</varname></link>: Contiene alguna vez</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="eintersects"><varname>eintersects</varname></link>: Cruza alguna vez</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Es disjunto alguna vez</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="etouches"><varname>etouches</varname></link>: Toca alguna vez</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Está alguna vez a distancia de</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Cruza alguna vez</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Disjunto temporal</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="etouches"><varname>etouches</varname></link>: Toca alguna vez</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 
-				<listitem>
-					<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
-				</listitem>
+			<sect3>
+				<title>Relaciones espaciales temporales</title>
 
-				<listitem>
-					<para><link linkend="tintersects"><varname>tintersects</varname></link>: Intersección temporal</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttouches"><varname>ttouches</varname></link>: Toca temporal</para>
-				</listitem>
-			</itemizedlist>
+					<listitem>
+						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Disjunto temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tintersects"><varname>tintersects</varname></link>: Intersección temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Toca temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 	</sect1>
 
@@ -1303,15 +1360,25 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por una cierta distancia</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="minTimeDeltaSimplify"><varname>minTimeDeltaSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por un cierto intervalo de tiempo</para>
+					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por una cierta distancia o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="DouglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>DouglasPeuckerSimplify</varname></link>: Simplificar un flotante o un punto temporal usando el algoritmo de Douglas-Peucker</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Reducción</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tsample"><varname>tsample</varname></link>: Muestrear un valor temporal con respecto a un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tprecision"><varname>tprecision</varname></link>: Reducir la precisión temporal de un valor temporal con respecto a un intervalo calculando el promedio/centroide ponderado por el tiempo en cada intervalo de tiempo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1350,7 +1417,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre el rango o el período con intervalos de la misma amplitud alineados con el origen</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de intervalos que cubre el rango o el período con intervalos de la misma amplitud alineados con el origen</para>
 					</listitem>
 
 					<listitem>
@@ -1377,7 +1444,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tileList"><varname>tileList</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
+						<para><link linkend="tileList"><varname>tileList</varname></link>: Obtener un conjunto de mosaicos que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
 					</listitem>
 
 					<listitem>
@@ -1413,8 +1480,10 @@
 			</sect3>
 		</sect2>
 
-		<sect2>
-			<title>Agregaciones</title>
+	</sect1>
+
+	<sect1>
+		<title>Tipos temporales: Agregaciones</title>
 
 			<itemizedlist>
 				<listitem>
@@ -1474,7 +1543,6 @@
 				</listitem>
 
 			</itemizedlist>
-		</sect2>
 	</sect1>
 
 	<sect1>
@@ -1690,7 +1758,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_relpos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Operadores de posición relativa</para>
+						<para><link linkend="tnpoint_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Operadores de posición relativa</para>
 					</listitem>
 
 					<listitem>

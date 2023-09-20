@@ -355,12 +355,12 @@ span_period_to_tbox(const Span *s, const Span *p)
 }
 
 /*****************************************************************************
- * Casting
+ * Conversion functions
  * The set functions start by setting the output argument box to 0
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a number.
  */
 void
@@ -376,7 +376,7 @@ number_set_tbox(Datum value, meosType basetype, TBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from an integer.
  */
 void
@@ -387,8 +387,8 @@ int_set_tbox(int i, TBox *box)
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast an integer to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert an integer to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -401,7 +401,7 @@ int_to_tbox(int i)
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a float.
  */
 void
@@ -412,8 +412,8 @@ float_set_tbox(double d, TBox *box)
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a float to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a float to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -427,7 +427,7 @@ float_to_tbox(double d)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a timestamp.
  */
 void
@@ -443,8 +443,8 @@ timestamp_set_tbox(TimestampTz t, TBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a timestamp to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a timestamp to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -458,7 +458,7 @@ timestamp_to_tbox(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a number set.
  */
 void
@@ -473,8 +473,8 @@ numset_set_tbox(const Set *s, TBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a number set to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a number set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -492,7 +492,7 @@ numset_to_tbox(const Set *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a timestamp set.
  */
 void
@@ -507,8 +507,8 @@ timestampset_set_tbox(const Set *s, TBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a timestamp set to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a timestamp set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -526,7 +526,7 @@ timestampset_to_tbox(const Set *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a number span.
  */
 void
@@ -539,8 +539,8 @@ numspan_set_tbox(const Span *s, TBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a span to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a span to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -558,7 +558,7 @@ numspan_to_tbox(const Span *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a period.
  */
 void
@@ -571,8 +571,8 @@ period_set_tbox(const Span *s, TBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a period to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a period to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -590,7 +590,7 @@ period_to_tbox(const Span *s)
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a span set.
  */
 void
@@ -603,8 +603,8 @@ numspanset_set_tbox(const SpanSet *ss, TBox *box)
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a span set to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a span set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -622,7 +622,7 @@ numspanset_to_tbox(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a period set.
  */
 void
@@ -634,8 +634,8 @@ periodset_set_tbox(const SpanSet *ss, TBox *box)
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a period set to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a period set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -656,8 +656,8 @@ periodset_to_tbox(const SpanSet *ss)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a temporal box as a span.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a temporal box as a span.
  * @sqlop @p ::
  */
 Span *
@@ -678,8 +678,8 @@ tbox_to_floatspan(const TBox *box)
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a temporal box as a period
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a temporal box as a period
  * @sqlop @p ::
  */
 Span *
@@ -897,9 +897,8 @@ tbox_tmax_inc(const TBox *box, bool *result)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libmeos_internal_box_transf
  * @brief Shift and/or scale the span of a temporal box by the values.
- * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue()
  */
 TBox *
 tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
@@ -1103,7 +1102,7 @@ topo_tbox_tbox_init(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the first temporal box contains the second one.
  * @sqlop @p \@>
  */
@@ -1124,7 +1123,7 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the first temporal box is contained in the second one.
  * @sqlop @p <@
  */
@@ -1135,7 +1134,7 @@ contained_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the temporal boxes overlap.
  * @sqlop @p &&
  */
@@ -1156,7 +1155,7 @@ overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the temporal boxes are equal in the common dimensions.
  * @sqlop @p ~=
  */
@@ -1177,7 +1176,7 @@ same_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the temporal boxes are adjacent.
  * @sqlop @p -|-
  */
@@ -1200,11 +1199,11 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /*****************************************************************************
- * Relative position operators
+ * Position operators
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is strictly to the left of
  * the second one.
  * @sqlop @p <<
@@ -1221,7 +1220,7 @@ left_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend to the right
  * of the second one.
  * @sqlop @p &<
@@ -1238,7 +1237,7 @@ overleft_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is strictly to the right of
  * the second one.
  * @sqlop @p >>
@@ -1255,7 +1254,7 @@ right_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend to the left of
  * the second one.
  * @sqlop @p &>
@@ -1273,7 +1272,7 @@ overright_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is strictly before
  * the second one.
  * @sqlop @p <<#
@@ -1289,7 +1288,7 @@ before_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend after
  * the second one.
  * @sqlop @p &<#
@@ -1305,7 +1304,7 @@ overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is strictly after the
  * second one.
  * @sqlop @p #>>
@@ -1321,7 +1320,7 @@ after_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend before
  * the second one.
  * @sqlop @p #&>

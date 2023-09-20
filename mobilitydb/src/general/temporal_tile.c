@@ -59,6 +59,7 @@
 PGDLLEXPORT Datum Number_bucket(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Number_bucket);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the initial value of the bucket in which an integer value falls.
  */
 Datum
@@ -79,6 +80,7 @@ Number_bucket(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Timestamptz_bucket(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamptz_bucket);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the initial timestamp of the bucket in which a timestamp falls.
  */
 Datum
@@ -171,6 +173,7 @@ Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
 PGDLLEXPORT Datum Span_bucket_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_bucket_list);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate a span bucket list.
  */
 Datum
@@ -182,6 +185,7 @@ Span_bucket_list(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Period_bucket_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_bucket_list);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate a period bucket list.
  */
 Datum
@@ -195,6 +199,7 @@ Period_bucket_list(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_bucket(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_bucket);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate an integer or float span bucket in a bucket list for spans.
 */
 Datum
@@ -212,6 +217,7 @@ Span_bucket(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Period_bucket(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_bucket);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate a bucket in a bucket list for periods.
 */
 Datum
@@ -232,6 +238,7 @@ Period_bucket(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_tile_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_tile_list);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate a multidimensional grid for temporal numbers.
  */
 Datum
@@ -307,8 +314,9 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_tile);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate a tile in a multidimensional grid for temporal numbers.
-*/
+ */
 Datum
 Tbox_tile(PG_FUNCTION_ARGS)
 {
@@ -480,6 +488,7 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
 PGDLLEXPORT Datum Temporal_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_time_split);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Split a temporal value into fragments with respect to period buckets.
  */
 Datum
@@ -491,6 +500,7 @@ Temporal_time_split(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_value_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_value_split);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Split a temporal value into fragments with respect to period tiles.
  */
 Datum
@@ -502,6 +512,7 @@ Tnumber_value_split(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_value_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Split a temporal value into fragments with respect to span and period
  * tiles.
  */

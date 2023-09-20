@@ -312,14 +312,14 @@ Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Casting
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Stbox_to_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_to_geo);
 /**
- * @ingroup mobilitydb_box_cast
- * @brief Cast the spatiotemporal box as a PostGIS GBOX
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a spatiotemporal box as a PostGIS GBOX
  * @sqlfunc geometry()
  * @sqlfunc @p ::
  */
@@ -334,8 +334,8 @@ Stbox_to_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_to_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_to_period);
 /**
- * @ingroup mobilitydb_box_cast
- * @brief Cast a spatiotemporal box as a period
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a spatiotemporal box as a period
  * @sqlfunc period()
  * @sqlfunc @p ::
  */
@@ -356,7 +356,7 @@ Stbox_to_period(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Geo_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_to_stbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform a geometry/geography to a spatiotemporal box
  * @sqlfunc stbox()
  * @sqlfunc @p ::
@@ -376,7 +376,7 @@ Geo_to_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Geoset_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_to_stbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform a geometry/geography to a spatiotemporal box
  * @sqlfunc stbox()
  * @sqlfunc @p ::
@@ -394,7 +394,7 @@ Geoset_to_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Timestamp_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamp_to_stbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform a timestampt to a spatiotemporal box
  * @sqlfunc stbox()
  * @sqlfunc @p ::
@@ -411,7 +411,7 @@ Timestamp_to_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Timestampset_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform a timestamp set to a spatiotemporal box
  * @sqlfunc stbox()
  * @sqlfunc @p ::
@@ -428,7 +428,7 @@ Timestampset_to_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Period_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_to_stbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform a period to a spatiotemporal box
  * @sqlfunc stbox()
  * @sqlfunc @p ::
@@ -463,7 +463,7 @@ periodset_stbox_slice(Datum psdatum, STBox *box)
 PGDLLEXPORT Datum Periodset_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Periodset_to_stbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform a period set to a spatiotemporal box
  * @sqlfunc stbox()
  * @sqlfunc @p ::
@@ -482,7 +482,7 @@ Periodset_to_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Geo_timestamp_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_timestamp_to_stbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform a geometry/geography and a timestamp to a spatiotemporal box
  * @sqlfunc stbox()
  * @sqlfunc @p ::
@@ -502,7 +502,7 @@ Geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Geo_period_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_period_to_stbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform a geometry/geography and a period to a spatiotemporal box
  * @sqlfunc stbox()
  */

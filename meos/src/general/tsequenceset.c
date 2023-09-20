@@ -1583,7 +1583,7 @@ tsequenceset_set_interp(const TSequenceSet *ss, interpType interp)
  * @sqlfunc shiftValues(), scaleValues(), shiftScaleValues().
  */
 TSequenceSet *
-tnumseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
+tnumberseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
   Datum width, bool hasshift, bool haswidth)
 {
   assert(ss);
@@ -1608,7 +1608,7 @@ tnumseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
     box = TSEQUENCE_BBOX_PTR(seq);
     numspan_delta_scale_iter(&box->span, origin, delta, hasshift, scale);
     /* Shift and/or scale each instant of the composing sequence */
-    tnumseq_shift_scale_value_iter(seq, origin, delta, hasshift, scale);
+    tnumberseq_shift_scale_value_iter(seq, origin, delta, hasshift, scale);
   }
   return result;
 }
@@ -1652,7 +1652,7 @@ tsequenceset_shift_scale_time(const TSequenceSet *ss, const Interval *shift,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence set is ever equal to a base value.
  * @sqlop @p ?=
  */
@@ -1671,7 +1671,7 @@ tsequenceset_ever_eq(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence set is always equal to a base value.
  * @sqlop @p %=
  */
@@ -1697,7 +1697,7 @@ tsequenceset_always_eq(const TSequenceSet *ss, Datum value)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence set is ever less than a base value.
  * @sqlop @p ?<
  */
@@ -1719,7 +1719,7 @@ tsequenceset_ever_lt(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence set is ever less than or equal
  * to a base value.
  * @sqlop @p ?<=
@@ -1742,7 +1742,7 @@ tsequenceset_ever_le(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence set is always less than a base value.
  * @sqlop @p %<
  */
@@ -1764,7 +1764,7 @@ tsequenceset_always_lt(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence set is always less than or equal
  * to a base value.
  * @sqlop @p %<=
@@ -3348,7 +3348,7 @@ tnumberseqset_twavg(const TSequenceSet *ss)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_comp
+ * @ingroup libmeos_internal_temporal_comp_trad
  * @brief Return true if two temporal sequence sets are equal.
  * @pre The arguments are of the same base type
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -3380,7 +3380,7 @@ tsequenceset_eq(const TSequenceSet *ss1, const TSequenceSet *ss2)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp
+ * @ingroup libmeos_internal_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first Temporal sequence
  * set is less than, equal, or greater than the second one.
  * @pre The arguments are of the same base type

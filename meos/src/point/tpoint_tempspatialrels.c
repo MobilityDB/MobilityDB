@@ -473,7 +473,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return the temporal disjoint relationship between a temporal point
  * and a geometry
  * @sqlfunc tdisjoint()
@@ -486,7 +486,7 @@ tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return the temporal intersects relationship between a temporal point
  * and a geometry
  * @sqlfunc tintersects()
@@ -1075,7 +1075,7 @@ tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return the temporal contains relationship between a geometry and
  * a temporal point
  * @sqlfunc tcontains()
@@ -1121,7 +1121,7 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return the temporal touches relationship between a geometry and a
  * temporal point
  * @sqlfunc ttouches()
@@ -1160,7 +1160,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal point and
  * a geometry are within the given distance.
  * @sqlfunc tdwithin()
@@ -1296,7 +1296,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return a temporal Boolean that states whether the temporal points
  * are within the given distance.
  * @sqlfunc tdwithin()
