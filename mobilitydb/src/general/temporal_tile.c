@@ -272,7 +272,8 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = tbox_tile_state_make(bounds, xsize, duration, xorigin, torigin);
+    funcctx->user_fctx = tbox_tile_state_make(bounds, Float8GetDatum(xsize),
+      duration, Float8GetDatum(xorigin), torigin);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -299,7 +300,8 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
   /* Store tile value and time */
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate box */
-  tbox_tile_get(state->value, state->t, state->xsize, state->tunits, box);
+  tbox_tile_get(state->value, state->t, state->vsize, state->tunits,
+    state->box.span.basetype, box);
   tuple_arr[1] = PointerGetDatum(box);
   /* Advance state */
   tbox_tile_state_next(state);
@@ -332,7 +334,8 @@ Tbox_tile(PG_FUNCTION_ARGS)
   double value_bucket = float_bucket(value, xsize, xorigin);
   TimestampTz time_bucket = timestamptz_bucket(t, duration, torigin);
   TBox *result = palloc(sizeof(TBox));
-  tbox_tile_get(value_bucket, time_bucket, xsize, tunits, result);
+  tbox_tile_get(Float8GetDatum(value_bucket), time_bucket,
+    Float8GetDatum(xsize), tunits, T_FLOAT8, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -432,9 +435,16 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
     Datum *value_buckets = NULL;
     TimestampTz *time_buckets = NULL;
     int count;
-    Temporal **fragments = temporal_value_time_split1(temp, size, duration,
-      vorigin, torigin, valuesplit, timesplit, &value_buckets, &time_buckets,
-      &count);
+    Temporal **fragments;
+    if (valuesplit && ! timesplit)
+      fragments = tnumber_value_split(temp, size, vorigin, &value_buckets,
+        &count);
+    else if (! valuesplit && timesplit)
+      fragments = temporal_time_split(temp, duration, torigin, &time_buckets,
+        &count);
+    else /* valuesplit && timesplit */
+      fragments = tnumber_value_time_split(temp, size, duration, vorigin,
+        torigin, &value_buckets, &time_buckets, &count);
 
     assert(count > 0);
     int64 tunits = 0;
