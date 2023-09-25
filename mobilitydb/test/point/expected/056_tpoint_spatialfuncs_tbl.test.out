@@ -244,6 +244,18 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
  POINT Z (31.13 68.76 563.03)@Wed Oct 10 11:35:00 2001 PDT
 (10 rows)
 
+SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+                                                                                                                           astext                                                                                                                           
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"POINT(21.49 97.18)@Mon Jun 11 07:33:00 2001 PDT","POINT(98.06 99.51)@Sun Mar 25 17:31:00 2001 PST","POINT(61.45 41.38)@Sun Apr 01 13:46:00 2001 PDT","POINT(38.6 33.16)@Wed Sep 26 06:26:00 2001 PDT","POINT(95.83 64.98)@Mon Jan 01 14:05:00 2001 PST"}
+(1 row)
+
+SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+                                                                                                                          astext                                                                                                                          
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"POINT(27.54 35.3)@Tue Oct 16 08:01:00 2001 PDT","POINT(-6.57 52.61)@Sat May 19 18:20:00 2001 PDT","POINT(22.5 68.97)@Fri Jan 12 03:31:00 2001 PST","POINT(26.45 70.34)@Tue Oct 16 07:29:00 2001 PDT","POINT(8.63 69.56)@Sun Jul 22 21:58:00 2001 PDT"}
+(1 row)
+
 SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint;
    round   
 -----------

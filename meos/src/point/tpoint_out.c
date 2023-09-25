@@ -158,9 +158,10 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
 char **
 geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
 {
-  assert(geoarr);
-  assert(count > 0);
-  assert(maxdd >= 0);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) geoarr) || ! ensure_positive(count) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
 
   char **result = palloc(sizeof(char *) * count);
   for (int i = 0; i < count; i++)
@@ -180,9 +181,10 @@ char **
 tpointarr_as_text(const Temporal **temparr, int count, int maxdd,
   bool extended)
 {
-  assert(temparr);
-  assert(count > 0);
-  assert(maxdd >= 0);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temparr) || ! ensure_positive(count) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
 
   char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)

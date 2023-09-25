@@ -202,3 +202,9 @@ SELECT round(MAX(maxValue(derivative(temp)))::numeric, 6) FROM tbl_tfloat;
  1.426902
 (1 row)
 
+SELECT round(array_agg(inst ORDER BY k), 2) FROM tbl_tfloat_inst WHERE inst IS NOT NULL AND k % 20 = 1;
+                                                                         round                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"73.98@Thu Mar 01 03:42:00 2001 PST","70.99@Fri Sep 14 13:31:00 2001 PDT","65.61@Sat Sep 29 14:47:00 2001 PDT","38.27@Wed Apr 18 14:52:00 2001 PDT"}
+(1 row)
+

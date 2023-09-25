@@ -464,7 +464,7 @@ Temporal *
 tnumber_abs(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || 
+  if (! ensure_not_null((void *) temp) ||
       ! ensure_tnumber_type(temp->temptype))
     return NULL;
 
@@ -736,6 +736,28 @@ tfloat_round(const Temporal *temp, int maxdd)
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Set the precision of the coordinates of an array of temporal floats
+ * to a number of decimal places.
+ * @sqlfunc round()
+ */
+Temporal **
+tfloatarr_round(const Temporal **temparr, int count, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temparr) ||
+      /* Ensure that the FIRST element is a temporal float */
+      ! ensure_temporal_has_type(temparr[0], T_TFLOAT) ||
+      ! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  Temporal **result = palloc(sizeof(Temporal *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = tfloat_round(temparr[i], maxdd);
   return result;
 }
 

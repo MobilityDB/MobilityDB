@@ -341,6 +341,37 @@ Tfloat_round(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Tfloatarr_round(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloatarr_round);
+/**
+ * @ingroup mobilitydb_temporal_inout
+ * @brief Output a temporal point array in Well-Known Text (WKT) format
+ * @sqlfunc asText()
+ */
+Datum
+Tfloatarr_round(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  /* Return NULL on empty array */
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
+  int maxdd = PG_GETARG_INT32(1);
+
+  Temporal **temparr = temporalarr_extract(array, &count);
+  Temporal **result_arr = tfloatarr_round((const Temporal **) temparr, count,
+      maxdd);
+
+  ArrayType *result = temporalarr_to_array((const Temporal **) result_arr,
+    count);
+  pfree(temparr);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 PGDLLEXPORT Datum Tnumber_abs(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_abs);
 /**

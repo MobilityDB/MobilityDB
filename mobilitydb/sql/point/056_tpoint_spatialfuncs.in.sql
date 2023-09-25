@@ -142,6 +142,15 @@ CREATE FUNCTION round(tgeogpoint, int DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Tpoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION round(tgeompoint[], int DEFAULT 0)
+  RETURNS tgeompoint[]
+  AS 'MODULE_PATHNAME', 'Tpointarr_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION round(tgeogpoint[], int DEFAULT 0)
+  RETURNS tgeogpoint[]
+  AS 'MODULE_PATHNAME', 'Tpointarr_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION trajectory(tgeompoint)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tpoint_trajectory'
