@@ -498,9 +498,7 @@ extern bool spanset_upper_inc(const SpanSet *ss);
 extern double spanset_width(const SpanSet *ss);
 extern STBox *spatialset_stbox(const Set *s);
 extern text *textset_end_value(const Set *s);
-extern Set *textset_lower(const Set *s);
 extern text *textset_start_value(const Set *s);
-extern Set *textset_upper(const Set *s);
 extern bool textset_value_n(const Set *s, int n, text **result);
 extern text **textset_values(const Set *s);
 extern TimestampTz timestampset_end_timestamp(const Set *ts);
@@ -530,8 +528,8 @@ extern Span *period_shift_scale(const Span *p, const Interval *shift, const Inte
 extern Span *period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
 extern SpanSet *periodset_shift_scale(const SpanSet *ss, const Interval *shift, const Interval *duration);
 extern SpanSet *periodset_tprecision(const SpanSet *ss, const Interval *duration, TimestampTz torigin);
-extern Set *textset_lowercase(const Set *s);
-extern Set *textset_uppercase(const Set *s);
+extern Set *textset_lower(const Set *s);
+extern Set *textset_upper(const Set *s);
 extern TimestampTz timestamp_tprecision(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Set *timestampset_shift_scale(const Set *ts, const Interval *shift, const Interval *duration);
 
