@@ -247,6 +247,14 @@
 				<listitem>
 					<para><link linkend="floatspan_round"><varname>round</varname></link>: Round the bounds of a float set or span to a number of decimal places</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="textset_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transform between lowercase and uppercase</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_tprecision"><varname>tprecision</varname></link>: Set the temporal precision of the time value to the interval with respect to the origin</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

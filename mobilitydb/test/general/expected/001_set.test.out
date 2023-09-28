@@ -286,3 +286,15 @@ SELECT set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1) <> set_hash_exten
  f
 (1 row)
 
+SELECT lower(textset '{"AAA", "BBB", "CCC"}');
+         lower         
+-----------------------
+ {"aaa", "bbb", "ccc"}
+(1 row)
+
+SELECT upper(textset '{"aaa", "bbb", "ccc"}');
+         upper         
+-----------------------
+ {"AAA", "BBB", "CCC"}
+(1 row)
+

@@ -248,6 +248,14 @@
 				<listitem>
 					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="textset_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transformar entre minúsculas y majúsculas</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_tprecision"><varname>tprecision</varname></link>: Establecer la precisión temporal del valor de tiempo al intervalo con respecto al origen</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

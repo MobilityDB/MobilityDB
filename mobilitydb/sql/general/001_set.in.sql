@@ -411,6 +411,15 @@ CREATE FUNCTION round(floatset, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Floatset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION lower(textset)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Textset_lower'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION upper(textset)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Textset_upper'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/
