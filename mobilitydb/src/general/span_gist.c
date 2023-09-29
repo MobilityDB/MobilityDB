@@ -910,8 +910,6 @@ Span_gist_distance(PG_FUNCTION_ARGS)
   if (! span_gist_get_span(fcinfo, &query, typid))
     PG_RETURN_FLOAT8(DBL_MAX);
 
-  /* Since we only have boxes we'll return the minimum possible distance,
-   * and let the recheck sort things out in the case of leaves */
   distance = distance_span_span(key, &query);
 
   PG_RETURN_FLOAT8(distance);

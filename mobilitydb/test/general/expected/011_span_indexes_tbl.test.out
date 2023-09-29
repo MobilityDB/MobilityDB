@@ -72,17 +72,17 @@ INSERT 0 1
 SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
@@ -206,17 +206,17 @@ UPDATE 1
 SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 UPDATE test_idxops
@@ -358,17 +358,17 @@ UPDATE 1
 SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 UPDATE test_idxops
@@ -510,17 +510,17 @@ UPDATE 1
 SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 UPDATE test_idxops
