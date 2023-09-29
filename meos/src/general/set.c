@@ -1224,7 +1224,7 @@ intset_end_value(const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_INTSET))
     return INT_MAX;
-  int result = DatumGetInt32(SET_VAL_N(s, 0));
+  int result = DatumGetInt32(SET_VAL_N(s, s->count - 1));
   return result;
 }
 

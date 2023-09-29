@@ -803,7 +803,7 @@ SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
 		<itemizedlist>
 			<listitem id="setspan_union">
 				<indexterm><primary><varname>+</varname></primary></indexterm>
-				<para>Union of span or time values</para>
+				<para>Union of set or span values</para>
 				<para><varname>{set,spans} + {set,spans} → {set,spans}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tstzset '{2011-01-01, 2011-01-03, 2011-01-05}' +
@@ -821,7 +821,7 @@ SELECT tstzspanset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +
 
 			<listitem id="setspan_difference">
 				<indexterm><primary><varname>-</varname></primary></indexterm>
-				<para>Difference of span or time values</para>
+				<para>Difference of set or span values</para>
 				<para><varname>{set,spans} - {set,spans} → {set,spans}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT intset '{1, 3, 5}' - intset '{3, 6}';
@@ -840,7 +840,7 @@ SELECT tstzspanset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
 
 			<listitem id="setspan_intersection">
 				<indexterm><primary><varname>*</varname></primary></indexterm>
-				<para>Intersection of span or time values</para>
+				<para>Intersection of set or span values</para>
 				<para><varname>{set,spans} * {set,spans} → {set,spans}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tstzset '{2011-01-01, 2011-01-03}' * tstzset '{2011-01-03, 2011-01-05}';
@@ -1134,7 +1134,7 @@ SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
 
 		<itemizedlist>
 			<listitem><para>Function <varname>tcount</varname> generalizes the traditional aggregate function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of spans). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />). The function has two optional parameters that specify the granularity (an <varname>interval</varname>) and the origin of time (a <varname>timestamptz</varname>). When these parameters are given, the temporal count is computed at time buckets of the given granularity (see <xref linkend="temporal_types_tiling" />).</para></listitem>
-			<listitem><para>Function <varname>extent</varname> returns a bounding span that encloses a set of span or time values.</para></listitem>
+			<listitem><para>Function <varname>extent</varname> returns a bounding span that encloses a set of set or span values.</para></listitem>
 			<listitem><para>Union is a very useful operation for set and span types. As we have seen in <xref linkend="setspan_set_operators" />, we can compute the union of two set or span values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Functions <varname>set_union</varname> and <varname>span_union</varname> can be used for this purpose.</para></listitem>
 		</itemizedlist>
 
