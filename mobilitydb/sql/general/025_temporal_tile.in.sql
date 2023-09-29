@@ -37,23 +37,23 @@
  * Bucket functions
  *****************************************************************************/
 
-CREATE TYPE number_intspan AS (
+CREATE TYPE index_intspan AS (
   index integer,
   span intspan
 );
-CREATE TYPE number_floatspan AS (
+CREATE TYPE index_floatspan AS (
   index integer,
   span floatspan
 );
 
 CREATE FUNCTION bucketList(bounds intspan, size integer,
   origin integer DEFAULT 0)
-  RETURNS SETOF number_intspan
+  RETURNS SETOF index_intspan
   AS 'MODULE_PATHNAME', 'Span_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bucketList(bounds floatspan, size float,
   origin float DEFAULT 0.0)
-  RETURNS SETOF number_floatspan
+  RETURNS SETOF index_floatspan
   AS 'MODULE_PATHNAME', 'Span_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -81,13 +81,13 @@ CREATE FUNCTION spanBucket("value" float, size float,
 
 /*****************************************************************************/
 
-CREATE TYPE index_span AS (
+CREATE TYPE index_tstzspan AS (
   index integer,
   span tstzspan
 );
 
 CREATE FUNCTION bucketList(tstzspan, interval, timestamptz DEFAULT '2000-01-03')
-  RETURNS SETOF index_span
+  RETURNS SETOF index_tstzspan
   AS 'MODULE_PATHNAME', 'Period_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -139,21 +139,21 @@ CREATE FUNCTION tile("value" float, "time" timestamptz,
  * Splitting
  *****************************************************************************/
 
-CREATE TYPE int_tint AS (
+CREATE TYPE number_tint AS (
   number integer,
   tnumber tint
 );
-CREATE TYPE float_tfloat AS (
+CREATE TYPE number_tfloat AS (
   number float,
   tnumber tfloat
 );
 
 CREATE FUNCTION valueSplit(tint, size integer, origin integer DEFAULT 0)
-  RETURNS SETOF int_tint
+  RETURNS SETOF number_tint
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION valueSplit(tfloat, size float, origin float DEFAULT 0.0)
-  RETURNS SETOF float_tfloat
+  RETURNS SETOF number_tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
@@ -199,12 +199,12 @@ CREATE FUNCTION timeSplit(ttext, size interval,
 
 /*****************************************************************************/
 
-CREATE TYPE int_time_tint AS (
+CREATE TYPE number_time_tint AS (
   number integer,
   time timestamptz,
   tnumber tint
 );
-CREATE TYPE float_time_tfloat AS (
+CREATE TYPE number_time_tfloat AS (
   number float,
   time timestamptz,
   tnumber tfloat
@@ -212,12 +212,12 @@ CREATE TYPE float_time_tfloat AS (
 
 CREATE FUNCTION valueTimeSplit(tint, size integer, duration interval,
     vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
-  RETURNS SETOF int_time_tint
+  RETURNS SETOF number_time_tint
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION valueTimeSplit(tfloat, size float, duration interval,
     vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
-  RETURNS SETOF float_time_tfloat
+  RETURNS SETOF number_time_tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 

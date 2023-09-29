@@ -522,7 +522,7 @@ period_bucket_list(const Span *s, const Interval *duration, TimestampTz origin,
  * @brief Create the initial state for tiling operations
  * @param[in] box Bounds of the multidimensional grid
  * @param[in] vsize Value size of the tiles
- * @param[in] duration Interval defining the time size of the tile
+ * @param[in] duration Interval defining the time size of the tile, may be NULL
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @pre At least one of vsize or tunits must be greater than 0.
@@ -541,7 +541,6 @@ tbox_tile_state_make(const TBox *box, Datum vsize, const Interval *duration,
   /* Fill in state */
   state->done = false;
   state->i = 1;
-  state->box.span.basetype = box->span.basetype;
   state->vsize = vsize;
   state->tunits = tunits;
   Span span, period;
