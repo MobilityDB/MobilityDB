@@ -1866,9 +1866,12 @@ double
 distance_set_value(const Set *s, Datum d, meosType basetype)
 {
   assert(s->basetype == basetype);
-  Span sp;
-  set_set_span(s, &sp);
-  return distance_span_value(&sp, d, basetype);
+  /* Integer spans are canonicalized and thus their upper bound is exclusive.
+   * Therefore, we cannot simply check that s->upper <= d */
+  Span sp1, sp2;
+  set_set_span(s, &sp1);
+  span_set(d, d, true, true, basetype, &sp2);
+  return distance_span_span(&sp1, &sp2);
 }
 
 /**
