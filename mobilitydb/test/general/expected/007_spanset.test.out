@@ -411,6 +411,18 @@ SELECT width(floatspanset '{[1,2),[3,4),[5,6)}');
      3
 (1 row)
 
+SELECT width(intspanset '{[1,2),[3,4),[5,6)}', true);
+ width 
+-------
+     5
+(1 row)
+
+SELECT width(floatspanset '{[1,2),[3,4),[5,6)}', true);
+ width 
+-------
+     5
+(1 row)
+
 SELECT duration(tstzspanset '{[2000-01-01,2000-01-01]}');
  duration 
 ----------

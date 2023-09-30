@@ -874,7 +874,8 @@ overbefore_period_timestamp(const Span *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if the first span does not extend to the right of the second one.
+ * @brief Return true if the first span does not extend to the right of the
+ * second one.
  * @sqlop @p &<
  */
 bool
@@ -1441,31 +1442,22 @@ minus_span_value_iter(const Span *s, Datum d, meosType basetype, Span *result)
   }
 
   /* Account for canonicalized spans */
-  Datum upper1;
-  if (basetype == T_INT4) /** xx **/
-    upper1 = Int32GetDatum(DatumGetInt32(s->upper) - (int32) 1);
-  else if (basetype == T_INT8)
-    upper1 = Int64GetDatum(DatumGetInt64(s->upper) - (int64) 1);
-  else
-    upper1 = s->upper;
+  Datum upper = span_canon_upper(s);
 
-  bool eqlower = datum_eq(s->lower, d, basetype);
-  bool equpper = datum_eq(upper1, d, basetype);
-  if (eqlower && equpper)
+  bool lowereq = datum_eq(s->lower, d, basetype);
+  bool uppereq = datum_eq(upper, d, basetype);
+  if (lowereq && uppereq)
     return 0;
 
-  if (eqlower)
+  if (lowereq)
   {
     span_set(s->lower, s->upper, false, s->upper_inc, basetype, &result[0]);
     return 1;
   }
 
-  if (equpper)
+  if (uppereq)
   {
-    if (basetype == T_INT4 || basetype == T_INT8) /** xx **/
-      span_set(s->lower, upper1, true, false, basetype, &result[0]);
-    else
-      span_set(s->lower, s->upper, s->lower_inc, false, basetype, &result[0]);
+    span_set(s->lower, upper, s->lower_inc, false, basetype, &result[0]);
     return 1;
   }
 
@@ -1680,13 +1672,7 @@ distance_span_value(const Span *s, Datum d, meosType basetype)
     return distance_value_value(d, s->lower, basetype);
 
   /* Account for canonicalized spans */
-  Datum upper;
-  if (s->basetype == T_INT4) /** xx **/
-    upper = Int32GetDatum(DatumGetInt32(s->upper) - (int32) 1);
-  else if (s->basetype == T_INT8)
-    upper = Int64GetDatum(DatumGetInt64(s->upper) - (int64) 1);
-  else
-    upper = s->upper;
+  Datum upper = span_canon_upper(s);
 
   /* If the span is to the left of the value return the distance
    * between the upper bound of the span and value
@@ -1779,22 +1765,8 @@ distance_span_span(const Span *s1, const Span *s2)
     return 0.0;
 
   /* Account for canonicalized spans */
-  Datum upper1, upper2;
-  if (s1->basetype == T_INT4) /** xx **/
-  {
-    upper1 = Int32GetDatum(DatumGetInt32(s1->upper) - (int32) 1);
-    upper2 = Int32GetDatum(DatumGetInt32(s2->upper) - (int32) 1);
-  }
-  else if (s1->basetype == T_INT8)
-  {
-    upper1 = Int64GetDatum(DatumGetInt64(s1->upper) - (int64) 1);
-    upper2 = Int64GetDatum(DatumGetInt64(s2->upper) - (int64) 1);
-  }
-  else
-  {
-    upper1 = s1->upper;
-    upper2 = s2->upper;
-  }
+  Datum upper1 = span_canon_upper(s1);
+  Datum upper2 = span_canon_upper(s2);
 
   /* If the first span is to the left of the second one return the distance
    * between the upper bound of the first and lower bound of the second

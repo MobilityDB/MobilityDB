@@ -250,6 +250,22 @@ span_upper_cmp(const Span *s1, const Span *s2)
 }
 
 /**
+ * @brief Return the inclusive upper bound accounting for canonicalized spans.
+ */
+Datum
+span_canon_upper(const Span *s)
+{
+  Datum result;
+  if (s->basetype == T_INT4)
+    result = Int32GetDatum(DatumGetInt32(s->upper) - (int32) 1);
+  else if (s->basetype == T_INT8)
+    result = Int64GetDatum(DatumGetInt64(s->upper) - (int64) 1);
+  else
+    result = s->upper;
+  return result;
+}
+
+/**
  * @brief Normalize an array of spans
  *
  * The input spans may overlap and may be non contiguous.
@@ -1138,11 +1154,7 @@ numspan_delta_scale_iter(Span *s, Datum origin, Datum delta, bool hasdelta,
     else
     {
       /* Integer spans have exclusive upper bound */
-      Datum upper1;
-      if (span_canon_basetype(type))
-        upper1 = datum_sub(upper, 1, type);
-      else
-        upper1 = upper;
+      Datum upper1 = span_canon_upper(s);
       s->upper = datum_add(origin, 
         double_datum(
           datum_double(datum_sub(upper1, origin, type), type) * scale,

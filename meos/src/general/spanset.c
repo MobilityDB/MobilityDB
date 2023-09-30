@@ -984,11 +984,18 @@ spanset_upper_inc(const SpanSet *ss)
  * @sqlfunc width()
  */
 double
-spanset_width(const SpanSet *ss)
+spanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return -1.0;
+
+  if (boundspan)
+  {
+    Datum lower = spanset_sp_n(ss, 0)->lower;
+    Datum upper = spanset_sp_n(ss, ss->count - 1)->upper;
+    return distance_value_value(lower, upper, ss->basetype);
+  }
 
   double result = 0;
   for (int i = 0; i < ss->count; i++)
