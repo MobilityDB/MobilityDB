@@ -752,6 +752,18 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 </programlisting>
 			</listitem>
 
+			<listitem id="textset_lower">
+				<indexterm><primary><varname>lower</varname></primary></indexterm>
+				<indexterm><primary><varname>upper</varname></primary></indexterm>
+				<para>Transformar entre minúsculas y mayúsculas</para>
+				<para><varname>lower(textset) → textset</varname></para>
+				<para><varname>upper(textset) → textset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT lower(textset '{"AAA", "BBB", "CCC"}');
+-- {"aaa", "bbb", "ccc"}
+</programlisting>
+			</listitem>
+
 			<listitem id="time_tprecision">
 				<indexterm><primary><varname>tprecision</varname></primary></indexterm>
 				<para>Establecer la precisión temporal del valor de tiempo al intervalo con respecto al origen</para>

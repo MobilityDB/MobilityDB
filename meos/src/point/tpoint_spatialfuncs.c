@@ -395,7 +395,7 @@ ensure_same_srid(int32_t srid1, int32_t srid2)
 bool
 ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
 {
-  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) && 
+  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
       box1->srid != box2->srid)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -672,9 +672,9 @@ ensure_not_empty(const GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @brief Ensure the validity of a spatiotemporal box and a geometry 
+ * @brief Ensure the validity of a spatiotemporal box and a geometry
  */
-bool 
+bool
 ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 {
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) gs) ||
@@ -683,13 +683,13 @@ ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs)
     return false;
   return true;
 }
- 
+
 /**
- * @brief Ensure the validity of a temporal point and a geometry 
+ * @brief Ensure the validity of a temporal point and a geometry
  * @note The geometry can be empty since some functions such atGeometry or
  * minusGeometry return different result on empty geometries.
  */
-bool 
+bool
 ensure_valid_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
@@ -704,7 +704,7 @@ ensure_valid_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @brief Ensure the validity of a spatiotemporal boxes
  */
-bool 
+bool
 ensure_valid_spatial_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
@@ -716,9 +716,9 @@ ensure_valid_spatial_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @brief Ensure the validity of a temporal point and a spatial box 
+ * @brief Ensure the validity of a temporal point and a spatial box
  */
-bool 
+bool
 ensure_valid_tpoint_box(const Temporal *temp, const STBox *box)
 {
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
@@ -792,7 +792,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
-      ! ensure_not_negative(coord) || 
+      ! ensure_not_negative(coord) ||
       (coord == 2 && ! ensure_has_Z(temp->flags)))
      return NULL;
 
@@ -4148,6 +4148,28 @@ tpoint_round(const Temporal *temp, int maxdd)
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Set the precision of the coordinates of an array of temporal point to
+ * a number of decimal places.
+ * @sqlfunc round()
+ */
+Temporal **
+tpointarr_round(const Temporal **temparr, int count, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temparr) ||
+      /* Ensure that the FIRST element is a temporal point */
+      ! ensure_tgeo_type(temparr[0]->temptype) ||
+      ! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  Temporal **result = palloc(sizeof(Temporal *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = tpoint_round(temparr[i], maxdd);
   return result;
 }
 

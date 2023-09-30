@@ -1679,10 +1679,19 @@ distance_span_value(const Span *s, Datum d, meosType basetype)
   if (right_span_value(s, d, basetype))
     return distance_value_value(d, s->lower, basetype);
 
+  /* Account for canonicalized spans */
+  Datum upper;
+  if (s->basetype == T_INT4) /** xx **/
+    upper = Int32GetDatum(DatumGetInt32(s->upper) - (int32) 1);
+  else if (s->basetype == T_INT8)
+    upper = Int64GetDatum(DatumGetInt64(s->upper) - (int64) 1);
+  else
+    upper = s->upper;
+
   /* If the span is to the left of the value return the distance
    * between the upper bound of the span and value
    *     [---- s ----]   d */
-  return distance_value_value(s->upper, d, basetype);
+  return distance_value_value(upper, d, basetype);
 }
 
 #if MEOS
@@ -1769,16 +1778,34 @@ distance_span_span(const Span *s1, const Span *s2)
   if (overlaps_span_span(s1, s2))
     return 0.0;
 
+  /* Account for canonicalized spans */
+  Datum upper1, upper2;
+  if (s1->basetype == T_INT4) /** xx **/
+  {
+    upper1 = Int32GetDatum(DatumGetInt32(s1->upper) - (int32) 1);
+    upper2 = Int32GetDatum(DatumGetInt32(s2->upper) - (int32) 1);
+  }
+  else if (s1->basetype == T_INT8)
+  {
+    upper1 = Int64GetDatum(DatumGetInt64(s1->upper) - (int64) 1);
+    upper2 = Int64GetDatum(DatumGetInt64(s2->upper) - (int64) 1);
+  }
+  else
+  {
+    upper1 = s1->upper;
+    upper2 = s2->upper;
+  }
+
   /* If the first span is to the left of the second one return the distance
    * between the upper bound of the first and lower bound of the second
    *     [---- s1 ----]   [---- s2 ----] */
   if (left_span_span(s1, s2))
-    return distance_value_value(s1->upper, s2->lower, s1->basetype);
+    return distance_value_value(upper1, s2->lower, s1->basetype);
 
   /* If the first span is to the right of the second one return the distance
    * between the upper bound of the second and the lower bound of the first
    *     [---- s2 ----]   [---- s1 ----] */
-  return distance_value_value(s2->upper, s1->lower, s1->basetype);
+  return distance_value_value(upper2, s1->lower, s1->basetype);
 }
 
 /******************************************************************************/

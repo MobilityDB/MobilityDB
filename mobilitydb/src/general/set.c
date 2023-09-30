@@ -487,6 +487,38 @@ Timestampset_shift_scale(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Textset_lower(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Textset_lower);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Transform a text set in lowercase
+ * @sqlfunc lower()
+ */
+Datum
+Textset_lower(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = textset_lower(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Textset_upper(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Textset_upper);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Transform a text set in uppercase
+ * @sqlfunc upper()
+ */
+Datum
+Textset_upper(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = textset_upper(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************
  * Unnest function
  *****************************************************************************/

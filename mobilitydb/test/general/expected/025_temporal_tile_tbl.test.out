@@ -141,9 +141,9 @@ SELECT tileList(b, 2.5, '1 week'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER 
 SELECT tileList(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
                                           tilelist                                           | count 
 ---------------------------------------------------------------------------------------------+-------
+ (5,"TBOXFLOAT XT([41.5, 44),[Mon Jun 11 01:00:00 2001 PDT, Mon Jun 18 01:00:00 2001 PDT))") |     3
  (1,"TBOXFLOAT XT([34, 36.5),[Mon Nov 19 00:00:00 2001 PST, Mon Nov 26 00:00:00 2001 PST))") |     2
  (1,"TBOXFLOAT XT([6.5, 9),[Mon Dec 03 00:00:00 2001 PST, Mon Dec 10 00:00:00 2001 PST))")   |     2
- (2,"TBOXFLOAT XT([36.5, 39),[Mon Nov 19 00:00:00 2001 PST, Mon Nov 26 00:00:00 2001 PST))") |     2
 (3 rows)
 
 SELECT tileList(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;

@@ -326,7 +326,7 @@ tbox_mfjson_buf(char *output, const TBox *bbox, int precision)
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
   ptr += sprintf(ptr, ",\"lower_inc\":%s,\"upper_inc\":%s},",
     bbox->period.lower_inc ? "true" : "false",
-	bbox->period.upper_inc ? "true" : "false");
+  bbox->period.upper_inc ? "true" : "false");
   return (ptr - output);
 }
 

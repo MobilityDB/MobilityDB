@@ -50,6 +50,7 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/ttext_textfuncs.h"
 #include "general/type_out.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
@@ -1223,7 +1224,7 @@ intset_end_value(const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_INTSET))
     return INT_MAX;
-  int result = DatumGetInt32(SET_VAL_N(s, 0));
+  int result = DatumGetInt32(SET_VAL_N(s, s->count - 1));
   return result;
 }
 
@@ -1668,6 +1669,42 @@ geoset_round(const Set *s, int maxdd)
   }
   Set *result = set_make(values, s->count, s->basetype, ORDERED);
   pfree(values);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Convert the text set to lowercase.
+ */
+Set *
+textset_lower(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TEXTSET))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = datum_lower(SET_VAL_N(s, i));
+  Set *result = set_make_free(values, s->count, T_TEXT, ORDERED);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Convert the text set to uppercase.
+ */
+Set *
+textset_upper(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TEXTSET))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = datum_upper(SET_VAL_N(s, i));
+  Set *result = set_make_free(values, s->count, T_TEXT, ORDERED);
   return result;
 }
 

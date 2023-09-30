@@ -105,17 +105,17 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE i &> intspan '[85, 95]';
 SELECT i <-> 101 FROM tbl_intspanset ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 SELECT i <-> intspan '[101,105]' FROM tbl_intspanset ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f @> 50.0;
@@ -307,17 +307,17 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE i &> intspan '[85, 95]';
 SELECT i <-> 101 FROM tbl_intspanset ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 SELECT i <-> intspan '[101,105]' FROM tbl_intspanset ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f @> 50.0;

@@ -1104,7 +1104,7 @@ overright_bigint_bigintset(int64 i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a valfloatue does not extend to the the left of a
+ * @brief Return true if a float value does not extend to the left of a
  * float set
  * @sqlop @p &>
  */
@@ -1130,6 +1130,21 @@ overafter_timestamp_timestampset(TimestampTz t, const Set *s)
       ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
     return false;
   return overright_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a text does not extend to the left of a text set.
+ * @sqlop @p &>
+ */
+bool
+overright_text_textset(text *txt, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_same_set_basetype(s, T_TEXT))
+    return false;
+  return overright_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 #endif /* MEOS */
 
@@ -1851,9 +1866,12 @@ double
 distance_set_value(const Set *s, Datum d, meosType basetype)
 {
   assert(s->basetype == basetype);
-  Span sp;
-  set_set_span(s, &sp);
-  return distance_span_value(&sp, d, basetype);
+  /* Integer spans are canonicalized and thus their upper bound is exclusive.
+   * Therefore, we cannot simply check that s->upper <= d */
+  Span sp1, sp2;
+  set_set_span(s, &sp1);
+  span_set(d, d, true, true, basetype, &sp2);
+  return distance_span_span(&sp1, &sp2);
 }
 
 /**

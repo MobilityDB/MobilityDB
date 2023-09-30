@@ -134,7 +134,12 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p)
     *p = span_copy(&box.period);
   }
   else
+  {
+    /* Error */
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Unknown type for selectivity estimation: %d", type);
     return false;
+  }
   return true;
 }
 
@@ -157,7 +162,12 @@ tpoint_const_to_stbox(Node *other, STBox *box)
   else if (tspatial_type(type))
     temporal_set_bbox(DatumGetTemporalP(constvalue), box);
   else
+  {
+    /* Error */
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Unknown type for selectivity estimation: %d", type);
     return false;
+  }
   return true;
 }
 
@@ -688,11 +698,6 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   }
   else if (tempfamily == TNUMBERTYPE)
   {
-#if DEBUG_BUILD
-    /* Get the base type of the temporal column */
-    meosType basetype = temptype_basetype(oid_type(vardata.atttype));
-    assert(span_basetype(basetype));
-#endif /* DEBUG_BUILD */
     /* Transform the constant into a span and/or a period */
     Span *s = NULL;
     Span *p = NULL;

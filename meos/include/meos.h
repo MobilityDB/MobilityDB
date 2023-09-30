@@ -528,6 +528,8 @@ extern Span *period_shift_scale(const Span *p, const Interval *shift, const Inte
 extern Span *period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
 extern SpanSet *periodset_shift_scale(const SpanSet *ss, const Interval *shift, const Interval *duration);
 extern SpanSet *periodset_tprecision(const SpanSet *ss, const Interval *duration, TimestampTz torigin);
+extern Set *textset_lower(const Set *s);
+extern Set *textset_upper(const Set *s);
 extern TimestampTz timestamp_tprecision(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Set *timestampset_shift_scale(const Set *ts, const Interval *shift, const Interval *duration);
 
@@ -667,55 +669,106 @@ extern bool overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 
 /* Position functions for set and span types */
 
+extern bool after_period_timestamp(const Span *s, TimestampTz t);
+extern bool after_periodset_timestamp(const SpanSet *ss, TimestampTz t);
+extern bool after_timestamp_period(TimestampTz t, const Span *s);
+extern bool after_timestamp_periodset(TimestampTz t, const SpanSet *ss);
 extern bool after_timestamp_timestampset(TimestampTz t, const Set *ts);
-extern bool before_periodset_timestamp(const SpanSet *ps, TimestampTz t);
+extern bool after_timestampset_timestamp(const Set *s, TimestampTz t);
+extern bool before_period_timestamp(const Span *s, TimestampTz t);
+extern bool before_periodset_timestamp(const SpanSet *ss, TimestampTz t);
+extern bool before_timestamp_period(TimestampTz t, const Span *s);
+extern bool before_timestamp_periodset(TimestampTz t, const SpanSet *ss);
 extern bool before_timestamp_timestampset(TimestampTz t, const Set *ts);
+extern bool before_timestampset_timestamp(const Set *s, TimestampTz t);
+extern bool left_bigint_bigintset(int64 i, const Set *s);
+extern bool left_bigint_bigintspan(int64 i, const Span *s);
+extern bool left_bigintset_bigint(const Set *s, int64 i);
+extern bool left_bigintspan_bigint(const Span *s, int64 i);
+extern bool left_float_floatset(double d, const Set *s);
 extern bool left_float_floatspan(double d, const Span *s);
+extern bool left_floatset_float(const Set *s, double d);
 extern bool left_floatspan_float(const Span *s, double d);
+extern bool left_int_intset(int i, const Set *s);
 extern bool left_int_intspan(int i, const Span *s);
+extern bool left_intset_int(const Set *s, int i);
 extern bool left_intspan_int(const Span *s, int i);
 extern bool left_set_set(const Set *s1, const Set *s2);
 extern bool left_span_span(const Span *s1, const Span *s2);
 extern bool left_span_spanset(const Span *s, const SpanSet *ss);
 extern bool left_spanset_span(const SpanSet *ss, const Span *s);
 extern bool left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
-extern bool overafter_period_timestamp(const Span *p, TimestampTz t);
-extern bool overafter_periodset_timestamp(const SpanSet *ps, TimestampTz t);
-extern bool overafter_timestamp_period(TimestampTz t, const Span *p);
-extern bool overafter_timestamp_periodset(TimestampTz t, const SpanSet *ps);
+extern bool left_text_textset(text *txt, const Set *s);
+extern bool left_textset_text(const Set *s, text *txt);
+extern bool overafter_period_timestamp(const Span *s, TimestampTz t);
+extern bool overafter_periodset_timestamp(const SpanSet *ss, TimestampTz t);
+extern bool overafter_timestamp_period(TimestampTz t, const Span *s);
+extern bool overafter_timestamp_periodset(TimestampTz t, const SpanSet *ss);
 extern bool overafter_timestamp_timestampset(TimestampTz t, const Set *ts);
-extern bool overbefore_period_timestamp(const Span *p, TimestampTz t);
-extern bool overbefore_periodset_timestamp(const SpanSet *ps, TimestampTz t);
-extern bool overbefore_timestamp_period(TimestampTz t, const Span *p);
-extern bool overbefore_timestamp_periodset(TimestampTz t, const SpanSet *ps);
+extern bool overafter_timestampset_timestamp(const Set *s, TimestampTz t);
+extern bool overbefore_period_timestamp(const Span *s, TimestampTz t);
+extern bool overbefore_periodset_timestamp(const SpanSet *ss, TimestampTz t);
+extern bool overbefore_timestamp_period(TimestampTz t, const Span *s);
+extern bool overbefore_timestamp_periodset(TimestampTz t, const SpanSet *ss);
 extern bool overbefore_timestamp_timestampset(TimestampTz t, const Set *ts);
+extern bool overbefore_timestampset_timestamp(const Set *s, TimestampTz t);
+extern bool overleft_bigint_bigintset(int64 i, const Set *s);
+extern bool overleft_bigint_bigintspan(int64 i, const Span *s);
+extern bool overleft_bigintset_bigint(const Set *s, int64 i);
+extern bool overleft_bigintspan_bigint(const Span *s, int64 i);
+extern bool overleft_float_floatset(double d, const Set *s);
 extern bool overleft_float_floatspan(double d, const Span *s);
+extern bool overleft_floatset_float(const Set *s, double d);
 extern bool overleft_floatspan_float(const Span *s, double d);
+extern bool overleft_int_intset(int i, const Set *s);
 extern bool overleft_int_intspan(int i, const Span *s);
+extern bool overleft_intset_int(const Set *s, int i);
 extern bool overleft_intspan_int(const Span *s, int i);
 extern bool overleft_set_set(const Set *s1, const Set *s2);
 extern bool overleft_span_span(const Span *s1, const Span *s2);
 extern bool overleft_span_spanset(const Span *s, const SpanSet *ss);
 extern bool overleft_spanset_span(const SpanSet *ss, const Span *s);
 extern bool overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
+extern bool overleft_text_textset(text *txt, const Set *s);
+extern bool overleft_textset_text(const Set *s, text *txt);
+extern bool overright_bigint_bigintset(int64 i, const Set *s);
+extern bool overright_bigint_bigintspan(int64 i, const Span *s);
+extern bool overright_bigintset_bigint(const Set *s, int64 i);
+extern bool overright_bigintspan_bigint(const Span *s, int64 i);
+extern bool overright_float_floatset(double d, const Set *s);
 extern bool overright_float_floatspan(double d, const Span *s);
+extern bool overright_floatset_float(const Set *s, double d);
 extern bool overright_floatspan_float(const Span *s, double d);
+extern bool overright_int_intset(int i, const Set *s);
 extern bool overright_int_intspan(int i, const Span *s);
+extern bool overright_intset_int(const Set *s, int i);
 extern bool overright_intspan_int(const Span *s, int i);
 extern bool overright_set_set(const Set *s1, const Set *s2);
 extern bool overright_span_span(const Span *s1, const Span *s2);
 extern bool overright_span_spanset(const Span *s, const SpanSet *ss);
 extern bool overright_spanset_span(const SpanSet *ss, const Span *s);
 extern bool overright_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
+extern bool overright_text_textset(text *txt, const Set *s);
+extern bool overright_textset_text(const Set *s, text *txt);
+extern bool right_bigint_bigintset(int64 i, const Set *s);
+extern bool right_bigint_bigintspan(int64 i, const Span *s);
+extern bool right_bigintset_bigint(const Set *s, int64 i);
+extern bool right_bigintspan_bigint(const Span *s, int64 i);
+extern bool right_float_floatset(double d, const Set *s);
 extern bool right_float_floatspan(double d, const Span *s);
+extern bool right_floatset_float(const Set *s, double d);
 extern bool right_floatspan_float(const Span *s, double d);
+extern bool right_int_intset(int i, const Set *s);
 extern bool right_int_intspan(int i, const Span *s);
+extern bool right_intset_int(const Set *s, int i);
 extern bool right_intspan_int(const Span *s, int i);
 extern bool right_set_set(const Set *s1, const Set *s2);
 extern bool right_span_span(const Span *s1, const Span *s2);
 extern bool right_span_spanset(const Span *s, const SpanSet *ss);
 extern bool right_spanset_span(const SpanSet *ss, const Span *s);
 extern bool right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
+extern bool right_text_textset(text *txt, const Set *s);
+extern bool right_textset_text(const Set *s, text *txt);
 
 /*****************************************************************************/
 
@@ -1313,6 +1366,7 @@ extern Temporal *sub_tfloat_float(const Temporal *tnumber, double d);
 extern Temporal *sub_tint_int(const Temporal *tnumber, int i);
 extern Temporal *sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2);
 extern Temporal *tfloat_round(const Temporal *temp, int maxdd);
+extern Temporal **tfloatarr_round(const Temporal **temp, int count, int maxdd);
 extern Temporal *tfloat_degrees(const Temporal *temp, bool normalize);
 extern Temporal *tfloat_derivative(const Temporal *temp);
 extern Temporal *tfloat_radians(const Temporal *temp);
@@ -1391,6 +1445,7 @@ bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
 extern STBox *tpoint_expand_space(const Temporal *temp, double d);
 extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 extern Temporal *tpoint_round(const Temporal *temp, int maxdd);
+extern Temporal **tpointarr_round(const Temporal **temp, int count, int maxdd);
 extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
 bool tpoint_to_geo_meas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
@@ -1478,18 +1533,22 @@ extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal 
 /* Tile functions for temporal types */
 
 extern double float_bucket(double value, double size, double origin);
-extern Span *floatspan_bucket_list(const Span *bounds, double size, double origin, int *newcount);
+extern Span *floatspan_bucket_list(const Span *bounds, double size, double origin, int *count);
 extern int int_bucket(int value, int size, int origin);
-extern Span *intspan_bucket_list(const Span *bounds, int size, int origin, int *newcount);
-extern Span *period_bucket_list(const Span *bounds, const Interval *duration, TimestampTz origin, int *newcount);
-extern STBox *stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize, const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin, int **cellcount);
-extern TBox *tbox_tile_list(const TBox *bounds, double xsize, const Interval *duration, double xorigin, TimestampTz torigin, int *rows, int *columns);
-extern Temporal **temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin, int *newcount);
-extern Temporal **tfloat_value_split(Temporal *temp, double size, double origin, int *newcount);
-extern Temporal **tfloat_value_time_split(Temporal *temp, double size, double vorigin, Interval *duration, TimestampTz torigin, int *newcount);
+extern Span *intspan_bucket_list(const Span *bounds, int size, int origin, int *count);
+extern Span *period_bucket_list(const Span *bounds, const Interval *duration, TimestampTz origin, int *count);
+extern STBox *stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize, const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin, int *count);
+extern TBox *tintbox_tile_list(const TBox *box, int xsize, const Interval *duration, int xorigin, TimestampTz torigin, int *count);
+extern TBox *tfloatbox_tile_list(const TBox *box, double xsize, const Interval *duration, double xorigin, TimestampTz torigin, int *count);
+extern Temporal **temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin, TimestampTz **time_buckets, int *count);
+extern Temporal **tfloat_value_split(Temporal *temp, double size, double origin, double **value_buckets, int *count);
+extern Temporal **tfloat_value_time_split(Temporal *temp, double size, Interval *duration, double vorigin, TimestampTz torigin, double **value_buckets, TimestampTz **time_buckets, int *count);
 extern TimestampTz timestamptz_bucket(TimestampTz timestamp, const Interval *duration, TimestampTz origin);
-extern Temporal **tint_value_split(Temporal *temp, int size, int origin, int *newcount);
-extern Temporal **tint_value_time_split(Temporal *temp, int size, int vorigin, Interval *duration, TimestampTz torigin, int *newcount);
+extern Temporal **tint_value_split(Temporal *temp, int size, int origin, int **value_buckets, int *count);
+extern Temporal **tint_value_time_split(Temporal *temp, int size, Interval *duration, int vorigin, TimestampTz torigin, int **value_buckets, TimestampTz **time_buckets, int *count);
+extern Temporal **tpoint_space_split(Temporal *temp, float xsize, float ysize, float zsize, GSERIALIZED *sorigin, bool bitmatrix, GSERIALIZED ***space_buckets, int *count);
+extern Temporal **tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize, Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, GSERIALIZED ***space_buckets, TimestampTz **time_buckets, int *count);
+
 
 /*****************************************************************************/
 
