@@ -392,7 +392,8 @@ Datum
 Spanset_width(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  double result = spanset_width(ss);
+  bool boundspan = PG_GETARG_BOOL(1);
+  double result = spanset_width(ss, boundspan);
   PG_RETURN_FLOAT8(result);
 }
 

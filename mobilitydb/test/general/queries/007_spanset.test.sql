@@ -140,6 +140,8 @@ SELECT duration(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2
 
 SELECT width(intspanset '{[1,2),[3,4),[5,6)}');
 SELECT width(floatspanset '{[1,2),[3,4),[5,6)}');
+SELECT width(intspanset '{[1,2),[3,4),[5,6)}', true);
+SELECT width(floatspanset '{[1,2),[3,4),[5,6)}', true);
 
 SELECT duration(tstzspanset '{[2000-01-01,2000-01-01]}');
 SELECT duration(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');
