@@ -35,9 +35,7 @@
 
 #include "../postgis_config.h"
 
-#if POSTGRESQL_VERSION_NUMBER >= 100000
 #include <utils/regproc.h>
-#endif
 
 #include "liblwgeom.h"
 #include "lwgeom_pg.h"
@@ -57,7 +55,9 @@ postgisConstants *POSTGIS_CONSTANTS = NULL;
 static Oid TypenameNspGetTypid(const char *typname, Oid nsp_oid)
 {
   return GetSysCacheOid2(TYPENAMENSP,
+#if POSTGIS_PGSQL_VERSION >= 120
                          Anum_pg_type_oid,
+#endif
                          PointerGetDatum(typname),
                          ObjectIdGetDatum(nsp_oid));
 }
@@ -75,19 +75,19 @@ postgis_get_extension_schema(Oid ext_oid)
     HeapTuple   tuple;
     ScanKeyData entry[1];
 
-#if POSTGRESQL_VERSION_NUMBER < 120000
+#if POSTGIS_PGSQL_VERSION < 120
     Relation rel = heap_open(ExtensionRelationId, AccessShareLock);
     ScanKeyInit(&entry[0],
-      ObjectIdAttributeNumber,
+        ObjectIdAttributeNumber,
         BTEqualStrategyNumber, F_OIDEQ,
         ObjectIdGetDatum(ext_oid));
 #else
     Relation rel = table_open(ExtensionRelationId, AccessShareLock);
     ScanKeyInit(&entry[0],
-      Anum_pg_extension_oid,
+        Anum_pg_extension_oid,
         BTEqualStrategyNumber, F_OIDEQ,
         ObjectIdGetDatum(ext_oid));
-#endif /* POSTGRESQL_VERSION_NUMBER */
+#endif /* POSTGIS_PGSQL_VERSION */
 
     scandesc = systable_beginscan(rel, ExtensionOidIndexId, true,
                                   NULL, 1, entry);
@@ -102,7 +102,7 @@ postgis_get_extension_schema(Oid ext_oid)
 
     systable_endscan(scandesc);
 
-#if POSTGRESQL_VERSION_NUMBER < 120000
+#if POSTGIS_PGSQL_VERSION < 120
     heap_close(rel, AccessShareLock);
 #else
     table_close(rel, AccessShareLock);
@@ -115,12 +115,12 @@ static Oid
 postgis_get_full_version_schema()
 {
   const char* proname = "postgis_full_version";
-  #if POSTGRESQL_VERSION_NUMBER < 160000
+  #if POSTGIS_PGSQL_VERSION < 160
   List* names = stringToQualifiedNameList(proname);
   #else
   List* names = stringToQualifiedNameList(proname, NULL);
   #endif
-  #if POSTGRESQL_VERSION_NUMBER < 140000
+  #if POSTGIS_PGSQL_VERSION < 140
   FuncCandidateList clist = FuncnameGetCandidates(names, -1, NIL, false, false, false);
   #else
   FuncCandidateList clist = FuncnameGetCandidates(names, -1, NIL, false, false, false, false);
@@ -519,14 +519,14 @@ postgis_guc_find_option(const char *name)
    * By equating const char ** with struct config_generic *, we are assuming
    * the name field is first in config_generic.
    */
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-	res = (struct config_generic **) find_option((void *) &key, false, true, ERROR);
+#if POSTGIS_PGSQL_VERSION >= 160
+  res = (struct config_generic **) find_option((void *) &key, false, true, ERROR);
 #else
-	res = (struct config_generic **) bsearch((void *) &key,
-		 (void *) get_guc_variables(),
-		 GetNumConfigOptions(),
-		 sizeof(struct config_generic *),
-		 postgis_guc_var_compare);
+  res = (struct config_generic **) bsearch((void *) &key,
+     (void *) get_guc_variables(),
+     GetNumConfigOptions(),
+     sizeof(struct config_generic *),
+     postgis_guc_var_compare);
 #endif
 
   /* Found nothing? Good */
@@ -541,57 +541,12 @@ postgis_guc_find_option(const char *name)
 }
 
 
-#if POSTGRESQL_VERSION_NUMBER < 100000
-Datum
-CallerFInfoFunctionCall1(PGFunction func, FmgrInfo *flinfo, Oid collation, Datum arg1)
-{
-  FunctionCallInfoData fcinfo;
-  Datum    result;
-
-  InitFunctionCallInfoData(fcinfo, flinfo, 1, collation, NULL, NULL);
-
-  fcinfo.arg[0] = arg1;
-  fcinfo.argnull[0] = false;
-
-  result = (*func) (&fcinfo);
-
-  /* Check for null result, since caller is clearly not expecting one */
-  if (fcinfo.isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-
-  return result;
-}
-
-Datum
-CallerFInfoFunctionCall2(PGFunction func, FmgrInfo *flinfo, Oid collation, Datum arg1, Datum arg2)
-{
-  FunctionCallInfoData fcinfo;
-  Datum    result;
-
-  InitFunctionCallInfoData(fcinfo, flinfo, 2, collation, NULL, NULL);
-
-  fcinfo.arg[0] = arg1;
-  fcinfo.arg[1] = arg2;
-  fcinfo.argnull[0] = false;
-  fcinfo.argnull[1] = false;
-
-  result = (*func) (&fcinfo);
-
-  /* Check for null result, since caller is clearly not expecting one */
-  if (fcinfo.isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-
-  return result;
-}
-
-#else
-
-#if POSTGRESQL_VERSION_NUMBER < 120000
+#if POSTGIS_PGSQL_VERSION < 120
 Datum
 CallerFInfoFunctionCall3(PGFunction func, FmgrInfo *flinfo, Oid collation, Datum arg1, Datum arg2, Datum arg3)
 {
   FunctionCallInfoData fcinfo;
-  Datum    result;
+  Datum result;
 
   InitFunctionCallInfoData(fcinfo, flinfo, 3, collation, NULL, NULL);
 
@@ -635,6 +590,4 @@ CallerFInfoFunctionCall3(PGFunction func, FmgrInfo *flinfo, Oid collation, Datum
 
     return result;
 }
-#endif
-
 #endif
