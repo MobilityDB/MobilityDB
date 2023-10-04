@@ -319,7 +319,8 @@ span_in(const char *str, meosType spantype)
 {
   assert(str);
   Span *result = palloc(sizeof(Span));
-  span_parse(&str, spantype, true, result);
+  if (! span_parse(&str, spantype, true, result))
+    return NULL;
   return result;
 }
 

@@ -65,7 +65,8 @@ void srid_check_latlong(int32_t srid);
 #if MEOS
 #define PG_PARSER_ERROR(lwg_parser_result) \
   do { \
-    elog(ERROR, "%s", lwg_parser_result.message); \
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, \
+      "%s", lwg_parser_result.message); \
   } while(0);
 #else
   #include <lwgeom_pg.h>
@@ -1274,8 +1275,11 @@ gserialized_geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
   /* Something went wrong, negative return... should already be eloged, return NULL */
   if ( distance < 0.0 )
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "gserialized_geog_distance returned distance < 0.0");
+    return -1;
+  }
 
   return distance;
 }
@@ -1480,6 +1484,7 @@ pgis_geometry_in(char *input, int32 geom_typmod)
     if ( lwgeom_parse_wkt(&lwg_parser_result, str, LW_PARSER_CHECK_ALL) == LW_FAILURE )
     {
       PG_PARSER_ERROR(lwg_parser_result);
+      return NULL;
     }
     lwgeom = lwg_parser_result.geom;
     if ( lwgeom_needs_bbox(lwgeom) )

@@ -34,16 +34,13 @@
  * https://github.com/OSGeo/PROJ/blob/master/src/4D_api.cpp
  */
 
-#include "general/error.h"
-
 /* C */
 #include <errno.h>
 #include <stdarg.h>
-/* C */
+/* Postgres */
 #include <postgres.h>
-#if ! MEOS
-  #include <utils/elog.h>
-#endif /* ! MEOS */
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************/
 
@@ -55,7 +52,7 @@ int _meos_errno = 0;
 /**
  * @brief Read an error number
  */
-static int
+int
 meos_errno(void)
 {
   return _meos_errno;
@@ -71,8 +68,7 @@ meos_errno_set(int err)
   if (err == 0)
     return 0;
 
-  meos_errno_set(err);
-  errno = err;
+  _meos_errno = err;
   return err;
 }
 
@@ -97,7 +93,7 @@ meos_errno_restore(int err)
  * @brief Clears errno.
  * @return Returns the previous value of the errno, for convenient reset/restore
  * operations
- * 
+ *
  * @code
  * int foo(void)
  * {
@@ -139,28 +135,27 @@ void (*_error_handler)(int, int, char *) = NULL;
 
 #if MEOS
 /**
- * @brief Default error handler function that prints the error to stderr and
- * exits if error level is equal to `ERROR`
+ * @brief Default error handler function that prints the error message to
+ * stderr, sets the errcode, and exits if error level is equal to `ERROR`
  */
 void
-default_error_handler(int errlevel, int errcode __attribute((__unused__)),
-  char *text)
+default_error_handler(int errlevel, int errcode, char *errmsg)
 {
-  fprintf(stderr, "%s", text);
-  fprintf(stderr, "\n");
+  fprintf(stderr, "%s\n", errmsg);
+  meos_errno_set(errcode);
   if (errlevel == ERROR)
     exit(EXIT_FAILURE);
   return;
 }
 
 /**
- * @brief Error handler function that sets the errno
+ * @brief Error handler function that sets the errcode and the error message
  */
 void
 error_handler_errno(int errlevel __attribute((__unused__)), int errcode,
-  char *text)
+  char *errmsg)
 {
-  perror(text);
+  perror(errmsg);
   meos_errno_set(errcode);
   return;
 }
@@ -185,20 +180,29 @@ meos_initialize_error_handler(error_handler_fn err_handler)
  * @brief Function handling error messages
  */
 void
-meos_error(int errlevel, int errcode, char *errmsg, ...)
+meos_error(int errlevel, int errcode, char *format, ...)
 {
   char buffer[1024];
   va_list args;
-  va_start(args, errmsg);
-  vsprintf(buffer, errmsg, args);
+  va_start(args, format);
+  vsprintf(buffer, format, args);
   /* Execute the error handler function */
   if (_error_handler)
     _error_handler(errlevel, errcode, buffer);
   else
+#if ! MEOS
     elog(errlevel, "%s", buffer);
+#else
+  {
+    fprintf (stderr, "%s\n", buffer);
+    va_end(args);
+    if (errlevel == ERROR)
+      exit(EXIT_FAILURE);
+  }
+#endif /* ! MEOS */
   va_end(args);
   return;
-} 
+}
 
 /*****************************************************************************/
 
