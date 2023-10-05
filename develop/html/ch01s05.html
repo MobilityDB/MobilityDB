@@ -1,0 +1,148 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Installation from Sources</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 User's Manual"><link rel="up" href="ch01.html" title="Chapter 1. Introduction"><link rel="prev" href="ch01s04.html" title="Licenses"><link rel="next" href="ch01s06.html" title="Installation from Binaries"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Installation from Sources</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch01s04.html">Prev</a> </td><th width="60%" align="center">Chapter 1. Introduction</th><td width="20%" align="right"> <a accesskey="n" href="ch01s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="installation_sources"></a>Installation from Sources</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="short_version"></a>Short Version</h3></div></div></div><p>
+				To compile assuming you have all the dependencies in your search path
+			</p><pre class="programlisting">
+git clone https://github.com/MobilityDB/MobilityDB
+mkdir MobilityDB/build
+cd MobilityDB/build
+cmake  ..
+make
+sudo make install
+</pre><p>
+				The above commands install the <code class="varname">master</code> branch. If you want to install another branch, for example, <code class="varname">develop</code>, you can replace the first command above as follows
+			</p><pre class="programlisting">
+git clone --branch develop https://github.com/MobilityDB/MobilityDB
+</pre><p>
+				You should also set the following in the <code class="varname">postgresql.conf</code> file depending on the version of PostGIS you have installed (below we use PostGIS 3):
+			</p><pre class="programlisting">
+shared_preload_libraries = 'postgis-3'
+max_locks_per_transaction = 128
+</pre><p>
+				If you do not preload the PostGIS library with the above configuration you will not be able to load the MobilityDB library and will get an error message such as the following one:
+			</p><pre class="programlisting">
+ERROR:  could not load library "/usr/local/pgsql/lib/libMobilityDB-1.1.so":
+  undefined symbol: ST_Distance
+</pre><p>
+				You can find the location of the <code class="varname">postgresql.conf</code> file as given next.
+			</p><pre class="programlisting">
+$ which postgres
+/usr/local/pgsql/bin/postgres
+$ ls /usr/local/pgsql/data/postgresql.conf
+/usr/local/pgsql/data/postgresql.conf
+</pre><p>
+				As can be seen, the PostgreSQL binaries are in the <code class="varname">bin</code> subdirectory while the <code class="varname">postgresql.conf</code> file is in the <code class="varname">data</code> subdirectory.
+			</p><p>
+				Once MobilityDB is installed, it needs to be enabled in each database you want to use it in. In the example below we use a database named <code class="varname">mobility</code>.
+			</p><pre class="programlisting">
+createdb mobility
+psql mobility -c "CREATE EXTENSION PostGIS"
+psql mobility -c "CREATE EXTENSION MobilityDB"
+</pre><p>
+				The two extensions PostGIS and MobilityDB can also be created using a single command.
+			</p><pre class="programlisting">
+psql mobility -c "CREATE EXTENSION MobilityDB cascade"
+</pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="get_sources"></a>Get the Sources</h3></div></div></div><p>
+				The MobilityDB latest release can be found in <a class="ulink" href="https://github.com/MobilityDB/MobilityDB/releases/latest" target="_top">https://github.com/MobilityDB/MobilityDB/releases/latest</a>
+			</p><p>
+				<span class="bold"><strong>wget</strong></span>
+			</p><p>
+				To download this release:
+			</p><pre class="programlisting">
+wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz
+</pre><p>
+				Go to <a class="xref" href="ch01s05.html#short_version" title="Short Version">the section called “Short Version”</a> to the extract and compile instructions.
+			</p><p>
+				<span class="bold"><strong>git</strong></span>
+			</p><p>
+				To download the repository
+			</p><pre class="programlisting">
+git clone https://github.com/MobilityDB/MobilityDB.git
+cd MobilityDB
+git checkout v1.0
+</pre><p>
+				Go to <a class="xref" href="ch01s05.html#short_version" title="Short Version">the section called “Short Version”</a> to the compile instructions (there is no tar ball).
+			</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="enabling_database"></a>Enabling the Database</h3></div></div></div><p>
+				MobilityDB is an extension that depends on PostGIS. Enabling PostGIS before enabling MobilityDB in the database can be done as follows
+			</p><pre class="programlisting">
+CREATE EXTENSION postgis;
+CREATE EXTENSION mobilitydb;
+</pre><p>
+				Alternatively, this can be done in a single command by using <code class="varname">CASCADE</code>, which installs the required PostGIS extension before installing the MobilityDB extension
+			</p><pre class="programlisting">
+CREATE EXTENSION mobilitydb CASCADE;
+</pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="dependencies"></a>Dependencies</h3></div></div></div><p>
+				<span class="bold"><strong>Compilation Dependencies</strong></span>
+			</p><p>
+				To be able to compile MobilityDB, make sure that the following dependencies are met:
+			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="filename">CMake</code> cross-platform build system.</p></li><li class="listitem"><p>C compiler <code class="filename">gcc</code> or <code class="filename">clang</code>. Other ANSI C compilers can be used but may cause problems compiling some dependencies.</p></li><li class="listitem"><p>GNU Make (<code class="filename">gmake</code> or <code class="filename">make</code>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <code class="filename">make -v</code>.</p></li><li class="listitem"><p>PostgreSQL version 12 or higher. PostgreSQL is available from <a class="ulink" href="http://www.postgresql.org" target="_top">http://www.postgresql.org</a>.</p></li><li class="listitem"><p>PostGIS version 3 or higher. PostGIS is available from <a class="ulink" href="https://postgis.net/" target="_top">https://postgis.net/</a>.</p></li><li class="listitem"><p>GNU Scientific Library (GSL). GSL is available from <a class="ulink" href="https://www.gnu.org/software/gsl/" target="_top">https://www.gnu.org/software/gsl/</a>. GSL is used for the random number generators.</p></li></ul></div><p>
+				Notice that PostGIS has its own dependencies such as Proj, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. Refer to <a class="ulink" href="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS" target="_top">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</a> for a support matrix of PostGIS with PostgreSQL, GEOS, and Proj.
+			</p><p>
+				<span class="bold"><strong>Optional Dependencies</strong></span>
+			</p><p>For the user's documentation</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>The DocBook DTD and XSL files are required for building the documentation. For Ubuntu, they are provided by the packages <code class="varname">docbook</code> and <code class="varname">docbook-xsl</code>.</p></li><li class="listitem"><p>The XML validator <code class="varname">xmllint</code> is required for validating the XML files of the documentation. For Ubuntu, it is provided by the package <code class="varname">libxml2</code>.</p></li><li class="listitem"><p>The XSLT processor <code class="varname">xsltproc</code> is required for building the documentation in HTML format. For Ubuntu, it is provided by the package <code class="varname">libxslt</code>.</p></li><li class="listitem"><p>The program <code class="varname">dblatex</code> is required for building the documentation in PDF format. For Ubuntu, it is provided by the package <code class="varname">dblatex</code>.</p></li><li class="listitem"><p>The program <code class="varname">dbtoepub</code> is required for building the documentation in EPUB format.  For Ubuntu, it is provided by the package <code class="varname">dbtoepub</code>.</p></li></ul></div><p>For the developers's documentation</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>The program <code class="varname">doxygen</code> is required for building the documentation. For Ubuntu, it is provided by the package <code class="varname">doxygen</code>.</p></li></ul></div><p>
+				<span class="bold"><strong>Example: Installing dependencies on Linux</strong></span>
+			</p><p>Database dependencies</p><pre class="programlisting">
+sudo apt-get install postgresql-14 postgresql-server-dev-14 postgresql-14-postgis
+</pre><p>Build dependencies</p><pre class="programlisting">
+sudo apt-get install cmake gcc libgsl-dev
+</pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="configuring"></a>Configuring</h3></div></div></div><p>
+				MobilityDB uses the <code class="varname">cmake</code> system to do the configuration. The build directory must be different from the source directory.
+			</p><p>To create the build directory</p><pre class="programlisting">
+mkdir build
+</pre><p>To see the variables that can be configured</p><pre class="programlisting">
+cd build
+cmake -L ..
+</pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="build_install"></a>Build and Install</h3></div></div></div><p>
+				Notice that the current version of MobilityDB has been tested on Linux, MacOS, and Windows systems. It may work on other Unix-like systems, but remain untested. We are looking for volunteers to help us to test MobilityDB on multiple platforms.
+			</p><p>
+				The following instructions start from <code class="varname">path/to/MobilityDB</code> on a Linux system
+			</p><pre class="programlisting">
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+</pre><p>
+				When the configuration changes
+			</p><pre class="programlisting">
+rm -rf build
+</pre><p>
+				and start the build process as mentioned above.
+			</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="testing"></a>Testing</h3></div></div></div><p>
+				MobilityDB uses <code class="varname">ctest</code>, the CMake test driver program, for testing. This program will run the tests and report results.
+			</p><p>
+				To run all the tests
+			</p><pre class="programlisting">
+ctest
+</pre><p>
+				To run a given test file
+			</p><pre class="programlisting">
+ctest -R '021_tbox'
+</pre><p>
+				To run a set of given test files you can use wildcards
+			</p><pre class="programlisting">
+ctest -R '022_*'
+</pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="documentation"></a>Documentation</h3></div></div></div><p>
+				MobilityDB user's documentation can be generated in HTML, PDF, and EPUB format. Furthermore, the documentation is available in English and in other languages (currently, only in Spanish). The user's documentation can be generated in all formats and in all languages, or specific formats and/or languages can be specified. MobilityDB developer's documentation can only be generated in HTML format and in English.
+			</p><p>
+				The variables used for generating user's and the developer's documentation are as follows:
+			</p><div class="table"><a name="idm298"></a><p class="title"><b>Table 1.1. Variables for the user's and the developer's documentation</b></p><div class="table-contents"><table class="table" summary="Variables for the user's and the developer's documentation" border="1"><colgroup><col><col><col></colgroup><thead><tr><th align="left">Variable</th><th align="left">Default value</th><th align="left">Comment</th></tr></thead><tbody><tr><td align="left"><code class="varname">DOC_ALL</code></td><td align="left"><code class="varname">BOOL=OFF</code></td><td align="left">The user's documentation is generated in HTML, PDF, and EPUB formats.</td></tr><tr><td align="left"><code class="varname">DOC_HTML</code></td><td align="left"><code class="varname">BOOL=OFF</code></td><td align="left">The user's documentation is generated in HTML format.</td></tr><tr><td align="left"><code class="varname">DOC_PDF</code></td><td align="left"><code class="varname">BOOL=OFF</code></td><td align="left">The user's documentation is generated in PDF format.</td></tr><tr><td align="left"><code class="varname">DOC_EPUB</code></td><td align="left"><code class="varname">BOOL=OFF</code></td><td align="left">The user's documentation is generated in EPUB format.</td></tr><tr><td align="left"><code class="varname">LANG_ALL</code></td><td align="left"><code class="varname">BOOL=OFF</code></td><td align="left">The user's documentation is generated in English and in all available translations.</td></tr><tr><td align="left"><code class="varname">ES</code></td><td align="left"><code class="varname">BOOL=OFF</code></td><td align="left">The user's documentation is generated in English and in Spanish.</td></tr><tr><td align="left"><code class="varname">DOC_DEV</code></td><td align="left"><code class="varname">BOOL=OFF</code></td><td align="left">The English developer's documentation is generated in HTML format.</td></tr></tbody></table></div></div><br class="table-break"><p>
+				Generate the user's and the developer's documentation in all formats and in all languages.
+			</p><pre class="programlisting">
+cmake -D DOC_ALL=ON -D LANG_ALL=ON -D DOC_DEV=ON ..
+make doc
+make doc_dev
+</pre><p>
+				Generate the user's documentation in HTML format and in all languages.
+			</p><pre class="programlisting">
+cmake -D DOC_HTML=ON -D LANG_ALL=ON ..
+make doc
+</pre><p>
+				Generate the English user's documentation in all formats.
+			</p><pre class="programlisting">
+cmake -D DOC_ALL=ON ..
+make doc
+</pre><p>
+				Generate the user's documentation in PDF format in English and in Spanish.
+			</p><pre class="programlisting">
+cmake -D DOC_PDF=ON -D ES=ON ..
+make doc
+</pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch01.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch01s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Licenses </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Installation from Binaries</td></tr></table></div></body></html>

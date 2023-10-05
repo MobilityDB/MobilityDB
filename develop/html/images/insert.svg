@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Généré par Microsoft Visio, SVG Export insert.svg Page 1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		width="2.62833in" height="1.90958in" viewBox="0 0 189.24 137.49" xml:space="preserve" color-interpolation-filters="sRGB"
+		class="st9">
+	<title>figure12</title>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#f2dcda;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st2 {fill:#eeeaf2;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st3 {marker-end:url(#mrkr5-10);stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st4 {fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:0.11764705882353}
+		.st5 {fill:none;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st6 {fill:#000000;font-family:Arial;font-size:0.666664em}
+		.st7 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st8 {fill:#ffffff;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st9 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<defs id="Markers">
+		<g id="lend5">
+			<path d="M 2 1 L 0 0 L 1.98117 -0.993387 C 1.67173 -0.364515 1.67301 0.372641 1.98465 1.00043 " style="stroke:none"/>
+		</g>
+		<marker id="mrkr5-10" class="st4" refX="-14.875" orient="auto" markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend5" transform="scale(-8.5,-8.5) "/>
+		</marker>
+	</defs>
+	<g>
+		<title>Page 1</title>
+		<g id="shape352-1" transform="translate(108.12,-63.12)">
+			<title>Feuille.352</title>
+			<rect x="0" y="119.49" width="27" height="18" class="st1"/>
+		</g>
+		<g id="shape353-3" transform="translate(18.12,-90.12)">
+			<title>Feuille.353</title>
+			<rect x="0" y="119.49" width="36" height="18" class="st2"/>
+		</g>
+		<g id="shape354-5" transform="translate(18.12,-126.12)">
+			<title>Feuille.354</title>
+			<path d="M0 137.49 L32.43 137.49" class="st3"/>
+		</g>
+		<g id="shape355-11" transform="translate(18.12,-126.12)">
+			<title>Feuille.355</title>
+			<desc>time</desc>
+			<rect x="0" y="126.24" width="36" height="11.25" class="st5"/>
+			<text x="10.44" y="134.26" class="st6">time</text>		</g>
+		<g id="shape356-14" transform="translate(90.12,-112.62)">
+			<title>Feuille.356</title>
+			<desc>insert</desc>
+			<rect x="0" y="126.24" width="36" height="11.25" class="st5"/>
+			<text x="8.22" y="134.26" class="st6">insert</text>		</g>
+		<g id="shape359-17" transform="translate(281.61,29.37) rotate(90)">
+			<title>Feuille.359</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape361-20" transform="translate(191.61,29.37) rotate(90)">
+			<title>Feuille.361</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape362-23" transform="translate(182.61,29.37) rotate(90)">
+			<title>Feuille.362</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape363-26" transform="translate(173.61,29.37) rotate(90)">
+			<title>Feuille.363</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape364-29" transform="translate(164.61,29.37) rotate(90)">
+			<title>Feuille.364</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape368-32" transform="translate(54.12,-63.12)">
+			<title>Feuille.368</title>
+			<rect x="0" y="119.49" width="36" height="18" class="st1"/>
+		</g>
+		<g id="shape369-34" transform="translate(200.61,56.37) rotate(90)">
+			<title>Feuille.369</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape370-37" transform="translate(209.277,56.37) rotate(90)">
+			<title>Feuille.370</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape371-40" transform="translate(218.61,56.37) rotate(90)">
+			<title>Feuille.371</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape372-43" transform="translate(254.61,56.37) rotate(90)">
+			<title>Feuille.372</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape373-46" transform="translate(263.277,56.37) rotate(90)">
+			<title>Feuille.373</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape386-49" transform="translate(135.12,-0.12)">
+			<title>Feuille.386</title>
+			<rect x="0" y="119.49" width="27" height="18" class="st2"/>
+		</g>
+		<g id="shape387-51" transform="translate(90.12,-0.12)">
+			<title>Feuille.387</title>
+			<rect x="0" y="119.49" width="18" height="18" class="st2"/>
+		</g>
+		<g id="shape388-53" transform="translate(18.12,-0.12)">
+			<title>Feuille.388</title>
+			<rect x="0" y="119.49" width="36" height="18" class="st2"/>
+		</g>
+		<g id="shape389-55" transform="translate(290.61,119.37) rotate(90)">
+			<title>Feuille.389</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape390-58" transform="translate(182.61,119.37) rotate(90)">
+			<title>Feuille.390</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape391-61" transform="translate(173.61,119.37) rotate(90)">
+			<title>Feuille.391</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape392-64" transform="translate(164.61,119.37) rotate(90)">
+			<title>Feuille.392</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape393-67" transform="translate(54.12,-0.12)">
+			<title>Feuille.393</title>
+			<rect x="0" y="119.49" width="36" height="18" class="st1"/>
+		</g>
+		<g id="shape394-69" transform="translate(200.61,119.37) rotate(90)">
+			<title>Feuille.394</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape395-72" transform="translate(209.277,119.37) rotate(90)">
+			<title>Feuille.395</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape396-75" transform="translate(218.61,119.37) rotate(90)">
+			<title>Feuille.396</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape397-78" transform="translate(108.12,-0.12)">
+			<title>Feuille.397</title>
+			<rect x="0" y="119.49" width="27" height="18" class="st1"/>
+		</g>
+		<g id="shape398-80" transform="translate(254.61,119.37) rotate(90)">
+			<title>Feuille.398</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape399-83" transform="translate(263.277,119.37) rotate(90)">
+			<title>Feuille.399</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape400-86" transform="translate(144.12,-90.12)">
+			<title>Feuille.400</title>
+			<rect x="0" y="119.49" width="18" height="18" class="st2"/>
+		</g>
+		<g id="shape401-88" transform="translate(290.777,29.37) rotate(90)">
+			<title>Feuille.401</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape402-91" transform="translate(281.777,119.37) rotate(90)">
+			<title>Feuille.402</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape404-94" transform="translate(236.61,119.37) rotate(90)">
+			<title>Feuille.404</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape405-97" transform="translate(90.12,-90.12)">
+			<title>Feuille.405</title>
+			<rect x="0" y="119.49" width="9" height="18" class="st2"/>
+		</g>
+		<g id="group424-99" transform="translate(73.87,-47.3283)">
+			<title>Feuille.424</title>
+			<g id="shape425-100" transform="translate(1.59872E-14,-1.125)">
+				<title>Feuille.425</title>
+				<path d="M2.25 128.49 L2.25 132.99 L0 132.99 L3.94 137.49 L7.88 132.99 L5.63 132.99 L5.62 128.49 L2.25 128.49 Z"
+						class="st8"/>
+			</g>
+			<g id="shape426-102" transform="translate(5.5,0)">
+				<title>Feuille.426</title>
+				<desc>result</desc>
+				<rect x="0" y="126.24" width="27" height="11.25" class="st5"/>
+				<text x="3.72" y="134.26" class="st6">result</text>			</g>
+		</g>
+		<g id="group427-105" transform="translate(18.12,-27.12)">
+			<title>Feuille.427</title>
+			<g id="shape351-106" transform="translate(126,0)">
+				<title>Feuille.351</title>
+				<rect x="0" y="119.49" width="18" height="18" class="st2"/>
+			</g>
+			<g id="shape374-108">
+				<title>Feuille.374</title>
+				<rect x="0" y="119.49" width="36" height="18" class="st2"/>
+			</g>
+			<g id="shape375-110" transform="translate(272.49,119.49) rotate(90)">
+				<title>Feuille.375</title>
+				<path d="M0 137.49 L18 137.49" class="st7"/>
+			</g>
+			<g id="shape376-113" transform="translate(164.49,119.49) rotate(90)">
+				<title>Feuille.376</title>
+				<path d="M0 137.49 L18 137.49" class="st7"/>
+			</g>
+			<g id="shape377-116" transform="translate(155.49,119.49) rotate(90)">
+				<title>Feuille.377</title>
+				<path d="M0 137.49 L18 137.49" class="st7"/>
+			</g>
+			<g id="shape378-119" transform="translate(146.49,119.49) rotate(90)">
+				<title>Feuille.378</title>
+				<path d="M0 137.49 L18 137.49" class="st7"/>
+			</g>
+			<g id="shape379-122" transform="translate(36,0)">
+				<title>Feuille.379</title>
+				<rect x="0" y="119.49" width="36" height="18" class="st1"/>
+			</g>
+			<g id="shape380-124" transform="translate(182.49,119.49) rotate(90)">
+				<title>Feuille.380</title>
+				<path d="M0 137.49 L18 137.49" class="st7"/>
+			</g>
+			<g id="shape381-127" transform="translate(191.157,119.49) rotate(90)">
+				<title>Feuille.381</title>
+				<path d="M0 137.49 L18 137.49" class="st7"/>
+			</g>
+			<g id="shape382-130" transform="translate(200.49,119.49) rotate(90)">
+				<title>Feuille.382</title>
+				<path d="M0 137.49 L18 137.49" class="st7"/>
+			</g>
+			<g id="shape383-133" transform="translate(90,0)">
+				<title>Feuille.383</title>
+				<rect x="0" y="119.49" width="27" height="18" class="st1"/>
+			</g>
+			<g id="shape384-135" transform="translate(236.49,119.49) rotate(90)">
+				<title>Feuille.384</title>
+				<path d="M0 137.49 L18 137.49" class="st7"/>
+			</g>
+			<g id="shape385-138" transform="translate(245.157,119.49) rotate(90)">
+				<title>Feuille.385</title>
+				<path d="M0 137.49 L18 137.49" class="st7"/>
+			</g>
+			<g id="shape403-141" transform="translate(72,0)">
+				<title>Feuille.403</title>
+				<rect x="0" y="119.49" width="9" height="18" class="st2"/>
+			</g>
+		</g>
+		<g id="shape435-143" transform="translate(0.12,-27.12)">
+			<title>Feuille.435</title>
+			<desc>(1)</desc>
+			<rect x="0" y="119.49" width="18" height="18" class="st5"/>
+			<text x="4.11" y="130.89" class="st6">(1)</text>		</g>
+		<g id="shape436-146" transform="translate(0.12,-0.12)">
+			<title>Feuille.436</title>
+			<desc>(2)</desc>
+			<rect x="0" y="119.49" width="18" height="18" class="st5"/>
+			<text x="4.11" y="130.89" class="st6">(2)</text>		</g>
+		<g id="shape437-149" transform="translate(308.61,29.37) rotate(90)">
+			<title>Feuille.437</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape438-152" transform="translate(171.12,-90.12)">
+			<title>Feuille.438</title>
+			<rect x="0" y="119.49" width="18" height="18" class="st2"/>
+		</g>
+		<g id="shape439-154" transform="translate(317.777,29.37) rotate(90)">
+			<title>Feuille.439</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape440-157" transform="translate(308.61,92.37) rotate(90)">
+			<title>Feuille.440</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape441-160" transform="translate(171.12,-27.12)">
+			<title>Feuille.441</title>
+			<rect x="0" y="119.49" width="18" height="18" class="st2"/>
+		</g>
+		<g id="shape442-162" transform="translate(317.777,92.37) rotate(90)">
+			<title>Feuille.442</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape443-165" transform="translate(308.61,119.37) rotate(90)">
+			<title>Feuille.443</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+		<g id="shape444-168" transform="translate(171.12,-0.12)">
+			<title>Feuille.444</title>
+			<rect x="0" y="119.49" width="18" height="18" class="st2"/>
+		</g>
+		<g id="shape445-170" transform="translate(317.777,119.37) rotate(90)">
+			<title>Feuille.445</title>
+			<path d="M0 137.49 L18 137.49" class="st7"/>
+		</g>
+	</g>
+</svg>

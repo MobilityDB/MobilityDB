@@ -1,0 +1,27 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 User's Manual"><link rel="up" href="ch02.html" title="Chapter 2. Set and Span Types"><link rel="prev" href="ch02.html" title="Chapter 2. Set and Span Types"><link rel="next" href="ch02s03.html" title="Conversions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Set and Span Types</th><td width="20%" align="right"> <a accesskey="n" href="ch02s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idm680"></a>Constructors</h2></div></div></div><p>The constructor function for the set types has a single argument that is an array of values of the corresponding base type. The values must be ordered and cannot have nulls or duplicates.
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="set"></a><a class="indexterm" name="idm685"></a><p>Constructor for set types</p><p><code class="varname">set(base[]) → set</code></p><pre class="programlisting">
+SELECT set(ARRAY['highway', 'primary', 'secondary']);
+-- {"highway", "primary", "secondary"}
+SELECT set(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
+-- {2001-01-01 08:00:00+00, 2001-01-03 09:30:00+00}
+</pre></li></ul></div><p>The unit span types have a constructor function that accepts four arguments. The first two arguments specify, respectively, the lower and upper bound, and the last two arguments are Boolean values stating, respectively, whether the lower and upper bounds are inclusive or not. The last two arguments are assumed to be, respectively, true and false if not specified. Notice that integer spans are transformed into <span class="emphasis"><em>normal form</em></span>, that is, with inclusive lower bound and exclusive upper bound.
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="span"></a><a class="indexterm" name="idm696"></a><p>Constructor for span types</p><p><code class="varname">span(base,base,left_inc=true,right_inc=false) → span</code></p><pre class="programlisting">
+-- Float span defined with two arguments
+SELECT span(20.5, 25);
+-- [20.5, 25)
+-- Integer span defined with four arguments
+SELECT span(20, 25, false, true);
+-- [21, 26)
+-- Time span defined with four arguments
+SELECT span(timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00', false, true);
+-- (2001-01-01 08:00:00, 2001-01-03 09:30:00]
+</pre></li></ul></div><p>The constructor function for span set types have a single argument that is an array of span values of the same subtype.
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="spanset"></a><a class="indexterm" name="idm706"></a><p>Constructor for span set types</p><p><code class="varname">spanset(span[]) → spanset</code></p><pre class="programlisting">
+SELECT spanset(ARRAY[intspan '[10,12]', '[13,15]']);
+-- {[10, 16)}
+SELECT spanset(ARRAY[floatspan '[10.5,12.5]', '[13.5,15.5]']);
+-- {[10.5, 12.5], [13.5, 15.5]}
+SELECT spanset(ARRAY[tstzspan '[2001-01-01 08:00, 2001-01-01 08:10]',
+  '[2001-01-01 08:20, 2001-01-01 08:40]']);
+-- {[2001-01-01 08:00, 2001-01-01 08:10], [2001-01-01 08:20, 2001-01-01 08:40]};
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Set and Span Types </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Conversions</td></tr></table></div></body></html>
