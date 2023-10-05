@@ -15,9 +15,8 @@
 # **Documentation of the MobilityDB Workshop**
 -----------------------------------------------
 
-
 The documentation is available in the following formats
 
-* HTML: [English](./html/index.html) - [Spanish](./es/html/index.html)
-* PDF: [English](./mobilitydb-workshop.pdf) - [Spanish](./es/mobilitydb-workshop.pdf)
-* EPUB: [English](./mobilitydb-workshop.epub) - [Spanish](./es/mobilitydb-workshop.epub)
+*HTML: [English](./html/index.html), [Spanish](./es/html/index.html)
+*PDF: [English](./mobilitydb-workshop.pdf), [Spanish](./es/mobilitydb-workshop.pdf)
+*EPUB: [English](./mobilitydb-workshop.epub), [Spanish](./es/mobilitydb-workshop.epub)
