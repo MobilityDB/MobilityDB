@@ -7,8 +7,14 @@
 # **Documentation of the MobilityDB Workshop**
 -----------------------------------------------
 
+The documentation is available for both the master and develop branches.
 
-The documentation is available for the following branches
+*   HTML: [master](https://mobilitydb.github.io/MobilityDB/master/), [develop](https://mobilitydb.github.io/MobilityDB/develop/)
+*   PDF: [master](https://mobilitydb.github.io/MobilityDB/master/mobilitydb-manual.pdf), [develop](https://mobilitydb.github.io/MobilityDB/develop/mobilitydb-manual.pdf)
+*   EPUB: [master](https://mobilitydb.github.io/MobilityDB/master/mobilitydb-manual.epub), [develop](https://mobilitydb.github.io/MobilityDB/develop/mobilitydb-manual.epub)
 
-* [Master](https://MobilityDB.github.io/MobilityDB/master/)
-* [Develop](https://MobilityDB.github.io/MobilityDB/develop/)
+The documentation is also avaible in Spanish.
+
+*   HTML: [master](https://mobilitydb.github.io/MobilityDB/master/es/), [develop](https://mobilitydb.github.io/MobilityDB/develop/es/)
+*   PDF: [master](https://mobilitydb.github.io/MobilityDB/master/es/mobilitydb-manual.pdf), [develop](https://mobilitydb.github.io/MobilityDB/develop/es/mobilitydb-manual.pdf)
+*   EPUB: [master](https://mobilitydb.github.io/MobilityDB/master/es/mobilitydb-manual.epub), [develop](https://mobilitydb.github.io/MobilityDB/develop/es/mobilitydb-manual.epub)

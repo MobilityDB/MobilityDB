@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Généré par Microsoft Visio, SVG Export dist_vs_sed.svg Page 1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="3.88455in" height="2.63194in"
+		viewBox="0 0 279.688 189.499" xml:space="preserve" color-interpolation-filters="sRGB" class="st9">
+	<v:documentProperties v:langID="2060" v:viewMarkup="false">
+		<v:userDefs>
+			<v:ud v:nameU="msvConvertTheme"/>
+		</v:userDefs>
+	</v:documentProperties>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {marker-end:url(#mrkr2-6);stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st2 {fill:#000000;fill-opacity:1;stroke:#000000;stroke-opacity:1;stroke-width:0.22935779816514}
+		.st3 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st4 {fill:none;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st5 {fill:#000000;font-family:Calibri;font-size:1.00001em}
+		.st6 {stroke:#000000;stroke-dasharray:5.25,3.75;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st7 {font-size:1em}
+		.st8 {stroke:#1f477d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2}
+		.st9 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<defs id="Markers">
+		<g id="lend2">
+			<path d="M 1 1 L 0 0 L 1 -1 L 1 1 " style="stroke:none"/>
+		</g>
+		<marker id="mrkr2-6" class="st2" v:arrowType="2" v:arrowSize="2" v:setback="4.36" refX="-4.36" orient="auto"
+				markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend2" transform="scale(-4.36,-4.36) "/>
+		</marker>
+	</defs>
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>Page 1</title>
+		<v:pageProperties v:drawingScale="1" v:pageScale="1" v:drawingUnits="19" v:shadowOffsetX="9" v:shadowOffsetY="-9"/>
+		<g id="shape36-1" v:mID="36" v:groupContext="shape" transform="translate(27.9375,-49.875) rotate(1.74299E-06)">
+			<title>Feuille.36</title>
+			<path d="M0 189.5 L243.61 189.5" class="st1"/>
+		</g>
+		<g id="shape37-7" v:mID="37" v:groupContext="shape" transform="translate(293.937,135.124) rotate(90)">
+			<title>Feuille.37</title>
+			<path d="M0 189.5 L8.44 189.5" class="st3"/>
+		</g>
+		<g id="shape38-10" v:mID="38" v:groupContext="shape" transform="translate(257.937,136.156) rotate(90)">
+			<title>Feuille.38</title>
+			<path d="M0 189.5 L8.44 189.5" class="st3"/>
+		</g>
+		<g id="shape39-13" v:mID="39" v:groupContext="shape" transform="translate(-157.562,143.687) rotate(-90)">
+			<title>Feuille.39</title>
+			<path d="M0 189.5 L135.79 189.5" class="st1"/>
+		</g>
+		<g id="shape40-18" v:mID="40" v:groupContext="shape" transform="translate(27.9375,-85.875)">
+			<title>Feuille.40</title>
+			<path d="M0 189.5 L9.37 189.5" class="st3"/>
+		</g>
+		<g id="shape41-21" v:mID="41" v:groupContext="shape" transform="translate(5.43748,-77.125)">
+			<title>Feuille.41</title>
+			<desc>2</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="13.5" cy="180.624" width="27.01" height="17.75"/>
+			<rect x="0" y="171.749" width="27" height="17.75" class="st4"/>
+			<text x="10.46" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>2</text>		</g>
+		<g id="shape42-24" v:mID="42" v:groupContext="shape" transform="translate(22.813,135.374) rotate(-90)">
+			<title>Feuille.42</title>
+			<path d="M0 189.5 L81.88 189.5" class="st6"/>
+		</g>
+		<g id="shape43-27" v:mID="43" v:groupContext="shape" transform="translate(43.545,225.808) rotate(-117.052)">
+			<title>Feuille.43</title>
+			<path d="M0 189.5 L80.63 189.5" class="st6"/>
+		</g>
+		<g id="shape44-30" v:mID="44" v:groupContext="shape" transform="translate(56.9062,-27.375)">
+			<title>Feuille.44</title>
+			<desc>2</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="11.5313" cy="180.624" width="23.07" height="17.75"/>
+			<rect x="0" y="171.749" width="23.0625" height="17.75" class="st4"/>
+			<text x="8.49" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>2</text>		</g>
+		<g id="shape45-33" v:mID="45" v:groupContext="shape" transform="translate(27.9375,-121.75)">
+			<title>Feuille.45</title>
+			<path d="M0 189.5 L9.37 189.5" class="st3"/>
+		</g>
+		<g id="shape46-36" v:mID="46" v:groupContext="shape" transform="translate(5.43748,-113)">
+			<title>Feuille.46</title>
+			<desc>3</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="13.5" cy="180.624" width="27.01" height="17.75"/>
+			<rect x="0" y="171.749" width="27" height="17.75" class="st4"/>
+			<text x="10.46" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>3</text>		</g>
+		<g id="shape47-39" v:mID="47" v:groupContext="shape" transform="translate(27.9375,-157.75)">
+			<title>Feuille.47</title>
+			<path d="M0 189.5 L9.37 189.5" class="st3"/>
+		</g>
+		<g id="shape48-42" v:mID="48" v:groupContext="shape" transform="translate(5.43748,-149)">
+			<title>Feuille.48</title>
+			<desc>4</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="13.5" cy="180.624" width="27.01" height="17.75"/>
+			<rect x="0" y="171.749" width="27" height="17.75" class="st4"/>
+			<text x="10.46" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>4</text>		</g>
+		<g id="shape49-45" v:mID="49" v:groupContext="shape" transform="translate(5.43747,-41.125)">
+			<title>Feuille.49</title>
+			<desc>1</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="13.5" cy="180.624" width="27.01" height="17.75"/>
+			<rect x="0" y="171.749" width="27" height="17.75" class="st4"/>
+			<text x="10.46" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>1</text>		</g>
+		<g id="shape50-48" v:mID="50" v:groupContext="shape" transform="translate(0.375,-13.875)">
+			<title>Feuille.50</title>
+			<desc>2000-01-01</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="32.625" cy="181.015" width="65.25" height="16.9688"/>
+			<rect x="0" y="172.531" width="65.25" height="16.9688" class="st4"/>
+			<text x="4.62" y="184.62" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>2000-01-01</text>		</g>
+		<g id="shape51-51" v:mID="51" v:groupContext="shape" transform="translate(63.9375,-13.875)">
+			<title>Feuille.51</title>
+			<desc>2000-01-03</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="32.625" cy="180.499" width="65.25" height="18"/>
+			<rect x="0" y="171.499" width="65.25" height="18" class="st4"/>
+			<text x="4.62" y="184.1" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>2000-01-03</text>		</g>
+		<g id="shape52-54" v:mID="52" v:groupContext="shape" transform="translate(34.6875,-0.500005)">
+			<title>Feuille.52</title>
+			<desc>2000-01-02</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="32.625" cy="180.624" width="65.25" height="17.75"/>
+			<rect x="0" y="171.749" width="65.25" height="17.75" class="st4"/>
+			<text x="4.62" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>2000-01-02</text>		</g>
+		<g id="shape53-57" v:mID="53" v:groupContext="shape" transform="translate(107.25,-0.375)">
+			<title>Feuille.53</title>
+			<desc>2000-01-04</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="32.625" cy="180.624" width="65.25" height="17.75"/>
+			<rect x="0" y="171.749" width="65.25" height="17.75" class="st4"/>
+			<text x="4.62" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>2000-01-04</text>		</g>
+		<g id="shape54-60" v:mID="54" v:groupContext="shape" transform="translate(329.937,135.124) rotate(90)">
+			<title>Feuille.54</title>
+			<path d="M0 189.5 L8.44 189.5" class="st3"/>
+		</g>
+		<g id="shape55-63" v:mID="55" v:groupContext="shape" transform="translate(92.9062,-27.625)">
+			<title>Feuille.55</title>
+			<desc>3</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="11.5313" cy="180.624" width="23.07" height="17.75"/>
+			<rect x="0" y="171.749" width="23.0625" height="17.75" class="st4"/>
+			<text x="8.49" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>3</text>		</g>
+		<g id="shape56-66" v:mID="56" v:groupContext="shape" transform="translate(128.906,-27.625)">
+			<title>Feuille.56</title>
+			<desc>4</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="11.5313" cy="180.624" width="23.07" height="17.75"/>
+			<rect x="0" y="171.749" width="23.0625" height="17.75" class="st4"/>
+			<text x="8.49" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>4</text>		</g>
+		<g id="shape57-69" v:mID="57" v:groupContext="shape" transform="translate(214.401,-104.962) rotate(15)">
+			<title>Feuille.57</title>
+			<path d="M0 183.62 L5.88 189.5 L12.8 183.29" class="st3"/>
+		</g>
+		<g id="shape58-72" v:mID="58" v:groupContext="shape" transform="translate(365.812,135.124) rotate(90)">
+			<title>Feuille.58</title>
+			<path d="M0 189.5 L8.44 189.5" class="st3"/>
+		</g>
+		<g id="shape59-75" v:mID="59" v:groupContext="shape" transform="translate(164.781,-27.625)">
+			<title>Feuille.59</title>
+			<desc>5</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="11.5313" cy="180.624" width="23.07" height="17.75"/>
+			<rect x="0" y="171.749" width="23.0625" height="17.75" class="st4"/>
+			<text x="8.49" y="184.22" class="st5" v:langID="2060"><v:paragraph v:horizAlign="1"/><v:tabList/>5</text>		</g>
+		<g id="shape60-78" v:mID="60" v:groupContext="shape" transform="translate(139.187,-13.875)">
+			<title>Feuille.60</title>
+			<desc>2000-01-05</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="32.625" cy="180.499" width="65.25" height="18"/>
+			<rect x="0" y="171.499" width="65.25" height="18" class="st4"/>
+			<text x="4.62" y="184.1" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>2000-01-0<tspan
+						class="st7" v:langID="2060">5</tspan></text>		</g>
+		<g id="shape61-82" v:mID="61" v:groupContext="shape" transform="translate(401.812,135.374) rotate(90)">
+			<title>Feuille.61</title>
+			<path d="M0 189.5 L8.44 189.5" class="st3"/>
+		</g>
+		<g id="shape62-85" v:mID="62" v:groupContext="shape" transform="translate(200.781,-27.375)">
+			<title>Feuille.62</title>
+			<desc>6</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="11.5313" cy="180.624" width="23.07" height="17.75"/>
+			<rect x="0" y="171.749" width="23.0625" height="17.75" class="st4"/>
+			<text x="8.49" y="184.22" class="st5" v:langID="2060"><v:paragraph v:horizAlign="1"/><v:tabList/>6</text>		</g>
+		<g id="shape63-88" v:mID="63" v:groupContext="shape" transform="translate(179.25,-0.375)">
+			<title>Feuille.63</title>
+			<desc>2000-01-06</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="32.625" cy="180.624" width="65.25" height="17.75"/>
+			<rect x="0" y="171.749" width="65.25" height="17.75" class="st4"/>
+			<text x="4.62" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>2000-01-0<tspan
+						class="st7" v:langID="2060">6</tspan></text>		</g>
+		<g id="shape64-92" v:mID="64" v:groupContext="shape" transform="translate(437.312,135.124) rotate(90)">
+			<title>Feuille.64</title>
+			<path d="M0 189.5 L8.44 189.5" class="st3"/>
+		</g>
+		<g id="shape65-95" v:mID="65" v:groupContext="shape" transform="translate(236.281,-27.625)">
+			<title>Feuille.65</title>
+			<desc>7</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="11.5313" cy="180.624" width="23.07" height="17.75"/>
+			<rect x="0" y="171.749" width="23.0625" height="17.75" class="st4"/>
+			<text x="8.49" y="184.22" class="st5" v:langID="2060"><v:paragraph v:horizAlign="1"/><v:tabList/>7</text>		</g>
+		<g id="shape66-98" v:mID="66" v:groupContext="shape" transform="translate(210.687,-13.875)">
+			<title>Feuille.66</title>
+			<desc>2000-01-07</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="32.625" cy="180.499" width="65.25" height="18"/>
+			<rect x="0" y="171.499" width="65.25" height="18" class="st4"/>
+			<text x="4.62" y="184.1" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>2000-01-07</text>		</g>
+		<g id="shape67-101" v:mID="67" v:groupContext="shape" transform="translate(32.4375,-49.875)">
+			<title>Feuille.67</title>
+			<path d="M0 189.5 L215.37 81.5" class="st8"/>
+		</g>
+		<g id="shape68-104" v:mID="68" v:groupContext="shape" transform="translate(256.25,-27.625)">
+			<title>Feuille.68</title>
+			<desc>x</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="11.5313" cy="180.624" width="23.07" height="17.75"/>
+			<rect x="0" y="171.749" width="23.0625" height="17.75" class="st4"/>
+			<text x="8.93" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>x</text>		</g>
+		<g id="shape69-107" v:mID="69" v:groupContext="shape" transform="translate(153.312,-137.063)">
+			<title>Feuille.69</title>
+			<desc>d=2.23 (5,3)</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="22.5" cy="178.249" width="45" height="22.5"/>
+			<rect x="0" y="166.999" width="45" height="22.5" class="st4"/>
+			<text x="5.72" y="175.25" class="st5" v:langID="1033"><v:paragraph v:spLine="-1" v:horizAlign="1"/><v:tabList/>d=2.23<v:newlineChar/><tspan
+						x="11.28" dy="1em" class="st7">(5,3)</tspan></text>		</g>
+		<g id="shape70-111" v:mID="70" v:groupContext="shape" transform="translate(365.374,54.0211) rotate(90)">
+			<title>Feuille.70</title>
+			<path d="M0 189.5 L7.52 189.5" class="st1"/>
+		</g>
+		<g id="shape71-116" v:mID="71" v:groupContext="shape" transform="translate(401.415,36.1245) rotate(90)">
+			<title>Feuille.71</title>
+			<path d="M0 189.5 L7.52 189.5" class="st1"/>
+		</g>
+		<g id="shape72-121" v:mID="72" v:groupContext="shape" transform="translate(32.4375,-49.875)">
+			<title>Feuille.72</title>
+			<path d="M0 189.5 L179.87 189.5 L215.37 81.5" class="st8"/>
+		</g>
+		<g id="shape73-124" v:mID="73" v:groupContext="shape" transform="translate(189.312,-153.375)">
+			<title>Feuille.73</title>
+			<desc>d=2.5 (6,3.5)</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="22.5" cy="178.249" width="45" height="22.5"/>
+			<rect x="0" y="166.999" width="45" height="22.5" class="st4"/>
+			<text x="8.76" y="175.25" class="st5" v:langID="1033"><v:paragraph v:spLine="-1" v:horizAlign="1"/><v:tabList/>d=2.5<v:newlineChar/><tspan
+						x="6.73" dy="1em" class="st7">(6,3.5)</tspan></text>		</g>
+		<g id="shape74-128" v:mID="74" v:groupContext="shape" transform="translate(20.3437,-27.375)">
+			<title>Feuille.74</title>
+			<desc>1</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)"/>
+			<v:textRect cx="11.5313" cy="180.624" width="23.07" height="17.75"/>
+			<rect x="0" y="171.749" width="23.0625" height="17.75" class="st4"/>
+			<text x="8.49" y="184.22" class="st5" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>1</text>		</g>
+	</g>
+</svg>
