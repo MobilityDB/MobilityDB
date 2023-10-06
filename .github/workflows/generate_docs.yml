@@ -35,9 +35,7 @@ jobs:
           cd doc
           dblatex -s texstyle.sty -o mobilitydb-manual.pdf mobilitydb-manual.xml
           dbtoepub -o mobilitydb-manual.epub mobilitydb-manual.xml
-          mkdir html
-          xsltproc --stringparam html.stylesheet "docbook.css" --stringparam chunker.output.encoding "UTF-8" --xinclude -o html/index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl mobilitydb-manual.xml
-          cp -r images docbook.css html/
+          xsltproc --stringparam html.stylesheet "docbook.css" --stringparam chunker.output.encoding "UTF-8" --xinclude -o index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl mobilitydb-manual.xml
 
       # generate the documentation files
       - name: Generate Spanish documentation
@@ -45,9 +43,8 @@ jobs:
           cd doc
           dblatex -s texstyle.sty -o es/mobilitydb-manual.pdf es/mobilitydb-manual.xml
           dbtoepub -o es/mobilitydb-manual.epub es/mobilitydb-manual.xml
-          mkdir es/html
-          xsltproc --stringparam html.stylesheet "docbook.css" --stringparam chunker.output.encoding "UTF-8" --xinclude -o es/html/index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl es/mobilitydb-manual.xml
-          cp -r images docbook.css es/html/
+          xsltproc --stringparam html.stylesheet "docbook.css" --stringparam chunker.output.encoding "UTF-8" --xinclude -o es/index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl es/mobilitydb-manual.xml
+          cp docbook.css es/
 
       # store the documentation files
       - name: Upload output directory
@@ -55,17 +52,16 @@ jobs:
         with:
           name: doc-files
           path: |
+            doc/images/*
             doc/index.md
             doc/mobilitydb-manual.pdf
             doc/mobilitydb-manual.epub
-            doc/html/docbook.css
-            doc/html/images/*
-            doc/html/*.html
+            doc/docbook.css
+            doc/*.html
             doc/es/mobilitydb-manual.pdf
             doc/es/mobilitydb-manual.epub
-            doc/es/html/docbook.css
-            doc/es/html/images/*
-            doc/es/html/*.html
+            doc/es/docbook.css
+            doc/es/*.html
           retention-days: 1
 
 
