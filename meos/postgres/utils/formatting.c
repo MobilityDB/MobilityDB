@@ -1439,8 +1439,7 @@ from_char_parse_int_len(int *dest, const char **src, const int len,
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "source string too short for \"%s\" formatting field",
         node->key->name);
-      pfree(copy);
-      return -1;
+      goto on_error;
     }
 
     errno = 0;
@@ -1451,7 +1450,7 @@ from_char_parse_int_len(int *dest, const char **src, const int len,
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "invalid value \"%s\" for \"%s\"", copy, node->key->name);
-      return -1;
+      goto on_error;
     }
 
     *src += used;
@@ -1461,14 +1460,14 @@ from_char_parse_int_len(int *dest, const char **src, const int len,
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "invalid value \"%s\" for \"%s\"", copy, node->key->name);
-    return -1;
+    goto on_error;
   }
 
   if (errno == ERANGE || result < INT_MIN || result > INT_MAX)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "value for \"%s\" in source string is out of range", node->key->name);
-    return -1;
+    goto on_error;
   }
 
   if (dest != NULL)
