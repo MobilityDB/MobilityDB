@@ -1439,6 +1439,7 @@ from_char_parse_int_len(int *dest, const char **src, const int len,
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "source string too short for \"%s\" formatting field",
         node->key->name);
+      pfree(copy);
       return -1;
     }
 
