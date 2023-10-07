@@ -186,6 +186,7 @@ meos_error(int errlevel, int errcode, char *format, ...)
   va_list args;
   va_start(args, format);
   vsprintf(buffer, format, args);
+  va_end(args);
   /* Execute the error handler function */
   if (_error_handler)
     _error_handler(errlevel, errcode, buffer);
@@ -195,12 +196,10 @@ meos_error(int errlevel, int errcode, char *format, ...)
 #else
   {
     fprintf (stderr, "%s\n", buffer);
-    va_end(args);
     if (errlevel == ERROR)
       exit(EXIT_FAILURE);
   }
 #endif /* ! MEOS */
-  va_end(args);
   return;
 }
 
