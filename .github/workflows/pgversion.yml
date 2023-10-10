@@ -7,8 +7,20 @@ name: Main Build
 on:
   workflow_dispatch:
   push:
+    paths:
+      - 'cmake/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
     branch_ignore: gh-pages
   pull_request:
+    paths:
+      - 'cmake/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
     branch_ignore: gh-pages
 
 jobs:

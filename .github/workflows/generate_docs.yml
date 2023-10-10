@@ -3,7 +3,15 @@
 name: Documentation generation CI
 
 on:
+  workflow_dispatch:
   push:
+    paths:
+      - '.github/workflows/generate_docs.yml'
+      - 'doc/**'
+    branches:
+      - master
+      - develop
+  pull_request:
     paths:
       - '.github/workflows/generate_docs.yml'
       - 'doc/**'
@@ -84,17 +92,31 @@ jobs:
 
       # Rename the directory to master
       - name: Rename the directory to master
-        if: ${{ github.ref == 'refs/heads/master' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         run: |
           rm -rf master
           mv docs-temp master
 
       # Rename the directory to master
       - name: Rename the directory to develop
-        if: ${{ github.ref == 'refs/heads/develop' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
         run: |
           rm -rf develop
           mv docs-temp develop
+
+      # Rename the directory to master
+      - name: Rename the directory to master
+        if: ${{ github.event_name == 'pull_request' && github.ref == 'refs/heads/master' }}
+        run: |
+          rm -rf master-pr
+          mv docs-temp master-pr
+
+      # Rename the directory to master
+      - name: Rename the directory to develop
+        if: ${{ github.event_name == 'pull_request' && github.ref == 'refs/heads/develop' }}
+        run: |
+          rm -rf develop-pr
+          mv docs-temp develop-pr
 
       # add, commit and push to gh-pages
       - name: Commit changes
