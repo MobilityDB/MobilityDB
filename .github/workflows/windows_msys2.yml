@@ -1,11 +1,23 @@
 name: Build for Windows
 
 on:
-  push:
-    # branches: [ main ]
-  pull_request:
-    # branches: [ main ]
   workflow_dispatch:
+  push:
+    paths:
+      - 'cmake/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
+  pull_request:
+    paths:
+      - 'cmake/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
 
 jobs:
   build:
