@@ -3,6 +3,7 @@
 name: Documentation generation CI
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - '.github/workflows/generate_docs.yml'
