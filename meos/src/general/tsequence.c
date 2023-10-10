@@ -589,8 +589,10 @@ tsequence_in(const char *str, meosType temptype, interpType interp)
   assert(str);
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, temptype);
-  else
-    return tcontseq_parse(&str, temptype, interp, true, true);
+  TSequence *result;
+  if (! tcontseq_parse(&str, temptype, interp, true, &result))
+    return NULL;
+  return result;
 }
 
 /**
@@ -601,11 +603,7 @@ tsequence_in(const char *str, meosType temptype, interpType interp)
 TSequence *
 tboolseq_in(const char *str, interpType interp)
 {
-  assert(str);
-  if (interp == DISCRETE)
-    return tdiscseq_parse(&str, T_TBOOL);
-  else
-    return tcontseq_parse(&str, T_TBOOL, STEP, true, true);
+  return tsequence_in(str, T_TBOOL, interp);
 }
 
 /**
@@ -616,11 +614,7 @@ tboolseq_in(const char *str, interpType interp)
 TSequence *
 tintseq_in(const char *str, interpType interp)
 {
-  assert(str);
-  if (interp == DISCRETE)
-    return tdiscseq_parse(&str, T_TINT);
-  else
-    return tcontseq_parse(&str, T_TINT, STEP, true, true);
+  return tsequence_in(str, T_TINT, interp);
 }
 
 /**
@@ -631,11 +625,7 @@ tintseq_in(const char *str, interpType interp)
 TSequence *
 tfloatseq_in(const char *str, interpType interp)
 {
-  assert(str);
-  if (interp == DISCRETE)
-    return tdiscseq_parse(&str, T_TFLOAT);
-  else
-    return tcontseq_parse(&str, T_TFLOAT, interp, true, true);
+  return tsequence_in(str, T_TFLOAT, interp);
 }
 
 /**
@@ -646,11 +636,7 @@ tfloatseq_in(const char *str, interpType interp)
 TSequence *
 ttextseq_in(const char *str, interpType interp)
 {
-  assert(str);
-  if (interp == DISCRETE)
-    return tdiscseq_parse(&str, T_TTEXT);
-  else
-    return tcontseq_parse(&str, T_TTEXT, STEP, true, true);
+  return tsequence_in(str, T_TTEXT, interp);
 }
 
 /**
@@ -664,6 +650,8 @@ tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
   assert(str);
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
+  if (! temp)
+    return NULL;
   assert (temp->subtype == TSEQUENCE);
   return (TSequence *) temp;
 }
@@ -679,6 +667,8 @@ tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
   assert(str);
   /* Call the superclass function to read the SRID at the beginning (if any) */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
+  if (! temp)
+    return NULL;
   assert (temp->subtype == TSEQUENCE);
   return (TSequence *) temp;
 }

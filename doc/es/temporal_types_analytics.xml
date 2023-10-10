@@ -114,15 +114,15 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05
 -- {POINT(1 1)@2000-01-01, POINT(4 4)@2000-01-04, POINT(3 3)@2000-01-07}
 </programlisting>
 				<para>La <xref linkend="fig_tsample" /> ilustra el muestreo para números flotantes temporales con varias interpolaciones. Como ilustra la figura, la operación de muestreo es más adecuada para valores temporales con interpolación continua.</para>
+				<figure id="fig_tsample" float="start">
+					<title>Muestreo de flotantes temporales con interpolación discreta, escalonada y lineal.</title>
+					<mediaobject>
+						<imageobject><imagedata format="PDF" scale='75' fileref="../images/tsample.pdf"/></imageobject>
+						<imageobject><imagedata format="SVG" scale='75' fileref="../images/tsample.svg"/></imageobject>
+						<imageobject><imagedata format="PNG" scale='75' fileref="../images/tsample.png"/></imageobject>
+					</mediaobject>
+				</figure>
 			</listitem>
-			<figure id="fig_tsample" float="start">
-				<title>Muestreo de flotantes temporales con interpolación discreta, escalonada y lineal.</title>
-				<mediaobject>
-					<imageobject><imagedata format="PDF" scale='75' fileref="../images/tsample.pdf"/></imageobject>
-					<imageobject><imagedata format="SVG" scale='75' fileref="../images/tsample.svg"/></imageobject>
-					<imageobject><imagedata format="PNG" scale='75' fileref="../images/tsample.png"/></imageobject>
-				</mediaobject>
-			</figure>
 
 			<listitem id="tprecision">
 				<indexterm><primary><varname>tprecision</varname></primary></indexterm>
@@ -159,16 +159,15 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-
 -- [POINT(3 3)@2000-01-01, POINT(3 3)@2000-01-05]
 </programlisting>
 				<para>Cambiar la precisión de un valor temporal es similar a cambiar su <emphasis>granularidad temporal</emphasis>, por ejemplo, de marcas de tiempo a horas o días, aunque la precisión se puede establecer en un intervalo arbitrario, como 2 horas y 15 minutos. La <xref linkend="fig_tprecision" /> ilustra un cambio de precisión temporal para números flotantes temporales con varias interpolaciones.</para>
+				<figure id="fig_tprecision" float="start">
+					<title>Cambio de precisión de números flotantes temporales con interpolación discreta, escalonada y lineal.</title>
+					<mediaobject>
+						<imageobject><imagedata format="PDF" scale='75' fileref="../images/tprecision.pdf"/></imageobject>
+						<imageobject><imagedata format="SVG" scale='75' fileref="../images/tprecision.svg"/></imageobject>
+						<imageobject><imagedata format="PNG" scale='75' fileref="../images/tprecision.png"/></imageobject>
+					</mediaobject>
+				</figure>
 			</listitem>
-
-			<figure id="fig_tprecision" float="start">
-				<title>Cambio de precisión de números flotantes temporales con interpolación discreta, escalonada y lineal.</title>
-				<mediaobject>
-					<imageobject><imagedata format="PDF" scale='75' fileref="../images/tprecision.pdf"/></imageobject>
-					<imageobject><imagedata format="SVG" scale='75' fileref="../images/tprecision.svg"/></imageobject>
-					<imageobject><imagedata format="PNG" scale='75' fileref="../images/tprecision.png"/></imageobject>
-				</mediaobject>
-			</figure>
 		</itemizedlist>
 	</sect1>
 

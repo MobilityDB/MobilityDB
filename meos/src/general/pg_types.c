@@ -330,6 +330,7 @@ int4_out(int32 val)
 
 /**
  * @brief Return an int8 from a string
+ * @return On error return PG_INT64_MAX;
  * @note PostgreSQL function: Datum int8in(PG_FUNCTION_ARGS)
  */
 int64
@@ -538,8 +539,7 @@ float8_in_opt_error(char *num, const char *type_name, const char *orig_string)
 double
 float8_in(const char *num, const char *type_name, const char *orig_string)
 {
-  double result = float8_in_opt_error((char *) num, type_name, orig_string);
-  return result;
+  return float8_in_opt_error((char *) num, type_name, orig_string);
 }
 
 /*
@@ -718,11 +718,14 @@ pg_date_in(const char *str)
     dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tzp);
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
   if (dterr != 0)
+  {
 #if POSTGRESQL_VERSION_NUMBER >= 160000
     DateTimeParseError(dterr, NULL, str, "date", NULL);
 #else
     DateTimeParseError(dterr, str, "date");
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
+    return DATEVAL_NOEND;
+  }
 
   switch (dtype)
   {
@@ -747,7 +750,7 @@ pg_date_in(const char *str)
 #else
       DateTimeParseError(DTERR_BAD_FORMAT, str, "date");
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
-      break;
+      return DATEVAL_NOEND;
   }
 
   /* Prevent overflow in Julian-day routines */
@@ -874,11 +877,14 @@ pg_time_in(const char *str, int32 typmod)
   if (dterr == 0)
     dterr = DecodeTimeOnly(field, ftype, nf, &dtype, tm, &fsec, &tz);
   if (dterr != 0)
+  {
 #if POSTGRESQL_VERSION_NUMBER >= 160000
     DateTimeParseError(dterr, NULL, str, "time", NULL);
 #else
     DateTimeParseError(dterr, str, "time");
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
+    return DT_NOEND;
+  }
 
   tm2time(tm, fsec, &result);
   MEOSAdjustTimeForTypmod(&result, typmod);
@@ -1018,26 +1024,24 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
 
   dterr = ParseDateTime(str, workbuf, sizeof(workbuf),
               field, ftype, MAXDATEFIELDS, &nf);
-  if (dterr == 0)
+  if (dterr != 0)
+    return DT_NOEND;
+
 #if POSTGRESQL_VERSION_NUMBER >= 160000
     dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz, NULL);
 #else
     dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz);
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
+
   if (dterr != 0)
   {
-    if (withtz)
+    char *type_str = withtz ? "timestamp with time zone" : "time";
 #if POSTGRESQL_VERSION_NUMBER >= 160000
-      DateTimeParseError(dterr, NULL, str, "timestamp with time zone", NULL);
+    DateTimeParseError(dterr, NULL, str, type_str, NULL);
 #else
-      DateTimeParseError(dterr, str, "timestamp with time zone");
-#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
-    else
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-    DateTimeParseError(dterr, NULL, str, "time", NULL);
-#else
-    DateTimeParseError(dterr, str, "time");
-#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
+    DateTimeParseError(dterr, str, type_str);
+#endif
+    return DT_NOEND;
   }
 
   switch (dtype)
@@ -1082,6 +1086,7 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp with time zone.
+ * @return On error return DT_NOEND
  * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
  */
 TimestampTz
@@ -1093,6 +1098,7 @@ pg_timestamptz_in(const char *str, int32 typmod)
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp without time zone.
+ * @return On error return DT_NOEND
  * @note PostgreSQL function: Datum timestamp_in(PG_FUNCTION_ARGS)
  */
 Timestamp
@@ -1398,6 +1404,7 @@ pg_interval_in(const char *str, int32 typmod)
 
   dterr = ParseDateTime(str, workbuf, sizeof(workbuf), field,
               ftype, MAXDATEFIELDS, &nf);
+
   if (dterr == 0)
     dterr = DecodeInterval(field, ftype, nf, range, &dtype, tm, &fsec);
 
@@ -1414,6 +1421,7 @@ pg_interval_in(const char *str, int32 typmod)
 #else
     DateTimeParseError(dterr, str, "interval");
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
+    return NULL;
   }
 
   result = (Interval *) palloc(sizeof(Interval));

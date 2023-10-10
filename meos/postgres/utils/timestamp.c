@@ -17,6 +17,8 @@
 
 #include "postgres.h"
 
+#include "../../include/meos.h"
+
 // MEOS
 // #include "datatype/timestamp.h"
 #include "utils/timestamp_def.h"
@@ -41,7 +43,8 @@ EncodeSpecialTimestamp(Timestamp dt, char *str)
   else if (TIMESTAMP_IS_NOEND(dt))
     strcpy(str, LATE);
   else            /* shouldn't happen */
-    elog(ERROR, "invalid argument for EncodeSpecialTimestamp");
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "invalid argument for EncodeSpecialTimestamp");
 }
 
 /*
@@ -248,7 +251,11 @@ interval2tm(Interval span, struct pg_tm *tm, fsec_t *fsec)
   time -= tfrac * USECS_PER_HOUR;
   tm->tm_hour = tfrac;
   if (!SAMESIGN(tm->tm_hour, tfrac))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "interval out of range");
+    return -1;
+  }
   tfrac = time / USECS_PER_MINUTE;
   time -= tfrac * USECS_PER_MINUTE;
   tm->tm_min = tfrac;
@@ -301,7 +308,11 @@ GetEpochTime(struct pg_tm *tm)
   t0 = pg_gmtime(&epoch);
 
   if (t0 == NULL)
-    elog(ERROR, "could not convert epoch to timestamp: %m");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "could not convert epoch to timestamp: %m");
+    return;
+  }
 
   tm->tm_year = t0->tm_year;
   tm->tm_mon = t0->tm_mon;

@@ -149,7 +149,10 @@ TInstant *
 tinstant_in(const char *str, meosType temptype)
 {
   assert(str);
-  return tinstant_parse(&str, temptype, true, true);
+  TInstant *result;
+  if (! tinstant_parse(&str, temptype, true, &result))
+    return NULL;
+  return result;
 }
 
 /**
@@ -160,8 +163,7 @@ tinstant_in(const char *str, meosType temptype)
 TInstant *
 tboolinst_in(const char *str)
 {
-  assert(str);
-  return tinstant_parse(&str, T_TBOOL, true, true);
+  return tinstant_in(str, T_TBOOL);
 }
 
 /**
@@ -172,8 +174,7 @@ tboolinst_in(const char *str)
 TInstant *
 tintinst_in(const char *str)
 {
-  assert(str);
-  return tinstant_parse(&str, T_TINT, true, true);
+  return tinstant_in(str, T_TINT);
 }
 
 /**
@@ -184,8 +185,7 @@ tintinst_in(const char *str)
 TInstant *
 tfloatinst_in(const char *str)
 {
-  assert(str);
-  return tinstant_parse(&str, T_TFLOAT, true, true);
+  return tinstant_in(str, T_TFLOAT);
 }
 
 /**
@@ -196,8 +196,7 @@ tfloatinst_in(const char *str)
 TInstant *
 ttextinst_in(const char *str)
 {
-  assert(str);
-  return tinstant_parse(&str, T_TTEXT, true, true);
+  return tinstant_in(str, T_TTEXT);
 }
 
 /**
