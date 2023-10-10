@@ -22,6 +22,8 @@
 #include "utils/datetime.h"
 #include "utils/date.h"
 
+#include "../../include/meos.h"
+
 static const datetkn *datebsearch(const char *key, const datetkn *base, int nel);
 
 /* Defined below */
@@ -35,8 +37,7 @@ static int  DecodeTime(char *str, int fmask, int range,
 static int  DecodeNumber(int flen, char *field, bool haveTextMonth,
              int fmask, int *tmask,
              struct pg_tm *tm, fsec_t *fsec, bool *is2digits);
-static int  DecodeNumberField(int len, char *str,
-                int fmask, int *tmask,
+static int  DecodeNumberField(int len, char *str, int fmask, int *tmask,
                 struct pg_tm *tm, fsec_t *fsec, bool *is2digits);
 static pg_tz *FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp);
 static bool DetermineTimeZoneAbbrevOffsetInternal(pg_time_t t,
@@ -386,9 +387,12 @@ GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
      * really expect any error here, since current time surely ought to be
      * within range, but check just for sanity's sake.
      */
-    if (timestamp2tm(cur_ts, &cache_tz, &cache_tm, &cache_fsec,
-             NULL, session_timezone) != 0)
-      elog(ERROR, "timestamp out of range");
+    if (timestamp2tm(cur_ts, &cache_tz, &cache_tm, &cache_fsec, NULL,
+             session_timezone) != 0)
+    {
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of range");
+      return;
+    }
 
     /* OK, so mark the cache valid. */
     cache_ts = cur_ts;
@@ -797,25 +801,25 @@ ParseDateTime(const char *timestr, char *workbuf, size_t buflen,
  * 1997-05-27
  */
 int
-DecodeDateTime(char **field, int *ftype, int nf,
-         int *dtype, struct pg_tm *tm, fsec_t *fsec, int *tzp)
+DecodeDateTime(char **field, int *ftype, int nf, int *dtype,
+  struct pg_tm *tm, fsec_t *fsec, int *tzp)
 {
-  int      fmask = 0,
-        tmask,
-        type;
-  int      ptype = 0;    /* "prefix type" for ISO y2001m02d04 format */
-  int      i;
-  int      val;
-  int      dterr;
-  int      mer = HR24;
-  bool    haveTextMonth = false;
-  bool    isjulian = false;
-  bool    is2digits = false;
-  bool    bc = false;
-  pg_tz     *namedTz = NULL;
-  pg_tz     *abbrevTz = NULL;
-  pg_tz     *valtz;
-  char     *abbrev = NULL;
+  int fmask = 0,
+      tmask,
+      type;
+  int ptype = 0;    /* "prefix type" for ISO y2001m02d04 format */
+  int i;
+  int val;
+  int dterr;
+  int mer = HR24;
+  bool haveTextMonth = false;
+  bool isjulian = false;
+  bool is2digits = false;
+  bool bc = false;
+  pg_tz *namedTz = NULL;
+  pg_tz *abbrevTz = NULL;
+  pg_tz *valtz;
+  char *abbrev = NULL;
   struct pg_tm cur_tm;
 
   /*
@@ -943,7 +947,9 @@ DecodeDateTime(char **field, int *ftype, int nf,
                * ereport'ing directly, but then there is no way
                * to report the bad time zone name.
                */
-              elog(ERROR, "time zone \"%s\" not recognized", field[i]);
+              meos_error(ERROR, MEOS_ERR_FILE_ERROR,
+                "time zone \"%s\" not recognized", field[i]);
+              return -1;
             }
             /* we'll apply the zone setting below */
             tmask = DTK_M(TZ);
@@ -1704,24 +1710,24 @@ DetermineTimeZoneAbbrevOffsetInternal(pg_time_t t, const char *abbr, pg_tz *tzp,
  * if time zones are allowed. - thomas 2001-12-26
  */
 int
-DecodeTimeOnly(char **field, int *ftype, int nf,
-         int *dtype, struct pg_tm *tm, fsec_t *fsec, int *tzp)
+DecodeTimeOnly(char **field, int *ftype, int nf, int *dtype, struct pg_tm *tm,
+  fsec_t *fsec, int *tzp)
 {
-  int      fmask = 0,
-        tmask,
-        type;
-  int      ptype = 0;    /* "prefix type" for ISO h04mm05s06 format */
-  int      i;
-  int      val;
-  int      dterr;
-  bool    isjulian = false;
-  bool    is2digits = false;
-  bool    bc = false;
-  int      mer = HR24;
-  pg_tz     *namedTz = NULL;
-  pg_tz     *abbrevTz = NULL;
-  char     *abbrev = NULL;
-  pg_tz     *valtz;
+  int fmask = 0,
+      tmask,
+      type;
+  int ptype = 0;    /* "prefix type" for ISO h04mm05s06 format */
+  int i;
+  int val;
+  int dterr;
+  bool isjulian = false;
+  bool is2digits = false;
+  bool bc = false;
+  int mer = HR24;
+  pg_tz *namedTz = NULL;
+  pg_tz *abbrevTz = NULL;
+  char *abbrev = NULL;
+  pg_tz *valtz;
 
   *dtype = DTK_TIME;
   tm->tm_hour = 0;
@@ -1751,8 +1757,7 @@ DecodeTimeOnly(char **field, int *ftype, int nf,
         if (i == 0 && nf >= 2 &&
           (ftype[nf - 1] == DTK_DATE || ftype[1] == DTK_TIME))
         {
-          dterr = DecodeDate(field[i], fmask,
-                     &tmask, &is2digits, tm);
+          dterr = DecodeDate(field[i], fmask,  &tmask, &is2digits, tm);
           if (dterr)
             return dterr;
         }
@@ -1806,7 +1811,9 @@ DecodeTimeOnly(char **field, int *ftype, int nf,
                * ereport'ing directly, but then there is no way
                * to report the bad time zone name.
                */
-              elog(ERROR, "time zone \"%s\" not recognized", field[i]);
+              meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+                "time zone \"%s\" not recognized", field[i]);
+              return DTERR_BAD_FORMAT;
             }
             /* we'll apply the zone setting below */
             ftype[i] = DTK_TZ;
@@ -3706,34 +3713,36 @@ DecodeUnits(int field, char *lowtoken, int *val)
 void
 DateTimeParseError(int dterr, const char *str, const char *datatype)
 {
+  size_t size = strlen(str) + strlen(datatype) + 50;
+  char *errmsg = palloc(size);
   switch (dterr)
   {
     case DTERR_FIELD_OVERFLOW:
-      elog(ERROR, "date/time field value out of range: \"%s\"", str);
+      sprintf(errmsg,
+        "date/time field value out of range: \"%s\"", str);
       break;
     case DTERR_MD_FIELD_OVERFLOW:
       /* <nanny>same as above, but add hint about DateStyle</nanny> */
-      elog(ERROR, "date/time field value out of range: \"%s\"", str);
+      sprintf(errmsg,
+        "date/time field value out of range: \"%s\"", str);
       break;
     case DTERR_INTERVAL_OVERFLOW:
-      elog(ERROR, "interval field value out of range: \"%s\"", str);
+      sprintf(errmsg,
+        "interval field value out of range: \"%s\"", str);
       break;
     case DTERR_TZDISP_OVERFLOW:
-      elog(ERROR, "time zone displacement out of range: \"%s\"", str);
+      sprintf(errmsg,
+        "time zone displacement out of range: \"%s\"", str);
       break;
     case DTERR_BAD_FORMAT:
     default:
-      elog(ERROR, "invalid input syntax for type %s: \"%s\"", datatype, str);
+      sprintf(errmsg,
+        "invalid input syntax for type %s: \"%s\"", datatype, str);
       break;
   }
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, errmsg);
+  return;
 }
-
-
-
-
-
-
-
 
 /* datebsearch()
  * Binary search -- from Knuth (6.2.1) Algorithm B.  Special case like this
@@ -3821,7 +3830,9 @@ EncodeSpecialDate(DateADT dt, char *str)
   else if (DATE_IS_NOEND(dt))
     strcpy(str, LATE);
   else            /* shouldn't happen */
-    elog(ERROR, "invalid argument for EncodeSpecialDate");
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "invalid argument for EncodeSpecialDate");
+  return;
 }
 
 /* EncodeDateOnly()
@@ -4388,7 +4399,10 @@ FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp)
      * then there is no way to report the bad time zone name.
      */
     if (dtza->tz == NULL)
-      elog(ERROR, "time zone \"%s\" not recognized", dtza->zone);
+    {
+      meos_error(ERROR, "time zone \"%s\" not recognized", dtza->zone);
+      return NULL;
+    }
   }
   return dtza->tz;
 }

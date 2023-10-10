@@ -72,7 +72,7 @@ ERROR:  invalid input syntax for type double precision: "ABC"
 LINE 1: SELECT tfloat 'ABC@2012-01-01 08:00:00';
                       ^
 SELECT tfloat '25';
-ERROR:  Could not parse element value
+ERROR:  Could not parse temporal value: 25
 LINE 1: SELECT tfloat '25';
                       ^
 SELECT tfloat '2@2012-01-01 08:00:00,';

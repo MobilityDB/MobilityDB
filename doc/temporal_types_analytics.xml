@@ -114,16 +114,15 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05
 -- {POINT(1 1)@2000-01-01, POINT(4 4)@2000-01-04, POINT(3 3)@2000-01-07}
 </programlisting>
 				<para><xref linkend="fig_tsample" /> illustrates the sampling of temporal floats with various interpolations. As shown in the figure, the sampling operation is best suited for temporal values with continuous interpolation.</para>
+				<figure id="fig_tsample" float="start">
+					<title>Sampling of temporal floats with discrete, step, and linear interpolation.</title>
+					<mediaobject>
+						<imageobject><imagedata format="PDF" scale='75' fileref="images/tsample.pdf"/></imageobject>
+						<imageobject><imagedata format="SVG" scale='75' fileref="images/tsample.svg"/></imageobject>
+						<imageobject><imagedata format="PNG" scale='75' fileref="images/tsample.png"/></imageobject>
+					</mediaobject>
+				</figure>
 			</listitem>
-
-			<figure id="fig_tsample" float="start">
-				<title>Sampling of temporal floats with discrete, step, and linear interpolation.</title>
-				<mediaobject>
-					<imageobject><imagedata format="PDF" scale='75' fileref="images/tsample.pdf"/></imageobject>
-					<imageobject><imagedata format="SVG" scale='75' fileref="images/tsample.svg"/></imageobject>
-					<imageobject><imagedata format="PNG" scale='75' fileref="images/tsample.png"/></imageobject>
-				</mediaobject>
-			</figure>
 
 			<listitem id="tprecision">
 				<indexterm><primary><varname>tprecision</varname></primary></indexterm>
@@ -160,16 +159,15 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-
 -- [POINT(3 3)@2000-01-01, POINT(3 3)@2000-01-05]
 </programlisting>
 				<para>Changing the precision of a temporal value is akin to changing its <emphasis>temporal granularity</emphasis>, for example, from timestamps to hours or days, although the precision can be set to an arbitrary interval, such as 2 hours and 15 minutes. <xref linkend="fig_tprecision" /> illustrates a change of temporal precision for temporal floats with various interpolations.</para>
+				<figure id="fig_tprecision" float="start">
+					<title>Changing the precision of temporal floats with discrete, step, and linear interpolation.</title>
+					<mediaobject>
+						<imageobject><imagedata format="PDF" scale='75' fileref="images/tprecision.pdf"/></imageobject>
+						<imageobject><imagedata format="SVG" scale='75' fileref="images/tprecision.svg"/></imageobject>
+						<imageobject><imagedata format="PNG" scale='75' fileref="images/tprecision.png"/></imageobject>
+					</mediaobject>
+				</figure>
 			</listitem>
-
-			<figure id="fig_tprecision" float="start">
-				<title>Changing the precision of temporal floats with discrete, step, and linear interpolation.</title>
-				<mediaobject>
-					<imageobject><imagedata format="PDF" scale='75' fileref="images/tprecision.pdf"/></imageobject>
-					<imageobject><imagedata format="SVG" scale='75' fileref="images/tprecision.svg"/></imageobject>
-					<imageobject><imagedata format="PNG" scale='75' fileref="images/tprecision.png"/></imageobject>
-				</mediaobject>
-			</figure>
 		</itemizedlist>
 	</sect1>
 

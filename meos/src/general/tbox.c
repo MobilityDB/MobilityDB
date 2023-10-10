@@ -142,7 +142,7 @@ tbox_out(const TBox *box, int maxdd)
 
   static size_t size = MAXTBOXLEN + 1;
   char *result = palloc(size);
-  char *period = NULL, *span = NULL;
+  char *span = NULL, *period = NULL;
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
@@ -155,20 +155,21 @@ tbox_out(const TBox *box, int maxdd)
     period = span_out(&box->period, maxdd);
 
   /* Print the box */
-  char *spantype = "";
   if (hasx)
-    spantype = box->span.basetype == T_INT4 ? "INT" : "FLOAT";
-  if (hasx && hast)
-    snprintf(result, size, "TBOX%s XT(%s,%s)", spantype, span, period);
-  else if (hasx)
-    snprintf(result, size, "TBOX%s X(%s)", spantype, span);
-  else /* hast */
+  {
+    char *spantype = (box->span.basetype == T_INT4) ? "INT" : "FLOAT";
+    if (hast)
+      snprintf(result, size, "TBOX%s XT(%s,%s)", spantype, span, period);
+    else
+      snprintf(result, size, "TBOX%s X(%s)", spantype, span);
+  }
+  else if (hast) /* make compiler quiet */
     snprintf(result, size, "TBOX T(%s)", period);
 
-  if (hast)
-    pfree(period);
   if (hasx)
     pfree(span);
+  if (hast)
+    pfree(period);
   return result;
 }
 

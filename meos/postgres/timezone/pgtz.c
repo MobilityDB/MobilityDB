@@ -22,6 +22,8 @@
 #include "utils/timestamp_def.h"
 #include "pgtz.h"
 
+#include "../../include/meos.h"
+
 /**
  * Structure to represent the timezone cache hash table, which extends
  * the `ENTRY` structure used by hsearch
@@ -199,7 +201,8 @@ ReadDir(DIR *dir, const char *dirname)
   /* Give a generic message for AllocateDir failure, if caller didn't */
   if (dir == NULL)
   {
-    elog(ERROR, "could not open directory \"%s\": %m", dirname);
+    meos_error(ERROR, MEOS_ERR_DIRECTORY_ERROR,
+      "could not open directory \"%s\": %m", dirname);
     return NULL;
   }
 
@@ -208,7 +211,8 @@ ReadDir(DIR *dir, const char *dirname)
     return dent;
 
   if (errno)
-    elog(ERROR, "could not read directory \"%s\": %m", dirname);
+    meos_error(ERROR, MEOS_ERR_DIRECTORY_ERROR,
+      "could not read directory \"%s\": %m", dirname);
   return NULL;
 }
 
@@ -335,7 +339,9 @@ pg_tzset(const char *name)
     if (!tzparse(uppername, &tzstate, true))
     {
       /* This really, really should not happen ... */
-      elog(ERROR, "could not initialize GMT time zone");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not initialize GMT time zone");
+      return NULL;
     }
     /* Use uppercase name as canonical */
     strcpy(canonname, uppername);
@@ -428,7 +434,8 @@ meos_initialize_timezone(const char *tz_str)
 
   session_timezone = pg_tzset(tz_str);
   if (! session_timezone)
-    elog(ERROR, "Failed to initialize local timezone");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Failed to initialize local timezone");
   return;
 }
 

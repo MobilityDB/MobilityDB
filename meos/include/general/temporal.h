@@ -37,7 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include "general/error.h"
+#include <meos.h>
 #include "general/meos_catalog.h"
 #include "general/span.h"
 #include "general/set.h"

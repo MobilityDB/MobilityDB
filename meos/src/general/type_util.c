@@ -950,40 +950,95 @@ hypot4d(double x, double y, double z, double m)
 /**
  * @brief Call input function of the base type
  */
-Datum
+bool 
 #if NPOINT
-basetype_in(const char *str, meosType basetype, bool end)
+basetype_in(const char *str, meosType basetype, bool end, Datum *result)
 #else
-basetype_in(const char *str, meosType basetype, bool end __attribute__((unused)))
+basetype_in(const char *str, meosType basetype, 
+  bool end __attribute__((unused)), Datum *result)
 #endif
 {
   assert(meos_basetype(basetype));
   switch (basetype)
   {
     case T_TIMESTAMPTZ:
-      return TimestampTzGetDatum(pg_timestamptz_in(str, -1));
+    {
+      TimestampTz t = pg_timestamptz_in(str, -1);
+      if (t == DT_NOEND)
+        return false;
+      *result = TimestampTzGetDatum(t);
+      return true;
+    }
     case T_BOOL:
-      return BoolGetDatum(bool_in(str));
+    {
+      bool b = bool_in(str);
+      if (meos_errno())
+        return false;
+      *result = BoolGetDatum(b);
+      return true;
+    }
     case T_INT4:
-      return Int32GetDatum(int4_in(str));
+    {
+      int i = int4_in(str);
+      if (i == PG_INT32_MAX)
+        return false;
+      *result = Int32GetDatum(i);
+      return true;
+    }
     case T_INT8:
-      return Int64GetDatum(int8_in(str));
+    {
+      int64 i = int8_in(str);
+      if (i == PG_INT64_MAX)
+        return false;
+      *result = Int64GetDatum(i);
+      return true;
+    }
     case T_FLOAT8:
-      return Float8GetDatum(float8_in(str, "double precision", str));
+    {
+      double d = float8_in(str, "double precision", str);
+      if (d == DBL_MAX)
+        return false;
+      *result = Float8GetDatum(d);
+      return true;
+    }
     case T_TEXT:
-      return PointerGetDatum(cstring2text(str));
+    {
+      text *txt = cstring2text(str);
+      if (! txt)
+        return false;
+      *result = PointerGetDatum(txt);
+      return true;
+    }
     case T_GEOMETRY:
-      return PointerGetDatum(pgis_geometry_in((char *) str, -1));
+    {
+      GSERIALIZED *gs = pgis_geometry_in((char *) str, -1);
+      if (! gs)
+        return false;
+      *result = PointerGetDatum(gs);
+      return true;
+    }
     case T_GEOGRAPHY:
-      return PointerGetDatum(pgis_geography_in((char *) str, -1));
+    {
+      GSERIALIZED *gs = pgis_geography_in((char *) str, -1);
+      if (! gs)
+        return false;
+      *result = PointerGetDatum(gs);
+      return true;
+    }
 #if NPOINT
     case T_NPOINT:
-      return PointerGetDatum(npoint_parse(&str, end));
+    {
+      Npoint *np = npoint_parse(&str, end);
+      if (! np)
+        return false;
+      *result = PointerGetDatum(np);
+      return true;
+    }
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown input function for base type: %d", basetype);
-      return Int32GetDatum(0);
+      return false;
   }
 }
 

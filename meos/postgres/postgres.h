@@ -62,13 +62,6 @@
 #define ERROR    21  /* user error - abort transaction; return to known state */
 #endif
 #define EXIT_FAILURE 1
-#define elog(error, ...) \
-  do { \
-    fprintf (stderr, __VA_ARGS__); \
-    fprintf (stderr, "\n"); \
-    if (error == ERROR) \
-      exit(EXIT_FAILURE); \
-  } while(0);
 
 /* MEOS: redefining palloc0, palloc, and pfree */
 #if MEOS

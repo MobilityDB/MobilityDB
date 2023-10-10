@@ -17,6 +17,8 @@
 #include "common/int.h"
 #include "port/pg_bitutils.h"
 
+#include "../../include/meos.h"
+
 /*
  * A table of all two-digit numbers. This is used to speed up decimal digit
  * generation by copying pairs of digits into the final output.
@@ -80,13 +82,13 @@ decimalLength64(const uint64 v)
   return t + (v >= PowersOfTen[t]);
 }
 
-/*
- * Convert input string to a signed 32 bit integer.
+/**
+ * @brief Convert input string to a signed 32 bit integer.
  *
  * Allows any number of leading or trailing whitespace characters. Will throw
  * ereport() upon bad input format or overflow.
- *
- * NB: Accumulate input as a negative number, to deal with two's complement
+ * @return On error return PG_INT32_MAX;
+ * @note Accumulate input as a negative number, to deal with two's complement
  * representation of the most negative number, which can't be represented as a
  * positive number.
  */
@@ -142,12 +144,14 @@ pg_strtoint32(const char *s)
   return tmp;
 
 out_of_range:
-  elog(ERROR, "value \"%s\" is out of range for type %s", s, "integer");
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+    "value \"%s\" is out of range for type %s", s, "integer");
+  return PG_INT32_MAX;
 
 invalid_syntax:
-  elog(ERROR, "invalid input syntax for type %s: \"%s\"", "integer", s);
-
-  return 0;          /* keep compiler quiet */
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+    "invalid input syntax for type %s: \"%s\"", "integer", s);
+  return PG_INT32_MAX;
 }
 
 /*
@@ -221,12 +225,14 @@ pg_strtoint64(const char *s)
   return tmp;
 
 out_of_range:
-  elog(ERROR, "value \"%s\" is out of range for type %s", s, "bigint");
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+    "value \"%s\" is out of range for type %s", s, "bigint");
+  return PG_INT64_MAX;
 
 invalid_syntax:
-  elog(ERROR, "invalid input syntax for type %s: \"%s\"", "bigint", s);
-
-  return 0;          /* keep compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "invalid input syntax for type %s: \"%s\"", "bigint", s);
+  return PG_INT64_MAX;
 }
 
 /*
