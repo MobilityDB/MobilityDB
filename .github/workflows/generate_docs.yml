@@ -92,7 +92,7 @@ jobs:
 
       # Rename the directory to develop
       - name: Rename the directory to develop
-        if: ${{ github.egithub.ref == 'refs/heads/develop' }}
+        if: ${{ github.ref == 'refs/heads/develop' }}
         run: |
           rm -rf develop
           mv docs-temp develop
