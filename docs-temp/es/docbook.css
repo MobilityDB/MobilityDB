@@ -1,0 +1,434 @@
+/*
+ * Copyright (c) 2001, 2003, 2010 The FreeBSD Documentation Project
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * $FreeBSD$
+ */
+
+/*
+ * General DocBook styles from the DocBook XSL distribution
+ */
+
+.formalpara-title {
+  font-weight: bold;
+}
+
+a:link {
+  color: #0645AD;
+  text-decoration: underline;
+}
+
+a:visited, a:hover, a:active {
+  color: #663366;
+  text-decoration: underline;
+}
+
+div.blockquote-title {
+  font-weight: bold;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+span.msgmain-title {
+  font-weight: bold;
+}
+
+span.msgsub-title {
+  font-weight: bold;
+}
+
+span.msgrel-title {
+  font-weight: bold;
+}
+
+div.msglevel, div.msgorig, div.msgaud {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+span.msglevel-title, span.msgorig-title, span.msgaud-title {
+  font-weight: bold;
+}
+
+div.msgexplan {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+span.msgexplan-title {
+  font-weight: bold;
+}
+
+div.figure-title {
+  font-weight: bold;
+}
+
+div.example-title {
+  font-weight: bold;
+}
+
+div.equation-title {
+  font-weight: bold;
+}
+
+div.table-title {
+  font-weight: bold;
+}
+
+div.sidebar-title {
+  font-weight: bold;
+}
+
+div.synopsis {
+  white-space: pre;
+  font-family: monospace;
+}
+
+/*
+ * FreeBSD-specific formatting
+ */
+
+body address {
+  line-height: 1.3;
+  margin: 0.6em 0;
+}
+
+html body {
+  margin: 1em 8% 1em 10%;
+  line-height: 1.2;
+}
+
+@media screen {
+  html body { font-family: sans-serif; }
+}
+
+@media print {
+  html body { font-family: serif; }
+}
+
+.legalnotice {
+  font-size: small;
+  font-variant: small-caps;
+}
+
+body div {
+  margin: 0;
+}
+
+dl {
+  margin: 0.4em 0 0 0;
+  line-height: 1.2;
+}
+
+dt {
+  font-weight: bold;
+  margin: 0.4em 0 0 0;
+}
+
+div.abstract div.abstract-title,
+div.toc div.toc-title,
+div.list-of-figures div.toc-title,
+div.list-of-tables div.toc-title,
+div.list-of-examples div.toc-title {
+  font-size: 115%;
+}
+
+div.calloutlist dt {
+  float: left;
+  width: 1em;
+}
+
+div.calloutlist dd {
+  clear: right;
+  margin-bottom: 1ex;
+}
+
+body .calloutlist td {
+  padding-right: 0.5em;
+  width: auto;
+}
+
+body .calloutlist td p {
+  line-height: 1.2;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+body form {
+  margin: 0.6em 0;
+}
+
+div.example p b,
+.question,
+div.table p b,
+div.procedure p b {
+  color: #990000;
+}
+
+h1.title, h2.title, h3.title, h4.title, h5.title, h6.title, p.title,
+h3.author, .corpauthor,
+div.abstract div.abstract-title,
+div.toc div.toc-title,
+div.list-of-figures div.toc-title,
+div.list-of-tables div.toc-title,
+div.list-of-examples div.toc-title {
+  font-weight: bold;
+  line-height: 1.3;
+  margin-top: 1em;
+  margin-left: 0;
+  color: #990000;
+}
+
+h1.title, h2.title {
+  margin: 0.8em 0 0 0;
+}
+
+h3.title, h4.title {
+  margin: 0.8em 0 0 0;
+}
+
+h5.title {
+  margin: 0.8em 0 0 0;
+}
+
+h6.title {
+  margin: 0.8em 0 0 0;
+}
+
+body hr {
+  margin: 0.6em;
+  border-width: 0 0 1px 0;
+  border-style: solid;
+  border-color: #cecece;
+}
+
+body img.navheader {
+  margin: 0 0 0 -4%;
+}
+
+ol {
+  margin: 0 0 0 1em;
+  line-height: 1.2;
+}
+
+body pre {
+  margin: 0.75em 0;
+  font-family: monospace;
+}
+
+body td, body th {
+  line-height: 1.2;
+  padding-right: 1.5em;
+}
+
+ul, body dir, body menu {
+  margin: 0 0 0 1em;
+  line-height: 1.2;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+}
+
+.filename {
+  color: #007a00;
+}
+
+.package, .port {
+  color: #007a00;
+  font-family: monospace;
+  font-style: italic;
+}
+
+.svnref {
+  color: #007a00;
+}
+
+.guimenu, .guimenuitem, .guisubmenu,
+.guilabel, .interface,
+.shortcut, .shortcut .keycap {
+  font-weight: bold;
+}
+
+.guibutton {
+  background-color: #CFCFCF;
+  padding: 2px;
+}
+
+.accel {
+  background-color: #F0F0F0;
+  text-decoration: underline;
+}
+
+pre.screen {
+  white-space: pre;
+  overflow: auto;
+  font-family: monospace;
+  padding: 1em;
+  background-color: #edc;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+pre.programlisting {
+  white-space: pre;
+  overflow: auto;
+  font-family: monospace;
+  padding: 1ex;
+  padding-top: 0;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+@media screen {  /* hide from IE3 */
+  a[href]:hover { background: #ffa }
+}
+
+/* .informaltable, .table th { */
+  /* padding-left: 0.2em; */
+  /* text-align: left; */
+/* } */
+
+.note, .tip, .important, .warning, .caution, .example, div.procedure {
+  border-radius: 4px;
+  padding: 2ex;
+  margin: 0.75em 3em 0.75em 1em;
+  line-height: 1.3;
+}
+
+.note, div.procedure {
+  color: #222;
+  background: #eee;
+  border: 1px solid #ccc;
+  width: 90%;
+}
+
+.tip {
+  color: #004F00;
+  background: #d8ecd6;
+  border: 1px solid green;
+  width: 90%;
+}
+
+.important {
+  font-style: italic;
+  border: 1px solid #a00;
+  border-left: 12px solid #c00;
+  width: 90%;
+}
+
+.warning {
+  color: #9F1313;
+  background: #f8e8e8;
+  border: 1px solid #e59595;
+  width: 90%;
+}
+
+.caution {
+  color: #3E3535;
+  background: #FFC;
+  border: 1px solid #e59595;
+  width: 90%;
+}
+
+.example {
+  background: #fefde6;
+  border: 1px solid #f1bb16;
+  width: 90%;
+}
+
+.admontitle {
+  display: inline;
+  line-height: 1;
+  margin-right: 0;
+}
+
+.procedure-title {
+  font-weight: bold;
+  line-height: 1;
+  margin-right: 0;
+}
+
+.note p:first-of-type, .tip p:first-of-type, .important p:first-of-type, .warning p:first-of-type, .caution p:first-of-type {
+  display: inline-block;
+}
+
+.note p, .tip p, .important p, .warning p, .caution p {
+  margin: 0.4ex 0 0.4ex 0;
+}
+
+/* .informaltable table.calstable tr td { */
+  /* padding-left: 1em; */
+  /* padding-right: 1em; */
+/* } */
+
+.authorgroup {
+  font-style: italic;
+}
+
+.userinput,
+.userinput code {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.errorname {
+  font-family: monospace;
+  font-style:  italic;
+}
+
+pre.screen strong {
+  font-family: monospace;
+  font-weight: normal;
+}
+
+.procedure ol {
+  line-height: 1.2;
+  margin: 0 0 0 -1em;
+}
+
+span.contrib {
+  font-size: small;
+  font-style: italic;
+}
+
+.literal, .command {
+  font-family: monospace;
+}
+
+code.prompt {
+  margin-left: -3px;
+}
+
+/** MobilityDB addons **/
+
+tr.question td {
+  vertical-align: bottom ;
+}
+
+table {
+  border-collapse: collapse;
+}
