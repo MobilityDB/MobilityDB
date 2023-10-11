@@ -74,18 +74,21 @@ SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(6
   Point(7 4)@2000-01-07]', 2.3, true));
 -- [POINT(1 1)@2000-01-01, POINT(6 1)@2000-01-06, POINT(7 4)@2000-01-07]
 </programlisting>
-				<para>La diferencia entre la distancia espacial y la distancia sincronizada se ilustra en los dos últimos ejemplos anteriores y en la <xref linkend="dist_vs_sed" />. En el primer ejemplo, que usa la distancia espacial, se elimina el segundo instante ya que la distancia perperdicular entre <varname>POINT(2 2)</varname> y la línea definida por <varname>POINT(1 1)</varname> y <varname>POINT(7 4)</varname> es igual a 2.23. Por el contrario, en el segundo ejemplo se mantiene el segundo instante dado que la proyección de <varname>Point(6 2)</varname> en la marca de tiempo <varname >2000-01-06</varname> sobre el segmento de línea temporal da como resultado <varname>Point(6 3.5)</varname> y la distancia entre el punto original y su proyección es 2.5.</para>
-				<figure id="dist_vs_sed" float="start">
-					<title>Diferencia entre la distancia espacial la distancia sincronizada.</title>
-					<mediaobject>
-						<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.pdf' /></imageobject>
-						<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.svg' /></imageobject>
-						<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.png' /></imageobject>
-					</mediaobject>
-				</figure>
-				<para>Un uso típico de la función <varname>DouglasPeuckerSimplify</varname> es reducir el tamaño de un conjunto de datos, en particular con fines de visualización. Si la visualización es estática, se debe preferir la distancia espacial; si la visualización es dinámica o animada, se debe preferir la distancia sincronizada.</para>
 			</listitem>
 		</itemizedlist>
+
+		<para>La diferencia entre la distancia espacial y la distancia sincronizada se ilustra en los dos últimos ejemplos anteriores y en la <xref linkend="dist_vs_sed" />. En el primer ejemplo, que usa la distancia espacial, se elimina el segundo instante ya que la distancia perperdicular entre <varname>POINT(2 2)</varname> y la línea definida por <varname>POINT(1 1)</varname> y <varname>POINT(7 4)</varname> es igual a 2.23. Por el contrario, en el segundo ejemplo se mantiene el segundo instante dado que la proyección de <varname>Point(6 2)</varname> en la marca de tiempo <varname >2000-01-06</varname> sobre el segmento de línea temporal da como resultado <varname>Point(6 3.5)</varname> y la distancia entre el punto original y su proyección es 2.5.</para>
+
+		<figure id="dist_vs_sed">
+			<title>Diferencia entre la distancia espacial y la distancia sincronizada.</title>
+			<mediaobject>
+				<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.pdf' /></imageobject>
+				<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.svg' /></imageobject>
+				<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.png' /></imageobject>
+			</mediaobject>
+		</figure>
+
+		<para>Un uso típico de la función <varname>DouglasPeuckerSimplify</varname> es reducir el tamaño de un conjunto de datos, en particular con fines de visualización. Si la visualización es estática, se debe preferir la distancia espacial; si la visualización es dinámica o animada, se debe preferir la distancia sincronizada.</para>
 	</sect1>
 
 	<sect1 id="temporal_types_reduction">
@@ -114,16 +117,19 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05
 -- {POINT(1 1)@2000-01-01, POINT(4 4)@2000-01-04, POINT(3 3)@2000-01-07}
 </programlisting>
 				<para>La <xref linkend="fig_tsample" /> ilustra el muestreo para números flotantes temporales con varias interpolaciones. Como ilustra la figura, la operación de muestreo es más adecuada para valores temporales con interpolación continua.</para>
-				<figure id="fig_tsample" float="start">
-					<title>Muestreo de flotantes temporales con interpolación discreta, escalonada y lineal.</title>
-					<mediaobject>
-						<imageobject><imagedata format="PDF" scale='75' fileref="../images/tsample.pdf"/></imageobject>
-						<imageobject><imagedata format="SVG" scale='75' fileref="../images/tsample.svg"/></imageobject>
-						<imageobject><imagedata format="PNG" scale='75' fileref="../images/tsample.png"/></imageobject>
-					</mediaobject>
-				</figure>
 			</listitem>
+		</itemizedlist>
 
+		<figure id="fig_tsample">
+			<title>Muestreo de flotantes temporales con interpolación discreta, escalonada y lineal.</title>
+			<mediaobject>
+				<imageobject><imagedata format="PDF" scale='75' fileref="../images/tsample.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='75' fileref="../images/tsample.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='75' fileref="../images/tsample.png"/></imageobject>
+			</mediaobject>
+		</figure>
+
+		<itemizedlist>
 			<listitem id="tprecision">
 				<indexterm><primary><varname>tprecision</varname></primary></indexterm>
 				<para>Reducir la precisión temporal de un valor temporal con respecto a un intervalo calculando el promedio/centroide ponderado por el tiempo en cada intervalo de tiempo</para>
@@ -159,15 +165,16 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-
 -- [POINT(3 3)@2000-01-01, POINT(3 3)@2000-01-05]
 </programlisting>
 				<para>Cambiar la precisión de un valor temporal es similar a cambiar su <emphasis>granularidad temporal</emphasis>, por ejemplo, de marcas de tiempo a horas o días, aunque la precisión se puede establecer en un intervalo arbitrario, como 2 horas y 15 minutos. La <xref linkend="fig_tprecision" /> ilustra un cambio de precisión temporal para números flotantes temporales con varias interpolaciones.</para>
-				<figure id="fig_tprecision" float="start">
-					<title>Cambio de precisión de números flotantes temporales con interpolación discreta, escalonada y lineal.</title>
-					<mediaobject>
-						<imageobject><imagedata format="PDF" scale='75' fileref="../images/tprecision.pdf"/></imageobject>
-						<imageobject><imagedata format="SVG" scale='75' fileref="../images/tprecision.svg"/></imageobject>
-						<imageobject><imagedata format="PNG" scale='75' fileref="../images/tprecision.png"/></imageobject>
-					</mediaobject>
-				</figure>
 			</listitem>
+
+			<figure id="fig_tprecision">
+				<title>Cambio de precisión de números flotantes temporales con interpolación discreta, escalonada y lineal.</title>
+				<mediaobject>
+					<imageobject><imagedata format="PDF" scale='75' fileref="../images/tprecision.pdf"/></imageobject>
+					<imageobject><imagedata format="SVG" scale='75' fileref="../images/tprecision.svg"/></imageobject>
+					<imageobject><imagedata format="PNG" scale='75' fileref="../images/tprecision.png"/></imageobject>
+				</mediaobject>
+			</figure>
 		</itemizedlist>
 	</sect1>
 
