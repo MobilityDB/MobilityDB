@@ -97,23 +97,23 @@ jobs:
           rm -rf master
           mv docs-temp master
 
-      # Rename the directory to master
+      # Rename the directory to develop
       - name: Rename the directory to develop
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
         run: |
           rm -rf develop
           mv docs-temp develop
 
-      # Rename the directory to master
-      - name: Rename the directory to master
-        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'refs/heads/master' }}
+      # Rename the directory to master-pr
+      - name: Rename the directory to master-pr
+        if: ${{ github.event_name == 'pull_request' && github.base_ref == 'refs/heads/master' }}
         run: |
           rm -rf master-pr
           mv docs-temp master-pr
 
-      # Rename the directory to master
-      - name: Rename the directory to develop
-        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'refs/heads/develop' }}
+      # Rename the directory to develop-pr
+      - name: Rename the directory to develop-pr
+        if: ${{ github.event_name == 'pull_request' && github.base_ref == 'refs/heads/develop' }}
         run: |
           rm -rf develop-pr
           mv docs-temp develop-pr
