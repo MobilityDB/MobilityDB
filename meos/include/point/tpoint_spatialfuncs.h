@@ -81,29 +81,45 @@ extern Datum geom_intersection2d(Datum geom1, Datum geom2);
 
 /* Parameter tests */
 
-extern void ensure_spatial_validity(const Temporal *temp1,
+extern bool ensure_spatial_validity(const Temporal *temp1,
   const Temporal *temp2);
-extern void ensure_not_geodetic(int16 flags);
-extern void ensure_same_geodetic(int16 flags1, int16 flags2);
-extern void ensure_same_srid(int32_t srid1, int32_t srid2);
-extern void ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs);
-extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
-extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
-extern void ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2);
-extern void ensure_same_dimensionality_gs(const GSERIALIZED *gs1,
+extern bool ensure_not_geodetic(int16 flags);
+extern bool ensure_same_geodetic(int16 flags1, int16 flags2);
+extern bool ensure_same_srid(int32_t srid1, int32_t srid2);
+extern bool ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs);
+extern bool ensure_same_srid_stbox(const STBox *box1, const STBox *box2);
+extern bool ensure_same_dimensionality(int16 flags1, int16 flags2);
+extern bool same_spatial_dimensionality(int16 flags1, int16 flags2);
+extern bool ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
+extern bool ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2);
+extern bool ensure_same_dimensionality_gs(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
-extern void ensure_same_dimensionality_tpoint_gs(const Temporal *temp,
+extern bool same_dimensionality_tpoint_gs(const Temporal *temp,
   const GSERIALIZED *gs);
-extern void ensure_same_spatial_dimensionality_stbox_gs(const STBox *box1,
+extern bool ensure_same_dimensionality_tpoint_gs(const Temporal *temp,
   const GSERIALIZED *gs);
-extern void ensure_has_Z(int16 flags);
-extern void ensure_has_not_Z(int16 flags);
-extern void ensure_has_Z_gs(const GSERIALIZED *gs);
-extern void ensure_has_not_Z_gs(const GSERIALIZED *gs);
-extern void ensure_has_M_gs(const GSERIALIZED *gs);
-extern void ensure_has_not_M_gs(const GSERIALIZED *gs);
-extern void ensure_point_type(const GSERIALIZED *gs);
-extern void ensure_non_empty(const GSERIALIZED *gs);
+extern bool ensure_same_spatial_dimensionality_stbox_gs(const STBox *box,
+  const GSERIALIZED *gs);
+extern bool ensure_has_Z(int16 flags);
+extern bool ensure_has_not_Z(int16 flags);
+extern bool ensure_has_Z_gs(const GSERIALIZED *gs);
+extern bool ensure_has_not_Z_gs(const GSERIALIZED *gs);
+extern bool ensure_has_M_gs(const GSERIALIZED *gs);
+extern bool ensure_has_not_M_gs(const GSERIALIZED *gs);
+extern bool ensure_point_type(const GSERIALIZED *gs);
+extern bool ensure_not_empty(const GSERIALIZED *gs);
+extern bool ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs);
+extern bool ensure_valid_tpoint_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern bool ensure_valid_spatial_stbox_stbox(const STBox *box1,
+  const STBox *box2);
+extern bool ensure_valid_tpoint_box(const Temporal *temp, const STBox *box);
+extern bool ensure_valid_tpoint_tpoint(const Temporal *temp1,
+  const Temporal *temp2);
+
+/* Functions for extracting coordinates */
+
+extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
 /* Functions derived from PostGIS to increase floating-point precision */
 
@@ -144,11 +160,13 @@ extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
 
 extern LWGEOM **lwpointarr_remove_duplicates(LWGEOM **points, int count,
   int *newcount);
-extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
+extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **points, int count,
   interpType interp);
 extern LWLINE *lwline_make(Datum value1, Datum value2);
 extern LWGEOM *lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines,
   int npoints, int nlines);
+extern GSERIALIZED *tpointseq_disc_trajectory(const TSequence *seq);
+extern GSERIALIZED *tpointseq_cont_trajectory(const TSequence *seq);
 
 /* Functions for spatial reference systems */
 
@@ -161,7 +179,11 @@ extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 /* Set precision of the coordinates */
 
 extern Datum datum_round_geo(Datum value, Datum size);
-extern Temporal *tpoint_round(const Temporal *temp, Datum size);
+
+/* Stop function */
+
+int tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
+  TSequence **result);
 
 /*****************************************************************************/
 

@@ -46,12 +46,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
-#include "pg_general/span.h"
-#include "pg_general/tnumber_mathfuncs.h"
 #include "pg_general/type_util.h"
 
 /*****************************************************************************
@@ -133,7 +132,7 @@ PGDLLEXPORT Datum Span_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output function for periods
+ * @brief Output function for spans
  * @sqlfunc asText()
  */
 Datum
@@ -175,14 +174,14 @@ Span_constructor(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Casting
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Value_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_to_span);
 /**
- * @ingroup mobilitydb_setspan_cast
- * @brief Cast a value as a span
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a value as a span
  * @sqlfunc intspan(), bigintspan(), floatspan(), period()
  * @sqlop @p ::
  */
@@ -198,7 +197,7 @@ Value_to_span(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_to_range(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_range);
 /**
- * @ingroup mobilitydb_setspan_cast
+ * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a span as a range value
  * @sqlfunc int4range(), tstzrange()
  * @sqlop @p ::
@@ -241,7 +240,7 @@ range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
 PGDLLEXPORT Datum Range_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Range_to_span);
 /**
- * @ingroup mobilitydb_setspan_cast
+ * @ingroup mobilitydb_setspan_conversion
  * @brief Convert the PostgreSQL range value as a span value
  * @sqlfunc intspan(), period()
  * @sqlop @p ::
@@ -356,54 +355,19 @@ Period_duration(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
-/**
- * @brief Set the precision of the float span to the number of decimal places.
- */
-void
-floatspan_round(const Span *span, Datum size, Span *result)
-{
-  /* Set precision of bounds */
-  Datum lower = datum_round_float(span->lower, size);
-  Datum upper = datum_round_float(span->upper, size);
-  /* Set resulting span */
-  span_set(lower, upper, span->lower_inc, span->upper_inc, span->basetype,
-    result);
-  return;
-}
-
-PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Floatspan_round);
+PGDLLEXPORT Datum Numspan_shift(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Set the precision of the float span to the number of decimal places
- * @sqlfunc round()
- */
-Datum
-Floatspan_round(PG_FUNCTION_ARGS)
-{
-  Span *span = PG_GETARG_SPAN_P(0);
-  Datum size = PG_GETARG_DATUM(1);
-  Span *result = palloc(sizeof(Span));
-  floatspan_round(span, size, result);
-  PG_RETURN_POINTER(result);
-}
-
-/******************************************************************************/
-
-PGDLLEXPORT Datum Span_shift(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_shift);
-/**
- * @ingroup mobilitydb_setspan_transf
- * @brief Shift the span by a value
+ * @brief Shift the number span by the value
  * @sqlfunc shift()
  */
 Datum
-Span_shift(PG_FUNCTION_ARGS)
+Numspan_shift(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum shift = PG_GETARG_DATUM(1);
-  Span *result = span_copy(s);
-  span_shift(result, shift);
+  Span *result = numspan_shift_scale(s, shift, 0, true, false);
   PG_RETURN_POINTER(result);
 }
 
@@ -417,42 +381,91 @@ PG_FUNCTION_INFO_V1(Period_shift);
 Datum
 Period_shift(PG_FUNCTION_ARGS)
 {
-  Span *p = PG_GETARG_SPAN_P(0);
+  Span *s = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Span *result = period_shift_tscale(p, shift, NULL);
+  Span *result = period_shift_scale(s, shift, NULL);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Period_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_tscale);
+PGDLLEXPORT Datum Numspan_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift the period  value by the interval
- * @sqlfunc tscale()
+ * @brief Scale the number span by the value
+ * @sqlfunc scale()
  */
 Datum
-Period_tscale(PG_FUNCTION_ARGS)
+Numspan_scale(PG_FUNCTION_ARGS)
 {
-  Span *p = PG_GETARG_SPAN_P(0);
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum duration = PG_GETARG_DATUM(1);
+  Span *result = numspan_shift_scale(s, 0, duration, false, true);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Period_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Period_scale);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Scale the period value by the interval
+ * @sqlfunc scale()
+ */
+Datum
+Period_scale(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Span *result = period_shift_tscale(p, NULL, duration);
+  Span *result = period_shift_scale(s, NULL, duration);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Period_shift_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_shift_tscale);
+PGDLLEXPORT Datum Numspan_shift_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift the period value by the interval
- * @sqlfunc shiftTscale()
+ * @brief Shift and scale the number span by the values
+ * @sqlfunc shiftScale()
  */
 Datum
-Period_shift_tscale(PG_FUNCTION_ARGS)
+Numspan_shift_scale(PG_FUNCTION_ARGS)
 {
-  Span *p = PG_GETARG_SPAN_P(0);
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  Datum duration = PG_GETARG_DATUM(2);
+  Span *result = numspan_shift_scale(s, shift, duration, true, true);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Period_shift_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Period_shift_scale);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift and scale the period value by the intervals
+ * @sqlfunc shiftScale()
+ */
+Datum
+Period_shift_scale(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  Span *result = period_shift_tscale(p, shift, duration);
+  Span *result = period_shift_scale(s, shift, duration);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspan_round);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Set the precision of the float span to the number of decimal places
+ * @sqlfunc round()
+ */
+Datum
+Floatspan_round(PG_FUNCTION_ARGS)
+{
+  Span *span = PG_GETARG_SPAN_P(0);
+  int maxdd = PG_GETARG_INT32(1);
+  Span *result = floatspan_round(span, maxdd);
   PG_RETURN_POINTER(result);
 }
 

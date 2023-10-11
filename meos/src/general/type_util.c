@@ -36,6 +36,8 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/float.h>
@@ -64,24 +66,94 @@ extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2, Oi
  * Comparison functions on datums
  *****************************************************************************/
 
-/* Version of the functions where the types of both arguments is equal */
-
 /**
  * @brief Return true if the first value is less than the second one
  */
 int
 datum_cmp(Datum l, Datum r, meosType type)
 {
-  return datum_cmp2(l, r, type, type);
+  assert(meos_basetype(type));
+  switch (type)
+  {
+    case T_TIMESTAMPTZ:
+      return timestamptz_cmp_internal(DatumGetTimestampTz(l),
+        DatumGetTimestampTz(r));
+    case T_BOOL:
+      return (DatumGetBool(l) < DatumGetBool(r)) ? -1 :
+        ((DatumGetBool(l) > DatumGetBool(r)) ? 1 : 0);
+    case T_INT4:
+      return (DatumGetInt32(l) < DatumGetInt32(r)) ? -1 :
+        ((DatumGetInt32(l) > DatumGetInt32(r)) ? 1 : 0);
+    case T_INT8:
+      return (DatumGetInt64(l) < DatumGetInt64(r)) ? -1 :
+        ((DatumGetInt64(l) > DatumGetInt64(r)) ? 1 : 0);
+    case T_FLOAT8:
+      return float8_cmp_internal(DatumGetFloat8(l), DatumGetFloat8(r));
+    case T_TEXT:
+      return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
+#if 0 /* not used */
+    case T_DOUBLE2:
+      return double2_cmp(DatumGetDouble2P(l), DatumGetDouble2P(r));
+    case type == T_DOUBLE3:
+      return double3_cmp(DatumGetDouble3P(l), DatumGetDouble3P(r));
+    case T_DOUBLE4:
+      return double4_cmp(DatumGetDouble4P(l), DatumGetDouble4P(r));
+#endif /* not used */
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      return gserialized_cmp(DatumGetGserializedP(l), DatumGetGserializedP(r));
+#if NPOINT
+    case T_NPOINT:
+      return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown compare function for base type: %d", type);
+    return INT_MAX;
+  }
 }
 
 /**
  * @brief Return true if the values are equal
+ * @note This function should be faster than the function datum_cmp
+ * @pre For geometry and geography types it us supposed that the type is a POINT
  */
 bool
 datum_eq(Datum l, Datum r, meosType type)
 {
-  return datum_eq2(l, r, type, type);
+  assert(meos_basetype(type));
+  switch (type)
+  {
+    /* For types passed by value */
+    case T_TIMESTAMPTZ:
+    case T_BOOL:
+    case T_INT4:
+    case T_INT8:
+      return l == r;
+    case T_FLOAT8:
+      return float8_eq(DatumGetFloat8(l), DatumGetFloat8(r));
+    case T_TEXT:
+      return text_cmp(DatumGetTextP(l), DatumGetTextP(r),
+        DEFAULT_COLLATION_OID) == 0;
+    case T_DOUBLE2:
+      return double2_eq(DatumGetDouble2P(l), DatumGetDouble2P(r));
+    case T_DOUBLE3:
+      return double3_eq(DatumGetDouble3P(l), DatumGetDouble3P(r));
+    case T_DOUBLE4:
+      return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
+    case T_GEOMETRY:
+      return datum_point_eq(l, r);
+    case T_GEOGRAPHY:
+      return datum_point_same(l, r);
+#if NPOINT
+    case T_NPOINT:
+      return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
+    default: /* Error! */
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Unknown equality function for base type: %d", type);
+    return false;
+  }
 }
 
 /**
@@ -90,7 +162,7 @@ datum_eq(Datum l, Datum r, meosType type)
 bool
 datum_ne(Datum l, Datum r, meosType type)
 {
-  return ! datum_eq2(l, r, type, type);
+  return ! datum_eq(l, r, type);
 }
 
 /**
@@ -99,7 +171,7 @@ datum_ne(Datum l, Datum r, meosType type)
 bool
 datum_lt(Datum l, Datum r, meosType type)
 {
-  return datum_lt2(l, r, type, type);
+  return datum_cmp(l, r, type) < 0;
 }
 
 /**
@@ -108,7 +180,7 @@ datum_lt(Datum l, Datum r, meosType type)
 bool
 datum_le(Datum l, Datum r, meosType type)
 {
-  return datum_eq2(l, r, type, type) || datum_lt2(l, r, type, type);
+  return datum_cmp(l, r, type) <= 0;
 }
 
 /**
@@ -117,7 +189,7 @@ datum_le(Datum l, Datum r, meosType type)
 bool
 datum_gt(Datum l, Datum r, meosType type)
 {
-  return datum_lt2(r, l, type, type);
+  return datum_cmp(l, r, type) > 0;
 }
 
 /**
@@ -126,148 +198,7 @@ datum_gt(Datum l, Datum r, meosType type)
 bool
 datum_ge(Datum l, Datum r, meosType type)
 {
-  return datum_eq2(l, r, type, type) || datum_lt2(r, l, type, type);
-}
-
-/*****************************************************************************/
-
-/*
- * Version of the functions where the types of both arguments may be different
- * but compatible, e.g., integer and float
- */
-
-/**
- * @brief Return true if the first value is less than the second one
- */
-int
-datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
-{
-  assert(meos_basetype(typel));
-  if (typel != typer)
-    assert(meos_basetype(typer));
-  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
-    return timestamptz_cmp_internal(DatumGetTimestampTz(l),
-      DatumGetTimestampTz(r));
-  if (typel == T_BOOL && typer == T_BOOL)
-    return (DatumGetBool(l) < DatumGetBool(r)) ? -1 :
-      ((DatumGetBool(l) > DatumGetBool(r)) ? 1 : 0);
-  if (typel == T_INT4 && typer == T_INT4)
-    return (DatumGetInt32(l) < DatumGetInt32(r)) ? -1 :
-      ((DatumGetInt32(l) > DatumGetInt32(r)) ? 1 : 0);
-  if (typel == T_INT8 && typer == T_INT8)
-    return (DatumGetInt64(l) < DatumGetInt64(r)) ? -1 :
-      ((DatumGetInt64(l) > DatumGetInt64(r)) ? 1 : 0);
-  if (typel == T_FLOAT8 && typer == T_FLOAT8)
-    return float8_cmp_internal(DatumGetFloat8(l), DatumGetFloat8(r));
-  if (typel == T_INT4 && typer == T_FLOAT8)
-    return float8_cmp_internal((double) DatumGetInt32(l), DatumGetFloat8(r));
-  if (typel == T_FLOAT8 && typer == T_INT4)
-    return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  if (typel == T_TEXT && typer == T_TEXT)
-    return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
-#if 0 /* not used */
-  if (typel == T_DOUBLE2 && typel == typer)
-    return double2_cmp(DatumGetDouble2P(l), DatumGetDouble2P(r));
-  if (typel == T_DOUBLE3 && typel == typer)
-    return double3_cmp(DatumGetDouble3P(l), DatumGetDouble3P(r));
-  if (typel == T_DOUBLE4 && typel == typer)
-    return double4_cmp(DatumGetDouble4P(l), DatumGetDouble4P(r));
-#endif /* not used */
-  if ((typel == T_GEOMETRY || typel == T_GEOGRAPHY) && typel == typer)
-    return gserialized_cmp(DatumGetGserializedP(l), DatumGetGserializedP(r));
-#if NPOINT
-  if (typel == T_NPOINT && typel == typer)
-    return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
-#endif
-  elog(ERROR, "unknown compare function for base type: %d", typel);
-  return 0; /* make compiler quiet */
-}
-
-/**
- * @brief Return true if the values are equal even if their type is not the same
- * @note This function should be faster than the function datum_cmp2
- */
-bool
-datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
-{
-  assert(meos_basetype(typel));
-  if (typel != typer)
-    assert(meos_basetype(typer));
-  if ((typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ) ||
-    (typel == T_BOOL && typer == T_BOOL) ||
-    (typel == T_INT4 && typer == T_INT4) ||
-    (typel == T_INT8 && typer == T_INT8))
-    return l == r;
-  if (typel == T_FLOAT8 && typer == T_FLOAT8)
-    return float8_eq(DatumGetFloat8(l), DatumGetFloat8(r));
-  if (typel == T_INT4 && typer == T_FLOAT8)
-    return float8_eq((double) DatumGetInt32(l), DatumGetFloat8(r));
-  if (typel == T_FLOAT8 && typer == T_INT4)
-    return float8_eq(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  if (typel == T_TEXT && typer == T_TEXT)
-    return text_cmp(DatumGetTextP(l), DatumGetTextP(r),
-      DEFAULT_COLLATION_OID) == 0;
-  if (typel == T_DOUBLE2 && typel == typer)
-    return double2_eq(DatumGetDouble2P(l), DatumGetDouble2P(r));
-  if (typel == T_DOUBLE3 && typel == typer)
-    return double3_eq(DatumGetDouble3P(l), DatumGetDouble3P(r));
-  if (typel == T_DOUBLE4 && typel == typer)
-    return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
-  if ((typel == T_GEOMETRY || typel == T_GEOGRAPHY) && typel == typer)
-    return (gserialized_cmp(DatumGetGserializedP(l),
-      DatumGetGserializedP(r)) == 0);
-#if NPOINT
-  if (typel == T_NPOINT && typel == typer)
-    return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
-#endif
-  elog(ERROR, "unknown datum_eq2 function for base type: %d", typel);
-  return false; /* make compiler quiet */
-}
-
-/**
- * @brief Return true if the values are different
- */
-bool
-datum_ne2(Datum l, Datum r, meosType typel, meosType typer)
-{
-  return ! datum_eq2(l, r, typel, typer);
-}
-
-/**
- * @brief Return true if the first value is less than the second one
- */
-bool
-datum_lt2(Datum l, Datum r, meosType typel, meosType typer)
-{
-  return datum_cmp2(l, r, typel, typer) < 0;
-}
-
-
-/**
- * @brief Return true if the first value is less than or equal to the second one
- */
-bool
-datum_le2(Datum l, Datum r, meosType typel, meosType typer)
-{
-  return datum_cmp2(l, r, typel, typer) <= 0;
-}
-
-/**
- * @brief Return true if the first value is greater than the second one
- */
-bool
-datum_gt2(Datum l, Datum r, meosType typel, meosType typer)
-{
-  return datum_cmp2(l, r, typel, typer) > 0;
-}
-
-/**
- * @brief Return true if the first value is greater than or equal to the second one
- */
-bool
-datum_ge2(Datum l, Datum r, meosType typel, meosType typer)
-{
-  return datum_cmp2(l, r, typel, typer) >= 0;
+  return datum_cmp(l, r, type) >= 0;
 }
 
 /*****************************************************************************/
@@ -276,54 +207,54 @@ datum_ge2(Datum l, Datum r, meosType typel, meosType typer)
  * @brief Return a Datum true if the values are equal
  */
 Datum
-datum2_eq2(Datum l, Datum r, meosType typel, meosType typer)
+datum2_eq(Datum l, Datum r, meosType type)
 {
-  return BoolGetDatum(datum_eq2(l, r, typel, typer));
+  return BoolGetDatum(datum_eq(l, r, type));
 }
 
 /**
  * @brief Return a Datum true if the values are different
  */
 Datum
-datum2_ne2(Datum l, Datum r, meosType typel, meosType typer)
+datum2_ne(Datum l, Datum r, meosType type)
 {
-  return BoolGetDatum(datum_ne2(l, r, typel, typer));
+  return BoolGetDatum(datum_ne(l, r, type));
 }
 
 /**
  * @brief Return a Datum true if the first value is less than the second one
  */
 Datum
-datum2_lt2(Datum l, Datum r, meosType typel, meosType typer)
+datum2_lt(Datum l, Datum r, meosType type)
 {
-  return BoolGetDatum(datum_lt2(l, r, typel, typer));
+  return BoolGetDatum(datum_lt(l, r, type));
 }
 
 /**
  * @brief Return a Datum true if the first value is less than or equal to the second one
  */
 Datum
-datum2_le2(Datum l, Datum r, meosType typel, meosType typer)
+datum2_le(Datum l, Datum r, meosType type)
 {
-  return BoolGetDatum(datum_le2(l, r, typel, typer));
+  return BoolGetDatum(datum_le(l, r, type));
 }
 
 /**
  * @brief Return a Datum true if the first value is greater than the second one
  */
 Datum
-datum2_gt2(Datum l, Datum r, meosType typel, meosType typer)
+datum2_gt(Datum l, Datum r, meosType type)
 {
-  return BoolGetDatum(datum_gt2(l, r, typel, typer));
+  return BoolGetDatum(datum_gt(l, r, type));
 }
 
 /**
  * @brief Return a Datum true if the first value is greater than or equal to the second one
  */
 Datum
-datum2_ge2(Datum l, Datum r, meosType typel, meosType typer)
+datum2_ge(Datum l, Datum r, meosType type)
 {
-  return BoolGetDatum(datum_ge2(l, r, typel, typer));
+  return BoolGetDatum(datum_ge(l, r, type));
 }
 
 /*****************************************************************************
@@ -335,148 +266,84 @@ datum2_ge2(Datum l, Datum r, meosType typel, meosType typer)
  * @brief Return the addition of the two numbers
  */
 Datum
-datum_add(Datum l, Datum r, meosType typel, meosType typer)
+datum_add(Datum l, Datum r, meosType type)
 {
-  Datum result = 0;
-  if (typel == T_INT4)
+  switch (type)
   {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum((int64) DatumGetInt32(l) + DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
+    case T_INT4:
+      return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+    case T_INT8:
+      return Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
+    case T_FLOAT8:
+      return Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown add function for base type: %d", type);
+      return 0;
   }
-  else if (typel == T_INT8)
-  {
-    if (typer == T_INT4)
-      result = Int64GetDatum(DatumGetInt64(l) + DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) + (double) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Float8GetDatum(DatumGetFloat8(l) + (double) DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
-  }
-  return result;
 }
 
 /**
  * @brief Return the subtraction of the two numbers
  */
 Datum
-datum_sub(Datum l, Datum r, meosType typel, meosType typer)
+datum_sub(Datum l, Datum r, meosType type)
 {
-  Datum result = 0;
-  if (typel == T_INT4)
+  switch (type)
   {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum(DatumGetInt32(l) - DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt32(l) - DatumGetFloat8(r));
+    case T_INT4:
+      return Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+    case T_INT8:
+      return Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
+    case T_FLOAT8:
+      return Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown subtract function for base type: %d", type);
+      return 0;
   }
-  else if (typel == T_INT8)
-  {
-    if (typer == T_INT4)
-      result = Int64GetDatum(DatumGetInt64(l) - (int64) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt32(l) - DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) - (double) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Float8GetDatum(DatumGetFloat8(l) - (double) DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
-  }
-  return result;
 }
 
 /**
  * @brief Return the multiplication of the two numbers
  */
 Datum
-datum_mult(Datum l, Datum r, meosType typel, meosType typer)
+datum_mult(Datum l, Datum r, meosType type)
 {
-  Datum result = 0;
-  if (typel == T_INT4)
+  switch (type)
   {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum((int64) DatumGetInt32(l) * DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt32(l) * DatumGetFloat8(r));
+    case T_INT4:
+      return Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+    case T_INT8:
+      return Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
+    case T_FLOAT8:
+      return Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown multiplication function for base type: %d", type);
+      return 0;
   }
-  else if (typel == T_INT8)
-  {
-    if (typer == T_INT4)
-      result = Int64GetDatum(DatumGetInt64(l) * (int64) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt64(l) * DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) * (double) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Float8GetDatum(DatumGetFloat8(l) * (double) DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
-  }
-  return result;
 }
 
 /**
  * @brief Return the division of the two numbers
  */
 Datum
-datum_div(Datum l, Datum r, meosType typel, meosType typer)
+datum_div(Datum l, Datum r, meosType type)
 {
-  Datum result;
-  if (typel == T_INT4)
+  switch (type)
   {
-    if (typer == T_INT4)
-      result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum((int64) DatumGetInt32(l) / DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt32(l) / DatumGetFloat8(r));
+    case T_INT4:
+      return Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+    case T_INT8:
+      return Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
+    case T_FLOAT8:
+      return Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown division function for base type: %d", type);
+    return 0;
   }
-  else if (typel == T_INT8)
-  {
-    if (typer == T_INT4)
-      result = Int64GetDatum(DatumGetInt64(l) / (int64) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum((double) DatumGetInt64(l) / DatumGetFloat8(r));
-  }
-  else /* typel == T_FLOAT8 */
-  {
-    if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) / (double) DatumGetInt32(r));
-    else if (typer == T_INT8)
-      result = Float8GetDatum(DatumGetFloat8(l) / (double) DatumGetInt64(r));
-    else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
-  }
-  return result;
 }
 
 /*****************************************************************************
@@ -486,62 +353,76 @@ datum_div(Datum l, Datum r, meosType typel, meosType typer)
 /**
  * @ingroup libmeos_internal_typefuncs
  * @brief Return the 32-bit hash of a value.
+ * @return On error return INT_MAX
  */
 uint32
 datum_hash(Datum d, meosType type)
 {
   assert(meos_basetype(type));
-  if (type == T_TIMESTAMPTZ)
-    return pg_hashint8(TimestampTzGetDatum(d));
-  else if (type == T_BOOL)
-    return hash_bytes_uint32((int32) DatumGetBool(d));
-  else if (type == T_INT4)
-    return hash_bytes_uint32(DatumGetInt32(d));
-  else if (type == T_INT8)
-    return pg_hashint8(DatumGetInt64(d));
-  else if (type == T_FLOAT8)
-    return pg_hashfloat8(DatumGetFloat8(d));
-  else if (type == T_TEXT)
-    return pg_hashtext(DatumGetTextP(d));
-  else if (geo_basetype(type))
-    return gserialized_hash(DatumGetGserializedP(d));
+  switch (type)
+  {
+    case T_TIMESTAMPTZ:
+      return pg_hashint8(TimestampTzGetDatum(d));
+    case T_BOOL:
+      return hash_bytes_uint32((int32) DatumGetBool(d));
+    case T_INT4:
+      return hash_bytes_uint32(DatumGetInt32(d));
+    case T_INT8:
+      return pg_hashint8(DatumGetInt64(d));
+    case T_FLOAT8:
+      return pg_hashfloat8(DatumGetFloat8(d));
+    case T_TEXT:
+      return pg_hashtext(DatumGetTextP(d));
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      return gserialized_hash(DatumGetGserializedP(d));
 #if NPOINT
-  else if (type == T_NPOINT)
-    return npoint_hash(DatumGetNpointP(d));
+    case T_NPOINT:
+      return npoint_hash(DatumGetNpointP(d));
 #endif
-  elog(ERROR, "unknown hash function for base type: %d", type);
-  return (uint32) 0; /* make compiler quiet */
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "unknown hash function for base type: %d", type);
+      return INT_MAX;
+  }
 }
 
 /**
  * @ingroup libmeos_internal_typefuncs
  * @brief Return the 64-bit hash of a value using a seed.
+ * @return On error return INT_MAX
  */
 uint64
 datum_hash_extended(Datum d, meosType type, uint64 seed)
 {
   assert(meos_basetype(type));
-  if (type == T_TIMESTAMPTZ)
-    return pg_hashint8extended(DatumGetTimestampTz(d), seed);
-  else if (type == T_BOOL)
-    return hash_bytes_uint32_extended((int32) DatumGetBool(d), seed);
-  else if (type == T_INT4)
-    return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
-  else if (type == T_INT8)
-    return pg_hashint8extended(DatumGetInt64(d), seed);
-  else if (type == T_FLOAT8)
-    return pg_hashfloat8extended(DatumGetFloat8(d), seed);
-  else if (type == T_TEXT)
-    return pg_hashtextextended(DatumGetTextP(d), seed);
-  // PostGIS currently does not provide an extended hash function
-  // else if (geo_basetype(type))
-    // return gserialized_hash_extended(DatumGetGserializedP(d), seed);
+  switch (type)
+  {
+    case T_TIMESTAMPTZ:
+      return pg_hashint8extended(DatumGetTimestampTz(d), seed);
+    case T_BOOL:
+      return hash_bytes_uint32_extended((int32) DatumGetBool(d), seed);
+    case T_INT4:
+      return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
+    case T_INT8:
+      return pg_hashint8extended(DatumGetInt64(d), seed);
+    case T_FLOAT8:
+      return pg_hashfloat8extended(DatumGetFloat8(d), seed);
+    case T_TEXT:
+      return pg_hashtextextended(DatumGetTextP(d), seed);
+    // PostGIS currently does not provide an extended hash function
+    // case T_GEOMETRY:
+    // case T_GEOGRAPHY:
+      // return gserialized_hash_extended(DatumGetGserializedP(d), seed);
 #if NPOINT
-  else if (type == T_NPOINT)
-    return npoint_hash_extended(DatumGetNpointP(d), seed);
+    case T_NPOINT:
+      return npoint_hash_extended(DatumGetNpointP(d), seed);
 #endif
-  elog(ERROR, "unknown extended hash function for base type: %d", type);
-  return (uint64) 0; /* make compiler quiet */
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "unknown extended hash function for base type: %d", type);
+      return INT_MAX;
+  }
 }
 
 /*****************************************************************************
@@ -567,32 +448,47 @@ datum_copy(Datum value, meosType basetype)
 
 /**
  * @brief Convert a number to a double
+ * @return On error return DBL_MAX
  */
 double
-datum_double(Datum d, meosType basetype)
+datum_double(Datum d, meosType type)
 {
-  assert(tnumber_basetype(basetype));
-  if (basetype == T_INT4)
-    return (double) DatumGetInt32(d);
-  if (basetype == T_INT8)
-    return (double) DatumGetInt64(d);
-  else /* basetype == T_FLOAT8 */
-    return DatumGetFloat8(d);
+  assert(numspan_basetype(type));
+  switch (type)
+  {
+    case T_INT4:
+      return (double) DatumGetInt32(d);
+    case T_INT8:
+      return (double) DatumGetInt64(d);
+    case T_FLOAT8:
+      return DatumGetFloat8(d);
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "unknown conversion to double function for base type: %d", type);
+      return DBL_MAX;
+  }
 }
 
 /**
- * @brief Convert a double to a datum
+ * @brief Convert a double to a number Datum
  */
 Datum
-double_datum(double d, meosType basetype)
+double_datum(double d, meosType type)
 {
-  assert(tnumber_basetype(basetype));
-  if (basetype == T_INT4)
-    return Int32GetDatum((int32) d);
-  if (basetype == T_INT8)
-    return Int64GetDatum((int64) d);
-  else /* basetype == T_FLOAT8 */
-    return Float8GetDatum(d);
+  assert(numspan_basetype(type));
+  switch (type)
+  {
+    case T_INT4:
+      return Int32GetDatum((int) d);
+    case T_INT8:
+      return Int64GetDatum((int64) d);
+    case T_FLOAT8:
+      return Float8GetDatum(d);
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "unknown conversion to Datum function for base type: %d", type);
+      return 0;
+  }
 }
 
 /*****************************************************************************
@@ -725,7 +621,7 @@ tseqarr_sort(TSequence **sequences, int count)
 int
 datumarr_remove_duplicates(Datum *values, int count, meosType type)
 {
-  assert (count > 0);
+  assert(count > 0);
   int newcount = 0;
   for (int i = 1; i < count; i++)
     if (datum_ne(values[newcount], values[i], type))
@@ -739,7 +635,7 @@ datumarr_remove_duplicates(Datum *values, int count, meosType type)
 int
 timestamparr_remove_duplicates(TimestampTz *values, int count)
 {
-  assert (count > 0);
+  assert(count > 0);
   int newcount = 0;
   for (int i = 1; i < count; i++)
     if (values[newcount] != values[i])
@@ -753,7 +649,7 @@ timestamparr_remove_duplicates(TimestampTz *values, int count)
 int
 tinstarr_remove_duplicates(const TInstant **instants, int count)
 {
-  assert(count != 0);
+  assert(count > 0);
   int newcount = 0;
   for (int i = 1; i < count; i++)
     if (! tinstant_eq(instants[newcount], instants[i]))
@@ -786,6 +682,10 @@ bstring2bytea(const uint8_t *wkb, size_t size)
 text *
 cstring2text(const char *cstring)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cstring))
+    return NULL;
+
   size_t len = strlen(cstring);
   text *result = palloc(len + VARHDRSZ);
   SET_VARSIZE(result, len + VARHDRSZ);
@@ -802,6 +702,10 @@ cstring2text(const char *cstring)
 char *
 text2cstring(const text *textptr)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) textptr))
+    return NULL;
+
   size_t size = VARSIZE_ANY_EXHDR(textptr);
   char *str = palloc(size + 1);
   memcpy(str, VARDATA(textptr), size);
@@ -1040,55 +944,114 @@ hypot4d(double x, double y, double z, double m)
 #endif /* not used */
 
 /*****************************************************************************
- * Input/output PostgreSQL functions
+ * Input/output PostgreSQL and PostGIS functions
  *****************************************************************************/
 
 /**
  * @brief Call input function of the base type
  */
-Datum
+bool 
 #if NPOINT
-basetype_in(const char *str, meosType basetype, bool end)
+basetype_in(const char *str, meosType basetype, bool end, Datum *result)
 #else
-basetype_in(const char *str, meosType basetype, bool end __attribute__((unused)))
+basetype_in(const char *str, meosType basetype, 
+  bool end __attribute__((unused)), Datum *result)
 #endif
 {
   assert(meos_basetype(basetype));
   switch (basetype)
   {
     case T_TIMESTAMPTZ:
-      return TimestampTzGetDatum(pg_timestamptz_in(str, -1));
+    {
+      TimestampTz t = pg_timestamptz_in(str, -1);
+      if (t == DT_NOEND)
+        return false;
+      *result = TimestampTzGetDatum(t);
+      return true;
+    }
     case T_BOOL:
-      return BoolGetDatum(bool_in(str));
+    {
+      bool b = bool_in(str);
+      if (meos_errno())
+        return false;
+      *result = BoolGetDatum(b);
+      return true;
+    }
     case T_INT4:
-      return Int32GetDatum(int4_in(str));
+    {
+      int i = int4_in(str);
+      if (i == PG_INT32_MAX)
+        return false;
+      *result = Int32GetDatum(i);
+      return true;
+    }
     case T_INT8:
-      return Int64GetDatum(int8_in(str));
+    {
+      int64 i = int8_in(str);
+      if (i == PG_INT64_MAX)
+        return false;
+      *result = Int64GetDatum(i);
+      return true;
+    }
     case T_FLOAT8:
-      return Float8GetDatum(float8_in(str, "double precision", str));
+    {
+      double d = float8_in(str, "double precision", str);
+      if (d == DBL_MAX)
+        return false;
+      *result = Float8GetDatum(d);
+      return true;
+    }
     case T_TEXT:
-      return PointerGetDatum(cstring2text(str));
+    {
+      text *txt = cstring2text(str);
+      if (! txt)
+        return false;
+      *result = PointerGetDatum(txt);
+      return true;
+    }
     case T_GEOMETRY:
-      return PointerGetDatum(gserialized_in((char *) str, -1));
+    {
+      GSERIALIZED *gs = pgis_geometry_in((char *) str, -1);
+      if (! gs)
+        return false;
+      *result = PointerGetDatum(gs);
+      return true;
+    }
     case T_GEOGRAPHY:
-      return PointerGetDatum(gserialized_geog_in((char *) str, -1));
+    {
+      GSERIALIZED *gs = pgis_geography_in((char *) str, -1);
+      if (! gs)
+        return false;
+      *result = PointerGetDatum(gs);
+      return true;
+    }
 #if NPOINT
     case T_NPOINT:
-      return PointerGetDatum(npoint_parse(&str, end));
+    {
+      Npoint *np = npoint_parse(&str, end);
+      if (! np)
+        return false;
+      *result = PointerGetDatum(np);
+      return true;
+    }
 #endif
     default: /* Error! */
-      elog(ERROR, "Unknown base type: %d", basetype);
-      return Int32GetDatum(0); /* make compiler quiet */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown input function for base type: %d", basetype);
+      return false;
   }
 }
 
 /**
  * @brief Call output function of the base type
+ * @return On error return NULL
  */
 char *
 basetype_out(Datum value, meosType basetype, int maxdd)
 {
   assert(meos_basetype(basetype));
+  assert(maxdd >= 0);
+
   switch (basetype)
   {
     case T_TIMESTAMPTZ:
@@ -1118,16 +1081,16 @@ basetype_out(Datum value, meosType basetype, int maxdd)
       return double4_out(DatumGetDouble4P(value), maxdd);
 #endif
     case T_GEOMETRY:
-      return gserialized_out(DatumGetGserializedP(value));
     case T_GEOGRAPHY:
-      return gserialized_geog_out(DatumGetGserializedP(value));
+      return gserialized_out(DatumGetGserializedP(value));
 #if NPOINT
     case T_NPOINT:
       return npoint_out(DatumGetNpointP(value), maxdd);
 #endif
     default: /* Error! */
-      elog(ERROR, "Unknown base type: %d", basetype);
-      return NULL; /* make compiler quiet */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown output function for base type: %d", basetype);
+      return NULL;
   }
 }
 

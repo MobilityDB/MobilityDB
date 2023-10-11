@@ -44,7 +44,7 @@
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize();
+  meos_initialize(NULL, NULL);
 
   /* Input geometries in WKT format */
   char *point_wkt = "POINT(1 1)";
@@ -104,9 +104,9 @@ int main()
   char *polygon_hexwkb = gserialized_as_hexwkb(polygon, "XDR");
 
   /* Revert generated GeoJSON strings into geometries */
-  GSERIALIZED *point3 = gserialized_from_hexewkb(point_hexwkb);
-  GSERIALIZED *linestring3 = gserialized_from_hexewkb(linestring_hexwkb);
-  GSERIALIZED *polygon3 = gserialized_from_hexewkb(polygon_hexwkb);
+  GSERIALIZED *point3 = geometry_from_hexewkb(point_hexwkb);
+  GSERIALIZED *linestring3 = geometry_from_hexewkb(linestring_hexwkb);
+  GSERIALIZED *polygon3 = geometry_from_hexewkb(polygon_hexwkb);
 
   /* Ensure that the reverted types are equal to the original ones */
   if (! pgis_gserialized_same(point, point3))

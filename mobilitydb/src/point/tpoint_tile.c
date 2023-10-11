@@ -97,7 +97,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
       sorigin = PG_GETARG_GSERIALIZED_P(5);
       torigin = PG_GETARG_TIMESTAMPTZ(6);
     }
-    ensure_non_empty(sorigin);
+    ensure_not_empty(sorigin);
     ensure_point_type(sorigin);
     /* Since we pass by default Point(0 0 0) as origin independently of the input
      * STBox, we test the same spatial dimensionality only for STBox Z */
@@ -181,7 +181,7 @@ Datum
 Stbox_tile(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
-  ensure_non_empty(point);
+  ensure_not_empty(point);
   ensure_point_type(point);
   TimestampTz t = 0; /* make compiler quiet */
   double xsize, ysize, zsize;
@@ -214,7 +214,7 @@ Stbox_tile(PG_FUNCTION_ARGS)
   ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
   ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
   ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
-  ensure_non_empty(sorigin);
+  ensure_not_empty(sorigin);
   ensure_point_type(sorigin);
   int32 srid = gserialized_get_srid(point);
   int32 gs_srid = gserialized_get_srid(sorigin);
@@ -305,6 +305,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
     bool bitmatrix = PG_GETARG_BOOL(i++);
 
+    /* ---> */
+
     /* Set bounding box */
     STBox bounds;
     temporal_set_bbox(temp, &bounds);
@@ -316,7 +318,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
     ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
     ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
-    ensure_non_empty(sorigin);
+    ensure_not_empty(sorigin);
     ensure_point_type(sorigin);
     ensure_same_geodetic(temp->flags, sorigin->gflags);
     int32 srid = bounds.srid;
@@ -350,17 +352,17 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       /* Create the bit matrix and set the tiles traversed by the temporal point */
       int count[MAXDIMS];
       memset(&count, 0, sizeof(count));
-      int numdims = 2;
+      int ndims = 2;
       /* We need to add 1 to take into account the last bucket for each dimension */
       count[0] = (int) ((state->box.xmax - state->box.xmin) / state->xsize) + 1;
       count[1] = (int) ((state->box.ymax - state->box.ymin) / state->ysize) + 1;
       if (MEOS_FLAGS_GET_Z(state->box.flags))
-        count[numdims++] = (int) ((state->box.zmax - state->box.zmin) /
+        count[ndims++] = (int) ((state->box.zmax - state->box.zmin) /
           state->zsize) + 1;
       if (state->tunits)
-        count[numdims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
+        count[ndims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
           DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
-      state->bm = bitmatrix_make(count, numdims);
+      state->bm = bitmatrix_make(count, ndims);
       tpoint_set_tiles(temp, state, state->bm);
     }
     funcctx->user_fctx = state;

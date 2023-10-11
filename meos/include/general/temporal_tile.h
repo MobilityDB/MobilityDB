@@ -55,17 +55,16 @@ typedef struct SpanBucketState
 } SpanBucketState;
 
 /**
- * Struct for storing the state that persists across multiple calls generating
- * the multidimensional grid
+ * @brief Struct for storing the state for tiling operations
  */
 typedef struct TboxGridState
 {
   bool done;
   int i;
-  double xsize;
+  Datum vsize;
   int64 tunits;
   TBox box;
-  double value;
+  Datum value;
   TimestampTz t;
 } TboxGridState;
 
@@ -96,10 +95,10 @@ extern SpanBucketState *span_bucket_state_make(const Span *s, Datum size,
   Datum origin);
 extern void span_bucket_state_next(SpanBucketState *state);
 
-extern void tbox_tile_get(double value, TimestampTz t, double xsize,
-  int64 tunits, TBox *box);
-extern TboxGridState *tbox_tile_state_make(const TBox *box, double xsize,
-  const Interval *duration, double xorigin, TimestampTz torigin);
+extern void tbox_tile_get(Datum value, TimestampTz t, Datum vsize,
+  int64 tunits, meosType basetype, TBox *box);
+extern TboxGridState *tbox_tile_state_make(const TBox *box, Datum vsize,
+  const Interval *duration, Datum xorigin, TimestampTz torigin);
 extern void tbox_tile_state_next(TboxGridState *state);
 
 /*****************************************************************************/
@@ -110,14 +109,11 @@ extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
 extern Datum datum_bucket(Datum value, Datum size, Datum offset,
   meosType basetype);
 
-extern Temporal **temporal_time_split1(const Temporal *temp, TimestampTz start,
-  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
-  TimestampTz **buckets, int *newcount);
-
-Temporal **
-temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
-  Datum vorigin, TimestampTz torigin, bool valuesplit, bool timesplit,
-  Datum **value_buckets, TimestampTz **time_buckets, int *newcount);
+extern Temporal **temporal_time_split(Temporal *temp, Interval *duration,
+  TimestampTz torigin, TimestampTz **time_buckets, int *count);
+extern Temporal **tnumber_value_time_split(Temporal *temp, Datum size,
+  Interval *duration, Datum vorigin, TimestampTz torigin,
+  Datum **value_buckets, TimestampTz **time_buckets, int *count);
 
 /*****************************************************************************/
 

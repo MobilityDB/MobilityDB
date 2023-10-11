@@ -103,14 +103,14 @@ Tnpoint_in(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_to_tgeompoint);
 /**
- * @ingroup mobilitydb_temporal_cast
- * @brief Cast a temporal network point as a temporal geometric point
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal network point as a temporal geometric point
  * @sqlfunc tgeompoint()
  */
 Datum
@@ -125,8 +125,8 @@ Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_to_tnpoint);
 /**
- * @ingroup mobilitydb_temporal_cast
- * @brief Cast a temporal geometric point as a temporal network point
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal geometric point as a temporal network point
  * @sqlfunc tnpoint()
  */
 Datum
@@ -168,8 +168,8 @@ PGDLLEXPORT Datum Tnpoint_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_round);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Set the precision of the fraction of the temporal network point to the
- * number of decimal places.
+ * @brief Set the precision of the fraction of the temporal network point to
+ * the number of decimal places.
  * @sqlfunc round()
  */
 Datum
@@ -186,7 +186,7 @@ PGDLLEXPORT Datum Npointset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npointset_round);
 /**
  * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Sets the precision of the coordinates of the geometry set
+ * @brief Set the precision of the coordinates of the geometry set
  * @sqlfunc round()
  */
 Datum

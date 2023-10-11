@@ -36,6 +36,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <funcapi.h>
 #include <utils/float.h>
 /* PostGIS */
 #include <liblwgeom.h>
@@ -47,12 +48,12 @@
 #include "general/lifting.h"
 #include "general/set.h"
 #include "general/tsequence.h"
+#include "general/tnumber_mathfuncs.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_restrfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_general/tnumber_mathfuncs.h"
 #include "pg_general/type_util.h"
 #include "pg_point/postgis.h"
 
@@ -62,17 +63,16 @@
 
 /**
  * @brief Generic function for the temporal ever/always comparison operators
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
 static Datum
 tpoint_ev_al_comp_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, Datum))
+  bool (*func)(const Temporal *, const GSERIALIZED *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  bool result = func(temp, PointerGetDatum(gs));
+  bool result = func(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_BOOL(result);
@@ -81,7 +81,7 @@ tpoint_ev_al_comp_ext(FunctionCallInfo fcinfo,
 PGDLLEXPORT Datum Tpoint_ever_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_ever_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is ever equal to a point
  * @sqlfunc ever_eq()
  */
@@ -94,7 +94,7 @@ Tpoint_ever_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_always_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_always_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is always equal to a point
  * @sqlfunc always_eq()
  */
@@ -107,7 +107,7 @@ Tpoint_always_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_ever_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_ever_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is ever different from a point
  * @sqlfunc ever_ne()
  */
@@ -120,7 +120,7 @@ Tpoint_ever_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_always_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_always_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is always different from a point
  * @sqlfunc always_ne()
  */
@@ -289,12 +289,12 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
     }
   }
   /* Last parameter set to STEP to force the function to return multipoint */
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, ss->totalcount, STEP);
-  Datum multipoint = PointerGetDatum(geo_serialize(lwgeom));
-  lwgeom_free(lwgeom);
+  LWGEOM *geom = lwpointarr_make_trajectory(points, ss->totalcount, STEP);
+  Datum multipoint = PointerGetDatum(geo_serialize(geom));
+  lwgeom_free(geom);
   Datum transf = datum_transform(multipoint, srid);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
-  LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+  LWMPOINT *mpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   TInstant **instants = palloc(sizeof(TInstant *) * maxcount);
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
@@ -305,7 +305,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
     for (int j = 0; j < seq->count; j++)
     {
       GSERIALIZED *point = geo_serialize((LWGEOM *)
-        (lwmpoint->geoms[npoints++]));
+        (mpoint->geoms[npoints++]));
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       instants[j] = tinstant_make(PointerGetDatum(point), inst->temptype,
         inst->t);
@@ -321,7 +321,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   pfree(instants);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(transf));
   pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
-  lwmpoint_free(lwmpoint);
+  lwmpoint_free(mpoint);
   return result;
 }
 
@@ -362,13 +362,13 @@ Tpoint_transform(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_to_tgeogpoint);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal geometry point to a temporal geography point
  * @sqlfunc tgeogpoint()
  */
@@ -384,7 +384,7 @@ Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeogpoint_to_tgeompoint);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal geography point to a temporal geometry point
  * @sqlfunc tgeompoint()
  */
@@ -400,370 +400,6 @@ Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Set precision of the coordinates
  *****************************************************************************/
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_point(POINTARRAY *points, uint32_t i, Datum size, bool hasz, bool hasm)
-{
-  /* N.B. lwpoint->point can be of 2, 3, or 4 dimensions depending on
-   * the values of the arguments hasz and hasm !!! */
-  POINT4D *pt = (POINT4D *) getPoint_internal(points, i);
-  pt->x = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->x), size));
-  pt->y = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->y), size));
-  if (hasz && hasm)
-  {
-    pt->z = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->z), size));
-    pt->m = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->m), size));
-  }
-  else if (hasz)
-    pt->z = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->z), size));
-  else if (hasm)
-    /* The m coordinate is located at the third double of the point */
-    pt->z = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->z), size));
-  return;
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_point(GSERIALIZED *gs, Datum size)
-{
-  assert(gserialized_get_type(gs) == POINTTYPE);
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-  round_point(lwpoint->point, 0, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoint);
-  pfree(lwpoint);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_linestring(LWLINE *lwline, Datum size, bool hasz, bool hasm)
-{
-  int npoints = lwline->points->npoints;
-  for (int i = 0; i < npoints; i++)
-    round_point(lwline->points, i, size, hasz, hasm);
-  return;
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_linestring(GSERIALIZED *gs, Datum size)
-{
-  assert(gserialized_get_type(gs) == LINETYPE);
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
-  round_linestring(lwline, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwline);
-  lwfree(lwline);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_triangle(LWTRIANGLE *lwtriangle, Datum size, bool hasz, bool hasm)
-{
-  int npoints = lwtriangle->points->npoints;
-  for (int i = 0; i < npoints; i++)
-    round_point(lwtriangle->points, i, size, hasz, hasm);
-  return;
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_triangle(GSERIALIZED *gs, Datum size)
-{
-  assert(gserialized_get_type(gs) == TRIANGLETYPE);
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWTRIANGLE *lwtriangle = lwgeom_as_lwtriangle(lwgeom_from_gserialized(gs));
-  round_triangle(lwtriangle, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwtriangle);
-  lwfree(lwtriangle);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_circularstring(LWCIRCSTRING *lwcircstring, Datum size, bool hasz,
-  bool hasm)
-{
-  int npoints = lwcircstring->points->npoints;
-  for (int i = 0; i < npoints; i++)
-    round_point(lwcircstring->points, i, size, hasz, hasm);
-  return;
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_circularstring(GSERIALIZED *gs, Datum size)
-{
-  assert(gserialized_get_type(gs) == CIRCSTRINGTYPE);
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWCIRCSTRING *lwcircstring = lwgeom_as_lwcircstring(lwgeom_from_gserialized(gs));
-  round_circularstring(lwcircstring, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwcircstring);
-  lwfree(lwcircstring);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_polygon(LWPOLY *lwpoly, Datum size, bool hasz, bool hasm)
-{
-  int nrings = lwpoly->nrings;
-  for (int i = 0; i < nrings; i++)
-  {
-    POINTARRAY *points = lwpoly->rings[i];
-    int npoints = points->npoints;
-    for (int j = 0; j < npoints; j++)
-      round_point(points, j, size, hasz, hasm);
-  }
-  return;
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_polygon(GSERIALIZED *gs, Datum size)
-{
-  assert(gserialized_get_type(gs) == POLYGONTYPE);
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWPOLY *lwpoly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs));
-  round_polygon(lwpoly, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoly);
-  lwfree(lwpoly);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_multipoint(LWMPOINT *lwmpoint, Datum size, bool hasz, bool hasm)
-{
-  int ngeoms = lwmpoint->ngeoms;
-  for (int i = 0; i < ngeoms; i++)
-  {
-    LWPOINT *lwpoint = lwmpoint->geoms[i];
-    round_point(lwpoint->point, 0, size, hasz, hasm);
-  }
-  return;
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_multipoint(GSERIALIZED *gs, Datum size)
-{
-  assert(gserialized_get_type(gs) == MULTIPOINTTYPE);
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWMPOINT *lwmpoint =  lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
-  round_multipoint(lwmpoint, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoint);
-  lwfree(lwmpoint);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_multilinestring(LWMLINE *lwmline, Datum size, bool hasz, bool hasm)
-{
-  int ngeoms = lwmline->ngeoms;
-  for (int i = 0; i < ngeoms; i++)
-  {
-    LWLINE *lwline = lwmline->geoms[i];
-    int npoints = lwline->points->npoints;
-    for (int j = 0; j < npoints; j++)
-      round_point(lwline->points, j, size, hasz, hasm);
-  }
-  return;
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_multilinestring(GSERIALIZED *gs, Datum size)
-{
-  assert(gserialized_get_type(gs) == MULTILINETYPE);
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWMLINE *lwmline = lwgeom_as_lwmline(lwgeom_from_gserialized(gs));
-  round_multilinestring(lwmline, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmline);
-  lwfree(lwmline);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static void
-round_multipolygon(LWMPOLY *lwmpoly, Datum size, bool hasz, bool hasm)
-{
-  int ngeoms = lwmpoly->ngeoms;
-  for (int i = 0; i < ngeoms; i++)
-  {
-    LWPOLY *lwpoly = lwmpoly->geoms[i];
-    round_polygon(lwpoly, size, hasz, hasm);
-  }
-  return;
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_multipolygon(GSERIALIZED *gs, Datum size)
-{
-  assert(gserialized_get_type(gs) == MULTIPOLYGONTYPE);
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  LWMPOLY *lwmpoly = lwgeom_as_lwmpoly(lwgeom_from_gserialized(gs));
-  round_multipolygon(lwmpoly, size, hasz, hasm);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoly);
-  lwfree(lwmpoly);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places
- */
-static Datum
-datum_round_geometrycollection(GSERIALIZED *gs, Datum size)
-{
-  assert(gserialized_get_type(gs) == COLLECTIONTYPE);
-  LWCOLLECTION *lwcol = lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
-  int ngeoms = lwcol->ngeoms;
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-  for (int i = 0; i < ngeoms; i++)
-  {
-    LWGEOM *lwgeom = lwcol->geoms[i];
-    if (lwgeom->type == POINTTYPE)
-      round_point((lwgeom_as_lwpoint(lwgeom))->point, 0, size, hasz, hasm);
-    else if (lwgeom->type == LINETYPE)
-      round_linestring(lwgeom_as_lwline(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == TRIANGLETYPE)
-      round_triangle(lwgeom_as_lwtriangle(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == CIRCSTRINGTYPE)
-      round_circularstring(lwgeom_as_lwcircstring(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == POLYGONTYPE)
-      round_polygon(lwgeom_as_lwpoly(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == MULTIPOINTTYPE)
-      round_multipoint(lwgeom_as_lwmpoint(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == MULTILINETYPE)
-      round_multilinestring(lwgeom_as_lwmline(lwgeom), size, hasz, hasm);
-    else if (lwgeom->type == MULTIPOLYGONTYPE)
-      round_multipolygon(lwgeom_as_lwmpoly(lwgeom), size, hasz, hasm);
-    else
-      elog(ERROR, "Unsupported geometry type");
-  }
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwcol);
-  lwfree(lwcol);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places.
- * @note Currently not all geometry types are allowed
- */
-Datum
-datum_round_geo(Datum value, Datum size)
-{
-  GSERIALIZED *gs = DatumGetGserializedP(value);
-  if (gserialized_is_empty(gs))
-    return PointerGetDatum(gserialized_copy(gs));
-
-  uint32_t type = gserialized_get_type(gs);
-  if (type == POINTTYPE)
-    return datum_round_point(gs, size);
-  if (type == LINETYPE)
-    return datum_round_linestring(gs, size);
-  if (type == TRIANGLETYPE)
-    return datum_round_triangle(gs, size);
-  if (type == CIRCSTRINGTYPE)
-    return datum_round_circularstring(gs, size);
-  if (type == POLYGONTYPE)
-    return datum_round_polygon(gs, size);
-  if (type == MULTIPOINTTYPE)
-    return datum_round_multipoint(gs, size);
-  if (type == MULTILINETYPE)
-    return datum_round_multilinestring(gs, size);
-  if (type == MULTIPOLYGONTYPE)
-    return datum_round_multipolygon(gs, size);
-  if (type == COLLECTIONTYPE)
-    return datum_round_geometrycollection(gs, size);
-  elog(ERROR, "Unsupported geometry type");
-  return Float8GetDatum(0); /* make compiler quiet */
-}
-
-/**
- * @brief Set the precision of the coordinates to the number of decimal places.
- */
-Set *
-geoset_round(const Set *s, Datum size)
-{
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-  {
-    Datum value = SET_VAL_N(s, i);
-    values[i] = datum_round_geo(value, size);
-  }
-  Set *result = set_make(values, s->count, s->basetype, ORDERED);
-  pfree(values);
-  return result;
-}
-
-/**
- * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Set the precision of the coordinates of a temporal point to a
- * number of decimal places.
- * @sqlfunc round()
- */
-Temporal *
-tpoint_round(const Temporal *temp, Datum size)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_round_geo;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = size;
-  lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
 
 PGDLLEXPORT Datum Geo_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_round);
@@ -793,8 +429,8 @@ Datum
 Geoset_round(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Datum size = PG_GETARG_DATUM(1);
-  Set *result = geoset_round(s, size);
+  int maxdd = PG_GETARG_INT32(1);
+  Set *result = geoset_round(s, maxdd);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_POINTER(result);
 }
@@ -815,6 +451,150 @@ Tpoint_round(PG_FUNCTION_ARGS)
   Temporal *result = tpoint_round(temp, size);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tpointarr_round(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpointarr_round);
+/**
+ * @ingroup mobilitydb_temporal_inout
+ * @brief Output a temporal point array in Well-Known Text (WKT) format
+ * @sqlfunc asText()
+ */
+Datum
+Tpointarr_round(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  /* Return NULL on empty array */
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
+  int maxdd = PG_GETARG_INT32(1);
+
+  Temporal **temparr = temporalarr_extract(array, &count);
+  Temporal **result_arr = tpointarr_round((const Temporal **) temparr, count,
+      maxdd);
+
+  ArrayType *result = temporalarr_to_array((const Temporal **) result_arr,
+    count);
+  pfree(temparr);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Tpoint_to_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_to_geo);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Convert the temporal point into a PostGIS trajectory geometry or
+ * geography where the M coordinates encode the timestamps in number of seconds
+ * since '1970-01-01'
+ */
+Datum
+Tpoint_to_geo(PG_FUNCTION_ARGS)
+{
+  Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
+  bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
+  GSERIALIZED *result;
+  tpoint_to_geo_meas(tpoint, NULL, segmentize, &result);
+  PG_FREE_IF_COPY(tpoint, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Geo_to_tpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_to_tpoint);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert the PostGIS trajectory geometry or geography where the M
+ * coordinates encode the timestamps in Unix epoch into a temporal point.
+ */
+Datum
+Geo_to_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *result = geo_to_tpoint(geo);
+  PG_FREE_IF_COPY(geo, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tpoint_to_geo_meas(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_to_geo_meas);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Construct a geometry/geography with M measure from the temporal point
+ * and the temporal float
+ */
+Datum
+Tpoint_to_geo_meas(PG_FUNCTION_ARGS)
+{
+  Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
+  Temporal *measure = PG_GETARG_TEMPORAL_P(1);
+  bool segmentize = (PG_NARGS() == 3) ? PG_GETARG_BOOL(2) : false;
+  GSERIALIZED *result;
+  bool found = tpoint_to_geo_meas(tpoint, measure, segmentize, &result);
+  PG_FREE_IF_COPY(tpoint, 0);
+  PG_FREE_IF_COPY(measure, 1);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Mapbox Vector Tile functions for temporal points.
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpoint_AsMVTGeom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_AsMVTGeom);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf
+ * @brief Transform the temporal point to Mapbox Vector Tile format
+ */
+Datum
+Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *bounds = PG_GETARG_STBOX_P(1);
+  int32_t extent = PG_GETARG_INT32(2);
+  int32_t buffer = PG_GETARG_INT32(3);
+  bool clip_geom = PG_GETARG_BOOL(4);
+
+  GSERIALIZED *geom;
+  int64 *times; /* Timestamps are returned in Unix time */
+  int count;
+  bool found = tpoint_AsMVTGeom(temp, bounds, extent, buffer, clip_geom,
+    &geom, &times, &count);
+  if (! found)
+  {
+    PG_FREE_IF_COPY(temp, 0);
+    PG_RETURN_NULL();
+  }
+
+  ArrayType *timesarr = int64arr_to_array(times, count);
+
+  /* Build a tuple description for the function output */
+  TupleDesc resultTupleDesc;
+  get_call_result_type(fcinfo, NULL, &resultTupleDesc);
+  BlessTupleDesc(resultTupleDesc);
+
+  /* Construct the result */
+  HeapTuple resultTuple;
+  bool result_is_null[2] = {0,0}; /* needed to say no value is null */
+  Datum result_values[2]; /* used to construct the composite return value */
+  Datum result; /* the actual composite return value */
+  /* Store geometry */
+  result_values[0] = PointerGetDatum(geom);
+  /* Store timestamp array */
+  result_values[1] = PointerGetDatum(timesarr);
+  /* Form tuple and return */
+  resultTuple = heap_form_tuple(resultTupleDesc, result_values, result_is_null);
+  result = HeapTupleGetDatum(resultTuple);
+
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************

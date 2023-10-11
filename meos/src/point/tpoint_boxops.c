@@ -165,7 +165,7 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
 static int
 tpointseq_stboxes_iter(const TSequence *seq, STBox *result)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   const TInstant *inst1;
 
   /* Instantaneous sequence */
@@ -200,7 +200,9 @@ tpointseq_stboxes_iter(const TSequence *seq, STBox *result)
 STBox *
 tpointseq_stboxes(const TSequence *seq, int *count)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(seq); assert(count);
+  assert(tgeo_type(seq->temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   int newcount = seq->count == 1 ? 1 : seq->count - 1;
   STBox *result = palloc(sizeof(STBox) * newcount);
   tpointseq_stboxes_iter(seq, result);
@@ -218,7 +220,9 @@ tpointseq_stboxes(const TSequence *seq, int *count)
 STBox *
 tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
+  assert(ss); assert(count);
+  assert(tgeo_type(ss->temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   STBox *result = palloc(sizeof(STBox) * ss->totalcount);
   int nboxes = 0;
   for (int i = 0; i < ss->count; i++)
@@ -232,15 +236,22 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup libmeos_temporal_spatial_accessor
- * @brief Return an array of spatiotemporal boxes from a temporal point
+ * @brief Return an array of spatiotemporal boxes from the segments of a
+ * temporal point
+ * @return On error return NULL
  * @sqlfunc stboxes()
  */
 STBox *
 tpoint_stboxes(const Temporal *temp, int *count)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+
   STBox *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MEOS_FLAGS_GET_DISCRETE(temp->flags))
+  if (temp->subtype == TINSTANT || MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_stboxes((TSequence *)temp, count);

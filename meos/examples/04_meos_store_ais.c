@@ -150,7 +150,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  meos_initialize(NULL, NULL);
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("aisinput.csv", "r");

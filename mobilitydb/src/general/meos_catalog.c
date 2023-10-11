@@ -109,60 +109,6 @@ typedef struct
  *****************************************************************************/
 
 /**
- * @brief Global array containing the type names corresponding to the
- * enumeration meosType defined in file meos_catalog.h.
- */
-const char *_meosType_names[] =
-{
-  [T_UNKNOWN] = "",
-  [T_BOOL] = "bool",
-  [T_DOUBLE2] = "double2",
-  [T_DOUBLE3] = "double3",
-  [T_DOUBLE4] = "double4",
-  [T_FLOAT8] = "float8",
-  [T_FLOATSET] = "floatset",
-  [T_FLOATSPAN] = "floatspan",
-  [T_FLOATSPANSET] = "floatspanset",
-  [T_INT4] = "int4",
-  [T_INT4RANGE] = "int4range",
-  [T_INT4MULTIRANGE] = "int4multirange",
-  [T_INTSET] = "intset",
-  [T_INTSPAN] = "intspan",
-  [T_INTSPANSET] = "intspanset",
-  [T_INT8] = "int8",
-  [T_BIGINTSET] = "bigintset",
-  [T_BIGINTSPAN] = "bigintspan",
-  [T_BIGINTSPANSET] = "bigintspanset",
-  [T_STBOX] = "stbox",
-  [T_TBOOL] = "tbool",
-  [T_TBOX] = "tbox",
-  [T_TDOUBLE2] = "tdouble2",
-  [T_TDOUBLE3] = "tdouble3",
-  [T_TDOUBLE4] = "tdouble4",
-  [T_TEXT] = "text",
-  [T_TEXTSET] = "textset",
-  [T_TFLOAT] = "tfloat",
-  [T_TIMESTAMPTZ] = "timestamptz",
-  [T_TINT] = "tint",
-  [T_TSTZMULTIRANGE] = "tstzmultirange",
-  [T_TSTZRANGE] = "tstzrange",
-  [T_TSTZSET] = "tstzset",
-  [T_TSTZSPAN] = "tstzspan",
-  [T_TSTZSPANSET] = "tstzspanset",
-  [T_TTEXT] = "ttext",
-  [T_GEOMETRY] = "geometry",
-  [T_GEOMSET] = "geomset",
-  [T_GEOGRAPHY] = "geography",
-  [T_GEOGSET] = "geogset",
-  [T_TGEOMPOINT] = "tgeompoint",
-  [T_TGEOGPOINT] = "tgeogpoint",
-  [T_NPOINT] = "npoint",
-  [T_NPOINTSET] = "npointset",
-  [T_NSEGMENT] = "nsegment",
-  [T_TNPOINT] = "tnpoint",
-};
-
-/**
  * @brief Global array containing the operator names corresponding to the
  * enumeration meosOper defined in file meos_catalog.h.
  */
@@ -222,7 +168,7 @@ bool _oid_cache_ready = false;
 /**
  * @brief Global array that keeps the type Oids used in MobilityDB.
  */
-Oid _type_oids[sizeof(_meosType_names) / sizeof(char *)];
+Oid _type_oids[NO_MEOS_TYPES];
 
 /**
  * @brief Global hash table that keeps the operator Oids used in MobilityDB.
@@ -237,9 +183,7 @@ struct opertable_hash *_oid_oper = NULL;
  * the cell of the array if the operator class is not defined for the left and
  * right types.
  */
-Oid _oper_oid[sizeof(_meosOper_names) / sizeof(char *)]
-  [sizeof(_meosType_names) / sizeof(char *)]
-  [sizeof(_meosType_names) / sizeof(char *)];
+Oid _oper_oid[NO_MEOS_TYPES][NO_MEOS_TYPES][NO_MEOS_TYPES];
 
 /*****************************************************************************
  * Catalog functions
@@ -266,13 +210,13 @@ populate_typeoid_cache()
   if (_oid_cache_ready)
     return;
   /* Fill the cache */
-  int n = sizeof(_meosType_names) / sizeof(char *);
-  for (int i = 0; i < n; i++)
+  for (int i = 0; i < NO_MEOS_TYPES; i++)
   {
     /* Depending on the PG version some types may not exist (e.g.,
      * multirangetype) and in this case _meosType_names[i] will be equal to 0 */
-    if (_meosType_names[i] && ! internal_type(_meosType_names[i]))
-      _type_oids[i] = TypenameGetTypid(_meosType_names[i]);
+    const char *name = meostype_name(i);
+    if (name && ! internal_type(name))
+      _type_oids[i] = TypenameGetTypid(name);
   }
   return;
 }
@@ -364,7 +308,8 @@ type_oid(meosType type)
     populate_operoid_cache();
   Oid result = _type_oids[type];
   if (! result)
-    elog(ERROR, "Unknown MEOS type; %d", type);
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("Unknown MEOS type; %d", type)));
   return result;
 }
 
@@ -380,8 +325,7 @@ oid_type(Oid typid)
 {
   if (!_oid_cache_ready)
     populate_operoid_cache();
-  int n = sizeof(_meosType_names) / sizeof(char *);
-  for (int i = 0; i < n; i++)
+  for (int i = 0; i < NO_MEOS_TYPES; i++)
   {
     if (_type_oids[i] == typid)
       return i;
@@ -431,8 +375,8 @@ oper_oid(meosOper oper, meosType lt, meosType rt)
     populate_operoid_cache();
   Oid result = _oper_oid[oper][lt][rt];
   if (! result)
-    elog(ERROR, "Unknown MEOS operator: %d, ltype; %d, rtype; %d",
-      oper, lt, rt);
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("Unknown MEOS operator: %d, ltype; %d, rtype; %d", oper, lt, rt)));
   return _oper_oid[oper][lt][rt];
 }
 

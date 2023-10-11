@@ -49,34 +49,48 @@
 Npoint *
 npoint_parse(const char **str, bool end)
 {
+  const char *type_str = "network point";
   p_whitespace(str);
-
   if (pg_strncasecmp(*str, "NPOINT", 6) != 0)
-    elog(ERROR, "Could not parse network point");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse network point");
+    return NULL;
+  }
 
   *str += 6;
   p_whitespace(str);
 
   /* Parse opening parenthesis */
-  if (! p_oparen(str))
-    elog(ERROR, "Could not parse network point: Missing opening parenthesis");
+  if (! ensure_oparen(str, type_str))
+    return NULL;
 
   /* Parse rid */
   p_whitespace(str);
-  int64 rid = DatumGetInt64(elem_parse(str, T_INT8));
+  Datum d;
+  if (! elem_parse(str, T_INT8, &d))
+    return NULL;
+  int64 rid = DatumGetInt64(d);
+
   p_comma(str);
+
+  /* Parse pos */
   p_whitespace(str);
-  double pos = DatumGetFloat8(elem_parse(str, T_FLOAT8));
+  if (! elem_parse(str, T_FLOAT8, &d))
+    return NULL;
+  double pos = DatumGetFloat8(d);
   if (pos < 0 || pos > 1)
-    elog(ERROR, "The relative position must be a real number between 0 and 1");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "The relative position must be a real number between 0 and 1");
+    return NULL;
+  }
 
   /* Parse closing parenthesis */
   p_whitespace(str);
-  if (! p_cparen(str))
-    elog(ERROR, "Could not parse network point: Missing closing parenthesis");
-
-  /* Ensure there is no more input */
-  ensure_end_input(str, end, "network point");
+  if (! ensure_cparen(str, type_str) ||
+        (end && ! ensure_end_input(str, type_str)))
+    return NULL;
 
   return npoint_make(rid, pos);
 }
@@ -87,39 +101,61 @@ npoint_parse(const char **str, bool end)
 Nsegment *
 nsegment_parse(const char **str)
 {
+  const char *type_str = "network segment";
   p_whitespace(str);
 
   if (pg_strncasecmp(*str, "NSEGMENT", 8) != 0)
-    elog(ERROR, "Could not parse network segment");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse network segment");
+    return NULL;
+  }
 
   *str += 8;
   p_whitespace(str);
 
   /* Parse opening parenthesis */
-  if (! p_oparen(str))
-    elog(ERROR, "Could not parse network point: Missing opening parenthesis");
+  if (! ensure_oparen(str, type_str))
+    return NULL;
 
   /* Parse rid */
   p_whitespace(str);
-  int64 rid = DatumGetInt64(elem_parse(str, T_INT8));
+  Datum d;
+  if (! elem_parse(str, T_INT8, &d))
+    return NULL;
+  int64 rid = DatumGetInt64(d);
+
   p_comma(str);
+
+  /* Parse pos1 */
   p_whitespace(str);
-  double pos1 = DatumGetFloat8(elem_parse(str, T_FLOAT8));
+  if (! elem_parse(str, T_FLOAT8, &d))
+    return NULL;
+  double pos1 = DatumGetFloat8(d);
   if (pos1 < 0 || pos1 > 1)
-    elog(ERROR, "The relative position must be a real number between 0 and 1");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "The relative position must be a real number between 0 and 1");
+    return NULL;
+  }
   p_comma(str);
+
+  /* Parse pos2 */
   p_whitespace(str);
-  double pos2 = DatumGetFloat8(elem_parse(str, T_FLOAT8));
+  if (! elem_parse(str, T_FLOAT8, &d))
+    return NULL;
+  double pos2 = DatumGetFloat8(d);
   if (pos2 < 0 || pos2 > 1)
-    elog(ERROR, "The relative position must be a real number between 0 and 1");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "The relative position must be a real number between 0 and 1");
+    return NULL;
+  }
 
   /* Parse closing parenthesis */
   p_whitespace(str);
-  if (! p_cparen(str))
-    elog(ERROR, "Could not parse network point: Missing closing parenthesis");
-
-  /* Ensure there is no more input */
-  ensure_end_input(str, true, "network segment");
+  if (! ensure_cparen(str, type_str) || ! ensure_end_input(str, type_str))
+    return NULL;
 
   return nsegment_make(rid, pos1, pos2);
 }

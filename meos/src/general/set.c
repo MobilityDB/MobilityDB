@@ -37,6 +37,8 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
@@ -47,6 +49,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/tnumber_mathfuncs.h"
+#include "general/ttext_textfuncs.h"
 #include "general/type_out.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
@@ -57,6 +61,58 @@
 /*****************************************************************************
  * General functions
  *****************************************************************************/
+
+/**
+ * @brief Ensure that a set value is of a set type
+ */
+bool
+ensure_set_has_type(const Set *s, meosType settype)
+{
+  if (s->settype != settype)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The set value must be of type %s", meostype_name(settype));
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that the set arguments have the same type in order to be able
+ * to apply operations to them
+ */
+bool
+ensure_same_set_type(const Set *s1, const Set *s2)
+{
+  if (s1->settype != s2->settype)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Operation on mixed set types: %s and %s",
+      meostype_name(s1->settype), meostype_name(s2->settype));
+    return false;
+  }
+  return true;
+}
+
+#if MEOS
+/**
+ * @brief Ensure that a set value has the same base type as the given one
+ * @param[in] s Input value
+ * @param[in] basetype Input base type
+ */
+bool
+ensure_same_set_basetype(const Set *s, meosType basetype)
+{
+  if (s->basetype != basetype)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Operation on mixed set and base types: %s and %s",
+      meostype_name(s->settype), meostype_name(basetype));
+    return false;
+  }
+  return true;
+}
+#endif /* MEOS */
 
 /**
  * @brief Return the location of a value in a set using binary search.
@@ -122,6 +178,7 @@ set_find_value(const Set *s, Datum d, int *loc)
 bool
 rset_find_value(const Set *s, Datum d, int *loc)
 {
+  assert(s); assert(loc);
   for (int i = 0; i < s->count; i++)
   {
     Datum d1 = SET_VAL_N(s, i);
@@ -147,6 +204,7 @@ rset_find_value(const Set *s, Datum d, int *loc)
 Set *
 set_in(const char *str, meosType settype)
 {
+  assert(str);
   return set_parse(&str, settype);
 }
 
@@ -158,7 +216,10 @@ set_in(const char *str, meosType settype)
 Set *
 intset_in(const char *str)
 {
-  return set_parse(&str, T_INT4);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return set_parse(&str, T_INTSET);
 }
 
 /**
@@ -168,7 +229,10 @@ intset_in(const char *str)
 Set *
 bigintset_in(const char *str)
 {
-  return set_parse(&str, T_INT8);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return set_parse(&str, T_BIGINTSET);
 }
 
 /**
@@ -178,27 +242,10 @@ bigintset_in(const char *str)
 Set *
 floatset_in(const char *str)
 {
-  return set_parse(&str, T_FLOAT8);
-}
-
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Return a set from its Well-Known Text (WKT) representation.
- */
-Set *
-geogset_in(const char *str)
-{
-  return set_parse(&str, T_GEOMETRY);
-}
-
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Return a set from its Well-Known Text (WKT) representation.
- */
-Set *
-geomset_in(const char *str)
-{
-  return set_parse(&str, T_GEOGRAPHY);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return set_parse(&str, T_FLOATSET);
 }
 
 /**
@@ -208,6 +255,9 @@ geomset_in(const char *str)
 Set *
 textset_in(const char *str)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
   return set_parse(&str, T_TEXTSET);
 }
 
@@ -218,7 +268,36 @@ textset_in(const char *str)
 Set *
 timestampset_in(const char *str)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
   return set_parse(&str, T_TSTZSET);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a set from its Well-Known Text (WKT) representation.
+ */
+Set *
+geomset_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return set_parse(&str, T_GEOMSET);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a set from its Well-Known Text (WKT) representation.
+ */
+Set *
+geogset_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return set_parse(&str, T_GEOGSET);
 }
 #endif /* MEOS */
 
@@ -241,6 +320,9 @@ set_basetype_quotes(meosType type)
 char *
 set_out_fn(const Set *s, int maxdd, outfunc value_out)
 {
+  assert(s != NULL);
+  assert(maxdd >= 0);
+
   char **strings = palloc(sizeof(char *) * s->count);
   size_t outlen = 0;
   for (int i = 0; i < s->count; i++)
@@ -256,43 +338,30 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
 
 /**
  * @ingroup libmeos_internal_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a set.
+ * @brief Return the Well-Known Text (WKT) representation of a s.
  */
 char *
 set_out(const Set *s, int maxdd)
 {
+  assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_negative(maxdd))
+    return NULL;
   return set_out_fn(s, maxdd, &basetype_out);
 }
 
 #if MEOS
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Output a set of timestamps.
-*/
-char *
-timestampset_out(const Set *set)
-{
-  return set_out(set, 0);
-}
-
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Output a set of texts.
-*/
-char *
-textset_out(const Set *set)
-{
-  return set_out(set, 0);
-}
-
-/**
- * @ingroup libmeos_setspan_inout
  * @brief Output a set of integers.
 */
 char *
-intset_out(const Set *set)
+intset_out(const Set *s)
 {
-  return set_out(set, 0);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_INTSET))
+    return NULL;
+  return set_out(s, 0);
 }
 
 /**
@@ -300,9 +369,12 @@ intset_out(const Set *set)
  * @brief Output a set of big integers.
 */
 char *
-bigintset_out(const Set *set)
+bigintset_out(const Set *s)
 {
-  return set_out(set, 0);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_BIGINTSET))
+    return NULL;
+  return set_out(s, 0);
 }
 
 /**
@@ -310,9 +382,39 @@ bigintset_out(const Set *set)
  * @brief Output a set of floats.
 */
 char *
-floatset_out(const Set *set, int maxdd)
+floatset_out(const Set *s, int maxdd)
 {
-  return set_out(set, maxdd);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_FLOATSET) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
+  return set_out(s, maxdd);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of texts.
+*/
+char *
+textset_out(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TEXTSET))
+    return NULL;
+  return set_out(s, 0);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of timestamps.
+*/
+char *
+timestampset_out(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
+    return NULL;
+  return set_out(s, 0);
 }
 
 /**
@@ -320,21 +422,15 @@ floatset_out(const Set *set, int maxdd)
  * @brief Output a set of geometries.
 */
 char *
-geomset_out(const Set *set, int maxdd)
+geoset_out(const Set *s, int maxdd)
 {
-  return set_out(set, maxdd);
-}
-
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Output a set of geographies.
-*/
-char *
-geogset_out(const Set *set, int maxdd)
-{
-  return set_out(set, maxdd);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+    return NULL;
+  return set_out(s, maxdd);
 }
 #endif /* MEOS */
+
 
 /**
  * @ingroup libmeos_setspan_inout
@@ -342,9 +438,12 @@ geogset_out(const Set *set, int maxdd)
  * @sqlfunc asText()
  */
 char *
-geoset_as_text(const Set *set, int maxdd)
+geoset_as_text(const Set *s, int maxdd)
 {
-  return set_out_fn(set, maxdd, &wkt_out);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+    return NULL;
+  return set_out_fn(s, maxdd, &wkt_out);
 }
 
 /**
@@ -353,9 +452,12 @@ geoset_as_text(const Set *set, int maxdd)
  * @sqlfunc asEWKT()
  */
 char *
-geoset_as_ewkt(const Set *set, int maxdd)
+geoset_as_ewkt(const Set *s, int maxdd)
 {
-  return set_out_fn(set, maxdd, &ewkt_out);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+    return NULL;
+  return set_out_fn(s, maxdd, &ewkt_out);
 }
 
 /*****************************************************************************
@@ -364,6 +466,7 @@ geoset_as_ewkt(const Set *set, int maxdd)
 
 /**
  * @brief Return the size of a bounding box of a temporal type
+ * @return On error return SIZE_MAX
  */
 static size_t
 set_bbox_size(meosType settype)
@@ -372,8 +475,9 @@ set_bbox_size(meosType settype)
     return 0;
   if (spatialset_type(settype))
     return sizeof(STBox);
-  elog(ERROR, "unknown set_bbox_size function for set type: %d", settype);
-  return 0; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "unknown set_bbox_size function for set type: %d", settype);
+  return SIZE_MAX;
 }
 
 /**
@@ -388,18 +492,27 @@ void
 valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   void *box)
 {
-  /* Currently, only geo set types have bounding box */
+  /* Currently, only geoset types have bounding box */
   assert(set_basetype(basetype));
   assert(! alphanum_basetype(basetype));
   if (geo_basetype(basetype))
+  {
     geoarr_set_stbox(values, count, (STBox *) box);
+    return;
+  }
 #if NPOINT
   else if (basetype == T_NPOINT)
-   npointarr_set_stbox(values, count, (STBox *) box);
+  {
+    npointarr_set_stbox(values, count, (STBox *) box);
+    return;
+  }
 #endif
   else
-    elog(ERROR, "unknown set type for computing bounding box: %d", basetype);
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "unknown set type for computing bounding box: %d", basetype);
+    return;
+  }
 }
 
 #ifdef DEBUG_BUILD
@@ -430,6 +543,7 @@ SET_OFFSETS_PTR(const Set *s)
 Datum
 SET_VAL_N(const Set *s, int index)
 {
+  assert(s);
   assert(index >= 0);
   /* For base types passed by value */
   if (MEOS_FLAGS_GET_BYVAL(s->flags))
@@ -480,13 +594,15 @@ SET_VAL_N(const Set *s, int index)
  * @param[in] basetype Base type
  * @param[in] ordered True for ordered sets
  * @sqlfunc intset(), bigintset(), floatset(), textset(), tstzset()
- * @pymeosfunc TstzSet()
  */
 Set *
 set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   bool ordered)
 {
-  assert(maxcount >= count);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) values) || ! ensure_positive(count) ||
+      ! ensure_less_equal(count, maxcount))
+    return NULL;
 
   bool hasz = false;
   bool geodetic = false;
@@ -502,10 +618,11 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
     {
       /* Test that the geometry is not empty */
       GSERIALIZED *gs2 = DatumGetGserializedP(values[i]);
-      ensure_point_type(gs2);
-      ensure_same_srid(srid, gserialized_get_srid(gs2));
-      ensure_same_dimensionality_gs(gs1, gs2);
-      ensure_non_empty(gs2);
+      if (! ensure_point_type(gs2) ||
+          ! ensure_same_srid(srid, gserialized_get_srid(gs2)) ||
+          ! ensure_same_dimensionality_gs(gs1, gs2) ||
+          ! ensure_not_empty(gs2))
+        return NULL;
     }
   }
 
@@ -625,7 +742,6 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
  * @param[in] basetype Base type
  * @param[in] ordered True for ordered sets
  * @sqlfunc intset(), bigintset(), floatset(), textset(), tstzset()
- * @pymeosfunc TstzSet()
  */
 Set *
 set_make(const Datum *values, int count, meosType basetype, bool ordered)
@@ -636,41 +752,19 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a timestamp with time zone set from an array of values.
-*/
-Set *
-timestampset_make(const TimestampTz *values, int count)
-{
-  Datum *datums = palloc(sizeof(Datum *) * count);
-  for (int i=0; i<count; ++i)
-    datums[i] = TimestampTzGetDatum(values[i]);
-  return set_make(datums, count, T_TIMESTAMPTZ, ORDERED);
-}
-
-/**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct a text set from an array of values.
-*/
-Set *
-textset_make(const text **values, int count)
-{
-  Datum *datums = palloc(sizeof(Datum *) * count);
-  for (int i=0; i<count; ++i)
-    datums[i] = PointerGetDatum(values[i]);
-  return set_make(datums, count, T_TEXT, ORDERED);
-}
-
-/**
- * @ingroup libmeos_setspan_constructor
  * @brief Construct an integer set from an array of values.
 */
 Set *
 intset_make(const int *values, int count)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) values) || ! ensure_positive(count))
+    return NULL;
+
   Datum *datums = palloc(sizeof(Datum *) * count);
-  for (int i=0; i<count; ++i)
+  for (int i = 0; i < count; ++i)
     datums[i] = Int32GetDatum(values[i]);
-  return set_make(datums, count, T_INT4, ORDERED);
+  return set_make_free(datums, count, T_INT4, ORDERED);
 }
 
 /**
@@ -680,10 +774,14 @@ intset_make(const int *values, int count)
 Set *
 bigintset_make(const int64 *values, int count)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) values) || ! ensure_positive(count))
+    return NULL;
+
   Datum *datums = palloc(sizeof(Datum *) * count);
-  for (int i=0; i<count; ++i)
+  for (int i = 0; i < count; ++i)
     datums[i] = Int64GetDatum(values[i]);
-  return set_make(datums, count, T_INT8, ORDERED);
+  return set_make_free(datums, count, T_INT8, ORDERED);
 }
 
 /**
@@ -693,10 +791,48 @@ bigintset_make(const int64 *values, int count)
 Set *
 floatset_make(const double *values, int count)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) values) || ! ensure_positive(count))
+    return NULL;
+
   Datum *datums = palloc(sizeof(Datum *) * count);
-  for (int i=0; i<count; ++i)
+  for (int i = 0; i < count; ++i)
     datums[i] = Float8GetDatum(values[i]);
-  return set_make(datums, count, T_FLOAT8, ORDERED);
+  return set_make_free(datums, count, T_FLOAT8, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a text set from an array of values.
+*/
+Set *
+textset_make(const text **values, int count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) values) || ! ensure_positive(count))
+    return NULL;
+
+  Datum *datums = palloc(sizeof(Datum *) * count);
+  for (int i = 0; i < count; ++i)
+    datums[i] = PointerGetDatum(values[i]);
+  return set_make_free(datums, count, T_TEXT, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a timestamp with time zone set from an array of values.
+*/
+Set *
+timestampset_make(const TimestampTz *values, int count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) values) || ! ensure_positive(count))
+    return NULL;
+
+  Datum *datums = palloc(sizeof(Datum *) * count);
+  for (int i = 0; i < count; ++i)
+    datums[i] = TimestampTzGetDatum(values[i]);
+  return set_make_free(datums, count, T_TIMESTAMPTZ, ORDERED);
 }
 
 /**
@@ -704,25 +840,18 @@ floatset_make(const double *values, int count)
  * @brief Construct a geometry set from an array of values.
 */
 Set *
-geomset_make(const GSERIALIZED **values, int count)
+geoset_make(const GSERIALIZED **values, int count)
 {
-  Datum *datums = palloc(sizeof(Datum *) * count);
-  for (int i=0; i<count; ++i)
-    datums[i] = PointerGetDatum(values[i]);
-  return set_make(datums, count, T_GEOMETRY, ORDERED);
-}
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) values) || ! ensure_positive(count))
+    return NULL;
 
-/**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct a geography set from an array of values.
-*/
-Set *
-geogset_make(const GSERIALIZED **values, int count)
-{
   Datum *datums = palloc(sizeof(Datum *) * count);
-  for (int i=0; i<count; ++i)
+  for (int i = 0; i < count; ++i)
     datums[i] = PointerGetDatum(values[i]);
-  return set_make(datums, count, T_GEOGRAPHY, ORDERED);
+  meosType geotype = FLAGS_GET_GEODETIC(values[0]->gflags) ?
+    T_GEOMETRY : T_GEOGRAPHY;
+  return set_make_free(datums, count, geotype, ORDERED);
 }
 #endif /* MEOS */
 
@@ -738,6 +867,7 @@ geogset_make(const GSERIALIZED **values, int count)
 Set *
 set_make_free(Datum *values, int count, meosType basetype, bool ordered)
 {
+  assert(values);
   if (count == 0)
   {
     pfree(values);
@@ -755,18 +885,21 @@ set_make_free(Datum *values, int count, meosType basetype, bool ordered)
 Set *
 set_copy(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s))
+    return NULL;
   Set *result = palloc(VARSIZE(s));
   memcpy(result, s, VARSIZE(s));
   return result;
 }
 
 /*****************************************************************************
- * Cast function
+ * Conversion functions
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_cast
- * @brief Cast a value as a set
+ * @ingroup libmeos_internal_setspan_conversion
+ * @brief Convert a value as a set
  * @sqlop @p ::
  */
 Set *
@@ -777,8 +910,8 @@ value_to_set(Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast an integer as a set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert an integer as a set
  * @sqlop @p ::
  */
 Set *
@@ -789,8 +922,8 @@ int_to_intset(int i)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a big integer as a set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a big integer as a set
  * @sqlop @p ::
  */
 Set *
@@ -801,8 +934,8 @@ bigint_to_bigintset(int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a float as a set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a float as a set
  * @sqlop @p ::
  */
 Set *
@@ -813,8 +946,23 @@ float_to_floatset(double d)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
- * @brief Cast a timestamp as a set
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a text as a set
+ * @sqlop @p ::
+ */
+Set *
+text_to_textset(text *txt)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) txt))
+    return NULL;
+  Datum v = PointerGetDatum(txt);
+  return set_make(&v, 1, T_TEXT, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a timestamp as a set
  * @sqlop @p ::
  */
 Set *
@@ -822,6 +970,22 @@ timestamp_to_tstzset(TimestampTz t)
 {
   Datum v = TimestampTzGetDatum(t);
   return set_make(&v, 1, T_TIMESTAMPTZ, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a geometry/geograph as a geoset
+ * @sqlop @p ::
+ */
+Set *
+geo_to_geoset(GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
+    return NULL;
+  Datum v = PointerGetDatum(gs);
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  return set_make(&v, 1, geotype, ORDERED);
 }
 #endif /* MEOS */
 
@@ -832,6 +996,7 @@ timestamp_to_tstzset(TimestampTz t)
 void
 set_set_span(const Set *set, Span *s)
 {
+  assert(set); assert(s);
   span_set(SET_VAL_N(set, MINIDX), SET_VAL_N(set, set->MAXIDX), true, true,
     set->basetype, s);
   return;
@@ -845,11 +1010,14 @@ set_set_span(const Set *set, Span *s)
  * @brief Return the bounding box of a spatial set.
  * @sqlfunc stbox()
  * @sqlop @p ::
- * @pymeosfunc stbox()
  */
 STBox *
 spatialset_stbox(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
+    return NULL;
+
   STBox *result = palloc(sizeof(STBox));
   spatialset_set_stbox(s, result);
   return result;
@@ -861,11 +1029,12 @@ spatialset_stbox(const Set *s)
  * @brief Set the last argument to the bounding box of a spatial set.
  */
 void
-spatialset_set_stbox(const Set *set, STBox *box)
+spatialset_set_stbox(const Set *s, STBox *box)
 {
-  assert(spatialset_type(set->settype));
+  assert(s); assert(box);
+  assert(spatialset_type(s->settype));
   memset(box, 0, sizeof(STBox));
-  memcpy(box, SET_BBOX_PTR(set), sizeof(STBox));
+  memcpy(box, SET_BBOX_PTR(s), sizeof(STBox));
   return;
 }
 
@@ -882,6 +1051,7 @@ spatialset_set_stbox(const Set *set, STBox *box)
 int
 set_mem_size(const Set *s)
 {
+  assert(s);
   return (int) VARSIZE(DatumGetPointer(s));
 }
 #endif /* MEOS */
@@ -891,11 +1061,14 @@ set_mem_size(const Set *s)
  * @brief Return the bounding span of a set.
  * @sqlfunc span()
  * @sqlop @p ::
- * @pymeosfunc span()
  */
 Span *
 set_span(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_spantype(s->settype))
+    return NULL;
+
   Span *result = palloc(sizeof(Span));
   set_set_span(s, result);
   return result;
@@ -904,12 +1077,15 @@ set_span(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of values of a set.
+ * @return On error return -1
  * @sqlfunc numTimestamps()
- * @pymeosfunc numTimestamps()
  */
 int
 set_num_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s))
+    return -1;
   return s->count;
 }
 
@@ -917,11 +1093,11 @@ set_num_values(const Set *s)
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the start value of a set.
  * @sqlfunc startTimestamp()
- * @pymeosfunc startTimestamp()
  */
 Datum
 set_start_value(const Set *s)
 {
+  assert(s);
   return SET_VAL_N(s, 0);
 }
 
@@ -929,12 +1105,15 @@ set_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of an integer set.
+ * @return On error return INT_MAX
  * @sqlfunc startValue()
- * @pymeosfunc startValue()
  */
 int
 intset_start_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_INTSET))
+    return INT_MAX;
   int result = DatumGetInt32(SET_VAL_N(s, 0));
   return result;
 }
@@ -942,12 +1121,15 @@ intset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a big integer set.
+ * @return On error return INT_MAX
  * @sqlfunc startValue()
- * @pymeosfunc startValue()
  */
 int64
 bigintset_start_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_BIGINTSET))
+    return INT_MAX;
   int64 result = DatumGetInt64(SET_VAL_N(s, 0));
   return result;
 }
@@ -955,26 +1137,64 @@ bigintset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a float set.
+ * @return On error return DBL_MAX
  * @sqlfunc startValue()
- * @pymeosfunc startValue()
  */
 double
 floatset_start_value(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_FLOATSET))
+    return DBL_MAX;
   double result = DatumGetFloat8(SET_VAL_N(s, 0));
   return result;
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
+ * @brief Return the start value of a text set.
+ * @return On error return NULL
+ * @sqlfunc startValue()
+ */
+text *
+textset_start_value(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TEXTSET))
+    return NULL;
+  text *result = DatumGetTextP(SET_VAL_N(s, 0));
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a timestamp set.
+ * @return On error return DT_NOEND
  * @sqlfunc startTimestamp()
- * @pymeosfunc startTimestamp()
  */
 TimestampTz
-timestampset_start_timestamp(const Set *ts)
+timestampset_start_timestamp(const Set *s)
 {
-  TimestampTz result = DatumGetTimestampTz(SET_VAL_N(ts, 0));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
+    return DT_NOEND;
+  TimestampTz result = DatumGetTimestampTz(SET_VAL_N(s, 0));
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the start value of a geo set.
+ * @return On error return NULL
+ * @sqlfunc startValue()
+ */
+GSERIALIZED *
+geoset_start_value(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+    return NULL;
+  GSERIALIZED *result = DatumGetGserializedP(SET_VAL_N(s, 0));
   return result;
 }
 #endif /* MEOS */
@@ -983,11 +1203,11 @@ timestampset_start_timestamp(const Set *ts)
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the end value of a set.
  * @sqlfunc endTimestamp()
- * @pymeosfunc endTimestamp()
  */
 Datum
 set_end_value(const Set *s)
 {
+  assert(s);
   return SET_VAL_N(s, s->count - 1);
 }
 
@@ -995,52 +1215,96 @@ set_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of an integer set.
+ * @return On error return INT_MAX
  * @sqlfunc endValue()
- * @pymeosfunc endValue()
  */
 int
 intset_end_value(const Set *s)
 {
-  int result = DatumGetInt32(SET_VAL_N(s, 0));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_INTSET))
+    return INT_MAX;
+  int result = DatumGetInt32(SET_VAL_N(s, s->count - 1));
   return result;
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a big integer set.
+ * @return On error return INT_MAX
  * @sqlfunc endValue()
- * @pymeosfunc endValue()
  */
 int64
 bigintset_end_value(const Set *s)
 {
-  int64 result = DatumGetInt64(SET_VAL_N(s, 0));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_BIGINTSET))
+    return INT_MAX;
+  int64 result = DatumGetInt64(SET_VAL_N(s, s->count - 1));
   return result;
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a float set.
+ * @return On error return DBL_MAX
  * @sqlfunc endValue()
- * @pymeosfunc endValue()
  */
 double
 floatset_end_value(const Set *s)
 {
-  double result = DatumGetFloat8(SET_VAL_N(s, 0));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_FLOATSET))
+    return DBL_MAX;
+  double result = DatumGetFloat8(SET_VAL_N(s, s->count - 1));
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the end value of a text set.
+ * @return On error return NULL
+ * @sqlfunc endValue()
+ */
+text *
+textset_end_value(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TEXTSET))
+    return NULL;
+  text *result = DatumGetTextP(SET_VAL_N(s, s->count - 1));
   return result;
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a timestamp set.
+ * @return On error return DT_NOEND
  * @sqlfunc endTimestamp()
- * @pymeosfunc endTimestamp()
  */
 TimestampTz
-timestampset_end_timestamp(const Set *ts)
+timestampset_end_timestamp(const Set *s)
 {
-  TimestampTz result = DatumGetTimestampTz(SET_VAL_N(ts, ts->count - 1));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
+    return DT_NOEND;
+  TimestampTz result = DatumGetTimestampTz(SET_VAL_N(s, s->count - 1));
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the end value of a geo set.
+ * @return On error return NULL
+ * @sqlfunc endValue()
+ */
+GSERIALIZED *
+geoset_end_value(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+    return NULL;
+  GSERIALIZED *result = DatumGetGserializedP(SET_VAL_N(s, s->count - 1));
   return result;
 }
 #endif /* MEOS */
@@ -1054,11 +1318,11 @@ timestampset_end_timestamp(const Set *ts)
  * @result Return true if the value is found
  * @note It is assumed that n is 1-based
  * @sqlfunc valueN(), timestampN()
- * @pymeosfunc timestampN()
  */
 bool
 set_value_n(const Set *s, int n, Datum *result)
 {
+  assert(s); assert(result);
   if (n < 1 || n > s->count)
     return false;
   *result = SET_VAL_N(s, n - 1);
@@ -1075,12 +1339,13 @@ set_value_n(const Set *s, int n, Datum *result)
  * @result Return true if the value is found
  * @note It is assumed that n is 1-based
  * @sqlfunc valueN()
- * @pymeosfunc valueN()
  */
 bool
 intset_value_n(const Set *s, int n, int *result)
 {
-  if (n < 1 || n > s->count)
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_set_has_type(s, T_INTSET) || n < 1 || n > s->count)
     return false;
   *result = DatumGetInt32(SET_VAL_N(s, n - 1));
   return true;
@@ -1095,12 +1360,13 @@ intset_value_n(const Set *s, int n, int *result)
  * @result Return true if the value is found
  * @note It is assumed that n is 1-based
  * @sqlfunc valueN()
- * @pymeosfunc valueN()
  */
 bool
 bigintset_value_n(const Set *s, int n, int64 *result)
 {
-  if (n < 1 || n > s->count)
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_set_has_type(s, T_BIGINTSET) || n < 1 || n > s->count)
     return false;
   *result = DatumGetInt64(SET_VAL_N(s, n - 1));
   return true;
@@ -1115,12 +1381,13 @@ bigintset_value_n(const Set *s, int n, int64 *result)
  * @result Return true if the value is found
  * @note It is assumed that n is 1-based
  * @sqlfunc valueN()
- * @pymeosfunc valueN()
  */
 bool
 floatset_value_n(const Set *s, int n, double *result)
 {
-  if (n < 1 || n > s->count)
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_set_has_type(s, T_FLOATSET) || n < 1 || n > s->count)
     return false;
   *result = DatumGetFloat8(SET_VAL_N(s, n - 1));
   return true;
@@ -1128,21 +1395,64 @@ floatset_value_n(const Set *s, int n, double *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
+ * @brief Compute the n-th value of a text set
+ * @param[in] s Float set
+ * @param[in] n Number
+ * @param[out] result Value
+ * @result Return true if the value is found
+ * @note It is assumed that n is 1-based
+ * @sqlfunc valueN()
+ */
+bool
+textset_value_n(const Set *s, int n, text **result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_set_has_type(s, T_TEXTSET) || n < 1 || n > s->count)
+    return false;
+  *result = DatumGetTextP(SET_VAL_N(s, n - 1));
+  return true;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
  * @brief Compute the n-th value of a timestamp set
- * @param[in] ts Timestamp set
+ * @param[in] s Timestamp set
  * @param[in] n Number
  * @param[out] result Timestamp
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
  * @sqlfunc timestampN()
- * @pymeosfunc timestampN()
  */
 bool
-timestampset_timestamp_n(const Set *ts, int n, TimestampTz *result)
+timestampset_timestamp_n(const Set *s, int n, TimestampTz *result)
 {
-  if (n < 1 || n > ts->count)
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_set_has_type(s, T_TSTZSET) || n < 1 || n > s->count)
     return false;
-  *result = DatumGetTimestampTz(SET_VAL_N(ts, n - 1));
+  *result = DatumGetTimestampTz(SET_VAL_N(s, n - 1));
+  return true;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Compute the n-th value of a geo set
+ * @param[in] s Float set
+ * @param[in] n Number
+ * @param[out] result Value
+ * @result Return true if the value is found
+ * @note It is assumed that n is 1-based
+ * @sqlfunc valueN()
+ */
+bool
+geoset_value_n(const Set *s, int n, GSERIALIZED **result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_geoset_type(s->settype) ||n < 1 || n > s->count)
+    return false;
+  *result = DatumGetGserializedP(SET_VAL_N(s, n - 1));
   return true;
 }
 #endif /* MEOS */
@@ -1151,11 +1461,11 @@ timestampset_timestamp_n(const Set *ts, int n, TimestampTz *result)
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the array of values of a set.
  * @sqlfunc values(), timestamps()
- * @pymeosfunc timestamps()
  */
 Datum *
 set_values(const Set *s)
 {
+  assert(s);
   Datum *result = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = SET_VAL_N(s, i);
@@ -1166,12 +1476,16 @@ set_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of an integer set.
+ * @return On error return NULL
  * @sqlfunc values()
- * @pymeosfunc values()
  */
 int *
 intset_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_INTSET))
+    return NULL;
+
   int *result = palloc(sizeof(int) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetInt32(SET_VAL_N(s, i));
@@ -1181,12 +1495,16 @@ intset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a big integer set.
+ * @return On error return NULL
  * @sqlfunc values()
- * @pymeosfunc values()
  */
 int64 *
 bigintset_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_BIGINTSET))
+    return NULL;
+
   int64 *result = palloc(sizeof(int64) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetInt64(SET_VAL_N(s, i));
@@ -1196,12 +1514,16 @@ bigintset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a float set.
+ * @return On error return NULL
  * @sqlfunc values()
- * @pymeosfunc values()
  */
 double *
 floatset_values(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_FLOATSET))
+    return NULL;
+
   double *result = palloc(sizeof(double) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetFloat8(SET_VAL_N(s, i));
@@ -1210,16 +1532,58 @@ floatset_values(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
+ * @brief Return the array of values of a text set.
+ * @return On error return NULL
+ * @sqlfunc values()
+ */
+text **
+textset_values(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TEXTSET))
+    return NULL;
+
+  text **result = palloc(sizeof(text *) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetTextP(SET_VAL_N(s, i));
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a timestamp set.
+ * @return On error return NULL
  * @sqlfunc timestamps()
- * @pymeosfunc timestamps()
  */
 TimestampTz *
-timestampset_values(const Set *ts)
+timestampset_values(const Set *s)
 {
-  TimestampTz *result = palloc(sizeof(TimestampTz) * ts->count);
-  for (int i = 0; i < ts->count; i++)
-    result[i] = DatumGetTimestampTz(SET_VAL_N(ts, i));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
+    return NULL;
+
+  TimestampTz *result = palloc(sizeof(TimestampTz) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetTimestampTz(SET_VAL_N(s, i));
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the array of values of a geo set.
+ * @return On error return NULL
+ * @sqlfunc values()
+ */
+GSERIALIZED **
+geoset_values(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+    return NULL;
+
+  GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetGserializedP(SET_VAL_N(s, i));
   return result;
 }
 #endif /* MEOS */
@@ -1230,11 +1594,118 @@ timestampset_values(const Set *ts)
  * @sqlfunc SRID()
  */
 int
-geoset_srid(const Set *set)
+geoset_srid(const Set *s)
 {
-  assert(geo_basetype(set->basetype));
-  GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(set, 0));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+    return SRID_INVALID;
+
+  GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(s, 0));
   return gserialized_get_srid(gs);
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Return a copy of a set ordered, without duplicates, and with no
+ * additional free space.
+ */
+Set *
+set_compact(const Set *s)
+{
+  assert(s);
+  /* Collect the values which may be UNSORTED */
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = SET_VAL_N(s, i);
+
+  Set *result = set_make_exp(values, s->count, s->count, s->basetype, ORDERED);
+  pfree(values);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Set the precision of the float set to the number of decimal places.
+ */
+Set *
+floatset_round(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_FLOATSET) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
+
+  Set *result = set_copy(s);
+  Datum size = Int32GetDatum(maxdd);
+  for (int i = 0; i < s->count; i++)
+    (SET_OFFSETS_PTR(result))[i] = datum_round_float(SET_VAL_N(s, i), size);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Set the precision of the coordinates to the number of decimal places.
+ */
+Set *
+geoset_round(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  Datum size = Int32GetDatum(maxdd);
+  for (int i = 0; i < s->count; i++)
+  {
+    Datum value = SET_VAL_N(s, i);
+    values[i] = datum_round_geo(value, size);
+  }
+  Set *result = set_make(values, s->count, s->basetype, ORDERED);
+  pfree(values);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Convert the text set to lowercase.
+ */
+Set *
+textset_lower(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TEXTSET))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = datum_lower(SET_VAL_N(s, i));
+  Set *result = set_make_free(values, s->count, T_TEXT, ORDERED);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Convert the text set to uppercase.
+ */
+Set *
+textset_upper(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TEXTSET))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = datum_upper(SET_VAL_N(s, i));
+  Set *result = set_make_free(values, s->count, T_TEXT, ORDERED);
+  return result;
 }
 
 /*****************************************************************************
@@ -1243,39 +1714,134 @@ geoset_srid(const Set *set)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Shift the values of set.
+ * @brief Return a number set shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
  */
 Set *
-set_shift(const Set *s, Datum shift)
+numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
+  bool haswidth)
 {
-  assert(MEOS_FLAGS_GET_BYVAL(s->flags));
+  meosType type = s->basetype;
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_numset_type(s->settype) ||
+      ! ensure_one_shift_width(hasshift, haswidth) ||
+      (haswidth && ! ensure_positive_datum(width, type)))
+    return NULL;
+
+  /* Copy the input set to the output set */
   Set *result = set_copy(s);
-  for (int i = 0; i < s->count; i++)
-    (SET_OFFSETS_PTR(result))[i] =
-      datum_add(SET_VAL_N(s, i), shift, s->basetype, s->basetype);
+  
+  /* Set the first and last instants */
+  Datum lower, lower1, upper, upper1;
+  lower = lower1 = SET_VAL_N(s, 0);
+  upper = upper1 = SET_VAL_N(s, s->count - 1);
+  lower_upper_shift_scale_value(shift, width, type, hasshift, haswidth,
+    &lower1, &upper1);
+  (SET_OFFSETS_PTR(result))[0] = lower1;
+  (SET_OFFSETS_PTR(result))[s->count - 1] = upper1;
+  if (s->count > 1)
+  {
+    /* Shift and/or scale from the second to the penultimate values */
+    Datum delta = 0;    /* make compiler quiet */
+    double scale = 1.0; /* make compiler quiet */
+    if (hasshift)
+      delta = datum_sub(lower1, lower, type);
+    if (haswidth)
+      scale = datum_double(datum_sub(upper1, lower1, type), type) /
+              datum_double(datum_sub(upper, lower, type), type);
+    for (int i = 1; i < s->count - 1; i++)
+    {
+      if (hasshift)
+        (SET_OFFSETS_PTR(result))[i] = datum_add((SET_OFFSETS_PTR(result))[i],
+          delta, type);
+      if (haswidth)
+        (SET_OFFSETS_PTR(result))[i] = datum_add(lower1, double_datum(
+          datum_double(datum_sub(SET_VAL_N(result, i), lower1, type), type) *
+          scale, type), type);
+    }
+  }
   return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return an integer set shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+Set *
+intset_shift_scale(const Set *s, int shift, int width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_has_type(s, T_INTSET))
+    return NULL;
+
+  return numset_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),
+    hasshift, haswidth);
 }
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a timestamp set shifted and/or scaled by the intervals
- * @sqlfunc shift(), tscale(), shiftTscale()
- * @pymeosfunc shift()
+ * @brief Return a big integer set shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
  */
 Set *
-timestampset_shift_tscale(const Set *s, const Interval *shift,
+bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_has_type(s, T_BIGINTSET))
+    return NULL;
+
+  return numset_shift_scale(s, Int64GetDatum(shift), Int64GetDatum(width),
+    hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a float set shifted and/or scaled by the values
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+Set *
+floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_has_type(s, T_FLOATSET))
+    return NULL;
+
+  return numset_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
+    hasshift, haswidth);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a timestamp set shifted and/or scaled by the intervals
+ * @sqlfunc shift(), scale(), shiftScale()
+ */
+Set *
+timestampset_shift_scale(const Set *s, const Interval *shift,
   const Interval *duration)
 {
-  assert(shift != NULL || duration != NULL);
-  if (duration != NULL)
-    ensure_valid_duration(duration);
-  Set *result = set_copy(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_has_type(s, T_TSTZSET) ||
+      ! ensure_one_not_null((void *) shift, (void *) duration) ||
+      (duration && ! ensure_valid_duration(duration)))
+    return NULL;
 
+  Set *result = set_copy(s);
   /* Set the first and last instants */
   TimestampTz lower, lower1, upper, upper1;
   lower = lower1 = DatumGetTimestampTz(SET_VAL_N(s, 0));
   upper = upper1 = DatumGetTimestampTz(SET_VAL_N(s, s->count - 1));
-  lower_upper_shift_tscale(shift, duration, &lower1, &upper1);
+  lower_upper_shift_scale_time(shift, duration, &lower1, &upper1);
   (SET_OFFSETS_PTR(result))[0] = TimestampTzGetDatum(lower1);
   (SET_OFFSETS_PTR(result))[s->count - 1] = TimestampTzGetDatum(upper1);
   if (s->count > 1)
@@ -1308,12 +1874,15 @@ timestampset_shift_tscale(const Set *s, const Interval *shift,
  * @brief Return true if the first set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
- * @pymeosfunc __eq__()
  */
 bool
 set_eq(const Set *s1, const Set *s2)
 {
-  assert(s1->settype == s2->settype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return false;
+
   if (s1->count != s2->count)
     return false;
   /* s1 and s2 have the same number of values */
@@ -1351,7 +1920,11 @@ set_ne(const Set *s1, const Set *s2)
 int
 set_cmp(const Set *s1, const Set *s2)
 {
-  assert(s1->settype == s2->settype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_set_type(s1, s2))
+    return INT_MAX;
+
   int count = Min(s1->count, s2->count);
   int result = 0;
   for (int i = 0; i < count; i++)
@@ -1435,6 +2008,10 @@ set_gt(const Set *s1, const Set *s2)
 uint32
 set_hash(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s))
+    return INT_MAX;
+
   uint32 result = 1;
   for (int i = 0; i < s->count; i++)
   {
@@ -1453,6 +2030,10 @@ set_hash(const Set *s)
 uint64
 set_hash_extended(const Set *s, uint64 seed)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s))
+    return INT_MAX;
+
   uint64 result = 1;
   for (int i = 0; i < s->count; i++)
   {

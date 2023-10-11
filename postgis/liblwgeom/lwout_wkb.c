@@ -260,7 +260,7 @@ static uint8_t* double_nan_to_wkb_buf(uint8_t *buf, uint8_t variant)
 	{
 		for (int i = 0; i < NAN_SIZE; i++)
 		{
-			buf[i] = (variant & WKB_NDR) ? ndr_nan[i] : xdr_nan[i];;
+			buf[i] = (variant & WKB_NDR) ? ndr_nan[i] : xdr_nan[i];
 		}
 		return buf + NAN_SIZE;
 	}

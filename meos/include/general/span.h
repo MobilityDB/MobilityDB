@@ -77,21 +77,31 @@ typedef struct
 
 /* General functions */
 
+extern bool ensure_span_has_type(const Span *s, meosType spantype);
+extern bool ensure_same_span_type(const Span *s1, const Span *s2);
+extern bool ensure_same_span_basetype(const Span *s, meosType basetype);
 extern void span_deserialize(const Span *s, SpanBound *lower,
   SpanBound *upper);
 extern Span *span_serialize(SpanBound *lower, SpanBound *upper);
 extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
-extern int span_bound_qsort_cmp(const void *a1, const void *a2);
-extern int span_lower_cmp(const Span *a, const Span *b);
-extern int span_upper_cmp(const Span *a, const Span *b);
+extern int span_bound_qsort_cmp(const void *s1, const void *s2);
+extern int span_lower_cmp(const Span *s1, const Span *s2);
+extern int span_upper_cmp(const Span *s1, const Span *s2);
+extern Datum span_canon_upper(const Span *s);
 extern Span *spanarr_normalize(Span *spans, int count, bool sort,
   int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
-extern void lower_upper_shift_tscale(const Interval *shift,
+extern void lower_upper_shift_scale_value(Datum shift, Datum width,
+  meosType type, bool hasshift, bool haswidth, Datum *lower, Datum *upper);
+extern void lower_upper_shift_scale_time(const Interval *shift,
   const Interval *duration, TimestampTz *lower, TimestampTz *upper);
-extern void period_delta_scale(Span *p, TimestampTz origin, TimestampTz delta,
-  double scale);
-extern void period_shift_tscale1(Span *p, const Interval *shift,
+extern void numspan_delta_scale_iter(Span *s, Datum origin, Datum delta,
+  bool hasdelta, double scale);
+extern void period_delta_scale_iter(Span *s, TimestampTz origin,
+  TimestampTz delta, double scale);
+extern void numspan_shift_scale1(Span *s, Datum shift, Datum width,
+  bool hasshift, bool haswidth, Datum *delta, double *scale);
+extern void period_shift_scale1(Span *s, const Interval *shift,
   const Interval *duration, TimestampTz *delta, double *scale);
 
 extern size_t span_to_wkb_size(const Span *s);

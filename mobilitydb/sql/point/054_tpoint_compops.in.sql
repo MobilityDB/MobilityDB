@@ -38,11 +38,11 @@
 
 CREATE FUNCTION tpoint_teq(geometry(Point), tgeompoint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_teq(tgeompoint, geometry(Point))
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_teq(tgeompoint, tgeompoint)
   RETURNS tbool
@@ -67,11 +67,11 @@ CREATE OPERATOR #= (
 
 CREATE FUNCTION tpoint_teq(geometry(Point), tgeompoint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_teq(tgeompoint, geometry(Point), atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_teq(tgeompoint, tgeompoint, atvalue bool)
   RETURNS tbool
@@ -82,11 +82,11 @@ CREATE FUNCTION tpoint_teq(tgeompoint, tgeompoint, atvalue bool)
 
 CREATE FUNCTION tpoint_teq(geography(Point), tgeogpoint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_teq(tgeogpoint, geography(Point))
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_teq(tgeogpoint, tgeogpoint)
   RETURNS tbool
@@ -111,11 +111,11 @@ CREATE OPERATOR #= (
 
 CREATE FUNCTION tpoint_teq(geography(Point), tgeogpoint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_teq(tgeogpoint, geography(Point), atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_teq(tgeogpoint, tgeogpoint, atvalue bool)
   RETURNS tbool
@@ -128,11 +128,11 @@ CREATE FUNCTION tpoint_teq(tgeogpoint, tgeogpoint, atvalue bool)
 
 CREATE FUNCTION tpoint_tne(geometry(Point), tgeompoint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_tne(tgeompoint, geometry(Point))
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_tne(tgeompoint, tgeompoint)
   RETURNS tbool
@@ -157,11 +157,11 @@ CREATE OPERATOR #<> (
 
 CREATE FUNCTION tpoint_tne(geometry(Point), tgeompoint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_tne(tgeompoint, geometry(Point), atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_tne(tgeompoint, tgeompoint, atvalue bool)
   RETURNS tbool
@@ -172,11 +172,11 @@ CREATE FUNCTION tpoint_tne(tgeompoint, tgeompoint, atvalue bool)
 
 CREATE FUNCTION tpoint_tne(geography(Point), tgeogpoint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_tne(tgeogpoint, geography(Point))
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_tne(tgeogpoint, tgeogpoint)
   RETURNS tbool
@@ -201,11 +201,11 @@ CREATE OPERATOR #<> (
 
 CREATE FUNCTION tpoint_tne(geography(Point), tgeogpoint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_tne(tgeogpoint, geography(Point), atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_tne(tgeogpoint, tgeogpoint, atvalue bool)
   RETURNS tbool

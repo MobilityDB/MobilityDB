@@ -70,20 +70,6 @@ extern PGDLLEXPORT Datum interval_cmp(PG_FUNCTION_ARGS);
  */
 PG_MODULE_MAGIC;
 
-/**
- * @brief Global array containing the interpolation names corresponding to the
- * enumeration interpType defined in file meos_catalog.h.
- */
-char * _interpType_names[] =
-{
-  [INTERP_NONE] = "none",
-  [DISCRETE] = "discrete",
-  [STEP] = "step",
-  [LINEAR] = "linear"
-};
-
-#define INTERP_STR_MAX_LEN 8
-
 /*****************************************************************************
  * Initialization function
  *****************************************************************************/
@@ -152,30 +138,21 @@ store_fcinfo(FunctionCallInfo fcinfo)
  * @brief Ensure that the array is not empty
  * @note Used for the constructor functions
  */
-void
-ensure_non_empty_array(ArrayType *array)
+bool
+ensure_not_empty_array(ArrayType *array)
 {
   if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
+  {
     ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
       errmsg("The input array cannot be empty")));
-  return;
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************
  * Typmod functions
  *****************************************************************************/
-
-/**
- * @brief Array storing the string representation of the concrete subtypes of
- * temporal types
- */
-static char *tempsubtypeName[] =
-{
-  "AnyDuration",
-  "Instant",
-  "Sequence",
-  "SequenceSet"
-};
 
 /**
  * @brief Array storing the mapping between the string representation of the
@@ -188,16 +165,6 @@ struct tempsubtype_struct tempsubtype_struct_array[] =
   {"SEQUENCE", TSEQUENCE},
   {"SEQUENCESET", TSEQUENCESET},
 };
-
-/**
- * @brief Return the string representation of the subtype of the temporal type
- * corresponding to the enum value
- */
-const char *
-tempsubtype_name(int16 subtype)
-{
-  return tempsubtypeName[subtype];
-}
 
 /**
  * @brief Return the enum value corresponding to the string representation
@@ -358,7 +325,7 @@ Temporal_enforce_typmod(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Peak into a temporal datum to find the bounding box. If the datum needs
+ * @brief Peek into a temporal datum to find the bounding box. If the datum
  * needs to be detoasted, extract only the header and not the full object.
  */
 void
@@ -636,23 +603,6 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/**
- * @brief Get the interpolation type from the interpolation string
- */
-interpType
-interp_from_string(const char *interp_str)
-{
-  int n = sizeof(_interpType_names) / sizeof(char *);
-  for (int i = 0; i < n; i++)
-  {
-    if (pg_strncasecmp(interp_str, _interpType_names[i], INTERP_STR_MAX_LEN) == 0)
-      return i;
-  }
-  /* Error */
-  elog(ERROR, "Unknown interpolation type: %s", interp_str);
-  return INTERP_NONE; /* make compiler quiet */
-}
-
 PGDLLEXPORT Datum Tsequence_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequence_constructor);
 /**
@@ -670,7 +620,7 @@ Tsequence_constructor(PG_FUNCTION_ARGS)
   {
     text *interp_txt = PG_GETARG_TEXT_P(1);
     char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
+    interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
   bool lower_inc = true, upper_inc = true;
@@ -678,7 +628,7 @@ Tsequence_constructor(PG_FUNCTION_ARGS)
     lower_inc = PG_GETARG_BOOL(2);
   if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
     upper_inc = PG_GETARG_BOOL(3);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
   Temporal *result = (Temporal *) tsequence_make((const TInstant **) instants,
@@ -699,7 +649,7 @@ Datum
 Tsequenceset_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   int count;
   TSequence **sequences = (TSequence **) temporalarr_extract(array, &count);
   Temporal *result = (Temporal *) tsequenceset_make(
@@ -725,7 +675,7 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   double maxdist = -1.0;
   Interval *maxt = NULL;
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
@@ -738,7 +688,7 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
   {
     text *interp_txt = PG_GETARG_TEXT_P(3);
     char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
+    interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
   /* Store fcinfo into a global variable */
@@ -793,7 +743,7 @@ Tsequence_from_base_period(PG_FUNCTION_ARGS)
   {
     text *interp_txt = PG_GETARG_TEXT_P(2);
     char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
+    interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
   TSequence *result = tsequence_from_base_period(value, temptype, p, interp);
@@ -819,7 +769,7 @@ Tsequenceset_from_base_periodset(PG_FUNCTION_ARGS)
   {
     text *interp_txt = PG_GETARG_TEXT_P(2);
     char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
+    interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
   TSequenceSet *result = tsequenceset_from_base_periodset(value, temptype, ps,
@@ -829,14 +779,14 @@ Tsequenceset_from_base_periodset(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tint_to_tfloat(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_to_tfloat);
 /**
- * @ingroup mobilitydb_temporal_cast
- * @brief Cast a temporal integer as a temporal float
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal integer as a temporal float
  * @sqlfunc tfloat()
  * @sqlop @p ::
  */
@@ -852,8 +802,8 @@ Tint_to_tfloat(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tfloat_to_tint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_to_tint);
 /**
- * @ingroup mobilitydb_temporal_cast
- * @brief Cast a temporal float as a temporal integer
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal float as a temporal integer
  * @sqlfunc tint()
  * @sqlop @p ::
  */
@@ -869,7 +819,7 @@ Tfloat_to_tint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_to_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_to_period);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding period on which a temporal value is defined
  * @note We cannot detoast only the header since we don't know whether the
  * lower and upper bounds of the period are inclusive or not
@@ -889,7 +839,7 @@ Temporal_to_period(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_to_span);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Return the value span of a temporal integer
  * @sqlfunc span()
  * @sqlop @p ::
@@ -906,7 +856,7 @@ Tnumber_to_span(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding box of a temporal number
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -984,7 +934,7 @@ PG_FUNCTION_INFO_V1(Tinstant_get_value);
 Datum
 Tinstant_get_value(PG_FUNCTION_ARGS)
 {
-   TInstant *inst = PG_GETARG_TINSTANT_P(0);
+  TInstant *inst = PG_GETARG_TINSTANT_P(0);
   if (inst->subtype != TINSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal value must be of subtype instant")));
@@ -1605,7 +1555,7 @@ temporal_ev_al_comp_ext(FunctionCallInfo fcinfo,
 PGDLLEXPORT Datum Temporal_ever_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever equal to a base value
  * @sqlfunc ever_eq()
  * @sqlop @p ?=
@@ -1619,7 +1569,7 @@ Temporal_ever_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always equal to the base value
  * @sqlfunc always_eq()
  * @sqlop @p %=
@@ -1633,7 +1583,7 @@ Temporal_always_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ever_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever different from a base value
  * @sqlfunc ever_eq()
  * @sqlop @p ?<>
@@ -1647,7 +1597,7 @@ Temporal_ever_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always different from a base value
  * @sqlfunc always_ne()
  * @sqlop @p %<>
@@ -1663,7 +1613,7 @@ Temporal_always_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ever_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_lt);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than a base value
  * @sqlfunc ever_lt()
  * @sqlop @p ?<
@@ -1677,7 +1627,7 @@ Temporal_ever_lt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_lt);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always less than a base value
  * @sqlfunc always_lt()
  * @sqlop @p %<
@@ -1691,7 +1641,7 @@ Temporal_always_lt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ever_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_le);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than or equal to a base value
  * @sqlfunc ever_le()
  * @sqlop @p ?<=
@@ -1705,7 +1655,7 @@ Temporal_ever_le(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_le);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always less than or equal to a base value
  * @sqlfunc always_le()
  * @sqlop @p %<=
@@ -1719,7 +1669,7 @@ Temporal_always_le(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ever_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_gt);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than a base value
  * @sqlfunc ever_gt()
  * @sqlop @p ?>
@@ -1733,7 +1683,7 @@ Temporal_ever_gt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_gt);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than a base value
  * @sqlfunc always_gt()
  * @sqlop @p %>
@@ -1747,7 +1697,7 @@ Temporal_always_gt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ever_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_ge);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than or equal
  * to a base value
  * @sqlfunc ever_ge()
@@ -1762,7 +1712,7 @@ Temporal_ever_ge(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_always_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_always_ge);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than or equal
  * to a base value
  * @sqlfunc always_ge()
@@ -1799,13 +1749,32 @@ PG_FUNCTION_INFO_V1(Temporal_to_tsequence);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal sequence
+ * @note The SQL function is not strict
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq()
  */
 Datum
 Temporal_to_tsequence(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_to_tsequence(temp);
+  interpType interp;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+  {
+    text *interp_txt = PG_GETARG_TEXT_P(1);
+    char *interp_str = text2cstring(interp_txt);
+    interp = interptype_from_string(interp_str);
+    pfree(interp_str);
+  }
+  else
+  {
+    if (temp->subtype == TSEQUENCE)
+      interp = MEOS_FLAGS_GET_INTERP(temp->flags);
+    else
+      interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
+  }
+  Temporal *result = temporal_to_tsequence(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1815,13 +1784,31 @@ PG_FUNCTION_INFO_V1(Temporal_to_tsequenceset);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal sequence set
+ * @note The SQL function is not strict
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset()
  */
 Datum
 Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_to_tsequenceset(temp);
+  interpType interp;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+  {
+    text *interp_txt = PG_GETARG_TEXT_P(1);
+    char *interp_str = text2cstring(interp_txt);
+    interp = interptype_from_string(interp_str);
+    pfree(interp_str);
+  }
+  else
+  {
+    interp = MEOS_FLAGS_GET_INTERP(temp->flags);
+    if (interp == INTERP_NONE || interp == DISCRETE)
+      interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
+  }
+  Temporal *result = temporal_to_tsequenceset(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1840,7 +1827,7 @@ Temporal_set_interp(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *interp_txt = PG_GETARG_TEXT_P(1);
   char *interp_str = text2cstring(interp_txt);
-  interpType interp = interp_from_string(interp_str);
+  interpType interp = interptype_from_string(interp_str);
   pfree(interp_str);
   Temporal *result = temporal_set_interp(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
@@ -1849,94 +1836,118 @@ Temporal_set_interp(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Temporal_shift(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_shift);
+PGDLLEXPORT Datum Tnumber_shift_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_shift_value);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value a shifted by an interval
- * @sqlfunc shift()
+ * @sqlfunc shiftValue()
  */
 Datum
-Temporal_shift(PG_FUNCTION_ARGS)
+Tnumber_shift_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Temporal *result = temporal_shift_tscale(temp, shift, NULL);
+  Datum shift = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  ensure_same_temporal_basetype(temp, basetype);
+  Temporal *result = tnumber_shift_scale_value(temp, shift, 0, true, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_tscale);
+PGDLLEXPORT Datum Tnumber_scale_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_scale_value);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value scaled by an interval
- * @sqlfunc tscale()
+ * @sqlfunc scaleValue()
  */
 Datum
-Temporal_tscale(PG_FUNCTION_ARGS)
+Tnumber_scale_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Temporal *result = temporal_shift_tscale(temp, NULL, duration);
+  Datum duration = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  ensure_same_temporal_basetype(temp, basetype);
+  Temporal *result = tnumber_shift_scale_value(temp, 0, duration, false, true);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_shift_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_shift_tscale);
+PGDLLEXPORT Datum Tnumber_shift_scale_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_shift_scale_value);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value shifted and scaled by the intervals
- * @sqlfunc shiftTscale()
+ * @sqlfunc shiftScaleValue()
  */
 Datum
-Temporal_shift_tscale(PG_FUNCTION_ARGS)
+Tnumber_shift_scale_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  Datum duration = PG_GETARG_DATUM(2);
+  meosType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  ensure_same_temporal_basetype(temp, basetype1);
+  meosType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 2));
+  ensure_same_temporal_basetype(temp, basetype2);
+  Temporal *result = tnumber_shift_scale_value(temp, shift, duration, true, true);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Temporal_shift_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_shift_time);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a temporal value a shifted by an interval
+ * @sqlfunc shiftTime()
+ */
+Datum
+Temporal_shift_time(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  Temporal *result = temporal_shift_scale_time(temp, shift, NULL);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Temporal_scale_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_scale_time);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a temporal value scaled by an interval
+ * @sqlfunc scaleTime()
+ */
+Datum
+Temporal_scale_time(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  Temporal *result = temporal_shift_scale_time(temp, NULL, duration);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Temporal_shift_scale_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_shift_scale_time);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a temporal value shifted and scaled by the intervals
+ * @sqlfunc shiftScaleTime()
+ */
+Datum
+Temporal_shift_scale_time(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  Temporal *result = temporal_shift_tscale(temp, shift, duration);
+  Temporal *result = temporal_shift_scale_time(temp, shift, duration);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
-}
-
-PGDLLEXPORT Datum Temporal_tprecision(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_tprecision);
-/**
- * @ingroup mobilitydb_temporal_transf
- * @brief Set the precision of a temporal value according to period buckets.
- * @sqlfunc tprecision()
- */
-Datum
-Temporal_tprecision(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Interval *duration = PG_GETARG_INTERVAL_P(1);
-  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  Temporal *result = temporal_tprecision(temp, duration, origin);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-PGDLLEXPORT Datum Temporal_tsample(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_tsample);
-/**
- * @ingroup mobilitydb_temporal_transf
- * @brief Sample a temporal value according to period buckets.
- * @sqlfunc tsample()
- */
-Datum
-Temporal_tsample(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Interval *duration = PG_GETARG_INTERVAL_P(1);
-  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  Temporal *result = temporal_tsample(temp, duration, origin);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************
@@ -2012,7 +2023,7 @@ Datum
 Temporal_merge_array(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(array);
+  ensure_not_empty_array(array);
   int count;
   Temporal **temparr = temporalarr_extract(array, &count);
   Temporal *result = temporal_merge_array(temparr, count);
@@ -2701,7 +2712,7 @@ Tnumber_twavg(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_eq);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the temporal values are equal
  * @sqlfunc tbool_eq(), tint_eq(), tfloat_eq(), ttext_eq(),
  * tgeompoint_eq(), tgeogpoint_eq(), tnpoint_eq()
@@ -2721,7 +2732,7 @@ Temporal_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ne);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the temporal values are different
  * @sqlfunc tbool_ne(), tint_ne(), tfloat_ne(), ttext_ne(),
  * tgeompoint_ne(), tgeogpoint_ne(), tnpoint_ne()
@@ -2743,7 +2754,7 @@ Temporal_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_cmp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_cmp);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal value
  * is less than, equal, or greater than the second temporal value
  * @note Function used for B-tree comparison
@@ -2764,7 +2775,7 @@ Temporal_cmp(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_lt);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is less than the second one
  * @sqlfunc tbool_lt(), tint_lt(), tfloat_lt(), ttext_lt(),
  * tgeompoint_lt(), tgeogpoint_lt(), tnpoint_lt()
@@ -2784,7 +2795,7 @@ Temporal_lt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_le);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
  * @sqlfunc tbool_le(), tint_le(), tfloat_le(), ttext_le(),
@@ -2805,7 +2816,7 @@ Temporal_le(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ge);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
  * @sqlfunc tbool_ge(), tint_ge(), tfloat_ge(), ttext_ge(),
@@ -2826,7 +2837,7 @@ Temporal_ge(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_gt);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than the second one
  * @sqlfunc tbool_gt(), tint_gt(), tfloat_gt(), ttext_gt(),
  * tgeompoint_gt(), tgeogpoint_gt(), tnpoint_gt()

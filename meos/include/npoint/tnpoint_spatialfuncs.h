@@ -44,9 +44,9 @@
 
 /* Parameter tests */
 
-extern void ensure_same_srid_tnpoint_stbox(const Temporal *temp,
+extern bool ensure_same_srid_tnpoint_stbox(const Temporal *temp,
   const STBox *box);
-extern void ensure_same_rid_tnpointinst(const TInstant *inst1,
+extern bool ensure_same_rid_tnpointinst(const TInstant *inst1,
   const TInstant *inst2);
 
 /* Interpolation functions */

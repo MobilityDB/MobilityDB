@@ -1344,23 +1344,6 @@ CREATE FUNCTION set_distance(floatset, floatset)
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_distance(text, text)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Distance_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(text, textset)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Distance_value_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(textset, text)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Distance_set_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(textset, textset)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Distance_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION set_distance(timestamptz, timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_value'

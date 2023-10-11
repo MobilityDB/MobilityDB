@@ -875,11 +875,10 @@ static int
 stbox_tmin_cmp(const STBox *box1, const STBox *box2)
 {
   assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
-  if (datum_eq2(box1->period.lower, box2->period.lower, box1->period.basetype,
-        box2->period.basetype))
+  if (datum_eq(box1->period.lower, box2->period.lower, box1->period.basetype))
     return 0;
-  return datum_gt2(box1->period.lower, box2->period.lower, box1->period.basetype,
-        box2->period.basetype) ? 1 : -1;
+  return datum_gt(box1->period.lower, box2->period.lower,
+    box1->period.basetype) ? 1 : -1;
 }
 
 /**
@@ -889,11 +888,10 @@ static int
 stbox_tmax_cmp(const STBox *box1, const STBox *box2)
 {
   assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
-  if (datum_eq2(box1->period.upper, box2->period.upper, box1->period.basetype,
-        box2->period.basetype))
+  if (datum_eq(box1->period.upper, box2->period.upper, box1->period.basetype))
     return 0;
-  return datum_gt2(box1->period.upper, box2->period.upper, box1->period.basetype,
-        box2->period.basetype) ? 1 : -1;
+  return datum_gt(box1->period.upper, box2->period.upper,
+    box1->period.basetype) ? 1 : -1;
 }
 
 /*****************************************************************************/
@@ -976,8 +974,8 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     lowZs = palloc(sizeof(double) * in->nTuples);
     highZs = palloc(sizeof(double) * in->nTuples);
   }
-  double *lowTs = palloc(sizeof(double) * in->nTuples);
-  double *highTs = palloc(sizeof(double) * in->nTuples);
+  TimestampTz *lowTs = palloc(sizeof(TimestampTz) * in->nTuples);
+  TimestampTz *highTs = palloc(sizeof(TimestampTz) * in->nTuples);
 
   /* Calculate median of all 8D coordinates */
   for (i = 0; i < in->nTuples; i++)
@@ -992,21 +990,21 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
       lowZs[i] = box->zmin;
       highZs[i] = box->zmax;
     }
-    lowTs[i] = (double) DatumGetTimestampTz(box->period.lower);
-    highTs[i] = (double) DatumGetTimestampTz(box->period.upper);
+    lowTs[i] = DatumGetTimestampTz(box->period.lower);
+    highTs[i] = DatumGetTimestampTz(box->period.upper);
   }
 
-  qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-  qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-  qsort(lowYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-  qsort(highYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareFloat8);
+  qsort(highXs, (size_t) in->nTuples, sizeof(double), compareFloat8);
+  qsort(lowYs, (size_t) in->nTuples, sizeof(double), compareFloat8);
+  qsort(highYs, (size_t) in->nTuples, sizeof(double), compareFloat8);
   if (hasz)
   {
-    qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-    qsort(highZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+    qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareFloat8);
+    qsort(highZs, (size_t) in->nTuples, sizeof(double), compareFloat8);
   }
-  qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-  qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
+  qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
 
   median = in->nTuples / 2;
 
@@ -1019,8 +1017,8 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     centroid->zmin = lowZs[median];
     centroid->zmax = highZs[median];
   }
-  centroid->period.lower = TimestampTzGetDatum((TimestampTz) lowTs[median]);
-  centroid->period.upper = TimestampTzGetDatum((TimestampTz) highTs[median]);
+  centroid->period.lower = TimestampTzGetDatum(lowTs[median]);
+  centroid->period.upper = TimestampTzGetDatum(highTs[median]);
 
   /* Fill the output */
   out->hasPrefix = true;
@@ -1412,7 +1410,7 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     out->distances = distances;
     for (i = 0; i < in->norderbys; i++)
     {
-      /* Cast the order by argument to a box and perform the test */
+      /* Convert the order by argument to a box and perform the test */
       if (tpoint_spgist_get_stbox(&in->orderbys[i], &box))
         distances[i] = nad_stbox_stbox(&box, key);
       else

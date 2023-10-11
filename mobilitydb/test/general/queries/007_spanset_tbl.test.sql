@@ -145,7 +145,22 @@ SELECT MAX(endTimestamp(ps)) FROM tbl_tstzspanset;
 SELECT MAX(timestampN(ps, 0)) FROM tbl_tstzspanset;
 SELECT MAX((timestamps(ps))[1]) FROM tbl_tstzspanset;
 
-SELECT MAX(startTimestamp(shift(ps, '5 min'))) FROM tbl_tstzspanset;
+SELECT MAX(lower(shift(i, 5))) FROM tbl_intspanset;
+SELECT MAX(lower(shift(b, 5))) FROM tbl_bigintspanset;
+SELECT round(MAX(lower(shift(f, 5)))::numeric, 6) FROM tbl_floatspanset;
+SELECT MAX(lower(shift(ps, '5 min'))) FROM tbl_tstzspanset;
+
+SELECT MAX(lower(scale(i, 5))) FROM tbl_intspanset;
+SELECT MAX(lower(scale(b, 5))) FROM tbl_bigintspanset;
+SELECT round(MAX(lower(scale(f, 5)))::numeric, 6) FROM tbl_floatspanset;
+SELECT MAX(lower(scale(ps, '5 min'))) FROM tbl_tstzspanset;
+
+SELECT MAX(lower(shiftScale(i, 5, 5))) FROM tbl_intspanset;
+SELECT MAX(lower(shiftScale(b, 5, 5))) FROM tbl_bigintspanset;
+SELECT round(MAX(lower(shiftScale(f, 5, 5)))::numeric, 6) FROM tbl_floatspanset;
+SELECT MAX(lower(shiftScale(ps, '5 min', '5 min'))) FROM tbl_tstzspanset;
+
+SELECT MAX(startTimestamp(shiftScale(ps, '5 min', '5 min'))) FROM tbl_tstzspanset;
 
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spanset_cmp(t1.i, t2.i) = -1;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i = t2.i;

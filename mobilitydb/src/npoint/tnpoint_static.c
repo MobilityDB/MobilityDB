@@ -45,11 +45,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_general/tnumber_mathfuncs.h"
 #include "pg_npoint/tnpoint_static.h"
 
 /*****************************************************************************
@@ -335,14 +335,14 @@ Nsegment_constructor(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Npoint_to_nsegment(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_to_nsegment);
 /**
- * @ingroup mobilitydb_temporal_cast
- * @brief Cast a network segment from a network point
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a network segment from a network point
  * @sqlfunc nsegment()
  */
 Datum
@@ -571,7 +571,7 @@ Nsegment_get_srid(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Npoint_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_eq);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network point is equal to the second one
  * @sqlfunc npoint_eq()
  * @sqlop @p =
@@ -587,7 +587,7 @@ Npoint_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Npoint_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_ne);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network point is not equal to the second one
  * @sqlfunc npoint_ne()
  * @sqlop @p <>
@@ -603,7 +603,7 @@ Npoint_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Npoint_cmp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_cmp);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal, or greater than the second one
  * @note Function used for B-tree comparison
@@ -620,7 +620,7 @@ Npoint_cmp(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Npoint_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_lt);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network point is less than the second one
  * @sqlfunc npoint_lt()
  * @sqlop @p <
@@ -636,7 +636,7 @@ Npoint_lt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Npoint_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_le);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network point is less than or equal to the
  * second one
  * @sqlfunc npoint_le()
@@ -653,7 +653,7 @@ Npoint_le(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Npoint_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_ge);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network point is greater than or equal to the
  * second one
  * @sqlfunc npoint_ge()
@@ -670,7 +670,7 @@ Npoint_ge(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Npoint_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_gt);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network point is greater than the second one
  * @sqlfunc npoint_gt()
  * @sqlop @p >
@@ -688,7 +688,7 @@ Npoint_gt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Nsegment_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_eq);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network segment is equal to the second one
  * @sqlfunc nsegment_eq()
  * @sqlop @p =
@@ -704,7 +704,7 @@ Nsegment_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Nsegment_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_ne);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network segment is not equal to the second one
  * @sqlfunc nsegment_ne()
  * @sqlop @p <>
@@ -720,7 +720,7 @@ Nsegment_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Nsegment_cmp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_cmp);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal, or greater than the second one
  * @sqlfunc nsegment_cmp()
@@ -738,7 +738,7 @@ Nsegment_cmp(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Nsegment_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_lt);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network segment is less than the second one
  * @sqlfunc nsegment_lt()
  * @sqlop @p <
@@ -754,7 +754,7 @@ Nsegment_lt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Nsegment_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_le);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network segment is less than or equal to the
  * second one
  * @sqlfunc nsegment_le()
@@ -771,7 +771,7 @@ Nsegment_le(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Nsegment_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_ge);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network segment is greater than or equal to the
  * second one
  * @sqlfunc nsegment_ge()
@@ -788,7 +788,7 @@ Nsegment_ge(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Nsegment_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_gt);
 /**
- * @ingroup mobilitydb_temporal_comp
+ * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first network segment is greater than the second one
  * @sqlfunc nsegment_gt()
  * @sqlop @p >

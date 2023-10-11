@@ -14,188 +14,267 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_floatspan_big_quadtree_idx;
 NOTICE:  index "tbl_floatspan_big_quadtree_idx" does not exist, skipping
 DROP INDEX
-CREATE INDEX tbl_intspan_big_rtree_idx ON tbl_intspan_big USING GIST(i);
-CREATE INDEX
-CREATE INDEX tbl_floatspan_big_rtree_idx ON tbl_floatspan_big USING GIST(f);
-CREATE INDEX
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> 50;
- count 
--------
-   620
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50;
- count 
--------
-   215
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i << 15;
- count 
--------
-  1136
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< 15;
- count 
--------
-  1239
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> 85;
- count 
--------
-   571
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> 85;
- count 
--------
-   697
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i && intspan '[45, 55]';
- count 
--------
-  1701
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> intspan '[45, 55]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i <@ intspan '[45, 55]';
- count 
--------
-   696
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- intspan '[45, 55]';
- count 
--------
-   214
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i << intspan '[15, 25]';
- count 
--------
-  1136
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< intspan '[15, 25]';
- count 
--------
-  2282
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> intspan '[85, 95]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]';
- count 
--------
-   697
-(1 row)
-
+DROP TABLE IF EXISTS test_idxops;
+NOTICE:  table "test_idxops" does not exist, skipping
+DROP TABLE
+CREATE TABLE test_idxops(
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  no_idx BIGINT,
+  rtree_idx BIGINT,
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
+);
+CREATE TABLE
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'intspan', 'int', COUNT(*) FROM tbl_intspan_big WHERE i @> 50;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'intspan', 'int', COUNT(*) FROM tbl_intspan_big WHERE i -|- 50;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'intspan', 'int', COUNT(*) FROM tbl_intspan_big WHERE i << 15;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'intspan', 'int', COUNT(*) FROM tbl_intspan_big WHERE i &< 15;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'intspan', 'int', COUNT(*) FROM tbl_intspan_big WHERE i >> 85;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'intspan', 'int', COUNT(*) FROM tbl_intspan_big WHERE i &> 85;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan_big WHERE i && intspan '[45, 55]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan_big WHERE i @> intspan '[45, 55]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan_big WHERE i <@ intspan '[45, 55]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan_big WHERE i -|- intspan '[45, 55]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan_big WHERE i << intspan '[15, 25]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan_big WHERE i &< intspan '[15, 25]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan_big WHERE i >> intspan '[85, 95]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]';
+INSERT 0 1
 SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0;
- count 
--------
-   611
-(1 row)
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan_big WHERE f << 15.0;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan_big WHERE f &< 15.0;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan_big WHERE f >> 85.0;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan_big WHERE f &> 85.0;
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan_big WHERE f && floatspan '[45, 55]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan_big WHERE f @> floatspan '[45, 55]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan_big WHERE f <@ floatspan '[45, 55]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan_big WHERE f -|- floatspan '[45, 55]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan_big WHERE f << floatspan '[15, 25]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan_big WHERE f &< floatspan '[15, 25]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan_big WHERE f >> floatspan '[85, 95]';
+INSERT 0 1
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]';
+INSERT 0 1
+SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+  round   
+----------
+ 1.391026
+ 1.682749
+ 1.708919
+(3 rows)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0;
- count 
--------
-     0
-(1 row)
+SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+  round   
+----------
+ 1.391026
+ 1.682749
+ 1.708919
+(3 rows)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << 15.0;
- count 
--------
-  1027
-(1 row)
+CREATE INDEX tbl_intspan_big_rtree_idx ON tbl_intspan_big USING GIST(i);
+CREATE INDEX
+CREATE INDEX tbl_floatspan_big_rtree_idx ON tbl_floatspan_big USING GIST(f);
+CREATE INDEX
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> 50 )
+WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50 )
+WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i << 15 )
+WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< 15 )
+WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> 85 )
+WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> 85 )
+WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i && intspan '[45, 55]' )
+WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> intspan '[45, 55]' )
+WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i <@ intspan '[45, 55]' )
+WHERE op = '<@' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- intspan '[45, 55]' )
+WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i << intspan '[15, 25]' )
+WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< intspan '[15, 25]' )
+WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> intspan '[85, 95]' )
+WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]' )
+WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        2
+        2
+        2
+(3 rows)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< 15.0;
- count 
--------
-  1027
-(1 row)
+SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        2
+        2
+        2
+(3 rows)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> 85.0;
- count 
--------
-   565
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> 85.0;
- count 
--------
-   565
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f && floatspan '[45, 55]';
- count 
--------
-  1713
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> floatspan '[45, 55]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f <@ floatspan '[45, 55]';
- count 
--------
-   495
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << floatspan '[15, 25]';
- count 
--------
-  1027
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< floatspan '[15, 25]';
- count 
--------
-  2133
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> floatspan '[85, 95]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]';
- count 
--------
-   565
-(1 row)
-
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0 )
+WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0 )
+WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << 15.0 )
+WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< 15.0 )
+WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> 85.0 )
+WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> 85.0 )
+WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f && floatspan '[45, 55]' )
+WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> floatspan '[45, 55]' )
+WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f <@ floatspan '[45, 55]' )
+WHERE op = '<@' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- floatspan '[45, 55]' )
+WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << floatspan '[15, 25]' )
+WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< floatspan '[15, 25]' )
+WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> floatspan '[85, 95]' )
+WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]' )
+WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
 SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
@@ -220,184 +299,134 @@ CREATE INDEX tbl_intspan_big_quadtree_idx ON tbl_intspan_big USING SPGIST(i);
 CREATE INDEX
 CREATE INDEX tbl_floatspan_big_quadtree_idx ON tbl_floatspan_big USING SPGIST(f);
 CREATE INDEX
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> 50;
- count 
--------
-   620
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50;
- count 
--------
-   215
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i << 15;
- count 
--------
-  1136
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< 15;
- count 
--------
-  1239
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> 85;
- count 
--------
-   571
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> 85;
- count 
--------
-   697
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i && intspan '[45, 55]';
- count 
--------
-  1701
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> intspan '[45, 55]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i <@ intspan '[45, 55]';
- count 
--------
-   696
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- intspan '[45, 55]';
- count 
--------
-   174
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i << intspan '[15, 25]';
- count 
--------
-  1136
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< intspan '[15, 25]';
- count 
--------
-  2282
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> intspan '[85, 95]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]';
- count 
--------
-   697
-(1 row)
-
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> 50 )
+WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50 )
+WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i << 15 )
+WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< 15 )
+WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> 85 )
+WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> 85 )
+WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i && intspan '[45, 55]' )
+WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> intspan '[45, 55]' )
+WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i <@ intspan '[45, 55]' )
+WHERE op = '<@' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- intspan '[45, 55]' )
+WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i << intspan '[15, 25]' )
+WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< intspan '[15, 25]' )
+WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> intspan '[85, 95]' )
+WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]' )
+WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
 SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
 SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
-        1
-        1
-        1
+        2
+        2
+        2
 (3 rows)
 
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0;
- count 
--------
-   611
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0;
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << 15.0;
- count 
--------
-  1027
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< 15.0;
- count 
--------
-  1027
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> 85.0;
- count 
--------
-   565
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> 85.0;
- count 
--------
-   565
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f && floatspan '[45, 55]';
- count 
--------
-  1713
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> floatspan '[45, 55]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f <@ floatspan '[45, 55]';
- count 
--------
-   495
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << floatspan '[15, 25]';
- count 
--------
-  1027
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< floatspan '[15, 25]';
- count 
--------
-  2133
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> floatspan '[85, 95]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]';
- count 
--------
-   565
-(1 row)
-
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0 )
+WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0 )
+WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << 15.0 )
+WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< 15.0 )
+WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> 85.0 )
+WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> 85.0 )
+WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f && floatspan '[45, 55]' )
+WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> floatspan '[45, 55]' )
+WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f <@ floatspan '[45, 55]' )
+WHERE op = '<@' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- floatspan '[45, 55]' )
+WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << floatspan '[15, 25]' )
+WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< floatspan '[15, 25]' )
+WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> floatspan '[85, 95]' )
+WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]' )
+WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
 SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
@@ -418,3 +447,166 @@ DROP INDEX IF EXISTS tbl_intspan_big_quadtree_idx;
 DROP INDEX
 DROP INDEX IF EXISTS tbl_floatspan_big_quadtree_idx;
 DROP INDEX
+CREATE INDEX tbl_intspan_big_kdtree_idx ON tbl_intspan_big USING SPGIST(i intspan_kdtree_ops);
+CREATE INDEX
+CREATE INDEX tbl_floatspan_big_kdtree_idx ON tbl_floatspan_big USING SPGIST(f floatspan_kdtree_ops);
+CREATE INDEX
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> 50 )
+WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50 )
+WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i << 15 )
+WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< 15 )
+WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> 85 )
+WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> 85 )
+WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i && intspan '[45, 55]' )
+WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> intspan '[45, 55]' )
+WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i <@ intspan '[45, 55]' )
+WHERE op = '<@' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- intspan '[45, 55]' )
+WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i << intspan '[15, 25]' )
+WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &< intspan '[15, 25]' )
+WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i >> intspan '[85, 95]' )
+WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i &> intspan '[85, 95]' )
+WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+UPDATE 1
+SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        2
+        2
+        2
+(3 rows)
+
+SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        2
+        2
+        2
+(3 rows)
+
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0 )
+WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0 )
+WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << 15.0 )
+WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< 15.0 )
+WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> 85.0 )
+WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> 85.0 )
+WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f && floatspan '[45, 55]' )
+WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> floatspan '[45, 55]' )
+WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f <@ floatspan '[45, 55]' )
+WHERE op = '<@' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- floatspan '[45, 55]' )
+WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f << floatspan '[15, 25]' )
+WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &< floatspan '[15, 25]' )
+WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f >> floatspan '[85, 95]' )
+WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]' )
+WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+UPDATE 1
+SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+  round   
+----------
+ 1.391026
+ 1.682749
+ 1.708919
+(3 rows)
+
+SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+  round   
+----------
+ 1.391026
+ 1.682749
+ 1.708919
+(3 rows)
+
+DROP INDEX IF EXISTS tbl_intspan_big_kdtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_floatspan_big_kdtree_idx;
+DROP INDEX
+SELECT * FROM test_idxops
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR
+  no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
+ORDER BY op, leftarg, rightarg;
+ op  | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
+-----+---------+----------+--------+-----------+--------------+------------
+ -|- | intspan | intspan  |    214 |       214 |          174 |        214
+(1 row)
+
+DROP TABLE test_idxops;
+DROP TABLE

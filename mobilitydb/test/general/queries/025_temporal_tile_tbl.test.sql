@@ -63,9 +63,9 @@ SELECT periodBucket(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FR
 
 -------------------------------------------------------------------------------
 
-SELECT tileList(b, 2.5, '1 week'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT tileList(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT tileList(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT tileList(b, 2.5, '1 week'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT tileList(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT tileList(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 SELECT extent(tile(t1.f, t2.t, 2.5, '1 week')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
@@ -85,7 +85,7 @@ SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5, 1.5) 
 
 WITH temp1 AS (
   SELECT k, temp, (tb).tnumber AS slice
-  FROM (SELECT k, temp, valueSplit(temp, 5) AS tb from tbl_tfloat_big) t ),
+  FROM (SELECT k, temp, valueSplit(temp, 5) AS tb from tbl_tfloat) t ),
 temp2 AS (
   SELECT k, temp, merge(slice ORDER BY slice) AS merge
   FROM temp1 GROUP BY k, temp )
@@ -106,7 +106,7 @@ SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001
 
 WITH temp1 AS (
   SELECT k, temp, (tb).temp AS slice
-  FROM (SELECT k, temp, timeSplit(temp, '5 min') AS tb FROM tbl_tfloat_big) t ),
+  FROM (SELECT k, temp, timeSplit(temp, '5 min') AS tb FROM tbl_tfloat) t ),
 temp2 AS (
   SELECT k, temp, merge(slice ORDER BY slice) AS merge
   FROM temp1 GROUP BY k, temp )
@@ -124,7 +124,7 @@ SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '
 
 WITH temp1 AS (
   SELECT k, temp, (tb).tnumber AS slice
-  FROM (SELECT k, temp, valueTimeSplit(temp, 5, '5 min') AS tb FROM tbl_tfloat_big) t ),
+  FROM (SELECT k, temp, valueTimeSplit(temp, 5, '5 min') AS tb FROM tbl_tfloat) t ),
 temp2 AS (
   SELECT k, temp, merge(slice ORDER BY slice) AS merge
   FROM temp1 GROUP BY k, temp )

@@ -78,7 +78,7 @@ wkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 char *
 ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 {
-  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
   char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, maxdd, &len);
@@ -97,6 +97,11 @@ ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 char *
 tpoint_as_text(const Temporal *temp, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
+
   char *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -117,6 +122,11 @@ tpoint_as_text(const Temporal *temp, int maxdd)
 char *
 tpoint_as_ewkt(const Temporal *temp, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
+
   int srid = tpoint_srid(temp);
   char str1[20];
   if (srid > 0)
@@ -148,6 +158,11 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
 char **
 geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) geoarr) || ! ensure_positive(count) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
+
   char **result = palloc(sizeof(char *) * count);
   for (int i = 0; i < count; i++)
     /* The wkt_out and ewkt_out functions do not use the second argument */
@@ -166,6 +181,11 @@ char **
 tpointarr_as_text(const Temporal **temparr, int count, int maxdd,
   bool extended)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temparr) || ! ensure_positive(count) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
+
   char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
     result[i] = extended ? tpoint_as_ewkt(temparr[i], maxdd) :

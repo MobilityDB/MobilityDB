@@ -34,6 +34,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -51,7 +52,7 @@
  * @brief Return the minimum value of two span base values
  */
 Datum
-span_value_min(Datum l, Datum r, meosType type)
+span_min_value(Datum l, Datum r, meosType type)
 {
   assert(span_basetype(type));
   if (type == T_TIMESTAMPTZ)
@@ -69,7 +70,7 @@ span_value_min(Datum l, Datum r, meosType type)
  * @brief Return the maximum value of two span base values
  */
 Datum
-span_value_max(Datum l, Datum r, meosType type)
+span_max_value(Datum l, Datum r, meosType type)
 {
   assert(span_basetype(type));
   if (type == T_TIMESTAMPTZ)
@@ -94,11 +95,13 @@ span_value_max(Datum l, Datum r, meosType type)
 bool
 contains_span_value(const Span *s, Datum d, meosType basetype)
 {
-  int cmp = datum_cmp2(s->lower, d, s->basetype, basetype);
+  assert(s);
+  assert(s->basetype == basetype);
+  int cmp = datum_cmp(s->lower, d, basetype);
   if (cmp > 0 || (cmp == 0 && ! s->lower_inc))
     return false;
 
-  cmp = datum_cmp2(s->upper, d, s->basetype, basetype);
+  cmp = datum_cmp(s->upper, d, basetype);
   if (cmp < 0 || (cmp == 0 && ! s->upper_inc))
     return false;
 
@@ -114,6 +117,9 @@ contains_span_value(const Span *s, Datum d, meosType basetype)
 bool
 contains_intspan_int(const Span *s, int i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
   return contains_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -125,6 +131,9 @@ contains_intspan_int(const Span *s, int i)
 bool
 contains_bigintspan_bigint(const Span *s, int64 i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
   return contains_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -136,6 +145,9 @@ contains_bigintspan_bigint(const Span *s, int64 i)
 bool
 contains_floatspan_float(const Span *s, double d)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
   return contains_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
@@ -144,12 +156,15 @@ contains_floatspan_float(const Span *s, double d)
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a period contains a timestamp.
  * @sqlop @p \@>
- * @pymeosfunc contains_timestamp()
  */
 bool
-contains_period_timestamp(const Span *p, TimestampTz t)
+contains_period_timestamp(const Span *s, TimestampTz t)
 {
-  return contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return contains_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -160,7 +175,11 @@ contains_period_timestamp(const Span *p, TimestampTz t)
 bool
 contains_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_span_type(s1, s2))
+    return false;
+
   int c1 = datum_cmp(s1->lower, s2->lower, s1->basetype);
   int c2 = datum_cmp(s1->upper, s2->upper, s1->basetype);
   if (
@@ -194,6 +213,9 @@ contained_value_span(Datum d, meosType basetype, const Span *s)
 bool
 contained_int_intspan(int i, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
   return contains_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -205,6 +227,9 @@ contained_int_intspan(int i, const Span *s)
 bool
 contained_bigint_bigintspan(int64 i, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
   return contains_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -216,6 +241,9 @@ contained_bigint_bigintspan(int64 i, const Span *s)
 bool
 contained_float_floatspan(double d, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
   return contains_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -225,9 +253,13 @@ contained_float_floatspan(double d, const Span *s)
  * @sqlop @p <@
  */
 bool
-contained_timestamp_period(TimestampTz t, const Span *p)
+contained_timestamp_period(TimestampTz t, const Span *s)
 {
-  return contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return contains_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -250,12 +282,15 @@ contained_span_span(const Span *s1, const Span *s2)
  * @ingroup libmeos_setspan_topo
  * @brief Return true if two spans overlap.
  * @sqlop @p &&
- * @pymeosfunc overlap()
  */
 bool
 overlaps_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_span_type(s1, s2))
+    return false;
+
   int cmp1 = datum_cmp(s1->lower, s2->upper, s1->basetype);
   int cmp2 = datum_cmp(s2->lower, s1->upper, s1->basetype);
   if (
@@ -277,6 +312,7 @@ overlaps_span_span(const Span *s1, const Span *s2)
 bool
 adjacent_span_value(const Span *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   Span s1;
   span_set(d, d, true, true, basetype, &s1);
   return adjacent_span_span(s, &s1);
@@ -291,6 +327,9 @@ adjacent_span_value(const Span *s, Datum d, meosType basetype)
 bool
 adjacent_intspan_int(const Span *s, int i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
   return adjacent_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -302,6 +341,9 @@ adjacent_intspan_int(const Span *s, int i)
 bool
 adjacent_bigintspan_bigint(const Span *s, int64 i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
   return adjacent_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -313,6 +355,9 @@ adjacent_bigintspan_bigint(const Span *s, int64 i)
 bool
 adjacent_floatspan_float(const Span *s, double d)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
   return adjacent_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -322,9 +367,13 @@ adjacent_floatspan_float(const Span *s, double d)
  * @sqlop @p -|-
  */
 bool
-adjacent_period_timestamp(const Span *p, TimestampTz t)
+adjacent_period_timestamp(const Span *s, TimestampTz t)
 {
-  return adjacent_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return adjacent_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -336,15 +385,19 @@ adjacent_period_timestamp(const Span *p, TimestampTz t)
 bool
 adjacent_span_span(const Span *s1, const Span *s2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_span_type(s1, s2))
+    return false;
+
   /*
    * Two spans A..B and C..D are adjacent if and only if
    * B is adjacent to C, or D is adjacent to A.
    */
-  assert(s1->spantype == s2->spantype);
   return (
-    (datum_eq2(s1->upper, s2->lower, s1->basetype, s2->basetype) &&
+    (datum_eq(s1->upper, s2->lower, s1->basetype) &&
       s1->upper_inc != s2->lower_inc) ||
-    (datum_eq2(s2->upper, s1->lower, s2->basetype, s1->basetype) &&
+    (datum_eq(s2->upper, s1->lower, s1->basetype) &&
       s2->upper_inc != s1->lower_inc) );
 }
 
@@ -359,7 +412,8 @@ adjacent_span_span(const Span *s1, const Span *s2)
 bool
 left_value_span(Datum d, meosType basetype, const Span *s)
 {
-  int cmp = datum_cmp2(d, s->lower, basetype, s->basetype);
+  assert(s->basetype == basetype);
+  int cmp = datum_cmp(d, s->lower, basetype);
   return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
 }
 
@@ -372,17 +426,24 @@ left_value_span(Datum d, meosType basetype, const Span *s)
 bool
 left_int_intspan(int i, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
   return left_value_span(Int32GetDatum(i), T_INT4, s);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer is strictly to the left of a big integer span.
+ * @brief Return true if a big integer is strictly to the left of a big integer
+ * span.
  * @sqlop @p <<
  */
 bool
 left_bigint_bigintspan(int64 i, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
   return left_value_span(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -394,6 +455,9 @@ left_bigint_bigintspan(int64 i, const Span *s)
 bool
 left_float_floatspan(double d, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
   return left_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -403,9 +467,13 @@ left_float_floatspan(double d, const Span *s)
  * @sqlop @p <<
  */
 bool
-before_timestamp_period(TimestampTz t, const Span *p)
+before_timestamp_period(TimestampTz t, const Span *s)
 {
-  return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
 
@@ -416,8 +484,8 @@ before_timestamp_period(TimestampTz t, const Span *p)
 bool
 left_span_value(const Span *s, Datum d, meosType basetype)
 {
-
-  int cmp = datum_cmp2(s->upper, d, s->basetype, basetype);
+  assert(s->basetype == basetype);
+  int cmp = datum_cmp(s->upper, d, basetype);
   return (cmp < 0 || (cmp == 0 && ! s->upper_inc));
 }
 
@@ -430,6 +498,9 @@ left_span_value(const Span *s, Datum d, meosType basetype)
 bool
 left_intspan_int(const Span *s, int i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
   return left_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -441,6 +512,9 @@ left_intspan_int(const Span *s, int i)
 bool
 left_bigintspan_bigint(const Span *s, int64 i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
   return left_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -452,6 +526,9 @@ left_bigintspan_bigint(const Span *s, int64 i)
 bool
 left_floatspan_float(const Span *s, double d)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
   return left_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -461,9 +538,13 @@ left_floatspan_float(const Span *s, double d)
  * @sqlop @p <<
  */
 bool
-before_period_timestamp(const Span *p, TimestampTz t)
+before_period_timestamp(const Span *s, TimestampTz t)
 {
-  return left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return left_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -475,7 +556,11 @@ before_period_timestamp(const Span *p, TimestampTz t)
 bool
 left_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_span_type(s1, s2))
+    return false;
+
   int cmp = datum_cmp(s1->upper, s2->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || ! s2->lower_inc)));
 }
@@ -503,18 +588,25 @@ right_value_span(Datum d, meosType basetype, const Span *s)
 bool
 right_int_intspan(int i, const Span *s)
 {
-  return left_intspan_int(s, i);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
+  return left_span_value(s, DatumGetInt32(i), T_INT4);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer is strictly to the right of a big integer span.
+ * @brief Return true if a big integer is strictly to the right of a big
+ * integer span.
  * @sqlop @p >>
  */
 bool
 right_bigint_bigintspan(int64 i, const Span *s)
 {
-  return left_bigintspan_bigint(s, i);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
+  return left_span_value(s, DatumGetInt64(i), T_INT8);
 }
 
 /**
@@ -525,7 +617,10 @@ right_bigint_bigintspan(int64 i, const Span *s)
 bool
 right_float_floatspan(double d, const Span *s)
 {
-  return left_floatspan_float(s, d);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
+  return left_span_value(s, DatumGetFloat8(d), T_FLOAT8);
 }
 
 /**
@@ -534,9 +629,13 @@ right_float_floatspan(double d, const Span *s)
  * @sqlop @p #>>
  */
 bool
-after_timestamp_period(TimestampTz t, const Span *p)
+after_timestamp_period(TimestampTz t, const Span *s)
 {
-  return before_period_timestamp(p, t);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return left_span_value(s, DatumGetTimestampTz(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -559,18 +658,25 @@ right_span_value(const Span *s, Datum d, meosType basetype)
 bool
 right_intspan_int(const Span *s, int i)
 {
-  return left_int_intspan(i, s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
+  return left_value_span(DatumGetInt32(i), T_INT4, s);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer span is strictly to the right of a big integer
+ * @brief Return true if a big integer span is strictly to the right of a big
+ * integer
  * @sqlop @p >>
  */
 bool
 right_bigintspan_bigint(const Span *s, int64 i)
 {
-  return left_bigint_bigintspan(i, s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
+  return left_value_span(DatumGetInt64(i), T_INT8, s);
 }
 
 /**
@@ -581,7 +687,10 @@ right_bigintspan_bigint(const Span *s, int64 i)
 bool
 right_floatspan_float(const Span *s, double d)
 {
-  return left_float_floatspan(d, s);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
+  return left_value_span(DatumGetFloat8(d), T_FLOAT8, s);
 }
 
 /**
@@ -590,9 +699,13 @@ right_floatspan_float(const Span *s, double d)
  * @sqlop @p #>>
  */
 bool
-after_period_timestamp(const Span *p, TimestampTz t)
+after_period_timestamp(const Span *s, TimestampTz t)
 {
-  return before_timestamp_period(t, p);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return left_value_span(DatumGetTimestampTz(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
 
@@ -618,30 +731,39 @@ right_span_span(const Span *s1, const Span *s2)
 bool
 overleft_value_span(Datum d, meosType basetype, const Span *s)
 {
-  int cmp = datum_cmp2(d, s->upper, basetype, s->basetype);
+  assert(s->basetype == basetype);
+  int cmp = datum_cmp(d, s->upper, basetype);
   return (cmp < 0 || (cmp == 0 && s->upper_inc));
 }
 
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer does not extend to the right of an integer span.
+ * @brief Return true if an integer does not extend to the right of an integer
+ * span.
  * @sqlop @p &<
  */
 bool
 overleft_int_intspan(int i, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
   return overleft_value_span(Int32GetDatum(i), T_INT4, s);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer does not extend to the right of a big integer span.
+ * @brief Return true if a big integer does not extend to the right of a big
+ * integer span.
  * @sqlop @p &<
  */
 bool
 overleft_bigint_bigintspan(int64 i, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
   return overleft_value_span(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -653,6 +775,9 @@ overleft_bigint_bigintspan(int64 i, const Span *s)
 bool
 overleft_float_floatspan(double d, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
   return overleft_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -662,9 +787,13 @@ overleft_float_floatspan(double d, const Span *s)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestamp_period(TimestampTz t, const Span *p)
+overbefore_timestamp_period(TimestampTz t, const Span *s)
 {
-  return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
 
@@ -675,6 +804,7 @@ overbefore_timestamp_period(TimestampTz t, const Span *p)
 bool
 overleft_span_value(const Span *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   /* Integer spans are canonicalized and thus their upper bound is exclusive.
    * Therefore, we cannot simply check that s->upper <= d */
   Span s1;
@@ -691,17 +821,24 @@ overleft_span_value(const Span *s, Datum d, meosType basetype)
 bool
 overleft_intspan_int(const Span *s, int i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
   return overleft_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer span does not extend to the right of a big integer.
+ * @brief Return true if a big integer span does not extend to the right of a
+ * big integer.
  * @sqlop @p &<
  */
 bool
 overleft_bigintspan_bigint(const Span *s, int64 i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
   return overleft_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -713,6 +850,9 @@ overleft_bigintspan_bigint(const Span *s, int64 i)
 bool
 overleft_floatspan_float(const Span *s, double d)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
   return overleft_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -722,21 +862,29 @@ overleft_floatspan_float(const Span *s, double d)
  * @sqlop @p &<#
  */
 bool
-overbefore_period_timestamp(const Span *p, TimestampTz t)
+overbefore_period_timestamp(const Span *s, TimestampTz t)
 {
-  return overleft_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return overleft_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if the first span does not extend to the right of the second one.
+ * @brief Return true if the first span does not extend to the right of the
+ * second one.
  * @sqlop @p &<
  */
 bool
 overleft_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_span_type(s1, s2))
+    return false;
   int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || s2->upper_inc)));
 }
@@ -752,19 +900,24 @@ overleft_span_span(const Span *s1, const Span *s2)
 bool
 overright_value_span(Datum d, meosType basetype, const Span *s)
 {
-  int cmp = datum_cmp2(s->lower, d, s->basetype, basetype);
+  assert(s->basetype == basetype);
+  int cmp = datum_cmp(s->lower, d, basetype);
   return (cmp < 0 || (cmp == 0 && s->lower_inc));
 }
 
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer does not extend to the left of an integer span.
+ * @brief Return true if an integer does not extend to the left of an integer
+ * span.
  * @sqlop @p &>
  */
 bool
 overright_int_intspan(int i, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
   return overright_value_span(Int32GetDatum(i), T_INT4, s);
 }
 
@@ -776,6 +929,9 @@ overright_int_intspan(int i, const Span *s)
 bool
 overright_bigint_bigintspan(int64 i, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
   return overright_value_span(Int64GetDatum(i), T_INT8, s);
 }
 
@@ -787,6 +943,9 @@ overright_bigint_bigintspan(int64 i, const Span *s)
 bool
 overright_float_floatspan(double d, const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
   return overright_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
 
@@ -796,9 +955,13 @@ overright_float_floatspan(double d, const Span *s)
  * @sqlop @p #&>
  */
 bool
-overafter_timestamp_period(TimestampTz t, const Span *p)
+overafter_timestamp_period(TimestampTz t, const Span *s)
 {
-  return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
 
@@ -809,7 +972,8 @@ overafter_timestamp_period(TimestampTz t, const Span *p)
 bool
 overright_span_value(const Span *s, Datum d, meosType basetype)
 {
-  return datum_le2(d, s->lower, basetype, s->basetype);
+  assert(s->basetype == basetype);
+  return datum_le(d, s->lower, basetype);
 }
 
 #if MEOS
@@ -821,6 +985,9 @@ overright_span_value(const Span *s, Datum d, meosType basetype)
 bool
 overright_intspan_int(const Span *s, int i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
   return overright_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -832,6 +999,9 @@ overright_intspan_int(const Span *s, int i)
 bool
 overright_bigintspan_bigint(const Span *s, int64 i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||! ensure_same_span_basetype(s, T_INT8))
+    return false;
   return overright_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -843,6 +1013,9 @@ overright_bigintspan_bigint(const Span *s, int64 i)
 bool
 overright_floatspan_float(const Span *s, double d)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
   return overright_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -852,9 +1025,13 @@ overright_floatspan_float(const Span *s, double d)
  * @sqlop @p #&>
  */
 bool
-overafter_period_timestamp(const Span *p, TimestampTz t)
+overafter_period_timestamp(const Span *s, TimestampTz t)
 {
-  return overright_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return overright_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -866,7 +1043,11 @@ overafter_period_timestamp(const Span *p, TimestampTz t)
 bool
 overright_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_span_type(s1, s2))
+    return false;
+
   int cmp = datum_cmp(s2->lower, s1->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->lower_inc || s2->lower_inc)));
 }
@@ -876,7 +1057,7 @@ overright_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libmeos_internal_setspan_set
  * @brief Compute the bouding box union of two spans
  * @note The result of the function is always a span even if the spans do not
  * overlap
@@ -885,7 +1066,7 @@ overright_span_span(const Span *s1, const Span *s2)
 void
 bbox_union_span_span(const Span *s1, const Span *s2, Span *result)
 {
-  assert(s1->spantype == s2->spantype);
+  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
   memset(result, 0, sizeof(Span));
   memcpy(result, s1, sizeof(Span));
   span_expand(s2, result);
@@ -900,6 +1081,7 @@ bbox_union_span_span(const Span *s1, const Span *s2, Span *result)
 SpanSet *
 union_span_value(const Span *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   Span s1;
   span_set(d, d, true, true, basetype, &s1);
   SpanSet *result = union_span_span(s, &s1);
@@ -915,6 +1097,9 @@ union_span_value(const Span *s, Datum d, meosType basetype)
 SpanSet *
 union_intspan_int(const Span *s, int i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return NULL;
   return union_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -926,6 +1111,9 @@ union_intspan_int(const Span *s, int i)
 SpanSet *
 union_bigintspan_bigint(const Span *s, int64 i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return NULL;
   return union_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -937,6 +1125,9 @@ union_bigintspan_bigint(const Span *s, int64 i)
 SpanSet *
 union_floatspan_float(const Span *s, double d)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return NULL;
   return union_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -946,9 +1137,13 @@ union_floatspan_float(const Span *s, double d)
  * @sqlop @p +
  */
 SpanSet *
-union_period_timestamp(const Span *p, TimestampTz t)
+union_period_timestamp(const Span *s, TimestampTz t)
 {
-  return union_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return NULL;
+  return union_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -960,6 +1155,11 @@ union_period_timestamp(const Span *p, TimestampTz t)
 SpanSet *
 union_span_span(const Span *s1, const Span *s2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_span_type(s1, s2))
+    return NULL;
+
   /* If the spans do not overlap */
   if (! overlaps_span_span(s1, s2) &&
     !adjacent_span_span(s1, s2))
@@ -998,6 +1198,7 @@ bool
 intersection_span_value(const Span *s, Datum d, meosType basetype,
   Datum *result)
 {
+  assert(s->basetype == basetype);
   if (! contains_span_value(s, d, basetype))
     return false;
   *result = d;
@@ -1014,7 +1215,11 @@ intersection_span_value(const Span *s, Datum d, meosType basetype,
 bool
 intersection_intspan_int(const Span *s, int i, int *result)
 {
-  if (! contains_span_value(s, TimestampTzGetDatum(i), T_INT4))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return false;
+
+  if (! contains_span_value(s, Int32GetDatum(i), T_INT4))
     return false;
   *result = i;
   return true;
@@ -1029,6 +1234,10 @@ intersection_intspan_int(const Span *s, int i, int *result)
 bool
 intersection_bigintspan_bigint(const Span *s, int64 i, int64 *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return false;
+
   if (! contains_span_value(s, Int64GetDatum(i), T_INT8))
     return false;
   *result = i;
@@ -1044,6 +1253,10 @@ intersection_bigintspan_bigint(const Span *s, int64 i, int64 *result)
 bool
 intersection_floatspan_float(const Span *s, double d, double *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
+
   if (! contains_span_value(s, Float8GetDatum(d), T_FLOAT8))
     return false;
   *result = d;
@@ -1057,10 +1270,15 @@ intersection_floatspan_float(const Span *s, double d, double *result)
  * @sqlop @p *
  */
 bool
-intersection_period_timestamp(const Span *p, TimestampTz t,
+intersection_period_timestamp(const Span *s, TimestampTz t,
   TimestampTz *result)
 {
-  if (! contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+
+  if (! contains_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
     return false;
   *result = t;
   return true;
@@ -1076,14 +1294,14 @@ intersection_period_timestamp(const Span *p, TimestampTz t,
 bool
 inter_span_span(const Span *s1, const Span *s2, Span *result)
 {
-  assert(s1->spantype == s2->spantype);
+  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
   /* Bounding box test */
   if (! overlaps_span_span(s1, s2))
     return false;
 
   memset(result, 0, sizeof(Span));
-  Datum lower = span_value_max(s1->lower, s2->lower, s1->basetype);
-  Datum upper = span_value_min(s1->upper, s2->upper, s1->basetype);
+  Datum lower = span_max_value(s1->lower, s2->lower, s1->basetype);
+  Datum upper = span_min_value(s1->upper, s2->upper, s1->basetype);
   bool lower_inc = s1->lower == s2->lower ? s1->lower_inc && s2->lower_inc :
     ( lower == s1->lower ? s1->lower_inc : s2->lower_inc );
   bool upper_inc = s1->upper == s2->upper ? s1->upper_inc && s2->upper_inc :
@@ -1100,6 +1318,11 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
 Span *
 intersection_span_span(const Span *s1, const Span *s2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_span_type(s1, s2))
+    return NULL;
+
   Span result;
   if (! inter_span_span(s1, s2, &result))
     return NULL;
@@ -1118,6 +1341,7 @@ bool
 minus_value_span(Datum d, meosType basetype, const Span *s,
   Datum *result)
 {
+  assert(s->basetype == basetype);
   if (contains_span_value(s, d, basetype))
     return false;
   *result = d;
@@ -1134,6 +1358,11 @@ minus_value_span(Datum d, meosType basetype, const Span *s,
 bool
 minus_int_intspan(int i, const Span *s, int *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_span_basetype(s, T_INT4))
+    return false;
+
   Datum v;
   bool found = minus_value_span(Int32GetDatum(i), T_INT4, s, &v);
   *result = DatumGetInt32(v);
@@ -1149,6 +1378,11 @@ minus_int_intspan(int i, const Span *s, int *result)
 bool
 minus_bigint_bigintspan(int64 i, const Span *s, int64 *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_span_basetype(s, T_INT8))
+    return false;
+
   Datum v;
   bool found = minus_value_span(Int64GetDatum(i), T_INT8, s, &v);
   *result = DatumGetInt64(v);
@@ -1163,6 +1397,11 @@ minus_bigint_bigintspan(int64 i, const Span *s, int64 *result)
 bool
 minus_float_floatspan(double d, const Span *s, double *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_span_basetype(s, T_FLOAT8))
+    return false;
+
   Datum v;
   bool found = minus_value_span(Float8GetDatum(d), T_FLOAT8, s, &v);
   *result = DatumGetFloat8(v);
@@ -1175,10 +1414,15 @@ minus_float_floatspan(double d, const Span *s, double *result)
  * @sqlop @p -
  */
 bool
-minus_timestamp_period(TimestampTz t, const Span *p, TimestampTz *result)
+minus_timestamp_period(TimestampTz t, const Span *s, TimestampTz *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+
   Datum v;
-  bool res = minus_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p, &v);
+  bool res = minus_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s, &v);
   *result = DatumGetTimestampTz(v);
   return res;
 }
@@ -1190,6 +1434,7 @@ minus_timestamp_period(TimestampTz t, const Span *p, TimestampTz *result)
 int
 minus_span_value_iter(const Span *s, Datum d, meosType basetype, Span *result)
 {
+  assert(s->basetype == basetype);
   if (! contains_span_value(s, d, basetype))
   {
     result[0] = *s;
@@ -1197,31 +1442,22 @@ minus_span_value_iter(const Span *s, Datum d, meosType basetype, Span *result)
   }
 
   /* Account for canonicalized spans */
-  Datum upper1;
-  if (basetype == T_INT4) /** xx **/
-    upper1 = Int32GetDatum(DatumGetInt32(s->upper) - (int32) 1);
-  else if (basetype == T_INT8)
-    upper1 = Int64GetDatum(DatumGetInt64(s->upper) - (int64) 1);
-  else
-    upper1 = s->upper;
+  Datum upper = span_canon_upper(s);
 
-  bool eqlower = datum_eq(s->lower, d, basetype);
-  bool equpper = datum_eq(upper1, d, basetype);
-  if (eqlower && equpper)
+  bool lowereq = datum_eq(s->lower, d, basetype);
+  bool uppereq = datum_eq(upper, d, basetype);
+  if (lowereq && uppereq)
     return 0;
 
-  if (eqlower)
+  if (lowereq)
   {
     span_set(s->lower, s->upper, false, s->upper_inc, basetype, &result[0]);
     return 1;
   }
 
-  if (equpper)
+  if (uppereq)
   {
-    if (basetype == T_INT4 || basetype == T_INT8) /** xx **/
-      span_set(s->lower, upper1, true, false, basetype, &result[0]);
-    else
-      span_set(s->lower, s->upper, s->lower_inc, false, basetype, &result[0]);
+    span_set(s->lower, upper, s->lower_inc, false, basetype, &result[0]);
     return 1;
   }
 
@@ -1237,6 +1473,7 @@ minus_span_value_iter(const Span *s, Datum d, meosType basetype, Span *result)
 SpanSet *
 minus_span_value(const Span *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   Span spans[2];
   int count = minus_span_value_iter(s, d, basetype, spans);
   if (count == 0)
@@ -1253,6 +1490,9 @@ minus_span_value(const Span *s, Datum d, meosType basetype)
 SpanSet *
 minus_intspan_int(const Span *s, int i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return NULL;
   return minus_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -1264,6 +1504,9 @@ minus_intspan_int(const Span *s, int i)
 SpanSet *
 minus_bigintspan_bigint(const Span *s, int64 i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return NULL;
   return minus_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -1275,6 +1518,9 @@ minus_bigintspan_bigint(const Span *s, int64 i)
 SpanSet *
 minus_floatspan_float(const Span *s, double d)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return NULL;
   return minus_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1284,9 +1530,13 @@ minus_floatspan_float(const Span *s, double d)
  * @sqlop @p -
  */
 SpanSet *
-minus_period_timestamp(const Span *p, TimestampTz t)
+minus_period_timestamp(const Span *s, TimestampTz t)
 {
-  return minus_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return NULL;
+  return minus_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -1363,6 +1613,11 @@ minus_span_span_iter(const Span *s1, const Span *s2, Span *result)
 SpanSet *
 minus_span_span(const Span *s1, const Span *s2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_span_type(s1, s2))
+    return NULL;
+
   Span spans[2];
   int count = minus_span_span_iter(s1, s2, spans);
   if (count == 0)
@@ -1377,30 +1632,25 @@ minus_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between two values as a double
+ * @return On error return DBL_MAX
  */
 double
-distance_value_value(Datum l, Datum r, meosType typel, meosType typer)
+distance_value_value(Datum l, Datum r, meosType type)
 {
-  assert(span_basetype(typel));
-  if (typel != typer)
-    assert(span_basetype(typer));
-  if (typel == T_INT4 && typer == T_INT4)
+  assert(span_basetype(type));
+  if (type == T_INT4)
     return (double) abs(DatumGetInt32(l) - DatumGetInt32(r));
-  if (typel == T_INT8 && typer == T_INT8)
+  if (type == T_INT8)
     return (double) llabs(DatumGetInt64(l) - DatumGetInt64(r));
-  if (typel == T_FLOAT8 && typer == T_FLOAT8)
+  if (type == T_FLOAT8)
     return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
-  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
+  if (type == T_TIMESTAMPTZ)
     /* Distance in seconds if the base type is TimestampTz */
     return (double) (llabs((DatumGetTimestampTz(l) -
       DatumGetTimestampTz(r)))) / USECS_PER_SEC;
-  if (typel == T_INT4 && typer == T_FLOAT8)
-    return fabs((double) DatumGetInt32(l) - DatumGetFloat8(r));
-  if (typel == T_FLOAT8 && typer == T_INT4)
-    return fabs(DatumGetFloat8(l) - (double) DatumGetInt32(r));
-  elog(ERROR, "Unknown types for distance between values: %d, %d",
-    typel, typer);
-  return 0; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Unknown types for distance between values of type: %d", type);
+  return DBL_MAX;
 }
 
 /**
@@ -1410,6 +1660,7 @@ distance_value_value(Datum l, Datum r, meosType typel, meosType typer)
 double
 distance_span_value(const Span *s, Datum d, meosType basetype)
 {
+  assert(s->basetype == basetype);
   /* If the span contains the value return 0 */
   if (contains_span_value(s, d, basetype))
     return 0.0;
@@ -1418,12 +1669,15 @@ distance_span_value(const Span *s, Datum d, meosType basetype)
    * between the value and the lower bound of the span
    *     d   [---- s ----] */
   if (right_span_value(s, d, basetype))
-    return distance_value_value(d, s->lower, basetype, s->basetype);
+    return distance_value_value(d, s->lower, basetype);
+
+  /* Account for canonicalized spans */
+  Datum upper = span_canon_upper(s);
 
   /* If the span is to the left of the value return the distance
    * between the upper bound of the span and value
    *     [---- s ----]   d */
-  return distance_value_value(s->upper, d, s->basetype, basetype);
+  return distance_value_value(upper, d, basetype);
 }
 
 #if MEOS
@@ -1431,11 +1685,15 @@ distance_span_value(const Span *s, Datum d, meosType basetype)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between an integer span and an integer
  * as a double
+ * @return On error return -1.0
  * @sqlop @p <->
  */
 double
 distance_intspan_int(const Span *s, int i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
+    return -1.0;
   return distance_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -1443,22 +1701,30 @@ distance_intspan_int(const Span *s, int i)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a big integer span and a big integer
  * as a double
+ * @return On error return -1.0
  * @sqlop @p <->
  */
 double
 distance_bigintspan_bigint(const Span *s, int64 i)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
+    return -1.0;
   return distance_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a float span and a float.
+ * @return On error return -1.0
  * @sqlop @p <->
  */
 double
 distance_floatspan_float(const Span *s, double d)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
+    return -1.0;
   return distance_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
@@ -1466,39 +1732,52 @@ distance_floatspan_float(const Span *s, double d)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance in seconds between a period and a timestamp
  * as a double
+ * @return On error return -1.0
  * @sqlop @p <->
  */
 double
-distance_period_timestamp(const Span *p, TimestampTz t)
+distance_period_timestamp(const Span *s, TimestampTz t)
 {
-  return distance_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return -1.0;
+  return distance_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between two spans as a double
+ * @return On error return -1.0
  * @sqlop @p <->
  */
 double
 distance_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_same_span_type(s1, s2))
+    return -1.0;
 
   /* If the spans intersect return 0 */
   if (overlaps_span_span(s1, s2))
     return 0.0;
 
+  /* Account for canonicalized spans */
+  Datum upper1 = span_canon_upper(s1);
+  Datum upper2 = span_canon_upper(s2);
+
   /* If the first span is to the left of the second one return the distance
    * between the upper bound of the first and lower bound of the second
    *     [---- s1 ----]   [---- s2 ----] */
   if (left_span_span(s1, s2))
-    return distance_value_value(s1->upper, s2->lower, s1->basetype, s2->basetype);
+    return distance_value_value(upper1, s2->lower, s1->basetype);
 
   /* If the first span is to the right of the second one return the distance
    * between the upper bound of the second and the lower bound of the first
    *     [---- s2 ----]   [---- s1 ----] */
-  return distance_value_value(s2->upper, s1->lower, s2->basetype, s1->basetype);
+  return distance_value_value(upper2, s1->lower, s1->basetype);
 }
 
 /******************************************************************************/

@@ -422,7 +422,7 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   ensure_point_type(gs);
-  ensure_non_empty(gs);
+  ensure_not_empty(gs);
   ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
@@ -433,13 +433,13 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tpoint_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_stbox);
 /**
- * @ingroup mobilitydb_temporal_cast
+ * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding box of a temporal point
  * @sqlfunc stbox()
  * @sqlop @p ::
@@ -493,102 +493,6 @@ Tpoint_expand_space(PG_FUNCTION_ARGS)
   STBox *result = tpoint_expand_space(temp, d);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Temporal comparisons
- *****************************************************************************/
-
-/**
- * @brief Return the temporal comparison of a point and a temporal point
- */
-static Datum
-tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, meosType, meosType))
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = tcomp_tpoint_point(temp, gs, func, true);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-/**
- * @brief Return the temporal comparison of a temporal point and a point
- */
-static Datum
-tcomp_tpoint_point_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, meosType, meosType))
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = tcomp_tpoint_point(temp, gs, func, false);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Teq_geo_tpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Teq_geo_tpoint);
-/**
- * @ingroup mobilitydb_temporal_comp
- * @brief Return the temporal equality of a point and a temporal point
- * @sqlfunc tpoint_teq()
- * @sqlop @p #=
- */
-Datum
-Teq_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return tcomp_geo_tpoint_ext(fcinfo, &datum2_eq2);
-}
-
-PGDLLEXPORT Datum Teq_tpoint_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Teq_tpoint_geo);
-/**
- * @ingroup mobilitydb_temporal_comp
- * @brief Return the temporal equality of the temporal point and a point
- * @sqlfunc tpoint_teq()
- * @sqlop @p #=
- */
-Datum
-Teq_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return tcomp_tpoint_point_ext(fcinfo, &datum2_eq2);
-}
-
-PGDLLEXPORT Datum Tne_geo_tpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tne_geo_tpoint);
-/**
- * @ingroup mobilitydb_temporal_comp
- * @brief Return the temporal inequality of a point and a temporal point
- * @sqlfunc tpoint_tne()
- * @sqlop @p #=
- */
-Datum
-Tne_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return tcomp_geo_tpoint_ext(fcinfo, &datum2_ne2);
-}
-
-PGDLLEXPORT Datum Tne_tpoint_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tne_tpoint_geo);
-/**
- * @ingroup mobilitydb_temporal_comp
- * @brief Return the temporal inequality of the temporal point and a point
- * @sqlfunc tpoint_tne()
- * @sqlop @p #=
- */
-Datum
-Tne_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return tcomp_tpoint_point_ext(fcinfo, &datum2_ne2);
 }
 
 /*****************************************************************************/

@@ -99,6 +99,8 @@ typedef enum
   T_TNPOINT        = 45,  /**< temporal network point type */
 } meosType;
 
+#define NO_MEOS_TYPES 46
+
 /**
  * Enumeration that defines the classes of Boolean operators used in
  * MobilityDB.
@@ -190,6 +192,7 @@ typedef struct
 
 /* Type conversion functions */
 
+extern const char *meostype_name(meosType temptype);
 extern meosType temptype_basetype(meosType temptype);
 extern meosType settype_basetype(meosType settype);
 extern meosType spantype_basetype(meosType spantype);
@@ -200,6 +203,7 @@ extern meosType basetype_settype(meosType basetype);
 
 /* Catalog functions */
 
+extern bool meostype_internal(meosType type);
 extern bool meos_basetype(meosType type);
 extern bool alpha_basetype(meosType basetype);
 extern bool number_basetype(meosType basetype);
@@ -212,11 +216,15 @@ extern bool set_basetype(meosType basetype);
 
 extern bool set_type(meosType type);
 extern bool numset_type(meosType type);
+extern bool ensure_numset_type(meosType type);
 extern bool timeset_type(meosType type);
-extern bool set_span_type(meosType type);
+extern bool set_spantype(meosType type);
+extern bool ensure_set_spantype(meosType type);
 extern bool alphanumset_type(meosType settype);
 extern bool geoset_type(meosType type);
+extern bool ensure_geoset_type(meosType type);
 extern bool spatialset_type(meosType type);
+extern bool ensure_spatialset_type(meosType type);
 
 extern bool span_basetype(meosType type);
 extern bool span_canon_basetype(meosType type);
@@ -224,6 +232,7 @@ extern bool span_type(meosType type);
 extern bool span_bbox_type(meosType type);
 extern bool numspan_basetype(meosType type);
 extern bool numspan_type(meosType type);
+extern bool ensure_numspan_type(meosType type);
 extern bool timespan_basetype(meosType type);
 extern bool timespan_type(meosType type);
 
@@ -240,13 +249,17 @@ extern int16 basetype_length(meosType basetype);
 extern bool talphanum_type(meosType type);
 extern bool talpha_type(meosType temptype);
 extern bool tnumber_type(meosType temptype);
+extern bool ensure_tnumber_type(meosType temptype);
 extern bool tnumber_basetype(meosType basetype);
 extern bool tnumber_settype(meosType settype);
 extern bool tnumber_spantype(meosType settype);
 extern bool tnumber_spansettype(meosType spansettype);
 extern bool tspatial_type(meosType temptype);
+extern bool ensure_tspatial_type(meosType temptype);
 extern bool tspatial_basetype(meosType basetype);
-extern bool tgeo_type(meosType basetype);
+extern bool tgeo_type(meosType type);
+extern bool ensure_tgeo_type(meosType type);
+extern bool ensure_tnumber_tgeo_type(meosType type);
 
 /*****************************************************************************/
 

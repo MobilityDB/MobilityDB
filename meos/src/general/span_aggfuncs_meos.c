@@ -55,6 +55,7 @@
 static SpanSet *
 spanset_append_span(SpanSet *ss, const Span *span, bool expand)
 {
+  assert(ss); assert(span);
   assert(ss->spantype == span->spantype);
 
   /* Account for expandable structures */
@@ -94,6 +95,7 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
 static SpanSet *
 spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 {
+  assert(ss1); assert(ss2);
   assert(ss1->spantype == ss2->spantype);
 
   /* Account for expandable structures */
@@ -127,7 +129,6 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
   SpanSet *result = spanset_make_exp(spans, count, maxcount, NORMALIZE_NO,
     ORDERED_NO);
   pfree(spans);
-  // pfree(ss);
   return result;
 }
 
@@ -138,11 +139,17 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 SpanSet *
 span_union_transfn(SpanSet *state, const Span *span)
 {
-  /* Null set: create a new span set with the input span */
+  /* Null span: return current state */
+  if (! span)
+    return state;
+  /* Null state: create a new span set with the input span */
   if (! state)
     /* Arbitrary initialization to 64 elements */
     return spanset_make_exp((Span *) span, 1, 64, NORMALIZE_NO, ORDERED_NO);
 
+  /* Ensure validity of the arguments */
+  if (! ensure_same_span_type(&state->elems[0], span))
+    return NULL;
   return spanset_append_span(state, span, true);
 }
 
@@ -153,7 +160,10 @@ span_union_transfn(SpanSet *state, const Span *span)
 SpanSet *
 spanset_union_transfn(SpanSet *state, const SpanSet *ss)
 {
-  /* Null set: create a new span set with the input span set */
+  /* Null span set: return current state */
+  if (! ss)
+    return state;
+  /* Null state: create a new span set with the input span set */
   if (! state)
   {
     int count = ((ss->count / 64) + 1) * 64;
@@ -162,6 +172,9 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
       NORMALIZE_NO, ORDERED_NO);
   }
 
+  /* Ensure validity of the arguments */
+  if (! ensure_same_span_type(&state->elems[0], &ss->elems[0]))
+    return NULL;
   return spanset_append_spanset(state, ss, true);
 }
 
@@ -174,11 +187,7 @@ spanset_union_finalfn(SpanSet *state)
 {
   if (! state)
     return NULL;
-
-  /* Create the final value reusing the array of spans in the state */
-  SpanSet *result = spanset_make_exp((Span *) &state->elems, state->count,
-    state->count, NORMALIZE, ORDERED_NO);
-  return result;
+  return spanset_compact(state);
 }
 
 /*****************************************************************************/

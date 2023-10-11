@@ -34,6 +34,8 @@
 
 #include "general/ttext_textfuncs.h"
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
@@ -96,7 +98,6 @@ datum_textcat(Datum l, Datum r)
 }
 
 #if MEOS
-
 char *
 pnstrdup(const char *in, Size size)
 {
@@ -129,22 +130,22 @@ pnstrdup(const char *in, Size size)
  * We pass the number of bytes so we can pass varlena and char*
  * to this function.  The result is a palloc'd, null-terminated string.
  */
-char *
-asc_tolower(const char *buff, size_t nbytes)
-{
-  char *result;
-  char *p;
+// char *
+// asc_tolower(const char *buff, size_t nbytes)
+// {
+//   char *result;
+//   char *p;
 
-  if (!buff)
-    return NULL;
+//   if (!buff)
+//     return NULL;
 
-  result = pnstrdup(buff, nbytes);
+//   result = pnstrdup(buff, nbytes);
 
-  for (p = result; *p; p++)
-    *p = pg_ascii_tolower((unsigned char) *p);
+//   for (p = result; *p; p++)
+//     *p = pg_ascii_tolower((unsigned char) *p);
 
-  return result;
-}
+//   return result;
+// }
 
 /*
  * ASCII-only upper function
@@ -152,22 +153,22 @@ asc_tolower(const char *buff, size_t nbytes)
  * We pass the number of bytes so we can pass varlena and char*
  * to this function.  The result is a palloc'd, null-terminated string.
  */
-char *
-asc_toupper(const char *buff, size_t nbytes)
-{
-  char *result;
-  char *p;
+// char *
+// asc_toupper(const char *buff, size_t nbytes)
+// {
+//   char *result;
+//   char *p;
 
-  if (!buff)
-    return NULL;
+//   if (!buff)
+//     return NULL;
 
-  result = pnstrdup(buff, nbytes);
+//   result = pnstrdup(buff, nbytes);
 
-  for (p = result; *p; p++)
-    *p = pg_ascii_toupper((unsigned char) *p);
+//   for (p = result; *p; p++)
+//     *p = pg_ascii_toupper((unsigned char) *p);
 
-  return result;
-}
+//   return result;
+// }
 
 #endif /* MEOS */
 
@@ -245,6 +246,10 @@ datum_upper(Datum value)
 Temporal *
 textfunc_ttext(const Temporal *temp, Datum (*func)(Datum value))
 {
+  /* Ensure validity of the arguments */
+  assert(temp); assert(func);
+  assert(temp->temptype == T_TTEXT);
+
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -263,6 +268,10 @@ Temporal *
 textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func,
   bool invert)
 {
+  /* Ensure validity of the arguments */
+  assert(temp);
+  assert(temp->temptype == T_TTEXT);
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -283,6 +292,11 @@ Temporal *
 textfunc_ttext_ttext(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func)
 {
+  /* Ensure validity of the arguments */
+  assert(temp1); assert(temp2);
+  assert(temp1->temptype == temp2->temptype);
+  assert(temp1->temptype == T_TTEXT);
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;

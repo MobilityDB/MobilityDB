@@ -28,23 +28,23 @@
  *****************************************************************************/
 
 /**
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
- * for temporal numbers.
+ * @brief Basic functions for set of disjoint spans.
  */
 
-#ifndef __PG_TEMPORAL_MATHFUNCS_H__
-#define __PG_TEMPORAL_MATHFUNCS_H__
+#ifndef __PG_SPANSET_H__
+#define __PG_SPANSET_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-/* PostgreSQL */
-#include "general/temporal.h"
+/* MEOS */
+#include "general/span.h"
 
 /*****************************************************************************/
 
-extern Datum datum_round_float(Datum value, Datum size);
-extern Temporal *tfloat_round(const Temporal *temp, Datum size);
+/* General functions */
+
+extern void spanset_span_slice(Datum d, Span *p);
 
 /*****************************************************************************/
 
-#endif /* __PG_TEMPORAL_MATHFUNCS_H__ */
+#endif

@@ -69,17 +69,19 @@ npoint_distance(Datum np1, Datum np2)
  *****************************************************************************/
 
 /**
- * @brief Return the temporal distance between the geometry point and the temporal
+ * @brief Return the temporal distance between a geometry point and the temporal
  * network point
  */
 Temporal *
-distance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
+distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(geo))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      gserialized_is_empty(gs) || ! ensure_point_type(gs))
     return NULL;
-  ensure_point_type(geo);
+
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_geo((const Temporal *) tempgeom, geo);
+  Temporal *result = distance_tpoint_point((const Temporal *) tempgeom, gs);
   pfree(tempgeom);
   return result;
 }
@@ -93,7 +95,7 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_geo(tempgeom, geom);
+  Temporal *result = distance_tpoint_point(tempgeom, geom);
   pfree(geom);
   return result;
 }
@@ -127,12 +129,12 @@ distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * and the geometry
  */
 TInstant *
-nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
+nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(geo))
+  if (gserialized_is_empty(gs))
     return NULL;
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(tempgeom, geo);
+  TInstant *resultgeom = nai_tpoint_geo(tempgeom, gs);
   /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -191,13 +193,13 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * and the geometry
  */
 double
-nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
+nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(geo))
+  if (gserialized_is_empty(gs))
     return -1;
   GSERIALIZED *traj = tnpoint_geom(temp);
   double result = DatumGetFloat8(geom_distance2d(PointerGetDatum(traj),
-    PointerGetDatum(geo)));
+    PointerGetDatum(gs)));
   pfree(traj);
   return result;
 }
@@ -241,13 +243,13 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * geometry and the temporal network point
  */
 bool
-shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
+shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   GSERIALIZED **result)
 {
-  if (gserialized_is_empty(geo))
+  if (gserialized_is_empty(gs))
     return false;
   GSERIALIZED *traj = tnpoint_geom(temp);
-  *result = gserialized_shortestline2d(traj, geo);
+  *result = gserialized_shortestline2d(traj, gs);
   pfree(traj);
   return true;
 }

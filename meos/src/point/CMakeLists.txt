@@ -4,7 +4,6 @@ add_library(point OBJECT
   stbox.c
   tpoint.c
   tpoint_aggfuncs.c
-  tpoint_analytics.c
   tpoint_boxops.c
   tpoint_distance.c
   tpoint_out.c
@@ -16,6 +15,3 @@ add_library(point OBJECT
   tpoint_tile.c
 )
 
-add_library(point_meos OBJECT
-  tpoint_meos.c
-)

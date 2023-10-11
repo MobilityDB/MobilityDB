@@ -36,11 +36,13 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/set.h"
+#include "general/spanset.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
@@ -55,32 +57,49 @@
 /**
  * @brief Ensure that a temporal box has X values
  */
-void
+bool
 ensure_has_X_tbox(const TBox *box)
 {
+  assert(box);
   if (! MEOS_FLAGS_GET_X(box->flags))
-    elog(ERROR, "The box must have value dimension");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The box must have value dimension");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that a temporal box has T values
  */
-void
+bool
 ensure_has_T_tbox(const TBox *box)
 {
+  assert(box);
   if (! MEOS_FLAGS_GET_T(box->flags))
-    elog(ERROR, "The box must have time dimension");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The box must have time dimension");
+    return false;
+  }
+  return true;
 }
 
 /**
  * @brief Ensure that a temporal boxes have the same dimensionality
  */
-void
+bool
 ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
 {
   if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
     MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
-    elog(ERROR, "The boxes must be of the same dimensionality");
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The boxes must be of the same dimensionality");
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************
@@ -98,23 +117,32 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
  * TBOX T([2001-01-01, 2001-01-02]) -> only time
  * @endcode
  * where the commas are optional.
+ * @return On error return NULL
  */
 TBox *
 tbox_in(const char *str)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
   return tbox_parse(&str);
 }
 
 /**
  * @ingroup libmeos_box_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal box.
+ * @return On error return NULL
  */
 char *
 tbox_out(const TBox *box, int maxdd)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_negative(maxdd))
+    return NULL;
+
   static size_t size = MAXTBOXLEN + 1;
   char *result = palloc(size);
-  char *period = NULL, *span = NULL;
+  char *span = NULL, *period = NULL;
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
@@ -127,17 +155,21 @@ tbox_out(const TBox *box, int maxdd)
     period = span_out(&box->period, maxdd);
 
   /* Print the box */
-  if (hasx && hast)
-    snprintf(result, size, "TBOX XT(%s,%s)", span, period);
-  else if (hasx)
-    snprintf(result, size, "TBOX X(%s)", span);
-  else /* hast */
+  if (hasx)
+  {
+    char *spantype = (box->span.basetype == T_INT4) ? "INT" : "FLOAT";
+    if (hast)
+      snprintf(result, size, "TBOX%s XT(%s,%s)", spantype, span, period);
+    else
+      snprintf(result, size, "TBOX%s X(%s)", spantype, span);
+  }
+  else if (hast) /* make compiler quiet */
     snprintf(result, size, "TBOX T(%s)", period);
 
-  if (hast)
-    pfree(period);
   if (hasx)
     pfree(span);
+  if (hast)
+    pfree(period);
   return result;
 }
 
@@ -147,11 +179,14 @@ tbox_out(const TBox *box, int maxdd)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from a number span and a period.
+ * @return On error return NULL
  * @sqlfunc tbox()
  */
 TBox *
 tbox_make(const Span *s, const Span *p)
 {
+  if (! ensure_one_not_null((void *) s, (void *) p))
+    return NULL;
   /* Note: zero-fill is done in function tbox_set */
   TBox *result = palloc(sizeof(TBox));
   tbox_set(s, p, result);
@@ -169,6 +204,7 @@ tbox_set(const Span *s, const Span *p, TBox *box)
 {
   /* At least on of the X or T dimensions should be given */
   assert(s || p);
+  assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
   if (s)
@@ -191,6 +227,10 @@ tbox_set(const Span *s, const Span *p, TBox *box)
 TBox *
 tbox_copy(const TBox *box)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box))
+    return NULL;
+
   TBox *result = palloc(sizeof(TBox));
   memcpy(result, box, sizeof(TBox));
   return result;
@@ -206,12 +246,11 @@ tbox_copy(const TBox *box)
 TBox *
 number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
 {
-  TBox *result = palloc(sizeof(TBox));
-  number_set_tbox(d, basetype, result);
+  Span s, p;
+  span_set(d, d, true, true, basetype, &s);
   Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
+  return tbox_make(&s, &p);
 }
 
 #if MEOS
@@ -223,12 +262,7 @@ number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
 TBox *
 int_timestamp_to_tbox(int i, TimestampTz t)
 {
-  TBox *result = palloc(sizeof(TBox));
-  int_set_tbox(i, result);
-  Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  return number_timestamp_to_tbox(Int32GetDatum(i), T_INT4, t);
 }
 
 /**
@@ -239,12 +273,7 @@ int_timestamp_to_tbox(int i, TimestampTz t)
 TBox *
 float_timestamp_to_tbox(double d, TimestampTz t)
 {
-  TBox *result = palloc(sizeof(TBox));
-  float_set_tbox(d, result);
-  Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  return number_timestamp_to_tbox(Float8GetDatum(d), T_FLOAT8, t);
 }
 #endif /* MEOS */
 
@@ -254,13 +283,12 @@ float_timestamp_to_tbox(double d, TimestampTz t)
  * @sqlfunc tbox()
  */
 TBox *
-number_period_to_tbox(Datum d, meosType basetype, const Span *p)
+number_period_to_tbox(Datum d, meosType basetype, const Span *s)
 {
-  TBox *result = palloc(sizeof(TBox));
-  number_set_tbox(d, basetype, result);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  assert(s);
+  Span s1;
+  span_set(d, d, true, true, basetype, &s1);
+  return tbox_make(&s1, s);
 }
 
 #if MEOS
@@ -270,13 +298,12 @@ number_period_to_tbox(Datum d, meosType basetype, const Span *p)
  * @sqlfunc tbox()
  */
 TBox *
-int_period_to_tbox(int i, const Span *p)
+int_period_to_tbox(int i, const Span *s)
 {
-  TBox *result = palloc(sizeof(TBox));
-  int_set_tbox(i, result);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
+    return NULL;
+  return number_period_to_tbox(Int32GetDatum(i), T_INT4, s);
 }
 
 /**
@@ -285,13 +312,12 @@ int_period_to_tbox(int i, const Span *p)
  * @sqlfunc tbox()
  */
 TBox *
-float_period_to_tbox(double d, const Span *p)
+float_period_to_tbox(double d, const Span *s)
 {
-  TBox *result = palloc(sizeof(TBox));
-  float_set_tbox(d, result);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
+    return NULL;
+  return number_period_to_tbox(Float8GetDatum(d), T_FLOAT8, s);
 }
 #endif /* MEOS */
 
@@ -301,16 +327,16 @@ float_period_to_tbox(double d, const Span *p)
  * @sqlfunc tbox()
  */
 TBox *
-span_timestamp_to_tbox(const Span *span, TimestampTz t)
+span_timestamp_to_tbox(const Span *s, TimestampTz t)
 {
-  assert(tnumber_spantype(span->spantype));
-  TBox *result = palloc(sizeof(TBox));
-  numspan_set_floatspan(span, &result->span);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_numspan_type(s->spantype))
+    return NULL;
+
   Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  Span p;
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
+  return tbox_make(s, &p);
 }
 
 /**
@@ -319,60 +345,51 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
  * @sqlfunc tbox()
  */
 TBox *
-span_period_to_tbox(const Span *span, const Span *p)
+span_period_to_tbox(const Span *s, const Span *p)
 {
-  assert(tnumber_spantype(span->spantype));
-  assert(p->basetype == T_TIMESTAMPTZ);
-  TBox *result = palloc(sizeof(TBox));
-  numspan_set_floatspan(span, &result->span);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) p) ||
+      ! ensure_numspan_type(s->spantype) ||
+      ! ensure_span_has_type(p, T_TSTZSPAN))
+    return NULL;
+  return tbox_make(s, p);
 }
 
 /*****************************************************************************
- * Casting
+ * Conversion functions
  * The set functions start by setting the output argument box to 0
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a number.
  */
 void
 number_set_tbox(Datum value, meosType basetype, TBox *box)
 {
+  assert(box);
   assert(tnumber_basetype(basetype));
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  Datum dvalue = Float8GetDatum(datum_double(value, basetype));
-  span_set(dvalue, dvalue, true, true, T_FLOAT8, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  Span s;
+  span_set(value, value, true, true, basetype, &s);
+  tbox_set(&s, NULL, box);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from an integer.
  */
 void
 int_set_tbox(int i, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  Datum d = Float8GetDatum((double) i);
-  span_set(d, d, true, true, T_FLOAT8, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
-  return;
+  assert(box);
+  return number_set_tbox(Int32GetDatum(i), T_INT4, box);
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast an integer to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert an integer to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -385,24 +402,19 @@ int_to_tbox(int i)
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a float.
  */
 void
 float_set_tbox(double d, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  Datum dd = Float8GetDatum(d);
-  span_set(dd, dd, true, true, T_FLOAT8, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
-  return;
+  assert(box);
+  return number_set_tbox(Float8GetDatum(d), T_FLOAT8, box);
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a float to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a float to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -416,25 +428,24 @@ float_to_tbox(double d)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a timestamp.
  */
 void
 timestamp_set_tbox(TimestampTz t, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, &box->period);
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  assert(box);
+  Span p;
+  Datum dt = TimestampTzGetDatum(t);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
+  tbox_set(NULL, &p, box);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a timestamp to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a timestamp to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
@@ -448,32 +459,33 @@ timestamp_to_tbox(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a number set.
  */
 void
 numset_set_tbox(const Set *s, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  Span sp;
-  set_set_span(s, &sp);
-  numspan_set_floatspan(&sp, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  assert(s); assert(box);
+  Span span;
+  set_set_span(s, &span);
+  tbox_set(&span, NULL, box);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a set to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a number set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
 TBox *
 numset_to_tbox(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_numset_type(s->settype))
+    return NULL;
+
   TBox *result = palloc(sizeof(TBox));
   numset_set_tbox(s, result);
   return result;
@@ -481,30 +493,33 @@ numset_to_tbox(const Set *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a timestamp set.
  */
 void
 timestampset_set_tbox(const Set *s, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  set_set_span(s, &box->period);
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  assert(s); assert(box);
+  Span p;
+  set_set_span(s, &p);
+  tbox_set(NULL, &p, box);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a timestamp set to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a timestamp set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
 TBox *
 timestampset_to_tbox(const Set *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
+    return NULL;
+
   TBox *result = palloc(sizeof(TBox));
   timestampset_set_tbox(s, result);
   return result;
@@ -512,30 +527,31 @@ timestampset_to_tbox(const Set *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a number span.
  */
 void
 numspan_set_tbox(const Span *s, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  numspan_set_floatspan(s, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  assert(s); assert(box);
+  tbox_set(s, NULL, box);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a span to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a span to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
 TBox *
 numspan_to_tbox(const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_numspan_type(s->spantype))
+    return NULL;
+
   TBox *result = palloc(sizeof(TBox));
   numspan_set_tbox(s, result);
   return result;
@@ -543,83 +559,97 @@ numspan_to_tbox(const Span *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a period.
  */
 void
-period_set_tbox(const Span *p, TBox *box)
+period_set_tbox(const Span *s, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  memcpy(&box->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  assert(s); assert(box);
+  tbox_set(NULL, s, box);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a period to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a period to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
 TBox *
-period_to_tbox(const Span *p)
+period_to_tbox(const Span *s)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_span_has_type(s, T_TSTZSPAN))
+    return NULL;
+
   TBox *result = palloc(sizeof(TBox));
-  period_set_tbox(p, result);
+  period_set_tbox(s, result);
   return result;
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a span set.
  */
 void
 numspanset_set_tbox(const SpanSet *ss, TBox *box)
 {
+  assert(ss); assert(box);
   assert(tnumber_spansettype(ss->spansettype));
-  numspan_set_tbox(&ss->span, box);
+  tbox_set(&ss->span, NULL, box);
   return;
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a span set to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a span set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
 TBox *
 numspanset_to_tbox(const SpanSet *ss)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_numspan_type(ss->spantype))
+    return NULL;
+
   TBox *result = palloc(sizeof(TBox));
   numspanset_set_tbox(ss, result);
   return result;
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a period set.
  */
 void
-periodset_set_tbox(const SpanSet *ps, TBox *box)
+periodset_set_tbox(const SpanSet *ss, TBox *box)
 {
-  period_set_tbox(&ps->span, box);
+  assert(ss); assert(box);
+  tbox_set(NULL, &ss->span, box);
   return;
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a period set to a temporal box.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a period set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
 TBox *
-periodset_to_tbox(const SpanSet *ps)
+periodset_to_tbox(const SpanSet *ss)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+    return NULL;
+
   TBox *result = palloc(sizeof(TBox));
-  periodset_set_tbox(ps, result);
+  periodset_set_tbox(ss, result);
   return result;
 }
 #endif /* MEOS */
@@ -627,26 +657,39 @@ periodset_to_tbox(const SpanSet *ps)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a temporal box as a span.
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a temporal box as a span.
  * @sqlop @p ::
  */
 Span *
 tbox_to_floatspan(const TBox *box)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box))
+    return NULL;
+
   if (! MEOS_FLAGS_GET_X(box->flags))
     return NULL;
-  return span_copy(&box->span);
+  if (box->span.basetype == T_FLOAT8)
+    return span_copy(&box->span);
+  /* Convert the integer span to a float span */
+  Span *result = palloc(sizeof(Span));
+  intspan_set_floatspan(&box->span, result);
+  return result;
 }
 
 /**
- * @ingroup libmeos_box_cast
- * @brief Cast a temporal box as a period
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a temporal box as a period
  * @sqlop @p ::
  */
 Span *
 tbox_to_period(const TBox *box)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box))
+    return NULL;
+
   if (! MEOS_FLAGS_GET_T(box->flags))
     return NULL;
   return span_copy(&box->period);
@@ -664,6 +707,9 @@ tbox_to_period(const TBox *box)
 bool
 tbox_hasx(const TBox *box)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box))
+    return false;
   bool result = MEOS_FLAGS_GET_X(box->flags);
   return result;
 }
@@ -676,6 +722,9 @@ tbox_hasx(const TBox *box)
 bool
 tbox_hast(const TBox *box)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box))
+    return false;
   bool result = MEOS_FLAGS_GET_T(box->flags);
   return result;
 }
@@ -686,14 +735,17 @@ tbox_hast(const TBox *box)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmin()
- * @pymeosfunc xmin()
  */
 bool
 tbox_xmin(const TBox *box, double *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
+    return false;
+
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
-  *result = DatumGetFloat8(box->span.lower);
+  *result = datum_double(box->span.lower, box->span.basetype);
   return true;
 }
 
@@ -703,11 +755,14 @@ tbox_xmin(const TBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmin_inc()
- * @pymeosfunc xmin_inc()
  */
 bool
 tbox_xmin_inc(const TBox *box, bool *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
+    return false;
+
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetBool(box->span.lower_inc);
@@ -720,14 +775,21 @@ tbox_xmin_inc(const TBox *box, bool *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmax()
- * @pymeosfunc xmax()
  */
 bool
 tbox_xmax(const TBox *box, double *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
+    return false;
+
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
-  *result = DatumGetFloat8(box->span.upper);
+  if (box->span.basetype == T_INT4)
+    /* Integer spans are canonicalized, i.e., the upper bound is exclusive */
+    *result = (double) (DatumGetInt32(box->span.upper) - 1);
+  else
+    *result = DatumGetFloat8(box->span.upper);
   return true;
 }
 
@@ -737,11 +799,14 @@ tbox_xmax(const TBox *box, double *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmax_inc()
- * @pymeosfunc xmax_inc()
  */
 bool
 tbox_xmax_inc(const TBox *box, bool *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
+    return false;
+
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetBool(box->span.upper_inc);
@@ -754,11 +819,14 @@ tbox_xmax_inc(const TBox *box, bool *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin()
- * @pymeosfunc tmin()
  */
 bool
 tbox_tmin(const TBox *box, TimestampTz *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
+    return false;
+
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.lower);
@@ -771,11 +839,14 @@ tbox_tmin(const TBox *box, TimestampTz *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin_inc()
- * @pymeosfunc tmin_inc()
  */
 bool
 tbox_tmin_inc(const TBox *box, bool *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
+    return false;
+
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetBool(box->period.lower_inc);
@@ -788,11 +859,14 @@ tbox_tmin_inc(const TBox *box, bool *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax()
- * @pymeosfunc tmax()
  */
 bool
 tbox_tmax(const TBox *box, TimestampTz *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
+    return false;
+
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.upper);
@@ -805,11 +879,14 @@ tbox_tmax(const TBox *box, TimestampTz *result)
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax_inc()
- * @pymeosfunc tmax_inc()
  */
 bool
 tbox_tmax_inc(const TBox *box, bool *result)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
+    return false;
+
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetBool(box->period.upper_inc);
@@ -821,12 +898,103 @@ tbox_tmax_inc(const TBox *box, bool *result)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_internal_box_transf
+ * @brief Shift and/or scale the span of a temporal box by the values.
+ */
+TBox *
+tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
+  bool hasshift, bool haswidth)
+{
+  assert(box);
+  /* Ensure validity of the arguments */
+  if (! ensure_has_X_tbox(box) ||
+      ! ensure_one_shift_width(hasshift, haswidth) ||
+      (width && ! ensure_positive_datum(width, box->span.basetype)))
+    return NULL;
+
+  /* Copy the input box to the result */
+  TBox *result = tbox_copy(box);
+  /* Shift and/or scale the span of the resulting box */
+  Datum lower = box->span.lower;
+  Datum upper = box->span.upper;
+  lower_upper_shift_scale_value(shift, width, box->span.basetype, hasshift,
+    haswidth, &lower, &upper);
+  result->span.lower = lower;
+  result->span.upper = upper;
+  return result;
+}
+
+#if MEOS
+/**
  * @ingroup libmeos_box_transf
+ * @brief Shift and/or scale the span of a temporal box by the values.
+ * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue()
+ */
+TBox *
+tbox_shift_scale_int(const TBox *box, int shift, int width,
+  bool hasshift, bool haswidth)
+{
+  if (! ensure_not_null((void *) box) ||
+      ! ensure_same_span_basetype(&box->span, T_FLOAT8))
+    return NULL;
+
+  return tbox_shift_scale_value(box, Int32GetDatum(shift),
+    Int32GetDatum(width), hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Shift and/or scale the span of a temporal box by the values.
+ * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue()
+ */
+TBox *
+tbox_shift_scale_float(const TBox *box, double shift, double width,
+  bool hasshift, bool haswidth)
+{
+  if (! ensure_not_null((void *) box) ||
+      ! ensure_same_span_basetype(&box->span, T_FLOAT8))
+    return NULL;
+
+  return tbox_shift_scale_value(box, Float8GetDatum(shift),
+    Float8GetDatum(width), hasshift, haswidth);
+}
+
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Shift and/or scale the period of a temporal box by the intervals.
+ * @sqlfunc shiftTime(), scaleTime(), shiftScaleTime()
+ */
+TBox *
+tbox_shift_scale_time(const TBox *box, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_T_tbox(box) ||
+      ! ensure_one_not_null((void *) shift, (void *) duration) ||
+      (duration && ! ensure_valid_duration(duration)))
+    return NULL;
+
+  /* Copy the input period to the result */
+  TBox *result = tbox_copy(box);
+  /* Shift and/or scale the resulting period */
+  TimestampTz lower = DatumGetTimestampTz(box->period.lower);
+  TimestampTz upper = DatumGetTimestampTz(box->period.upper);
+  lower_upper_shift_scale_time(shift, duration, &lower, &upper);
+  result->period.lower = TimestampTzGetDatum(lower);
+  result->period.upper = TimestampTzGetDatum(upper);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_box_transf
  * @brief Expand the second temporal box with the first one
  */
 void
 tbox_expand(const TBox *box1, TBox *box2)
 {
+  assert(box1); assert(box2);
   if (MEOS_FLAGS_GET_X(box2->flags))
     span_expand(&box1->span, &box2->span);
   if (MEOS_FLAGS_GET_T(box2->flags))
@@ -842,7 +1010,10 @@ tbox_expand(const TBox *box1, TBox *box2)
 TBox *
 tbox_expand_value(const TBox *box, const double d)
 {
-  ensure_has_X_tbox(box);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box))
+    return NULL;
+
   TBox *result = tbox_copy(box);
   result->span.lower = Float8GetDatum(DatumGetFloat8(result->span.lower) - d);
   result->span.upper = Float8GetDatum(DatumGetFloat8(result->span.upper) + d);
@@ -857,7 +1028,11 @@ tbox_expand_value(const TBox *box, const double d)
 TBox *
 tbox_expand_time(const TBox *box, const Interval *interval)
 {
-  ensure_has_T_tbox(box);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) interval) ||
+      ! ensure_has_T_tbox(box))
+    return NULL;
+
   TBox *result = tbox_copy(box);
   TimestampTz tmin = pg_timestamp_mi_interval(DatumGetTimestampTz(
     box->period.lower), interval);
@@ -867,6 +1042,27 @@ tbox_expand_time(const TBox *box, const Interval *interval)
   result->period.upper = TimestampTzGetDatum(tmax);
   return result;
 }
+
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Set the precision of the value dimension of the temporal box to
+ * the number of decimal places.
+ */
+TBox *
+tbox_round(const TBox *box, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
+
+  TBox *result = tbox_copy(box);
+  Datum size = Int32GetDatum(maxdd);
+  result->span.lower = datum_round_float(box->span.lower, size);
+  result->span.upper = datum_round_float(box->span.upper, size);
+  return result;
+}
+
 
 /*****************************************************************************
  * Topological operators
@@ -881,6 +1077,7 @@ tbox_expand_time(const TBox *box, const Interval *interval)
 static void
 tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 {
+  assert(box1); assert(box2); assert(hasx); assert(hast);
   *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
   *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   return;
@@ -892,17 +1089,21 @@ tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hast Boolean variables
  */
-static void
+static bool
 topo_tbox_tbox_init(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 {
-  ensure_common_dimension(box1->flags, box2->flags);
+  assert(box1); assert(box2); assert(hasx); assert(hast);
+  if (! ensure_common_dimension(box1->flags, box2->flags))
+    return false;
   *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
   *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  return;
+  if (*hasx && ! ensure_same_span_type(&box1->span, &box2->span))
+    return false;
+  return true;
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the first temporal box contains the second one.
  * @sqlop @p \@>
  */
@@ -910,7 +1111,11 @@ bool
 contains_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
-  topo_tbox_tbox_init(box1, box2, &hasx, &hast);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
+    return false;
+
   if (hasx && ! contains_span_span(&box1->span, &box2->span))
     return false;
   if (hast && ! contains_span_span(&box1->period, &box2->period))
@@ -919,7 +1124,7 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the first temporal box is contained in the second one.
  * @sqlop @p <@
  */
@@ -930,7 +1135,7 @@ contained_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the temporal boxes overlap.
  * @sqlop @p &&
  */
@@ -938,7 +1143,11 @@ bool
 overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
-  topo_tbox_tbox_init(box1, box2, &hasx, &hast);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
+    return false;
+
   if (hasx && ! overlaps_span_span(&box1->span, &box2->span))
     return false;
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
@@ -947,7 +1156,7 @@ overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the temporal boxes are equal in the common dimensions.
  * @sqlop @p ~=
  */
@@ -955,7 +1164,11 @@ bool
 same_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
-  topo_tbox_tbox_init(box1, box2, &hasx, &hast);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
+    return false;
+
   if (hasx && ! span_eq(&box1->span, &box2->span))
     return false;
   if (hast && ! span_eq(&box1->period, &box2->period))
@@ -964,7 +1177,7 @@ same_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the temporal boxes are adjacent.
  * @sqlop @p -|-
  */
@@ -972,7 +1185,11 @@ bool
 adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
-  topo_tbox_tbox_init(box1, box2, &hasx, &hast);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
+    return false;
+
   /* Boxes are adjacent if they are adjacent in at least one dimension */
   bool adjx = false, adjt = false;
   if (hasx)
@@ -983,11 +1200,11 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /*****************************************************************************
- * Relative position operators
+ * Position operators
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is strictly to the left of
  * the second one.
  * @sqlop @p <<
@@ -995,13 +1212,16 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 left_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  ensure_has_X_tbox(box1);
-  ensure_has_X_tbox(box2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
+      ! ensure_same_span_type(&box1->span, &box2->span))
+    return false;
   return left_span_span(&box1->span, &box2->span);
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend to the right
  * of the second one.
  * @sqlop @p &<
@@ -1009,13 +1229,16 @@ left_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 overleft_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  ensure_has_X_tbox(box1);
-  ensure_has_X_tbox(box2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
+      ! ensure_same_span_type(&box1->span, &box2->span))
+    return false;
   return overleft_span_span(&box1->span, &box2->span);
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is strictly to the right of
  * the second one.
  * @sqlop @p >>
@@ -1023,13 +1246,16 @@ overleft_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 right_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  ensure_has_X_tbox(box1);
-  ensure_has_X_tbox(box2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
+      ! ensure_same_span_type(&box1->span, &box2->span))
+    return false;
   return right_span_span(&box1->span, &box2->span);
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend to the left of
  * the second one.
  * @sqlop @p &>
@@ -1037,13 +1263,17 @@ right_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 overright_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  ensure_has_X_tbox(box1);
-  ensure_has_X_tbox(box2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
+      ! ensure_same_span_type(&box1->span, &box2->span))
+    return false;
+
   return overright_span_span(&box1->span, &box2->span);
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is strictly before
  * the second one.
  * @sqlop @p <<#
@@ -1051,13 +1281,15 @@ overright_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 before_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  ensure_has_T_tbox(box1);
-  ensure_has_T_tbox(box2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! ensure_has_T_tbox(box1) || ! ensure_has_T_tbox(box2))
+    return false;
   return left_span_span(&box1->period, &box2->period);
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend after
  * the second one.
  * @sqlop @p &<#
@@ -1065,13 +1297,15 @@ before_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  ensure_has_T_tbox(box1);
-  ensure_has_T_tbox(box2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! ensure_has_T_tbox(box1) || ! ensure_has_T_tbox(box2))
+    return false;
   return overleft_span_span(&box1->period, &box2->period);
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is strictly after the
  * second one.
  * @sqlop @p #>>
@@ -1079,13 +1313,15 @@ overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 after_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  ensure_has_T_tbox(box1);
-  ensure_has_T_tbox(box2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! ensure_has_T_tbox(box1) || ! ensure_has_T_tbox(box2))
+    return false;
   return right_span_span(&box1->period, &box2->period);
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend before
  * the second one.
  * @sqlop @p #&>
@@ -1093,8 +1329,10 @@ after_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 overafter_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  ensure_has_T_tbox(box1);
-  ensure_has_T_tbox(box2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! ensure_has_T_tbox(box1) || ! ensure_has_T_tbox(box2))
+    return false;
   return overright_span_span(&box1->period, &box2->period);
 }
 
@@ -1108,12 +1346,22 @@ overafter_tbox_tbox(const TBox *box1, const TBox *box2)
  * @sqlop @p +
  */
 TBox *
-union_tbox_tbox(const TBox *box1, const TBox *box2)
+union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
 {
-  ensure_same_dimensionality_tbox(box1, box2);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      ! ensure_same_dimensionality_tbox(box1, box2) ||
+      (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
+        ! ensure_same_span_type(&box1->span, &box2->span)))
+    return NULL;
+
   /* The union of boxes that do not intersect cannot be represented by a box */
-  if (! overlaps_tbox_tbox(box1, box2))
-    elog(ERROR, "Result of box union would not be contiguous");
+  if (strict && ! overlaps_tbox_tbox(box1, box2))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Result of box union would not be contiguous");
+    return NULL;
+  }
 
   bool hasx = MEOS_FLAGS_GET_X(box1->flags);
   bool hast = MEOS_FLAGS_GET_T(box1->flags);
@@ -1136,6 +1384,7 @@ union_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)
 {
+  assert(box1); assert(box2);
   bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   /* If there is no common dimension */
@@ -1162,6 +1411,12 @@ inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)
 TBox *
 intersection_tbox_tbox(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
+      (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
+        ! ensure_same_span_type(&box1->span, &box2->span)))
+    return NULL;
+
   TBox *result = palloc(sizeof(TBox));
   if (! inter_tbox_tbox(box1, box2, result))
   {
@@ -1180,11 +1435,14 @@ intersection_tbox_tbox(const TBox *box1, const TBox *box2)
  * @brief Return true if the temporal boxes are equal
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
- * @pymeosfunc __eq__()
  */
 bool
 tbox_eq(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
+    return false;
+
   if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
     MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
       return false;
@@ -1218,6 +1476,10 @@ tbox_ne(const TBox *box1, const TBox *box2)
 int
 tbox_cmp(const TBox *box1, const TBox *box2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
+    return INT_MAX;
+
   bool hasx, hast;
   tbox_tbox_flags(box1, box2, &hasx, &hast);
   int cmp;

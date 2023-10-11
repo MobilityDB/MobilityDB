@@ -1,0 +1,105 @@
+# Automatic generation of documentation will be copied and checked into the
+# gh-pages branch.
+name: Documentation generation CI
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/generate_docs.yml'
+      - 'doc/**'
+    branches:
+      - master
+      - develop
+
+jobs:
+  build:
+    name: Generate documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      # checkout branch
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: doc
+
+      # Install dblatex
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dblatex dbtoepub xsltproc texlive-lang-spanish
+
+      # generate the documentation files
+      - name: Generate English documentation
+        run: |
+          cd doc
+          dblatex -s texstyle.sty -o mobilitydb-manual.pdf mobilitydb-manual.xml
+          dbtoepub -o mobilitydb-manual.epub mobilitydb-manual.xml
+          xsltproc --stringparam html.stylesheet "docbook.css" --stringparam chunker.output.encoding "UTF-8" --xinclude -o index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl mobilitydb-manual.xml
+
+      # generate the documentation files
+      - name: Generate Spanish documentation
+        run: |
+          cd doc
+          dblatex -s texstyle.sty -o es/mobilitydb-manual.pdf es/mobilitydb-manual.xml
+          dbtoepub -o es/mobilitydb-manual.epub es/mobilitydb-manual.xml
+          xsltproc --stringparam html.stylesheet "docbook.css" --stringparam chunker.output.encoding "UTF-8" --xinclude -o es/index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl es/mobilitydb-manual.xml
+          cp docbook.css es/
+
+      # store the documentation files
+      - name: Upload output directory
+        uses: actions/upload-artifact@v2
+        with:
+          name: doc-files
+          path: |
+            doc/images/*
+            doc/mobilitydb-manual.pdf
+            doc/mobilitydb-manual.epub
+            doc/docbook.css
+            doc/*.html
+            doc/es/mobilitydb-manual.pdf
+            doc/es/mobilitydb-manual.epub
+            doc/es/docbook.css
+            doc/es/*.html
+          retention-days: 1
+
+
+  copy:
+    name: Deploy documentation
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      # checkout the gh-pages branch
+      - uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+
+      # download the doc files, most of which are generated above
+      - name: Download output directory
+        uses: actions/download-artifact@v2
+        with:
+          name: doc-files
+          path: docs-temp
+
+      # Rename the directory to master
+      - name: Rename the directory to master
+        if: ${{ github.ref == 'refs/heads/master' }}
+        run: |
+          rm -rf master
+          mv docs-temp master
+
+      # Rename the directory to develop
+      - name: Rename the directory to develop
+        if: ${{ github.ref == 'refs/heads/develop' }}
+        run: |
+          rm -rf develop
+          mv docs-temp develop
+
+      # add, commit and push to gh-pages
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'Update docs'
+          default_author: github_actions

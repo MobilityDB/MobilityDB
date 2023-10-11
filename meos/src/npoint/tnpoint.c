@@ -36,6 +36,7 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -54,11 +55,11 @@
 
 
 /*****************************************************************************
- * Cast functions
+ * Conversion functions
  *****************************************************************************/
 
 /**
- * @brief Cast a temporal network point as a temporal geometric point.
+ * @brief Convert a temporal network point as a temporal geometric point.
  */
 TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
@@ -72,7 +73,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
 }
 
 /**
- * @brief Cast a temporal network point as a temporal geometric point.
+ * @brief Convert a temporal network point as a temporal geometric point.
  */
 TSequence *
 tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
@@ -88,7 +89,7 @@ tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
 }
 
 /**
- * @brief Cast a temporal network point as a temporal geometric point.
+ * @brief Convert a temporal network point as a temporal geometric point.
  */
 TSequence *
 tnpointcontseq_tgeompointcontseq(const TSequence *seq)
@@ -105,12 +106,11 @@ tnpointcontseq_tgeompointcontseq(const TSequence *seq)
     inst = TSEQUENCE_INST_N(seq, i);
     np = DatumGetNpointP(tinstant_value(inst));
     POINTARRAY *opa = lwline_interpolate_points(lwline, np->pos, 0);
-    LWGEOM *lwpoint;
     assert(opa->npoints <= 1);
-    lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
+    LWGEOM *lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
     Datum point = PointerGetDatum(geo_serialize(lwpoint));
     instants[i] = tinstant_make(point, T_TGEOMPOINT, inst->t);
-    lwpoint_free((LWPOINT *) lwpoint);
+    lwgeom_free(lwpoint);
     pfree(DatumGetPointer(point));
   }
 
@@ -121,7 +121,7 @@ tnpointcontseq_tgeompointcontseq(const TSequence *seq)
 }
 
 /**
- * @brief Cast a temporal network point as a temporal geometric point.
+ * @brief Convert a temporal network point as a temporal geometric point.
  */
 TSequenceSet *
 tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
@@ -136,7 +136,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 }
 
 /**
- * @brief Cast a temporal network point as a temporal geometric point.
+ * @brief Convert a temporal network point as a temporal geometric point.
  */
 Temporal *
 tnpoint_tgeompoint(const Temporal *temp)
@@ -146,7 +146,7 @@ tnpoint_tgeompoint(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
       (Temporal *) tnpointdiscseq_tgeompointdiscseq((TSequence *) temp) :
       (Temporal *) tnpointcontseq_tgeompointcontseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -157,7 +157,7 @@ tnpoint_tgeompoint(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @brief Cast a temporal geometric point as a temporal network point.
+ * @brief Convert a temporal geometric point as a temporal network point.
  */
 TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
@@ -172,7 +172,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
 }
 
 /**
- * @brief Cast a temporal geometric point as a temporal network point.
+ * @brief Convert a temporal geometric point as a temporal network point.
  */
 TSequence *
 tgeompointseq_tnpointseq(const TSequence *seq)
@@ -196,7 +196,7 @@ tgeompointseq_tnpointseq(const TSequence *seq)
 }
 
 /**
- * @brief Cast a temporal geometric point as a temporal network point.
+ * @brief Convert a temporal geometric point as a temporal network point.
  */
 TSequenceSet *
 tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
@@ -217,14 +217,16 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
 }
 
 /**
- * @brief Cast a temporal geometric point as a temporal network point.
+ * @brief Convert a temporal geometric point as a temporal network point.
  */
 Temporal *
 tgeompoint_tnpoint(const Temporal *temp)
 {
   int32_t srid_tpoint = tpoint_srid(temp);
   int32_t srid_ways = get_srid_ways();
-  ensure_same_srid(srid_tpoint, srid_ways);
+  if (! ensure_same_srid(srid_tpoint, srid_ways))
+    return NULL;
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -299,7 +301,7 @@ tnpointseq_linear_positions(const TSequence *seq)
 Nsegment **
 tnpointseq_positions(const TSequence *seq, int *count)
 {
-  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
   {
     Nsegment **result = palloc(sizeof(Nsegment *));
     result[0] = tnpointseq_linear_positions(seq);
@@ -357,7 +359,7 @@ Nsegment **
 tnpointseqset_positions(const TSequenceSet *ss, int *count)
 {
   Nsegment **result;
-  result = (MEOS_FLAGS_GET_LINEAR(ss->flags)) ?
+  result = (MEOS_FLAGS_LINEAR_INTERP(ss->flags)) ?
     tnpointseqset_linear_positions(ss, count) :
     tnpointseqset_step_positions(ss, count);
   return result;
@@ -397,13 +399,17 @@ tnpointinst_route(const TInstant *inst)
 
 /**
  * @brief Return the single route of a temporal network point.
+ * @return On error return INT_MAX
  */
 int64
 tnpoint_route(const Temporal *temp)
 {
-  if ( temp->subtype != TINSTANT && MEOS_FLAGS_GET_DISCRETE(temp->flags) )
-    elog(ERROR, "Input must be a temporal instant or a temporal sequence with continuous interpolation");
-
+  if ( temp->subtype != TINSTANT && MEOS_FLAGS_DISCRETE_INTERP(temp->flags) )
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Input must be a temporal instant or a temporal sequence with continuous interpolation");
+    return INT_MAX;
+  }
   const TInstant *inst = (temp->subtype == TINSTANT) ?
     (const TInstant *) temp : TSEQUENCE_INST_N((const TSequence *) temp, 0);
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
@@ -485,7 +491,7 @@ tnpoint_routes(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tnpointinst_routes((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
       tnpointdiscseq_routes((TSequence *) temp) :
       tnpointcontseq_routes((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */

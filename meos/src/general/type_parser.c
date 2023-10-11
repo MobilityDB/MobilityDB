@@ -29,16 +29,18 @@
 
 /**
  * @file
- * @brief Functions for parsing time types and temporal types
- *
- * Many functions make two passes for parsing, the first one to obtain the
- * number of elements in order to do memory allocation with `palloc`, the
+ * @brief Functions for parsing base, set, span, tbox, and temporal types
+ * @note Many functions make two passes for parsing, the first one to obtain
+ * the number of elements in order to do memory allocation with `palloc`, the
  * second one to create the type. This is the only approach we can see at the
  * moment which is both correct and simple.
  */
 
 #include "general/type_parser.h"
 
+/* C */
+#include <float.h>
+#include <limits.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -48,6 +50,22 @@
 /*****************************************************************************/
 
 /**
+ * @brief Ensure there is no more input excepted white spaces
+ */
+bool
+ensure_end_input(const char **str, const char *type)
+{
+  p_whitespace(str);
+  if (**str != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse %s value: Extraneous characters at the end", type);
+    return false;
+  }
+  return true;
+}
+
+/**
  * @brief Input a white space from the buffer
  */
 void
@@ -55,21 +73,6 @@ p_whitespace(const char **str)
 {
   while (**str == ' ' || **str == '\n' || **str == '\r' || **str == '\t')
     *str += 1;
-  return;
-}
-
-/**
- * @brief Ensure there is no more input excepted white spaces
- */
-void
-ensure_end_input(const char **str, bool end, const char *type)
-{
-  if (end)
-  {
-    p_whitespace(str);
-    if (**str != 0)
-      elog(ERROR, "Could not parse %s value", type);
-  }
   return;
 }
 
@@ -89,6 +92,21 @@ p_obrace(const char **str)
 }
 
 /**
+ * @brief Ensure to input an opening brace from the buffer
+ */
+bool
+ensure_obrace(const char **str, const char *type)
+{
+  if (! p_obrace(str))
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse %s value: Missing opening brace", type);
+    return false;
+  }
+  return true;
+}
+
+/**
  * @brief Input a closing brace from the buffer
  */
 bool
@@ -101,6 +119,21 @@ p_cbrace(const char **str)
     return true;
   }
   return false;
+}
+
+/**
+ * @brief Ensure to input a closing brace from the buffer
+ */
+bool
+ensure_cbrace(const char **str, const char *type)
+{
+  if (! p_cbrace(str))
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse %s value: Missing closing brace", type);
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -151,11 +184,16 @@ p_oparen(const char **str)
 /**
  * @brief Ensure to input an opening parenthesis from the buffer
  */
-void
+bool
 ensure_oparen(const char **str, const char *type)
 {
   if (!p_oparen(str))
-    elog(ERROR, "Could not parse %s: Missing opening parenthesis", type);
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Could not parse %s: Missing opening parenthesis", type);
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -176,11 +214,16 @@ p_cparen(const char **str)
 /**
  * @brief Ensure to input a closing parenthesis from the buffer
  */
-void
+bool
 ensure_cparen(const char **str, const char *type)
 {
   if (!p_cparen(str))
-    elog(ERROR, "Could not parse %s: Missing closing parenthesis", type);
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse %s: Missing closing parenthesis", type);
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -198,19 +241,22 @@ p_comma(const char **str)
   return false;
 }
 
+/*****************************************************************************/
+
 /**
  * @brief Input a double from the buffer
- *
- * @param[in,out] str Pointer to the current position of the input buffer
  */
-
-double
-double_parse(const char **str)
+bool
+double_parse(const char **str, double *result)
 {
   char *nextstr = (char *) *str;
-  double result = strtod(*str, &nextstr);
+  *result = strtod(*str, &nextstr);
   if (*str == nextstr)
-    elog(ERROR, "Invalid input syntax for type double");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Invalid input syntax for type double");
+    return false;
+  }
   *str = nextstr;
   return result;
 }
@@ -218,11 +264,15 @@ double_parse(const char **str)
 /**
  * @brief Parse a base value from the buffer
  */
-Datum
-temporal_basetype_parse(const char **str, meosType basetype)
+bool
+temporal_basetype_parse(const char **str, meosType basetype,
+  Datum *result)
 {
   p_whitespace(str);
   int delim = 0;
+  /* Save the original string for error handling */
+  char *origstr = (char *) *str;
+
   /* ttext values must be enclosed between double quotes */
   if (**str == '"')
   {
@@ -238,16 +288,21 @@ temporal_basetype_parse(const char **str, meosType basetype)
       delim++;
   }
   if ((*str)[delim] == '\0')
-    elog(ERROR, "Could not parse element value");
-
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+      "Could not parse temporal value: %s", origstr);
+    return false;
+  }
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
-  Datum result = basetype_in(str1, basetype, false);
+  bool success = basetype_in(str1, basetype, false, result);
   pfree(str1);
+  if (! success)
+    return false;
   /* since there's an @ here, let's take it with us */
   *str += delim + 1;
-  return result;
+  return true;
 }
 
 /*****************************************************************************/
@@ -261,16 +316,32 @@ tbox_parse(const char **str)
   bool hasx = false, hast = false;
   Span span;
   Span period;
+  const char *type_str = "temporal box";
 
   p_whitespace(str);
-  if (pg_strncasecmp(*str, "TBOX", 4) == 0)
+  /* By default the span type is float span */
+  meosType spantype = T_FLOATSPAN;
+  if (pg_strncasecmp(*str, "TBOXINT", 7) == 0)
+  {
+    spantype = T_INTSPAN;
+    *str += 7;
+    p_whitespace(str);
+  }
+  else if (pg_strncasecmp(*str, "TBOXFLOAT", 9) == 0)
+  {
+    *str += 9;
+    p_whitespace(str);
+  }
+  else if (pg_strncasecmp(*str, "TBOX", 4) == 0)
   {
     *str += 4;
     p_whitespace(str);
   }
   else
-    elog(ERROR, "Could not parse temporal box");
-
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, "Could not parse temporal box");
+    return NULL;
+  }
   /* Determine whether the box has X and/or T dimensions */
   if (pg_strncasecmp(*str, "XT", 2) == 0)
   {
@@ -291,14 +362,19 @@ tbox_parse(const char **str)
     p_whitespace(str);
   }
   else
-    elog(ERROR, "Could not parse temporal box: Missing dimension information");
-
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse temporal box: Missing dimension information");
+    return NULL;
+  }
   /* Parse opening parenthesis */
-  ensure_oparen(str, "temporal box");
+  if (! ensure_oparen(str, type_str))
+    return NULL;
 
   if (hasx)
   {
-    span_parse(str, T_FLOATSPAN, false, &span);
+    if (! span_parse(str, spantype, false, &span))
+      return NULL;
     if (hast)
     {
       /* Consume the optional comma separating the span and the period */
@@ -308,14 +384,15 @@ tbox_parse(const char **str)
   }
 
   if (hast)
-    span_parse(str, T_TSTZSPAN, false, &period);
+    if (! span_parse(str, T_TSTZSPAN, false, &period))
+      return NULL;
 
   /* Parse closing parenthesis */
   p_whitespace(str);
-  ensure_cparen(str, "temporal box");
-
-  /* Ensure there is no more input */
-  ensure_end_input(str, true, "temporal box");
+  if (! ensure_cparen(str, type_str) ||
+      /* Ensure there is no more input */
+      ! ensure_end_input(str, type_str))
+    return NULL;
 
   return tbox_make(hasx ? &span: NULL, hast ? &period : NULL);
 }
@@ -325,6 +402,7 @@ tbox_parse(const char **str)
 
 /**
  * @brief Parse a timestamp value from the buffer.
+ * @brief On error return DT_NOEND
  */
 TimestampTz
 timestamp_parse(const char **str)
@@ -339,7 +417,7 @@ timestamp_parse(const char **str)
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
   /* The last argument is for an unused typmod */
-  Datum result = pg_timestamptz_in(str1, -1);
+  TimestampTz result = pg_timestamptz_in(str1, -1);
   pfree(str1);
   *str += delim;
   return result;
@@ -351,8 +429,8 @@ timestamp_parse(const char **str)
 /**
  * @brief Parse a element value from the buffer.
  */
-Datum
-elem_parse(const char **str, meosType basetype)
+bool
+elem_parse(const char **str, meosType basetype, Datum *result)
 {
   p_whitespace(str);
   int delim = 0, dquote = 0;
@@ -375,61 +453,71 @@ elem_parse(const char **str, meosType basetype)
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
-  Datum result = basetype_in(str1, basetype, false);
+  bool success = basetype_in(str1, basetype, false, result);
   pfree(str1);
+  if (! success) 
+    return false;
   *str += delim + dquote;
-  return result;
+  return true;
 }
 
 /**
- * @brief Parse a timestamp set value from the buffer.
+ * @brief Parse a set value from the buffer.
  */
 Set *
 set_parse(const char **str, meosType settype)
 {
-  if (!p_obrace(str))
-    elog(ERROR, "Could not parse the set: Missing open brace");
+  const char *type_str = "set";
+  if (! ensure_obrace(str, type_str))
+    return NULL;
+  meosType basetype = settype_basetype(settype);
 
   /* First parsing */
-  meosType basetype = settype_basetype(settype);
   const char *bak = *str;
-  elem_parse(str, basetype);
+  Datum d;
+  if (! elem_parse(str, basetype, &d))
+    return NULL;
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    elem_parse(str, basetype);
+    if (! elem_parse(str, basetype, &d))
+      return NULL;
   }
-  if (!p_cbrace(str))
-    elog(ERROR, "Could not parse the set: Missing closing brace");
+  if (! ensure_cbrace(str, type_str) ||
+      ! ensure_end_input(str, type_str))
+    return NULL;
 
+  /* Second parsing */
   *str = bak;
   Datum *values = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    values[i] = elem_parse(str, basetype);
+    elem_parse(str, basetype, &values[i]);
   }
   p_cbrace(str);
   return set_make_free(values, count, basetype, ORDERED);
 }
 
 /**
- * @brief Parse a element value from the buffer
+ * @brief Parse a bound value from the buffer
  */
-Datum
-bound_parse(const char **str, meosType basetype)
+bool
+bound_parse(const char **str, meosType basetype, Datum *result)
 {
   p_whitespace(str);
   int delim = 0;
   while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
-    (*str)[delim] != '}' && (*str)[delim] != ')' &&  (*str)[delim] != '\0')
+    (*str)[delim] != '}' && (*str)[delim] != ')' && (*str)[delim] != '\0')
     delim++;
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
-  Datum result = basetype_in(str1, basetype, false);
+  bool success = basetype_in(str1, basetype, false, result);
   pfree(str1);
+  if (! success)
+    return false;
   *str += delim;
   return result;
 }
@@ -437,7 +525,7 @@ bound_parse(const char **str, meosType basetype)
 /**
  * @brief Parse a span value from the buffer
  */
-void
+bool
 span_parse(const char **str, meosType spantype, bool end, Span *span)
 {
   bool lower_inc = false, upper_inc = false;
@@ -446,28 +534,37 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
   else if (p_oparen(str))
     lower_inc = false;
   else
-    elog(ERROR, "Could not parse span: Missing opening bracket/parenthesis");
-
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse span: Missing opening bracket/parenthesis");
+    return false;
+  }
   meosType basetype = spantype_basetype(spantype);
-  /* The next two instructions will throw an exception if they fail */
-  Datum lower = bound_parse(str, basetype);
+  Datum lower, upper;
+  if (! bound_parse(str, basetype, &lower))
+    return NULL;
   p_comma(str);
-  Datum upper = bound_parse(str, basetype);
+  if (! bound_parse(str, basetype, &upper))
+    return NULL;
 
   if (p_cbracket(str))
     upper_inc = true;
   else if (p_cparen(str))
     upper_inc = false;
   else
-    elog(ERROR, "Could not parse span: Missing closing bracket/parenthesis");
-
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse span: Missing closing bracket/parenthesis");
+    return false;
+  }
   /* Ensure there is no more input */
-  ensure_end_input(str, end, "span");
+  if (end && ! ensure_end_input(str, "span"))
+    return false;
 
   if (! span)
-    return;
+    return true;
   span_set(lower, upper, lower_inc, upper_inc, basetype, span);
-  return;
+  return true;
 }
 
 /**
@@ -476,21 +573,24 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
 SpanSet *
 spanset_parse(const char **str, meosType spansettype)
 {
-  if (! p_obrace(str))
-    elog(ERROR, "Could not parse span set: Missing open brace");
-
+  const char *type_str = "span set";
+  if (! ensure_obrace(str, type_str))
+    return NULL;
   meosType spantype = spansettype_spantype(spansettype);
+
   /* First parsing */
   const char *bak = *str;
-  span_parse(str, spantype, false, NULL);
+  if (! span_parse(str, spantype, false, NULL))
+    return NULL;
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    span_parse(str, spantype, false, NULL);
+    if (! span_parse(str, spantype, false, NULL))
+      return NULL;
   }
-  if (! p_cbrace(str))
-    elog(ERROR, "Could not parse span set: Missing closing brace");
+  if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
+    return NULL;
 
   /* Second parsing */
   *str = bak;
@@ -514,21 +614,27 @@ spanset_parse(const char **str, meosType spansettype)
  * @param[in] temptype Temporal type
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no more input after the instant
- * @param[in] make Set to false for the first pass to do not create the instant
+ * @param[out] result New instant, may be NULL
  */
-TInstant *
-tinstant_parse(const char **str, meosType temptype, bool end, bool make)
+bool 
+tinstant_parse(const char **str, meosType temptype, bool end, 
+  TInstant **result)
 {
   p_whitespace(str);
   meosType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
-  Datum elem = temporal_basetype_parse(str, basetype);
+  Datum elem;
+  if (! temporal_basetype_parse(str, basetype, &elem))
+    return false;
   TimestampTz t = timestamp_parse(str);
+  if (t == DT_NOEND)
+    return false;
   /* Ensure there is no more input */
-  ensure_end_input(str, end, "temporal");
-  if (! make)
-    return NULL;
-  return tinstant_make(elem, temptype, t);
+  if (end && ! ensure_end_input(str, "temporal"))
+    return false;
+  if (result)
+    *result = tinstant_make(elem, temptype, t);
+  return true;
 }
 
 /**
@@ -536,27 +642,28 @@ tinstant_parse(const char **str, meosType temptype, bool end, bool make)
  * @param[in] str Input string
  * @param[in] temptype Base type
  */
-TSequence *
+TSequence * 
 tdiscseq_parse(const char **str, meosType temptype)
 {
+  const char *type_str = "temporal";
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
-   * to call this function in the dispatch function temporal_parse */
+   * to call this function in the dispatch function #temporal_parse */
   p_obrace(str);
 
   /* First parsing */
   const char *bak = *str;
-  tinstant_parse(str, temptype, false, false);
+  if (! tinstant_parse(str, temptype, false, NULL))
+    return NULL;
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tinstant_parse(str, temptype, false, false);
+    if (! tinstant_parse(str, temptype, false, NULL))
+      return NULL;
   }
-  if (!p_cbrace(str))
-    elog(ERROR, "Could not parse temporal value: Missing closing brace");
-  /* Ensure there is no more input */
-  ensure_end_input(str, true, "temporal");
+  if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
+    return NULL;
 
   /* Second parsing */
   *str = bak;
@@ -564,7 +671,7 @@ tdiscseq_parse(const char **str, meosType temptype)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    instants[i] = tinstant_parse(str, temptype, false, true);
+    tinstant_parse(str, temptype, false, &instants[i]);
   }
   p_cbrace(str);
   return tsequence_make_free(instants, count, true, true, DISCRETE,
@@ -577,12 +684,12 @@ tdiscseq_parse(const char **str, meosType temptype)
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
  * @param[in] end Set to true when reading a single sequence to ensure there is
- * no moreinput after the sequence
- * @param[in] make Set to false for the first pass to do not create the sequence
+ * no more input after the sequence
+ * @param[out] result New sequence, may be NULL
  */
-TSequence *
-tcontseq_parse(const char **str, meosType temptype, interpType interp, bool end,
-  bool make)
+bool 
+tcontseq_parse(const char **str, meosType temptype, interpType interp,
+  bool end, TSequence **result)
 {
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
@@ -595,22 +702,27 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp, bool end,
 
   /* First parsing */
   const char *bak = *str;
-  tinstant_parse(str, temptype, false, false);
+  if (! tinstant_parse(str, temptype, false, NULL))
+    return false;
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tinstant_parse(str, temptype, false, false);
+    if (! tinstant_parse(str, temptype, false, NULL))
+      return false;
   }
   if (p_cbracket(str))
     upper_inc = true;
   else if (p_cparen(str))
     upper_inc = false;
   else
-    elog(ERROR, "Could not parse temporal value: Missing closing bracket/parenthesis");
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse temporal value: Missing closing bracket/parenthesis");
+      return false;
+  }
   /* Ensure there is no more input */
-  ensure_end_input(str, end, "temporal");
-  if (! make)
+  if (end && ! ensure_end_input(str, "temporal"))
     return NULL;
 
   /* Second parsing */
@@ -619,12 +731,14 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp, bool end,
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    instants[i] = tinstant_parse(str, temptype, false, true);
+    tinstant_parse(str, temptype, false, &instants[i]);
   }
   p_cbracket(str);
   p_cparen(str);
-  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
-    NORMALIZE);
+  if (result)
+    *result = tsequence_make_free(instants, count, lower_inc, upper_inc,
+      interp, NORMALIZE);
+  return true;
 }
 
 /**
@@ -636,6 +750,7 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp, bool end,
 TSequenceSet *
 tsequenceset_parse(const char **str, meosType temptype, interpType interp)
 {
+  const char *type_str = "temporal";
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function temporal_parse */
@@ -643,17 +758,17 @@ tsequenceset_parse(const char **str, meosType temptype, interpType interp)
 
   /* First parsing */
   const char *bak = *str;
-  tcontseq_parse(str, temptype, interp, false, false);
+  if (! tcontseq_parse(str, temptype, interp, false, NULL))
+    return NULL;
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tcontseq_parse(str, temptype, interp, false, false);
+    if (! tcontseq_parse(str, temptype, interp, false, NULL))
+      return NULL;
   }
-  if (!p_cbrace(str))
-    elog(ERROR, "Could not parse temporal value: Missing closing brace");
-  /* Ensure there is no more input */
-  ensure_end_input(str, true, "temporal");
+  if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
+    return NULL;
 
   /* Second parsing */
   *str = bak;
@@ -661,7 +776,7 @@ tsequenceset_parse(const char **str, meosType temptype, interpType interp)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    sequences[i] = tcontseq_parse(str, temptype, interp, false, true);
+    tcontseq_parse(str, temptype, interp, false, &sequences[i]);
   }
   p_cbrace(str);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
@@ -686,13 +801,23 @@ temporal_parse(const char **str, meosType temptype)
     interp = STEP;
   }
 
-  /* Allow spaces after the Interpolation */
+  /* Allow spaces after Interp */
   p_whitespace(str);
 
   if (**str != '{' && **str != '[' && **str != '(')
-    result = (Temporal *) tinstant_parse(str, temptype, true, true);
+  {
+    TInstant *inst;
+    if (! tinstant_parse(str, temptype, true, &inst))
+      return NULL;
+    result = (Temporal *) inst;
+  }
   else if (**str == '[' || **str == '(')
-    result = (Temporal *) tcontseq_parse(str, temptype, interp, true, true);
+  {
+    TSequence *seq;
+    if (! tcontseq_parse(str, temptype, interp, true, &seq))
+      return NULL;
+    result = (Temporal *) seq;
+  }
   else if (**str == '{')
   {
     const char *bak = *str;

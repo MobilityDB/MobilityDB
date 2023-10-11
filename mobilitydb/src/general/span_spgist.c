@@ -50,6 +50,7 @@
 #include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
+#include "pg_general/spanset.h"
 #include "pg_general/span_gist.h"
 #include "pg_general/temporal.h"
 
@@ -238,7 +239,7 @@ spannode_kdtree_next(const SpanNode *nodebox, const Span *centroid,
     }
     else
     {
-      /* The inclusive flag must be negated so that the bounds with the
+      /* The inclusive flag must set to true so that the bounds with the
        * same timestamp are in one of the two childs */
       next_nodespan->left.upper = centroid->upper;
       next_nodespan->left.upper_inc = true;
@@ -266,10 +267,10 @@ get_quadrant2D(const Span *centroid, const Span *query)
 }
 
 /**
- * @brief Can any span from nodebox overlap with this argument?
+ * @brief Can any span from nodebox overlap with the query?
  */
 static bool
-overlap2D(const SpanNode *nodebox, const Span *query)
+overlap2D_quad(const SpanNode *nodebox, const Span *query)
 {
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
@@ -278,14 +279,54 @@ overlap2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
+ * @brief Can any span from nodebox overlap with the query?
+ */
+static bool
+overlap2D_kd(const SpanNode *nodebox, const Span *query, int level)
+{
+  Span s;
+  if (level % 2)
+  {
+    span_set(nodebox->left.lower, nodebox->right.lower, nodebox->left.lower_inc,
+      nodebox->right.lower_inc, nodebox->left.basetype, &s);    
+  }
+  else
+  {
+    span_set(nodebox->left.upper, nodebox->right.upper, nodebox->left.upper_inc,
+      nodebox->right.upper_inc, nodebox->left.basetype, &s);
+  }
+  return overlaps_span_span(&s, query);
+}
+
+/**
  * @brief Can any span from nodebox contain the query?
  */
 static bool
-contain2D(const SpanNode *nodebox, const Span *query)
+contain2D_quad(const SpanNode *nodebox, const Span *query)
 {
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
     nodebox->right.upper_inc, nodebox->left.basetype, &s);
+  return contains_span_span(&s, query);
+}
+
+/**
+ * @brief Can any span from nodebox contain the query?
+ */
+static bool
+contain2D_kd(const SpanNode *nodebox, const Span *query, int level)
+{
+  Span s;
+  if (level % 2)
+  {
+    span_set(nodebox->left.lower, nodebox->right.lower, nodebox->left.lower_inc,
+      nodebox->right.lower_inc, nodebox->left.basetype, &s);    
+  }
+  else
+  {
+    span_set(nodebox->left.upper, nodebox->right.upper, nodebox->left.upper_inc,
+      nodebox->right.upper_inc, nodebox->left.basetype, &s);
+  }
   return contains_span_span(&s, query);
 }
 
@@ -857,12 +898,16 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
         case RTOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
-          flag = overlap2D(&next_nodespan, &queries[i]);
+          flag = (idxtype == SPGIST_QUADTREE) ?
+            overlap2D_quad(&next_nodespan, &queries[i]) :
+            overlap2D_kd(&next_nodespan, &queries[i], in->level);
           break;
         case RTContainsStrategyNumber:
         case RTEqualStrategyNumber:
         case RTSameStrategyNumber:
-          flag = contain2D(&next_nodespan, &queries[i]);
+          flag = (idxtype == SPGIST_QUADTREE) ?
+            contain2D_quad(&next_nodespan, &queries[i]) :
+            contain2D_kd(&next_nodespan, &queries[i], in->level);
           break;
         case RTLeftStrategyNumber:
           flag = ! overRight2D(&next_nodespan, &queries[i]);
@@ -978,7 +1023,7 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     /* Update the recheck flag according to the strategy */
     out->recheck |= span_index_recheck(strategy);
 
-    /* Cast the query to a span and perform the test */
+    /* Convert the query to a span and perform the test */
     span_spgist_get_span(&in->scankeys[i], &span);
     /* All tests are lossy for temporal types */
     if (temporal_type(in->scankeys[i].sk_subtype))
@@ -999,7 +1044,7 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     out->distances = distances;
     for (i = 0; i < in->norderbys; i++)
     {
-      /* Cast the order by argument to a span and perform the test */
+      /* Convert the order by argument to a span and perform the test */
       span_spgist_get_span(&in->orderbys[i], &span);
       distances[i] = distance_span_span(&span, key);
     }

@@ -158,7 +158,7 @@ ERROR:  Span lower bound must be less than or equal to span upper bound
 LINE 1: SELECT stbox 'SRID=4326;GEODSTBOX ZT(((5,6,7),(1,2,3)),[2001...
                      ^
 SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-04,2001-01-08])xxxx';
-ERROR:  Could not parse spatiotemporal box value
+ERROR:  Could not parse spatiotemporal box value: Extraneous characters at the end
 LINE 1: SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-04,2001-01...
                      ^
 COPY tbl_stbox3d TO '/tmp/tbl_stbox3d' (FORMAT BINARY);
@@ -208,14 +208,20 @@ SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;
      0
 (1 row)
 
-SELECT stbox_t('[2001-01-03,2001-01-06]');
+SELECT stbox_t(timestamptz '2001-01-03');
+                                stbox_t                                
+-----------------------------------------------------------------------
+ STBOX T([Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
+(1 row)
+
+SELECT stbox_t(tstzspan '[2001-01-03,2001-01-06]');
                                 stbox_t                                
 -----------------------------------------------------------------------
  STBOX T([Wed Jan 03 00:00:00 2001 PST, Sat Jan 06 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox(1,2,3,4);
-        stbox         
+SELECT stbox_x(1,2,3,4);
+       stbox_x        
 ----------------------
  STBOX X((1,2),(3,4))
 (1 row)
@@ -226,19 +232,37 @@ SELECT stbox_z(1,2,3,4,5,6);
  STBOX Z((1,2,3),(4,5,6))
 (1 row)
 
-SELECT stbox_t(1,2,3,4,'[2001-01-03,2001-01-06]');
-                                       stbox_t                                        
+SELECT stbox_xt(1,2,3,4,timestamptz '2001-01-03');
+                                       stbox_xt                                       
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,2),(3,4)),[Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
+(1 row)
+
+SELECT stbox_xt(1,2,3,4,tstzspan '[2001-01-03,2001-01-06]');
+                                       stbox_xt                                       
 --------------------------------------------------------------------------------------
  STBOX XT(((1,2),(3,4)),[Wed Jan 03 00:00:00 2001 PST, Sat Jan 06 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox_zt(1,2,3,4,5,6,'[2001-01-04,2001-01-08]');
+SELECT stbox_zt(1,2,3,4,5,6,timestamptz '2001-01-04');
+                                         stbox_zt                                         
+------------------------------------------------------------------------------------------
+ STBOX ZT(((1,2,3),(4,5,6)),[Thu Jan 04 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
+(1 row)
+
+SELECT stbox_zt(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
                                          stbox_zt                                         
 ------------------------------------------------------------------------------------------
  STBOX ZT(((1,2,3),(4,5,6)),[Thu Jan 04 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST])
 (1 row)
 
-SELECT geodstbox_t('[2001-01-03,2001-01-06]');
+SELECT geodstbox_t(timestamptz '2001-01-03');
+                                geodstbox_t                                
+---------------------------------------------------------------------------
+ GEODSTBOX T([Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
+(1 row)
+
+SELECT geodstbox_t(tstzspan '[2001-01-03,2001-01-06]');
                                 geodstbox_t                                
 ---------------------------------------------------------------------------
  GEODSTBOX T([Wed Jan 03 00:00:00 2001 PST, Sat Jan 06 00:00:00 2001 PST])
@@ -250,28 +274,34 @@ SELECT geodstbox_z(1,2,3,4,5,6);
  SRID=4326;GEODSTBOX Z((1,2,3),(4,5,6))
 (1 row)
 
-SELECT geodstbox_zt(1,2,3,4,5,6,'[2001-01-04,2001-01-08]');
+SELECT geodstbox_zt(1,2,3,4,5,6,timestamptz '2001-01-04');
+                                              geodstbox_zt                                              
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX ZT(((1,2,3),(4,5,6)),[Thu Jan 04 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
+(1 row)
+
+SELECT geodstbox_zt(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
                                               geodstbox_zt                                              
 --------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((1,2,3),(4,5,6)),[Thu Jan 04 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox_zt(8,7,6,4,3,2,'[2001-01-01,2001-01-05]');
+SELECT stbox_xt(4,3,2,1,tstzspan '[2001-01-01,2001-01-04]');
+                                       stbox_xt                                       
+--------------------------------------------------------------------------------------
+ STBOX XT(((2,1),(4,3)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
+(1 row)
+
+SELECT stbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
                                          stbox_zt                                         
 ------------------------------------------------------------------------------------------
- STBOX ZT(((4,3,2),(8,7,6)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
+ STBOX ZT(((3,2,1),(6,5,4)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox_t(6,5,3,2,'[2001-01-01,2001-01-04]');
-                                       stbox_t                                        
---------------------------------------------------------------------------------------
- STBOX XT(((3,2),(6,5)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
-(1 row)
-
-SELECT geodstbox_zt(8,7,6,4,3,2,'[2001-01-01,2001-01-05]');
+SELECT geodstbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
                                               geodstbox_zt                                              
 --------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX ZT(((4,3,2),(8,7,6)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
+ SRID=4326;GEODSTBOX ZT(((3,2,1),(6,5,4)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
 (1 row)
 
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])'::tstzspan;
@@ -290,18 +320,6 @@ SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::tstzspan;
                            tstzspan                           
 --------------------------------------------------------------
  [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
-(1 row)
-
-SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))'::tstzspan;
- tstzspan 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::tstzspan;
- tstzspan 
-----------
- 
 (1 row)
 
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
@@ -379,6 +397,10 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01,2000-01
 /* Errors */
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
 ERROR:  The box must have space dimension
+SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))'::tstzspan;
+ERROR:  The box must have time dimension
+SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::tstzspan;
+ERROR:  The box must have time dimension
 SELECT geomset '{"Point(1 1 1)", "Point(2 2 2)", "Point(3 3 3)"}'::stbox;
           stbox           
 --------------------------
@@ -760,6 +782,42 @@ SELECT MAX(tmax(b)) FROM tbl_stbox;
              max              
 ------------------------------
  Sat Dec 22 15:29:00 2001 PST
+(1 row)
+
+SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day');
+                                      shifttime                                       
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,1),(2,2)),[Sun Jan 02 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST])
+(1 row)
+
+SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '-1 day');
+                                      shifttime                                       
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,1),(2,2)),[Fri Dec 31 00:00:00 1999 PST, Sat Jan 01 00:00:00 2000 PST])
+(1 row)
+
+SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day');
+                                      scaletime                                       
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,1),(2,2)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 hour');
+                                      scaletime                                       
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,1),(2,2)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 01:00:00 2000 PST])
+(1 row)
+
+SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day', '1 hour');
+                                    shiftscaletime                                    
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,1),(2,2)),[Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 01:00:00 2000 PST])
+(1 row)
+
+SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '-1 day', '1 hour');
+                                    shiftscaletime                                    
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,1),(2,2)),[Fri Dec 31 00:00:00 1999 PST, Fri Dec 31 01:00:00 1999 PST])
 (1 row)
 
 SELECT getSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');

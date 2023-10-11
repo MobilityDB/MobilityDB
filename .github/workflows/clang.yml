@@ -1,24 +1,23 @@
 name: Build for Ubuntu with clang
 
-# This action runs:
-# - When this file changes
-# - When changes on code (src, include)
-# - When changes on data or testing scripts (tools/testers)
-# - When the way the build changes (CMakeLists.txt)
-#
-# Test is done on:
-# - the preinstalled postgres version
-# - postgis 3
-
 on:
+  workflow_dispatch:
   push:
-    branches-ignore:
-      - 'gh-pages'
-    tags: []
-
+    paths:
+      - 'cmake/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
   pull_request:
-    branches-ignore:
-      - 'gh-pages'
+    paths:
+      - 'cmake/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
 
 jobs:
   Test_clang:

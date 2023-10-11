@@ -120,19 +120,26 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p)
   else if (type == T_TBOX)
   {
     const TBox *box = DatumGetTboxP(((Const *) other)->constvalue);
-    *s = tbox_to_floatspan(box);
-    *p = tbox_to_period(box);
+    if (MEOS_FLAGS_GET_X(box->flags))
+      *s = span_copy(&box->span);
+    if (MEOS_FLAGS_GET_T(box->flags))
+      *p = span_copy(&box->period);
   }
   else if (tnumber_type(type))
   {
     const Temporal *temp = DatumGetTemporalP(((Const *) other)->constvalue);
     TBox box;
     temporal_set_bbox(temp, &box);
-    *s = tbox_to_floatspan(&box);
-    *p = tbox_to_period(&box);
+    *s = span_copy(&box.span);
+    *p = span_copy(&box.period);
   }
   else
+  {
+    /* Error */
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Unknown type for selectivity estimation: %d", type);
     return false;
+  }
   return true;
 }
 
@@ -155,7 +162,12 @@ tpoint_const_to_stbox(Node *other, STBox *box)
   else if (tspatial_type(type))
     temporal_set_bbox(DatumGetTemporalP(constvalue), box);
   else
+  {
+    /* Error */
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Unknown type for selectivity estimation: %d", type);
     return false;
+  }
   return true;
 }
 
@@ -490,7 +502,7 @@ temporal_sel_period(VariableStatData *vardata, Span *period, meosOper oper)
     oper == LT_OP || oper == LE_OP ||
     oper == GT_OP || oper == GE_OP)
   {
-    /* Cast the period as a span to call the span selectivity functions */
+    /* Convert the period as a span to call the span selectivity functions */
     selec = span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
   }
   else /* Unknown operator */
@@ -565,7 +577,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
       selec *= span_sel_hist(vardata, span, oper, VALUE_SEL);
     /* Selectivity for the time dimension */
     if (period != NULL)
-      /* Cast the period as a span to call the span selectivity functions */
+      /* Convert the period as a span to call the span selectivity functions */
       selec *= span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
   }
   else if (oper == LEFT_OP || oper == RIGHT_OP ||
@@ -580,7 +592,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
   {
     /* Selectivity for the value dimension */
     if (period != NULL)
-      /* Cast the period as a span to call the span selectivity functions */
+      /* Convert the period as a span to call the span selectivity functions */
       selec *= span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
   }
   else /* Unknown operator */
@@ -686,11 +698,6 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   }
   else if (tempfamily == TNUMBERTYPE)
   {
-#if DEBUG_BUILD
-    /* Get the base type of the temporal column */
-    meosType basetype = temptype_basetype(oid_type(vardata.atttype));
-    assert(span_basetype(basetype));
-#endif /* DEBUG_BUILD */
     /* Transform the constant into a span and/or a period */
     Span *s = NULL;
     Span *p = NULL;

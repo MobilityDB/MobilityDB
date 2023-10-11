@@ -198,17 +198,17 @@ SELECT DISTINCT tempSubtype(ttext_seqset(ss)) FROM tbl_ttext_seqset;
 
 -------------------------------------------------------------------------------
 
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tbool;
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tint;
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tfloat;
-SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_ttext;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tbool;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tint;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tfloat;
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_ttext;
 
 -------------------------------------------------------------------------------
 
-select MAX(numinstants(appendSequence(temp, setInterp(shift(endinstant(temp), '5 min'), interp(temp))))) from tbl_tbool;
-SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tint;
-SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tfloat;
-SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_ttext;
+select MAX(numinstants(appendSequence(temp, setInterp(shiftTime(endinstant(temp), '5 min'), interp(temp))))) from tbl_tbool;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shiftTime(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tint;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shiftTime(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tfloat;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shiftTime(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_ttext;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
@@ -424,23 +424,32 @@ SELECT COUNT(*) FROM tbl_ttext t1, test2 t2 WHERE t1.k = t2.k AND t1.temp <> t2.
 SELECT COUNT(*) FROM (SELECT k, unnest(temp) AS rec FROM tbl_tfloat) AS T;
 
 -------------------------------------------------------------------------------
--- Shift and tscale functions
+-- Shift and scale functions
 -------------------------------------------------------------------------------
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
-SELECT COUNT(shift(temp, i)) FROM tbl_tint, tbl_interval;
-SELECT COUNT(shift(temp, i)) FROM tbl_tfloat, tbl_interval;
-SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
+SELECT COUNT(shiftValue(temp, i)) FROM tbl_tint, tbl_int;
+SELECT COUNT(shiftValue(temp, f)) FROM tbl_tfloat, tbl_float;
 
-SELECT COUNT(tscale(temp, i)) FROM tbl_tbool, tbl_interval;
-SELECT COUNT(tscale(temp, i)) FROM tbl_tint, tbl_interval;
-SELECT COUNT(tscale(temp, i)) FROM tbl_tfloat, tbl_interval;
-SELECT COUNT(tscale(temp, i)) FROM tbl_ttext, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tfloat, tbl_interval;
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_ttext, tbl_interval;
 
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tbool, tbl_interval;
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tint, tbl_interval;
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tfloat, tbl_interval;
-SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_ttext, tbl_interval;
+SELECT COUNT(scaleValue(temp, i)) FROM tbl_tint, tbl_int WHERE i > 0;
+SELECT COUNT(scaleValue(temp, f)) FROM tbl_tfloat, tbl_float WHERE f > 0;
+
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tfloat, tbl_interval;
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_ttext, tbl_interval;
+
+SELECT COUNT(shiftScaleValue(temp, i, i)) FROM tbl_tint, tbl_int WHERE i > 0;
+SELECT COUNT(shiftScaleValue(temp, f, f)) FROM tbl_tfloat, tbl_float WHERE f > 0;
+
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tfloat, tbl_interval;
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_ttext, tbl_interval;
 
 -------------------------------------------------------------------------------
 -- Granularity modification with tprecision and tsample
@@ -577,8 +586,8 @@ SELECT COUNT(*) FROM tbl_tint, tbl_tstzspanset WHERE merge(atTime(temp, ps), min
 SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspanset WHERE merge(atTime(temp, ps), minusTime(temp, ps)) != temp;
 SELECT COUNT(*) FROM tbl_ttext, tbl_tstzspanset WHERE merge(atTime(temp, ps), minusTime(temp, ps)) != temp;
 
-SELECT COUNT(*) FROM tbl_tint, tbl_tbox WHERE temp != merge(atTbox(temp, b), minusTbox(temp, b));
-SELECT COUNT(*) FROM tbl_tfloat, tbl_tbox WHERE temp != merge(atTbox(temp, b), minusTbox(temp, b));
+SELECT COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp != merge(atTbox(temp, b), minusTbox(temp, b));
+SELECT COUNT(*) FROM tbl_tfloat, tbl_tboxfloat WHERE temp != merge(atTbox(temp, b), minusTbox(temp, b));
 
 -------------------------------------------------------------------------------
 -- Modification functions

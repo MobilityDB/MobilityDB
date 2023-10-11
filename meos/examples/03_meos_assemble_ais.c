@@ -87,7 +87,7 @@ typedef struct
 int main(void)
 {
   /* Initialize MEOS */
-  meos_initialize("UTC");
+  meos_initialize("UTC", NULL);
 
   /* Get start time */
   clock_t t;

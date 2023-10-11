@@ -225,11 +225,11 @@ CREATE CAST (tbox AS tstzspan) WITH FUNCTION timeSpan(tbox);
  *****************************************************************************/
 
 CREATE FUNCTION hasX(tbox)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_hasx'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION hasT(tbox)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_hast'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -267,8 +267,48 @@ CREATE FUNCTION Tmax_inc(tbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Modification functions
+ * Transformation functions
  *****************************************************************************/
+
+
+CREATE FUNCTION shiftValue(tbox, int)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_shift_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftValue(tbox, float)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_shift_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftTime(tbox, interval)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_shift_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION scaleValue(tbox, int)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_scale_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scaleValue(tbox, float)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_scale_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scaleTime(tbox, interval)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftScaleValue(tbox, int, int)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_shift_scale_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScaleValue(tbox, float, float)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_shift_scale_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScaleTime(tbox, interval, interval)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_shift_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION expandValue(tbox, float)
   RETURNS tbox

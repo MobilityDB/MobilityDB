@@ -60,7 +60,7 @@ extern void npoint_set(int64 rid, double pos, Npoint *np);
 extern Nsegment *nsegment_make(int64 rid, double pos1, double pos2);
 extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
 
-/* Cast functions */
+/* Conversion functions */
 
 extern Nsegment *npoint_to_nsegment(const Npoint *np);
 

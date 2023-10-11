@@ -262,12 +262,16 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the functions
  * @param[in] invert True if the arguments should be inverted
+ * @return On error return -1
  */
-bool
+static int
 espatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   Datum (*func)(Datum, ...), int numparam, bool invert)
 {
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
+    return -1;
+    
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
   Datum traj = PointerGetDatum(tpoint_trajectory(temp));
@@ -277,7 +281,7 @@ espatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   else /* numparam == 3 */
     result = invert ? func(geo, traj, param) : func(traj, geo, param);
   pfree(DatumGetPointer(traj));
-  return DatumGetBool(result);
+  return result ? 1 : 0;
 }
 
 /*****************************************************************************/
@@ -292,8 +296,11 @@ int
 espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum))
 {
-  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
+      ! ensure_same_dimensionality(temp1->flags, temp2->flags))
+    return -1;
+
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -305,8 +312,8 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
-    MEOS_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   int result = efunc_temporal_temporal(temp1, temp2, &lfinfo);
@@ -318,11 +325,10 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry ever contains a temporal point,
- * 0 if not, and -1 if the geometry is empty.
- *
- * The function does not accept 3D or geography since it is based on the
+ * 0 if not, and -1 on error or if the geometry is empty.
+ * @note The function does not accept 3D or geography since it is based on the
  * PostGIS ST_Relate function. The function tests whether the trajectory
  * intersects the interior of the geometry. Please refer to the documentation
  * of the ST_Contains and ST_Relate functions
@@ -331,14 +337,14 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  * @sqlfunc contains()
  */
 int
-econtains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp)
+econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
-  if (gserialized_is_empty(geo))
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags))
     return -1;
-  ensure_has_not_Z_gs(geo);
-  ensure_has_not_Z(temp->flags);
   GSERIALIZED *traj = tpoint_trajectory(temp);
-  bool result = gserialized_relate_pattern(geo, traj, "T********");
+  bool result = gserialized_relate_pattern(gs, traj, "T********");
   return result ? 1 : 0;
 }
 
@@ -401,9 +407,9 @@ edisjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point and a geometry are ever disjoint,
- * 0 if not, and -1 if the geometry is empty.
+ * 0 if not, and -1 on error or if the geometry is empty.
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @sqlfunc disjoint()
@@ -411,9 +417,10 @@ edisjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
 int
 edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+
   varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, gs->gflags);
   bool result;
   assert(temptype_subtype(temp->subtype));
@@ -431,9 +438,9 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if the temporal points are ever disjoint, 0 if not, and
- * -1 if the temporal points do not intersect in time
+ * -1 on error or if the temporal points do not intersect in time
  * @sqlfunc disjoint()
  */
 int
@@ -451,27 +458,29 @@ edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry and a temporal point ever intersect,
- * 0 if not, and -1 if the geometry is empty.
+ * 0 if not, and -1 on error or if the geometry is empty.
  * @sqlfunc intersects()
  */
 int
 eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
-  bool result = espatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func,
+  int result = espatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func,
     2, INVERT_NO);
-  return result ? 1 : 0;
+  return result;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if the temporal points ever intersect, 0 if not, and
- * -1 if the temporal points do not intersect in time
+ * -1 on error or if the temporal points do not intersect in time
  * @sqlfunc intersects()
  */
 int
@@ -491,29 +500,39 @@ eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point and a geometry ever touch, 0 if not, and
- * -1 if the geometry is empty
+ * -1 on error or if the geometry is empty
  * @sqlfunc touches()
  */
 int
 etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
+  varfunc func = (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
+    (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
+  GSERIALIZED *traj = tpoint_trajectory(temp);
   GSERIALIZED *gsbound = gserialized_boundary(gs);
   bool result = false;
-  if (! gserialized_is_empty(gsbound))
-  {
-    varfunc func =
-      (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
-      (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
-    result = espatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
-      INVERT_NO);
-  }
+  if (gsbound && ! gserialized_is_empty(gsbound))
+    result = func(PointerGetDatum(gsbound), PointerGetDatum(traj));
+  /* TODO */
+  // else if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+  // {
+    // /* The geometry is a point or a multipoint -> the boundary is empty */
+    // GSERIALIZED *tempbound = gserialized_boundary(traj);
+    // if (tempbound)
+    // {
+      // result = func(PointerGetDatum(tempbound), PointerGetDatum(gs));
+      // pfree(tempbound);
+    // }
+  // }
+  pfree(traj);
   pfree(gsbound);
   return result ? 1 : 0;
 }
@@ -524,20 +543,23 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry and a temporal point are ever within the
- * given distance, 0 if not, -1 if a geometry is empty
+ * given distance, 0 if not, -1 on error or if a geometry is empty
  * @sqlfunc dwithin()
  */
 int
 edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
+
   datum_func3 func = get_dwithin_fn_gs(temp->flags, gs->gflags);
-  bool result = espatialrel_tpoint_geo(temp, gs, Float8GetDatum(dist),
+  int result = espatialrel_tpoint_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) func, 3, INVERT_NO);
-  return result ? 1 : 0;
+  return result;
 }
 
 /*****************************************************************************/
@@ -603,8 +625,8 @@ edwithin_tpointseq_tpointseq_cont(const TSequence *seq1, const TSequence *seq2,
   Datum sv1 = tinstant_value(start1);
   Datum sv2 = tinstant_value(start2);
 
-  bool linear1 = MEOS_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MEOS_FLAGS_GET_LINEAR(seq2->flags);
+  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
+  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
   TimestampTz lower = start1->t;
   bool lower_inc = seq1->period.lower_inc;
@@ -656,8 +678,8 @@ static bool
 edwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
   const TSequenceSet *ss2, double dist, datum_func3 func)
 {
-  bool linear = MEOS_FLAGS_GET_LINEAR(ss1->flags) ||
-    MEOS_FLAGS_GET_LINEAR(ss2->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(ss2->flags);
   for (int i = 0; i < ss1->count; i++)
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
@@ -689,8 +711,8 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
     result = edwithin_tpointinst_tpointinst((TInstant *) sync1,
       (TInstant *) sync2, dist, func);
   else if (sync1->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_LINEAR(sync1->flags) ||
-        MEOS_FLAGS_GET_LINEAR(sync2->flags) ?
+    result = MEOS_FLAGS_LINEAR_INTERP(sync1->flags) ||
+        MEOS_FLAGS_LINEAR_INTERP(sync2->flags) ?
       edwithin_tpointseq_tpointseq_cont((TSequence *) sync1,
         (TSequence *) sync2, dist, func) :
       edwithin_tpointseq_tpointseq_discstep((TSequence *) sync1,
@@ -702,15 +724,19 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return 1 if the temporal points are ever within the given distance,
- * 0 if not, -1 if the temporal points do not intersect on time
+ * 0 if not, -1 on error or if the temporal points do not intersect on time
  * @sqlfunc dwithin()
  */
 int
 edwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist)
 {
-  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+    return -1;
+
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time
    * The operation is synchronization without adding crossings */

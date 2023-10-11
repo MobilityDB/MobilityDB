@@ -43,19 +43,19 @@
 /*****************************************************************************/
 
 extern Datum npoint_distance(Datum np1, Datum np2);
-extern Temporal *distance_tnpoint_geo(const Temporal *temp,
-  const GSERIALIZED *geo);
+extern Temporal *distance_tnpoint_point(const Temporal *temp,
+  const GSERIALIZED *gs);
 extern Temporal *distance_tnpoint_npoint(const Temporal *temp,
   const Npoint *np);
 extern Temporal *distance_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2);
 
-extern TInstant *nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo);
+extern TInstant *nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern TInstant *nai_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern TInstant *nai_tnpoint_tnpoint(const Temporal *temp,
   const Temporal *temp2);
 
-extern double nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo);
+extern double nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern double nad_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2);

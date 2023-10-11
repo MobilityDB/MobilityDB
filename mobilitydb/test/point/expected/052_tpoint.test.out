@@ -42,11 +42,11 @@ ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint 'Point empty@2012-01-01 08:00:00';
                           ^
 SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
-ERROR:  Could not parse temporal point value
+ERROR:  Could not parse temporal point value: Extraneous characters at the end
 LINE 1: SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
                           ^
 SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
-ERROR:  Could not parse temporal point value
+ERROR:  Could not parse temporal point value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
                           ^
 SELECT tgeogpoint 'Point M(1 1 1)@2000-01-01 00:00:00+01';
@@ -103,11 +103,11 @@ ERROR:  Could not parse temporal point value: Missing closing brace
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00} xxx';
-ERROR:  Could not parse temporal point value
+ERROR:  Could not parse temporal point value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00} xxx';
-ERROR:  Could not parse temporal point value
+ERROR:  Could not parse temporal point value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT asText(tgeompoint ' [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ] ');
@@ -166,11 +166,11 @@ ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesi
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00] xxx';
-ERROR:  Could not parse temporal point value
+ERROR:  Could not parse temporal point value: Extraneous characters at the end
 LINE 1: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00] xxx';
-ERROR:  Could not parse temporal point value
+ERROR:  Could not parse temporal point value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT asText(tgeompoint '  { [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ],
@@ -229,11 +229,11 @@ ERROR:  Could not parse temporal point value: Missing closing brace
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
-ERROR:  Could not parse temporal point value
+ERROR:  Could not parse temporal point value: Extraneous characters at the end
 LINE 1: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
-ERROR:  Could not parse temporal point value
+ERROR:  Could not parse temporal point value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 1)@2000-01-01, Point(0 1)@2000-01-02]');
@@ -1287,6 +1287,7 @@ SELECT asEWKT(setInterp(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT asEWKT(tgeompoint_seq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 ERROR:  Cannot transform input value to a temporal sequence
+CONTEXT:  SQL function "tgeompoint_seq" statement 1
 SELECT asEWKT(tgeogpoint_inst(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
                         asewkt                         
 -------------------------------------------------------
@@ -1354,6 +1355,7 @@ SELECT asEWKT(setInterp(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT asEWKT(tgeogpoint_seq(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 ERROR:  Cannot transform input value to a temporal sequence
+CONTEXT:  SQL function "tgeogpoint_seq" statement 1
 SELECT asText(setInterp(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01]', 'linear'));
                    astext                    
 ---------------------------------------------
@@ -1623,25 +1625,25 @@ ERROR:  The temporal values have different value at their overlapping instant Mo
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
 ERROR:  The temporal values have different value at their overlapping instant Mon Jan 03 00:00:00 2000 PST
 SELECT merge(tgeompoint 'SRID=5676;{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
-ERROR:  The temporal values have different value at their overlapping instant Mon Jan 03 00:00:00 2000 PST
+ERROR:  Operation on mixed SRID
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05}');
-ERROR:  The temporal values have different value at their overlapping instant Mon Jan 03 00:00:00 2000 PST
+ERROR:  The arguments must be of the same dimensionality
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]');
 ERROR:  The temporal values cannot overlap on time: Mon Jan 03 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
 ERROR:  The temporal values have different value at their common instant Mon Jan 03 00:00:00 2000 PST
 SELECT merge(tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
-ERROR:  The temporal values have different value at their common instant Mon Jan 03 00:00:00 2000 PST
+ERROR:  Operation on mixed SRID
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05]');
-ERROR:  The temporal values have different value at their common instant Mon Jan 03 00:00:00 2000 PST
+ERROR:  The arguments must be of the same dimensionality
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-04, Point(2 2)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
 ERROR:  The temporal values cannot overlap on time: Wed Jan 05 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
 ERROR:  The temporal values have different value at their common instant Wed Jan 05 00:00:00 2000 PST
 SELECT merge(tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
-ERROR:  The temporal values have different value at their common instant Wed Jan 05 00:00:00 2000 PST
+ERROR:  Operation on mixed SRID
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}');
-ERROR:  The temporal values have different value at their common instant Wed Jan 05 00:00:00 2000 PST
+ERROR:  The arguments must be of the same dimensionality
 SELECT asText(merge(ARRAY[tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-02']));
                                        astext                                       
 ------------------------------------------------------------------------------------
@@ -2883,155 +2885,155 @@ SELECT timestamps(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-0
  {"Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST","Mon Jan 03 00:00:00 2000 PST","Tue Jan 04 00:00:00 2000 PST","Wed Jan 05 00:00:00 2000 PST"}
 (1 row)
 
-SELECT asEWKT(shift(tgeompoint 'Point(1 1)@2000-01-01', '5 min'));
+SELECT asEWKT(shiftTime(tgeompoint 'Point(1 1)@2000-01-01', '5 min'));
                  asewkt                  
 -----------------------------------------
  POINT(1 1)@Sat Jan 01 00:05:00 2000 PST
 (1 row)
 
-SELECT asEWKT(shift(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '5 min'));
+SELECT asEWKT(shiftTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '5 min'));
                                                            asewkt                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  {POINT(1 1)@Sat Jan 01 00:05:00 2000 PST, POINT(2 2)@Sun Jan 02 00:05:00 2000 PST, POINT(1 1)@Mon Jan 03 00:05:00 2000 PST}
 (1 row)
 
-SELECT asEWKT(shift(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '5 min'));
+SELECT asEWKT(shiftTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '5 min'));
                                                            asewkt                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  [POINT(1 1)@Sat Jan 01 00:05:00 2000 PST, POINT(2 2)@Sun Jan 02 00:05:00 2000 PST, POINT(1 1)@Mon Jan 03 00:05:00 2000 PST]
 (1 row)
 
-SELECT asEWKT(shift(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '5 min'));
+SELECT asEWKT(shiftTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '5 min'));
                                                                                                       asewkt                                                                                                       
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(1 1)@Sat Jan 01 00:05:00 2000 PST, POINT(2 2)@Sun Jan 02 00:05:00 2000 PST, POINT(1 1)@Mon Jan 03 00:05:00 2000 PST], [POINT(3 3)@Tue Jan 04 00:05:00 2000 PST, POINT(3 3)@Wed Jan 05 00:05:00 2000 PST]}
 (1 row)
 
-SELECT asEWKT(shift(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '5 min'));
+SELECT asEWKT(shiftTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '5 min'));
                         asewkt                         
 -------------------------------------------------------
  SRID=4326;POINT(1.5 1.5)@Sat Jan 01 00:05:00 2000 PST
 (1 row)
 
-SELECT asEWKT(shift(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '5 min'));
+SELECT asEWKT(shiftTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '5 min'));
                                                                       asewkt                                                                       
 ---------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{POINT(1.5 1.5)@Sat Jan 01 00:05:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:05:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:05:00 2000 PST}
 (1 row)
 
-SELECT asEWKT(shift(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '5 min'));
+SELECT asEWKT(shiftTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '5 min'));
                                                                       asewkt                                                                       
 ---------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;[POINT(1.5 1.5)@Sat Jan 01 00:05:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:05:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:05:00 2000 PST]
 (1 row)
 
-SELECT asEWKT(shift(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '5 min'));
+SELECT asEWKT(shiftTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '5 min'));
                                                                                                                      asewkt                                                                                                                      
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{[POINT(1.5 1.5)@Sat Jan 01 00:05:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:05:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:05:00 2000 PST], [POINT(3.5 3.5)@Tue Jan 04 00:05:00 2000 PST, POINT(3.5 3.5)@Wed Jan 05 00:05:00 2000 PST]}
 (1 row)
 
-SELECT asEWKT(tscale(tgeompoint 'Point(1 1)@2000-01-01', '1 day'));
+SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2000-01-01', '1 day'));
                  asewkt                  
 -----------------------------------------
  POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT asEWKT(tscale(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '1 day'));
+SELECT asEWKT(scaleTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '1 day'));
                                                            asewkt                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  {POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sat Jan 01 12:00:00 2000 PST, POINT(1 1)@Sun Jan 02 00:00:00 2000 PST}
 (1 row)
 
-SELECT asEWKT(tscale(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '1 day'));
+SELECT asEWKT(scaleTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '1 day'));
                                                            asewkt                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sat Jan 01 12:00:00 2000 PST, POINT(1 1)@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
-SELECT asEWKT(tscale(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '1 day'));
+SELECT asEWKT(scaleTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '1 day'));
                                                                                                       asewkt                                                                                                       
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sat Jan 01 06:00:00 2000 PST, POINT(1 1)@Sat Jan 01 12:00:00 2000 PST], [POINT(3 3)@Sat Jan 01 18:00:00 2000 PST, POINT(3 3)@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT asEWKT(tscale(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '1 day'));
+SELECT asEWKT(scaleTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '1 day'));
                         asewkt                         
 -------------------------------------------------------
  SRID=4326;POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT asEWKT(tscale(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '1 day'));
+SELECT asEWKT(scaleTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '1 day'));
                                                                       asewkt                                                                       
 ---------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sat Jan 01 12:00:00 2000 PST, POINT(1.5 1.5)@Sun Jan 02 00:00:00 2000 PST}
 (1 row)
 
-SELECT asEWKT(tscale(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '1 day'));
+SELECT asEWKT(scaleTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '1 day'));
                                                                       asewkt                                                                       
 ---------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;[POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sat Jan 01 12:00:00 2000 PST, POINT(1.5 1.5)@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
-SELECT asEWKT(tscale(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '1 day'));
+SELECT asEWKT(scaleTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '1 day'));
                                                                                                                      asewkt                                                                                                                      
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{[POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sat Jan 01 06:00:00 2000 PST, POINT(1.5 1.5)@Sat Jan 01 12:00:00 2000 PST], [POINT(3.5 3.5)@Sat Jan 01 18:00:00 2000 PST, POINT(3.5 3.5)@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT asEWKT(shiftTscale(tgeompoint 'Point(1 1)@2000-01-01', '1 day', '1 day'));
+SELECT asEWKT(shiftScaleTime(tgeompoint 'Point(1 1)@2000-01-01', '1 day', '1 day'));
                  asewkt                  
 -----------------------------------------
  POINT(1 1)@Sun Jan 02 00:00:00 2000 PST
 (1 row)
 
-SELECT asEWKT(shiftTscale(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '1 day', '1 day'));
+SELECT asEWKT(shiftScaleTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '1 day', '1 day'));
                                                            asewkt                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  {POINT(1 1)@Sun Jan 02 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 12:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT asEWKT(shiftTscale(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '1 day', '1 day'));
+SELECT asEWKT(shiftScaleTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '1 day', '1 day'));
                                                            asewkt                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  [POINT(1 1)@Sun Jan 02 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 12:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT asEWKT(shiftTscale(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '1 day', '1 day'));
+SELECT asEWKT(shiftScaleTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '1 day', '1 day'));
                                                                                                       asewkt                                                                                                       
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(1 1)@Sun Jan 02 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 06:00:00 2000 PST, POINT(1 1)@Sun Jan 02 12:00:00 2000 PST], [POINT(3 3)@Sun Jan 02 18:00:00 2000 PST, POINT(3 3)@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT asEWKT(shiftTscale(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '1 day', '1 day'));
+SELECT asEWKT(shiftScaleTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '1 day', '1 day'));
                         asewkt                         
 -------------------------------------------------------
  SRID=4326;POINT(1.5 1.5)@Sun Jan 02 00:00:00 2000 PST
 (1 row)
 
-SELECT asEWKT(shiftTscale(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '1 day', '1 day'));
+SELECT asEWKT(shiftScaleTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '1 day', '1 day'));
                                                                       asewkt                                                                       
 ---------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{POINT(1.5 1.5)@Sun Jan 02 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 12:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT asEWKT(shiftTscale(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '1 day', '1 day'));
+SELECT asEWKT(shiftScaleTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '1 day', '1 day'));
                                                                       asewkt                                                                       
 ---------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;[POINT(1.5 1.5)@Sun Jan 02 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 12:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT asEWKT(shiftTscale(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '1 day', '1 day'));
+SELECT asEWKT(shiftScaleTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '1 day', '1 day'));
                                                                                                                      asewkt                                                                                                                      
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{[POINT(1.5 1.5)@Sun Jan 02 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 06:00:00 2000 PST, POINT(1.5 1.5)@Sun Jan 02 12:00:00 2000 PST], [POINT(3.5 3.5)@Sun Jan 02 18:00:00 2000 PST, POINT(3.5 3.5)@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
 /* Errors */
-SELECT asEWKT(tscale(tgeompoint 'Point(1 1)@2000-01-01', '0'));
-ERROR:  The interval must be positive
-SELECT asEWKT(tscale(tgeompoint 'Point(1 1)@2000-01-01', '-1 day'));
-ERROR:  The interval must be positive
+SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2000-01-01', '0'));
+ERROR:  The interval must be positive: 00:00:00
+SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2000-01-01', '-1 day'));
+ERROR:  The interval must be positive: -1 days
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= ST_Point(1,1);
  ?column? 
 ----------

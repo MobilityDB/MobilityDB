@@ -56,14 +56,18 @@ Temporal *
 tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
   bool restr, bool atvalue)
 {
-  ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) np) || 
+      ! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
+    return NULL;
+
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  GSERIALIZED *geo = npoint_geom(np);
+  GSERIALIZED *gs = npoint_geom(np);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(tempgeom, geo, tinter, restr,
+  Temporal *result = tinterrel_tpoint_geo(tempgeom, gs, tinter, restr,
      atvalue);
   pfree(tempgeom);
-  pfree(geo);
+  pfree(gs);
   return result;
 }
 
@@ -72,15 +76,18 @@ tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
  * temporal network point and the geometry
  */
 Temporal *
-tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool tinter,
+tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   bool restr, bool atvalue)
 {
-  if (gserialized_is_empty(geo))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      gserialized_is_empty(gs) ||
+      ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
     return NULL;
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(geo));
+
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(tempgeom, geo, tinter, restr,
+  Temporal *result = tinterrel_tpoint_geo(tempgeom, gs, tinter, restr,
     atvalue);
   pfree(tempgeom);
   return result;
@@ -93,13 +100,13 @@ tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool tinter,
  * the temporal network point
  */
 Temporal *
-tcontains_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, bool restr,
+tcontains_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, bool restr,
   bool atvalue)
 {
-  if (gserialized_is_empty(geo))
+  if (gserialized_is_empty(gs))
     return NULL;
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tcontains_geo_tpoint(geo, tempgeom, restr, atvalue);
+  Temporal *result = tcontains_geo_tpoint(gs, tempgeom, restr, atvalue);
   pfree(tempgeom);
   return result;
 }
@@ -109,15 +116,17 @@ tcontains_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, bool restr,
  * point and the geometry
  */
 Temporal *
-ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool restr,
+ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  if (gserialized_is_empty(geo))
+  /* Ensure validity of the arguments */
+  if (gserialized_is_empty(gs) ||
+      ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
     return NULL;
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(geo));
+
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = ttouches_tpoint_geo(tempgeom, geo, restr, atvalue);
+  Temporal *result = ttouches_tpoint_geo(tempgeom, gs, restr, atvalue);
   pfree(tempgeom);
   return result;
 }
@@ -127,10 +136,10 @@ ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool restr,
  * point and the geometry
  */
 Temporal *
-ttouches_geo_tnpoint(const GSERIALIZED *geo, const Temporal *temp, bool restr,
+ttouches_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
-  return ttouches_tnpoint_geo(temp, geo, restr, atvalue);
+  return ttouches_tnpoint_geo(temp, gs, restr, atvalue);
 }
 
 /**
@@ -141,13 +150,16 @@ Temporal *
 ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
   bool atvalue)
 {
-  ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
+  /* Ensure validity of the arguments */
+  if (! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
+    return NULL;
+
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  GSERIALIZED *geo = npoint_geom(np);
+  GSERIALIZED *gs = npoint_geom(np);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = ttouches_tpoint_geo(tempgeom, geo, restr, atvalue);
+  Temporal *result = ttouches_tpoint_geo(tempgeom, gs, restr, atvalue);
   pfree(tempgeom);
-  pfree(geo);
+  pfree(gs);
   return result;
 }
 
@@ -167,13 +179,13 @@ ttouches_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool restr,
  * temporal network point are within the given distance
  */
 Temporal *
-tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo, double dist, bool restr,
+tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, double dist, bool restr,
   bool atvalue)
 {
-  if (gserialized_is_empty(geo))
+  if (gserialized_is_empty(gs))
     return NULL;
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo(tempgeom, geo, dist, restr, atvalue);
+  Temporal *result = tdwithin_tpoint_geo(tempgeom, gs, dist, restr, atvalue);
   pfree(tempgeom);
   return result;
 }
@@ -183,10 +195,10 @@ tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo, double dist, bool restr,
  * temporal network point are within the given distance
  */
 Temporal *
-tdwithin_geo_tnpoint(GSERIALIZED *geo, Temporal *temp, double dist, bool restr,
+tdwithin_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, double dist, bool restr,
   bool atvalue)
 {
-  return tdwithin_tnpoint_geo(temp, geo, dist, restr, atvalue);
+  return tdwithin_tnpoint_geo(temp, gs, dist, restr, atvalue);
 }
 
 /**

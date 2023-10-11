@@ -1659,8 +1659,6 @@ ERROR:  Only point geometries accepted
 SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)', 2);
 ERROR:  Only point geometries accepted
 SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(0 0)', -1);
-ERROR:  Tolerance cannot be less than zero
-
+ERROR:  The value cannot be negative: -1.000000
 SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(0 0 0)', -1);
-ERROR:  Tolerance cannot be less than zero
-
+ERROR:  The value cannot be negative: -1.000000

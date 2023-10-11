@@ -27,23 +27,41 @@
  *
  *****************************************************************************/
 
-/**
- * @brief Aggregate functions for time types
- */
-
-#ifndef __TIME_AGGFUNCS_H__
-#define __TIME_AGGFUNCS_H__
+#ifndef __TEMPORAL_ANALYTICS_H__
+#define __TEMPORAL_ANALYTICS_H__
 
 /* MEOS */
-#include "general/span.h"
-#include "general/skiplist.h"
+#include "temporal.h"
 
 /*****************************************************************************/
 
-extern Datum datum_sum_int32(Datum l, Datum r);
+typedef enum
+{
+  FRECHET,
+  DYNTIMEWARP,
+  HAUSDORFF
+} SimFunc;
 
-extern void ensure_same_timetype_skiplist(SkipList *state, uint8 subtype);
+/**
+ * Struct for storing the state that persists across multiple calls generating
+ * the bucket list
+ */
+typedef struct
+{
+  bool done;
+  int i;
+  int size;
+  Match *path;
+} SimilarityPathState;
 
 /*****************************************************************************/
 
-#endif
+extern double temporal_similarity(const Temporal *temp1, const Temporal *temp2,
+  SimFunc simfunc);
+extern Match *temporal_similarity_path(const Temporal *temp1,
+  const Temporal *temp2, int *count, SimFunc simfunc);
+
+/*****************************************************************************/
+
+#endif /* __TEMPORAL_ANALYTICS_H__ */
+

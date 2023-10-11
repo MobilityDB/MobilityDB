@@ -1409,39 +1409,49 @@ CREATE FUNCTION ttext_inst(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION tbool_seq(tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tint_seq(tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seq(tfloat)
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tfloat_seq(tfloat, text)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tfloat_seq(tfloat)
+  RETURNS tfloat
+  AS 'SELECT @extschema@.tfloat_seq($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION ttext_seq(ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION tbool_seqset(tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tint_seqset(tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seqset(tfloat)
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tfloat_seqset(tfloat, text)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tfloat_seqset(tfloat)
+  RETURNS tfloat
+  AS 'SELECT @extschema@.tfloat_seqset($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION ttext_seqset(ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tbool, text)
   RETURNS tbool
@@ -1462,55 +1472,84 @@ CREATE FUNCTION setInterp(ttext, text)
 
 /******************************************************************************/
 
-CREATE FUNCTION shift(tbool, interval)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(tint, interval)
+CREATE FUNCTION shiftValue(tint, int)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_shift'
+  AS 'MODULE_PATHNAME', 'Tnumber_shift_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(tfloat, interval)
+CREATE FUNCTION shiftValue(tfloat, float)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(ttext, interval)
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_shift'
+  AS 'MODULE_PATHNAME', 'Tnumber_shift_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tscale(tbool, interval)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_tscale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tscale(tint, interval)
+CREATE FUNCTION scaleValue(tint, int)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_tscale'
+  AS 'MODULE_PATHNAME', 'Tnumber_scale_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tscale(tfloat, interval)
+CREATE FUNCTION scaleValue(tfloat, float)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_tscale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tscale(ttext, interval)
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_tscale'
+  AS 'MODULE_PATHNAME', 'Tnumber_scale_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftTscale(tbool, interval, interval)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftTscale(tint, interval, interval)
+CREATE FUNCTION shiftScaleValue(tint, int, int)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Tnumber_shift_scale_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftTscale(tfloat, interval, interval)
+CREATE FUNCTION shiftScaleValue(tfloat, float, float)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Tnumber_shift_scale_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftTscale(ttext, interval, interval)
+
+/******************************************************************************/
+
+CREATE FUNCTION shiftTime(tbool, interval)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftTime(tint, interval)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftTime(tfloat, interval)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftTime(ttext, interval)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION scaleTime(tbool, interval)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scaleTime(tint, interval)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scaleTime(tfloat, interval)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scaleTime(ttext, interval)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftScaleTime(tbool, interval, interval)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScaleTime(tint, interval, interval)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScaleTime(tfloat, interval, interval)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScaleTime(ttext, interval, interval)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tprecision(tint, duration interval,

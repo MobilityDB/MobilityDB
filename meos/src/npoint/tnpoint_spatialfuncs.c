@@ -57,13 +57,16 @@
 /**
  * @brief Ensure that a temporal network point and a STBox have the same SRID
  */
-void
+bool
 ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
 {
-  if (MEOS_FLAGS_GET_X(box->flags) &&
-    tnpoint_srid(temp) != box->srid)
-    elog(ERROR, "The temporal network point and the box must be in the same SRID");
-  return;
+  if (MEOS_FLAGS_GET_X(box->flags) && tnpoint_srid(temp) != box->srid)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal network point and the box must be in the same SRID");
+    return false;
+  }
+  return true;
 }
 #endif /* not used */
 
@@ -71,12 +74,16 @@ ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
  * @brief Ensure that two temporal network point instants have the same route
  * identifier
  */
-void
+bool
 ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
 {
   if (tnpointinst_route(inst1) != tnpointinst_route(inst2))
-    elog(ERROR, "All network points composing a temporal sequence must have same route identifier");
-  return;
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "All network points composing a temporal sequence must have same route identifier");
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************
@@ -233,7 +240,7 @@ tnpointseq_geom(const TSequence *seq)
     return tnpointinst_geom(TSEQUENCE_INST_N(seq, 0));
 
   GSERIALIZED *result;
-  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
   {
     Nsegment *segment = tnpointseq_linear_positions(seq);
     result = nsegment_geom(segment);
@@ -263,7 +270,7 @@ tnpointseqset_geom(const TSequenceSet *ss)
 
   int count;
   GSERIALIZED *result;
-  if (MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
   {
     Nsegment **segments = tnpointseqset_positions(ss, &count);
     result = nsegmentarr_geom(segments, count);
@@ -394,7 +401,7 @@ tnpoint_length(const Temporal *temp)
 {
   double result = 0.0;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tnpointseq_length((TSequence *) temp);
@@ -406,7 +413,6 @@ tnpoint_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @pre The sequence has linear interpolation
  * @sqlfunc cumulativeLength()
@@ -414,7 +420,8 @@ tnpoint_length(const Temporal *temp)
 static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(seq);
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   const TInstant *inst1;
 
   /* Instantaneous sequence */
@@ -473,7 +480,7 @@ tnpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     result = temporal_from_base_temp(Float8GetDatum(0.0), T_TFLOAT, temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
@@ -498,7 +505,7 @@ tnpointseq_speed(const TSequence *seq)
 
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   /* Step interpolation */
-  if (! MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
   {
     Datum length = Float8GetDatum(0.0);
     for (int i = 0; i < seq->count; i++)
@@ -561,7 +568,7 @@ tnpoint_speed(const Temporal *temp)
 {
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MEOS_FLAGS_GET_DISCRETE(temp->flags))
+  if (temp->subtype == TINSTANT || MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_speed((TSequence *) temp);
@@ -751,7 +758,7 @@ tnpoint_azimuth(const Temporal *temp)
 {
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_azimuth((TSequence *) temp);
@@ -768,21 +775,26 @@ tnpoint_azimuth(const Temporal *temp)
  * @brief Restrict a temporal network point to (the complement of) a geometry
  */
 Temporal *
-tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *geo,
+tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(geo));
-  if (gserialized_is_empty(geo))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
+    return NULL;
+
+  if (gserialized_is_empty(gs))
   {
     Temporal *result = atfunc ? NULL : temporal_copy(temp);
     if (atfunc)
       return NULL;
     return result;
   }
-  ensure_has_not_Z_gs(geo);
+  if (! ensure_has_not_Z_gs(gs))
+    return NULL;
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *resultgeom = tpoint_restrict_geom_time(tempgeom, geo, zspan,
+  Temporal *resultgeom = tpoint_restrict_geom_time(tempgeom, gs, zspan,
     period, atfunc);
   Temporal *result = NULL;
   if (resultgeom != NULL)

@@ -197,7 +197,6 @@ extern void store_fcinfo(FunctionCallInfo fcinfo);
 
 /* Typmod functions */
 
-extern const char *tempsubtype_name(int16 subtype);
 extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 
 /* Send/receive functions */
@@ -207,7 +206,7 @@ extern void temporal_write(const Temporal *temp, StringInfo buf);
 
 /* Parameter tests */
 
-extern void ensure_non_empty_array(ArrayType *array);
+extern bool ensure_not_empty_array(ArrayType *array);
 
 /*****************************************************************************/
 

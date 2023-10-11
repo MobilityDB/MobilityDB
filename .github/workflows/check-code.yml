@@ -1,8 +1,19 @@
 name: Check code
 
 on:
-  push:
+  workflow_dispatch:
   pull_request:
+    paths:
+      - '.github/workflows/check-code.yml'
+      - 'datagen/**'
+      - 'doc/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'postgis/**'
+      - 'LICENSE.txt'
+    branch:
+      - master
+      - develop
 
 jobs:
   license_check:

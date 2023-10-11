@@ -29,9 +29,10 @@
 
 /**
  * @file
- * @brief Functions for base and time types borrowed from PostgreSQL.
+ * @brief Functions for base and time types borrowed from PostgreSQL
+ * version 14.2 source code.
  * @note The MobilityDB functions pg_func(...) correspond to external
- * PostgreSQL functions func(PG_FUNCTION_ARGS). This avoids bypassing the
+ * PostgreSQL functions func(PG_FUNCTION_ARGS). This enables bypassing the
  * function manager fmgr.c.
  */
 
@@ -54,6 +55,8 @@
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
+/* PostGIS */
+#include <liblwgeom_internal.h> /* for OUT_DOUBLE_BUFFER_SIZE */
 
 /* MEOS */
 #include <meos.h>
@@ -67,7 +70,21 @@
   extern Datum timestamp_in(PG_FUNCTION_ARGS);
   extern Datum timestamptz_out(PG_FUNCTION_ARGS);
   extern Datum timestamp_out(PG_FUNCTION_ARGS);
+  extern Datum interval_out(PG_FUNCTION_ARGS);
 #endif /* ! MEOS */
+
+#if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
+  extern int64 pg_strtoint64(const char *s);
+#else
+  extern bool scanint8(const char *str, bool errorOK, int64 *result);
+#endif
+
+/* Definition in numutils.c */
+extern int32 pg_strtoint32(const char *s);
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  extern int pg_ultoa_n(uint32 value, char *a);
+  extern int pg_ulltoa_n(uint64 l, char *a);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
 /*****************************************************************************/
 
@@ -104,11 +121,449 @@ int DateOrder = DATEORDER_MDY;
 int IntervalStyle = INTSTYLE_POSTGRES;
 
 /*****************************************************************************
+ * Functions adapted from bool.c
+ *****************************************************************************/
+
+static bool
+parse_bool_with_len(const char *value, size_t len, bool *result)
+{
+  switch (*value)
+  {
+    case 't':
+    case 'T':
+      if (pg_strncasecmp(value, "true", len) == 0)
+      {
+        if (result)
+          *result = true;
+        return true;
+      }
+      break;
+    case 'f':
+    case 'F':
+      if (pg_strncasecmp(value, "false", len) == 0)
+      {
+        if (result)
+          *result = false;
+        return true;
+      }
+      break;
+    case 'y':
+    case 'Y':
+      if (pg_strncasecmp(value, "yes", len) == 0)
+      {
+        if (result)
+          *result = true;
+        return true;
+      }
+      break;
+    case 'n':
+    case 'N':
+      if (pg_strncasecmp(value, "no", len) == 0)
+      {
+        if (result)
+          *result = false;
+        return true;
+      }
+      break;
+    case 'o':
+    case 'O':
+      /* 'o' is not unique enough */
+      if (pg_strncasecmp(value, "on", (len > 2 ? len : 2)) == 0)
+      {
+        if (result)
+          *result = true;
+        return true;
+      }
+      else if (pg_strncasecmp(value, "off", (len > 2 ? len : 2)) == 0)
+      {
+        if (result)
+          *result = false;
+        return true;
+      }
+      break;
+    case '1':
+      if (len == 1)
+      {
+        if (result)
+          *result = true;
+        return true;
+      }
+      break;
+    case '0':
+      if (len == 1)
+      {
+        if (result)
+          *result = false;
+        return true;
+      }
+      break;
+    default:
+      break;
+  }
+
+  if (result)
+    *result = false;    /* suppress compiler warning */
+  return false;
+}
+
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert "t" or "f" to 1 or 0
+ *
+ * Check explicitly for "true/false" and TRUE/FALSE, 1/0, YES/NO, ON/OFF.
+ * Reject other values.
+ *
+ * In the switch statement, check the most-used possibilities first.
+ * @note PostgreSQL function: Datum boolin(PG_FUNCTION_ARGS)
+ */
+bool
+bool_in(const char *in_str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) in_str))
+    return false;
+
+  const char *str;
+  size_t len;
+  bool result;
+
+  /*
+   * Skip leading and trailing whitespace
+   */
+  str = in_str;
+  while (isspace((unsigned char) *str))
+    str++;
+
+  len = strlen(str);
+  while (len > 0 && isspace((unsigned char) str[len - 1]))
+    len--;
+
+  if (parse_bool_with_len(str, len, &result))
+    return result;
+
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+    "invalid input syntax for type %s: \"%s\"", "boolean", in_str);
+
+  /* not reached */
+  return false;
+}
+
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert 1 or 0 to "t" or "f"
+ * @note PostgreSQL function: Datum boolout(PG_FUNCTION_ARGS)
+ */
+char *
+bool_out(bool b)
+{
+  char *result = palloc(2);
+  result[0] = (b) ? 't' : 'f';
+  result[1] = '\0';
+  return result;
+}
+
+/*****************************************************************************
+ * Functions adapted from int.c
+ *****************************************************************************/
+
+/**
+ * @brief Return an int4 from a string
+ * @note PostgreSQL function: Datum int4in(PG_FUNCTION_ARGS)
+ */
+int32
+int4_in(const char *str)
+{
+  return pg_strtoint32(str);
+}
+
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+/*
+ * pg_ltoa: converts a signed 32-bit integer to its string representation and
+ * returns strlen(a).
+ *
+ * It is the caller's responsibility to ensure that a is at least 12 bytes long,
+ * which is enough room to hold a minus sign, a maximally long int32, and the
+ * above terminating NUL.
+ *
+ * @note This function is copied here since it returned void in PostgreSQL
+ * version < 14
+ */
+static int
+mobdb_ltoa(int32 value, char *a)
+{
+	uint32		uvalue = (uint32) value;
+	int			len = 0;
+
+	if (value < 0)
+	{
+		uvalue = (uint32) 0 - uvalue;
+		a[len++] = '-';
+	}
+	len += pg_ultoa_n(uvalue, a + len);
+	a[len] = '\0';
+	return len;
+}
+#endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
+
+/**
+ * @brief Return a string from an int4
+ * @note PostgreSQL function: Datum int4out(PG_FUNCTION_ARGS)
+ */
+char *
+int4_out(int32 val)
+{
+  char *result = palloc(12);  /* sign, 10 digits, '\0' */
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  mobdb_ltoa(val, result);
+#else
+  sprintf(result, "%d", val);
+#endif
+  return result;
+}
+
+/*****************************************************************************
+ * Functions adapted from int8.c
+ *****************************************************************************/
+
+/* Sign + the most decimal digits an 8-byte number could have */
+#define MAXINT8LEN 20
+
+/**
+ * @brief Return an int8 from a string
+ * @return On error return PG_INT64_MAX;
+ * @note PostgreSQL function: Datum int8in(PG_FUNCTION_ARGS)
+ */
+int64
+int8_in(const char *str)
+{
+#if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
+  int64 result = pg_strtoint64(str);
+#else
+  int64 result;
+  (void) scanint8(str, false, &result);
+#endif
+  return result;
+}
+
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+/*
+ * pg_lltoa: converts a signed 64-bit integer to its string representation and
+ * returns strlen(a).
+ *
+ * Caller must ensure that 'a' points to enough memory to hold the result
+ * (at least MAXINT8LEN + 1 bytes, counting a leading sign and trailing NUL).
+ *
+ * @note This function is copied here since it returned void in PostgreSQL
+ * version < 14
+ */
+int
+mobdb_lltoa(int64 value, char *a)
+{
+  uint64    uvalue = value;
+  int      len = 0;
+
+  if (value < 0)
+  {
+    uvalue = (uint64) 0 - uvalue;
+    a[len++] = '-';
+  }
+
+  len += pg_ulltoa_n(uvalue, a + len);
+  a[len] = '\0';
+  return len;
+}
+#endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
+
+/**
+ * @brief Return a string from an int8
+ * @note PostgreSQL function: Datum int8out(PG_FUNCTION_ARGS)
+ */
+char *
+int8_out(int64 val)
+{
+  char *result;
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  char buf[MAXINT8LEN + 1];
+  int len = mobdb_lltoa(val, buf) + 1;
+  /*
+   * Since the length is already known, we do a manual palloc() and memcpy()
+   * to avoid the strlen() call that would otherwise be done in pstrdup().
+   */
+  result = palloc(len);
+  memcpy(result, buf, len);
+#else
+  result = palloc(MAXINT8LEN + 1);
+  sprintf(result, "%ld", val);
+#endif
+  return result;
+}
+
+/*****************************************************************************
  * Functions adapted from float.c
  *****************************************************************************/
 
 /**
+ * float8in_internal_opt_error - guts of float8in()
+ * @return On error return DBL_MAX
+ *
+ * This is exposed for use by functions that want a reasonably
+ * platform-independent way of inputting doubles.  The behavior is
+ * essentially like strtod + ereport on error, but note the following
+ * differences:
+ * 1. Both leading and trailing whitespace are skipped.
+ * 2. If endptr_p is NULL, we throw error if there's trailing junk.
+ * Otherwise, it's up to the caller to complain about trailing junk.
+ * 3. In event of a syntax error, the report mentions the given type_name
+ * and prints orig_string as the input; this is meant to support use of
+ * this function with types such as "box" and "point", where what we are
+ * parsing here is just a substring of orig_string.
+ *
+ * "num" could validly be declared "const char *", but that results in an
+ * unreasonable amount of extra casting both here and in callers, so we don't.
+ */
+double
+float8_in_opt_error(char *num, const char *type_name, const char *orig_string)
+{
+  double    val;
+  char     *endptr;
+
+  /* skip leading whitespace */
+  while (*num != '\0' && isspace((unsigned char) *num))
+    num++;
+
+  /*
+   * Check for an empty-string input to begin with, to avoid the vagaries of
+   * strtod() on different platforms.
+   */
+  if (*num == '\0')
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "invalid input syntax for type %s: \"%s\"", type_name, orig_string);
+    return DBL_MAX;
+  }
+
+  errno = 0;
+  val = strtod(num, &endptr);
+
+  /* did we not see anything that looks like a double? */
+  if (endptr == num || errno != 0)
+  {
+    int      save_errno = errno;
+
+    /*
+     * C99 requires that strtod() accept NaN, [+-]Infinity, and [+-]Inf,
+     * but not all platforms support all of these (and some accept them
+     * but set ERANGE anyway...)  Therefore, we check for these inputs
+     * ourselves if strtod() fails.
+     *
+     * Note: C99 also requires hexadecimal input as well as some extended
+     * forms of NaN, but we consider these forms unportable and don't try
+     * to support them.  You can use 'em if your strtod() takes 'em.
+     */
+    if (pg_strncasecmp(num, "NaN", 3) == 0)
+    {
+      val = get_float8_nan();
+      endptr = num + 3;
+    }
+    else if (pg_strncasecmp(num, "Infinity", 8) == 0)
+    {
+      val = get_float8_infinity();
+      endptr = num + 8;
+    }
+    else if (pg_strncasecmp(num, "+Infinity", 9) == 0)
+    {
+      val = get_float8_infinity();
+      endptr = num + 9;
+    }
+    else if (pg_strncasecmp(num, "-Infinity", 9) == 0)
+    {
+      val = -get_float8_infinity();
+      endptr = num + 9;
+    }
+    else if (pg_strncasecmp(num, "inf", 3) == 0)
+    {
+      val = get_float8_infinity();
+      endptr = num + 3;
+    }
+    else if (pg_strncasecmp(num, "+inf", 4) == 0)
+    {
+      val = get_float8_infinity();
+      endptr = num + 4;
+    }
+    else if (pg_strncasecmp(num, "-inf", 4) == 0)
+    {
+      val = -get_float8_infinity();
+      endptr = num + 4;
+    }
+    else if (save_errno == ERANGE)
+    {
+      /*
+       * Some platforms return ERANGE for denormalized numbers (those
+       * that are not zero, but are too close to zero to have full
+       * precision).  We'd prefer not to throw error for that, so try to
+       * detect whether it's a "real" out-of-range condition by checking
+       * to see if the result is zero or huge.
+       *
+       * On error, we intentionally complain about double precision not
+       * the given type name, and we print only the part of the string
+       * that is the current number.
+       */
+      if (val == 0.0 || val >= HUGE_VAL || val <= -HUGE_VAL)
+      {
+        char *errnumber = strdup(num);
+        errnumber[endptr - num] = '\0';
+        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+          "\"%s\" is out of range for type double precision", errnumber);
+        pfree(errnumber);
+        return DBL_MAX;
+      }
+    }
+    else
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "invalid input syntax for type %s: \"%s\"", type_name, orig_string);
+      return DBL_MAX;
+    }
+  }
+
+  /* skip trailing whitespace */
+  while (*endptr != '\0' && isspace((unsigned char) *endptr))
+    endptr++;
+
+  return val;
+}
+
+/*
+ * Interface to float8in_internal_opt_error().
+ */
+double
+float8_in(const char *num, const char *type_name, const char *orig_string)
+{
+  return float8_in_opt_error((char *) num, type_name, orig_string);
+}
+
+/*
+ * This function uses the PostGIS function lwprint_double to print an ordinate
+ * value using at most **maxdd** number of decimal digits. The actual number
+ * of printed decimal digits may be less than the requested ones if out of
+ * significant digits.
+ *
+ * The function will write at most OUT_DOUBLE_BUFFER_SIZE bytes, including the
+ * terminating NULL.
+ */
+char *
+float8_out(double num, int maxdd)
+{
+  assert(maxdd >= 0);
+
+  char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
+  lwprint_double(num, maxdd, ascii);
+  return ascii;
+}
+
+/**
  * @brief Return the sine of arg1 (radians)
+ * @return On error return DBL_MAX
  * @note PostgreSQL function: Datum dsin(PG_FUNCTION_ARGS)
  */
 float8
@@ -124,7 +579,10 @@ pg_dsin(float8 arg1)
   errno = 0;
   result = sin(arg1);
   if (errno != 0 || isinf(arg1))
-    elog(ERROR, "input is out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "input is out of range");
+    return DBL_MAX;
+  }
   if (unlikely(isinf(result)))
     float_overflow_error();
 
@@ -133,6 +591,7 @@ pg_dsin(float8 arg1)
 
 /**
  * @brief Return the cosine of arg1 (radians)
+ * @return On error return DBL_MAX
  * @note PostgreSQL function: Datum dcos(PG_FUNCTION_ARGS)
  */
 float8
@@ -162,7 +621,10 @@ pg_dcos(float8 arg1)
   errno = 0;
   result = cos(arg1);
   if (errno != 0 || isinf(arg1))
-    elog(ERROR, "input is out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "input is out of range");
+    return DBL_MAX;
+  }
   if (unlikely(isinf(result)))
     float_overflow_error();
 
@@ -226,11 +688,16 @@ pg_datan2(float8 arg1, float8 arg2)
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a string to a date in internal date format.
+ * @return On error return DATEVAL_NOEND
  * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
  */
 DateADT
 pg_date_in(const char *str)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return DATEVAL_NOEND;
+
   DateADT date;
   fsec_t fsec;
   struct pg_tm tt, *tm = &tt;
@@ -251,11 +718,14 @@ pg_date_in(const char *str)
     dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tzp);
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
   if (dterr != 0)
+  {
 #if POSTGRESQL_VERSION_NUMBER >= 160000
     DateTimeParseError(dterr, NULL, str, "date", NULL);
 #else
     DateTimeParseError(dterr, str, "date");
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
+    return DATEVAL_NOEND;
+  }
 
   switch (dtype)
   {
@@ -280,18 +750,26 @@ pg_date_in(const char *str)
 #else
       DateTimeParseError(DTERR_BAD_FORMAT, str, "date");
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
-      break;
+      return DATEVAL_NOEND;
   }
 
   /* Prevent overflow in Julian-day routines */
   if (!IS_VALID_JULIAN(tm->tm_year, tm->tm_mon, tm->tm_mday))
-    elog(ERROR, "date out of range: \"%s\"", str);
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "date out of range: \"%s\"", str);
+    return DATEVAL_NOEND;
+  }
 
   date = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) - POSTGRES_EPOCH_JDATE;
 
   /* Now check for just-out-of-range dates */
   if (!IS_VALID_DATE(date))
-    elog(ERROR, "date out of range: \"%s\"", str);
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "date out of range: \"%s\"", str);
+    return DATEVAL_NOEND;
+  }
 
   return date;
 }
@@ -379,6 +857,10 @@ MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
 TimeADT
 pg_time_in(const char *str, int32 typmod)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return DT_NOEND;
+
   TimeADT result;
   fsec_t fsec;
   struct pg_tm tt, *tm = &tt;
@@ -395,11 +877,14 @@ pg_time_in(const char *str, int32 typmod)
   if (dterr == 0)
     dterr = DecodeTimeOnly(field, ftype, nf, &dtype, tm, &fsec, &tz);
   if (dterr != 0)
+  {
 #if POSTGRESQL_VERSION_NUMBER >= 160000
     DateTimeParseError(dterr, NULL, str, "time", NULL);
 #else
     DateTimeParseError(dterr, str, "time");
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
+    return DT_NOEND;
+  }
 
   tm2time(tm, fsec, &result);
   MEOSAdjustTimeForTypmod(&result, typmod);
@@ -434,7 +919,6 @@ pg_time_out(TimeADT time)
 
 #if ! MEOS
 /**
- * @ingroup libmeos_pg_types
  * @brief Convert a string into a timestamp with timezone.
  * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
  */
@@ -486,8 +970,10 @@ MEOSAdjustTimestampForTypmodError(Timestamp *time, int32 typmod, bool *error)
         return false;
       }
 
-      elog(ERROR, "timestamp(%d) precision must be between %d and %d",
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+        "timestamp(%d) precision must be between %d and %d",
               typmod, 0, MAX_TIMESTAMP_PRECISION);
+      return false;
     }
 
     if (*time >= INT64CONST(0))
@@ -513,12 +999,17 @@ MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 
 /**
  * @brief Convert a string to a either timestamp or a timestamp with timezone.
+ * @brief On error return DT_NOEND
  * @note The function returns a TimestampTz that must be cast to a Timestamp
  * when calling the function with the last argument to false
  */
 TimestampTz
 timestamp_in_common(const char *str, int32 typmod, bool withtz)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return DT_NOEND;
+
   TimestampTz result;
   fsec_t    fsec;
   struct pg_tm tt,
@@ -533,26 +1024,24 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
 
   dterr = ParseDateTime(str, workbuf, sizeof(workbuf),
               field, ftype, MAXDATEFIELDS, &nf);
-  if (dterr == 0)
+  if (dterr != 0)
+    return DT_NOEND;
+
 #if POSTGRESQL_VERSION_NUMBER >= 160000
     dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz, NULL);
 #else
     dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz);
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
+
   if (dterr != 0)
   {
-    if (withtz)
+    char *type_str = withtz ? "timestamp with time zone" : "time";
 #if POSTGRESQL_VERSION_NUMBER >= 160000
-      DateTimeParseError(dterr, NULL, str, "timestamp with time zone", NULL);
+    DateTimeParseError(dterr, NULL, str, type_str, NULL);
 #else
-      DateTimeParseError(dterr, str, "timestamp with time zone");
-#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
-    else
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-    DateTimeParseError(dterr, NULL, str, "time", NULL);
-#else
-    DateTimeParseError(dterr, str, "time");
-#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
+    DateTimeParseError(dterr, str, type_str);
+#endif
+    return DT_NOEND;
   }
 
   switch (dtype)
@@ -563,7 +1052,11 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
         tm2timestamp(tm, fsec, &tz, &result) :
         tm2timestamp(tm, fsec, NULL, &result);
       if (status != 0)
-        elog(ERROR, "timestamp out of range: \"%s\"", str);
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range: \"%s\"", str);
+        return DT_NOEND;
+      }
       break;
     }
     case DTK_EPOCH:
@@ -579,7 +1072,8 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
       break;
 
     default:
-      elog(ERROR, "unexpected dtype %d while parsing timestamp%s \"%s\"",
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "unexpected dtype %d while parsing timestamp%s \"%s\"",
         dtype, (withtz) ? "tz" : "", str);
       TIMESTAMP_NOEND(result);
   }
@@ -592,6 +1086,7 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp with time zone.
+ * @return On error return DT_NOEND
  * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
  */
 TimestampTz
@@ -603,6 +1098,7 @@ pg_timestamptz_in(const char *str, int32 typmod)
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp without time zone.
+ * @return On error return DT_NOEND
  * @note PostgreSQL function: Datum timestamp_in(PG_FUNCTION_ARGS)
  */
 Timestamp
@@ -614,8 +1110,8 @@ pg_timestamp_in(const char *str, int32 typmod)
 
 #if ! MEOS
 /**
- * @ingroup libmeos_pg_types
  * @brief Convert a timestamp with timezone to a string.
+ * @return On error return NULL
  * @note PostgreSQL function: Datum timestamptz_out(PG_FUNCTION_ARGS)
  */
 char *
@@ -647,7 +1143,10 @@ timestamp_out_common(TimestampTz dt, bool withtz)
   else if (! withtz && timestamp2tm(dt, NULL, tm, &fsec, NULL, NULL) == 0)
     EncodeDateTime(tm, fsec, false, 0, NULL, DateStyle, buf);
   else
-    elog(ERROR, "timestamp out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of range");
+    return NULL;
+  }
 
   result = pstrdup(buf);
   return result;
@@ -678,7 +1177,21 @@ pg_timestamp_out(Timestamp dt)
 
 /*****************************************************************************/
 
-#if MEOS
+
+#if ! MEOS
+/**
+ * @brief Convert an interval to a string.
+ * @return On error return NULL
+ * @note PostgreSQL function: Datum interval_out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_interval_out(const Interval *interval)
+{
+  Datum d = PointerGetDatum(interval);
+  char *result = DatumGetCString(call_function1(interval_out, d));
+  return result;
+}
+#else /*if MEOS */
 /*
  *  Adjust interval for specified precision, in both YEAR to SECOND
  *  range and sub-second precision.
@@ -818,14 +1331,22 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
       /* fractional-second rounding will be dealt with below */
     }
     else
-      elog(ERROR, "unrecognized interval typmod: %d", typmod);
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "unrecognized interval typmod: %d", typmod);
+      return;
+    }
 
     /* Need to adjust sub-second precision? */
     if (precision != INTERVAL_FULL_PRECISION)
     {
       if (precision < 0 || precision > MAX_INTERVAL_PRECISION)
-        elog(ERROR, "interval(%d) precision must be between %d and %d",
-                precision, 0, MAX_INTERVAL_PRECISION);
+      {
+        meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+          "interval(%d) precision must be between %d and %d",
+          precision, 0, MAX_INTERVAL_PRECISION);
+        return;
+      }
 
       if (interval->time >= INT64CONST(0))
       {
@@ -853,6 +1374,10 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
 Interval *
 pg_interval_in(const char *str, int32 typmod)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+
   Interval *result;
   fsec_t fsec;
   struct pg_tm tt, *tm = &tt;
@@ -879,6 +1404,7 @@ pg_interval_in(const char *str, int32 typmod)
 
   dterr = ParseDateTime(str, workbuf, sizeof(workbuf), field,
               ftype, MAXDATEFIELDS, &nf);
+
   if (dterr == 0)
     dterr = DecodeInterval(field, ftype, nf, range, &dtype, tm, &fsec);
 
@@ -895,6 +1421,7 @@ pg_interval_in(const char *str, int32 typmod)
 #else
     DateTimeParseError(dterr, str, "interval");
 #endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
+    return NULL;
   }
 
   result = (Interval *) palloc(sizeof(Interval));
@@ -903,12 +1430,19 @@ pg_interval_in(const char *str, int32 typmod)
   {
     case DTK_DELTA:
       if (tm2interval(tm, fsec, result) != 0)
-        elog(ERROR, "interval out of range");
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "interval out of range");
+        pfree(result);
+        return NULL;
+      }
       break;
 
     default:
-      elog(ERROR, "unexpected dtype %d while parsing interval \"%s\"",
-         dtype, str);
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "unexpected dtype %d while parsing interval \"%s\"", dtype, str);
+      pfree(result);
+      return NULL;
   }
 
   AdjustIntervalForTypmod(result, typmod);
@@ -932,7 +1466,10 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
    * inputs as well, but it's not entirely clear what limits to apply.
    */
   if (isinf(secs) || isnan(secs))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
 
   result = (Interval *) palloc(sizeof(Interval));
   result->month = years * MONTHS_PER_YEAR + months;
@@ -953,13 +1490,21 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
 char *
 pg_interval_out(const Interval *span)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) span))
+    return NULL;
+
   char *result;
   struct pg_tm tt, *tm = &tt;
   fsec_t fsec;
   char buf[MAXDATELEN + 1];
 
   if (interval2tm(*span, tm, &fsec) != 0)
-    elog(ERROR, "could not convert interval to tm");
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not convert interval to tm");
+    return NULL;
+  }
 
   EncodeInterval(tm, fsec, IntervalStyle, buf);
 
@@ -975,6 +1520,10 @@ pg_interval_out(const Interval *span)
 Interval *
 pg_interval_mul(const Interval *span, double factor)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) span))
+    return NULL;
+
   double month_remainder_days, sec_remainder, result_double;
   int32 orig_month = span->month,
     orig_day = span->day;
@@ -985,13 +1534,19 @@ pg_interval_mul(const Interval *span, double factor)
   result_double = span->month * factor;
   if (isnan(result_double) ||
     result_double > INT_MAX || result_double < INT_MIN)
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
   result->month = (int32) result_double;
 
   result_double = span->day * factor;
   if (isnan(result_double) ||
     result_double > INT_MAX || result_double < INT_MIN)
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
   result->day = (int32) result_double;
 
   /*
@@ -1033,7 +1588,10 @@ pg_interval_mul(const Interval *span, double factor)
   result->day += (int32) month_remainder_days;
   result_double = rint(span->time * factor + sec_remainder * USECS_PER_SEC);
   if (isnan(result_double) || !FLOAT8_FITS_IN_INT64(result_double))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
   result->time = (int64) result_double;
 
   return result;
@@ -1052,23 +1610,39 @@ pg_interval_mul(const Interval *span, double factor)
 Interval *
 pg_interval_pl(const Interval *span1, const Interval *span2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) span1) || ! ensure_not_null((void *) span2))
+    return NULL;
+
   Interval *result = palloc(sizeof(Interval));
 
   result->month = span1->month + span2->month;
   /* overflow check copied from int4pl */
   if (SAMESIGN(span1->month, span2->month) &&
     ! SAMESIGN(result->month, span1->month))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    pfree(result);
+    return NULL;
+  }
 
   result->day = span1->day + span2->day;
   if (SAMESIGN(span1->day, span2->day) &&
     ! SAMESIGN(result->day, span1->day))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    pfree(result);
+    return NULL;
+  }
 
   result->time = span1->time + span2->time;
   if (SAMESIGN(span1->time, span2->time) &&
     ! SAMESIGN(result->time, span1->time))
-    elog(ERROR, "interval out of range");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    pfree(result);
+    return NULL;
+  }
 
   return result;
 }
@@ -1076,6 +1650,7 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
 /**
  * @ingroup libmeos_pg_types
  * @brief Add an interval to a timestamp data type.
+ * @return On error return DT_NOEND
  *
  * Note that interval has provisions for qualitative year/month and day
  * units, so try to do the right thing with them.
@@ -1089,6 +1664,10 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
 TimestampTz
 pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) span))
+    return DT_NOEND;
+
   Timestamp result;
 
   if (TIMESTAMP_NOT_FINITE(timestamp))
@@ -1102,7 +1681,11 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
       fsec_t    fsec;
 
       if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) != 0)
-        elog(ERROR, "timestamp out of range");
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return DT_NOEND;
+      }
 
       tm->tm_mon += span->month;
       if (tm->tm_mon > MONTHS_PER_YEAR)
@@ -1121,7 +1704,11 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
         tm->tm_mday = (day_tab[isleap(tm->tm_year)][tm->tm_mon - 1]);
 
       if (tm2timestamp(tm, fsec, NULL, &timestamp) != 0)
-        elog(ERROR, "timestamp out of range");
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return DT_NOEND;
+      }
     }
 
     if (span->day != 0)
@@ -1132,20 +1719,32 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
       int      julian;
 
       if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) != 0)
-        elog(ERROR, "timestamp out of range");
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return DT_NOEND;
+      }
 
       /* Add days by converting to and from Julian */
       julian = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) + span->day;
       j2date(julian, &tm->tm_year, &tm->tm_mon, &tm->tm_mday);
 
       if (tm2timestamp(tm, fsec, NULL, &timestamp) != 0)
-        elog(ERROR, "timestamp out of range");
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return DT_NOEND;
+      }
     }
 
     timestamp += span->time;
 
     if (!IS_VALID_TIMESTAMP(timestamp))
-      elog(ERROR, "timestamp out of range");
+    {
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+        "timestamp out of range");
+      return DT_NOEND;
+    }
 
     result = timestamp;
   }
@@ -1161,6 +1760,10 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
 TimestampTz
 pg_timestamp_mi_interval(TimestampTz timestamp, const Interval *span)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) span))
+    return DT_NOEND;
+
   Interval tspan;
   tspan.month = -span->month;
   tspan.day = -span->day;
@@ -1212,8 +1815,13 @@ pg_interval_justify_hours(const Interval *span)
 Interval *
 pg_timestamp_mi(TimestampTz dt1, TimestampTz dt2)
 {
+  /* Ensure validity of the arguments */
   if (TIMESTAMP_NOT_FINITE(dt1) || TIMESTAMP_NOT_FINITE(dt2))
-    elog(ERROR, "cannot subtract infinite timestamps");
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "cannot subtract infinite timestamps");
+    return NULL;
+  }
 
   Interval interval;
   interval.time = dt1 - dt2;
@@ -1263,6 +1871,11 @@ interval_cmp_value(const Interval *interval)
 int
 pg_interval_cmp(const Interval *interval1, const Interval *interval2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) interval1) ||
+      ! ensure_not_null((void *) interval2))
+    return INT_MAX;
+
   INT128 span1 = interval_cmp_value(interval1);
   INT128 span2 = interval_cmp_value(interval2);
   return int128_compare(span1, span2);

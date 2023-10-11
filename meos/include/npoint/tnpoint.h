@@ -80,7 +80,7 @@ typedef struct
 
 /* Input/output functions */
 
-/* Cast functions */
+/* Conversion functions */
 
 /** Symbolic constants for transforming tnpoint <-> tgeompoint */
 #define NPOINT_TO_GEOM        true

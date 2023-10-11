@@ -49,6 +49,10 @@
 Temporal *
 tand_bool_tbool(bool b, const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_BOOL))
+    return NULL;
   return boolop_tbool_bool(temp, b, &datum_and, INVERT);
 }
 
@@ -60,6 +64,10 @@ tand_bool_tbool(bool b, const Temporal *temp)
 Temporal *
 tand_tbool_bool(const Temporal *temp, bool b)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_BOOL))
+    return NULL;
   return boolop_tbool_bool(temp, b, &datum_and, INVERT_NO);
 }
 
@@ -71,6 +79,11 @@ tand_tbool_bool(const Temporal *temp, bool b)
 Temporal *
 tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_temporal_has_type(temp1, T_TBOOL) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
   return boolop_tbool_tbool(temp1, temp2, &datum_and);
 }
 
@@ -86,6 +99,10 @@ tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tor_bool_tbool(bool b, const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_BOOL))
+    return NULL;
   return boolop_tbool_bool(temp, b, &datum_or, INVERT);
 }
 
@@ -97,6 +114,10 @@ tor_bool_tbool(bool b, const Temporal *temp)
 Temporal *
 tor_tbool_bool(const Temporal *temp, bool b)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_same_temporal_basetype(temp, T_BOOL))
+    return NULL;
   return boolop_tbool_bool(temp, b, &datum_or, INVERT_NO);
 }
 
@@ -108,6 +129,11 @@ tor_tbool_bool(const Temporal *temp, bool b)
 Temporal *
 tor_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_temporal_has_type(temp1, T_TBOOL) ||
+      ! ensure_same_temporal_type(temp1, temp2))
+    return NULL;
   return boolop_tbool_tbool(temp1, temp2, &datum_or);
 }
 

@@ -179,14 +179,26 @@ CREATE FUNCTION tnpoint_inst(tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seq(tnpoint)
+-- The function is not strict
+CREATE FUNCTION tnpoint_seq(tnpoint, text)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seqset(tnpoint)
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tnpoint_seq(tnpoint)
+  RETURNS tnpoint
+  AS 'SELECT @extschema@.tnpoint_seq($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tnpoint_seqset(tnpoint, text)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tnpoint_seqset(tnpoint)
+  RETURNS tnpoint
+  AS 'SELECT @extschema@.tnpoint_seqset($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tnpoint, text)
   RETURNS tnpoint
@@ -376,19 +388,19 @@ CREATE FUNCTION segments(tnpoint)
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION shift(tnpoint, interval)
+CREATE FUNCTION shiftTime(tnpoint, interval)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tscale(tnpoint, interval)
+CREATE FUNCTION scaleTime(tnpoint, interval)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftTscale(tnpoint, interval, interval)
+CREATE FUNCTION shiftScaleTime(tnpoint, interval, interval)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

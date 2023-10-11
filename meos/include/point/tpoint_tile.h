@@ -46,7 +46,7 @@
  */
 typedef struct
 {
-  int numdims;           /**< Number of dimensions */
+  int ndims;             /**< Number of dimensions */
   int count[MAXDIMS];    /**< Number of elements in each dimension */
   uint8_t byte[1];       /**< beginning of variable-length data */
 } BitMatrix;
@@ -78,8 +78,8 @@ typedef struct STboxGridState
 
 /*****************************************************************************/
 
-extern BitMatrix *bitmatrix_make(int *count, int numdims);
-extern void tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
+extern BitMatrix *bitmatrix_make(int *count, int ndims);
+extern int tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
   BitMatrix *bm);
 extern Temporal *tpoint_at_tile(const Temporal *temp, const STBox *box);
 

@@ -96,19 +96,24 @@ SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT stbox_t('[2001-01-03,2001-01-06]');
-SELECT stbox(1,2,3,4);
+SELECT stbox_t(timestamptz '2001-01-03');
+SELECT stbox_t(tstzspan '[2001-01-03,2001-01-06]');
+SELECT stbox_x(1,2,3,4);
 SELECT stbox_z(1,2,3,4,5,6);
-SELECT stbox_t(1,2,3,4,'[2001-01-03,2001-01-06]');
-SELECT stbox_zt(1,2,3,4,5,6,'[2001-01-04,2001-01-08]');
+SELECT stbox_xt(1,2,3,4,timestamptz '2001-01-03');
+SELECT stbox_xt(1,2,3,4,tstzspan '[2001-01-03,2001-01-06]');
+SELECT stbox_zt(1,2,3,4,5,6,timestamptz '2001-01-04');
+SELECT stbox_zt(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
 
-SELECT geodstbox_t('[2001-01-03,2001-01-06]');
+SELECT geodstbox_t(timestamptz '2001-01-03');
+SELECT geodstbox_t(tstzspan '[2001-01-03,2001-01-06]');
 SELECT geodstbox_z(1,2,3,4,5,6);
-SELECT geodstbox_zt(1,2,3,4,5,6,'[2001-01-04,2001-01-08]');
-
-SELECT stbox_zt(8,7,6,4,3,2,'[2001-01-01,2001-01-05]');
-SELECT stbox_t(6,5,3,2,'[2001-01-01,2001-01-04]');
-SELECT geodstbox_zt(8,7,6,4,3,2,'[2001-01-01,2001-01-05]');
+SELECT geodstbox_zt(1,2,3,4,5,6,timestamptz '2001-01-04');
+SELECT geodstbox_zt(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
+-- Ordering the coordinates
+SELECT stbox_xt(4,3,2,1,tstzspan '[2001-01-01,2001-01-04]');
+SELECT stbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
+SELECT geodstbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
 
 -------------------------------------------------------------------------------
 -- Casting
@@ -117,9 +122,6 @@ SELECT geodstbox_zt(8,7,6,4,3,2,'[2001-01-01,2001-01-05]');
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])'::tstzspan;
 SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'::tstzspan;
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::tstzspan;
--- NULL
-SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))'::tstzspan;
-SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::tstzspan;
 
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,5)),[2000-01-01,2000-01-05])'::geometry);
@@ -135,6 +137,8 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,1,1)),[2000-01-01,2000-01
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01,2000-01-05])'::geometry);
 /* Errors */
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
+SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))'::tstzspan;
+SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::tstzspan;
 
 SELECT geomset '{"Point(1 1 1)", "Point(2 2 2)", "Point(3 3 3)"}'::stbox;
 
@@ -223,6 +227,15 @@ SELECT MAX(tmax(b)) FROM tbl_stbox;
 -------------------------------------------------------------------------------
 -- Transformation function
 -------------------------------------------------------------------------------
+
+SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day');
+SELECT shiftTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '-1 day');
+
+SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day');
+SELECT scaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 hour');
+
+SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '1 day', '1 hour');
+SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '-1 day', '1 hour');
 
 SELECT getSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
 SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', 2.0);

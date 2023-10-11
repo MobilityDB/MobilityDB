@@ -272,44 +272,18 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 </programlisting>
 
 		<para>
-			Damos a continuación las funciones de entrada y salida en formato Moving Features JSON (MF-JSON) y binario conocido (WKB) para los tipos alfanuméricos temporales. Las funciones correspondientes para los puntos temporales se detallan en la <xref linkend="tpoint_inout" />.
+			Damos a continuación las funciones de entrada y salida en formato textual (Well-Known Text o WKT), binario (Well-Known Binary o WKB) y Moving Features JSON (MF-JSON) para los tipos alfanuméricos temporales. Las funciones correspondientes para los puntos temporales se detallan en la <xref linkend="tpoint_inout" />. El formato de salida predeterminado de todos los tipos alfanuméricos temporales es el formato de texto conocido. La función <varname>asText</varname> que se da a continuación permite determinar la salida de valores temporales de punto flotante.
 		</para>
 
 		<itemizedlist>
-			<listitem id="temporal_asMFJSON">
-				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
-				<para>Obtener la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
-				<para><varname>asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea</varname></para>
-				<para>El argumento <varname>options</varname> puede usarse para agregar un cuadro delimitador en la salida MFJSON:</para>
-				<itemizedlist>
-						<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>
-						<listitem><para>1: cuadro delimitador MFJSON</para></listitem>
-				</itemizedlist>
-				<para>El argumento <varname>flags</varname> puede usarse para personalizar la salida JSON, por ejemplo, para producir una salida JSON fácil de leer (para lectores humanos). Consulte la documentación de la biblioteca <varname>json-c</varname> para conocer los valores possible. Los valores típicos son los siguientes:</para>
-				<itemizedlist>
-					<listitem><para>0: means no option (default value)</para></listitem>
-					<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>
-					<listitem><para>2: JSON_C_TO_STRING_PRETTY</para></listitem>
-				</itemizedlist>
+			<listitem id="temporal_asText">
+				<indexterm><primary><varname>asText</varname></primary></indexterm>
+				<para>Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+				<para><varname>asText(tfloat,maxdecdigits=15) → text</varname></para>
 				<para>El argumento <varname>maxdecdigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asMFJSON(tbool 't@2019-01-01 18:00:00', 1);
-/* {"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
-  "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
-  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"} */
-SELECT asMFJSON(tint '{10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}', 1);
-/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
-   "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
-   "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
-   "interpolation":"Discrete"} */
-SELECT asMFJSON(tfloat '[10.5@2019-01-01 18:00:00+02, 25.5@2019-01-01 18:10:00+02]');
-/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
-  "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"} */
-SELECT asMFJSON(ttext '{[walking@2019-01-01 18:00:00+02,
-  driving@2019-01-01 18:10:00+02]}');
-/* {"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
-  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
+SELECT asText(tfloat '[10.55@2000-01-01, 25.55@2000-01-02]', 0);
+-- [11@2000-01-01, 26@2000-01-02]
 </programlisting>
 			</listitem>
 
@@ -347,11 +321,82 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 </programlisting>
 			</listitem>
 
+			<listitem id="temporal_asMFJSON">
+				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
+				<para>Obtener la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
+				<para><varname>asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea</varname></para>
+				<para>El argumento <varname>options</varname> puede usarse para agregar un cuadro delimitador en la salida MFJSON:</para>
+				<itemizedlist>
+						<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>
+						<listitem><para>1: cuadro delimitador MFJSON</para></listitem>
+				</itemizedlist>
+				<para>El argumento <varname>flags</varname> puede usarse para personalizar la salida JSON, por ejemplo, para producir una salida JSON fácil de leer (para lectores humanos). Consulte la documentación de la biblioteca <varname>json-c</varname> para conocer los valores possible. Los valores típicos son los siguientes:</para>
+				<itemizedlist>
+					<listitem><para>0: means no option (default value)</para></listitem>
+					<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>
+					<listitem><para>2: JSON_C_TO_STRING_PRETTY</para></listitem>
+				</itemizedlist>
+				<para>El argumento <varname>maxdecdigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asMFJSON(tbool 't@2019-01-01 18:00:00', 1);
+/* {"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
+  "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
+  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"} */
+SELECT asMFJSON(tint '{10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}', 1);
+/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
+   "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
+   "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
+   "interpolation":"Discrete"} */
+SELECT asMFJSON(tfloat '[10.5@2019-01-01 18:00:00+02, 25.5@2019-01-01 18:10:00+02]');
+/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
+  "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"} */
+SELECT asMFJSON(ttext '{[walking@2019-01-01 18:00:00+02,
+  driving@2019-01-01 18:10:00+02]}');
+/* {"type":"MovingText","sequences":[{"values":["walking","driving"],
+  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
+  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
+</programlisting>
+			</listitem>
+
+			<listitem id="temporal_FromBinary">
+				<indexterm><primary><varname>ttypeFromBinary</varname></primary></indexterm>
+				<para>Entrar un valor temporal de su representación binaria conocida (WKB)</para>
+				<para><varname>ttypeFromBinary(bytea) → ttype</varname></para>
+				<para>Hay una función por tipo temporal, el nombre de la función tiene como prefijo el nombre del tipo, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos a continuación.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tboolFromBinary('\x010d000101009c57d3c11c0000');
+-- t@2001-01-01
+SELECT tintFromBinary('\x000016010000000100001cc1d3579c00');
+-- 1@2001-01-01
+SELECT tfloatFromBinary('\x01130081000000000000f83f009c57d3c11c0000');
+-- 1.5@2001-01-01
+SELECT ttextFromBinary('\x01170001040000000000000041414100009c57d3c11c0000');
+-- "AAA"@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="temporal_FromHexWKB">
+				<indexterm><primary><varname>ttypeFromHexWKB</varname></primary></indexterm>
+				<para>Entrar un valor temporal de su representación hexadecimal binaria conocida (HexWKB)</para>
+				<para><varname>ttypeFromHexWKB(text) → ttype</varname></para>
+				<para>Hay una función por tipo temporal, el nombre de esta función tiene como prefijo el nombre del tipo, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos a continuación</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tboolFromHexWKB('010D000101009C57D3C11C0000');
+-- t@2001-01-01
+SELECT tintFromHexWKB('000016010000000100001CC1D3579C00');
+-- 1@2001-01-01
+SELECT tfloatFromHexWKB('01130081000000000000F83F009C57D3C11C0000');
+-- 1.5@2001-01-01
+SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
+-- "AAA"@2001-01-01
+</programlisting>
+			</listitem>
+
 			<listitem id="temporal_FromMFJSON">
 				<indexterm><primary><varname>ttypeFromMFJSON</varname></primary></indexterm>
-				<para>Input a temporal value from its Moving Features JSON (MF-JSON) representation</para>
-				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the examples below.</para>
+				<para>Entrar un valor temporal de su representación Moving Features JSON (MF-JSON)</para>
 				<para><varname>ttypeFromMFJSON(bytea) → ttype</varname></para>
+				<para>Hay una función por tipo temporal, el nombre de esta función tiene como prefijo el nombre del tipo, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos a continuación</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboolFromMFJSON(text
   '{"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
@@ -374,40 +419,6 @@ SELECT ttextFromMFJSON(text
   "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
   "lower_inc":true,"upper_inc":true}],"interpolation":"Step"}');
 -- {["walking"@2019-01-01 18:00:00, "driving"@2019-01-01 18:10:00]}');
-</programlisting>
-			</listitem>
-
-			<listitem id="temporal_FromBinary">
-				<indexterm><primary><varname>ttypeFromBinary</varname></primary></indexterm>
-				<para>Entrar un valor temporal de su representación binaria conocida (WKB)</para>
-				<para>Hay una función por tipo base, el nombre de esta función tiene como prefijo el nombre del tipo base, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos a continuación.</para>
-				<para><varname>ttypeFromBinary(bytea) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tboolFromBinary('\x010d000101009c57d3c11c0000');
--- t@2001-01-01
-SELECT tintFromBinary('\x000016010000000100001cc1d3579c00');
--- 1@2001-01-01
-SELECT tfloatFromBinary('\x01130081000000000000f83f009c57d3c11c0000');
--- 1.5@2001-01-01
-SELECT ttextFromBinary('\x01170001040000000000000041414100009c57d3c11c0000');
--- "AAA"@2001-01-01
-</programlisting>
-			</listitem>
-
-			<listitem id="temporal_FromHexWKB">
-				<indexterm><primary><varname>ttypeFromHexWKB</varname></primary></indexterm>
-				<para>Entrar un valor temporal de su representación hexadecimal binaria conocida (HexWKB)</para>
-				<para>Hay una función por tipo base, el nombre de esta función tiene como prefijo el nombre del tipo base, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos de firmas a continuación</para>
-				<para><varname>ttypeFromHexWKB(text) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tboolFromHexWKB('010D000101009C57D3C11C0000');
--- t@2001-01-01
-SELECT tintFromHexWKB('000016010000000100001CC1D3579C00');
--- 1@2001-01-01
-SELECT tfloatFromHexWKB('01130081000000000000F83F009C57D3C11C0000');
--- 1.5@2001-01-01
-SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
--- "AAA"@2001-01-01
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -498,7 +509,7 @@ SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
   '[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
 -- ERROR:  Input sequences must have the same interpolation
 </programlisting>
-				<para>Finalmente, otro conjunto de constructores para valores de conjunto de secuencias tiene como primer argumento una matriz de valores de <emphasis>instante</emphasis> correspondientes, y dos argumentos que establecen un intervalo de tiempo máximo y una distancia máxima tal que se introduce un espacio entre secuencias del resultado siempre que dos instantes de entrada consecutivos tengan un intervalo de tiempo o una distancia mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Estos dos argumentos de brechas son opcionales, pero al menos uno de ellos debe especificarse. Además, cuando el tipo base es continuo, un último argumento adicional establece si la interpolación es escalonada o lineal. Si no se especifica este argumento, se asume que es lineal por defecto.</para>
+				<para>Otro conjunto de constructores para valores de conjunto de secuencias tiene como primer argumento una matriz de valores de <emphasis>instante</emphasis> correspondientes, y dos argumentos que establecen un intervalo de tiempo máximo y una distancia máxima tal que se introduce un espacio entre secuencias del resultado siempre que dos instantes de entrada consecutivos tengan un intervalo de tiempo o una distancia mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Estos dos argumentos de brechas son opcionales, pero al menos uno de ellos debe especificarse. Además, cuando el tipo base es continuo, un último argumento adicional establece si la interpolación es escalonada o lineal. Si no se especifica este argumento, se asume que es lineal por defecto.</para>
 				<para>Los parámetros de la función dependen del tipo temporal. Por ejemplo, el parámetro de interpolación no está permitido para tipos temporales con subtipos discretos como <varname>tint</varname>. De manera similar, el parámetro <varname>maxdist</varname> no está permitido para tipos escalares como <varname>ttext</varname> que no tienen una función de distancia estándar.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
@@ -517,7 +528,7 @@ SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2000-01-01',
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_types_casting">
+	<sect1 id="temporal_types_conversions">
 		<title>Conversión de tipos</title>
 
 		<para>Un valor temporal se puede convertir en un tipo compatible usando la notación <varname>CAST(ttype1 AS ttype2)</varname> o <varname>ttype1::ttype2</varname>.</para>
@@ -592,7 +603,7 @@ SELECT asText((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
 		</itemizedlist>
 
 		<para>
-			Una forma común de almacenar puntos temporales en PostGIS es representarlos como geometrías de tipo <varname>LINESTRING M</varname> y utilizar la dimensión M para codificar marcas de tiempo como segundos desde 1970-01-01 00:00:00. Estas geometrías aumentadas con tiempo, llamadas <emphasis>trayectorias</emphasis>, se pueden validar con la función <varname>ST_IsValidTrajectory</varname> para verificar quel el valor M está creciendo de cada vértice al siguiente. Las trayectorias se pueden manipular con las funciones <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname> y <varname>ST_CPAWithin</varname>. Los valores de puntos temporales se pueden convertir a/desde trayectorias de PostGIS.
+			Una forma común de almacenar puntos temporales en PostGIS es representarlos como geometrías de tipo <varname>LINESTRING M</varname> y utilizar la dimensión M para codificar marcas de tiempo como segundos desde 1970-01-01 00:00:00. Estas geometrías aumentadas con tiempo, llamadas <ulink url="https://postgis.net/docs/reference.html#Temporal">trayectorias</ulink>, se pueden validar con la función <varname>ST_IsValidTrajectory</varname> para verificar quel el valor M está creciendo de cada vértice al siguiente. Las trayectorias se pueden manipular con las funciones <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname> y <varname>ST_CPAWithin</varname>. Los valores de puntos temporales se pueden convertir a/desde trayectorias de PostGIS.
 		</para>
 
 		<itemizedlist>
@@ -1047,54 +1058,83 @@ SELECT asText(setInterp(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01,
 			</listitem>
 
 			<listitem id="shift">
-				<indexterm><primary><varname>shift</varname></primary></indexterm>
-				<para>Desplazar el intervalo de tiempo del valor temporal con un intervalo</para>
-				<para><varname>shift(ttype,interval) → ttype</varname></para>
+				<indexterm><primary><varname>shiftValue</varname></primary></indexterm>
+				<indexterm><primary><varname>shiftTime</varname></primary></indexterm>
+				<para>Desplazar el rango de valores or el intervalo de tiempo de un valor temporal con un valor or intervalo</para>
+				<para><varname>shiftValue(tnumber,base) → tnumber</varname></para>
+				<para><varname>shiftTime(ttype,interval) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT shift(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
+SELECT shiftValue(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', 1);
+-- {2@2001-01-02, 3@2001-01-04, 2@2001-01-06}
+SELECT shiftValue(tfloat '{[1@2001-01-01,2@2001-01-02],[3@2001-01-03,4@2001-01-04]}', -1);
+--  {[0@2001-01-01, 1@2001-01-02], [2@2001-01-03, 3@2001-01-04]}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT shiftTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
 -- {1@2001-01-02, 2@2001-01-04, 1@2001-01-06}
-SELECT shift(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
+SELECT shiftTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
 -- [1@2001-01-02, 2@2001-01-04]
-SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
+SELECT asText(shiftTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
   [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
 /* {[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-04],
    [POINT(2 2)@2001-01-05, POINT(1 1)@2001-01-06]} */
 </programlisting>
 			</listitem>
 
-			<listitem id="tscale">
-				<indexterm><primary><varname>tscale</varname></primary></indexterm>
-				<para>Escalear el intervalo de tiempo del valor temporal a un intervalo. Si el intervalo de tiempo del valor temporal es cero (por ejemplo, para un instante temporal), el resultado es el valor temporal. El intervalo dado debe ser estrictamente mayor que cero.</para>
-				<para><varname>tscale(ttype,interval) → ttype</varname></para>
+			<listitem id="scale">
+				<indexterm><primary><varname>scaleValue</varname></primary></indexterm>
+				<indexterm><primary><varname>scaleTime</varname></primary></indexterm>
+				<para>Escalear el rango de valores o el intervalo de tiempo de un valor temporal a un valor o intervalo</para>
+				<para><varname>scaleValue(tnumber,width) → tnumber</varname></para>
+				<para><varname>scaleTime(ttype,interval) → ttype</varname></para>
+				<para>Si el rango de valores o el intervalo de tiempo del valor temporal es cero (por ejemplo, para un instante temporal), el resultado es el valor temporal. El ancho o intervalo dado debe ser estrictamente mayor que cero.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tscale(tint '1@2001-01-01', '1 day');
+SELECT scaleValue(tint '1@2001-01-01', 1);
 -- 1@2001-01-01
-SELECT tscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
+SELECT scaleValue(tfloat '{[1@2001-01-01,2@2001-01-02], [3@2001-01-03,4@2001-01-04]}', 6);
+-- {[1@2001-01-01, 3@2001-01-03], [5@2001-01-05, 7@2001-01-07]}
+SELECT scaleValue(tint '1@2001-01-01', -1);
+-- ERROR:   The value must be strictly positive: -1
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT scaleTime(tint '1@2001-01-01', '1 day');
+-- 1@2001-01-01
+SELECT scaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
 -- {1@2001-01-01 00:00:00+01, 2@2001-01-01 12:00:00+01, 1@2001-01-02 00:00:00+01}
-SELECT tscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
+SELECT scaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
 -- [1@2001-01-01, 2@2001-01-02]
-SELECT asText(tscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+SELECT asText(scaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
 /* {[POINT(1 1)@2001-01-01 00:00:00+01, POINT(2 2)@2001-01-01 06:00:00+01,
    POINT(1 1)@2001-01-01 12:00:00+01], [POINT(2 2) @2001-01-01 18:00:00+01,
    POINT(1 1)@2001-01-02 00:00:00+01]} */
-SELECT tscale(tint '1@2001-01-01', '-1 day');
--- ERROR:  The duration must be a positive interval: -1 days
+SELECT scaleTime(tint '1@2001-01-01', '-1 day');
+-- ERROR:  The interval must be positive: -1 days
 </programlisting>
 			</listitem>
 
-			<listitem id="shiftTscale">
-				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
-				<para>Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos. Esta función combina en un solo paso las funciones <link linkend="shift"><varname>shift</varname></link> y <link linkend="tscale"><varname>tscale</varname></link>.</para>
-				<para><varname>shiftTscale(ttype,interval,interval) → ttype</varname></para>
+			<listitem id="shiftScale">
+				<indexterm><primary><varname>shiftScaleValue</varname></primary></indexterm>
+				<indexterm><primary><varname>shiftScaleTime</varname></primary></indexterm>
+				<para>Desplazar y escalear el rango de valores o intervalo de tiempo de un valor temporal a los dos valores o intervalos</para>
+				<para><varname>shiftScaleValue(tnumber,base,base) → tnumber</varname></para>
+				<para><varname>shiftScaleTime(ttype,interval,interval) → ttype</varname></para>
+				<para>Estas funciones combinan las funciones <link linkend="shift"><varname>shiftValue</varname></link> y <link linkend="scale"><varname>scaleValue</varname></link> o <link linkend="shift"><varname>shiftTime</varname></link> y <link linkend="scale"><varname>scaleTime</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT shiftTscale(tint '1@2001-01-01', '1 day', '1 day');
+SELECT shiftScaleValue(tint '1@2001-01-01', 1, 1);
+-- 2@2001-01-01
+SELECT shiftScaleValue(tfloat '{[1@2001-01-01,2@2001-01-02],[3@2001-01-03,4@2001-01-04]}',
+  -1, 6);
+--  {[0@2001-01-01, 2@2001-01-02], [4@2001-01-03, 6@2001-01-04]}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+SELECT shiftScaleTime(tint '1@2001-01-01', '1 day', '1 day');
 -- 1@2001-01-02
-SELECT shiftTscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day', '1 day');
+SELECT shiftScaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day','1 day');
 -- {1@2001-01-02 00:00:00+01, 2@2001-01-02 12:00:00+01, 1@2001-01-03 00:00:00+01}
-SELECT shiftTscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
+SELECT shiftScaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
 -- [1@2001-01-02, 2@2001-01-03]
-SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+SELECT asText(shiftScaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}',
   '1 day', '1 day'));
 /* {[POINT(1 1)@2001-01-02 00:00:00+01, POINT(2 2)@2001-01-02 06:00:00+01,
@@ -1103,77 +1143,11 @@ SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-0
 </programlisting>
 			</listitem>
 
-			<listitem id="tsample">
-				<indexterm><primary><varname>tsample</varname></primary></indexterm>
-				<para>Reducir el valor temporal con respecto a un intervalo. Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero.</para>
-				<para><varname>tsample(ttype,duration interval,torigin timestamptz='2000-01-03') → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]', '1 day', '2000-01-01');
--- [1@2000-01-01, 5@2000-01-05, 1@2000-01-10]
-SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]', '2 days', '2000-01-01');
--- [1@2000-01-01, 5@2000-01-05, 1.8@2000-01-09]
-SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]', '2 days', '2000-01-02');
--- [2@2000-01-02, 4@2000-01-04, 4.2@2000-01-06, 1@2000-01-10]
-SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]', '3 days', '2000-01-01');
--- [1@2000-01-01, 4@2000-01-04, 3.4@2000-01-07, 1@2000-01-10]
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
-SELECT asText(tsample(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '1 day', '2000-01-01'));
--- [POINT(1 1)@2000-01-01, POINT(5 5)@2000-01-05, POINT(1 1)@2000-01-10]
-SELECT asText(tsample(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '2 days', '2000-01-01'));
--- [POINT(1 1)@2000-01-01, POINT(5 5)@2000-01-05, POINT(1.8 1.8)@2000-01-09]
-SELECT asText(tsample(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '2 days', '2000-01-02'));
--- [POINT(2 2)@2000-01-02, POINT(4 4)@2000-01-04, POINT(4.2 4.2)@2000-01-06,
-  POINT(1 1)@2000-01-10]
-SELECT asText(tsample(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '3 days', '2000-01-01'));
--- [POINT(1 1)@2000-01-01, POINT(4 4)@2000-01-04, POINT(3.4 3.4)@2000-01-07,
-  POINT(1 1)@2000-01-10]
-</programlisting>
-			</listitem>
-
-			<listitem id="tprecision">
-				<indexterm><primary><varname>tprecision</varname></primary></indexterm>
-				<para>Reducir la precisión temporal del valor temporal con respecto a un intervalo. La función calcula el promedio/centroide ponderado por el tiempo en cada intervalo de tiempo. Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero.</para>
-				<para><varname>tprecision(ttype,duration interval,torigin timestamptz='2000-01-03') → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','1 days',
-  '2000-01-01');
--- [1.5@2000-01-01, 3.5@2000-01-02, 3@2000-01-03]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','2 days',
-  '2000-01-01');
--- [2@2000-01-01, 4@2000-01-03, 3@2000-01-05]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','2 days',
-  '2000-01-02');
--- [1.5@1999-12-31, 3.5@2000-01-02, 3@2000-01-04]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-10]','3 days',
-  '2000-01-01');
--- [2.5@2000-01-01, 4.3@2000-01-04, 2.2@2000-01-07]
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '1 day', '2000-01-01'));
--- [POINT(1.5 1.5)@2000-01-01, POINT(3.5 3.5)@2000-01-02, POINT(3 3)@2000-01-03]
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '2 days', '2000-01-01'));
--- [POINT(2 2)@2000-01-01, POINT(4 4)@2000-01-03, POINT(3 3)@2000-01-05]
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '2 days', '2000-01-02'));
--- [POINT(1.5 1.5)@1999-12-31, POINT(3.5 3.5)@2000-01-02, POINT(3 3)@2000-01-04]
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-10]', '3 days', '2000-01-01'));
--- [POINT(2.5 2.5)@2000-01-01, POINT(4.3 4.3)@2000-01-04, POINT(2.2 2.2)@2000-01-07]
-</programlisting>
-			</listitem>
-
 			<listitem id="stops">
 				<indexterm><primary><varname>stops</varname></primary></indexterm>
 				<para>Extraer de un sequencia o un conjunto de secuencias temporales con interpolación linear los segmentos cuya distancia es menor o igual que el argumento dados y/o cuya duración es mayor o igual que el argumento dado &Z_support; &geography_support;</para>
 				<para><varname>stops({tcont_seq,ttype_seqset},maxDist=0.0,minDuration='0 minutes') → ttype_seqset</varname></para>
-				<para>Si no se proporciona <varname>maxDist</varname>, se supone que es 0.0 y, por lo tanto, la función extrae los segmentos constantes del valor temporal dado. Para puntos temporales, la distancia se calcula en las unidades del sistema de coordenadas. Nótese que aunque la función acepta geometrías 3D, el cálculo siempre se realiza en 2D.</para>
+				<para>Para los tipos espaciales, el tamaño del área se calcula como la diagonal del rectángulo mínimamente girado de los puntos de la subsecuencia. Para los tipos escalares, el tamaño se calcula como el ancho del intervalo circundante. Si no se proporciona <varname>maxDist</varname>, se supone que es 0.0 y, por lo tanto, la función extrae los segmentos constantes del valor temporal dado. Para puntos temporales, la distancia se calcula en las unidades del sistema de coordenadas. Nótese que aunque la función acepta geometrías 3D, el cálculo siempre se realiza en 2D.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stops(tfloat '[1@2000-01-01, 1@2000-01-02, 2@2000-01-03]');
 -- {[1@2000-01-01, 1@2000-01-02)}
@@ -1192,7 +1166,7 @@ SELECT asText(stops(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000-01-0
 
 			<listitem id="unnest">
 				<indexterm><primary><varname>unnest</varname></primary></indexterm>
-				<para>Transformar un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base.</para>
+				<para>Transformar un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base &SRF;</para>
 				<para><varname>unnest(ttype) → {(value,time)}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT (un).value, (un).time

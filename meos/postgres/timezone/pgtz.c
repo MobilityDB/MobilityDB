@@ -22,6 +22,8 @@
 #include "utils/timestamp_def.h"
 #include "pgtz.h"
 
+#include "../../include/meos.h"
+
 /**
  * Structure to represent the timezone cache hash table, which extends
  * the `ENTRY` structure used by hsearch
@@ -89,7 +91,8 @@ pg_TZDIR(void)
     return tzdir;
 
   get_share_path(my_exec_path, tzdir);
-  strlcpy(tzdir + strlen(tzdir), "/timezone", MAXPGPATH - strlen(tzdir));
+  // strlcpy(tzdir + strlen(tzdir), "/timezone", MAXPGPATH - strlen(tzdir));
+  strncpy(tzdir + strlen(tzdir), "/timezone", MAXPGPATH - strlen(tzdir));
 
   done_tzdir = true;
   return tzdir;
@@ -198,7 +201,8 @@ ReadDir(DIR *dir, const char *dirname)
   /* Give a generic message for AllocateDir failure, if caller didn't */
   if (dir == NULL)
   {
-    elog(ERROR, "could not open directory \"%s\": %m", dirname);
+    meos_error(ERROR, MEOS_ERR_DIRECTORY_ERROR,
+      "could not open directory \"%s\": %m", dirname);
     return NULL;
   }
 
@@ -207,7 +211,8 @@ ReadDir(DIR *dir, const char *dirname)
     return dent;
 
   if (errno)
-    elog(ERROR, "could not read directory \"%s\": %m", dirname);
+    meos_error(ERROR, MEOS_ERR_DIRECTORY_ERROR,
+      "could not read directory \"%s\": %m", dirname);
   return NULL;
 }
 
@@ -334,7 +339,9 @@ pg_tzset(const char *name)
     if (!tzparse(uppername, &tzstate, true))
     {
       /* This really, really should not happen ... */
-      elog(ERROR, "could not initialize GMT time zone");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not initialize GMT time zone");
+      return NULL;
     }
     /* Use uppercase name as canonical */
     strcpy(canonname, uppername);
@@ -416,27 +423,19 @@ pg_tzset_offset(long gmtoffset)
  * Initialize timezone cache
  */
 void
-meos_timezone_initialize(const char *name)
-{
-  session_timezone = pg_tzset(name);
-  if (! session_timezone)
-    elog(ERROR, "Failed to initialize local timezone");
-  return;
-}
-
-/*
- * Initialize timezone library
- */
-void
-meos_initialize(const char *tz_str)
+meos_initialize_timezone(const char *tz_str)
 {
   if (tz_str == NULL || strlen(tz_str) == 0)
     /* fetch local timezone */
     tz_str = select_default_timezone(NULL);
   if (tz_str == NULL)
-    meos_timezone_initialize("GMT");
-  else
-    meos_timezone_initialize(tz_str);
+    /* default timezone */
+    tz_str = "GMT";
+
+  session_timezone = pg_tzset(tz_str);
+  if (! session_timezone)
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Failed to initialize local timezone");
   return;
 }
 
@@ -444,9 +443,10 @@ meos_initialize(const char *tz_str)
  * Free the timezone cache
  */
 void
-meos_finalize(void)
+meos_finalize_timezone(void)
 {
   if (session_timezone)
     tzcache_destroy(timezone_cache);
   return;
 }
+/*****************************************************************************/

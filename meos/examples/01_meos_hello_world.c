@@ -37,7 +37,7 @@
  * @endcode
  */
 
-#include <stdio.h>  /* for printf */
+#include <stdio.h>    /* for printf */
 #include <stdlib.h>   /* for free */
 /* Include the MEOS API header */
 #include <meos.h>
@@ -45,7 +45,7 @@
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  meos_initialize(NULL, NULL);
 
   /* Input temporal points in WKT format */
   char *inst_wkt = "POINT(1 1)@2000-01-01";

@@ -50,7 +50,6 @@
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/type_util.h"
-#include "pg_general/tnumber_mathfuncs.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -156,8 +155,6 @@ Tbox_as_text(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Number_timestamp_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Number_timestamp_to_tbox);
 /**
@@ -225,14 +222,14 @@ Span_period_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Casting
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Number_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Number_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
- * @brief Transform the number to a temporal box
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a number to a temporal box
  * @sqlfunc tbox()
  */
 Datum
@@ -248,7 +245,7 @@ Number_to_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Numeric_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numeric_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform the numeric to a temporal box
  * @sqlfunc tbox()
  */
@@ -265,7 +262,7 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Timestamp_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamp_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform the timestamp to a temporal box
  * @sqlfunc tbox()
  */
@@ -281,7 +278,7 @@ Timestamp_to_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Set_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform the set to a temporal box
  * @sqlfunc tbox()
  */
@@ -301,7 +298,7 @@ Set_to_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform the span to a temporal box
  * @sqlfunc tbox()
  */
@@ -310,7 +307,7 @@ Span_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   TBox *result = palloc(sizeof(TBox));
-  if (tnumber_spantype(s->spantype))
+  if (numspan_type(s->spantype))
     numspan_set_tbox(s, result);
   else
     period_set_tbox(s, result);
@@ -341,7 +338,7 @@ spanset_tbox_slice(Datum ssdatum, TBox *box)
 PGDLLEXPORT Datum Spanset_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_to_tbox);
 /**
- * @ingroup mobilitydb_box_cast
+ * @ingroup mobilitydb_box_conversion
  * @brief Transform the span set to a temporal box
  * @sqlfunc tbox()
  */
@@ -359,8 +356,8 @@ Spanset_to_tbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_to_floatspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_floatspan);
 /**
- * @ingroup mobilitydb_box_cast
- * @brief Cast a temporal box as a float span
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a temporal box as a float span
  * @sqlfunc floatspan()
  */
 Datum
@@ -376,8 +373,8 @@ Tbox_to_floatspan(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_to_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_period);
 /**
- * @ingroup mobilitydb_box_cast
- * @brief Cast a temporal box as a period
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a temporal box as a period
  * @sqlfunc period()
  */
 Datum
@@ -564,6 +561,112 @@ Tbox_tmax_inc(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_shift_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_shift_value);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift the value span of the temporal box by the value
+ * @sqlfunc shiftValue()
+ */
+Datum
+Tbox_shift_value(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  ensure_same_span_basetype(&box->span, basetype);
+  TBox *result = tbox_shift_scale_value(box, shift, 0, true, false);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tbox_shift_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_shift_time);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift the period of the temporal box by the interval
+ * @sqlfunc shiftTime()
+ */
+Datum
+Tbox_shift_time(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  TBox *result = tbox_shift_scale_time(box, shift, NULL);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tbox_scale_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_scale_value);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Scale the value span of the temporal box by the value
+ * @sqlfunc scaleValue()
+ */
+Datum
+Tbox_scale_value(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Datum width = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  ensure_same_span_basetype(&box->span, basetype);
+  TBox *result = tbox_shift_scale_value(box, 0, width, false, true);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tbox_scale_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_scale_time);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Scale the period of the temporal box by the interval
+ * @sqlfunc scaleTime()
+ */
+Datum
+Tbox_scale_time(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TBox *result = tbox_shift_scale_time(box, NULL, duration);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tbox_shift_scale_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_shift_scale_value);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift and scale the value span of the temporal box by the values
+ * @sqlfunc scaleValue()
+ */
+Datum
+Tbox_shift_scale_value(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  Datum width = PG_GETARG_DATUM(2);
+  meosType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 2));
+  ensure_same_span_basetype(&box->span, basetype1);
+  ensure_same_span_basetype(&box->span, basetype2);
+  TBox *result = tbox_shift_scale_value(box, shift, width, true, true);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tbox_shift_scale_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_shift_scale_time);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift and scale the period of the temporal box by the intervals
+ * @sqlfunc shiftScaleTime()
+ */
+Datum
+Tbox_shift_scale_time(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  Interval *duration = PG_GETARG_INTERVAL_P(2);
+  TBox *result = tbox_shift_scale_time(box, shift, duration);
+  PG_RETURN_POINTER(result);
+}
+
 PGDLLEXPORT Datum Tbox_expand_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_expand_value);
 /**
@@ -594,20 +697,6 @@ Tbox_expand_time(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(tbox_expand_time(box, interval));
 }
 
-/**
- * @brief Set the precision of the value dimension of the temporal box to
- * the number of decimal places.
- */
-static TBox *
-tbox_round(const TBox *box, Datum size)
-{
-  ensure_has_X_tbox(box);
-  TBox *result = tbox_copy(box);
-  result->span.lower = datum_round_float(box->span.lower, size);
-  result->span.upper = datum_round_float(box->span.upper, size);
-  return result;
-}
-
 PGDLLEXPORT Datum Tbox_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_round);
 /**
@@ -620,8 +709,8 @@ Datum
 Tbox_round(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(tbox_round(box, size));
+  int maxdd = PG_GETARG_INT32(1);
+  PG_RETURN_POINTER(tbox_round(box, maxdd));
 }
 
 /*****************************************************************************
@@ -704,7 +793,7 @@ Adjacent_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Relative position operators
+ * Position operators
  *****************************************************************************/
 
 PGDLLEXPORT Datum Left_tbox_tbox(PG_FUNCTION_ARGS);
@@ -844,7 +933,7 @@ Union_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBox *box1 = PG_GETARG_TBOX_P(0);
   TBox *box2 = PG_GETARG_TBOX_P(1);
-  TBox *result = union_tbox_tbox(box1, box2);
+  TBox *result = union_tbox_tbox(box1, box2, true);
   PG_RETURN_POINTER(result);
 }
 

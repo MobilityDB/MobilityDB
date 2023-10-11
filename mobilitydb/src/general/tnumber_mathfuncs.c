@@ -34,8 +34,6 @@
  * for temporal number.
  */
 
-#include "pg_general/tnumber_mathfuncs.h"
-
 /* C */
 #include <assert.h>
 #include <math.h>
@@ -65,7 +63,7 @@
  */
 static Datum
 arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType, meosType))
+  Datum (*func)(Datum, Datum, meosType))
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -84,7 +82,7 @@ arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  */
 static Datum
 arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType, meosType))
+  Datum (*func)(Datum, Datum, meosType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
@@ -104,7 +102,7 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  */
 static Datum
 arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType, meosType),
+  Datum (*func)(Datum, Datum, meosType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {
@@ -326,28 +324,6 @@ datum_round_float(Datum value, Datum size)
   return result;
 }
 
-/**
- * @brief Round a temporal number to a given number of decimal places
- */
-Temporal *
-tfloat_round(const Temporal *temp, Datum digits)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_round_float;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = digits;
-  lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.argtype[1] = T_INT4;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
-
 PGDLLEXPORT Datum Tfloat_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_round);
 /**
@@ -359,10 +335,41 @@ Datum
 Tfloat_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum size = PG_GETARG_DATUM(1);
+  int size = PG_GETARG_INT32(1);
   Temporal *result = tfloat_round(temp, size);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tfloatarr_round(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloatarr_round);
+/**
+ * @ingroup mobilitydb_temporal_inout
+ * @brief Output a temporal point array in Well-Known Text (WKT) format
+ * @sqlfunc asText()
+ */
+Datum
+Tfloatarr_round(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  /* Return NULL on empty array */
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
+  int maxdd = PG_GETARG_INT32(1);
+
+  Temporal **temparr = temporalarr_extract(array, &count);
+  Temporal **result_arr = tfloatarr_round((const Temporal **) temparr, count,
+      maxdd);
+
+  ArrayType *result = temporalarr_to_array((const Temporal **) result_arr,
+    count);
+  pfree(temparr);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_abs(PG_FUNCTION_ARGS);

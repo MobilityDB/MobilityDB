@@ -34,6 +34,8 @@
 
 #include "general/tbool_boolops.h"
 
+/* C */
+#include <assert.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -45,7 +47,7 @@
  *****************************************************************************/
 
 /**
- * Return the Boolean and of two values
+ * @brief Return the Boolean and of two values
  */
 Datum
 datum_and(Datum l, Datum r)
@@ -54,7 +56,7 @@ datum_and(Datum l, Datum r)
 }
 
 /**
- * Return the Boolean or of two values
+ * @brief Return the Boolean or of two values
  */
 Datum
 datum_or(Datum l, Datum r)
@@ -63,7 +65,7 @@ datum_or(Datum l, Datum r)
 }
 
 /**
- * Return the Boolean not of a value.
+ * @brief Return the Boolean not of a value.
  */
 Datum
 datum_not(Datum d)
@@ -83,6 +85,11 @@ datum_not(Datum d)
 Temporal *
 tnot_tbool(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TBOOL))
+    return NULL;
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_not;
@@ -95,11 +102,13 @@ tnot_tbool(const Temporal *temp)
 }
 
 /**
- * Return the boolean operator of a temporal boolean and a boolean.
+ * @brief Return the boolean operator of a temporal boolean and a boolean.
  */
 Temporal *
 boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 {
+  assert(temp); assert(temp->temptype == T_TBOOL);
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -112,12 +121,15 @@ boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 }
 
 /**
- * Return the boolean operator of the temporal booleans.
+ * @brief Return the boolean operator of two temporal booleans.
  */
 Temporal *
 boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func)
 {
+  assert(temp1); assert(temp2);
+  assert(temp1->temptype == temp2->temptype);
+  assert(temp1->temptype == T_TBOOL);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -139,6 +151,11 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
 SpanSet *
 tbool_when_true(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_has_type(temp, T_TBOOL))
+    return NULL;
+
   Temporal *temp1 = temporal_restrict_value(temp, BoolGetDatum(true), REST_AT);
   if (! temp1)
     return NULL;

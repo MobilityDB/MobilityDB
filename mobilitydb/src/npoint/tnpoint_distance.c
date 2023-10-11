@@ -46,8 +46,8 @@
  * Temporal distance
  *****************************************************************************/
 
-PGDLLEXPORT Datum Distance_geo_tnpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_geo_tnpoint);
+PGDLLEXPORT Datum Distance_point_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_point_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between the geometry point and the
@@ -56,11 +56,11 @@ PG_FUNCTION_INFO_V1(Distance_geo_tnpoint);
  * @sqlop @p <->
  */
 Datum
-Distance_geo_tnpoint(PG_FUNCTION_ARGS)
+Distance_point_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tnpoint_geo(temp, geo);
+  Temporal *result = distance_tnpoint_point(temp, geo);
   PG_FREE_IF_COPY(geo, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -68,8 +68,8 @@ Distance_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Distance_tnpoint_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tnpoint_geo);
+PGDLLEXPORT Datum Distance_tnpoint_point(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_tnpoint_point);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between the temporal network point and
@@ -78,11 +78,11 @@ PG_FUNCTION_INFO_V1(Distance_tnpoint_geo);
  * @sqlop @p <->
  */
 Datum
-Distance_tnpoint_geo(PG_FUNCTION_ARGS)
+Distance_tnpoint_point(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = distance_tnpoint_geo(temp, geo);
+  Temporal *result = distance_tnpoint_point(temp, geo);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
   if (! result)

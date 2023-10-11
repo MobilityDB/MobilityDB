@@ -98,12 +98,20 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_textset(10, 1, 10) AS t
 FROM generate_series(perc+1, size) AS k;
 
-DROP TABLE IF EXISTS tbl_tbox;
-CREATE TABLE tbl_tbox AS
+DROP TABLE IF EXISTS tbl_tboxfloat;
+CREATE TABLE tbl_tboxfloat AS
 /* Add perc NULL values */
 SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tbox(0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
+SELECT k, random_tboxfloat(0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_tboxint;
+CREATE TABLE tbl_tboxint AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tboxint(0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_interval;
@@ -129,6 +137,15 @@ SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_int4range(0, 100, 10) AS i
 FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_float8range;
+CREATE TABLE tbl_float8range AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_float8range(0, 100, 10) AS i
+FROM generate_series(perc+1, size) AS k;
+
 
 DROP TABLE IF EXISTS tbl_intspan;
 CREATE TABLE tbl_intspan AS

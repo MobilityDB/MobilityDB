@@ -35,6 +35,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -98,7 +99,7 @@ int32_mfjson_buf(char *output, int i)
 static size_t
 double_mfjson_buf(char *output, double d, int precision)
 {
-  assert (precision <= OUT_MAX_DOUBLE_PRECISION);
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
   ptr += lwprint_double(d, precision, ptr);
   return (ptr - output);
@@ -180,7 +181,7 @@ coordinates_mfjson_size(int npoints, bool hasz, int precision)
 static size_t
 coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
 {
-  assert (precision <= OUT_MAX_DOUBLE_PRECISION);
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
   ptr += sprintf(ptr, "[");
   if (MEOS_FLAGS_GET_Z(inst->flags))
@@ -310,19 +311,22 @@ tbox_mfjson_size(int precision)
 static size_t
 tbox_mfjson_buf(char *output, const TBox *bbox, int precision)
 {
-  assert (precision <= OUT_MAX_DOUBLE_PRECISION);
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
+  bool intbox = bbox->span.basetype == T_INT4;
   char *ptr = output;
   ptr += sprintf(ptr, "\"bbox\":[");
-  ptr += lwprint_double(DatumGetFloat8(bbox->span.lower), precision, ptr);
+  ptr += intbox ? sprintf(ptr, "%d", DatumGetInt32(bbox->span.lower)) :
+    lwprint_double(DatumGetFloat8(bbox->span.lower), precision, ptr);
   ptr += sprintf(ptr, ",");
-  ptr += lwprint_double(DatumGetFloat8(bbox->span.upper), precision, ptr);
+  ptr += intbox ? sprintf(ptr, "%d", DatumGetInt32(bbox->span.upper) - 1) :
+    lwprint_double(DatumGetFloat8(bbox->span.upper), precision, ptr);
   ptr += sprintf(ptr, "],\"period\":{\"begin\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
   ptr += sprintf(ptr, ",\"end\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
   ptr += sprintf(ptr, ",\"lower_inc\":%s,\"upper_inc\":%s},",
     bbox->period.lower_inc ? "true" : "false",
-	bbox->period.upper_inc ? "true" : "false");
+  bbox->period.upper_inc ? "true" : "false");
   return (ptr - output);
 }
 
@@ -357,7 +361,7 @@ stbox_mfjson_size(bool hasz, int precision)
 static size_t
 stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
 {
-  assert (precision <= OUT_MAX_DOUBLE_PRECISION);
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
   ptr += sprintf(ptr, "\"bbox\":[[");
   ptr += lwprint_double(bbox->xmin, precision, ptr);
@@ -390,6 +394,7 @@ stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
 /**
  * @brief Return the maximum size in bytes of the bounding box corresponding
  * to the temporal type represented in MF-JSON format
+ * @return On error return SIZE_MAX
  */
 static size_t
 bbox_mfjson_size(meosType temptype, bool hasz, int precision)
@@ -410,8 +415,9 @@ bbox_mfjson_size(meosType temptype, bool hasz, int precision)
       size = stbox_mfjson_size(hasz, precision);
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", temptype);
-      return 0; /* make compiler quiet */
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
+        "Unknown temporal type in MFJSON output: %d", temptype);
+      return SIZE_MAX;
   }
   return size;
 }
@@ -419,6 +425,7 @@ bbox_mfjson_size(meosType temptype, bool hasz, int precision)
 /**
  * @brief Write into the buffer the bounding box corresponding to the temporal type
  * represented in MF-JSON format
+ * @return On error return SIZE_MAX
  */
 static size_t
 bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
@@ -436,14 +443,16 @@ bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
     case T_TGEOGPOINT:
       return stbox_mfjson_buf(output, (STBox *) bbox, hasz, precision);
     default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", temptype);
-      return 0; /* make compiler quiet */
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
+        "Unknown temporal type in MFJSON output: %d", temptype);
+      return SIZE_MAX;
   }
 }
 
 /**
  * @brief Return the maximum size in bytes of the temporal type represented in
  * MF-JSON format
+ * @return On error return SIZE_MAX
  */
 static size_t
 temptype_mfjson_size(meosType temptype)
@@ -471,8 +480,9 @@ temptype_mfjson_size(meosType temptype)
       size = sizeof("{'type':'MovingGeogPoint',");
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", temptype);
-      size = 0; /* make compiler quiet */
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
+        "Unknown temporal type in MFJSON output: %d", temptype);
+      size = SIZE_MAX;
       break;
   }
   return size;
@@ -480,6 +490,7 @@ temptype_mfjson_size(meosType temptype)
 
 /**
  * @brief Write into the buffer the temporal type represented in MF-JSON format
+ * @return On error return SIZE_MAX
  */
 static size_t
 temptype_mfjson_buf(char *output, meosType temptype)
@@ -507,7 +518,9 @@ temptype_mfjson_buf(char *output, meosType temptype)
       ptr += sprintf(ptr, "{\"type\":\"MovingGeogPoint\",");
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", temptype);
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
+        "Unknown temporal type in MFJSON output: %d", temptype);
+      return SIZE_MAX;
       break;
   }
   return (ptr - output);
@@ -564,6 +577,7 @@ char *
 tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox,
   char *srs)
 {
+  assert(inst);
   /* Get bounding box if needed */
   bboxunion *bbox = NULL, tmp;
   if (with_bbox)
@@ -588,6 +602,7 @@ tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox,
 char *
 tboolinst_as_mfjson(const TInstant *inst, bool with_bbox)
 {
+  assert(inst);
   return tinstant_as_mfjson(inst, 0, with_bbox, NULL);
 }
 
@@ -599,6 +614,7 @@ tboolinst_as_mfjson(const TInstant *inst, bool with_bbox)
 char *
 tintinst_as_mfjson(const TInstant *inst, bool with_bbox)
 {
+  assert(inst);
   return tinstant_as_mfjson(inst, 0, with_bbox, NULL);
 }
 
@@ -610,6 +626,7 @@ tintinst_as_mfjson(const TInstant *inst, bool with_bbox)
 char *
 tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision)
 {
+  assert(inst);
   return tinstant_as_mfjson(inst, precision, with_bbox, NULL);
 }
 
@@ -621,32 +638,20 @@ tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision)
 char *
 ttextinst_as_mfjson(const TInstant *inst, bool with_bbox)
 {
+  assert(inst);
   return tinstant_as_mfjson(inst, 0, with_bbox, NULL);
 }
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal instant geometric
- * point.
+ * @brief Return the MF-JSON representation of a temporal instant point.
  * @sqlfunc asMFJSON()
  */
 char *
-tgeompointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
+tpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
   char *srs)
 {
-  return tinstant_as_mfjson(inst, precision, with_bbox, srs);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal instant geographic
- * point.
- * @sqlfunc asMFJSON()
- */
-char *
-tgeogpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
-  char *srs)
-{
+  assert(inst);
   return tinstant_as_mfjson(inst, precision, with_bbox, srs);
 }
 #endif /* MEOS */
@@ -712,8 +717,8 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
   }
   ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolation\":\"%s\"}",
     seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false",
-    MEOS_FLAGS_GET_DISCRETE(seq->flags) ? "Discrete" :
-    ( MEOS_FLAGS_GET_LINEAR(seq->flags) ? "Linear" : "Step" ) );
+    MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ? "Discrete" :
+    ( MEOS_FLAGS_LINEAR_INTERP(seq->flags) ? "Linear" : "Step" ) );
   return (ptr - output);
 }
 
@@ -725,6 +730,7 @@ char *
 tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox,
   char *srs)
 {
+  assert(seq);
   /* Get bounding box if needed */
   bboxunion *bbox = NULL, tmp;
   if (with_bbox)
@@ -749,6 +755,7 @@ tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox,
 char *
 tboolseq_as_mfjson(const TSequence *seq, bool with_bbox)
 {
+  assert(seq);
   return tsequence_as_mfjson(seq, 0, with_bbox, NULL);
 }
 
@@ -760,6 +767,7 @@ tboolseq_as_mfjson(const TSequence *seq, bool with_bbox)
 char *
 tintseq_as_mfjson(const TSequence *seq, bool with_bbox)
 {
+  assert(seq);
   return tsequence_as_mfjson(seq, 0, with_bbox, NULL);
 }
 
@@ -771,6 +779,7 @@ tintseq_as_mfjson(const TSequence *seq, bool with_bbox)
 char *
 tfloatseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision)
 {
+  assert(seq);
   return tsequence_as_mfjson(seq, precision, with_bbox, NULL);
 }
 
@@ -782,32 +791,20 @@ tfloatseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision)
 char *
 ttextseq_as_mfjson(const TSequence *seq, bool with_bbox)
 {
+  assert(seq);
   return tsequence_as_mfjson(seq, 0, with_bbox, NULL);
 }
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence geometric
- * point.
+ * @brief Return the MF-JSON representation of a temporal sequence point.
  * @sqlfunc asMFJSON()
  */
 char *
-tgeompointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
+tpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
   char *srs)
 {
-  return tsequence_as_mfjson(seq, precision, with_bbox, srs);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence geographic
- * point.
- * @sqlfunc asMFJSON()
- */
-char *
-tgeogpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
-  char *srs)
-{
+  assert(seq);
   return tsequence_as_mfjson(seq, precision, with_bbox, srs);
 }
 #endif /* MEOS */
@@ -886,7 +883,7 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
         "true" : "false");
   }
   ptr += sprintf(ptr, "],\"interpolation\":\"%s\"}",
-    MEOS_FLAGS_GET_LINEAR(ss->flags) ? "Linear" : "Step");
+    MEOS_FLAGS_LINEAR_INTERP(ss->flags) ? "Linear" : "Step");
   return (ptr - output);
 }
 
@@ -899,6 +896,7 @@ char *
 tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox,
   char *srs)
 {
+  assert(ss);
   /* Get bounding box if needed */
   bboxunion *bbox = NULL, tmp;
   if (with_bbox)
@@ -924,6 +922,7 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox,
 char *
 tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 {
+  assert(ss);
   return tsequenceset_as_mfjson(ss, 0, with_bbox, NULL);
 }
 
@@ -935,6 +934,7 @@ tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 char *
 tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 {
+  assert(ss);
   return tsequenceset_as_mfjson(ss, 0, with_bbox, NULL);
 }
 
@@ -946,6 +946,7 @@ tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 char *
 tfloatseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision)
 {
+  assert(ss);
   return tsequenceset_as_mfjson(ss, precision, with_bbox, NULL);
 }
 
@@ -957,32 +958,20 @@ tfloatseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision)
 char *
 ttextseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
 {
+  assert(ss);
   return tsequenceset_as_mfjson(ss, 0, with_bbox, NULL);
 }
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence set
- * geometric point.
+ * @brief Return the MF-JSON representation of a temporal sequence set point.
  * @sqlfunc asMFJSON()
  */
 char *
-tgeompointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
+tpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
   int precision, char *srs)
 {
-  return tsequenceset_as_mfjson(ss, precision, with_bbox, srs);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence set
- * geographic point.
- * @sqlfunc asMFJSON()
- */
-char *
-tgeogpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
-  int precision, char *srs)
-{
+  assert(ss);
   return tsequenceset_as_mfjson(ss, precision, with_bbox, srs);
 }
 #endif /* MEOS */
@@ -1001,6 +990,10 @@ char *
 temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   int precision, char *srs)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
   char *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1031,6 +1024,10 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
 char **
 temporalarr_out(const Temporal **temparr, int count, int maxdd)
 {
+  assert(temparr);
+  assert(count > 0);
+  assert(maxdd >=0);
+
   char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
     result[i] = temporal_out(temparr[i], maxdd);
@@ -1057,6 +1054,7 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
 
 /**
  * @brief Return the size of the WKB representation of a base value.
+ * @return On error return SIZE_MAX
  */
 static size_t
 basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
@@ -1086,8 +1084,9 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
       return MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE;
 #endif /* NPOINT */
     default: /* Error! */
-      elog(ERROR, "Unknown temporal base type: %d", basetype);
-      return 0; /* make compiler quiet */
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
+        "Unknown temporal base type in MFJSON output: %d", basetype);
+      return SIZE_MAX;
   }
 }
 
@@ -1390,6 +1389,7 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 
 /**
  * @brief Return the size of the WKB representation of a value.
+ * @return On error return SIZE_MAX
  */
 static size_t
 datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
@@ -1407,8 +1407,9 @@ datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
   if (temporal_type(type))
     return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
   /* Error! */
-  elog(ERROR, "Unknown WKB type: %d", type);
-  return 0; /* make compiler quiet */
+  meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+    "Unknown type in WKB output: %d", type);
+  return SIZE_MAX;
 }
 
 /*****************************************************************************
@@ -1497,8 +1498,11 @@ static uint8_t *
 bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(bool) != MEOS_WKB_BYTE_SIZE)
-    elog(ERROR, "Machine bool size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Machine bool size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
+    return NULL;
+  }
   char *bptr = (char *)(&b);
   return bytes_to_wkb_buf(bptr, MEOS_WKB_BYTE_SIZE, buf, variant);
 }
@@ -1510,8 +1514,11 @@ static uint8_t *
 uint8_to_wkb_buf(const uint8_t i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int8) != MEOS_WKB_BYTE_SIZE)
-    elog(ERROR, "Machine int8 size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Machine int8 size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
+    return NULL;
+  }
   char *iptr = (char *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_BYTE_SIZE, buf, variant);
 }
@@ -1523,8 +1530,11 @@ static uint8_t *
 int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int16) != MEOS_WKB_INT2_SIZE)
-    elog(ERROR, "Machine int16 size is not %d bytes!", MEOS_WKB_INT2_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Machine int16 size is not %d bytes!", MEOS_WKB_INT2_SIZE);
+    return NULL;
+  }
   char *iptr = (char *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_INT2_SIZE, buf, variant);
 }
@@ -1536,8 +1546,11 @@ uint8_t *
 int32_to_wkb_buf(const int i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int) != MEOS_WKB_INT4_SIZE)
-    elog(ERROR, "Machine int32 size is not %d bytes!", MEOS_WKB_INT4_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Machine int32 size is not %d bytes!", MEOS_WKB_INT4_SIZE);
+    return NULL;
+  }
   char *iptr = (char *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_INT4_SIZE, buf, variant);
 }
@@ -1549,8 +1562,11 @@ uint8_t *
 int64_to_wkb_buf(const int64 i, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(int64) != MEOS_WKB_INT8_SIZE)
-    elog(ERROR, "Machine int64 size is not %d bytes!", MEOS_WKB_INT8_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Machine int64 size is not %d bytes!", MEOS_WKB_INT8_SIZE);
+    return NULL;
+  }
   char *iptr = (char *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_INT8_SIZE, buf, variant);
 }
@@ -1562,8 +1578,11 @@ uint8_t*
 double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(double) != MEOS_WKB_DOUBLE_SIZE)
-    elog(ERROR, "Machine double size is not %d bytes!", MEOS_WKB_DOUBLE_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Machine double size is not %d bytes!", MEOS_WKB_DOUBLE_SIZE);
+    return NULL;
+  }
   char *dptr = (char *)(&d);
   return bytes_to_wkb_buf(dptr, MEOS_WKB_DOUBLE_SIZE, buf, variant);
 }
@@ -1576,9 +1595,11 @@ uint8_t *
 timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(TimestampTz) != MEOS_WKB_TIMESTAMP_SIZE)
-    elog(ERROR, "Machine timestamp size is not %d bytes!",
-      MEOS_WKB_TIMESTAMP_SIZE);
-
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Machine timestamp size is not %d bytes!", MEOS_WKB_TIMESTAMP_SIZE);
+    return NULL;
+  }
   char *tptr = (char *)(&t);
   return bytes_to_wkb_buf(tptr, MEOS_WKB_TIMESTAMP_SIZE, buf, variant);
 }
@@ -1676,8 +1697,9 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
       break;
 #endif /* NPOINT */
     default: /* Error! */
-      elog(ERROR, "unknown basetype for function basevalue_to_wkb_buf: %d",
-        basetype);
+      meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+        "unknown basetype in WKB output: %d", basetype);
+      return NULL;
   }
   return buf;
 }
@@ -1805,7 +1827,7 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
  * - Two base type values
  */
 static uint8_t *
-span_to_wkb_buf_int1(const Span *s, uint8_t *buf, uint8_t variant)
+span_to_wkb_buf_int_iter(const Span *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the span bounds */
   buf = bounds_to_wkb_buf(s->lower_inc, s->upper_inc, buf, variant);
@@ -1827,7 +1849,7 @@ span_to_wkb_buf_int(const Span *s, uint8_t *buf, uint8_t variant)
   /* Write the span type */
   buf = int16_to_wkb_buf(s->spantype, buf, variant);
   /* Write the span bounds and values */
-  buf = span_to_wkb_buf_int1(s, buf, variant);
+  buf = span_to_wkb_buf_int_iter(s, buf, variant);
   return buf;
 }
 
@@ -1870,7 +1892,7 @@ spanset_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
   buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Write the periods */
   for (int i = 0; i < ss->count; i++)
-    buf = span_to_wkb_buf_int1(&ss->elems[i], buf, variant);
+    buf = span_to_wkb_buf_int_iter(&ss->elems[i], buf, variant);
   /* Write the temporal dimension if any */
   return buf;
 }
@@ -2173,6 +2195,7 @@ temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the WKB representation of a value.
+ * @return On error return NULL
  */
 static uint8_t *
 datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
@@ -2191,7 +2214,11 @@ datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
     buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,
       variant);
   else /* Error! */
-    elog(ERROR, "Unknown WKB type: %d", type);
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Unknown type in WKB output: %d", type);
+    return NULL;
+  }
 
   return buf;
 }
@@ -2224,7 +2251,8 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   buf_size = datum_to_wkb_size(value, type, variant);
   if (buf_size == 0)
   {
-    elog(ERROR, "Error calculating output WKB buffer size.");
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Error calculating output WKB buffer size.");
     return NULL;
   }
 
@@ -2246,8 +2274,8 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   buf = palloc(buf_size);
   if (buf == NULL)
   {
-    elog(ERROR, "Unable to allocate " UINT64_FORMAT
-      " bytes for WKB output buffer.", buf_size);
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, "Unable to allocate "
+      UINT64_FORMAT " bytes for WKB output buffer.", buf_size);
     return NULL;
   }
 
@@ -2267,7 +2295,8 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   /* The buffer pointer should now land at the end of the allocated buffer space. Let's check. */
   if (buf_size != (size_t) (buf - wkb_out))
   {
-    elog(ERROR, "Output WKB is not the same size as the allocated buffer.");
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Output WKB is not the same size as the allocated buffer.");
     pfree(wkb_out);
     return NULL;
   }
@@ -2303,6 +2332,9 @@ datum_as_hexwkb(Datum value, meosType type, uint8_t variant, size_t *size)
 uint8_t *
 span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->spantype, variant,
     size_out);
   return result;
@@ -2317,6 +2349,9 @@ span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 char *
 span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->spantype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2333,6 +2368,9 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 uint8_t *
 set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->settype, variant,
     size_out);
   return result;
@@ -2347,6 +2385,9 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 char *
 set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->settype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2363,6 +2404,9 @@ set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 uint8_t *
 spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(ss), ss->spansettype, variant,
     size_out);
   return result;
@@ -2377,6 +2421,9 @@ spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 char *
 spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(ss), ss->spansettype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2393,6 +2440,9 @@ spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 uint8_t *
 tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_TBOX, variant,
     size_out);
   return result;
@@ -2407,6 +2457,9 @@ tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 char *
 tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_TBOX,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2423,6 +2476,9 @@ tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 uint8_t *
 stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_STBOX, variant,
     size_out);
   return result;
@@ -2437,6 +2493,9 @@ stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 char *
 stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
@@ -2453,6 +2512,9 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 uint8_t *
 temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) size_out))
+    return NULL;
   uint8_t *result = datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant, size_out);
   return result;
@@ -2467,6 +2529,9 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 char *
 temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) size_out))
+    return NULL;
   char *result = (char *) datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;

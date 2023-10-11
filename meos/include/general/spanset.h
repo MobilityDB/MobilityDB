@@ -43,9 +43,12 @@
 
 /* General functions */
 
-extern const Span *spanset_sp_n(const SpanSet *ss, int index);
-extern void spanset_span_slice(Datum psdatum, Span *p);
+extern bool ensure_spanset_has_type(const SpanSet *ss, meosType spansettype);
+extern bool ensure_same_spanset_type(const SpanSet *ss1, const SpanSet *ss2);
+extern bool ensure_same_spanset_span_type(const SpanSet *ss, const Span *s);
+extern bool ensure_same_spanset_basetype(const SpanSet *ss, meosType basetype);
 extern bool spanset_find_value(const SpanSet *ss, Datum v, int *loc);
+extern const Span *spanset_sp_n(const SpanSet *ss, int index);
 
 /*****************************************************************************/
 

@@ -41,6 +41,7 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -57,7 +58,6 @@
 #include "general/pg_types.h"
 #include "general/span.h"
 #include "general/temporal_aggfuncs.h"
-#include "general/time_aggfuncs.h"
 #include "general/type_util.h"
 
 #if ! MEOS
@@ -84,6 +84,23 @@ typedef enum
   DURING,
   AFTER
 } RelativeTimePos;
+
+/*****************************************************************************
+ * Parameter tests
+ *****************************************************************************/
+
+bool
+ensure_same_skiplist_subtype(SkipList *state, uint8 subtype)
+{
+  Temporal *head = (Temporal *) skiplist_headval(state);
+  if (head->subtype != subtype)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot aggregate temporal values of different subtype");
+    return false;
+  }
+  return true;
+}
 
 /*****************************************************************************
  * Functions manipulating skip lists
@@ -127,6 +144,7 @@ random_level()
 
 /**
  * @brief Return the position to store an additional element in the skiplist
+ * @return On error return INT_MAX
  */
 static int
 skiplist_alloc(SkipList *list)
@@ -150,7 +168,11 @@ skiplist_alloc(SkipList *list)
      * fit within MaxAllocSize. If this maximum has been previously reached
      * and more capacity is required, an error is generated. */
     if (list->capacity == (int) floor(MaxAllocSize / sizeof(SkipListElem)))
-      elog(ERROR, "No more memory available to compute the aggregation");
+    {
+      meos_error(ERROR, MEOS_ERR_MEMORY_ALLOC_ERROR,
+        "No more memory available to compute the aggregation");
+      return INT_MAX;
+    }
     if (sizeof(SkipListElem) * (list->capacity << 2) > MaxAllocSize)
       list->capacity = (int) floor(MaxAllocSize / sizeof(SkipListElem));
     else
@@ -197,13 +219,14 @@ skiplist_delete(SkipList *list, int cur)
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Free the skiplist
  */
 void
 skiplist_free(SkipList *list)
 {
-  assert(list);
+  if (! list)
+    return;
   if (list->extra)
     pfree(list->extra);
   if (list->freed)
@@ -272,7 +295,7 @@ skiplist_print(const SkipList *list)
     cur = e->next[0];
   }
   sprintf(buf+len, "}\n");
-  elog(WARNING, "SKIPLIST: %s", buf);
+  meos_error(WARNING, 0, "SKIPLIST: %s", buf);
 }
 #endif
 
@@ -451,10 +474,18 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   Temporal *temp1 = (Temporal *) skiplist_headval(list);
   Temporal *temp2 = (Temporal *) values[0];
   if (temp1->subtype != temp2->subtype)
-    elog(ERROR, "Cannot aggregate temporal values of different type");
-  if (MEOS_FLAGS_GET_LINEAR(temp1->flags) !=
-      MEOS_FLAGS_GET_LINEAR(temp2->flags))
-    elog(ERROR, "Cannot aggregate temporal values of different interpolation");
+  {
+    meos_error(ERROR, MEOS_ERR_AGGREGATION_ERROR,
+      "Cannot aggregate temporal values of different subtype");
+    return;
+  }
+  if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) !=
+      MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_AGGREGATION_ERROR,
+      "Cannot aggregate temporal values of different interpolation");
+    return;
+  }
 
   /* Compute the span of the new values */
   Span p;

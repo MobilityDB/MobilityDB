@@ -130,44 +130,44 @@ SELECT periodBucket(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FR
  [Thu May 10 00:00:00 2001 PDT, Sat May 12 00:00:00 2001 PDT) |     3
 (3 rows)
 
-SELECT tileList(b, 2.5, '1 week'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-                                        tilelist                                        | count 
-----------------------------------------------------------------------------------------+-------
- (1,"TBOX XT([10, 12.5),[Mon Jan 08 00:00:00 2001 PST, Mon Jan 15 00:00:00 2001 PST))") |     2
- (1,"TBOX XT([5, 7.5),[Mon May 28 01:00:00 2001 PDT, Mon Jun 04 01:00:00 2001 PDT))")   |     2
- (1,"TBOX XT([35, 37.5),[Mon Nov 19 00:00:00 2001 PST, Mon Nov 26 00:00:00 2001 PST))") |     2
+SELECT tileList(b, 2.5, '1 week'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                                          tilelist                                           | count 
+---------------------------------------------------------------------------------------------+-------
+ (1,"TBOXFLOAT XT([10, 12.5),[Mon Jan 08 00:00:00 2001 PST, Mon Jan 15 00:00:00 2001 PST))") |     2
+ (1,"TBOXFLOAT XT([5, 7.5),[Mon May 28 01:00:00 2001 PDT, Mon Jun 04 01:00:00 2001 PDT))")   |     2
+ (1,"TBOXFLOAT XT([35, 37.5),[Mon Nov 19 00:00:00 2001 PST, Mon Nov 26 00:00:00 2001 PST))") |     2
 (3 rows)
 
-SELECT tileList(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-                                        tilelist                                        | count 
-----------------------------------------------------------------------------------------+-------
- (1,"TBOX XT([34, 36.5),[Mon Nov 19 00:00:00 2001 PST, Mon Nov 26 00:00:00 2001 PST))") |     2
- (1,"TBOX XT([6.5, 9),[Mon Dec 03 00:00:00 2001 PST, Mon Dec 10 00:00:00 2001 PST))")   |     2
- (2,"TBOX XT([36.5, 39),[Mon Nov 19 00:00:00 2001 PST, Mon Nov 26 00:00:00 2001 PST))") |     2
+SELECT tileList(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                                          tilelist                                           | count 
+---------------------------------------------------------------------------------------------+-------
+ (5,"TBOXFLOAT XT([41.5, 44),[Mon Jun 11 01:00:00 2001 PDT, Mon Jun 18 01:00:00 2001 PDT))") |     3
+ (1,"TBOXFLOAT XT([34, 36.5),[Mon Nov 19 00:00:00 2001 PST, Mon Nov 26 00:00:00 2001 PST))") |     2
+ (1,"TBOXFLOAT XT([6.5, 9),[Mon Dec 03 00:00:00 2001 PST, Mon Dec 10 00:00:00 2001 PST))")   |     2
 (3 rows)
 
-SELECT tileList(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-                                        tilelist                                        | count 
-----------------------------------------------------------------------------------------+-------
- (1,"TBOX XT([11.5, 14),[Thu Jan 11 23:00:00 2001 PST, Thu Jan 18 23:00:00 2001 PST))") |     2
- (1,"TBOX XT([11.5, 14),[Thu Feb 22 23:00:00 2001 PST, Thu Mar 01 23:00:00 2001 PST))") |     2
- (1,"TBOX XT([34, 36.5),[Thu Nov 22 23:00:00 2001 PST, Thu Nov 29 23:00:00 2001 PST))") |     2
+SELECT tileList(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                                          tilelist                                           | count 
+---------------------------------------------------------------------------------------------+-------
+ (1,"TBOXFLOAT XT([11.5, 14),[Thu Jan 11 23:00:00 2001 PST, Thu Jan 18 23:00:00 2001 PST))") |     2
+ (1,"TBOXFLOAT XT([11.5, 14),[Thu Feb 22 23:00:00 2001 PST, Thu Mar 01 23:00:00 2001 PST))") |     2
+ (1,"TBOXFLOAT XT([34, 36.5),[Thu Nov 22 23:00:00 2001 PST, Thu Nov 29 23:00:00 2001 PST))") |     2
 (3 rows)
 
 SELECT extent(tile(t1.f, t2.t, 2.5, '1 week')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
-                                    extent                                     
--------------------------------------------------------------------------------
- TBOX XT([5, 85),[Mon Jan 22 00:00:00 2001 PST, Mon Dec 10 00:00:00 2001 PST))
+                                       extent                                       
+------------------------------------------------------------------------------------
+ TBOXFLOAT XT([5, 85),[Mon Jan 22 00:00:00 2001 PST, Mon Dec 10 00:00:00 2001 PST))
 (1 row)
 
 SELECT extent(tile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
-                                     extent                                      
----------------------------------------------------------------------------------
- TBOX XT([6, 83.5),[Mon Jan 22 00:00:00 2001 PST, Mon Dec 10 00:00:00 2001 PST))
+                                        extent                                        
+--------------------------------------------------------------------------------------
+ TBOXFLOAT XT([6, 83.5),[Mon Jan 22 00:00:00 2001 PST, Mon Dec 10 00:00:00 2001 PST))
 (1 row)
 
 SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2) AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
@@ -204,7 +204,7 @@ SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5, 1.5) 
 
 WITH temp1 AS (
   SELECT k, temp, (tb).tnumber AS slice
-  FROM (SELECT k, temp, valueSplit(temp, 5) AS tb from tbl_tfloat_big) t ),
+  FROM (SELECT k, temp, valueSplit(temp, 5) AS tb from tbl_tfloat) t ),
 temp2 AS (
   SELECT k, temp, merge(slice ORDER BY slice) AS merge
   FROM temp1 GROUP BY k, temp )
@@ -279,7 +279,7 @@ SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001
 
 WITH temp1 AS (
   SELECT k, temp, (tb).temp AS slice
-  FROM (SELECT k, temp, timeSplit(temp, '5 min') AS tb FROM tbl_tfloat_big) t ),
+  FROM (SELECT k, temp, timeSplit(temp, '5 min') AS tb FROM tbl_tfloat) t ),
 temp2 AS (
   SELECT k, temp, merge(slice ORDER BY slice) AS merge
   FROM temp1 GROUP BY k, temp )
@@ -322,7 +322,7 @@ SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '
 
 WITH temp1 AS (
   SELECT k, temp, (tb).tnumber AS slice
-  FROM (SELECT k, temp, valueTimeSplit(temp, 5, '5 min') AS tb FROM tbl_tfloat_big) t ),
+  FROM (SELECT k, temp, valueTimeSplit(temp, 5, '5 min') AS tb FROM tbl_tfloat) t ),
 temp2 AS (
   SELECT k, temp, merge(slice ORDER BY slice) AS merge
   FROM temp1 GROUP BY k, temp )

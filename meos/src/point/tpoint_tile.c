@@ -57,11 +57,11 @@
  * @brief Create a bit matrix
  */
 BitMatrix *
-bitmatrix_make(int *count, int numdims)
+bitmatrix_make(int *count, int ndims)
 {
   /* Calculate the needed number of bits and bytes */
   int i, bitCount = 1;
-  for (i = 0; i < numdims; i++)
+  for (i = 0; i < ndims; i++)
     bitCount *= count[i];
   int byteCount = bitCount >> 3;
   if (bitCount % 8 != 0)
@@ -72,8 +72,8 @@ bitmatrix_make(int *count, int numdims)
   /* palloc0 to set all bits to 0 */
   BitMatrix *result = palloc0(size);
   /* Fill the structure */
-  result->numdims = numdims;
-  for (i = 0; i < numdims; i++)
+  result->ndims = ndims;
+  for (i = 0; i < ndims; i++)
     result->count[i] = count[i];
   return result;
 }
@@ -85,13 +85,13 @@ static bool
 bitmatrix_get(const BitMatrix *bm, int *coords)
 {
   int i, j;
-  for (i = 0; i < bm->numdims; i++)
+  for (i = 0; i < bm->ndims; i++)
     assert(coords[i] <= bm->count[i]);
   int pos = 0;
-  for (i = 0; i < bm->numdims; i++)
+  for (i = 0; i < bm->ndims; i++)
   {
     int offset = coords[i];
-    for (j = i + 1; j < bm->numdims; j++)
+    for (j = i + 1; j < bm->ndims; j++)
     {
       offset *= bm->count[j];
     }
@@ -109,16 +109,16 @@ static void
 bitmatrix_set_cell(BitMatrix *bm, int *coords, bool value)
 {
   int i, j, pos = 0;
-  for (i = 0; i < bm->numdims; i++)
+  for (i = 0; i < bm->ndims; i++)
     assert(coords[i] <= bm->count[i]);
-  for (i = 0; i < bm->numdims - 1; i++)
+  for (i = 0; i < bm->ndims - 1; i++)
   {
     int offset = coords[i];
-    for (j = i + 1; j < bm->numdims; j++)
+    for (j = i + 1; j < bm->ndims; j++)
       offset *= bm->count[j];
     pos += offset;
   }
-  pos += coords[bm->numdims - 1];
+  pos += coords[bm->ndims - 1];
   int index = pos % 8;
   pos >>= 3;
   bm->byte[pos] &= (unsigned char)(~(1 << index));
@@ -136,7 +136,7 @@ void
 bitmatrix_print2D(const BitMatrix *bm, int *coords)
 {
   int i, j;
-  int dim = bm->numdims - 2;
+  int dim = bm->ndims - 2;
   /* Print the 2D matrix */
   if (bm->count[dim + 1] / 10 > 0)
   {
@@ -201,7 +201,7 @@ bitmatrix_print(const BitMatrix *bm)
   int i, j, k, l, coords[MAXDIMS];
   memset(&coords, 0, sizeof(coords));
   int totalcount = 1;
-  for (i = 0; i < bm->numdims; i++)
+  for (i = 0; i < bm->ndims; i++)
     totalcount *= bm->count[i];
   int count = 0;
   for (i = 0; i < bm->count[0]; i++)
@@ -210,12 +210,12 @@ bitmatrix_print(const BitMatrix *bm)
     for (j = 0; j < bm->count[1]; j++)
     {
       coords[1] = j;
-      if (bm->numdims >= 3)
+      if (bm->ndims >= 3)
       {
         for (k = 0; k < bm->count[2]; k++)
         {
           coords[2] = k;
-          if (bm->numdims >= 4)
+          if (bm->ndims >= 4)
           {
             for (l = 0; l < bm->count[3]; l++)
             {
@@ -266,40 +266,43 @@ bitmatrix_print(const BitMatrix *bm)
  *
  * @param[in] coords1, coords2 Coordinates of the input tiles
  * @param[in] eps1, eps2 Relative position of the points in the input tiles
- * @param[in] numdims Number of dimensions of the grid. It is either 2 (for 2D),
+ * @param[in] ndims Number of dimensions of the grid. It is either 2 (for 2D),
  * 3 (for 3D or 2D+T) or 4 (3D+T)
  * @param[out] bm Bit matrix
+ * @result Number of tiles set
  */
-static void
+static int
 fastvoxel_bm(int *coords1, double *eps1, int *coords2, double *eps2,
-  int numdims, BitMatrix *bm)
+  int ndims, BitMatrix *bm)
 {
-  int i, k, coords[MAXDIMS], next[MAXDIMS];
+  int i, k, coords[MAXDIMS], next[MAXDIMS], result = 0;
   double length, tMax[MAXDIMS], tDelta[MAXDIMS];
-  /* Compute manhattan distance */
+  /* Compute Manhattan distance */
   k = 0;
-  for (i = 0; i < numdims; ++i)
+  for (i = 0; i < ndims; ++i)
     k += abs(coords2[i] - coords1[i]);
-  /* Shortcut function if the segement covers only 1 or 2 cells */
+  /* Shortcut function if the segment covers only 1 or 2 cells */
   if (k == 0)
   {
     bitmatrix_set_cell(bm, coords1, true);
-    return;
+    result++;
+    return result;
   }
   else if (k == 1)
   {
     bitmatrix_set_cell(bm, coords1, true);
     bitmatrix_set_cell(bm, coords2, true);
-    return;
+    result += 2;
+    return result;
   }
   /* Compute length of translation for normalization */
   length = 0;
-  for (i = 0; i < numdims; ++i)
+  for (i = 0; i < ndims; ++i)
     length += pow((double) coords2[i] + eps2[i]
                 - (double) coords1[i] - eps1[i], 2);
   length = sqrt(length);
   /* Initialize all vectors */
-  for (i = 0; i < numdims; ++i)
+  for (i = 0; i < ndims; ++i)
   {
     /* Compute the (normalized) tDelta */
     tDelta[i] = length / fabs((double) coords2[i] + eps2[i]
@@ -322,13 +325,14 @@ fastvoxel_bm(int *coords1, double *eps1, int *coords2, double *eps2,
     }
   }
   /* Set the starting bitmap cell */
-  memcpy(coords, coords1, sizeof(int)*numdims);
+  memcpy(coords, coords1, sizeof(int) * ndims);
   bitmatrix_set_cell(bm, coords, true);
+  result++;
   for (i = 0; i < k; ++i)
   {
     /* Find dimension with smallest tMax */
     int idx = 0;
-    for (int j = 1; j < numdims; ++j)
+    for (int j = 1; j < ndims; ++j)
     {
       if (tMax[j] < tMax[idx])
         idx = j;
@@ -338,9 +342,10 @@ fastvoxel_bm(int *coords1, double *eps1, int *coords2, double *eps2,
     coords[idx] += next[idx];
     /* Set the bitmap cell */
     bitmatrix_set_cell(bm, coords, true);
+    result++;
   }
-  assert(memcmp(coords, coords2, sizeof(int)*numdims) == 0);
-  return;
+  assert(memcmp(coords, coords2, sizeof(int) * ndims) == 0);
+  return result;
 }
 
 /*****************************************************************************
@@ -537,7 +542,7 @@ stbox_tile_state_next(STboxGridState *state)
 bool
 stbox_tile_state_get(STboxGridState *state, STBox *box)
 {
-  if (!state || state->done)
+  if (! state || state->done)
     return false;
   /* Get the box of the current tile.
    * If there is a bit matrix for speeding up the computation, the while loop
@@ -568,33 +573,34 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
 STBox *
 stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
-  int **no_cells)
+  int *count)
 {
-  /* Get input parameters */
-  ensure_has_X_stbox(bounds);
-  ensure_not_geodetic(bounds->flags);
-  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
-  ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
-  if (MEOS_FLAGS_GET_Z(bounds->flags))
-    ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
+  /* Ensure validity of the arguments
+   * Since we pass by default Point(0 0 0) as origin independently of the input
+   * STBox, we test the same spatial dimensionality only for STBox Z */
+  if (! ensure_not_null((void *) bounds) || ! ensure_has_X_stbox(bounds) ||
+      ! ensure_not_geodetic(bounds->flags) ||
+      ! ensure_not_null((void *) count) ||
+      ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
+      ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
+      ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin) ||
+      (MEOS_FLAGS_GET_Z(bounds->flags) &&
+        (! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8) ||
+         ! ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin))))
+    return NULL;
   int64 tunits = 0; /* make compiler quiet */
   /* If time arguments are given */
   if (duration)
   {
-    ensure_has_T_stbox(bounds);
-    ensure_valid_duration(duration);
+    if (! ensure_has_T_stbox(bounds) || ! ensure_valid_duration(duration))
+      return NULL;
     tunits = interval_units(duration);
   }
-  ensure_non_empty(sorigin);
-  ensure_point_type(sorigin);
-  /* Since we pass by default Point(0 0 0) as origin independently of the input
-   * STBox, we test the same spatial dimensionality only for STBox Z */
-  if (MEOS_FLAGS_GET_Z(bounds->flags))
-    ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
   int32 srid = bounds->srid;
   int32 gs_srid = gserialized_get_srid(sorigin);
-  if (gs_srid != SRID_UNKNOWN)
-    ensure_same_srid(srid, gs_srid);
+  if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
+    return NULL;
+
   POINT3DZ pt;
   memset(&pt, 0, sizeof(POINT3DZ));
   if (FLAGS_GET_Z(sorigin->gflags))
@@ -619,28 +625,28 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   int *cellcount = palloc0(sizeof(int) * MAXDIMS);
   cellcount[0] = ceil((state->box.xmax - state->box.xmin) / state->xsize) + 1;
   cellcount[1] = ceil((state->box.ymax - state->box.ymin) / state->ysize) + 1;
-  int count = cellcount[0] * cellcount[1];
+  int count1 = cellcount[0] * cellcount[1];
   if (hasz)
   {
     cellcount[2] = ceil((state->box.zmax - state->box.zmin) / state->zsize) + 1;
-    count *= cellcount[2];
+    count1 *= cellcount[2];
   }
   if (hast)
   {
     cellcount[3] = ceil((DatumGetTimestampTz(state->box.period.upper) -
       DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
-    count *= cellcount[3];
+    count1 *= cellcount[3];
   }
-  STBox *result = palloc0(sizeof(STBox) * count);
+  STBox *result = palloc0(sizeof(STBox) * count1);
   /* Stop when we've used up all the grid tiles */
-  for (int i = 0; i < count; i++)
+  for (int i = 0; i < count1; i++)
   {
     stbox_tile_set(state->x, state->y, state->z, state->t, state->xsize,
       state->ysize, state->zsize, state->tunits, hasz, hast, state->box.srid,
       &result[i]);
     stbox_tile_state_next(state);
   }
-  *no_cells = cellcount;
+  *count = count1;
   return result;
 }
 #endif /* MEOS */
@@ -734,7 +740,7 @@ tpointinst_get_coords_eps(const TInstant *inst, bool hasz, bool hast,
  * @param[in] state Grid definition
  * @param[out] bm Bit matrix
  */
-static void
+static int
 tpointinst_set_tiles(const TInstant *inst, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
@@ -744,7 +750,7 @@ tpointinst_set_tiles(const TInstant *inst, bool hasz, bool hast,
   tpointinst_get_coords_eps(inst, hasz, hast, state, coords, NULL);
   /* Set the corresponding bit in the matix */
   bitmatrix_set_cell(bm, coords, true);
-  return;
+  return 1;
 }
 
 /**
@@ -755,20 +761,21 @@ tpointinst_set_tiles(const TInstant *inst, bool hasz, bool hast,
  * @param[in] state Grid definition
  * @param[out] bm Bit matrix
  */
-static void
+static int
 tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
   /* Transform the point into tile coordinates */
-  int coords[MAXDIMS];
+  int coords[MAXDIMS], result = 0;
   memset(coords, 0, sizeof(coords));
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     tpointinst_get_coords_eps(inst, hasz, hast, state, coords, NULL);
     bitmatrix_set_cell(bm, coords, true);
+    result++;
   }
-  return;
+  return result;
 }
 
 /**
@@ -779,12 +786,12 @@ tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
  * @param[in] state Grid definition
  * @param[out] bm Bit matrix
  */
-static void
+static int
 tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
-  int numdims = 2 + (hasz ? 1 : 0) + (hast ? 1 : 0);
-  int coords1[MAXDIMS], coords2[MAXDIMS];
+  int ndims = 2 + (hasz ? 1 : 0) + (hast ? 1 : 0);
+  int coords1[MAXDIMS], coords2[MAXDIMS], result = 0;
   double eps1[MAXDIMS], eps2[MAXDIMS];
   memset(coords1, 0, sizeof(coords1));
   memset(coords2, 0, sizeof(coords2));
@@ -794,11 +801,11 @@ tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     tpointinst_get_coords_eps(inst2, hasz, hast, state, coords2, eps2);
-    fastvoxel_bm(coords1, eps1, coords2, eps2, numdims, bm);
+    result += fastvoxel_bm(coords1, eps1, coords2, eps2, ndims, bm);
     memcpy(coords1, coords2, sizeof(coords1));
     memcpy(eps1, eps2, sizeof(eps1));
   }
-  return;
+  return result;
 }
 
 /**
@@ -809,15 +816,16 @@ tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
  * @param[in] state Grid definition
  * @param[out] bm Bit matrix
  */
-static void
+static int
 tpointseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
-  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
-    tcontseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
+  int result;
+  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+    result = tcontseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
   else
-    tdiscseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
-  return;
+    result = tdiscseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
+  return result;
 }
 
 /**
@@ -828,16 +836,17 @@ tpointseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
  * @param[in] state Grid definition
  * @param[out] bm Bit matrix
  */
-static void
+static int
 tpointseqset_set_tiles(const TSequenceSet *ss, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
+  int result = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    tpointseq_set_tiles(seq, hasz, hast, state, bm);
+    result += tpointseq_set_tiles(seq, hasz, hast, state, bm);
   }
-  return;
+  return result;
 }
 
 /**
@@ -845,21 +854,177 @@ tpointseqset_set_tiles(const TSequenceSet *ss, bool hasz, bool hast,
  * @param[in] temp Temporal point
  * @param[in] state Grid definition
  * @param[out] bm Bit matrix
+ * @result Number of tiles set
  */
-void
+int
 tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
   BitMatrix *bm)
 {
   bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
   bool hast = (state->tunits > 0);
   assert(temptype_subtype(temp->subtype));
+  int result;
   if (temp->subtype == TINSTANT)
-    tpointinst_set_tiles((TInstant *) temp, hasz, hast, state, bm);
+    result = tpointinst_set_tiles((TInstant *) temp, hasz, hast, state, bm);
   else if (temp->subtype == TSEQUENCE)
-    tpointseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
+    result = tpointseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
   else /* temp->subtype == TSEQUENCESET */
-    tpointseqset_set_tiles((TSequenceSet *) temp, hasz, hast, state, bm);
-  return;
+    result = tpointseqset_set_tiles((TSequenceSet *) temp, hasz, hast, state, bm);
+  return result;
 }
+
+/*****************************************************************************/
+#if MEOS
+/**
+ * @brief Split a temporal value with respect to a space and possibly time grid
+ */
+Temporal **
+tpoint_space_split(Temporal *temp, float xsize, float ysize, float zsize,
+  GSERIALIZED *sorigin, bool bitmatrix, GSERIALIZED ***space_buckets,
+  int *newcount)
+{
+  return tpoint_space_time_split(temp, xsize, ysize, zsize, NULL, sorigin, 0,
+    bitmatrix, space_buckets, NULL, newcount);
+}
+
+/**
+ * @brief Split a temporal value with respect to a space and possibly time grid
+ */
+Temporal **
+tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
+  Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
+  bool bitmatrix, GSERIALIZED ***space_buckets, TimestampTz **time_buckets,
+  int *newcount)
+{
+  /* Set bounding box */
+  STBox bounds;
+  temporal_set_bbox(temp, &bounds);
+  bool timesplit = (duration != NULL);
+  if (! timesplit)
+    /* Disallow T dimension for generating a spatial only grid */
+    MEOS_FLAGS_SET_T(bounds.flags, false);
+
+  /* Ensure parameter validity */
+  POINT3DZ pt;
+  bool hasz;
+  int64 tunits = 0;
+  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
+  ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
+  ensure_not_empty(sorigin);
+  ensure_point_type(sorigin);
+  ensure_same_geodetic(temp->flags, sorigin->gflags);
+  int32 srid = bounds.srid;
+  int32 gs_srid = gserialized_get_srid(sorigin);
+  if (gs_srid != SRID_UNKNOWN)
+    ensure_same_srid(srid, gs_srid);
+  memset(&pt, 0, sizeof(POINT3DZ));
+  hasz = MEOS_FLAGS_GET_Z(temp->flags);
+  if (hasz)
+  {
+    ensure_has_Z_gs(sorigin);
+    const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
+    pt.x = p3d->x;
+    pt.y = p3d->y;
+    pt.z = p3d->z;
+  }
+  else
+  {
+    const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
+    pt.x = p2d->x;
+    pt.y = p2d->y;
+  }
+  if (timesplit)
+  {
+    ensure_valid_duration(duration);
+    tunits = interval_units(duration);
+  }
+
+  /* Create function state */
+  STboxGridState *state = stbox_tile_state_make(temp, &bounds, xsize, ysize,
+    zsize, tunits, pt, torigin);
+  int count[MAXDIMS];
+  memset(&count, 0, sizeof(count));
+  int ndims = 2;
+  /* We need to add 1 to take into account the last bucket for each dimension */
+  count[0] = (int) ((state->box.xmax - state->box.xmin) / state->xsize) + 1;
+  count[1] = (int) ((state->box.ymax - state->box.ymin) / state->ysize) + 1;
+  if (MEOS_FLAGS_GET_Z(state->box.flags))
+    count[ndims++] = (int) ((state->box.zmax - state->box.zmin) /
+      state->zsize) + 1;
+  if (state->tunits)
+    count[ndims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
+      DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
+  int ntiles;
+  /* If a bit matrix is used to speed up the process */
+  if (bitmatrix)
+  {
+    /* Create the bit matrix and set the tiles traversed by the temporal point */
+    state->bm = bitmatrix_make(count, ndims);
+    ntiles = tpoint_set_tiles(temp, state, state->bm);
+  }
+  else
+  {
+    ntiles = count[0] * count[1];
+    int j = 2;
+    if (MEOS_FLAGS_GET_Z(state->box.flags))
+      ntiles *= count[j++];
+    if (state->tunits)
+      ntiles *= count[j++];
+  }
+
+  GSERIALIZED **spaces = palloc(sizeof(GSERIALIZED *) * ntiles);
+  TimestampTz *times = NULL;
+  if (timesplit)
+    times = palloc(sizeof(TimestampTz) * ntiles);
+  Temporal **result = palloc(sizeof(Temporal *) * ntiles);
+  hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
+  int i = 0;
+  /* We need to loop since atStbox may be NULL */
+  while (true)
+  {
+    /* Stop when we have used up all the grid tiles */
+    if (state->done)
+    {
+      if (state->bm)
+         pfree(state->bm);
+      pfree(state);
+      break;
+    }
+
+    /* Get current tile (if any) and advance state
+     * It is necessary to test if we found a tile since the previous tile
+     * may be the last one set in the associated bit matrix */
+    STBox box;
+    bool found = stbox_tile_state_get(state, &box);
+    if (! found)
+    {
+      if (state->bm) pfree(state->bm);
+      pfree(state);
+      break;
+    }
+    stbox_tile_state_next(state);
+
+    /* Restrict the temporal point to the box */
+    Temporal *atstbox = tpoint_restrict_stbox(state->temp, &box, BORDER_EXC,
+      REST_AT);
+    if (atstbox == NULL)
+      continue;
+
+    /* Construct value of the result */
+    spaces[i] = gspoint_make(box.xmin, box.ymin, box.zmin, hasz,
+      false, box.srid);
+    if (timesplit)
+      times[i] = DatumGetTimestampTz(box.period.lower);
+    result[i++] = atstbox;
+  }
+  *newcount = i;
+  if (space_buckets)
+    *space_buckets = spaces;
+  if (time_buckets)
+    *time_buckets = times;
+  return result;
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

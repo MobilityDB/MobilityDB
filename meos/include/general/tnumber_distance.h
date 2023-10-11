@@ -44,11 +44,10 @@
 
 extern Temporal *distance_tnumber_number(const Temporal *temp, Datum value,
   meosType valuetype, meosType restype);
-extern Temporal *distance_tnumber_tnumber1(const Temporal *temp1,
-  const Temporal *temp2, meosType restype);
+extern Temporal *distance_tnumber_tnumber(const Temporal *temp1,
+  const Temporal *temp2);
 
-extern Datum double_distance(Datum l, Datum r);
-extern Datum number_distance(Datum l, Datum r, meosType typel, meosType typer);
+extern Datum number_distance(Datum l, Datum r, meosType type);
 
 /* Nearest approach distance */
 

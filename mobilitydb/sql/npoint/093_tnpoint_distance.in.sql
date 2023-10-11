@@ -32,17 +32,17 @@
  * Temporal distance for temporal network points.
  */
 
-CREATE FUNCTION temporal_distance(geometry, tnpoint)
+CREATE FUNCTION temporal_distance(geometry(Point), tnpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Distance_point_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_distance(npoint, tnpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tnpoint, geometry)
+CREATE FUNCTION temporal_distance(tnpoint, geometry(Point))
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tnpoint_geo'
+  AS 'MODULE_PATHNAME', 'Distance_tnpoint_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_distance(tnpoint, npoint)
   RETURNS tfloat

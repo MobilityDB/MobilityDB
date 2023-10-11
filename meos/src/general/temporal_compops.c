@@ -46,12 +46,23 @@
  *****************************************************************************/
 
 /**
- * @brief Return the temporal comparison of the base value and the temporal value.
+ * @ingroup libmeos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value.
  */
 Temporal *
 tcomp_temporal_base(const Temporal *temp, Datum value, meosType basetype,
-  Datum (*func)(Datum, Datum, meosType, meosType), bool invert)
+  Datum (*func)(Datum, Datum, meosType), bool invert)
 {
+  /* Ensure validity of the arguments */
+  if (tgeo_type(temp->temptype))
+  {
+    GSERIALIZED *gs = DatumGetGserializedP(value);
+    if (gserialized_is_empty(gs) ||
+        ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+        ! ensure_same_dimensionality_tpoint_gs(temp, gs))
+    return NULL;
+  }
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -62,24 +73,28 @@ tcomp_temporal_base(const Temporal *temp, Datum value, meosType basetype,
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = invert;
-  lfinfo.discont = MEOS_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
 /**
+ * @ingroup libmeos_internal_temporal_comp_temp
  * @brief Return the temporal comparison of the temporal values.
  */
 Temporal *
 tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, meosType, meosType))
+  Datum (*func)(Datum, Datum, meosType))
 {
+  /* Ensure validity of the arguments */
   if (tgeo_type(temp1->temptype))
   {
-    ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
-    ensure_same_dimensionality(temp1->flags, temp2->flags);
+    if(! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
+    return NULL;
   }
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -90,8 +105,8 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
-    MEOS_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);

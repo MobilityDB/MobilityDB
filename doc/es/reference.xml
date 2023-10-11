@@ -112,6 +112,10 @@
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="setspan_asText"><varname>asText</varname></link>: Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="setspan_asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
 				</listitem>
 
@@ -150,23 +154,23 @@
 			<title>Conversión de tipos</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="base_cast"><varname>::</varname>, <varname>set(base)</varname>, <varname>span(base)</varname>, <varname>spanset(base)</varname></link>: Convertir un valor de base en un valor de conjunto, de rango o de conjunto de rangos</para>
+					<para><link linkend="base_convert"><varname>::</varname>, <varname>set(base)</varname>, <varname>span(base)</varname>, <varname>spanset(base)</varname></link>: Convertir un valor de base en un valor de conjunto, de rango o de conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="set_cast"><varname>::</varname>, <varname>spanset(set)</varname></link>: Convertir un valor de conjunto en un valor de conjunto de rangos</para>
+					<para><link linkend="set_convert"><varname>::</varname>, <varname>spanset(set)</varname></link>: Convertir un valor de conjunto en un valor de conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_cast"><varname>::</varname>, <varname>spanset(span)</varname></link>: Convertir un rango a un conjunto de rangos</para>
+					<para><link linkend="span_convert"><varname>::</varname>, <varname>spanset(span)</varname></link>: Convertir un rango a un conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_cast"><varname>::</varname>, <varname>span(range)</varname>, <varname>range(span)</varname></link>: Convertir un rango de MobilityDB hacia y desde un rango PostgreSQL</para>
+					<para><link linkend="range_convert"><varname>::</varname>, <varname>span(range)</varname>, <varname>range(span)</varname></link>: Convertir un rango de MobilityDB hacia y desde un rango PostgreSQL</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="multirange_cast"><varname>::</varname>, <varname>multirange(spanset)</varname>, <varname>spanset(multirange)</varname></link>: Convertir un rango PostgreSQL a un rango MobilityDB</para>
+					<para><link linkend="multirange_convert"><varname>::</varname>, <varname>multirange(spanset)</varname>, <varname>spanset(multirange)</varname></link>: Convertir un rango PostgreSQL a un rango MobilityDB</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -230,19 +234,27 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar el valor de tiempo con un intervalo</para>
+					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar el conjunto o el rango con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_tscale"><varname>tscale</varname></link>: Escalar el valor de tiempo a un intervalo</para>
+					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Escalar el conjunto o el rango con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalar el valor de tiempo con los intervalos</para>
+					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Desplazar y escalar el conjunto o el rango los valores or intervalos de tiempo</para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="textset_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transformar entre minúsculas y majúsculas</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_tprecision"><varname>tprecision</varname></link>: Establecer la precisión temporal del valor de tiempo al intervalo con respecto al origen</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -296,41 +308,51 @@
 		</sect2>
 
 		<sect2>
-			<title>Operaciones topológicas y de posición relativa</title>
+			<title>Operaciones de cuadro delimitador</title>
 
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="setspan_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores (tienen valores en común)?</para>
-				</listitem>
+			<sect3>
+				<title>Operaciones topológicas</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="setspan_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores (tienen valores en común)?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer valor el segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="setspan_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer valor el segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor contenido en el segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor contenido en el segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor adyacente al segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor adyacente al segundo?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 
-				<listitem>
-					<para><link linkend="setspan_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;#</varname></link>: ¿Está el primer valor estrictamente a la izquierda del segundo?</para>
-				</listitem>
+			<sect3>
+				<title>Operaciones de posición</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="setspan_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;#</varname></link>: ¿Está el primer valor estrictamente a la izquierda del segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_right"><varname>&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Está el primer valor de rango estrictamente a la izquierda del segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="setspan_right"><varname>&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Está el primer valor de rango estrictamente a la izquierda del segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;#</varname></link>: ¿No está el primer valor a la derecha del segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="setspan_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;#</varname></link>: ¿No está el primer valor a la derecha del segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="setspan_overright"><varname>&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No está el primer valor a la izquierda del segundo?</para>
-				</listitem>
-			</itemizedlist>
+					<listitem>
+						<para><link linkend="setspan_overright"><varname>&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No está el primer valor a la izquierda del segundo?</para>
+					</listitem>
+				</itemizedlist>
+
+			</sect3>
+
 		</sect2>
 
 		<sect2>
@@ -369,6 +391,10 @@
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="box_asText"><varname>asText</varname></link>: Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="box_asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
 				</listitem>
 
@@ -394,7 +420,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox"><varname>stbox, stbox_z, stbox_t, stbox_zt, geodstbox_z, geodstbox_t, geodstbox_zt</varname></link>: Constructor para <varname>stbox</varname></para>
+					<para><link linkend="stbox"><varname>stbox_x, stbox_z, stbox_t, stbox_xt, stbox_zt, geodstbox_z, geodstbox_t, geodstbox_zt</varname></link>: Constructor para <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -404,19 +430,19 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tbox_cast_to"><varname>tbox::type</varname></link>: Convertir un <varname>tbox</varname> a otro tipo</para>
+					<para><link linkend="tbox_convert_to"><varname>tbox::type</varname></link>: Convertir un <varname>tbox</varname> a otro tipo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tbox_cast_from"><varname>type::tbox</varname></link>: Convertir otro tipo a un <varname>tbox</varname></para>
+					<para><link linkend="tbox_convert_from"><varname>type::tbox</varname></link>: Convertir otro tipo a un <varname>tbox</varname></para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_cast_to"><varname>stbox::type</varname></link>: Convertir un <varname>stbox</varname> a otro tipo</para>
+					<para><link linkend="stbox_convert_to"><varname>stbox::type</varname></link>: Convertir un <varname>stbox</varname> a otro tipo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_cast_from"><varname>type::stbox</varname></link>: Convertir otro tipo a un <varname>stbox</varname></para>
+					<para><link linkend="stbox_convert_from"><varname>type::stbox</varname></link>: Convertir otro tipo a un <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -454,6 +480,18 @@
 		<sect2>
 			<title>Transformaciones</title>
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_shift"><varname>shiftValue</varname>, <varname>shiftTime</varname></link>: Desplazar el rango de valores o período del cuadro delimitador con un valor o intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_scale"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Escalar el rango de valores o el período del cuadro delimitador a un valor o intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_shiftScale"><varname>shiftScaleValue</varname>, <varname>shiftScaleTime</varname></link>: Desplazar y escalar el rango de valores o el período del cuadro delimitador con los valores o intervalos</para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="getSpace"><varname>getSpace</varname></link>: Obtener la dimensión espacial del cuadro delimitador, eliminando la dimensión temporal, si existe</para>
 					</listitem>
@@ -496,13 +534,93 @@
 		</sect2>
 
 		<sect2>
-			<title>Agregaciones</title>
-
+			<title>Funciones de división</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_extent"><varname>extent</varname></link>: Extensión del cuadro delimitador</para>
+					<para><link linkend="quadSplit"><varname>quadSplit</varname></link>: Dividir el cuadro delimitador en cuadrantes u octantes </para>
 				</listitem>
 			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operaciones de conjuntos</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_union"><varname>+</varname></link>: Union de los cuadros delimitadores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersección de los cuadros delimitadores</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operaciones de cuadro delimitador</title>
+
+			<sect3>
+				<title>Operaciones topológicas</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: ¿Se superponen los cuadros delimitadores?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer cuadro delimitador el segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: ¿Está el primer cuadro delimitador contenido en el segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_same"><varname>~=</varname></link>: ¿Son los cuadros delimitadores iguales en sus dimensiones comunes?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_adjacent"><varname>-|-</varname></link>: ¿Son los cuadros delimitadores adyacentes?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_right"><varname>&gt;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>/&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;|</varname>, <varname>&amp;&lt;/</varname>, <varname>&amp;&lt;#</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador menores que los del segundo?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de posición</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_right"><varname>&gt;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>/&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;|</varname>, <varname>&amp;&lt;/</varname>, <varname>&amp;&lt;#</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador mayores que los del segundo?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador menores que los del segundo?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 
 		<sect2>
@@ -535,55 +653,11 @@
 		</sect2>
 
 		<sect2>
-			<title>Operaciones de conjuntos</title>
+			<title>Agregaciones</title>
+
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_union"><varname>+</varname></link>: Union de los cuadros delimitadores</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersección de los cuadros delimitadores</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Operaciones topológicas y de posición relativa</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: ¿Se superponen los cuadros delimitadores?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer cuadro delimitador el segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: ¿Está el primer cuadro delimitador contenido en el segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_same"><varname>~=</varname></link>: ¿Son los cuadros delimitadores iguales en sus dimensiones comunes?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_adjacent"><varname>-|-</varname></link>: ¿Son los cuadros delimitadores adyacentes?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_right"><varname>&gt;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>/&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;|</varname>, <varname>&amp;&lt;/</varname>, <varname>&amp;&lt;#</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador mayores que los del segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No son los valores X/Y/Z/T del primer cuadro delimitador menores que los del segundo?</para>
+					<para><link linkend="box_extent"><varname>extent</varname></link>: Extensión del cuadro delimitador</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -596,7 +670,7 @@
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="temporal_asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación Moving Features JSON (MF-JSON)</para>
+					<para><link linkend="temporal_asText"><varname>asText</varname></link>: Obtener la representación Well-Known Text (WKT)</para>
 				</listitem>
 
 				<listitem>
@@ -608,7 +682,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Obtener a partir de la representación Moving Features JSON (MF-JSON)</para>
+					<para><link linkend="temporal_asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación Moving Features JSON (MF-JSON)</para>
 				</listitem>
 
 				<listitem>
@@ -617,6 +691,10 @@
 
 				<listitem>
 					<para><link linkend="temporal_FromHexWKB"><varname>ttypeFromHexWKB</varname></link>: Obtener a partir de la representación Hexadecimal Well-Known Binary (HexWKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Obtener a partir de la representación Moving Features JSON (MF-JSON)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -774,15 +852,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shift"><varname>shift</varname></link>: Desplazar el intervalo de tiempo del valor temporal con un intervalo</para>
+					<para><link linkend="shift"><varname>shiftValue</varname>, <varname>shiftTime</varname></link>: Desplazar el rango de valores o el intervalo de tiempo del valor temporal con un valor or intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tscale"><varname>tscale</varname></link>: Escalear el intervalo de tiempo del valor temporal a un intervalo</para>
+					<para><link linkend="scale"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Escalear el rango de valores o el intervalo de tiempo del valor temporal a un valor or intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos</para>
+					<para><link linkend="shiftScale"><varname>shiftScaleValue</varname>, <varname>shiftScaleTime</varname></link>: Desplazar y escalear el rango de valores o el intervalo de tiempo del valor temporal a los dos valores or intervalos</para>
 				</listitem>
 
 				<listitem>
@@ -1226,48 +1304,59 @@
 		</sect2>
 
 		<sect2>
-			<title>Relaciones espaciales alguna vez y temporales</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="econtains"><varname>econtains</varname></link>: Contiene alguna vez</para>
-				</listitem>
+			<title>Relaciones espaciales</title>
 
-				<listitem>
-					<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Es disjunto alguna vez</para>
-				</listitem>
+			<sect3>
+				<title>Relaciones espaciales alguna vez</title>
 
-				<listitem>
-					<para><link linkend="edwithin"><varname>edwithin</varname></link>: Está alguna vez a distancia de</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="econtains"><varname>econtains</varname></link>: Contiene alguna vez</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="eintersects"><varname>eintersects</varname></link>: Cruza alguna vez</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Es disjunto alguna vez</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="etouches"><varname>etouches</varname></link>: Toca alguna vez</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Está alguna vez a distancia de</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Cruza alguna vez</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Disjunto temporal</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="etouches"><varname>etouches</varname></link>: Toca alguna vez</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 
-				<listitem>
-					<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
-				</listitem>
+			<sect3>
+				<title>Relaciones espaciales temporales</title>
 
-				<listitem>
-					<para><link linkend="tintersects"><varname>tintersects</varname></link>: Intersección temporal</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttouches"><varname>ttouches</varname></link>: Toca temporal</para>
-				</listitem>
-			</itemizedlist>
+					<listitem>
+						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Disjunto temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tintersects"><varname>tintersects</varname></link>: Intersección temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Toca temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 	</sect1>
 
@@ -1279,15 +1368,25 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por una cierta distancia</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="minTimeDeltaSimplify"><varname>minTimeDeltaSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por un cierto intervalo de tiempo</para>
+					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por una cierta distancia o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="DouglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>DouglasPeuckerSimplify</varname></link>: Simplificar un flotante o un punto temporal usando el algoritmo de Douglas-Peucker</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Reducción</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tsample"><varname>tsample</varname></link>: Muestrear un valor temporal con respecto a un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tprecision"><varname>tprecision</varname></link>: Reducir la precisión temporal de un valor temporal con respecto a un intervalo calculando el promedio/centroide ponderado por el tiempo en cada intervalo de tiempo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1326,7 +1425,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre el rango o el período con intervalos de la misma amplitud alineados con el origen</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de intervalos que cubre el rango o el período con intervalos de la misma amplitud alineados con el origen</para>
 					</listitem>
 
 					<listitem>
@@ -1353,7 +1452,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tileList"><varname>tileList</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
+						<para><link linkend="tileList"><varname>tileList</varname></link>: Obtener un conjunto de mosaicos que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
 					</listitem>
 
 					<listitem>
@@ -1389,8 +1488,10 @@
 			</sect3>
 		</sect2>
 
-		<sect2>
-			<title>Agregaciones</title>
+	</sect1>
+
+	<sect1>
+		<title>Tipos temporales: Agregaciones</title>
 
 			<itemizedlist>
 				<listitem>
@@ -1450,7 +1551,6 @@
 				</listitem>
 
 			</itemizedlist>
-		</sect2>
 	</sect1>
 
 	<sect1>
@@ -1666,7 +1766,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_relpos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Operadores de posición relativa</para>
+						<para><link linkend="tnpoint_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Operadores de posición relativa</para>
 					</listitem>
 
 					<listitem>

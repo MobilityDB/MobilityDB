@@ -44,6 +44,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include "general/meos_catalog.h"
 
 #if MEOS
   #define DatumGetSetP(X)      ((Set *) DatumGetPointer(X))
@@ -79,6 +80,9 @@ typedef struct
 
 /* General functions */
 
+extern bool ensure_set_has_type(const Set *s, meosType settype);
+extern bool ensure_same_set_type(const Set *s1, const Set *s2);
+extern bool ensure_same_set_basetype(const Set *s, meosType basetype);
 extern bool set_find_value(const Set *s, Datum, int *loc);
 
 /*****************************************************************************/

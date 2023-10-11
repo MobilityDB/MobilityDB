@@ -194,45 +194,63 @@ CREATE FUNCTION intsetFromBinary(bytea)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intsetFromHexWKB(text)
-  RETURNS intset
-  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION bigintsetFromBinary(bytea)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatsetFromBinary(bytea)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textsetFromBinary(bytea)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tstzsetFromBinary(bytea)
+  RETURNS tstzset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION intsetFromHexWKB(text)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintsetFromHexWKB(text)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION floatsetFromBinary(bytea)
-  RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Set_from_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatsetFromHexWKB(text)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION textsetFromBinary(bytea)
-  RETURNS textset
-  AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION textsetFromHexWKB(text)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tstzsetFromBinary(bytea)
-  RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Set_from_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tstzsetFromHexWKB(text)
   RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(intset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(bigintset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(floatset, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(textset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(tstzset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(intset, endianenconding text DEFAULT '')
@@ -337,36 +355,69 @@ CREATE CAST (timestamptz AS tstzset) WITH FUNCTION set(timestamptz);
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION round(floatset, integer DEFAULT 0)
-  RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Floatset_round'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION shift(intset, int)
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Set_shift'
+  AS 'MODULE_PATHNAME', 'Numset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(bigintset, bigint)
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Set_shift'
+  AS 'MODULE_PATHNAME', 'Numset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(floatset, float)
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Set_shift'
+  AS 'MODULE_PATHNAME', 'Numset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(tstzset, interval)
   RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Timestampset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tscale(tstzset, interval)
+CREATE FUNCTION scale(intset, int)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Numset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(bigintset, bigint)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Numset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(floatset, float)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Numset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(tstzset, interval)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Timestampset_tscale'
+  AS 'MODULE_PATHNAME', 'Timestampset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftTscale(tstzset, interval, interval)
+CREATE FUNCTION shiftScale(intset, int, int)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Numset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(bigintset, bigint, bigint)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Numset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(floatset, float, float)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Numset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(tstzset, interval, interval)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Timestampset_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Timestampset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION round(floatset, integer DEFAULT 0)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Floatset_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION lower(textset)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Textset_lower'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION upper(textset)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Textset_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

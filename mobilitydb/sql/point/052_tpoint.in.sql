@@ -230,27 +230,51 @@ CREATE FUNCTION tgeompoint_inst(tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_seq(tgeompoint)
+-- The function is not strict
+CREATE FUNCTION tgeompoint_seq(tgeompoint, text)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_seqset(tgeompoint)
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeompoint_seq(tgeompoint)
+  RETURNS tgeompoint
+  AS 'SELECT @extschema@.tgeompoint_seq($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeompoint_seqset(tgeompoint, text)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeompoint_seqset(tgeompoint)
+  RETURNS tgeompoint
+  AS 'SELECT @extschema@.tgeompoint_seqset($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tgeogpoint_inst(tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seq(tgeogpoint)
+-- The function is not strict
+CREATE FUNCTION tgeogpoint_seq(tgeogpoint, text)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seqset(tgeogpoint)
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeogpoint_seq(tgeogpoint)
+  RETURNS tgeogpoint
+  AS 'SELECT @extschema@.tgeogpoint_seq($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeogpoint_seqset(tgeogpoint, text)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tgeogpoint_seqset(tgeogpoint)
+  RETURNS tgeogpoint
+  AS 'SELECT @extschema@.tgeogpoint_seqset($1, NULL)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tgeompoint, text)
   RETURNS tgeompoint
@@ -539,34 +563,34 @@ CREATE FUNCTION segments(tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Shift and tscale functions
+ * Shift and scale functions
  *****************************************************************************/
 
-CREATE FUNCTION shift(tgeompoint, interval)
+CREATE FUNCTION shiftTime(tgeompoint, interval)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(tgeogpoint, interval)
+CREATE FUNCTION shiftTime(tgeogpoint, interval)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tscale(tgeompoint, interval)
+CREATE FUNCTION scaleTime(tgeompoint, interval)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tscale(tgeogpoint, interval)
+CREATE FUNCTION scaleTime(tgeogpoint, interval)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftTscale(tgeompoint, interval, interval)
+CREATE FUNCTION shiftScaleTime(tgeompoint, interval, interval)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftTscale(tgeogpoint, interval, interval)
+CREATE FUNCTION shiftScaleTime(tgeogpoint, interval, interval)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tprecision(tgeompoint, duration interval,
