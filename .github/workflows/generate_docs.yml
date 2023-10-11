@@ -106,14 +106,14 @@ jobs:
 
       # Rename the directory to master
       - name: Rename the directory to master
-        if: ${{ github.event_name == 'pull_request' && github.ref == 'refs/heads/master' }}
+        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'refs/heads/master' }}
         run: |
           rm -rf master-pr
           mv docs-temp master-pr
 
       # Rename the directory to master
       - name: Rename the directory to develop
-        if: ${{ github.event_name == 'pull_request' && github.ref == 'refs/heads/develop' }}
+        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'refs/heads/develop' }}
         run: |
           rm -rf develop-pr
           mv docs-temp develop-pr
@@ -123,4 +123,4 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           message: 'Update docs'
-          branch: gh-pages
+          default_author: github_actions
