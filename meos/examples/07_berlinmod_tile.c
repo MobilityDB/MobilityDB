@@ -34,11 +34,11 @@
  * splits the trips and the speed of these trips by tiles, and computes
  * aggregate values of the count, duration, and distance of the tiles.
  *
- * Please read the assumptions made about the input file `trips.csv` in the
- * file `05_meos_disassemble_berlinmod.c` in the same directory. Notice that the
- * program assumes that we already have computed the extent of the trips and
- * the speeds. Otherwise, a first scan of the CSV file is needed for computing
- * both extents and then proceed for the second scan as below.
+ * Please read the assumptions made about the input file in the file
+ * `05_berlinmod_disassemble.c` in the same directory. Furthermore, the program
+ * that we already have computed the extent of the trips and the speeds.
+ * Otherwise, a first scan of the CSV file is needed for computing both extents
+ * and then proceed for the second scan as below.
  *
  * The program can be build as follows
  * @code
@@ -205,7 +205,7 @@ int main(void)
 
   /* Print results */
   printf("-------------\n");
-  printf(" Trip tiles \n");
+  printf(" Trip tiles\n");
   printf("-------------\n");
   k = 0;
   Interval intervalzero;
@@ -227,13 +227,13 @@ int main(void)
 
   /* Print results */
   printf("-------------\n");
-  printf(" Speed tiles \n");
+  printf(" Speed tiles\n");
   printf("-------------\n");
   k = 0;
   for (i = 0; i < no_speed_tiles; i++)
   {
     char *span_str = floatspan_out(&speed_tiles[k].span, 0);
-    char *period_str = floatspan_out(&speed_tiles[k].period, 0);
+    char *period_str = period_out(&speed_tiles[k].period);
     char *interval_str = pg_interval_out(&speed_splits[k].duration);
     printf("Tile: %d, Span: %s, Period: %s, Count: %d, Duration: %s\n",
       i, span_str, period_str, speed_splits[k].count, interval_str);

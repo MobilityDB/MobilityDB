@@ -33,7 +33,7 @@
  * when they reach a given number of instants in order to free the memory and
  * ingest the newest observations.
  *
- * This program is similar to `04_meos_stream_ais` but illustrates the use of
+ * This program is similar to `04_ais_stream_db` but illustrates the use of
  * an output file. In this setting, the expandable data structures accumulate
  * the observations that have been received so far and appends to the file.
  * Depending on application requirements and the available memory, the
@@ -53,21 +53,15 @@
 #include <meos_internal.h>
 
 /* Number of instants to send in batch to the file  */
-#define NO_INSTANTS_BATCH 500
+#define NO_INSTANTS_BATCH 1000
 /* Number of instants to keep when restarting a sequence */
 #define NO_INSTANTS_KEEP 2
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
 #define MAX_LENGTH_POINT 64
-/* Maximum length for a SQL output query */
-#define MAX_LENGTH_SQL 16384
-/* Number of inserts that are sent in bulk */
-#define NO_BULK_INSERT 20
 /* Maximum number of trips */
 #define MAX_TRIPS 5
-
-int count=0;
 
 typedef struct
 {
@@ -84,27 +78,6 @@ typedef struct
   TSequence *trip; /* Array of latest observations of the trip, by MMSI */
 } trip_record;
 
-/* Verifies if the size if greater than the maximum size, of so, it sends the
- * data to the output file */
-int windowManager(int size, trip_record *trips, int ship, FILE *fileOut)
-{
-  if (trips[ship].trip && trips[ship].trip->count == NO_INSTANTS_BATCH)
-  {
-    char *temp_out = tsequence_out(trips[ship].trip, 15);
-    fprintf(fileOut, "%ld, %s\n",trips[ship].MMSI, temp_out);
-    /* Free memory */
-    free(temp_out);
-    count++;
-    printf("*");
-    fflush(stdout);
-    /* Restart the sequence by only keeping the last instants */
-    tsequence_restart(trips[ship].trip, NO_INSTANTS_KEEP);
-  }
-  return 1;
-}
-
-
-
 int
 main(int argc, char **argv)
 {
@@ -116,11 +89,13 @@ main(int argc, char **argv)
   /* Allocate space to build the trips */
   trip_record trips[MAX_TRIPS] = {0};
   /* Number of ships */
-  int numships = 0;
-  /* Iterator variable */
-  int i;
-  /* Return value */
-  int return_value = 0;
+  int no_ships = 0;
+  /* Number of writes */
+  int no_writes = 0;
+  /* Iterator variables */
+  int i, j;
+  /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
+  int exit_value = 1;
 
   /***************************************************************************
    * Section 1: Open the output file
@@ -128,15 +103,13 @@ main(int argc, char **argv)
 
   /* Open/create the output file */
   /* You may substitute the full file path in the first argument of fopen */
-  FILE *fileOut = fopen("data/ais_trips.csv", "w+");
+  FILE *file_out = fopen("data/ais_trips_new.csv", "w+");
 
-  if (! fileOut)
+  if (! file_out)
   {
-    printf("Error creating/opening output file\n");
-    return_value = 1;
+    printf("Error creating/opening the output file\n");
     goto cleanup;
   }
-
 
   /***************************************************************************
    * Section 2: Initialize MEOS and open the input AIS file
@@ -146,12 +119,11 @@ main(int argc, char **argv)
   meos_initialize(NULL, NULL);
 
   /* You may substitute the full file path in the first argument of fopen */
-  FILE *fileIn = fopen("data/ais_instants.csv", "r");
+  FILE *file_in = fopen("data/ais_instants.csv", "r");
 
-  if (! fileIn)
+  if (! file_in)
   {
     printf("Error opening input file\n");
-    return_value = 1;
     goto cleanup;
   }
 
@@ -160,16 +132,16 @@ main(int argc, char **argv)
    * temporal point in MEOS
    ***************************************************************************/
 
-  printf("Accumulating %d instants before sending them to the logfile\n"
+  printf("Accumulating %d instants before sending them to the output file\n"
     "(one '*' marker every output file update)\n", NO_INSTANTS_BATCH);
 
   /* Read the first line of the file with the headers */
-  fscanf(fileIn, "%1023s\n", text_buffer);
+  fscanf(file_in, "%1023s\n", text_buffer);
 
   /* Continue reading the file */
   do
   {
-    int read = fscanf(fileIn, "%32[^,],%ld,%lf,%lf,%lf\n",
+    int read = fscanf(file_in, "%32[^,],%ld,%lf,%lf,%lf\n",
       text_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
     /* Transform the string representing the timestamp into a timestamp value */
     rec.T = pg_timestamp_in(text_buffer, -1);
@@ -177,39 +149,38 @@ main(int argc, char **argv)
     if (read == 5)
       no_records++;
 
-    if (read != 5 && ! feof(fileIn))
+    if (read != 5 && ! feof(file_in))
     {
       printf("Record with missing values ignored\n");
       no_nulls++;
     }
 
-    if (ferror(fileIn))
+    if (ferror(file_in))
     {
       printf("Error reading input file\n");
-      fclose(fileIn);
-      fclose(fileOut);
+      fclose(file_in);
+      fclose(file_out);
     }
 
     /* Find the place to store the new instant */
-    int ship = -1;
-    for (i = 0; i < MAX_TRIPS; i++)
+    j = -1;
+    for (i = 0; i < no_ships; i++)
     {
       if (trips[i].MMSI == rec.MMSI)
       {
-        ship = i;
+        j = i;
         break;
       }
     }
-    if (ship < 0)
+    if (j < 0)
     {
-      ship = numships++;
-      if (ship == MAX_TRIPS)
+      j = no_ships++;
+      if (j == MAX_TRIPS)
       {
         printf("The maximum number of ships in the input file is bigger than %d",MAX_TRIPS);
-        return_value = 1;
         goto cleanup;
       }
-      trips[ship].MMSI = rec.MMSI;
+      trips[j].MMSI = rec.MMSI;
     }
     /*
      * Append the latest observation to the corresponding ship.
@@ -222,36 +193,49 @@ main(int argc, char **argv)
       rec.Latitude, t_out);
 
     /* Send to the output file the trip if reached the maximum number of instants */
-    windowManager(NO_INSTANTS_BATCH,trips, ship,fileOut);
-
+    if (trips[j].trip && trips[j].trip->count == NO_INSTANTS_BATCH)
+    {
+      char *temp_out = tsequence_out(trips[j].trip, 15);
+      fprintf(file_out, "%ld, %s\n",trips[j].MMSI, temp_out);
+      /* Free memory */
+      free(temp_out);
+      no_writes++;
+      printf("*");
+      fflush(stdout);
+      /* Restart the sequence by only keeping the last instants */
+      tsequence_restart(trips[j].trip, NO_INSTANTS_KEEP);
+    }
+  
     /* Append the last observation */
     TInstant *inst = (TInstant *) tgeogpoint_in(point_buffer);
-    if (! trips[ship].trip)
-      trips[ship].trip = tsequence_make_exp((const TInstant **) &inst, 1,
+    if (! trips[j].trip)
+      trips[j].trip = tsequence_make_exp((const TInstant **) &inst, 1,
         NO_INSTANTS_BATCH, true, true, LINEAR, false);
     else
-      tsequence_append_tinstant(trips[ship].trip, inst, 0.0, NULL, true);
-  } while (!feof(fileIn));
+      tsequence_append_tinstant(trips[j].trip, inst, 0.0, NULL, true);
+  } while (! feof(file_in));
 
-  printf("\n%d records read.\n%d incomplete records ignored."
-    "%d writes to the output file 'ais_trips.csv'\n", no_records, no_nulls,
-    count);
+  printf("\n%d records read\n%d incomplete records ignored\n"
+    "%d writes to the output file\n", no_records, no_nulls, no_writes);
 
   /* Close the file */
-  fclose(fileIn);
+  fclose(file_in);
 
+  /* State that the program executed successfully */
+  exit_value = 0;
+  
 /* Clean up */
 cleanup:
 
  /* Free memory */
-  for (i = 0; i < numships; i++)
+  for (i = 0; i < no_ships; i++)
     free(trips[i].trip);
 
   /* Finalize MEOS */
   meos_finalize();
 
   /* Close the connection to the output file */
-  fclose(fileOut);
+  fclose(file_out);
 
-  return return_value;
+  return exit_value;
 }

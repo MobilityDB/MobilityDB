@@ -29,8 +29,8 @@
 
 /**
  * @brief A simple program that generates a given number of tfloat instants,
- * appends the instant into a sequence at each generation, and outputs the
- * final sequence at the end.
+ * appends the instant into a sequence at each generation, and at the end
+ * outputs the the number of instants and the time-weighted average.
  *
  * The instants are generated so they are not redundant, that is, all input
  * instants will appear in the final sequence. A compiler option allows to
@@ -83,15 +83,16 @@ int main(void)
     TInstant *inst = tfloatinst_make(i % 2 + 1, t);
     /* Test whether it is the first instant read */
     if (! seq)
-      /* Create an expandable temporal sequence that can store two instants
+      /* Create an expandable temporal sequence that can store 64 instants
        * and store the first instant */
-      seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1, 2,
+      seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1, 64,
         true, true, LINEAR, false);
     else
       /* Append the instant to the temporal sequence so that if there is no
        * more space the sequence automatically doubles its capacity */
       seq = temporal_append_tinstant(seq, inst, 0.0, NULL, true);
     free(inst);
+    /* Print a '*' marker every X instants generated */
     if (i % NO_INSTANTS_BATCH == 0)
     {
       printf("*");

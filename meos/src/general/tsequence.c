@@ -417,7 +417,7 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
   bboxunion bbox;
   memcpy(&bbox, TSEQUENCE_BBOX_PTR(seq1), bboxsize);
   bbox_expand(TSEQUENCE_BBOX_PTR(seq2), &bbox, seq1->temptype);
-  TSequence *result = tsequence_make1_exp(instants, count, count,
+  TSequence *result = tsequence_make_exp1(instants, count, count,
     seq1->period.lower_inc, seq2->period.upper_inc,
     MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO, &bbox);
   pfree(instants);
@@ -737,7 +737,7 @@ tsequence_out(const TSequence *seq, int maxdd)
  * Constructor functions
  * ---------------------
  * The basic constructor functions for temporal sequences is the function
- * #tsequence_make1_exp. This funtion is called in several contexts by the
+ * #tsequence_make_exp1. This funtion is called in several contexts by the
  * following functions
  * - #tsequence_make_exp: Construct a sequence from an array of instants
  * - #tsequence_append_tinstant: Append an instant to an existing sequence
@@ -749,7 +749,7 @@ tsequence_out(const TSequence *seq, int maxdd)
  * In all these cases, it is necessary to verify the validity of the array of
  * instants and to compute the bounding box of the resulting sequence. In some
  * cases, the computation of the bounding box does not need an iteration and
- * the bounding box is passed as an additional argument to #tsequence_make1_exp.
+ * the bounding box is passed as an additional argument to #tsequence_make_exp1.
  * - #tsequence_append_tinstant: The bounding box is computed by expanding the
  *   bounding box of the sequence with the instant
  * - #tsequence_join: The bounding box is computed from the ones of the two
@@ -804,7 +804,7 @@ TSEQUENCE_INST_N(const TSequence *seq, int index)
  * @pre The validity of the arguments has been tested before
  */
 TSequence *
-tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
+tsequence_make_exp1(const TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize,
   void *bbox)
 {
@@ -833,7 +833,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
    * the maximum number of instants and the remaining space for adding an
    * additional variable-length instant of arbitrary size */
   if (count != maxcount)
-    insts_size *= maxcount / count;
+    insts_size = DOUBLE_PAD((size_t) ((double) insts_size * maxcount / count));
   else
     maxcount = newcount;
   /* Total size of the struct */
@@ -978,8 +978,8 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
  * @brief Ensure the validity of the arguments when creating a temporal sequence
  */
 bool
-tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
-  bool upper_inc, interpType interp)
+ensure_valid_tinstarr_common(const TInstant **instants, int count,
+  bool lower_inc, bool upper_inc, interpType interp)
 {
   assert(instants); assert(count > 0);
   /* Test the validity of the instants */
@@ -1010,13 +1010,13 @@ static bool
 tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp)
 {
-  if (! tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp) ||
+  if (! ensure_valid_tinstarr_common(instants, count, lower_inc, upper_inc, interp) ||
       ! ensure_valid_tinstarr(instants, count, MERGE_NO, interp))
     return false;
   return true;
 }
 
-/**
+/** 
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence from an array of temporal instants
  * enabling the data structure to expand.
@@ -1031,11 +1031,11 @@ TSequence *
 tsequence_make_exp(const TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
-  assert(instants); assert (count > 0); assert(count <= maxcount);
+  assert(instants); assert(count > 0); assert(count <= maxcount);
   /* Ensure validity of the arguments */
   if (! tsequence_make_valid(instants, count, lower_inc, upper_inc, interp))
     return NULL;
-  return tsequence_make1_exp(instants, count, maxcount, lower_inc, upper_inc,
+  return tsequence_make_exp1(instants, count, maxcount, lower_inc, upper_inc,
     interp, normalize, NULL);
 }
 
@@ -1512,8 +1512,10 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     /* Get the last instant to keep. It is either the last instant or the
      * penultimate one if the last one is redundant through normalization */
     last = (TInstant *) TSEQUENCE_INST_N(seq, count - 2);
-    TInstant *new = (TInstant *) ((char *) last + DOUBLE_PAD(VARSIZE(last)));
-    size_t avail_size = (char *) seq + VARSIZE(seq) - (char *) new;
+    size_t size_last = DOUBLE_PAD(VARSIZE(last));
+    char *new = (char *) last + size_last;
+    size_t size_seq = VARSIZE(seq);
+    size_t avail_size = (char *) seq + size_seq - new;
     if (size > avail_size)
       /* There is not enough available space */
       break;
@@ -1523,10 +1525,10 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     {
       /* Update the offsets array and the count when adding one instant */
       (TSEQUENCE_OFFSETS_PTR(seq))[count - 1] =
-        (TSEQUENCE_OFFSETS_PTR(seq))[count - 2] + size;
+        (TSEQUENCE_OFFSETS_PTR(seq))[count - 2] + size_last;
       seq->count++;
     }
-    memcpy(new, inst, size);
+    memcpy(new, inst, VARSIZE(inst));
     /* Expand the bounding box and return */
     tsequence_expand_bbox(seq, inst);
     return (Temporal *) seq;
@@ -1535,25 +1537,37 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   /* This is the first time we use an expandable structure or there is no more
    * free space */
   const TInstant **instants = palloc(sizeof(TInstant *) * count);
-  int ninsts = 0;
   for (int i = 0; i < count - 1; i++)
-    instants[ninsts++] = TSEQUENCE_INST_N(seq, i);
-  instants[ninsts++] = inst;
-  int maxcount = count;
-  if (expand && count > seq->maxcount)
+    instants[i] = TSEQUENCE_INST_N(seq, i);
+  instants[count - 1] = inst;
+  int maxcount;
+  if (expand)
   {
-    maxcount = seq->maxcount * 2;
-    // printf(" seq -> %d\n", maxcount);
+    maxcount = seq->maxcount;
+    if (count > seq->maxcount)
+    {
+      maxcount *= 2;
+#if DEBUG_EXPAND
+      printf(" Sequence -> %d ", maxcount);
+#endif
+    }
   }
+  else
+    maxcount = count;
+
   /* Get the bounding box size */
   size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temptype));
   bboxunion bbox, bbox1;
   memcpy(&bbox, TSEQUENCE_BBOX_PTR(seq), bboxsize);
   tinstant_set_bbox(inst, &bbox1);
   bbox_expand(&bbox1, &bbox, seq->temptype);
-  TSequence *result = tsequence_make1_exp(instants, count, maxcount,
+  TSequence *result = tsequence_make_exp1(instants, count, maxcount,
     seq->period.lower_inc, true, interp, NORMALIZE_NO, &bbox);
   pfree(instants);
+#if MEOS
+  if (expand)
+    pfree(seq);
+#endif /* MEOS */
   return (Temporal *) result;
 }
 
@@ -1837,16 +1851,16 @@ tsequence_compact(const TSequence *seq)
   for (int i = 0; i < seq->count; i++)
     insts_size += DOUBLE_PAD(VARSIZE(TSEQUENCE_INST_N(seq, i)));
   size_t seqsize = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
-    seq->count * sizeof(size_t) + insts_size;
-  TSequence *result = palloc0(seqsize);
+    sizeof(size_t) * seq->count;
+  TSequence *result = palloc0(seqsize + insts_size);
 
-  /* Copy until the end of the offsets array */
-  memcpy(result, seq, seqsize - insts_size);
+  /* Copy until the last used element of the offsets array */
+  memcpy(result, seq, seqsize);
   /* Set the maxcount */
   result->maxcount = result->count;
-  /* Copy until the end of the offsets array */
-  memcpy((char *) TSEQUENCE_INST_N(result, 0), TSEQUENCE_INST_N(seq, 0),
-    insts_size);
+  /* Copy the instants */
+  memcpy((char *) TSEQUENCE_INST_N(result, 0),
+    (char *) TSEQUENCE_INST_N(seq, 0), insts_size);
   return result;
 }
 

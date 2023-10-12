@@ -557,6 +557,33 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
 /*****************************************************************************/
 
 /**
+ * @ingroup libmeos_internal_temporal_agg
+ * @brief Transition function for append temporal sequence aggregate
+ */
+Temporal *
+temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
+{
+  /* Null state: create a new temporal sequence with the sequence */
+  if (! state)
+  {
+#if ! MEOS
+    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
+    /* Arbitrary initialization to 64 elements */
+    Temporal *result = (Temporal *) tsequenceset_make_exp(
+      (const TSequence **) &seq, 1, 64, NORMALIZE_NO);
+#if ! MEOS
+    unset_aggregation_context(ctx);
+#endif /* ! MEOS */
+    return result;
+  }
+
+  return temporal_append_tsequence(state, seq, true);
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Transition function for append temporal instant aggregate
  */
 // TODO generalize for discrete interpolation
@@ -619,33 +646,6 @@ Temporal_append_finalfn(PG_FUNCTION_ARGS)
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_agg
- * @brief Transition function for append temporal sequence aggregate
- */
-Temporal *
-temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
-{
-  /* Null state: create a new temporal sequence with the sequence */
-  if (! state)
-  {
-#if ! MEOS
-    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
-    /* Arbitrary initialization to 64 elements */
-    Temporal *result = (Temporal *) tsequenceset_make_exp(
-      (const TSequence **) &seq, 1, 64, NORMALIZE_NO);
-#if ! MEOS
-    unset_aggregation_context(ctx);
-#endif /* ! MEOS */
-    return result;
-  }
-
-  return temporal_append_tsequence(state, seq, true);
 }
 
 /*****************************************************************************/

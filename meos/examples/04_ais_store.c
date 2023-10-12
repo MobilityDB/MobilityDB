@@ -53,8 +53,8 @@
  *
  * This program is based on the libpq example programs
  * https://www.postgresql.org/docs/current/libpq-example.html
- * Please read the assumptions made about the input file `ais_instants.csv` in
- * the file `02_meos_read_ais.c` in the same directory.
+ * Please read the assumptions made about the input file in the file
+ * `02_ais_read.c` in the same directory.
  *
  * The program can be build as follows
  * @code
@@ -85,37 +85,39 @@ typedef struct
   double SOG;
 } AIS_record;
 
-static void
-exit_nicely(PGconn *conn)
-{
-  PQfinish(conn);
-  exit(1);
-}
-
-static void
+/**
+ * @brief Function that sends a SQL query to the database
+ * @returns 0 if OK -1 on error
+ */
+static int
 exec_sql(PGconn *conn, const char *sql, ExecStatusType status)
 {
+  int result = 0;
   PGresult *res = PQexec(conn, sql);
   if (PQresultStatus(res) != status)
   {
     fprintf(stderr, "SQL command failed:\n%s %s", sql, PQerrorMessage(conn));
-    PQclear(res);
-    exit_nicely(conn);
+    result = -1;
   }
   PQclear(res);
+  return result;
 }
 
+/* Main program */
 int
 main(int argc, char **argv)
 {
   const char *conninfo;
   PGconn *conn;
+  int res_sql;
   AIS_record rec;
   int no_records = 0;
   int no_nulls = 0;
   char text_buffer[MAX_LENGTH_HEADER];
   /* Maximum length in characters of the string for the bulk insert */
   char insert_buffer[MAX_LENGTH_SQL];
+  /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
+  int exit_value = 1;
 
   /***************************************************************************
    * Section 1: Connexion to the database
@@ -138,12 +140,14 @@ main(int argc, char **argv)
   if (PQstatus(conn) != CONNECTION_OK)
   {
     fprintf(stderr, "%s", PQerrorMessage(conn));
-    exit_nicely(conn);
+    goto cleanup;
   }
 
   /* Set always-secure search path, so malicious users can't take control. */
-  exec_sql(conn, "SELECT pg_catalog.set_config('search_path', '', false)",
+  res_sql = exec_sql(conn, "SELECT pg_catalog.set_config('search_path', '', false)",
     PGRES_TUPLES_OK);
+  if (res_sql < 0)
+    goto cleanup;
 
   /***************************************************************************
    * Section 2: Initialize MEOS and open the input AIS file
@@ -158,7 +162,7 @@ main(int argc, char **argv)
   if (! file)
   {
     printf("Error opening input file\n");
-    return 1;
+    goto cleanup;
   }
 
   /***************************************************************************
@@ -168,12 +172,19 @@ main(int argc, char **argv)
 
   /* Create the table that will hold the data */
   printf("Creating the table in the database\n");
-  exec_sql(conn, "DROP TABLE IF EXISTS public.AISInstants;", PGRES_COMMAND_OK);
-  exec_sql(conn, "CREATE TABLE public.AISInstants(MMSI integer, "
+  res_sql = exec_sql(conn, "DROP TABLE IF EXISTS public.AISInstants;",
+    PGRES_COMMAND_OK);
+  if (res_sql < 0)
+    goto cleanup;
+  res_sql = exec_sql(conn, "CREATE TABLE public.AISInstants(MMSI integer, "
     "location public.tgeogpoint, SOG public.tfloat);", PGRES_COMMAND_OK);
+  if (res_sql < 0)
+    goto cleanup;
 
   /* Start a transaction block */
-  exec_sql(conn, "BEGIN", PGRES_COMMAND_OK);
+  res_sql = exec_sql(conn, "BEGIN", PGRES_COMMAND_OK);
+  if (res_sql < 0)
+    goto cleanup;
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", text_buffer);
@@ -210,7 +221,7 @@ main(int argc, char **argv)
     {
       printf("Error reading input file\n");
       fclose(file);
-      exit_nicely(conn);
+      goto cleanup;
     }
 
     /* Create the INSERT command with the values read */
@@ -228,16 +239,23 @@ main(int argc, char **argv)
     {
       /* Replace the last comma with a semicolon */
       insert_buffer[len - 1] = ';';
-      exec_sql(conn, insert_buffer, PGRES_COMMAND_OK);
+      res_sql = exec_sql(conn, insert_buffer, PGRES_COMMAND_OK);
+      if (res_sql < 0)
+        goto cleanup;
       len = 0;
     }
   } while (!feof(file));
+
+  /* Close the file */
+  fclose(file);
 
   if (len > 0)
   {
     /* Replace the last comma with a semicolon */
     insert_buffer[len - 1] = ';';
-    exec_sql(conn, insert_buffer, PGRES_COMMAND_OK);
+    res_sql = exec_sql(conn, insert_buffer, PGRES_COMMAND_OK);
+    if (res_sql < 0)
+      goto cleanup;
   }
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
@@ -247,19 +265,23 @@ main(int argc, char **argv)
   PGresult *res = PQexec(conn, text_buffer);
   if (PQresultStatus(res) != PGRES_TUPLES_OK)
   {
-    fprintf(stderr, "SQL command failed:\n%s %s", text_buffer, PQerrorMessage(conn));
+    fprintf(stderr, "SQL command failed:\n%s %s", text_buffer,
+      PQerrorMessage(conn));
     PQclear(res);
-    exit_nicely(conn);
+    goto cleanup;
   }
-
-  printf("Query 'SELECT COUNT(*) FROM public.AISInstants' returned %s\n",
-    PQgetvalue(res, 0, 0));
 
   /* End the transaction */
   exec_sql(conn, "END", PGRES_COMMAND_OK);
 
-  /* Close the file */
-  fclose(file);
+  printf("Query 'SELECT COUNT(*) FROM public.AISInstants' returned %s\n",
+    PQgetvalue(res, 0, 0));
+
+  /* State that the program executed successfully */
+  exit_value = 0;
+  
+/* Clean up */
+cleanup:
 
   /* Finalize MEOS */
   meos_finalize();
@@ -267,5 +289,5 @@ main(int argc, char **argv)
   /* Close the connection to the database and cleanup */
   PQfinish(conn);
 
-  return 0;
+  return exit_value;
 }

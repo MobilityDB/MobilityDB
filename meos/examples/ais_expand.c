@@ -32,8 +32,8 @@
  * trips from these records, and outputs for each trip the MMSI, the number of
  * instants, and the distance travelled.
  *
- * Please read the assumptions made about the input file `ais_instants.csv` in
- * the file `02_meos_read_ais.c` in the same directory. Furthermore, this
+ * Please read the assumptions made about the input file in the file
+ * `02_ais_read.c` in the same directory. Furthermore, this
  * program assumes the input file contains less than 50K observations for at
  * most five ships. Also, the program does not cope with erroneous inputs, such
  * as two or more observations for the same ship with equal timestamp values
@@ -91,7 +91,7 @@ int main(void)
   /* Allocate space to build the trips */
   trip_record trips[MAX_TRIPS] = {0};
   /* Number of ships */
-  int numships = 0;
+  int no_ships = 0;
   /* Iterator variable */
   int i;
 
@@ -136,7 +136,7 @@ int main(void)
       printf("Error reading input file\n");
       fclose(file);
       /* Free memory */
-      for (i = 0; i < numships; i++)
+      for (i = 0; i < no_ships; i++)
       {
         // free(trips[i].trip);
         free(trips[i].SOG);
@@ -156,7 +156,7 @@ int main(void)
     }
     if (ship < 0)
     {
-      ship = numships++;
+      ship = no_ships++;
       trips[ship].MMSI = rec.MMSI;
     }
     trips[ship].numinstants++;
@@ -189,10 +189,10 @@ int main(void)
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
     no_records, no_nulls);
-  printf("%d trips read.\n", numships);
+  printf("%d trips read.\n", no_ships);
 
   /* Print information about the trips */
-  for (i = 0; i < numships; i++)
+  for (i = 0; i < no_ships; i++)
   {
     printf("MMSI: %ld, Number of input instants: %d\n", trips[i].MMSI,
       trips[i].numinstants);
@@ -203,7 +203,7 @@ int main(void)
   }
 
   /* Free memory */
-  for (i = 0; i < numships; i++)
+  for (i = 0; i < no_ships; i++)
   {
     // free(trips[i].trip);
     free(trips[i].SOG);

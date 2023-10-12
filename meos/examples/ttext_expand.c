@@ -29,17 +29,32 @@
 
 /**
  * @brief A simple program that generates a given number of ttext instants,
- * appends the instant into a sequence at each generation, and outputs the
- * number of instants and the last value of the sequence at the end.
+ * appends the instant into a sequence set where each sequence of the sequence
+ * set has a fixed number of instants defined by a compiler constant.
+ * The program outputs the number of sequences and, for the last sequence, 
+ * the number of instants and the last value.
  *
  * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence. A compiler option allows to
- * either use expandable structures or to create a new sequence at every new
- * instant generated.
+ * instants will appear in the final sequence. 
  *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o ttext_expand ttext_expand.c -L/usr/local/lib -lmeos
+ * @endcode
+ *
+ * The output of the program when MEOS is built with the flag -DDEBUG_EXPAND=1
+ * to show debug messages pertaining to the expandable data structures is as
+ * follows
+ * @code
+ * Total number of instants generated: 50000
+ * Maximum number of instants in a sequence: 500
+ * Generating the instants (one '*' marker every 100 instants)
+ * * Seq -> 128 * Seq -> 256 * Seq -> 512 *************************************
+ * * SS -> 128 ****************************************************************
+ * Number of instants in the sequence set: 50000
+ * Number of sequences: 100, Maximum number of sequences : 128
+ * Number of instants in the last sequence: 500, Last value : BBBBBBBBB
+ * The program took 0.000000 seconds to execute
  * @endcode
  */
 
@@ -48,20 +63,21 @@
 #include <time.h>
 #include <string.h>
 #include <meos.h>
+/* The expandable functions are in the internal MEOS API */
+#include <meos_internal.h>
 
-/* Define the approach for processing the input instants. Possible values are
- * - false => static: produce a new sequence value after adding every instant
- * - true => expand: use expandable structures
- */
-#define EXPAND true
 /* Maximum number of instants */
-#define MAX_INSTANTS 1000000
+#define MAX_INSTANTS 50000000
+/* Maximum number of instants in a sequence */
+#define MAX_INSTANTS_SEQ 50000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 1000
-/* Maximum length in characters of the input instant */
-#define MAX_LENGTH_INST 64
+#define NO_INSTANTS_BATCH 50000
 /* Maximum length in characters of the text values in the instants */
-#define MAX_LENGTH_TEXT 20
+#define MAX_LENGTH_TEXT 10
+/* State whether a message is shown every time a sequence is expanded */
+#define EXPAND_SEQ true
+/* State whether a message is shown every time a sequence set is expanded */
+#define EXPAND_SEQSET true
 
 /* Main program */
 int main(void)
@@ -73,21 +89,22 @@ int main(void)
   clock_t tm;
   tm = clock();
 
-  /* Sequence constructed from the input instants */
-  Temporal *seq = NULL;
+  /* Sequence and sequence set for accumulating the input instants */
+  TSequence *seq = NULL, *seq1 = NULL;
+  TSequenceSet *ss = NULL;
   /* Interval to add */
-  Interval *oneday = pg_interval_in("1 day", -1);
-  /* Iterator variable */
+  Interval *onehour = pg_interval_in("1 hour", -1);
+  /* Iterator variables */
   int i;
   /* Seed the random number generator with the current time in seconds. */
   srandom(time(0));
 
-#if EXPAND == false
+  printf("Total number of instants generated: %d\n", MAX_INSTANTS);
+  printf("Maximum number of instants in a sequence: %d\n", MAX_INSTANTS_SEQ);
   printf("Generating the instants (one '*' marker every %d instants)\n",
     NO_INSTANTS_BATCH);
-#endif
 
-  TimestampTz t = pg_timestamptz_in("1999-12-31", -1);
+  TimestampTz t = pg_timestamptz_in("2000-01-01", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
   {
     /* Generate the instant */
@@ -97,47 +114,87 @@ int main(void)
     memset(value, i % 2 == 0 ? 'A' : 'B', len);
     value[len] = '\0';
     text *txt = cstring2text(value);
-    t = pg_timestamp_pl_interval(t, oneday);
+    t = pg_timestamp_pl_interval(t, onehour);
     TInstant *inst = ttextinst_make(txt, t);
     free(value); free(txt);
+    /* Test whether it is the first instant read */
     if (! seq)
-      seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1,
-        EXPAND ? 2 : 1, true, true, STEP, false);
+      /* Create an expandable temporal sequence that can store 64 instants
+       * and store the first instant. Notice that we do not use 
+       * MAX_INSTANTS_SEQ to illustrate the #tsequence_compact function */
+      seq = tsequence_make_exp((const TInstant **) &inst, 1, 64,
+        true, true, STEP, false);
     else
     {
-      Temporal *oldseq = seq;
-      seq = temporal_append_tinstant((Temporal *) seq, inst, EXPAND);
-      if (oldseq != seq)
-        free(oldseq);
+      int maxcount;
+      if (seq->count < MAX_INSTANTS_SEQ)
+      {
+        maxcount = seq->maxcount;
+        /* We are sure that the result is a temporal sequence */
+        seq = (TSequence *) tsequence_append_tinstant(seq, inst, 0.0, NULL, true);
+        /* Print a marker when the sequence has been expanded */
+        if (EXPAND_SEQ && maxcount != seq->maxcount)
+        {
+          printf(" Seq -> %d ", seq->maxcount);
+          fflush(stdout);
+        }
+      }
+      else
+      {
+        /* Compact the sequence to remove unused extra space */
+        seq1 = tsequence_compact(seq);
+        if (! ss)
+          ss = tsequenceset_make_exp((const TSequence **) &seq, 1, 64, false);
+        else
+        {
+          maxcount = ss->maxcount;
+          ss = tsequenceset_append_tsequence(ss, seq, true);
+          /* Print a marker when the sequence has been expanded */
+          if (EXPAND_SEQSET && maxcount != ss->maxcount)
+          {
+            printf(" SeqSet -> %d ", ss->maxcount);
+            fflush(stdout);
+          }
+        }
+        free(seq); // free(seq1);
+        /* Create a new sequence containing the last instant generated */
+        seq = tsequence_make_exp((const TInstant **) &inst, 1, MAX_INSTANTS_SEQ,
+          true, true, STEP, false);
+      }
     }
     free(inst);
 
-#if EXPAND == false
-    /* Print a marker every X instants generated */
+    /* Print a '*' marker every X instants generated */
     if (i % NO_INSTANTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
     }
-#endif
   }
+  /* Add the last sequence to the sequence set */
+  seq1 = tsequence_compact(seq);
+  ss = tsequenceset_append_tsequence(ss, seq1, true);
+  free(seq); free(seq1);
 
-  /* Print information about the sequence */
-  // Uncomment the next line to see the resulting sequence value
-  // printf("%s\n", ttext_out(seq));
-  char *str = text2cstring(ttext_end_value(seq));
-  printf("\nNumber of instants: %d, Last value : %s\n",
-    temporal_num_instants(seq), str);
+  /* Print information about the sequence set */
+  printf("\nNumber of instants in the sequence set: %d\n", ss->totalcount);
+  printf("Number of sequences: %d, Maximum number of sequences : %d\n",
+    ss->count, ss->maxcount);
+
+  /* Print information about the last sequence */
+  seq = temporal_end_sequence((Temporal *) ss);
+  char *str = text2cstring(ttext_end_value((Temporal *) seq));
+  printf("Number of instants in the last sequence: %d, Last value : %s\n",
+    seq->count, str);
 
   /* Free memory */
-  free(seq);
+  free(ss);
   free(str);
 
   /* Calculate the elapsed time */
   tm = clock() - tm;
   double time_taken = ((double) tm) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
-  printf("Using %s structures\n", EXPAND ? "expandable" : "static");
 
   /* Finalize MEOS */
   meos_finalize();

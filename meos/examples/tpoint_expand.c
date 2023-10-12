@@ -48,6 +48,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_internal.h>
 
 /*
  * Define the approach for processing the input instants. Possible values are
@@ -104,7 +105,7 @@ int main(void)
     else
     {
       Temporal *oldseq = seq;
-      seq = temporal_append_tinstant((Temporal *) seq, inst, EXPAND);
+      seq = temporal_append_tinstant((Temporal *) seq, inst, 0.0, NULL, EXPAND);
       if (oldseq != seq)
         free(oldseq);
     }

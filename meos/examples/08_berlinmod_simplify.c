@@ -37,7 +37,7 @@
  * instants of the two simplified trips.
  *
  * Please read the assumptions made about the input file `berlinmod_trips.csv`
- * in the file `05_meos_disassemble_berlinmod.c` in the same directory.
+ * in the file `05_berlinmod_disassemble.c` in the same directory.
  *
  * The program can be build as follows
  * @code
