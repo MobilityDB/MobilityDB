@@ -37,7 +37,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # Install MobilityDB
-RUN wget -O MobilityDB.tar.gz "https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz" \
+RUN wget -O MobilityDB.tar.gz "https://github.com/MobilityDB/MobilityDB/archive/v1.1.0-beta1.tar.gz" \
  && mkdir -p /usr/local/src/MobilityDB \
  && tar \
         --extract \
