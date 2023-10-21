@@ -110,7 +110,7 @@ Requirements
 
 For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 15 and PostGIS 3:
 ```bash
-apt install build-essential cmake postgresql-server-dev-15 libproj-dev libjson-c-dev
+apt install build-essential cmake postgresql-server-dev-15 libproj-dev libjson-c-dev libgsl-dev libgeos-dev
 ```
 
 Building & Installation
