@@ -1016,7 +1016,7 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
   return true;
 }
 
-/** 
+/**
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence from an array of temporal instants
  * enabling the data structure to expand.
@@ -1391,9 +1391,6 @@ datum_distance(Datum value1, Datum value2, meosType basetype, int16 flags)
  * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
  * @sqlfunc appendInstantGaps
- * @note It is the responsibility of the calling function to free the memory,
- * that is, delete the old value of seq when it is expanded or when the
- * result is a sequence set.
  */
 Temporal *
 tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
@@ -1578,9 +1575,6 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
  * @param[in] seq2 Temporal sequence to append
  * @param[in] expand True when reserving space for additional sequences
  * @sqlfunc appendSequence()
- * @note It is the responsibility of the calling function to free the memory,
- * that is, delete the old value of seq when it cannot be expanded or when the
- * result is a sequence set.
  */
 Temporal *
 tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,

@@ -23,17 +23,15 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 add_definitions(-DSYSTEMTZDIR="/usr/share/zoneinfo")
 message(STATUS "Directory of the time zone database: /usr/share/zoneinfo")
 
-# Option for including network points
+# Option to show debug messages for analyzing the expandable data structures
 option(DEBUG_EXPAND
   "Set DEBUG_EXPAND (default=OFF) to show debug messages for analyzing the
-  expandable data structures in MEOS
+  expandable data structures
   "
   OFF
 )
 
 if(DEBUG_EXPAND)
-  # Set NPOINT option for excluding support for network points, which require a
-  # table named `ways` containing the geometries of the road network
   add_definitions(-DDEBUG_EXPAND=1)
   message(STATUS "Showing debug messages for expandable data structures")
 endif()
