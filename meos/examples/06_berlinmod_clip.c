@@ -61,11 +61,11 @@
 /* Maximum length in characters of a trip in the input data */
 #define MAX_LENGTH_TRIP 170001
 /* Maximum length in characters of a geometry in the input data */
-#define MAX_LENGTH_GEOM 100000
+#define MAX_LENGTH_GEOM 100001
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a name in the input data */
-#define MAX_LENGTH_NAME 100
+#define MAX_LENGTH_NAME 101
 /* Maximum length in characters of a date in the input data */
 #define MAX_LENGTH_DATE 12
 /* Number of vehicles */

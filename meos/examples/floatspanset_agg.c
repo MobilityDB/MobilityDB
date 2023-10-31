@@ -91,7 +91,7 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%d,\"%[^\"]\"\n", &rec.k, spanset_buffer);
+    int read = fscanf(file, "%d,\"%1023[^\"]\"\n", &rec.k, spanset_buffer);
 
     if (read != 2 && ! feof(file))
     {
