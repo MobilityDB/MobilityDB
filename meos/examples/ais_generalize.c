@@ -242,12 +242,12 @@ int main(void)
     free(temp);
 
     /* Tprecision simplification */
-    TimestampTz orig = pg_timestamp_in("2000-01-01", -1);
-    temp = temporal_tprecision(trips[i].trip, secs1, orig);
+    TimestampTz origin = pg_timestamp_in("2000-01-01", -1);
+    temp = temporal_tprecision(trips[i].trip, secs1, origin);
     tprec_1s += temporal_mem_size(temp);
     no_tprec_1s += temporal_num_instants(temp);
     free(temp);
-    temp = temporal_tprecision(trips[i].trip, secs10, orig);
+    temp = temporal_tprecision(trips[i].trip, secs10, origin);
     tprec_10s += temporal_mem_size(temp);
     no_tprec_10s += temporal_num_instants(temp);
     free(temp);
@@ -256,17 +256,17 @@ int main(void)
   printf("\n---------------------------------------------------------------------------------\n");
   printf("Total size comparison (in KB:#instants) between various generalization algorithms\n");
   printf("---------------------------------------------------------------------------------\n");
-  printf("Original %ld:%d\n", orig / 1024, no_orig);
-  printf("DP-ED 1 %ld:%d, DP-ED 10 %ld:%d, DP-SED 1 %ld:%d, DP-SED 10 %ld:%d\n",
+  printf("Original %zu:%d\n", orig / 1024, no_orig);
+  printf("DP-ED 1 %zu:%d, DP-ED 10 %zu:%d, DP-SED 1 %zu:%d, DP-SED 10 %zu:%d\n",
     dp_ed_1 / 1024, no_dp_ed_1, dp_ed_10 / 1024, no_dp_ed_10, 
     dp_sed_1 / 1024, no_dp_sed_1, dp_sed_10 / 1024, no_dp_sed_10);
-  printf("MaxD-ED 1 %ld:%d, MaxD-ED 10 %ld:%d, MaxD-SED 1 %ld:%d, MaxD-SED 10 %ld:%d\n",
+  printf("MaxD-ED 1 %zu:%d, MaxD-ED 10 %zu:%d, MaxD-SED 1 %zu:%d, MaxD-SED 10 %zu:%d\n",
     max_dist_ed_1 / 1024, no_max_dist_ed_1, max_dist_ed_10 / 1024, no_max_dist_ed_10, 
     max_dist_sed_1 / 1024, no_max_dist_sed_1, max_dist_sed_10 / 1024, no_max_dist_sed_10);
-  printf("MinD 1 %ld:%d, MinD 10 %ld:%d, MinTD 1 %ld:%d, MinTD 10 %ld:%d\n",
+  printf("MinD 1 %zu:%d, MinD 10 %zu:%d, MinTD 1 %zu:%d, MinTD 10 %zu:%d\n",
     min_dist_1 / 1024, no_min_dist_1, min_dist_10 / 1024, no_min_dist_10, 
     min_tdelta_1 / 1024, no_min_tdelta_1, min_tdelta_10 / 1024, no_min_tdelta_10);
-  printf("Tprec 1 %ld:%d, Tprec 10 %ld:%d\n",
+  printf("Tprec 1 %zu:%d, Tprec 10 %zu:%d\n",
     tprec_1s / 1024, no_tprec_1s, tprec_10s / 1024, no_tprec_10s);
 
   printf("-------------------------------------------------------------------------------\n\n");

@@ -144,11 +144,11 @@ int main(void)
         /* Compact the sequence to remove unused extra space */
         seq1 = tsequence_compact(seq);
         if (! ss)
-          ss = tsequenceset_make_exp((const TSequence **) &seq, 1, 64, false);
+          ss = tsequenceset_make_exp((const TSequence **) &seq1, 1, 64, false);
         else
         {
           maxcount = ss->maxcount;
-          ss = tsequenceset_append_tsequence(ss, seq, true);
+          ss = tsequenceset_append_tsequence(ss, seq1, true);
           /* Print a marker when the sequence has been expanded */
           if (EXPAND_SEQSET && maxcount != ss->maxcount)
           {
@@ -156,7 +156,7 @@ int main(void)
             fflush(stdout);
           }
         }
-        free(seq); // free(seq1);
+        free(seq); free(seq1);
         /* Create a new sequence containing the last instant generated */
         seq = tsequence_make_exp((const TInstant **) &inst, 1, MAX_INSTANTS_SEQ,
           true, true, STEP, false);

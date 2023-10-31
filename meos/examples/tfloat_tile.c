@@ -37,7 +37,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_split_tfloat meos_split_tfloat.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o tfloat_tile tfloat_tile.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -59,7 +59,6 @@ int main(void)
 
   Temporal *tfloat = tfloat_in("[1@2020-03-01, 10@2020-03-10]");
   Interval *interv = pg_interval_in("2 days", -1);
-  double vorigin = 0.0;
   TimestampTz torigin = pg_timestamptz_in("2020-03-01", -1);
 
   bool valuesplit = true; /* Set this parameter to enable/disable value split */
@@ -71,7 +70,7 @@ int main(void)
   int count;
   if (valuesplit)
     result = tfloat_value_time_split(tfloat, 2.0, timesplit ? interv : NULL,
-      vorigin, torigin, &value_buckets, &time_buckets, &count);
+      0.0, torigin, &value_buckets, &time_buckets, &count);
   else
     result = temporal_time_split(tfloat, interv, torigin, &time_buckets,
       &count);
