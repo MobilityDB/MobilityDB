@@ -362,6 +362,7 @@ extern text *pg_timestamptz_to_char(TimestampTz dt, text *fmt);
 extern DateADT pg_to_date(text *date_txt, text *fmt);
 extern TimestampTz pg_to_timestamp(text *date_txt, text *fmt);
 extern char *text2cstring(const text *textptr);
+extern char *text_out(const text *txt);
 
 /*****************************************************************************
  * Functions for PostGIS types

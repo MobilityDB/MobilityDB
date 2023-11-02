@@ -46,9 +46,9 @@
 
 extern int tcontseq_find_timestamp(const TSequence *seq, TimestampTz t);
 extern int tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t);
-extern bool tsequence_make_valid1(const TInstant **instants, int count,
+extern bool ensure_valid_tinstarr_common(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp);
-extern TSequence *tsequence_make1_exp(const TInstant **instants, int count,
+extern TSequence *tsequence_make_exp1(const TInstant **instants, int count,
   int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize, void *bbox);
 extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,

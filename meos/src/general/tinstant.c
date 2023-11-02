@@ -945,7 +945,7 @@ tinstant_merge_array(const TInstant **instants, int count)
   int newcount = tinstarr_remove_duplicates(newinstants, count);
   Temporal *result = (newcount == 1) ?
     (Temporal *) tinstant_copy(newinstants[0]) :
-    (Temporal *) tsequence_make1_exp(newinstants, newcount, newcount, true,
+    (Temporal *) tsequence_make_exp1(newinstants, newcount, newcount, true,
       true, DISCRETE, NORMALIZE_NO, NULL);
   pfree(newinstants);
   return result;

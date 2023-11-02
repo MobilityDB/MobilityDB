@@ -207,7 +207,7 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
     state = (ArrayBuildState *) PG_GETARG_POINTER(0);
 
   /* skip NULLs */
-  if (! PG_ARGISNULL(1) )
+  if (! PG_ARGISNULL(1))
   {
     SpanSet *ss = PG_GETARG_SPANSET_P(1);
     const Span **spans = spanset_spans(ss);
