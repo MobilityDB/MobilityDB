@@ -2393,9 +2393,6 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
  * @param[in] seq Temporal sequence
  * @param[in] expand True when reserving space for additional sequences
  * @sqlfunc appendSequence()
- * @note It is the responsibility of the calling function to free the memory,
- * that is, delete the old value of ss when it cannot be expanded and a new
- * sequence set is created.
  */
 TSequenceSet *
 tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
