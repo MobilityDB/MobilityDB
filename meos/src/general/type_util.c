@@ -1043,6 +1043,21 @@ basetype_in(const char *str, meosType basetype,
 }
 
 /**
+ * @ingroup libmeos_pg_types
+ * @brief Output function for PG text values
+ */
+char *
+text_out(const text *txt)
+{
+  assert(txt != NULL);
+  char *str = text2cstring(txt);
+  char *result = palloc(strlen(str) + 4);
+  sprintf(result, "\"%s\"", str);
+  pfree(str);
+  return result;
+}
+
+/**
  * @brief Call output function of the base type
  * @return On error return NULL
  */
@@ -1065,13 +1080,7 @@ basetype_out(Datum value, meosType basetype, int maxdd)
     case T_FLOAT8:
       return float8_out(DatumGetFloat8(value), maxdd);
     case T_TEXT:
-    {
-      char *str = text2cstring(DatumGetTextP(value));
-      char *result = palloc(strlen(str) + 4);
-      sprintf(result, "\"%s\"", str);
-      pfree(str);
-      return result;
-    }
+      return text_out(DatumGetTextP(value));
 #if DEBUG_BUILD
     case T_DOUBLE2:
       return double2_out(DatumGetDouble2P(value), maxdd);

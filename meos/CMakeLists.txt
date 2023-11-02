@@ -23,6 +23,20 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 add_definitions(-DSYSTEMTZDIR="/usr/share/zoneinfo")
 message(STATUS "Directory of the time zone database: /usr/share/zoneinfo")
 
+# Option to show debug messages for analyzing the expandable data structures
+option(DEBUG_EXPAND
+  "Set DEBUG_EXPAND (default=OFF) to show debug messages for analyzing the
+  expandable data structures
+  "
+  OFF
+)
+
+if(DEBUG_EXPAND)
+  add_definitions(-DDEBUG_EXPAND=1)
+  message(STATUS "Showing debug messages for expandable data structures")
+endif()
+
+
 #-----------------------------------------
 # Set default PostgreSQL Version for MEOS
 #-----------------------------------------
