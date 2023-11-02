@@ -4380,7 +4380,7 @@ temporal_stops(const Temporal *temp, double maxdist,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_positive_datum(Float8GetDatum(maxdist), T_FLOAT8))
+      ! ensure_not_negative_datum(Float8GetDatum(maxdist), T_FLOAT8))
     return NULL;
 
   /* We cannot call #ensure_valid_duration since the duration may be zero */
