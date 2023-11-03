@@ -84,3 +84,96 @@ time2tm(TimeADT time, struct pg_tm *tm, fsec_t *fsec)
   return 0;
 }
 
+/*
+ * Promote date to timestamp with time zone.
+ *
+ * On successful conversion, *overflow is set to zero if it's not NULL.
+ *
+ * If the date is finite but out of the valid range for timestamptz, then:
+ * if overflow is NULL, we throw an out-of-range error.
+ * if overflow is not NULL, we store +1 or -1 there to indicate the sign
+ * of the overflow, and return the appropriate timestamptz infinity.
+ */
+TimestampTz
+date2timestamptz_opt_overflow(DateADT dateVal, int *overflow)
+{
+  TimestampTz result;
+  struct pg_tm tt, *tm = &tt;
+  int tz;
+
+  if (overflow)
+    *overflow = 0;
+
+  if (DATE_IS_NOBEGIN(dateVal))
+    TIMESTAMP_NOBEGIN(result);
+  else if (DATE_IS_NOEND(dateVal))
+    TIMESTAMP_NOEND(result);
+  else
+  {
+    /*
+     * Since dates have the same minimum values as timestamps, only upper
+     * boundary need be checked for overflow.
+     */
+    if (dateVal >= (TIMESTAMP_END_JULIAN - POSTGRES_EPOCH_JDATE))
+    {
+      if (overflow)
+      {
+        *overflow = 1;
+        TIMESTAMP_NOEND(result);
+        return result;
+      }
+      else
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+             "date out of range for timestamp");
+        return 0;
+      }
+    }
+
+    j2date(dateVal + POSTGRES_EPOCH_JDATE,
+         &(tm->tm_year), &(tm->tm_mon), &(tm->tm_mday));
+    tm->tm_hour = 0;
+    tm->tm_min = 0;
+    tm->tm_sec = 0;
+    tz = DetermineTimeZoneOffset(tm, session_timezone);
+
+    result = dateVal * USECS_PER_DAY + tz * USECS_PER_SEC;
+
+    /*
+     * Since it is possible to go beyond allowed timestamptz range because
+     * of time zone, check for allowed timestamp range after adding tz.
+     */
+    if (!IS_VALID_TIMESTAMP(result))
+    {
+      if (overflow)
+      {
+        if (result < MIN_TIMESTAMP)
+        {
+          *overflow = -1;
+          TIMESTAMP_NOBEGIN(result);
+        }
+        else
+        {
+          *overflow = 1;
+          TIMESTAMP_NOEND(result);
+        }
+      }
+      else
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "date out of range for timestamp");
+        return 0;
+      }
+    }
+  }
+  return result;
+}
+
+/*
+ * Promote date to timestamptz, throwing error for overflow.
+ */
+TimestampTz
+date2timestamptz(DateADT dateVal)
+{
+  return date2timestamptz_opt_overflow(dateVal, NULL);
+}

@@ -182,7 +182,7 @@ PG_FUNCTION_INFO_V1(Value_to_span);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a value as a span
- * @sqlfunc intspan(), bigintspan(), floatspan(), period()
+ * @sqlfunc span()
  * @sqlop @p ::
  */
 Datum
@@ -191,6 +191,24 @@ Value_to_span(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Span *result = value_to_span(d, basetype);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Date_to_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Date_to_span);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a date as a span
+ * @sqlfunc span()
+ * @sqlop @p ::
+ */
+Datum
+Date_to_span(PG_FUNCTION_ARGS)
+{
+  DateADT d = PG_GETARG_DATEADT(0);
+  Span *result = date_to_span(d);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

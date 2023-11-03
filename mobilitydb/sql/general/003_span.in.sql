@@ -287,6 +287,13 @@ CREATE CAST (bigint AS bigintspan) WITH FUNCTION span(bigint);
 CREATE CAST (float AS floatspan) WITH FUNCTION span(float);
 CREATE CAST (timestamptz AS tstzspan) WITH FUNCTION span(timestamptz);
 
+CREATE FUNCTION span(date)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Date_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (date AS tstzspan) WITH FUNCTION span(date);
+
 CREATE FUNCTION span(intset)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Set_span'

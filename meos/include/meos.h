@@ -470,6 +470,7 @@ extern SpanSet *int_to_intspanset(int i);
 extern SpanSet *set_to_spanset(const Set *s);
 extern SpanSet *span_to_spanset(const Span *s);
 extern Set *text_to_textset(text *txt);
+extern Span *date_to_span(DateADT d);
 extern Span *timestamp_to_period(TimestampTz t);
 extern SpanSet *timestamp_to_periodset(TimestampTz t);
 extern Set *timestamp_to_tstzset(TimestampTz t);
