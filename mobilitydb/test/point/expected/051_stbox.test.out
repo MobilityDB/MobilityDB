@@ -423,6 +423,18 @@ SELECT geomset '{"Point(1 1 1)", "Point(2 2 2)", "Point(3 3 3)"}'::stbox;
  STBOX Z((1,1,1),(3,3,3))
 (1 row)
 
+SELECT box2d 'BOX(1 1,5 5)'::stbox;
+        stbox         
+----------------------
+ STBOX X((1,1),(5,5))
+(1 row)
+
+SELECT box3d 'BOX3D(1 1 1,5 5 5)'::stbox;
+          stbox           
+--------------------------
+ STBOX Z((1,1,1),(5,5,5))
+(1 row)
+
 SELECT MAX(duration(b::tstzspan)) FROM tbl_stbox;
    max    
 ----------
