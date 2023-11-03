@@ -322,6 +322,18 @@ SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::tstzspan;
  [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
+SELECT stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::box2d;
+    box2d     
+--------------
+ BOX(1 1,5 5)
+(1 row)
+
+SELECT stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])'::box3d;
+       box3d        
+--------------------
+ BOX3D(1 1 1,5 5 5)
+(1 row)
+
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
                 st_asewkt                 
 ------------------------------------------
@@ -395,6 +407,10 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01,2000-01
 (1 row)
 
 /* Errors */
+SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box2d;
+ERROR:  The box must have space dimension
+SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box3d;
+ERROR:  The box must have space dimension
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
 ERROR:  The box must have space dimension
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))'::tstzspan;

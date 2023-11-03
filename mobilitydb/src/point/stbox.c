@@ -328,6 +328,8 @@ Stbox_to_box2d(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   GBOX *result = stbox_to_gbox(box);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -344,6 +346,8 @@ Stbox_to_box3d(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   BOX3D *result = stbox_to_box3d(box);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -397,10 +401,7 @@ Datum
 Box2d_to_stbox(PG_FUNCTION_ARGS)
 {
   GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
-  STBox *result = palloc(sizeof(STBox));
-  bool found = gbox_set_stbox(box, result);
-  if (! found)
-    PG_RETURN_NULL();
+  STBox *result = gbox_to_stbox(box);
   PG_RETURN_POINTER(result);
 }
 
@@ -416,10 +417,7 @@ Datum
 Box3d_to_stbox(PG_FUNCTION_ARGS)
 {
   BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
-  STBox *result = palloc(sizeof(STBox));
-  bool found = box3d_set_stbox(box, result);
-  if (! found)
-    PG_RETURN_NULL();
+  STBox *result = box3d_to_stbox(box);
   PG_RETURN_POINTER(result);
 }
 

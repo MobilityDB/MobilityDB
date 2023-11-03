@@ -256,19 +256,22 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 			<listitem id="stbox_convert_to">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convert an <varname>stbox</varname> to a another type</para>
-				<para><varname>stbox::{tstzspan,geometry}</varname></para>
+				<para><varname>stbox::{tstzspan,box2d,box3d,geometry}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan;
 -- [2000-01-01, 2000-01-03]
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
--- SRID=4326;POLYGON((1 1,1 5,5 5,5 1,1 1))
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,5)),[2000-01-01,2000-01-05])'::geometry);
--- SRID=4326;LINESTRING(1 1,1 5)
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-05])'::geometry);
--- SRID=4326;POINT(1 1)
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])'::
+SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::box2d;
+-- BOX(1 2,3 4)
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::
   geometry);
-/* SRID=4326;POLYHEDRALSURFACE(((1 1 1,1 5 1,5 5 1,5 1 1,1 1 1)),
+-- SRID=4326;POLYGON((1 1,1 5,5 5,5 1,1 1))
+SELECT ST_AsEWKT(stbox 'STBOX XT(((1,1),(1,5)),[2000-01-01,2000-01-05])'::geometry);
+-- LINESTRING(1 1,1 5)
+SELECT ST_AsEWKT(stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-05])'::geometry);
+-- POINT(1 1)
+SELECT ST_AsEWKT(stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])'::
+  geometry);
+/* POLYHEDRALSURFACE(((1 1 1,1 5 1,5 5 1,5 1 1,1 1 1)),
    ((1 1 5,5 1 5,5 5 5,1 5 5,1 1 5)),((1 1 1,1 1 5,1 5 5,1 5 1,1 1 1)),
    ((5 1 1,5 5 1,5 5 5,5 1 5,5 1 1)),((1 1 1,5 1 1,5 1 5,1 1 5,1 1 1)),
    ((1 5 1,1 5 5,5 5 5,5 5 1,1 5 1))) */
@@ -278,8 +281,10 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01
 			<listitem id="stbox_convert_from">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convert another type to an <varname>stbox</varname></para>
-				<para><varname>{geo,time,tpoint}::stbox</varname></para>
+				<para><varname>{box2d,box3d,geo,time,tpoint}::stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
+SELECT geometry 'Linestring(1 1 1,2 2 2)'::box3d::stbox;
+-- STBOX Z((1,1,1),(2,2,2))
 SELECT geometry 'Linestring(1 1,2 2)'::stbox;
 -- STBOX X((1,1),(2,2))
 SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
@@ -436,11 +441,14 @@ SELECT shiftTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
 				<programlisting language="sql" xml:space="preserve">
 SELECT scaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0);
 -- TBOXFLOAT XT([1.5, 3.5],[2001-01-01, 2001-01-02])
-SELECT scaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', interval '2 days');
+SELECT scaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
+  interval '2 days');
 -- TBOXFLOAT XT([1.5, 2.5],[2001-01-01, 2001-01-03])
-SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '1 hour');
+SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
+  interval '1 hour');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 00:00:00, 2001-01-01 01:00:00])
-SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '-1 day');
+SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
+  interval '-1 day');
 -- ERROR:  The duration must be a positive interval: -1 days
 </programlisting>
 			</listitem>
