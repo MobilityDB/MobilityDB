@@ -145,47 +145,24 @@ Spanset_extent_transfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Span_union_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_union_transfn);
 /*
- * @brief Transition function for aggregating spans
- *
- * All we do here is gather the input spans into an array
- * so that the finalfn can sort and combine them.
+ * The transition and combine functions for span_union are, respectively,
+ * PostgreSQL's array_agg_transfn and array_agg_combinefn. Similarly, the
+ * combine function for spanset_union is PostgreSQL's array_agg_combinefn.
+ * The idea is that all the component spans are simply appened to an array
+ * without any processing and thus are not sorted. The final function then
+ * extract the spans, sort them, and performs the normalization.
+ * Reusing PostgreSQL array function enables us to leverage parallel aggregates
+ * (introduced in PostgreSQL version 16) and other built-in optimizations.
  */
-Datum
-Span_union_transfn(PG_FUNCTION_ARGS)
-{
-  MemoryContext aggContext;
-  if (! AggCheckCallContext(fcinfo, &aggContext))
-    elog(ERROR, "span_union_transfn called in non-aggregate context");
-
-  Oid spanoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-#if DEBUG_BUILD
-  meosType spantype = oid_type(spanoid);
-  assert(span_type(spantype));
-#endif /* DEBUG_BUILD */
-
-  ArrayBuildState *state;
-  if (PG_ARGISNULL(0))
-    state = initArrayResult(spanoid, aggContext, false);
-  else
-    state = (ArrayBuildState *) PG_GETARG_POINTER(0);
-
-  /* Skip NULLs */
-  if (! PG_ARGISNULL(1))
-    accumArrayResult(state, PG_GETARG_DATUM(1), false, spanoid, aggContext);
-
-  PG_RETURN_POINTER(state);
-}
 
 PGDLLEXPORT Datum Spanset_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_union_transfn);
 /*
- * @brief Transition function for aggregating spans
+ * @brief Transition function for aggregating span sets
  *
  * All we do here is gather the input span sets' spans into an array so
- * that the finalfn can sort and combine them.
+ * that the final function can sort and combine them.
  */
 Datum
 Spanset_union_transfn(PG_FUNCTION_ARGS)
@@ -206,7 +183,7 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
   else
     state = (ArrayBuildState *) PG_GETARG_POINTER(0);
 
-  /* skip NULLs */
+  /* Skip NULLs */
   if (! PG_ARGISNULL(1))
   {
     SpanSet *ss = PG_GETARG_SPANSET_P(1);
@@ -219,42 +196,10 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-PGDLLEXPORT Datum Span_union_combinefn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_union_combinefn);
-/**
- * @brief Combine function for span union aggregation
- */
-Datum
-Span_union_combinefn(PG_FUNCTION_ARGS)
-{
-  MemoryContext aggContext;
-  if (! AggCheckCallContext(fcinfo, &aggContext))
-    elog(ERROR, "Span_union_combinefn called in non-aggregate context");
-
-  ArrayBuildState *s1 = PG_ARGISNULL(0) ? NULL : 
-    (ArrayBuildState *) PG_GETARG_POINTER(0);
-  ArrayBuildState *s2 = PG_ARGISNULL(1) ? NULL :
-    (ArrayBuildState *) PG_GETARG_POINTER(1);
-  if (! s2 && ! s1)
-    PG_RETURN_NULL();
-  if (s1 && ! s2)
-    PG_RETURN_POINTER(s1);
-  if (s2 && ! s1)
-    PG_RETURN_POINTER(s2);
-
-  /* Both states are not null: Accumulate all s2 values into s1 */
-  for (int i = 0; i < s2->nelems; i++)
-  {
-    s1 = accumArrayResult(s1, s2->dvalues[i], s2->dnulls[i],
-      s2->element_type, aggContext);
-  }
-  PG_RETURN_POINTER(s1);
-}
-
 PGDLLEXPORT Datum Span_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_union_finalfn);
 /*
- * @brief use our internal array to merge overlapping/touching spans.
+ * @brief Final function that merges overlapping/adjacent spans.
  * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
  */
 Datum
@@ -276,11 +221,19 @@ Span_union_finalfn(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   Span *spans = palloc0(sizeof(Span) * count);
+  int k = 0;
   for (int i = 0; i < count; i++)
-    spans[i] = *(DatumGetSpanP(state->dvalues[i]));
+  {
+    if (! state->dnulls[i])
+      spans[k++] = *(DatumGetSpanP(state->dvalues[i]));
+  }
+
+  /* Also return NULL if we had only null inputs */
+  if (k == 0)
+    PG_RETURN_NULL();
 
   int newcount;
-  Span *normspans = spanarr_normalize(spans, count, true, &newcount);
+  Span *normspans = spanarr_normalize(spans, k, true, &newcount);
   SpanSet *result = spanset_make_free(normspans, newcount, NORMALIZE_NO);
 
   /* Free memory */

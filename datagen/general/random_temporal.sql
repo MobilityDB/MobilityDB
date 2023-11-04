@@ -691,7 +691,7 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_timestamptz('2001-01-01', '2002-01-01') AS t
+SELECT k, random_date('2001-01-01', '2002-01-01') AS d
 FROM generate_series(1, 15) AS k;
 */
 

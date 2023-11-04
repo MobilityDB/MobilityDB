@@ -98,11 +98,12 @@ value_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
  * @brief Determine whether we can estimate selectivity for the operator
  */
 bool
-time_oper_sel(meosOper oper __attribute__((unused)), meosType ltype, meosType rtype)
+time_oper_sel(meosOper oper __attribute__((unused)), meosType ltype,
+  meosType rtype)
 {
   if ((timespan_basetype(ltype) || timeset_type(ltype) || timespan_type(ltype) ||
         timespanset_type(ltype)) &&
-      (span_basetype(rtype) || timeset_type(rtype) || timespan_type(ltype) ||
+      (timespan_basetype(rtype) || timeset_type(rtype) || timespan_type(rtype) ||
         timespanset_type(rtype)))
     return true;
   return false;

@@ -194,6 +194,7 @@ Value_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+#if POSTGRESQL_VERSION_NUMBER >= 130000
 PGDLLEXPORT Datum Date_to_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Date_to_tstzspan);
 /**
@@ -211,6 +212,7 @@ Date_to_tstzspan(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
+#endif 
 
 PGDLLEXPORT Datum Span_to_range(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_range);

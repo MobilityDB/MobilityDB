@@ -733,6 +733,7 @@ timestamp_to_period(TimestampTz t)
 }
 #endif /* MEOS */
 
+#if POSTGRESQL_VERSION_NUMBER >= 130000
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a date to a span
@@ -749,6 +750,7 @@ date_to_tstzspan(DateADT d)
     true, true, T_TIMESTAMPTZ);
   return result;
 }
+#endif 
 
 /*****************************************************************************
  * Accessor functions
