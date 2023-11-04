@@ -219,6 +219,38 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
+PGDLLEXPORT Datum Span_union_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_union_combinefn);
+/**
+ * @brief Combine function for span union aggregation
+ */
+Datum
+Span_union_combinefn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Span_union_combinefn called in non-aggregate context");
+
+  ArrayBuildState *s1 = PG_ARGISNULL(0) ? NULL : 
+    (ArrayBuildState *) PG_GETARG_POINTER(0);
+  ArrayBuildState *s2 = PG_ARGISNULL(1) ? NULL :
+    (ArrayBuildState *) PG_GETARG_POINTER(1);
+  if (! s2 && ! s1)
+    PG_RETURN_NULL();
+  if (s1 && ! s2)
+    PG_RETURN_POINTER(s1);
+  if (s2 && ! s1)
+    PG_RETURN_POINTER(s2);
+
+  /* Both states are not null: Accumulate all s2 values into s1 */
+  for (int i = 0; i < s2->nelems; i++)
+  {
+    s1 = accumArrayResult(s1, s2->dvalues[i], s2->dnulls[i],
+      s2->element_type, aggContext);
+  }
+  PG_RETURN_POINTER(s1);
+}
+
 PGDLLEXPORT Datum Span_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_union_finalfn);
 /*

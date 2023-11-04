@@ -262,7 +262,7 @@ CREATE FUNCTION span(timestamptz, timestamptz, boolean DEFAULT true, boolean DEF
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Casting
+ * Coversions
  ******************************************************************************/
 
 CREATE FUNCTION span(integer)
@@ -287,12 +287,12 @@ CREATE CAST (bigint AS bigintspan) WITH FUNCTION span(bigint);
 CREATE CAST (float AS floatspan) WITH FUNCTION span(float);
 CREATE CAST (timestamptz AS tstzspan) WITH FUNCTION span(timestamptz);
 
-CREATE FUNCTION span(date)
+CREATE FUNCTION tstzspan(date)
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Date_to_span'
+  AS 'MODULE_PATHNAME', 'Date_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (date AS tstzspan) WITH FUNCTION span(date);
+CREATE CAST (date AS tstzspan) WITH FUNCTION tstzspan(date);
 
 CREATE FUNCTION span(intset)
   RETURNS intspan

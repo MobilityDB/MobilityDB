@@ -739,7 +739,7 @@ timestamp_to_period(TimestampTz t)
  * @sqlop @p ::
  */
 Span *
-date_to_span(DateADT d)
+date_to_tstzspan(DateADT d)
 {
   int overflow;
   TimestampTz t = date2timestamptz_opt_overflow(d, &overflow);

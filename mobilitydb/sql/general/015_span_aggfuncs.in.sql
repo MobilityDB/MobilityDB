@@ -279,6 +279,11 @@ CREATE FUNCTION span_union_transfn(internal, tstzspan)
   AS 'MODULE_PATHNAME', 'Span_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION span_union_combinefn(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_union_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 CREATE FUNCTION intspan_union_finalfn(internal)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
@@ -299,21 +304,33 @@ CREATE FUNCTION tstzspan_union_finalfn(internal)
 CREATE AGGREGATE span_union(intspan) (
   SFUNC = span_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_union_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = intspan_union_finalfn
 );
 CREATE AGGREGATE span_union(bigintspan) (
   SFUNC = span_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_union_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = bigintspan_union_finalfn
 );
 CREATE AGGREGATE span_union(floatspan) (
   SFUNC = span_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_union_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = floatspan_union_finalfn
 );
 CREATE AGGREGATE span_union(tstzspan) (
   SFUNC = span_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_union_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tstzspan_union_finalfn
 );
 
@@ -339,21 +356,33 @@ CREATE FUNCTION spanset_union_transfn(internal, tstzspanset)
 CREATE AGGREGATE span_union(intspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_union_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = intspan_union_finalfn
 );
 CREATE AGGREGATE span_union(bigintspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_union_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = bigintspan_union_finalfn
 );
 CREATE AGGREGATE span_union(floatspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_union_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = floatspan_union_finalfn
 );
 CREATE AGGREGATE span_union(tstzspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_union_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tstzspan_union_finalfn
 );
 

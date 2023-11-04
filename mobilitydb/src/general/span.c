@@ -194,19 +194,19 @@ Value_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Date_to_span(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Date_to_span);
+PGDLLEXPORT Datum Date_to_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Date_to_tstzspan);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a date as a span
- * @sqlfunc span()
+ * @brief Convert a date as a timestamptz span
+ * @sqlfunc tstzspan()
  * @sqlop @p ::
  */
 Datum
-Date_to_span(PG_FUNCTION_ARGS)
+Date_to_tstzspan(PG_FUNCTION_ARGS)
 {
   DateADT d = PG_GETARG_DATEADT(0);
-  Span *result = date_to_span(d);
+  Span *result = date_to_tstzspan(d);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
