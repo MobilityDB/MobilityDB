@@ -315,16 +315,18 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Estimate that non-null values are unique */
     stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
-    /* The last argument determines the slot for number/time statistics */
+    /* The last argument determines the slot for value/time statistics.
+     * In this case, even in the case of tstzspan, the statistics will be 
+     * stored in the value (not on the time) slot */
     span_compute_stats_generic(stats, non_null_cnt, &slot_idx, lowers, uppers,
-      lengths, numspan_type(type));
+      lengths, true);
   }
   else if (null_cnt > 0)
   {
     /* We found only nulls; assume the column is entirely null */
     stats->stats_valid = true;
     stats->stanullfrac = 1.0;
-    stats->stawidth = 0;    /* "unknown" */
+    stats->stawidth = 0;       /* "unknown" */
     stats->stadistinct = 0.0;  /* "unknown" */
   }
 

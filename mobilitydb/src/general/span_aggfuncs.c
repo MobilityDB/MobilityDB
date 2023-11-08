@@ -205,9 +205,11 @@ PG_FUNCTION_INFO_V1(Span_union_finalfn);
 Datum
 Span_union_finalfn(PG_FUNCTION_ARGS)
 {
-  MemoryContext aggContext;
-  if (! AggCheckCallContext(fcinfo, &aggContext))
-    elog(ERROR, "Span_union_finalfn called in non-aggregate context");
+  /* cannot be called directly because of internal-type argument */
+  Assert(AggCheckCallContext(fcinfo, NULL));
+  // MemoryContext aggContext;
+  // if (! AggCheckCallContext(fcinfo, &aggContext))
+    // elog(ERROR, "Span_union_finalfn called in non-aggregate context");
 
   ArrayBuildState *state = PG_ARGISNULL(0) ? NULL :
     (ArrayBuildState *) PG_GETARG_POINTER(0);

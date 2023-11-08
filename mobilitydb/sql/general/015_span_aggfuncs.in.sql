@@ -265,19 +265,19 @@ CREATE AGGREGATE extent(tstzspanset) (
 CREATE FUNCTION intspan_union_finalfn(internal)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION bigintspan_union_finalfn(internal)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION floatspan_union_finalfn(internal)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tstzspan_union_finalfn(internal)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE span_union(intspan) (
   SFUNC = array_agg_transfn,
