@@ -303,7 +303,7 @@ WHERE intersects(T.Trip, R.Geom);
 				</orderedlist>
 			</para>
 
-			<para>Para los tipos de rango, como <varname>tstzrange</varname>, se recopilan tres histogramas adicionales:
+			<para>Para los tipos de rango, como <varname>tstzspan</varname>, se recopilan tres histogramas adicionales:
 				<orderedlist continuation="continues" numeration="arabic">
 					<listitem>
 						<para>histograma de longitud de rangos no vacíos,</para>

@@ -53,8 +53,8 @@ extern double span_sel_hist(VariableStatData *vardata, const Span *constval,
 extern float8 span_sel(PlannerInfo *root, Oid operid, List *args,
   int varRelid);
 
-extern float8 span_joinsel(PlannerInfo *root, meosOper oper, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo);
+extern float8 span_joinsel(PlannerInfo *root, bool value, meosOper oper,
+  List *args, JoinType jointype, SpecialJoinInfo *sjinfo);
 
 /*****************************************************************************/
 

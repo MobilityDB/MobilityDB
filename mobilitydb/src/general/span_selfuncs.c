@@ -687,8 +687,9 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
     selec = span_sel_default(InvalidOid);
   else
   {
-    elog(ERROR, "Unable to compute join selectivity for unknown span operator");
-    selec = -1.0;  /* keep compiler quiet */
+    // elog(NOTICE, "Unable to compute join selectivity for span operator: %d",
+      // oper);
+    selec = span_sel_default(InvalidOid);
   }
 
   pfree(hist_lower); pfree(hist_upper);
@@ -730,9 +731,9 @@ span_sel_hist(VariableStatData *vardata, const Span *constval, meosOper oper,
   {
     memset(&lslot, 0, sizeof(lslot));
 
-    stats_kind = value ?
-      STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
-      STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
+    // stats_kind = value ?
+      // STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
+      // STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
         get_attstatsslot(&lslot, vardata->statsTuple,
           stats_kind, InvalidOid, ATTSTATSSLOT_VALUES)))
@@ -1105,8 +1106,8 @@ span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
 
   /* Fast-forward i and j to start of iteration */
   int i, j;
-  for (i = 0; span_bound_cmp(&hist1[i], &hist2[0]) < 0; i++);
-  for (j = 0; span_bound_cmp(&hist2[j], &hist1[0]) < 0; j++);
+  for (i = 0; i < nhist1 && span_bound_cmp(&hist1[i], &hist2[0]) < 0; i++);
+  for (j = 0; j < nhist2 && span_bound_cmp(&hist2[j], &hist1[0]) < 0; j++);
 
   /* Do the estimation on overlapping regions */
   double selec = 0.0,  /* initialisation */
@@ -1272,8 +1273,9 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
     selec = span_joinsel_default(InvalidOid);
   else
   {
-    elog(ERROR, "Unable to compute join selectivity for unknown span operator");
-    selec = -1.0;  /* keep compiler quiet */
+    // elog(ERROR, "Unable to compute join selectivity for span operator: %d",
+      // oper);
+    selec = span_sel_default(InvalidOid);
   }
 
   pfree(lower1); pfree(upper1); pfree(lower2); pfree(upper2);
@@ -1288,14 +1290,18 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
  */
 static double
 span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
-  meosOper oper)
+  bool value, meosOper oper)
 {
   /* There is only one lslot, see explanation below */
   AttStatsSlot hslot1, hslot2, lslot;
   Form_pg_statistic stats1 = NULL, stats2 = NULL;
   double selec;
   bool have_hist1 = false, have_hist2 = false;
-
+  int bounds_hist = value ? STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM : 
+    STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
+  int lengths_hist = value ? STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
+    STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
+  
   memset(&hslot1, 0, sizeof(hslot1));
   memset(&hslot2, 0, sizeof(hslot2));
 
@@ -1305,7 +1311,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
     stats1 = (Form_pg_statistic) GETSTRUCT(vardata1->statsTuple);
 
     have_hist1 = get_attstatsslot(&hslot1, vardata1->statsTuple,
-      STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM, InvalidOid,  // TODO
+      bounds_hist, InvalidOid,  // TODO
       ATTSTATSSLOT_VALUES);
     /* Check that it's a histogram, not just a dummy entry */
     if (hslot1.nvalues < 2)
@@ -1318,7 +1324,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   {
     stats2 = (Form_pg_statistic) GETSTRUCT(vardata2->statsTuple);
     have_hist2 = get_attstatsslot(&hslot2, vardata2->statsTuple,
-      STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM, InvalidOid, // TODO
+      bounds_hist, InvalidOid, // TODO
       ATTSTATSSLOT_VALUES);
     /* Check that it's a histogram, not just a dummy entry */
     if (hslot2.nvalues < 2)
@@ -1375,7 +1381,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
 
     if (!(HeapTupleIsValid(vardata2->statsTuple) &&
         get_attstatsslot(&lslot, vardata1->statsTuple,
-          STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM, InvalidOid, // TODO
+          lengths_hist, InvalidOid, // TODO
           ATTSTATSSLOT_VALUES)))
     {
       free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
@@ -1407,7 +1413,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
  * @brief Estimate join selectivity for spans
  */
 float8
-span_joinsel(PlannerInfo *root, meosOper oper, List *args,
+span_joinsel(PlannerInfo *root, bool value, meosOper oper, List *args,
   JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo)
 {
   VariableStatData vardata1, vardata2;
@@ -1416,7 +1422,7 @@ span_joinsel(PlannerInfo *root, meosOper oper, List *args,
     &join_is_reversed);
 
   /* Estimate join selectivity */
-  float8 selec = span_joinsel_hist(&vardata1, &vardata2, oper);
+  float8 selec = span_joinsel_hist(&vardata1, &vardata2, value, oper);
 
   ReleaseVariableStats(vardata1);
   ReleaseVariableStats(vardata2);
@@ -1460,6 +1466,7 @@ Span_joinsel(PG_FUNCTION_ARGS)
   /* TODO: handle t1 <op> expandX(t2) */
   if (!IsA(arg1, Var) || !IsA(arg2, Var))
     PG_RETURN_FLOAT8(span_joinsel_default(operid));
+
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);
@@ -1472,7 +1479,7 @@ Span_joinsel(PG_FUNCTION_ARGS)
       PG_RETURN_FLOAT8(span_joinsel_default(operid));
   }
 
-  float8 selec = span_joinsel(root, oper, args, jointype, sjinfo);
+  float8 selec = span_joinsel(root, value, oper, args, jointype, sjinfo);
 
   PG_RETURN_FLOAT8(selec);
 }
@@ -1551,12 +1558,14 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (! get_attstatsslot(&hslot1, stats1_tuple, stats_kind, InvalidOid,
       ATTSTATSSLOT_VALUES))
     elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+
   /* Check that it's a histogram, not just a dummy entry */
   if (hslot1.nvalues < 2)
   {
     free_attstatsslot(&hslot1);
     elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
   }
+
   /* Second table */
   stats2_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table2_oid),
     Int16GetDatum(att2_num), BoolGetDatum(false));
@@ -1566,6 +1575,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (! get_attstatsslot(&hslot2, stats2_tuple, stats_kind, InvalidOid,
       ATTSTATSSLOT_VALUES))
     elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+
   /* Check that it's a histogram, not just a dummy entry */
   if (hslot2.nvalues < 2)
   {

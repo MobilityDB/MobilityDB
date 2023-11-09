@@ -303,10 +303,10 @@ WHERE intersects(T.Trip, R.Geom);
 				</orderedlist>
 			</para>
 
-			<para>For range types, like <varname>tstzrange</varname>, three additional histograms are collected:
+			<para>For span types, like <varname>tstzspan</varname>, three additional histograms are collected:
 				<orderedlist continuation="continues" numeration="arabic">
 					<listitem>
-						<para>length histogram of non-empty ranges,</para>
+						<para>length histogram of non-empty spans,</para>
 					</listitem>
 					<listitem>
 						<para>histograms of lower and upper bounds.</para>

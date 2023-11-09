@@ -85,7 +85,7 @@ float8_qsort_cmp(const void *a1, const void *a2)
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] non_null_cnt Number of rows that are not null
- * @param[in] slot_idx Index of the slot where the statistics collected are stored
+ * @param[in] slot_idx Index of the slot where the statistics will be stored
  * @param[in] lowers,uppers Arrays of span bounds
  * @param[in] lengths Arrays of span lengths
  * @param[in] valuedim True for computing the histogram of the value dimension,
@@ -241,7 +241,7 @@ static void
 span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
+  int null_cnt = 0, non_null_cnt = 0;
   double total_width = 0;
   meosType type = oid_type(stats->attrtypid);
 
@@ -318,8 +318,10 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* The last argument determines the slot for value/time statistics.
      * In this case, even in the case of tstzspan, the statistics will be 
      * stored in the value (not on the time) slot */
+    bool value = numspan_type(type);
+    int slot_idx = value ? 0 : 2;
     span_compute_stats_generic(stats, non_null_cnt, &slot_idx, lowers, uppers,
-      lengths, true);
+      lengths, numspan_type(type));
   }
   else if (null_cnt > 0)
   {

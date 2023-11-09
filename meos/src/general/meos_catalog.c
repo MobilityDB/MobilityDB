@@ -196,7 +196,7 @@ temptype_basetype(meosType temptype)
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a temporal type", temptype);
+    "type %s is not a temporal type", meostype_name(temptype));
   return T_UNKNOWN;
 }
 
@@ -214,7 +214,7 @@ spantype_basetype(meosType spantype)
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a span type", spantype);
+    "type %s is not a span type", meostype_name(spantype));
   return T_UNKNOWN;
 }
 
@@ -232,7 +232,7 @@ spansettype_spantype(meosType spansettype)
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a span set type", spansettype);
+    "type %s is not a span set type", meostype_name(spansettype));
   return T_UNKNOWN;
 }
 
@@ -250,7 +250,7 @@ basetype_spantype(meosType basetype)
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a span type", basetype);
+    "type %s is not a span type", meostype_name(basetype));
   return T_UNKNOWN;
 }
 
@@ -268,7 +268,7 @@ spantype_spansettype(meosType spantype)
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a span type", spantype);
+    "type %s is not a span type", meostype_name(spantype));
   return T_UNKNOWN;
 }
 
@@ -286,7 +286,7 @@ settype_basetype(meosType settype)
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a set type", settype);
+    "type %s is not a set type", meostype_name(settype));
   return T_UNKNOWN;
 }
 
@@ -304,7 +304,7 @@ basetype_settype(meosType basetype)
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a set type", basetype);
+    "type %s is not a set type", meostype_name(basetype));
   return T_UNKNOWN;
 }
 
@@ -394,7 +394,7 @@ basetype_length(meosType type)
     return sizeof(Npoint);
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "unknown base type: %d", type);
+    "unknown base type: %s", meostype_name(type));
   return SHRT_MAX;
 }
 
