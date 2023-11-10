@@ -470,6 +470,7 @@ extern SpanSet *int_to_intspanset(int i);
 extern SpanSet *set_to_spanset(const Set *s);
 extern SpanSet *span_to_spanset(const Span *s);
 extern Set *text_to_textset(text *txt);
+extern Span *date_to_tstzspan(DateADT d);
 extern Span *timestamp_to_period(TimestampTz t);
 extern SpanSet *timestamp_to_periodset(TimestampTz t);
 extern Set *timestamp_to_tstzset(TimestampTz t);
@@ -953,6 +954,8 @@ extern TBox *tbox_make(const Span *s, const Span *p);
 
 /* Conversion functions for box types */
 
+extern STBox *box3d_to_stbox(const BOX3D *box);
+extern STBox *gbox_to_stbox(const GBOX *box);
 extern TBox *float_to_tbox(double d);
 extern STBox *geo_to_stbox(const GSERIALIZED *gs);
 extern TBox *int_to_tbox(int i);
@@ -963,6 +966,8 @@ extern STBox *period_to_stbox(const Span *p);
 extern TBox *period_to_tbox(const Span *p);
 extern STBox *periodset_to_stbox(const SpanSet *ps);
 extern TBox *periodset_to_tbox(const SpanSet *ps);
+extern GBOX *stbox_to_gbox(const STBox *box);
+extern BOX3D *stbox_to_box3d(const STBox *box);
 extern GSERIALIZED *stbox_to_geo(const STBox *box);
 extern Span *stbox_to_period(const STBox *box);
 extern Span *tbox_to_floatspan(const TBox *box);

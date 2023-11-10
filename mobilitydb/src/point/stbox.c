@@ -315,11 +315,47 @@ Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
  * Conversion functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_to_box2d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_to_box2d);
+/**
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a spatiotemporal box as a PostGIS GBOX
+ * @sqlfunc box2d()
+ * @sqlfunc @p ::
+ */
+Datum
+Stbox_to_box2d(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  GBOX *result = stbox_to_gbox(box);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Stbox_to_box3d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_to_box3d);
+/**
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a spatiotemporal box as a PostGIS GBOX
+ * @sqlfunc box3d()
+ * @sqlfunc @p ::
+ */
+Datum
+Stbox_to_box3d(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  BOX3D *result = stbox_to_box3d(box);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
 PGDLLEXPORT Datum Stbox_to_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_to_geo);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a spatiotemporal box as a PostGIS GBOX
+ * @brief Convert a spatiotemporal box as a PostGIS geometry/geography
  * @sqlfunc geometry()
  * @sqlfunc @p ::
  */
@@ -350,8 +386,40 @@ Stbox_to_period(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Transform a <Type> to a STBox
+ * Transform a <Type> to an STBox
  *****************************************************************************/
+
+PGDLLEXPORT Datum Box2d_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Box2d_to_stbox);
+/**
+ * @ingroup mobilitydb_box_conversion
+ * @brief Transform a box2d to a spatiotemporal box
+ * @sqlfunc stbox()
+ * @sqlfunc @p ::
+ */
+Datum
+Box2d_to_stbox(PG_FUNCTION_ARGS)
+{
+  GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
+  STBox *result = gbox_to_stbox(box);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Box3d_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Box3d_to_stbox);
+/**
+ * @ingroup mobilitydb_box_conversion
+ * @brief Transform a box3d to a spatiotemporal box
+ * @sqlfunc stbox()
+ * @sqlfunc @p ::
+ */
+Datum
+Box3d_to_stbox(PG_FUNCTION_ARGS)
+{
+  BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
+  STBox *result = box3d_to_stbox(box);
+  PG_RETURN_POINTER(result);
+}
 
 PGDLLEXPORT Datum Geo_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_to_stbox);

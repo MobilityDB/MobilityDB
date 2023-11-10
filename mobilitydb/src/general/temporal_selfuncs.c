@@ -991,8 +991,8 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
       // TODO
       selec *= span_joinsel_default(oper);
     else
-      /* Estimate join selectivity */
-      selec *= span_joinsel(root, oper, args, jointype, sjinfo);
+      /* Estimate join selectivity for value dimension */
+      selec *= span_joinsel(root, true, oper, args, jointype, sjinfo);
   }
   if (space)
   {
@@ -1029,8 +1029,8 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
       (oper == OVERLAPS_OP && list_length(args) != 2))
       selec *= span_joinsel_default(oper);
     else
-      /* Estimate join selectivity */
-      selec *= span_joinsel(root, oper, args, jointype, sjinfo);
+      /* Estimate join selectivity for time dimension */
+      selec *= span_joinsel(root, false, oper, args, jointype, sjinfo);
   }
 
   CLAMP_PROBABILITY(selec);

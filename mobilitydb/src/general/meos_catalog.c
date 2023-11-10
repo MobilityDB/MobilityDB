@@ -351,16 +351,14 @@ name_oper(const char *name)
   return UNKNOWN_OP;
 }
 
-#if 0 /* not used */
 /**
  * @brief Return the string name from an operator number
  */
 const char *
-oper_name(meosOper oper)
+meosoper_name(meosOper oper)
 {
   return _meosOper_names[oper];
 }
-#endif /* not used */
 
 /**
  * @brief Fetch from the cache the Oid of an operator
@@ -375,8 +373,11 @@ oper_oid(meosOper oper, meosType lt, meosType rt)
     populate_operoid_cache();
   Oid result = _oper_oid[oper][lt][rt];
   if (! result)
+  {
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Unknown MEOS operator: %d, ltype; %d, rtype; %d", oper, lt, rt)));
+      errmsg("Unknown MEOS operator: %s, ltype; %s, rtype; %s", 
+        meosoper_name(oper), meostype_name(lt), meostype_name(rt))));
+  }
   return _oper_oid[oper][lt][rt];
 }
 

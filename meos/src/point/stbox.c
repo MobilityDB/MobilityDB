@@ -428,6 +428,42 @@ stbox_set_box3d(const STBox *box, BOX3D *box3d)
 
 /**
  * @ingroup libmeos_box_conversion
+ * @brief Convert a spatiotemporal box to a PostGIS GBOX.
+ * @sqlop @p ::
+ */
+GBOX *
+stbox_to_gbox(const STBox *box)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
+    return NULL;
+
+  GBOX *result = palloc(sizeof(GBOX));
+  stbox_set_gbox(box, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a spatiotemporal box to a PostGIS GBOX.
+ * @sqlop @p ::
+ */
+BOX3D *
+stbox_to_box3d(const STBox *box)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box) ||
+      /* box3d does not have flags */
+      ! ensure_not_geodetic(box->flags))
+    return NULL;
+
+  BOX3D *result = palloc(sizeof(BOX3D));
+  stbox_set_box3d(box, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_conversion
  * @brief Convert a spatiotemporal box as a PostGIS geometry
  * @sqlop @p ::
  */
@@ -502,9 +538,65 @@ stbox_to_period(const STBox *box)
 }
 
 /*****************************************************************************
- * Transform a <Type> to a STBox
+ * Convert a <Type> to an STBox
  * The functions assume set the argument box to 0
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_box_conversion
+ * @brief Convert a GBOX to a spatiotemporal box.
+ */
+STBox *
+gbox_to_stbox(const GBOX *box)
+{
+  assert(box);
+  
+  /* Note: zero-fill is required here, just as in heap tuples */
+  STBox *result = palloc0(sizeof(STBox));
+  bool hasz = (bool) FLAGS_GET_Z(box->flags);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(box->flags);
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_Z(result->flags, hasz);
+  MEOS_FLAGS_SET_T(result->flags, false);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
+
+  result->xmin = box->xmin;
+  result->xmax = box->xmax;
+  result->ymin = box->ymin;
+  result->ymax = box->ymax;
+  if (hasz)
+  {
+    result->zmin = box->zmin;
+    result->zmax = box->zmax;
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_box_conversion
+ * @brief Convert a spatiotemporal box from a BOX3D.
+ */
+STBox *
+box3d_to_stbox(const BOX3D *box3d)
+{
+  assert(box3d);
+
+  /* Note: zero-fill is required here, just as in heap tuples */
+  STBox *result = palloc0(sizeof(STBox));
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_Z(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, false);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, false);
+
+  result->xmin = box3d->xmin;
+  result->xmax = box3d->xmax;
+  result->ymin = box3d->ymin;
+  result->ymax = box3d->ymax;
+  result->zmin = box3d->zmin;
+  result->zmax = box3d->zmax;
+  result->srid = box3d->srid;
+  return result;
+}
 
 /**
  * @brief Get the coordinates from a geometry/geography point.

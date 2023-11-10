@@ -674,6 +674,30 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
+ * Generate a random date in a period
+ *
+ * @param[in] lowdate, higdate Inclusive bounds of the period
+ */
+DROP FUNCTION IF EXISTS random_date;
+CREATE FUNCTION random_date(lowdate date, highdate date)
+  RETURNS date AS $$
+BEGIN
+  IF lowdate > highdate THEN
+    RAISE EXCEPTION 'lowdate must be less than or equal to highdate: %, %',
+      lowdate, highdate;
+  END IF;
+  RETURN lowdate + floor(random() * (highdate - lowdate)) * interval '1 day';
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_date('2001-01-01', '2002-01-01') AS d
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * Generate a random timestamptz in a period
  *
  * @param[in] lowtime, hightime Inclusive bounds of the period

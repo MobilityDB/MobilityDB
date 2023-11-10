@@ -733,6 +733,25 @@ timestamp_to_period(TimestampTz t)
 }
 #endif /* MEOS */
 
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+/**
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a date to a span
+ * @sqlop @p ::
+ */
+Span *
+date_to_tstzspan(DateADT d)
+{
+  int overflow;
+  TimestampTz t = date2timestamptz_opt_overflow(d, &overflow);
+  if (overflow != 0)
+    return NULL;
+  Span *result = span_make(TimestampTzGetDatum(t), TimestampTzGetDatum(t),
+    true, true, T_TIMESTAMPTZ);
+  return result;
+}
+#endif 
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
@@ -1156,7 +1175,7 @@ numspan_delta_scale_iter(Span *s, Datum origin, Datum delta, bool hasdelta,
     {
       /* Integer spans have exclusive upper bound */
       Datum upper1 = span_canon_upper(s);
-      s->upper = datum_add(origin, 
+      s->upper = datum_add(origin,
         double_datum(
           datum_double(datum_sub(upper1, origin, type), type) * scale,
           type), type);
@@ -1211,7 +1230,7 @@ void
 numspan_shift_scale1(Span *s, Datum shift, Datum width, bool hasshift,
   bool haswidth, Datum *delta, double *scale)
 {
-  assert(s); assert(delta); assert(scale); 
+  assert(s); assert(delta); assert(scale);
   Datum lower = s->lower;
   Datum upper = s->upper;
   meosType type = s->basetype;
@@ -1253,7 +1272,7 @@ void
 period_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
   TimestampTz *delta, double *scale)
 {
-  assert(s); assert(delta); assert(scale); 
+  assert(s); assert(delta); assert(scale);
   TimestampTz lower = DatumGetTimestampTz(s->lower);
   TimestampTz upper = DatumGetTimestampTz(s->upper);
   lower_upper_shift_scale_time(shift, duration, &lower, &upper);

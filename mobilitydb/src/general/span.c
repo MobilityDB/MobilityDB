@@ -182,7 +182,7 @@ PG_FUNCTION_INFO_V1(Value_to_span);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a value as a span
- * @sqlfunc intspan(), bigintspan(), floatspan(), period()
+ * @sqlfunc span()
  * @sqlop @p ::
  */
 Datum
@@ -193,6 +193,26 @@ Value_to_span(PG_FUNCTION_ARGS)
   Span *result = value_to_span(d, basetype);
   PG_RETURN_POINTER(result);
 }
+
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+PGDLLEXPORT Datum Date_to_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Date_to_tstzspan);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a date as a timestamptz span
+ * @sqlfunc tstzspan()
+ * @sqlop @p ::
+ */
+Datum
+Date_to_tstzspan(PG_FUNCTION_ARGS)
+{
+  DateADT d = PG_GETARG_DATEADT(0);
+  Span *result = date_to_tstzspan(d);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+#endif 
 
 PGDLLEXPORT Datum Span_to_range(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_range);

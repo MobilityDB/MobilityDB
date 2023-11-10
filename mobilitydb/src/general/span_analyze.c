@@ -85,7 +85,7 @@ float8_qsort_cmp(const void *a1, const void *a2)
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] non_null_cnt Number of rows that are not null
- * @param[in] slot_idx Index of the slot where the statistics collected are stored
+ * @param[in] slot_idx Index of the slot where the statistics will be stored
  * @param[in] lowers,uppers Arrays of span bounds
  * @param[in] lengths Arrays of span lengths
  * @param[in] valuedim True for computing the histogram of the value dimension,
@@ -241,7 +241,7 @@ static void
 span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
+  int null_cnt = 0, non_null_cnt = 0;
   double total_width = 0;
   meosType type = oid_type(stats->attrtypid);
 
@@ -315,7 +315,11 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Estimate that non-null values are unique */
     stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
-    /* The last argument determines the slot for number/time statistics */
+    /* Store the value/time statistics.
+     * Statistics for integer/float spans are stored in slots 0 and 1, while
+     * statistics for tstzspan are stored in the value in slots 2 and 3 */
+    bool value = numspan_type(type);
+    int slot_idx = value ? 0 : 2;
     span_compute_stats_generic(stats, non_null_cnt, &slot_idx, lowers, uppers,
       lengths, numspan_type(type));
   }
@@ -324,7 +328,7 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* We found only nulls; assume the column is entirely null */
     stats->stats_valid = true;
     stats->stanullfrac = 1.0;
-    stats->stawidth = 0;    /* "unknown" */
+    stats->stawidth = 0;       /* "unknown" */
     stats->stadistinct = 0.0;  /* "unknown" */
   }
 
