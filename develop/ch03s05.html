@@ -12,11 +12,14 @@ SELECT shiftTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
 </pre></li><li class="listitem"><a name="box_scale"></a><a class="indexterm" name="idm1647"></a><a class="indexterm" name="idm1650"></a><p>Scale the span or the period of the bounding box to a value or interval. If the width or the time span of the period is zero (that is, the lower and upper bound are equal), the result is the box. The given value or interval must be strictly greater than zero.</p><p><code class="varname">scaleValue(box,{int,float}) → box</code></p><p><code class="varname">scaleTime(box,interval) → box</code></p><pre class="programlisting">
 SELECT scaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0);
 -- TBOXFLOAT XT([1.5, 3.5],[2001-01-01, 2001-01-02])
-SELECT scaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', interval '2 days');
+SELECT scaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
+  interval '2 days');
 -- TBOXFLOAT XT([1.5, 2.5],[2001-01-01, 2001-01-03])
-SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '1 hour');
+SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
+  interval '1 hour');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 00:00:00, 2001-01-01 01:00:00])
-SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '-1 day');
+SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
+  interval '-1 day');
 -- ERROR:  The duration must be a positive interval: -1 days
 </pre></li><li class="listitem"><a name="box_shiftScale"></a><a class="indexterm" name="idm1660"></a><a class="indexterm" name="idm1663"></a><p>Shift and scale the span or the period of the bounding box to the two values or intervals</p><p><code class="varname">shiftScaleValue(box,{int,float},{int,float}) → box</code></p><p><code class="varname">shiftScaleTime(box,interval,interval) → box</code></p><p>These functions combine the functions <a class="link" href="ch03s05.html#box_shift"><code class="varname">shiftValue</code></a> and <a class="link" href="ch03s05.html#box_scale"><code class="varname">scaleValue</code></a> or <a class="link" href="ch03s05.html#box_shift"><code class="varname">shiftTime</code></a> and <a class="link" href="ch03s05.html#box_scale"><code class="varname">scaleTime</code></a>.</p><pre class="programlisting">
 SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0, 3.0);

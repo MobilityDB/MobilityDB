@@ -12,11 +12,14 @@ SELECT shiftTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
 </pre></li><li class="listitem"><a name="box_scale"></a><a class="indexterm" name="idm1674"></a><a class="indexterm" name="idm1677"></a><p>Escalar el rango de valores o el período del cuadro delimitador a un valor o intervalo. Si el ancho o el lapso de tiempo del valor de tiempo es cero (es decir, los límites inferior y superior son iguales), el resultado es el cuadro delimitador. El valor o intervalo dado debe ser estrictamente mayor que cero.</p><p><code class="varname">scaleValue(box,{int,float}) → box</code></p><p><code class="varname">scaleTime(box,interval) → box</code></p><pre class="programlisting">
 SELECT scaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0);
 -- TBOXFLOAT XT([1.5, 3.5],[2001-01-01, 2001-01-02])
-SELECT scaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', interval '2 days');
+SELECT scaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 
+  interval '2 days');
 -- TBOXFLOAT XT([1.5, 2.5],[2001-01-01, 2001-01-03])
-SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '1 hour');
+SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 
+  interval '1 hour');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 00:00:00, 2001-01-01 01:00:00])
-SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', interval '-1 day');
+SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])', 
+  interval '-1 day');
 -- ERROR:  The duration must be a positive interval: -1 days
 </pre></li><li class="listitem"><a name="box_shiftScale"></a><a class="indexterm" name="idm1687"></a><a class="indexterm" name="idm1690"></a><p>Desplazar y escalar el rango de valores o el período del cuadro delimitador con los valores o intervalos</p><p><code class="varname">shiftScaleValue(box,{int,float},{int,float}) → box</code></p><p><code class="varname">shiftScaleTime(box,interval,interval) → box</code></p><p>Estas funciones combinan las funciones <a class="link" href="ch03s05.html#box_shift"><code class="varname">shiftValue</code></a> y <a class="link" href="ch03s05.html#box_scale"><code class="varname">scaleValue</code></a> o <a class="link" href="ch03s05.html#box_shift"><code class="varname">shiftTime</code></a> y <a class="link" href="ch03s05.html#box_scale"><code class="varname">scaleTime</code></a></p><pre class="programlisting">
 SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0, 3.0);

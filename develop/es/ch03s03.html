@@ -12,20 +12,25 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 -- TBOX T((2001-01-01,2001-01-04))
 </pre></li><li class="listitem"><a name="stbox_convert_to"></a><a class="indexterm" name="idm1539"></a><p>Convertir un <code class="varname">stbox</code> a otro tipo</p><p><code class="varname">stbox::{tstzspan,geometry}</code></p><pre class="programlisting">
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan;
--- [2000-01-01,2000-01-03]
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
--- SRID=4326;POLYGON((1 1,1 5,5 5,5 1,1 1))
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,5)),[2000-01-01,2000-01-05])'::geometry);
--- SRID=4326;LINESTRING(1 1,1 5)
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-05])'::geometry);
--- SRID=4326;POINT(1 1)
-SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])'::
+-- [2000-01-01, 2000-01-03]
+SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::box2d;
+-- BOX(1 2,3 4)
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::
   geometry);
-/* SRID=4326;POLYHEDRALSURFACE(((1 1 1,1 5 1,5 5 1,5 1 1,1 1 1)),
-  ((1 1 5,5 1 5,5 5 5,1 5 5,1 1 5)),((1 1 1,1 1 5,1 5 5,1 5 1,1 1 1)),
-  ((5 1 1,5 5 1,5 5 5,5 1 5,5 1 1)),((1 1 1,5 1 1,5 1 5,1 1 5,1 1 1)),
-  ((1 5 1,1 5 5,5 5 5,5 5 1,1 5 1))) */
+-- SRID=4326;POLYGON((1 1,1 5,5 5,5 1,1 1))
+SELECT ST_AsEWKT(stbox 'STBOX XT(((1,1),(1,5)),[2000-01-01,2000-01-05])'::geometry);
+-- LINESTRING(1 1,1 5)
+SELECT ST_AsEWKT(stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-05])'::geometry);
+-- POINT(1 1)
+SELECT ST_AsEWKT(stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])'::
+  geometry);
+/* POLYHEDRALSURFACE(((1 1 1,1 5 1,5 5 1,5 1 1,1 1 1)),
+   ((1 1 5,5 1 5,5 5 5,1 5 5,1 1 5)),((1 1 1,1 1 5,1 5 5,1 5 1,1 1 1)),
+   ((5 1 1,5 5 1,5 5 5,5 1 5,5 1 1)),((1 1 1,5 1 1,5 1 5,1 1 5,1 1 1)),
+   ((1 5 1,1 5 5,5 5 5,5 5 1,1 5 1))) */
 </pre></li><li class="listitem"><a name="stbox_convert_from"></a><a class="indexterm" name="idm1548"></a><p>Convertir otro tipo a un <code class="varname">stbox</code></p><p><code class="varname">{geo,time,tpoint}::stbox</code></p><pre class="programlisting">
+SELECT geometry 'Linestring(1 1 1,2 2 2)'::box3d::stbox;
+-- STBOX Z((1,1,1),(2,2,2))
 SELECT geometry 'Linestring(1 1,2 2)'::stbox;
 -- STBOX X((1,1),(2,2))
 SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
