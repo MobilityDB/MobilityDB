@@ -73,8 +73,6 @@ SELECT span(tstzrange'(2000-01-01,2000-01-02)');
 
 SELECT span(timestamptz '2000-01-01');
 SELECT timestamptz '2000-01-01'::tstzspan;
-SELECT date '2000-01-01'::tstzspan;
-SELECT tstzspan(date '2000-01-01');
 
 /* Errors */
 SELECT tstzrange '[2000-01-01,]'::tstzspan;
