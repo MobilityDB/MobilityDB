@@ -117,6 +117,18 @@ SELECT timestamptz '2000-01-01'::tstzspan;
  [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
 (1 row)
 
+SELECT date '2000-01-01'::tstzspan;
+                           tstzspan                           
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT tstzspan(date '2000-01-01');
+                           tstzspan                           
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
 /* Errors */
 SELECT tstzrange '[2000-01-01,]'::tstzspan;
 ERROR:  Range bounds cannot be infinite

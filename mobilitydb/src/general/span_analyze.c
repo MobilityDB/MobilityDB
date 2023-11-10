@@ -315,9 +315,9 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Estimate that non-null values are unique */
     stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
-    /* The last argument determines the slot for value/time statistics.
-     * In this case, even in the case of tstzspan, the statistics will be 
-     * stored in the value (not on the time) slot */
+    /* Store the value/time statistics.
+     * Statistics for integer/float spans are stored in slots 0 and 1, while
+     * statistics for tstzspan are stored in the value in slots 2 and 3 */
     bool value = numspan_type(type);
     int slot_idx = value ? 0 : 2;
     span_compute_stats_generic(stats, non_null_cnt, &slot_idx, lowers, uppers,
