@@ -244,7 +244,7 @@ tbox_copy(const TBox *box)
  * @sqlfunc tbox()
  */
 TBox *
-number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
+number_timestamptz_to_tbox(Datum d, meosType basetype, TimestampTz t)
 {
   Span s, p;
   span_set(d, d, true, true, basetype, &s);
@@ -260,9 +260,9 @@ number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
  * @sqlfunc tbox()
  */
 TBox *
-int_timestamp_to_tbox(int i, TimestampTz t)
+int_timestamptz_to_tbox(int i, TimestampTz t)
 {
-  return number_timestamp_to_tbox(Int32GetDatum(i), T_INT4, t);
+  return number_timestamptz_to_tbox(Int32GetDatum(i), T_INT4, t);
 }
 
 /**
@@ -271,19 +271,19 @@ int_timestamp_to_tbox(int i, TimestampTz t)
  * @sqlfunc tbox()
  */
 TBox *
-float_timestamp_to_tbox(double d, TimestampTz t)
+float_timestamptz_to_tbox(double d, TimestampTz t)
 {
-  return number_timestamp_to_tbox(Float8GetDatum(d), T_FLOAT8, t);
+  return number_timestamptz_to_tbox(Float8GetDatum(d), T_FLOAT8, t);
 }
 #endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_box_constructor
- * @brief Return a temporal box from an integer and a period
+ * @brief Return a temporal box from an integer and a timestamptz span
  * @sqlfunc tbox()
  */
 TBox *
-number_period_to_tbox(Datum d, meosType basetype, const Span *s)
+number_tstzspan_to_tbox(Datum d, meosType basetype, const Span *s)
 {
   assert(s);
   Span s1;
@@ -294,30 +294,30 @@ number_period_to_tbox(Datum d, meosType basetype, const Span *s)
 #if MEOS
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a temporal box from an integer and a period
+ * @brief Return a temporal box from an integer and a timestamptz span
  * @sqlfunc tbox()
  */
 TBox *
-int_period_to_tbox(int i, const Span *s)
+int_tstzspan_to_tbox(int i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
-  return number_period_to_tbox(Int32GetDatum(i), T_INT4, s);
+  return number_tstzspan_to_tbox(Int32GetDatum(i), T_INT4, s);
 }
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a temporal box from a float and a period
+ * @brief Return a temporal box from a float and a timestamptz span
  * @sqlfunc tbox()
  */
 TBox *
-float_period_to_tbox(double d, const Span *s)
+float_tstzspan_to_tbox(double d, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
-  return number_period_to_tbox(Float8GetDatum(d), T_FLOAT8, s);
+  return number_tstzspan_to_tbox(Float8GetDatum(d), T_FLOAT8, s);
 }
 #endif /* MEOS */
 
@@ -327,7 +327,7 @@ float_period_to_tbox(double d, const Span *s)
  * @sqlfunc tbox()
  */
 TBox *
-span_timestamp_to_tbox(const Span *s, TimestampTz t)
+numspan_timestamptz_to_tbox(const Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_numspan_type(s->spantype))
@@ -341,11 +341,11 @@ span_timestamp_to_tbox(const Span *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a temporal box from a span and a period
+ * @brief Return a temporal box from a span and a timestamptz span
  * @sqlfunc tbox()
  */
 TBox *
-span_period_to_tbox(const Span *s, const Span *p)
+numspan_tstzspan_to_tbox(const Span *s, const Span *p)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) p) ||
@@ -432,7 +432,7 @@ float_to_tbox(double d)
  * @brief Set a temporal box from a timestamp.
  */
 void
-timestamp_set_tbox(TimestampTz t, TBox *box)
+timestamptz_set_tbox(TimestampTz t, TBox *box)
 {
   assert(box);
   Span p;
@@ -450,10 +450,10 @@ timestamp_set_tbox(TimestampTz t, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-timestamp_to_tbox(TimestampTz t)
+timestamptz_to_tbox(TimestampTz t)
 {
   TBox *result = palloc(sizeof(TBox));
-  timestamp_set_tbox(t, result);
+  timestamptz_set_tbox(t, result);
   return result;
 }
 #endif /* MEOS */
@@ -497,7 +497,7 @@ numset_to_tbox(const Set *s)
  * @brief Set a temporal box from a timestamp set.
  */
 void
-timestampset_set_tbox(const Set *s, TBox *box)
+tstzset_set_tbox(const Set *s, TBox *box)
 {
   assert(s); assert(box);
   Span p;
@@ -514,14 +514,14 @@ timestampset_set_tbox(const Set *s, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-timestampset_to_tbox(const Set *s)
+tstzset_to_tbox(const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
-  timestampset_set_tbox(s, result);
+  tstzset_set_tbox(s, result);
   return result;
 }
 #endif /* MEOS */
@@ -563,7 +563,7 @@ numspan_to_tbox(const Span *s)
  * @brief Set a temporal box from a period.
  */
 void
-period_set_tbox(const Span *s, TBox *box)
+tstzspan_set_tbox(const Span *s, TBox *box)
 {
   assert(s); assert(box);
   tbox_set(NULL, s, box);
@@ -578,7 +578,7 @@ period_set_tbox(const Span *s, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-period_to_tbox(const Span *s)
+tstzspan_to_tbox(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -586,7 +586,7 @@ period_to_tbox(const Span *s)
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
-  period_set_tbox(s, result);
+  tstzspan_set_tbox(s, result);
   return result;
 }
 
@@ -627,7 +627,7 @@ numspanset_to_tbox(const SpanSet *ss)
  * @brief Set a temporal box from a period set.
  */
 void
-periodset_set_tbox(const SpanSet *ss, TBox *box)
+tstzspanset_set_tbox(const SpanSet *ss, TBox *box)
 {
   assert(ss); assert(box);
   tbox_set(NULL, &ss->span, box);
@@ -641,7 +641,7 @@ periodset_set_tbox(const SpanSet *ss, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-periodset_to_tbox(const SpanSet *ss)
+tstzspanset_to_tbox(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
@@ -649,7 +649,7 @@ periodset_to_tbox(const SpanSet *ss)
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
-  periodset_set_tbox(ss, result);
+  tstzspanset_set_tbox(ss, result);
   return result;
 }
 #endif /* MEOS */
@@ -684,7 +684,7 @@ tbox_to_floatspan(const TBox *box)
  * @sqlop @p ::
  */
 Span *
-tbox_to_period(const TBox *box)
+tbox_to_tstzspan(const TBox *box)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box))

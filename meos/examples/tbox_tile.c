@@ -80,7 +80,7 @@ int main(void)
       tintbox_tile_list(box, 5, timesplit ? interv : NULL, 1, torigin, &count) :
       tfloatbox_tile_list(box, 5, timesplit ? interv : NULL, 1, torigin, &count);
   else
-    spans = period_bucket_list(&box->period, interv, torigin, &count);
+    spans = tstzspan_bucket_list(&box->period, interv, torigin, &count);
 
   /* Print the input value to split */
   char *box_str = tbox_out(box, 3);

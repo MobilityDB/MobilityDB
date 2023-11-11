@@ -371,7 +371,7 @@ CREATE FUNCTION shift(floatspanset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(tstzspanset, interval)
   RETURNS tstzspanset
-  AS 'MODULE_PATHNAME', 'Periodset_shift'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION scale(intspanset, int)
@@ -388,7 +388,7 @@ CREATE FUNCTION scale(floatspanset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION scale(tstzspanset, interval)
   RETURNS tstzspanset
-  AS 'MODULE_PATHNAME', 'Periodset_scale'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shiftScale(intspanset, int, int)
@@ -405,7 +405,7 @@ CREATE FUNCTION shiftScale(floatspanset, float, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shiftScale(tstzspanset, interval, interval)
   RETURNS tstzspanset
-  AS 'MODULE_PATHNAME', 'Periodset_shift_scale'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
@@ -533,7 +533,7 @@ CREATE FUNCTION width(floatspanset, boundspan boolean DEFAULT FALSE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION duration(tstzspanset, boundspan boolean DEFAULT FALSE)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'Periodset_duration'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numSpans(intspanset)
@@ -623,27 +623,27 @@ CREATE FUNCTION spans(tstzspanset)
 
 CREATE FUNCTION numTimestamps(tstzspanset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Periodset_num_timestamps'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_num_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startTimestamp(tstzspanset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Periodset_start_timestamp'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_start_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endTimestamp(tstzspanset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Periodset_end_timestamp'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_end_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampN(tstzspanset, integer)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Periodset_timestamp_n'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_timestamp_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestamps(tstzspanset)
   RETURNS timestamptz[]
-  AS 'MODULE_PATHNAME', 'Periodset_timestamps'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

@@ -131,9 +131,9 @@ int main(void)
     /* Add the current value to the running aggregates */
     extent = tpoint_extent_transfn(extent, trip_rec.trip);
     /* Get the time of the trip at an hour granularity */
-    SpanSet *ps = periodset_tprecision(temporal_time(trip_rec.trip), interval, origin);
+    SpanSet *ps = tstzspanset_tprecision(temporal_time(trip_rec.trip), interval, origin);
     /* Aggregate the time of the trip */
-    state = periodset_tcount_transfn(state, ps);
+    state = tstzspanset_tcount_transfn(state, ps);
     /* Free memory */
     free(trip_rec.trip);
 

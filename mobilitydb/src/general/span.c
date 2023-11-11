@@ -356,18 +356,18 @@ Span_width(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum Period_duration(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_duration);
+PGDLLEXPORT Datum Tstzspan_duration(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_duration);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the duration of the period
  * @sqlfunc duration()
  */
 Datum
-Period_duration(PG_FUNCTION_ARGS)
+Tstzspan_duration(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Interval *result = period_duration(s);
+  Interval *result = tstzspan_duration(s);
   PG_RETURN_POINTER(result);
 }
 
@@ -391,19 +391,19 @@ Numspan_shift(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Period_shift(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_shift);
+PGDLLEXPORT Datum Tstzspan_shift(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift the period value by the interval
  * @sqlfunc shift()
  */
 Datum
-Period_shift(PG_FUNCTION_ARGS)
+Tstzspan_shift(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Span *result = period_shift_scale(s, shift, NULL);
+  Span *result = tstzspan_shift_scale(s, shift, NULL);
   PG_RETURN_POINTER(result);
 }
 
@@ -423,19 +423,19 @@ Numspan_scale(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Period_scale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_scale);
+PGDLLEXPORT Datum Tstzspan_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Scale the period value by the interval
  * @sqlfunc scale()
  */
 Datum
-Period_scale(PG_FUNCTION_ARGS)
+Tstzspan_scale(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Span *result = period_shift_scale(s, NULL, duration);
+  Span *result = tstzspan_shift_scale(s, NULL, duration);
   PG_RETURN_POINTER(result);
 }
 
@@ -456,20 +456,20 @@ Numspan_shift_scale(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Period_shift_scale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_shift_scale);
+PGDLLEXPORT Datum Tstzspan_shift_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift and scale the period value by the intervals
  * @sqlfunc shiftScale()
  */
 Datum
-Period_shift_scale(PG_FUNCTION_ARGS)
+Tstzspan_shift_scale(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  Span *result = period_shift_scale(s, shift, duration);
+  Span *result = tstzspan_shift_scale(s, shift, duration);
   PG_RETURN_POINTER(result);
 }
 

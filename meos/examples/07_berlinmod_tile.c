@@ -233,11 +233,11 @@ int main(void)
   for (i = 0; i < no_speed_tiles; i++)
   {
     char *span_str = floatspan_out(&speed_tiles[k].span, 0);
-    char *period_str = period_out(&speed_tiles[k].period);
+    char *tstzspan_str = tstzspan_out(&speed_tiles[k].period);
     char *interval_str = pg_interval_out(&speed_splits[k].duration);
     printf("Tile: %d, Span: %s, Period: %s, Count: %d, Duration: %s\n",
-      i, span_str, period_str, speed_splits[k].count, interval_str);
-    free(span_str); free(period_str); free(interval_str);
+      i, span_str, tstzspan_str, speed_splits[k].count, interval_str);
+    free(span_str); free(tstzspan_str); free(interval_str);
     k++;
   }
 

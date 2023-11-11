@@ -266,7 +266,7 @@ textset_in(const char *str)
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
-timestampset_in(const char *str)
+tstzset_in(const char *str)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
@@ -409,7 +409,7 @@ textset_out(const Set *s)
  * @brief Output a set of timestamps.
 */
 char *
-timestampset_out(const Set *s)
+tstzset_out(const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
@@ -823,7 +823,7 @@ textset_make(const text **values, int count)
  * @brief Construct a timestamp with time zone set from an array of values.
 */
 Set *
-timestampset_make(const TimestampTz *values, int count)
+tstzset_make(const TimestampTz *values, int count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) values) || ! ensure_positive(count))
@@ -915,7 +915,7 @@ value_to_set(Datum d, meosType basetype)
  * @sqlop @p ::
  */
 Set *
-int_to_intset(int i)
+int_to_set(int i)
 {
   Datum v = Int32GetDatum(i);
   return set_make(&v, 1, T_INT4, ORDERED);
@@ -927,7 +927,7 @@ int_to_intset(int i)
  * @sqlop @p ::
  */
 Set *
-bigint_to_bigintset(int64 i)
+bigint_to_set(int64 i)
 {
   Datum v = Int64GetDatum(i);
   return set_make(&v, 1, T_INT8, ORDERED);
@@ -939,7 +939,7 @@ bigint_to_bigintset(int64 i)
  * @sqlop @p ::
  */
 Set *
-float_to_floatset(double d)
+float_to_set(double d)
 {
   Datum v = Float8GetDatum(d);
   return set_make(&v, 1, T_FLOAT8, ORDERED);
@@ -951,7 +951,7 @@ float_to_floatset(double d)
  * @sqlop @p ::
  */
 Set *
-text_to_textset(text *txt)
+text_to_set(text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) txt))
@@ -966,7 +966,7 @@ text_to_textset(text *txt)
  * @sqlop @p ::
  */
 Set *
-timestamp_to_tstzset(TimestampTz t)
+timestamptz_to_set(TimestampTz t)
 {
   Datum v = TimestampTzGetDatum(t);
   return set_make(&v, 1, T_TIMESTAMPTZ, ORDERED);
@@ -978,7 +978,7 @@ timestamp_to_tstzset(TimestampTz t)
  * @sqlop @p ::
  */
 Set *
-geo_to_geoset(GSERIALIZED *gs)
+geo_to_set(GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
@@ -1173,7 +1173,7 @@ textset_start_value(const Set *s)
  * @sqlfunc startTimestamp()
  */
 TimestampTz
-timestampset_start_timestamp(const Set *s)
+tstzset_start_timestamp(const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
@@ -1283,7 +1283,7 @@ textset_end_value(const Set *s)
  * @sqlfunc endTimestamp()
  */
 TimestampTz
-timestampset_end_timestamp(const Set *s)
+tstzset_end_value(const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
@@ -1425,7 +1425,7 @@ textset_value_n(const Set *s, int n, text **result)
  * @sqlfunc timestampN()
  */
 bool
-timestampset_timestamp_n(const Set *s, int n, TimestampTz *result)
+tstzset_value_n(const Set *s, int n, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1556,7 +1556,7 @@ textset_values(const Set *s)
  * @sqlfunc timestamps()
  */
 TimestampTz *
-timestampset_values(const Set *s)
+tstzset_values(const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
@@ -1826,7 +1826,7 @@ floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
  * @sqlfunc shift(), scale(), shiftScale()
  */
 Set *
-timestampset_shift_scale(const Set *s, const Interval *shift,
+tstzset_shift_scale(const Set *s, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure validity of the arguments */

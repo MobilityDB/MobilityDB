@@ -234,7 +234,7 @@ nsegment_set_stbox(const Nsegment *ns, STBox *box)
  * @brief Transform a network point and a timestamp to a spatiotemporal box
  */
 bool
-npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
+npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
 {
   npoint_set_stbox(np, box);
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
@@ -247,7 +247,7 @@ npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
  * @brief Transform a network point and a period to a spatiotemporal box
  */
 bool
-npoint_period_set_stbox(const Npoint *np, const Span *p, STBox *box)
+npoint_tstzspan_set_stbox(const Npoint *np, const Span *p, STBox *box)
 {
   npoint_set_stbox(np, box);
   memcpy(&box->period, p, sizeof(Span));

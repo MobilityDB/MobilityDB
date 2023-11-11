@@ -876,7 +876,7 @@ DROP INDEX tbl_tstzspan_quadtree_idx;
 CREATE INDEX tbl_intspan_kdtree_idx ON tbl_intspan USING SPGIST(i intspan_kdtree_ops);
 CREATE INDEX tbl_bigintspan_kdtree_idx ON tbl_bigintspan USING SPGIST(b bigintspan_kdtree_ops);
 CREATE INDEX tbl_floatspan_kdtree_idx ON tbl_floatspan USING SPGIST(f floatspan_kdtree_ops);
-CREATE INDEX tbl_tstzspan_kdtree_idx ON tbl_tstzspan USING SPGIST(p period_kdtree_ops);
+CREATE INDEX tbl_tstzspan_kdtree_idx ON tbl_tstzspan USING SPGIST(p tstzspan_kdtree_ops);
 
 -------------------------------------------------------------------------------
 

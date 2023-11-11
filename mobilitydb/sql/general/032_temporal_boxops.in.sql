@@ -38,11 +38,11 @@
 
 CREATE FUNCTION temporal_overlaps(tstzspan, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(tbool, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(tbool, tbool)
   RETURNS boolean
@@ -72,11 +72,11 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION temporal_contains(tstzspan, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(tbool, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(tbool, tbool)
   RETURNS boolean
@@ -106,11 +106,11 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION temporal_contained(tstzspan, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(tbool, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(tbool, tbool)
   RETURNS boolean
@@ -140,11 +140,11 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION temporal_same(tstzspan, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_same(tbool, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_same(tbool, tbool)
   RETURNS boolean
@@ -174,11 +174,11 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION temporal_adjacent(tstzspan, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(tbool, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(tbool, tbool)
   RETURNS boolean
@@ -210,11 +210,11 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION temporal_overlaps(tstzspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(tint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -288,11 +288,11 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION temporal_contains(tstzspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(tint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -366,11 +366,11 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION temporal_contained(tstzspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(tint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -444,11 +444,11 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION temporal_same(tstzspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_same(tint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -522,11 +522,11 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION temporal_adjacent(tstzspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(tint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -602,11 +602,11 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION temporal_overlaps(tstzspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(tfloat, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -681,11 +681,11 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION temporal_contains(tstzspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(tfloat, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -759,11 +759,11 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION temporal_contained(tstzspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(tfloat, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -837,11 +837,11 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION temporal_same(tstzspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_same(tfloat, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -915,11 +915,11 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION temporal_adjacent(tstzspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(tfloat, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -995,11 +995,11 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION temporal_overlaps(tstzspan, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(ttext, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(ttext, ttext)
   RETURNS boolean
@@ -1029,11 +1029,11 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION temporal_contains(tstzspan, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(ttext, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(ttext, ttext)
   RETURNS boolean
@@ -1063,11 +1063,11 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION temporal_contained(tstzspan, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(ttext, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(ttext, ttext)
   RETURNS boolean
@@ -1097,11 +1097,11 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION temporal_same(tstzspan, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_same(ttext, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_same(ttext, ttext)
   RETURNS boolean
@@ -1131,11 +1131,11 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION temporal_adjacent(tstzspan, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(ttext, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(ttext, ttext)
   RETURNS boolean

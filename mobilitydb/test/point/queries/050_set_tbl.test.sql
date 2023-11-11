@@ -75,7 +75,7 @@ SELECT memSize(set_union(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT S
 SELECT MAX(memSize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
 SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
 
--- Coverage of periodset_stbox_slice
+-- Coverage of tstzspanset_stbox_slice
 DROP TABLE IF EXISTS test;
 CREATE TABLE test(ps) AS
 WITH test(ps) AS (

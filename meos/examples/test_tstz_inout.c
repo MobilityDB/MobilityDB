@@ -57,14 +57,14 @@ int main()
 
   // char *p1_in = "[2000-01-01 10:00:00+02, 2000-01-02 10:00:00+02]";
   // char *p2_in = "[2002-01-01 10:00:00+02, 2002-01-02 10:00:00+02]";
-  // Span *p1 = period_in(p1_in);
-  // Span *p2 = period_in(p2_in);
+  // Span *p1 = tstzspan_in(p1_in);
+  // Span *p2 = tstzspan_in(p2_in);
   // SpanSet *p = union_span_span(p1, p2);
   // char *p_out = periodset_out(p);
 
-  // printf("Period in: %s\n", p1_in);
-  // printf("Period in: %s\n", p2_in);
-  // printf("Period out: %s\n", p_out);
+  // printf("Tstzspan in: %s\n", p1_in);
+  // printf("Tstzspan in: %s\n", p2_in);
+  // printf("Tstzspan out: %s\n", p_out);
 
   char *gs1_in = "Point(1 1)";
   char *gs2_in = "Point(2 2)";

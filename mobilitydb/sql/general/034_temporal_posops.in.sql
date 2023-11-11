@@ -41,19 +41,19 @@
 
 CREATE FUNCTION temporal_before(tstzspan, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tstzspan, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tstzspan, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tstzspan, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -85,19 +85,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tstzspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tstzspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tstzspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tstzspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -129,19 +129,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tstzspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tstzspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tstzspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tstzspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -173,19 +173,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tstzspan, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tstzspan, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tstzspan, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tstzspan, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -565,19 +565,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tbool, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tbool, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tbool, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tbool, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -655,19 +655,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -909,19 +909,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tfloat, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tfloat, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tfloat, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tfloat, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1163,19 +1163,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(ttext, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(ttext, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(ttext, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(ttext, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (

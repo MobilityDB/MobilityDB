@@ -401,19 +401,19 @@ Numset_shift(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Timestampset_shift(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestampset_shift);
+PGDLLEXPORT Datum Tstzset_shift(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift a timestamp set by an interval
+ * @brief Shift a timestamptz set by an interval
  * @sqlfunc shift()
  */
 Datum
-Timestampset_shift(PG_FUNCTION_ARGS)
+Tstzset_shift(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Set *result = timestampset_shift_scale(s, shift, NULL);
+  Set *result = tstzset_shift_scale(s, shift, NULL);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_POINTER(result);
 }
@@ -435,19 +435,19 @@ Numset_scale(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Timestampset_scale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestampset_scale);
+PGDLLEXPORT Datum Tstzset_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzset_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Scale a timestamp set by an interval
+ * @brief Scale a timestamptz set by an interval
  * @sqlfunc scale()
  */
 Datum
-Timestampset_scale(PG_FUNCTION_ARGS)
+Tstzset_scale(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Set *result = timestampset_shift_scale(s, NULL, duration);
+  Set *result = tstzset_shift_scale(s, NULL, duration);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_POINTER(result);
 }
@@ -469,21 +469,21 @@ Numset_shift_scale(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Timestampset_shift_scale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestampset_shift_scale);
+PGDLLEXPORT Datum Tstzset_shift_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift and scale a timestamp set by the intervals
+ * @brief Shift and scale a timestamptz set by the intervals
  * @sqlfunc shiftScale()
  */
 Datum
-Timestampset_shift_scale(PG_FUNCTION_ARGS)
+Tstzset_shift_scale(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   ensure_valid_duration(duration);
-  Set *result = timestampset_shift_scale(s, shift, duration);
+  Set *result = tstzset_shift_scale(s, shift, duration);
   PG_RETURN_POINTER(result);
 }
 
