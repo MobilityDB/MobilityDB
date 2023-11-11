@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that uses the MEOS library for uses the set_union
- * aggregate function
+ * @brief A simple program that illustrates the set_union aggregate function
+ * with integer values
  *
  * The program can be build as follows
  * @code

@@ -2052,7 +2052,7 @@ Tnumber_minus_spanset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Generic function for restricting a temporal value to its 
+ * @brief Generic function for restricting a temporal value to its
  * minimum/maximum base value
  * @sqlfn atMin(), minusMin(), atMax(), minusMax(),
  */
@@ -2478,7 +2478,7 @@ Temporal_delete_tstzspanset(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_integral(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_integral);
 /**
- * @ingroup mobilitydb_temporal_agg
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the integral (area under the curve) of a temporal number
  * @sqlfn integral()
  */

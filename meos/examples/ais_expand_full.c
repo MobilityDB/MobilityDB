@@ -31,19 +31,22 @@
  * @brief A simple program that reads AIS data from a CSV file containing one
  * full day of observations provided by the Danish Maritime Authority in
  * https://web.ais.dk/aisdata/, constructs for each ship temporal values for
- * the trip and the SOG, and outputs for each ship the MMSI, the number 
+ * the trip and the SOG, and outputs for each ship the MMSI, the number
  * of records and instants used for contruct the temporal values, the distance
  * travelled and the time-weighted average of the SOG.
+ *
+ * Please notice that the `data` directory DOES NOT contain the input CSV file,
+ * you must download it from the website above.
  *
  * Please read the assumptions made about the input CSV file in the file
  * `02_ais_read.c` in the same directory. The program assumes that the input
  * file contains at most a given number of records for at most a given number
  * of ships, as defined by two compilation constraints. Also, the program copes
- * with minimal error correction, that is, 
+ * with minimal error correction, that is,
  * - It supposes that the observations have increasing timestamp values
  * - It verifies that the latitude, longitude, and SOG values read are in
  *   specified ranges, and
- * - It takes only the first observation when there are two or more 
+ * - It takes only the first observation when there are two or more
  *   observations for the same ship with equal timestamp values.
  *
  * The program can be build as follows
@@ -143,7 +146,7 @@ int main(void)
   fscanf(file, "%1023[^\n]\n", line_buffer);
   printf("Processing records\n");
   printf("  one '*' marker every %d records\n", NO_RECORDS_BATCH);
-  /* Uncomment the next lines to display a marker each time and incomplete 
+  /* Uncomment the next lines to display a marker each time and incomplete
    * record or an erroneous field has been read */
   // printf("  one '-' marker every incomplete or erroneous records\n");
   // printf("  one 'T' marker every record with duplicate timestamp and position\n");
@@ -397,7 +400,7 @@ int main(void)
       printf("       ---     |\n");
   }
   printf("-----------------------------------------------------------------------------\n");
-  printf("\n%d records read.\n%d erroneous records ignored.\n", no_records, 
+  printf("\n%d records read.\n%d erroneous records ignored.\n", no_records,
     no_err_records);
   printf("%d trips read.\n", no_ships);
 

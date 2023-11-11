@@ -43,8 +43,7 @@
  * @endcode
  *
  * The output of the program when MEOS is built with the flag -DDEBUG_EXPAND=1
- * to show debug messages pertaining to the expandable data structures is as
- * follows
+ * to show debug messages for the expandable data structures is as follows
  * @code
  * Total number of instants generated: 50000
  * Maximum number of instants in a sequence: 500
@@ -68,16 +67,23 @@
 
 /* Maximum number of instants */
 #define MAX_INSTANTS 50000000
+/* Initial number of instants allocated when creating a sequence */
+#define INITIAL_INSTANTS_SEQ 64
+/* Initial number of sequences allocated when creating a sequence set */
+#define INITIAL_SEQUENCES_SEQSET 64
 /* Maximum number of instants in a sequence */
 #define MAX_INSTANTS_SEQ 50000
 /* Number of instants in a batch for printing a marker */
 #define NO_INSTANTS_BATCH 50000
 /* Maximum length in characters of the text values in the instants */
 #define MAX_LENGTH_TEXT 10
-/* State whether a message is shown every time a sequence is expanded */
-#define EXPAND_SEQ true
 /* State whether a message is shown every time a sequence set is expanded */
-#define EXPAND_SEQSET true
+#define EXPAND_SEQ true
+/* Determine when the composing sequences are compacted
+ * - True: sequences are compacted before adding them to the sequence set
+ * - False: sequences are compacted when compacting the sequence set
+ */
+#define COMPACT_COMP_SEQS false
 
 /* Main program */
 int main(void)
@@ -119,11 +125,12 @@ int main(void)
     free(value); free(txt);
     /* Test whether it is the first instant read */
     if (! seq)
-      /* Create an expandable temporal sequence that can store 64 instants
-       * and store the first instant. Notice that we do not use
-       * MAX_INSTANTS_SEQ to illustrate the #tsequence_compact function */
-      seq = tsequence_make_exp((const TInstant **) &inst, 1, 64,
-        true, true, STEP, false);
+      /* Create an expandable temporal sequence that can store
+       * INITIAL_INSTANTS_SEQ instants and store the first instant.
+       * Notice that we do not use MAX_INSTANTS_SEQ to illustrate the
+       * #tsequence_compact() function */
+      seq = tsequence_make_exp((const TInstant **) &inst, 1,
+        INITIAL_INSTANTS_SEQ, true, true, STEP, false);
     else
     {
       int maxcount;
@@ -131,7 +138,8 @@ int main(void)
       {
         maxcount = seq->maxcount;
         /* We are sure that the result is a temporal sequence */
-        seq = (TSequence *) tsequence_append_tinstant(seq, inst, 0.0, NULL, true);
+        seq = (TSequence *) tsequence_append_tinstant(seq, inst, 0.0, NULL,
+          true);
         /* Print a marker when the sequence has been expanded */
         if (EXPAND_SEQ && maxcount != seq->maxcount)
         {
@@ -141,25 +149,19 @@ int main(void)
       }
       else
       {
-        /* Compact the sequence to remove unused extra space */
-        seq1 = tsequence_compact(seq);
+        /* If requested, compact the sequence to remove unused extra space */
+        seq1 = COMPACT_COMP_SEQS ? tsequence_compact(seq) : seq;
         if (! ss)
-          ss = tsequenceset_make_exp((const TSequence **) &seq1, 1, 64, false);
+          ss = tsequenceset_make_exp((const TSequence **) &seq1, 1,
+            INITIAL_SEQUENCES_SEQSET, false);
         else
-        {
-          maxcount = ss->maxcount;
           ss = tsequenceset_append_tsequence(ss, seq1, true);
-          /* Print a marker when the sequence has been expanded */
-          if (EXPAND_SEQSET && maxcount != ss->maxcount)
-          {
-            printf(" SeqSet -> %d ", ss->maxcount);
-            fflush(stdout);
-          }
-        }
-        free(seq); free(seq1);
+        free(seq);
+        if (COMPACT_COMP_SEQS)
+          free(seq1);
         /* Create a new sequence containing the last instant generated */
-        seq = tsequence_make_exp((const TInstant **) &inst, 1, MAX_INSTANTS_SEQ,
-          true, true, STEP, false);
+        seq = tsequence_make_exp((const TInstant **) &inst, 1,
+          INITIAL_INSTANTS_SEQ, true, true, STEP, false);
       }
     }
     free(inst);
@@ -172,23 +174,29 @@ int main(void)
     }
   }
   /* Add the last sequence to the sequence set */
-  seq1 = tsequence_compact(seq);
+  seq1 = COMPACT_COMP_SEQS ? tsequence_compact(seq) : seq;
   ss = tsequenceset_append_tsequence(ss, seq1, true);
-  free(seq); free(seq1);
+  free(seq);
+  if (COMPACT_COMP_SEQS)
+    free(seq1);
+
+  /* Compact the sequence set */
+  TSequenceSet *ss1 = tsequenceset_compact(ss);
+  free(ss);
 
   /* Print information about the sequence set */
-  printf("\nNumber of instants in the sequence set: %d\n", ss->totalcount);
+  printf("\nTotal number of instants in the sequence set: %d\n", ss1->totalcount);
   printf("Number of sequences: %d, Maximum number of sequences : %d\n",
-    ss->count, ss->maxcount);
+    ss1->count, ss1->maxcount);
 
   /* Print information about the last sequence */
-  seq = temporal_end_sequence((Temporal *) ss);
+  seq = temporal_end_sequence((Temporal *) ss1);
   char *str = text2cstring(ttext_end_value((Temporal *) seq));
   printf("Number of instants in the last sequence: %d, Last value : %s\n",
     seq->count, str);
 
   /* Free memory */
-  free(ss);
+  free(ss1);
   free(str);
 
   /* Calculate the elapsed time */

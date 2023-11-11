@@ -1950,7 +1950,7 @@ intersection_set_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-       ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) || 
+       ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
        ! ensure_point_type(gs))
     return false;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
@@ -2196,7 +2196,7 @@ minus_date_set(DateADT d, const Set *s)
 
 /**
  * @ingroup meos_setspan_set
- * @brief Return the difference of a timestamptz and a set 
+ * @brief Return the difference of a timestamptz and a set
  * @param[in] t Value
  * @param[in] s Set
  * @csqlfn #Minus_value_set()
@@ -2213,7 +2213,7 @@ minus_timestamptz_set(TimestampTz t, const Set *s)
 
 /**
  * @ingroup meos_setspan_set
- * @brief Return the difference of a geo and a set 
+ * @brief Return the difference of a geo and a set
  * @param[in] gs Value
  * @param[in] s Set
  * @csqlfn #Minus_value_set()
@@ -2223,7 +2223,7 @@ minus_geo_set(const GSERIALIZED *gs, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) || 
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs) )
     return false;
   return minus_value_set(PointerGetDatum(gs), s);

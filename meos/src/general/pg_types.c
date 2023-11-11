@@ -962,12 +962,15 @@ minus_date_date(DateADT d1, DateADT d2)
  *****************************************************************************/
 
 #if MEOS
-/* MEOSAdjustTimeForTypmod()
- * Force the precision of the time value to a specified value.
- * Uses *exactly* the same code as in MEOSAdjustTimestampForTypmod()
+/**
+ * @brief Force the precision of the time value to a specified value
+ * @details Uses *exactly* the same code as in MEOSAdjustTimestampForTypmod()
  * but we make a separate copy because those types do not
  * have a fundamental tie together but rather a coincidence of
  * implementation. - thomas
+ * @param[in] time Time
+ * @param[in] typmod Precision
+ * @note PostgreSQL function: AdjustTimeForTypmod()
  */
 void
 MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
@@ -1007,10 +1010,12 @@ MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
 /**
  * @ingroup meos_pg_types
  * @brief Return a time from its string representation
+ * @param[in] str String
+ * @param[in] prec Precision
  * @note PostgreSQL function: @p time_in(PG_FUNCTION_ARGS)
  */
 TimeADT
-pg_time_in(const char *str, int32 typmod)
+pg_time_in(const char *str, int32 prec)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
@@ -1042,7 +1047,7 @@ pg_time_in(const char *str, int32 typmod)
   }
 
   tm2time(tm, fsec, &result);
-  MEOSAdjustTimeForTypmod(&result, typmod);
+  MEOSAdjustTimeForTypmod(&result, prec);
 
   return result;
 }
@@ -1154,6 +1159,9 @@ MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 /**
  * @brief Return a string converted to a either timestamp or a timestamp with
  * timezone
+ * @param[in] str String
+ * @param[in] typmod Precision
+ * @param[in] withtz True when using timezone
  * @result On error return DT_NOEND
  * @note The function returns a TimestampTz that must be cast to a Timestamp
  * when calling the function with the last argument to false
@@ -1241,25 +1249,33 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
 /**
  * @ingroup meos_pg_types
  * @brief Return a timestamp without time zone from its string representation
+ * @param[in] str String
+ * @param[in] prec Precision, that is, the number of fractional digits retained
+ * in the seconds field. When precision is -1, there is no explicit bound on
+ * precision. The allowed precision range is from 0 to 6.
  * @return On error return @p DT_NOEND
  * @note PostgreSQL function: @p timestamp_in(PG_FUNCTION_ARGS)
  */
 Timestamp
-pg_timestamp_in(const char *str, int32 typmod)
+pg_timestamp_in(const char *str, int32 prec)
 {
-  return (Timestamp) timestamp_in_common(str, typmod, false);
+  return (Timestamp) timestamp_in_common(str, prec, false);
 }
 
 /**
  * @ingroup meos_pg_types
  * @brief Return the string representation of a timestamp with time zone
+ * @param[in] str String
+ * @param[in] prec Precision, that is, the number of fractional digits retained
+ * in the seconds field. When precision is -1, there is no explicit bound on
+ * precision. The allowed precision range is from 0 to 6.
  * @return On error return @p DT_NOEND
  * @note PostgreSQL function: @p timestamptz_in(PG_FUNCTION_ARGS)
  */
 TimestampTz
-pg_timestamptz_in(const char *str, int32 typmod)
+pg_timestamptz_in(const char *str, int32 prec)
 {
-  return timestamp_in_common(str, typmod, true);
+  return timestamp_in_common(str, prec, true);
 }
 #endif /* MEOS */
 
@@ -1550,10 +1566,15 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
 /**
  * @ingroup meos_pg_types
  * @brief Return an interval from its string representation
+ * @param[in] str String
+ * @param[in] prec Precision
  * @note PostgreSQL function: @p interval_in(PG_FUNCTION_ARGS)
+ * @note Please refer to the PostgreSQL documentation
+ * https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-INTERVAL-INPUT
+ * for a detailed account of the input syntax and the precision
  */
 Interval *
-pg_interval_in(const char *str, int32 typmod)
+pg_interval_in(const char *str, int32 prec)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
@@ -1578,8 +1599,8 @@ pg_interval_in(const char *str, int32 typmod)
   tm->tm_sec = 0;
   fsec = 0;
 
-  if (typmod >= 0)
-    range = INTERVAL_RANGE(typmod);
+  if (prec >= 0)
+    range = INTERVAL_RANGE(prec);
   else
     range = INTERVAL_FULL_RANGE;
 
@@ -1626,7 +1647,7 @@ pg_interval_in(const char *str, int32 typmod)
       return NULL;
   }
 
-  AdjustIntervalForTypmod(result, typmod);
+  AdjustIntervalForTypmod(result, prec);
 
   return result;
 }
@@ -1667,6 +1688,11 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
  * @ingroup meos_pg_types
  * @brief Return the string representation of an interval
  * @note PostgreSQL function: @p interval_out(PG_FUNCTION_ARGS)
+ * @note Please refer to the PostgreSQL documentation
+ * https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-INTERVAL-OUTPUT
+ * for a detailed account of the output format, which depends on the interval
+ * style specified at the initialization of the MEOS library (`postgres` by
+ * default)
  */
 char *
 pg_interval_out(const Interval *interv)
@@ -2133,7 +2159,7 @@ varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
  * @ingroup meos_pg_types
  * @brief Comparison function for text values
  * @param[in] txt1,txt2 Text values
- * @note Function derived from PostgreSQL since it is declared static. Notice 
+ * @note Function derived from PostgreSQL since it is declared static. Notice
  * that the third attribute collid of the original function has been removed
  * while waiting for a proper localization management
  */

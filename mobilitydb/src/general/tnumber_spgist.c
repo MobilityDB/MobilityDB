@@ -938,7 +938,7 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   /*
    * Switch memory context to allocate memory for new traversal values
    * (next_nodebox) and pass these pieces of memory to further calls of
-   * this function  
+   * this function
    */
   old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 

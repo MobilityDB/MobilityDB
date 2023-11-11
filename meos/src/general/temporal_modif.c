@@ -60,8 +60,237 @@
 #endif
 
 /*****************************************************************************
- * Modification functions
+ * Merge functions
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_modif
+ * @brief Merge two temporal instants
+ * @param[in] inst1,inst2 Temporal instants
+ * @csqlfn #Temporal_merge()
+ */
+Temporal *
+tinstant_merge(const TInstant *inst1, const TInstant *inst2)
+{
+  assert(inst1); assert(inst2);
+  assert(inst1->temptype == inst2->temptype);
+  const TInstant *instants[] = {inst1, inst2};
+  return tinstant_merge_array(instants, 2);
+}
+
+/**
+ * @ingroup meos_internal_temporal_modif
+ * @brief Merge an array of temporal instants
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the array
+ * @pre The number of elements in the array is greater than 1
+ * @csqlfn #Temporal_merge_array()
+ */
+Temporal *
+tinstant_merge_array(const TInstant **instants, int count)
+{
+  assert(instants); assert(count > 1);
+  tinstarr_sort((TInstant **) instants, count);
+  /* Ensure validity of the arguments and compute the bounding box */
+  if (! ensure_valid_tinstarr(instants, count, MERGE, DISCRETE))
+    return NULL;
+
+  const TInstant **newinstants = palloc(sizeof(TInstant *) * count);
+  memcpy(newinstants, instants, sizeof(TInstant *) * count);
+  int newcount = tinstarr_remove_duplicates(newinstants, count);
+  Temporal *result = (newcount == 1) ?
+    (Temporal *) tinstant_copy(newinstants[0]) :
+    (Temporal *) tsequence_make_exp1(newinstants, newcount, newcount, true,
+      true, DISCRETE, NORMALIZE_NO, NULL);
+  pfree(newinstants);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_modif
+ * @brief Merge two temporal sequences
+ * @param[in] seq1,seq2 Temporal sequences
+ * @csqlfn #Temporal_merge()
+ */
+Temporal *
+tsequence_merge(const TSequence *seq1, const TSequence *seq2)
+{
+  assert(seq1); assert(seq2);
+  assert(seq1->temptype == seq2->temptype);
+  const TSequence *sequences[] = {seq1, seq2};
+  return tsequence_merge_array(sequences, 2);
+}
+
+/**
+ * @brief Merge an array of temporal discrete sequences
+ * @note The function does not assume that the values in the array are strictly
+ * ordered on time, i.e., the intersection of the bounding boxes of two values
+ * may be a period. For this reason two passes are necessary.
+ * @param[in] sequences Array of temporal sequences
+ * @param[in] count Number of elements in the array
+ * @result Result value that can be either a temporal instant or a temporal
+ * discrete sequence
+ */
+Temporal *
+tdiscseq_merge_array(const TSequence **sequences, int count)
+{
+  assert(sequences);
+  /* Validity test will be done in #tinstant_merge_array */
+  /* Collect the composing instants */
+  int totalcount = 0;
+  for (int i = 0; i < count; i++)
+    totalcount += sequences[i]->count;
+  const TInstant **instants = palloc0(sizeof(TInstant *) * totalcount);
+  int ninsts = 0;
+  for (int i = 0; i < count; i++)
+  {
+    for (int j = 0; j < sequences[i]->count; j++)
+      instants[ninsts++] = TSEQUENCE_INST_N(sequences[i], j);
+  }
+  /* Create the result */
+  Temporal *result = tinstant_merge_array(instants, totalcount);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * @brief Merge an array of temporal sequences
+ * @param[in] sequences Array of values
+ * @param[in] count Number of elements in the array
+ * @param[out] totalcount Number of elements in the resulting array
+ * @result Array of merged sequences
+ * @note The values in the array may overlap on a single instant.
+ */
+static TSequence **
+tsequence_merge_array1(const TSequence **sequences, int count,
+  int *totalcount)
+{
+  assert(sequences); assert(totalcount);
+  if (count > 1)
+    tseqarr_sort((TSequence **) sequences, count);
+  /* Test the validity of the composing sequences */
+  const TSequence *seq1 = sequences[0];
+  meosType basetype = temptype_basetype(seq1->temptype);
+  for (int i = 1; i < count; i++)
+  {
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
+    const TSequence *seq2 = sequences[i];
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq2, 0);
+    char *str1;
+    if (inst1->t > inst2->t)
+    {
+      char *str2;
+      str1 = pg_timestamptz_out(inst1->t);
+      str2 = pg_timestamptz_out(inst2->t);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The temporal values cannot overlap on time: %s, %s", str1, str2);
+      pfree(str1); pfree(str2);
+      return NULL;
+    }
+    else if (inst1->t == inst2->t && seq1->period.upper_inc &&
+      seq2->period.lower_inc)
+    {
+      if (! datum_eq(tinstant_val(inst1), tinstant_val(inst2), basetype))
+      {
+        str1 = pg_timestamptz_out(inst1->t);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "The temporal values have different value at their common timestamp %s",
+          str1);
+        pfree(str1);
+        return NULL;
+      }
+    }
+    seq1 = seq2;
+  }
+  return tseqarr_normalize(sequences, count, totalcount);
+}
+
+/**
+ * @ingroup meos_internal_temporal_modif
+ * @brief Merge an array of temporal sequences
+ * @param[in] sequences Array of values
+ * @param[in] count Number of elements in the array
+ * @note The values in the array may overlap on a single instant.
+ * @csqlfn #Temporal_merge_array()
+ */
+Temporal *
+tsequence_merge_array(const TSequence **sequences, int count)
+{
+  assert(sequences);
+  assert(count > 0);
+
+  /* Discrete sequences */
+  if (MEOS_FLAGS_DISCRETE_INTERP(sequences[0]->flags))
+    return tdiscseq_merge_array(sequences, count);
+
+  /* Continuous sequences */
+  int totalcount;
+  TSequence **newseqs = tsequence_merge_array1(sequences, count, &totalcount);
+  Temporal *result;
+  if (totalcount == 1)
+  {
+    result = (Temporal *) newseqs[0];
+    pfree(newseqs);
+  }
+  else
+    /* Normalization was done at function tsequence_merge_array1 */
+    result = (Temporal *) tsequenceset_make_free(newseqs, totalcount,
+      NORMALIZE_NO);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_modif
+ * @brief Merge two temporal sequence sets
+ * @param[in] ss1,ss2 Temporal sequence set
+ * @csqlfn #Temporal_merge()
+ */
+TSequenceSet *
+tsequenceset_merge(const TSequenceSet *ss1, const TSequenceSet *ss2)
+{
+  assert(ss1); assert(ss2);
+  assert(ss1->temptype == ss2->temptype);
+  const TSequenceSet *seqsets[] = {ss1, ss2};
+  return tsequenceset_merge_array(seqsets, 2);
+}
+
+/**
+ * @ingroup meos_internal_temporal_modif
+ * @brief Merge an array of temporal sequence sets
+ * @param[in] seqsets Array of sequence sets
+ * @param[in] count Number of elements in the array
+ * @note The values in the array may overlap in a single instant.
+ * @csqlfn #Temporal_merge_array()
+ */
+TSequenceSet *
+tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
+{
+  assert(seqsets);
+  assert(count > 0);
+  /* Collect the composing sequences */
+  int totalcount = 0;
+  for (int i = 0; i < count; i++)
+    totalcount += seqsets[i]->count;
+  const TSequence **sequences = palloc0(sizeof(TSequence *) * totalcount);
+  int nseqs = 0;
+  for (int i = 0; i < count; i++)
+  {
+    for (int j = 0; j < seqsets[i]->count; j++)
+      sequences[nseqs++] = TSEQUENCESET_SEQ_N(seqsets[i], j);
+  }
+  /* We cannot call directly #tsequence_merge_array since the result must be of
+   * subtype TSEQUENCESET */
+  int newcount;
+  TSequence **newseqs = tsequence_merge_array1(sequences, totalcount,
+    &newcount);
+  return tsequenceset_make_free(newseqs, newcount, NORMALIZE);
+}
+
+/*****************************************************************************/
 
 /**
  * @brief Return two temporal values transformed into a common subtype
@@ -136,22 +365,29 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
   return;
 }
 
-/*****************************************************************************/
-
 /**
  * @ingroup meos_temporal_modif
- * @brief Insert the second temporal value into the first one
+ * @brief Merge two temporal values
  * @param[in] temp1,temp2 Temporal values
- * @param[in] connect True when the second temporal value is connected in the
- * result to the instants before and after, if any
- * @csqlfn #Temporal_insert()
+ * @result Return NULL if both arguments are NULL
+ * If one argument is null the other argument is output.
+ * @csqlfn #Temporal_merge()
  */
 Temporal *
-temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
+temporal_merge(const Temporal *temp1, const Temporal *temp2)
 {
+  Temporal *result;
+  /* Cannot do anything with null inputs */
+  if (! temp1 && ! temp2)
+    return NULL;
+  /* One argument is null, return a copy of the other temporal */
+  if (! temp1)
+    return temporal_cp(temp2);
+  if (! temp2)
+    return temporal_cp(temp1);
+
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
+  if (! ensure_same_temporal_type(temp1, temp2) ||
       ! ensure_same_continuous_interp(temp1->flags, temp2->flags) ||
       ! ensure_spatial_validity(temp1, temp2))
     return NULL;
@@ -160,7 +396,6 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
-  Temporal *result;
   assert(temptype_subtype(new1->subtype));
   switch (new1->subtype)
   {
@@ -168,15 +403,13 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
       result = tinstant_merge((TInstant *) new1, (TInstant *) new2);
       break;
     case TSEQUENCE:
-      result = (Temporal *) tsequence_insert((TSequence *) new1,
-        (TSequence *) new2, connect);
+      result = (Temporal *) tsequence_merge((TSequence *) new1,
+        (TSequence *) new2);
       break;
     default: /* TSEQUENCESET */
-      result = connect ?
-        (Temporal *) tsequenceset_merge((TSequenceSet *) new1,
-          (TSequenceSet *) new2) :
-        (Temporal *) tsequenceset_insert((TSequenceSet *) new1,
-          (TSequenceSet *) new2);
+      result = (Temporal *) tsequenceset_merge((TSequenceSet *) new1,
+        (TSequenceSet *) new2);
+      break;
   }
   if (temp1 != new1)
     pfree(new1);
@@ -186,164 +419,110 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 }
 
 /**
- * @ingroup meos_temporal_modif
- * @brief Update the first temporal value with the second one
- * @param[in] temp1,temp2 Temporal values
- * @param[in] connect True when the second temporal value is connected in the
- * result to the instants before and after, if any
- * @csqlfn #Temporal_update()
+ * @brief Return an array of temporal values transformed into a common subtype
+ * @param[in] temparr Array of values
+ * @param[in] count Number of values in the array
+ * @param[in] subtype common subtype
+ * @param[in] interp Interpolation
+ * @result  Array of output values
  */
-Temporal *
-temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
+static Temporal **
+temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
+  interpType interp)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_continuous_interp(temp1->flags, temp2->flags) ||
-      ! ensure_spatial_validity(temp1, temp2))
-    return NULL;
-
-  SpanSet *ss = temporal_time(temp2);
-  Temporal *rest = temporal_restrict_tstzspanset(temp1, ss, REST_MINUS);
-  if (! rest)
-    return temporal_cp((Temporal *) temp2);
-  Temporal *result = temporal_insert(rest, temp2, connect);
-  pfree(rest); pfree(ss);
-  return (Temporal *) result;
+  assert(temparr);
+  assert(temptype_subtype(subtype));
+  Temporal **result = palloc(sizeof(Temporal *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    uint8 subtype1 = temparr[i]->subtype;
+    assert(subtype >= subtype1);
+    if (subtype == subtype1)
+      result[i] = temporal_cp(temparr[i]);
+    else if (subtype1 == TINSTANT)
+    {
+      if (subtype == TSEQUENCE)
+        result[i] = (Temporal *) tinstant_to_tsequence((TInstant *) temparr[i],
+          interp);
+      else /* subtype == TSEQUENCESET */
+        result[i] = (Temporal *) tinstant_to_tsequenceset((TInstant *) temparr[i],
+          interp);
+    }
+    else /* subtype1 == TSEQUENCE && subtype == TSEQUENCESET */
+      result[i] = (Temporal *) tsequence_to_tsequenceset((TSequence *) temparr[i]);
+  }
+  return result;
 }
 
 /**
  * @ingroup meos_temporal_modif
- * @brief Delete a timestamp from a temporal value
- * @param[in] temp Temporal value
- * @param[in] t Timestamp
- * @param[in] connect True when the instants before and after the timestamp,
- * if any, are connected in the result
- * @csqlfn #Temporal_delete_timestamptz()
+ * @brief Merge an array of temporal values
+ * @param[in] temparr Array of values
+ * @param[in] count Number of values in the array
+ * @csqlfn #Temporal_merge_array()
  */
 Temporal *
-temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
+temporal_merge_array(Temporal **temparr, int count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp))
+  if( ! ensure_not_null((void *) temparr) || ! ensure_positive(count))
     return NULL;
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  if (count == 1)
+    return temporal_cp(temparr[0]);
+
+  /* Ensure all values have the same interpolation and, if they are spatial,
+   * have the same SRID and dimensionality, and determine subtype of the
+   * result */
+  uint8 subtype, origsubtype;
+  subtype = origsubtype = temparr[0]->subtype;
+  interpType interp = MEOS_FLAGS_GET_INTERP(temparr[0]->flags);
+  bool spatial = tgeo_type(temparr[0]->temptype);
+  bool convert = false;
+  for (int i = 1; i < count; i++)
+  {
+    uint8 subtype1 = temparr[i]->subtype;
+    interpType interp1 = MEOS_FLAGS_GET_INTERP(temparr[i]->flags);
+    if (subtype != subtype1 || interp != interp1)
+    {
+      convert = true;
+      uint8 newsubtype = Max(subtype, subtype1);
+      interpType newinterp = Max(interp, interp1);
+      /* A discrete TSequence cannot be converted to a continuous TSequence */
+      if (subtype == TSEQUENCE && subtype1 == TSEQUENCE && interp != newinterp)
+        newsubtype = TSEQUENCESET;
+      subtype = newsubtype;
+      interp |= newinterp;
+    }
+    if (spatial && ! ensure_spatial_validity(temparr[0], temparr[i]))
+      return NULL;
+  }
+  /* Convert all temporal values to a single subtype if needed */
+  Temporal **newtemps;
+  if (convert)
+    newtemps = temporalarr_convert_subtype(temparr, count, subtype, interp);
+  else
+    newtemps = temparr;
+
+  Temporal *result;
+  assert(temptype_subtype(subtype));
+  switch (subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_restrict_timestamptz((TInstant *) temp, t,
-        REST_MINUS);
+      result = (Temporal *) tinstant_merge_array(
+        (const TInstant **) newtemps, count);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_delete_timestamptz((TSequence *) temp, t,
-        connect);
+      result = (Temporal *) tsequence_merge_array(
+        (const TSequence **) newtemps, count);
+      break;
     default: /* TSEQUENCESET */
-      return connect ?
-        (Temporal *) tsequenceset_restrict_timestamptz((TSequenceSet *) temp, t,
-          REST_MINUS) :
-        (Temporal *) tsequenceset_delete_timestamptz((TSequenceSet *) temp, t);
+      result = (Temporal *) tsequenceset_merge_array(
+        (const TSequenceSet **) newtemps, count);
   }
-}
-
-/**
- * @ingroup meos_temporal_modif
- * @brief Delete a timestamp set from a temporal value connecting the instants
- * before and after the given timestamp, if any
- * @param[in] temp Temporal value
- * @param[in] s Timestamp set
- * @param[in] connect True when the instants before and after the timestamp
- * set are connected in the result
- * @csqlfn #Temporal_delete_tstzset()
- */
-Temporal *
-temporal_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return (Temporal *) tinstant_restrict_tstzset((TInstant *) temp, s,
-        REST_MINUS);
-    case TSEQUENCE:
-      return (Temporal *) tsequence_delete_tstzset((TSequence *) temp, s,
-        connect);
-    default: /* TSEQUENCESET */
-      return connect ?
-        (Temporal *) tsequenceset_delete_tstzset((TSequenceSet *) temp, s) :
-        (Temporal *) tsequenceset_restrict_tstzset((TSequenceSet *) temp, s,
-          REST_MINUS);
-  }
-}
-
-/**
- * @ingroup meos_temporal_modif
- * @brief Delete a timestamptz span from a temporal value
- * @param[in] temp Temporal value
- * @param[in] s Span
- * @param[in] connect True when the instants before and after the span, if any,
- * are connected in the result
- * @csqlfn #Temporal_delete_tstzspan()
- */
-Temporal *
-temporal_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return (Temporal *) tinstant_restrict_tstzspan((TInstant *) temp, s,
-        REST_MINUS);
-    case TSEQUENCE:
-      return (Temporal *) tsequence_delete_tstzspan((TSequence *) temp, s,
-        connect);
-    default: /* TSEQUENCESET */
-      return connect ?
-        (Temporal *) tsequenceset_delete_tstzspan((TSequenceSet *) temp, s) :
-        (Temporal *) tsequenceset_restrict_tstzspan((TSequenceSet *) temp, s,
-          REST_MINUS);
-  }
-}
-
-/**
- * @ingroup meos_temporal_modif
- * @brief Delete a timestamptz span set from a temporal value
- * @param[in] temp Temporal value
- * @param[in] ss Span set
- * @param[in] connect True when the instants before and after the span set, if
- * any, are connected in the result
- * @csqlfn #Temporal_delete_tstzspanset()
- */
-Temporal *
-temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
-  bool connect)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss))
-    return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return (Temporal *) tinstant_restrict_tstzspanset((TInstant *) temp, ss,
-        REST_MINUS);
-    case TSEQUENCE:
-      return (Temporal *) tsequence_delete_tstzspanset((TSequence *) temp, ss,
-        connect);
-    default: /* TSEQUENCESET */
-      return connect ?
-        (Temporal *) tsequenceset_delete_tstzspanset((TSequenceSet *) temp, ss) :
-        (Temporal *) tsequenceset_restrict_tstzspanset((TSequenceSet *) temp, ss,
-          REST_MINUS);
-  }
+  if (subtype != origsubtype)
+    pfree_array((void **) newtemps, count);
+  return result;
 }
 
 /*****************************************************************************
@@ -763,9 +942,7 @@ tsequence_delete_tstzspanset(const TSequence *seq, const SpanSet *ss,
       (Temporal *) tcontseq_restrict_tstzspanset(seq, ss, REST_MINUS);
 }
 
-/*****************************************************************************
- * Modification functions
- *****************************************************************************/
+/*****************************************************************************/
 
 /**
  * @ingroup meos_internal_temporal_modif
@@ -1119,125 +1296,22 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
   return result;
 }
 
-/*****************************************************************************
- * Append and merge functions
- ****************************************************************************/
+/*****************************************************************************/
 
 /**
  * @ingroup meos_temporal_modif
- * @brief Append an instant to a temporal value
- * @param[in,out] temp Temporal value
- * @param[in] inst Temporal instant
- * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap
- * @param[in] expand True when reserving space for additional instants
- * @csqlfn #Temporal_append_tinstant()
- */
-Temporal *
-temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
-  Interval *maxt, bool expand)
-{
-  /* Validity tests */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) inst) ||
-      ! ensure_same_temporal_type(temp, (Temporal *) inst) ||
-      ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT) ||
-      ! ensure_spatial_validity(temp, (const Temporal *) inst))
-    return NULL;
-
-  /* The test to ensure the increasing timestamps must be done in the
-   * subtype function since the inclusive/exclusive bounds must be
-   * taken into account for temporal sequences and sequence sets */
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-    {
-      /* Default interpolation depending on the base type */
-      interpType interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
-      TSequence *seq = tinstant_to_tsequence((const TInstant *) temp, interp);
-      Temporal *result = (Temporal *) tsequence_append_tinstant(seq, inst,
-        maxdist, maxt, expand);
-      pfree(seq);
-      return result;
-    }
-    case TSEQUENCE:
-      return (Temporal *) tsequence_append_tinstant((TSequence *) temp,
-        inst, maxdist, maxt, expand);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_append_tinstant((TSequenceSet *) temp,
-        inst, maxdist, maxt, expand);
-  }
-}
-
-/**
- * @ingroup meos_temporal_modif
- * @brief Append a sequence to a temporal value
- * @param[in,out] temp Temporal value
- * @param[in] seq Temporal sequence
- * @param[in] expand True when reserving space for additional sequences
- * @csqlfn #Temporal_append_tsequence()
- */
-Temporal *
-temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
-{
-  /* Validity tests */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) seq) ||
-      ! ensure_same_temporal_type(temp, (Temporal *) seq) ||
-      ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE) ||
-      (temp->subtype != TINSTANT && ! ensure_same_interp(temp, (Temporal *) seq)) ||
-      ! ensure_spatial_validity(temp, (Temporal *) seq))
-    return NULL;
-
-  /* The test to ensure the increasing timestamps must be done in the
-   * subtype function since the inclusive/exclusive bounds must be
-   * taken into account for temporal sequences and sequence sets */
-
-  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq->flags);
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-    {
-      TSequence *seq1 = tinstant_to_tsequence((TInstant *) temp, interp2);
-      Temporal *result = (Temporal *) tsequence_append_tsequence(
-        (TSequence *) seq1, (TSequence *) seq, expand);
-      pfree(seq1);
-      return result;
-    }
-    case TSEQUENCE:
-      return (Temporal *) tsequence_append_tsequence((TSequence *) temp, seq,
-        expand);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_append_tsequence((TSequenceSet *) temp,
-        seq, expand);
-  }
-}
-
-/**
- * @ingroup meos_temporal_modif
- * @brief Merge two temporal values
+ * @brief Insert the second temporal value into the first one
  * @param[in] temp1,temp2 Temporal values
- * @result Return NULL if both arguments are NULL
- * If one argument is null the other argument is output.
- * @csqlfn #Temporal_merge()
+ * @param[in] connect True when the second temporal value is connected in the
+ * result to the instants before and after, if any
+ * @csqlfn #Temporal_insert()
  */
 Temporal *
-temporal_merge(const Temporal *temp1, const Temporal *temp2)
+temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
-  Temporal *result;
-  /* Cannot do anything with null inputs */
-  if (! temp1 && ! temp2)
-    return NULL;
-  /* One argument is null, return a copy of the other temporal */
-  if (! temp1)
-    return temporal_cp(temp2);
-  if (! temp2)
-    return temporal_cp(temp1);
-
   /* Ensure validity of the arguments */
-  if (! ensure_same_temporal_type(temp1, temp2) ||
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
       ! ensure_same_continuous_interp(temp1->flags, temp2->flags) ||
       ! ensure_spatial_validity(temp1, temp2))
     return NULL;
@@ -1246,6 +1320,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
+  Temporal *result;
   assert(temptype_subtype(new1->subtype));
   switch (new1->subtype)
   {
@@ -1253,13 +1328,15 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
       result = tinstant_merge((TInstant *) new1, (TInstant *) new2);
       break;
     case TSEQUENCE:
-      result = (Temporal *) tsequence_merge((TSequence *) new1,
-        (TSequence *) new2);
+      result = (Temporal *) tsequence_insert((TSequence *) new1,
+        (TSequence *) new2, connect);
       break;
     default: /* TSEQUENCESET */
-      result = (Temporal *) tsequenceset_merge((TSequenceSet *) new1,
-        (TSequenceSet *) new2);
-      break;
+      result = connect ?
+        (Temporal *) tsequenceset_merge((TSequenceSet *) new1,
+          (TSequenceSet *) new2) :
+        (Temporal *) tsequenceset_insert((TSequenceSet *) new1,
+          (TSequenceSet *) new2);
   }
   if (temp1 != new1)
     pfree(new1);
@@ -1269,189 +1346,169 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @brief Return an array of temporal values transformed into a common subtype
- * @param[in] temparr Array of values
- * @param[in] count Number of values in the array
- * @param[in] subtype common subtype
- * @param[in] interp Interpolation
- * @result  Array of output values
+ * @ingroup meos_temporal_modif
+ * @brief Update the first temporal value with the second one
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] connect True when the second temporal value is connected in the
+ * result to the instants before and after, if any
+ * @csqlfn #Temporal_update()
  */
-static Temporal **
-temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
-  interpType interp)
+Temporal *
+temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
-  assert(temparr);
-  assert(temptype_subtype(subtype));
-  Temporal **result = palloc(sizeof(Temporal *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    uint8 subtype1 = temparr[i]->subtype;
-    assert(subtype >= subtype1);
-    if (subtype == subtype1)
-      result[i] = temporal_cp(temparr[i]);
-    else if (subtype1 == TINSTANT)
-    {
-      if (subtype == TSEQUENCE)
-        result[i] = (Temporal *) tinstant_to_tsequence((TInstant *) temparr[i],
-          interp);
-      else /* subtype == TSEQUENCESET */
-        result[i] = (Temporal *) tinstant_to_tsequenceset((TInstant *) temparr[i],
-          interp);
-    }
-    else /* subtype1 == TSEQUENCE && subtype == TSEQUENCESET */
-      result[i] = (Temporal *) tsequence_to_tsequenceset((TSequence *) temparr[i]);
-  }
-  return result;
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_same_continuous_interp(temp1->flags, temp2->flags) ||
+      ! ensure_spatial_validity(temp1, temp2))
+    return NULL;
+
+  SpanSet *ss = temporal_time(temp2);
+  Temporal *rest = temporal_restrict_tstzspanset(temp1, ss, REST_MINUS);
+  if (! rest)
+    return temporal_cp((Temporal *) temp2);
+  Temporal *result = temporal_insert(rest, temp2, connect);
+  pfree(rest); pfree(ss);
+  return (Temporal *) result;
 }
 
 /**
  * @ingroup meos_temporal_modif
- * @brief Merge an array of temporal values
- * @param[in] temparr Array of values
- * @param[in] count Number of values in the array
- * @csqlfn #Temporal_merge_array()
+ * @brief Delete a timestamp from a temporal value
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] connect True when the instants before and after the timestamp,
+ * if any, are connected in the result
+ * @csqlfn #Temporal_delete_timestamptz()
  */
 Temporal *
-temporal_merge_array(Temporal **temparr, int count)
+temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 {
   /* Ensure validity of the arguments */
-  if( ! ensure_not_null((void *) temparr) || ! ensure_positive(count))
+  if (! ensure_not_null((void *) temp))
     return NULL;
 
-  if (count == 1)
-    return temporal_cp(temparr[0]);
-
-  /* Ensure all values have the same interpolation and, if they are spatial,
-   * have the same SRID and dimensionality, and determine subtype of the
-   * result */
-  uint8 subtype, origsubtype;
-  subtype = origsubtype = temparr[0]->subtype;
-  interpType interp = MEOS_FLAGS_GET_INTERP(temparr[0]->flags);
-  bool spatial = tgeo_type(temparr[0]->temptype);
-  bool convert = false;
-  for (int i = 1; i < count; i++)
-  {
-    uint8 subtype1 = temparr[i]->subtype;
-    interpType interp1 = MEOS_FLAGS_GET_INTERP(temparr[i]->flags);
-    if (subtype != subtype1 || interp != interp1)
-    {
-      convert = true;
-      uint8 newsubtype = Max(subtype, subtype1);
-      interpType newinterp = Max(interp, interp1);
-      /* A discrete TSequence cannot be converted to a continuous TSequence */
-      if (subtype == TSEQUENCE && subtype1 == TSEQUENCE && interp != newinterp)
-        newsubtype = TSEQUENCESET;
-      subtype = newsubtype;
-      interp |= newinterp;
-    }
-    if (spatial && ! ensure_spatial_validity(temparr[0], temparr[i]))
-      return NULL;
-  }
-  /* Convert all temporal values to a single subtype if needed */
-  Temporal **newtemps;
-  if (convert)
-    newtemps = temporalarr_convert_subtype(temparr, count, subtype, interp);
-  else
-    newtemps = temparr;
-
-  Temporal *result;
-  assert(temptype_subtype(subtype));
-  switch (subtype)
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
   {
     case TINSTANT:
-      result = (Temporal *) tinstant_merge_array(
-        (const TInstant **) newtemps, count);
-      break;
+      return (Temporal *) tinstant_restrict_timestamptz((TInstant *) temp, t,
+        REST_MINUS);
     case TSEQUENCE:
-      result = (Temporal *) tsequence_merge_array(
-        (const TSequence **) newtemps, count);
-      break;
+      return (Temporal *) tsequence_delete_timestamptz((TSequence *) temp, t,
+        connect);
     default: /* TSEQUENCESET */
-      result = (Temporal *) tsequenceset_merge_array(
-        (const TSequenceSet **) newtemps, count);
+      return connect ?
+        (Temporal *) tsequenceset_restrict_timestamptz((TSequenceSet *) temp, t,
+          REST_MINUS) :
+        (Temporal *) tsequenceset_delete_timestamptz((TSequenceSet *) temp, t);
   }
-  if (subtype != origsubtype)
-    pfree_array((void **) newtemps, count);
-  return result;
-}
-
-
-/*****************************************************************************
- * Merge functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_internal_temporal_modif
- * @brief Merge two temporal instants
- * @param[in] inst1,inst2 Temporal instants
- * @csqlfn #Temporal_merge()
- */
-Temporal *
-tinstant_merge(const TInstant *inst1, const TInstant *inst2)
-{
-  assert(inst1); assert(inst2);
-  assert(inst1->temptype == inst2->temptype);
-  const TInstant *instants[] = {inst1, inst2};
-  return tinstant_merge_array(instants, 2);
 }
 
 /**
- * @ingroup meos_internal_temporal_modif
- * @brief Merge an array of temporal instants
- * @param[in] instants Array of temporal instants
- * @param[in] count Number of elements in the array
- * @pre The number of elements in the array is greater than 1
- * @csqlfn #Temporal_merge_array()
+ * @ingroup meos_temporal_modif
+ * @brief Delete a timestamp set from a temporal value connecting the instants
+ * before and after the given timestamp, if any
+ * @param[in] temp Temporal value
+ * @param[in] s Timestamp set
+ * @param[in] connect True when the instants before and after the timestamp
+ * set are connected in the result
+ * @csqlfn #Temporal_delete_tstzset()
  */
 Temporal *
-tinstant_merge_array(const TInstant **instants, int count)
+temporal_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 {
-  assert(instants); assert(count > 1);
-  tinstarr_sort((TInstant **) instants, count);
-  /* Ensure validity of the arguments and compute the bounding box */
-  if (! ensure_valid_tinstarr(instants, count, MERGE, DISCRETE))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
     return NULL;
 
-  const TInstant **newinstants = palloc(sizeof(TInstant *) * count);
-  memcpy(newinstants, instants, sizeof(TInstant *) * count);
-  int newcount = tinstarr_remove_duplicates(newinstants, count);
-  Temporal *result = (newcount == 1) ?
-    (Temporal *) tinstant_copy(newinstants[0]) :
-    (Temporal *) tsequence_make_exp1(newinstants, newcount, newcount, true,
-      true, DISCRETE, NORMALIZE_NO, NULL);
-  pfree(newinstants);
-  return result;
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tinstant_restrict_tstzset((TInstant *) temp, s,
+        REST_MINUS);
+    case TSEQUENCE:
+      return (Temporal *) tsequence_delete_tstzset((TSequence *) temp, s,
+        connect);
+    default: /* TSEQUENCESET */
+      return connect ?
+        (Temporal *) tsequenceset_delete_tstzset((TSequenceSet *) temp, s) :
+        (Temporal *) tsequenceset_restrict_tstzset((TSequenceSet *) temp, s,
+          REST_MINUS);
+  }
+}
+
+/**
+ * @ingroup meos_temporal_modif
+ * @brief Delete a timestamptz span from a temporal value
+ * @param[in] temp Temporal value
+ * @param[in] s Span
+ * @param[in] connect True when the instants before and after the span, if any,
+ * are connected in the result
+ * @csqlfn #Temporal_delete_tstzspan()
+ */
+Temporal *
+temporal_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tinstant_restrict_tstzspan((TInstant *) temp, s,
+        REST_MINUS);
+    case TSEQUENCE:
+      return (Temporal *) tsequence_delete_tstzspan((TSequence *) temp, s,
+        connect);
+    default: /* TSEQUENCESET */
+      return connect ?
+        (Temporal *) tsequenceset_delete_tstzspan((TSequenceSet *) temp, s) :
+        (Temporal *) tsequenceset_restrict_tstzspan((TSequenceSet *) temp, s,
+          REST_MINUS);
+  }
+}
+
+/**
+ * @ingroup meos_temporal_modif
+ * @brief Delete a timestamptz span set from a temporal value
+ * @param[in] temp Temporal value
+ * @param[in] ss Span set
+ * @param[in] connect True when the instants before and after the span set, if
+ * any, are connected in the result
+ * @csqlfn #Temporal_delete_tstzspanset()
+ */
+Temporal *
+temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
+  bool connect)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tinstant_restrict_tstzspanset((TInstant *) temp, ss,
+        REST_MINUS);
+    case TSEQUENCE:
+      return (Temporal *) tsequence_delete_tstzspanset((TSequence *) temp, ss,
+        connect);
+    default: /* TSEQUENCESET */
+      return connect ?
+        (Temporal *) tsequenceset_delete_tstzspanset((TSequenceSet *) temp, ss) :
+        (Temporal *) tsequenceset_restrict_tstzspanset((TSequenceSet *) temp, ss,
+          REST_MINUS);
+  }
 }
 
 /*****************************************************************************
- * Append and merge functions
- *****************************************************************************/
-
-/**
- * @brief Return the distance between two datums
- * @param[in] value1,value2 Values
- * @param[in] type Type of the values
- * @param[in] flags Flags
- * @return On error return -1.0
- */
-double
-datum_distance(Datum value1, Datum value2, meosType type, int16 flags)
-{
-  if (tnumber_basetype(type))
-    return datum_double(distance_value_value(value1, value2, type), type);
-  else if (geo_basetype(type))
-  {
-    datum_func2 point_distance = pt_distance_fn(flags);
-    return DatumGetFloat8(point_distance(value1, value2));
-  }
-#if NPOINT
-  else if (type == T_NPOINT)
-    return DatumGetFloat8(npoint_distance(value1, value2));
-#endif
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown types for distance between values: %s", meostype_name(type));
-  return (Datum) -1;
-}
+ * Append functions
+ ****************************************************************************/
 
 /**
  * @ingroup meos_internal_temporal_modif
@@ -1544,7 +1601,8 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     if (split)
     {
       TSequence *sequences[2];
-      sequences[0] = (TSequence *) seq;
+      sequences[0] = (seq->count < seq->maxcount) ?
+        tsequence_compact((TSequence *) seq) : seq;
       /* Arbitrary initialization to 64 elements if in expandable mode */
       sequences[1] = tsequence_make_exp((const TInstant **) &inst, 1,
         expand ? 64 : 1, true, true, interp, NORMALIZE_NO);
@@ -1616,7 +1674,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     {
       maxcount *= 2;
 #if DEBUG_EXPAND
-      printf(" Sequence -> %d ", maxcount);
+      meos_error(WARNING, 0, " Sequence -> %d ", maxcount);
 #endif /* DEBUG_EXPAND */
     }
   }
@@ -1713,191 +1771,7 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
       NORMALIZE_NO);
 }
 
-/**
- * @ingroup meos_internal_temporal_modif
- * @brief Merge two temporal sequences
- * @param[in] seq1,seq2 Temporal sequences
- * @csqlfn #Temporal_merge()
- */
-Temporal *
-tsequence_merge(const TSequence *seq1, const TSequence *seq2)
-{
-  assert(seq1); assert(seq2);
-  assert(seq1->temptype == seq2->temptype);
-  const TSequence *sequences[] = {seq1, seq2};
-  return tsequence_merge_array(sequences, 2);
-}
-
-/**
- * @brief Merge an array of temporal discrete sequences
- * @note The function does not assume that the values in the array are strictly
- * ordered on time, i.e., the intersection of the bounding boxes of two values
- * may be a period. For this reason two passes are necessary.
- * @param[in] sequences Array of temporal sequences
- * @param[in] count Number of elements in the array
- * @result Result value that can be either a temporal instant or a temporal
- * discrete sequence
- */
-Temporal *
-tdiscseq_merge_array(const TSequence **sequences, int count)
-{
-  assert(sequences);
-  /* Validity test will be done in #tinstant_merge_array */
-  /* Collect the composing instants */
-  int totalcount = 0;
-  for (int i = 0; i < count; i++)
-    totalcount += sequences[i]->count;
-  const TInstant **instants = palloc0(sizeof(TInstant *) * totalcount);
-  int ninsts = 0;
-  for (int i = 0; i < count; i++)
-  {
-    for (int j = 0; j < sequences[i]->count; j++)
-      instants[ninsts++] = TSEQUENCE_INST_N(sequences[i], j);
-  }
-  /* Create the result */
-  Temporal *result = tinstant_merge_array(instants, totalcount);
-  pfree(instants);
-  return result;
-}
-
-/**
- * @brief Normalize the array of temporal sequences
- * @details The input sequences may be non-contiguous but must ordered and
- * either (1) are non-overlapping, or (2) share the same last/first
- * instant in the case we are merging temporal sequences.
- * @param[in] sequences Array of temporal sequences
- * @param[in] count Number of elements in the input array
- * @param[out] newcount Number of elements in the output array
- * @result Array of normalized temporal sequences values
- * @pre Each sequence in the input array is normalized.
- * When merging sequences, the test whether the value is the same
- * at the common instant should be ensured by the calling function.
- * @note The function creates new sequences and does not free the original
- * ones
- */
-TSequence **
-tseqarr_normalize(const TSequence **sequences, int count, int *newcount)
-{
-  assert(sequences); assert(newcount); assert(count > 0);
-  TSequence **result = palloc(sizeof(TSequence *) * count);
-  /* seq1 is the sequence to which we try to join subsequent seq2 */
-  TSequence *seq1 = (TSequence *) sequences[0];
-  /* newseq is the result of joining seq1 and seq2 */
-  bool isnew = false;
-  int nseqs = 0;
-  for (int i = 1; i < count; i++)
-  {
-    TSequence *seq2 = (TSequence *) sequences[i];
-    bool removelast, removefirst;
-    if (tsequence_join_test(seq1, seq2, &removelast, &removefirst))
-    {
-      TSequence *newseq1 = tsequence_join(seq1, seq2, removelast, removefirst);
-      if (isnew)
-        pfree(seq1);
-      seq1 = newseq1;
-      isnew = true;
-    }
-    else
-    {
-      result[nseqs++] = isnew ? seq1 : tsequence_copy(seq1);
-      seq1 = seq2;
-      isnew = false;
-    }
-  }
-  result[nseqs++] = isnew ? seq1 : tsequence_copy(seq1);
-  *newcount = nseqs;
-  return result;
-}
-
-/**
- * @brief Merge an array of temporal sequences
- * @param[in] sequences Array of values
- * @param[in] count Number of elements in the array
- * @param[out] totalcount Number of elements in the resulting array
- * @result Array of merged sequences
- * @note The values in the array may overlap on a single instant.
- */
-TSequence **
-tsequence_merge_array1(const TSequence **sequences, int count,
-  int *totalcount)
-{
-  assert(sequences); assert(totalcount);
-  if (count > 1)
-    tseqarr_sort((TSequence **) sequences, count);
-  /* Test the validity of the composing sequences */
-  const TSequence *seq1 = sequences[0];
-  meosType basetype = temptype_basetype(seq1->temptype);
-  for (int i = 1; i < count; i++)
-  {
-    const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
-    const TSequence *seq2 = sequences[i];
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq2, 0);
-    char *str1;
-    if (inst1->t > inst2->t)
-    {
-      char *str2;
-      str1 = pg_timestamptz_out(inst1->t);
-      str2 = pg_timestamptz_out(inst2->t);
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The temporal values cannot overlap on time: %s, %s", str1, str2);
-      pfree(str1); pfree(str2);
-      return NULL;
-    }
-    else if (inst1->t == inst2->t && seq1->period.upper_inc &&
-      seq2->period.lower_inc)
-    {
-      if (! datum_eq(tinstant_val(inst1), tinstant_val(inst2), basetype))
-      {
-        str1 = pg_timestamptz_out(inst1->t);
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "The temporal values have different value at their common timestamp %s",
-          str1);
-        pfree(str1);
-        return NULL;
-      }
-    }
-    seq1 = seq2;
-  }
-  return tseqarr_normalize(sequences, count, totalcount);
-}
-
-/**
- * @ingroup meos_internal_temporal_modif
- * @brief Merge an array of temporal sequences
- * @param[in] sequences Array of values
- * @param[in] count Number of elements in the array
- * @note The values in the array may overlap on a single instant.
- * @csqlfn #Temporal_merge_array()
- */
-Temporal *
-tsequence_merge_array(const TSequence **sequences, int count)
-{
-  assert(sequences);
-  assert(count > 0);
-
-  /* Discrete sequences */
-  if (MEOS_FLAGS_DISCRETE_INTERP(sequences[0]->flags))
-    return tdiscseq_merge_array(sequences, count);
-
-  /* Continuous sequences */
-  int totalcount;
-  TSequence **newseqs = tsequence_merge_array1(sequences, count, &totalcount);
-  Temporal *result;
-  if (totalcount == 1)
-  {
-    result = (Temporal *) newseqs[0];
-    pfree(newseqs);
-  }
-  else
-    /* Normalization was done at function tsequence_merge_array1 */
-    result = (Temporal *) tsequenceset_make_free(newseqs, totalcount,
-      NORMALIZE_NO);
-  return result;
-}
-
-/*****************************************************************************
- * Append and merge functions
- *****************************************************************************/
+/*****************************************************************************/
 
 /**
  * @ingroup meos_internal_temporal_modif
@@ -2118,7 +1992,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
     {
       maxcount *= 2;
 #if DEBUG_EXPAND
-      printf(" Sequence set -> %d ", maxcount);
+      meos_error(WARNING, " Sequence set -> %d ", maxcount);
 #endif
     }
   }
@@ -2136,51 +2010,98 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
   return result;
 }
 
+/*****************************************************************************/
+
 /**
- * @ingroup meos_internal_temporal_modif
- * @brief Merge two temporal sequence sets
- * @param[in] ss1,ss2 Temporal sequence set
- * @csqlfn #Temporal_merge()
+ * @ingroup meos_temporal_modif
+ * @brief Append an instant to a temporal value
+ * @param[in,out] temp Temporal value
+ * @param[in] inst Temporal instant
+ * @param[in] maxdist Maximum distance for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap
+ * @param[in] expand True when reserving space for additional instants
+ * @csqlfn #Temporal_append_tinstant()
  */
-TSequenceSet *
-tsequenceset_merge(const TSequenceSet *ss1, const TSequenceSet *ss2)
+Temporal *
+temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
+  Interval *maxt, bool expand)
 {
-  assert(ss1); assert(ss2);
-  assert(ss1->temptype == ss2->temptype);
-  const TSequenceSet *seqsets[] = {ss1, ss2};
-  return tsequenceset_merge_array(seqsets, 2);
+  /* Validity tests */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) inst) ||
+      ! ensure_same_temporal_type(temp, (Temporal *) inst) ||
+      ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT) ||
+      ! ensure_spatial_validity(temp, (const Temporal *) inst))
+    return NULL;
+
+  /* The test to ensure the increasing timestamps must be done in the
+   * subtype function since the inclusive/exclusive bounds must be
+   * taken into account for temporal sequences and sequence sets */
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      /* Default interpolation depending on the base type */
+      interpType interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
+      TSequence *seq = tinstant_to_tsequence((const TInstant *) temp, interp);
+      Temporal *result = (Temporal *) tsequence_append_tinstant(seq, inst,
+        maxdist, maxt, expand);
+      pfree(seq);
+      return result;
+    }
+    case TSEQUENCE:
+      return (Temporal *) tsequence_append_tinstant((TSequence *) temp,
+        inst, maxdist, maxt, expand);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_append_tinstant((TSequenceSet *) temp,
+        inst, maxdist, maxt, expand);
+  }
 }
 
 /**
- * @ingroup meos_internal_temporal_modif
- * @brief Merge an array of temporal sequence sets
- * @param[in] seqsets Array of sequence sets
- * @param[in] count Number of elements in the array
- * @note The values in the array may overlap in a single instant.
- * @csqlfn #Temporal_merge_array()
+ * @ingroup meos_temporal_modif
+ * @brief Append a sequence to a temporal value
+ * @param[in,out] temp Temporal value
+ * @param[in] seq Temporal sequence
+ * @param[in] expand True when reserving space for additional sequences
+ * @csqlfn #Temporal_append_tsequence()
  */
-TSequenceSet *
-tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
+Temporal *
+temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 {
-  assert(seqsets);
-  assert(count > 0);
-  /* Collect the composing sequences */
-  int totalcount = 0;
-  for (int i = 0; i < count; i++)
-    totalcount += seqsets[i]->count;
-  const TSequence **sequences = palloc0(sizeof(TSequence *) * totalcount);
-  int nseqs = 0;
-  for (int i = 0; i < count; i++)
+  /* Validity tests */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) seq) ||
+      ! ensure_same_temporal_type(temp, (Temporal *) seq) ||
+      ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE) ||
+      (temp->subtype != TINSTANT && ! ensure_same_interp(temp, (Temporal *) seq)) ||
+      ! ensure_spatial_validity(temp, (Temporal *) seq))
+    return NULL;
+
+  /* The test to ensure the increasing timestamps must be done in the
+   * subtype function since the inclusive/exclusive bounds must be
+   * taken into account for temporal sequences and sequence sets */
+
+  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq->flags);
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
   {
-    for (int j = 0; j < seqsets[i]->count; j++)
-      sequences[nseqs++] = TSEQUENCESET_SEQ_N(seqsets[i], j);
+    case TINSTANT:
+    {
+      TSequence *seq1 = tinstant_to_tsequence((TInstant *) temp, interp2);
+      Temporal *result = (Temporal *) tsequence_append_tsequence(
+        (TSequence *) seq1, (TSequence *) seq, expand);
+      pfree(seq1);
+      return result;
+    }
+    case TSEQUENCE:
+      return (Temporal *) tsequence_append_tsequence((TSequence *) temp, seq,
+        expand);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_append_tsequence((TSequenceSet *) temp,
+        seq, expand);
   }
-  /* We cannot call directly #tsequence_merge_array since the result must be of
-   * subtype TSEQUENCESET */
-  int newcount;
-  TSequence **newseqs = tsequence_merge_array1(sequences, totalcount,
-    &newcount);
-  return tsequenceset_make_free(newseqs, newcount, NORMALIZE);
 }
 
 /*****************************************************************************/

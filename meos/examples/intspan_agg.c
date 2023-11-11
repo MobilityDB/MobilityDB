@@ -29,9 +29,8 @@
 
 /**
  * @brief A simple program that reads integer span values from a CSV file and
- * aggregates them into a single spanset value.
+ * aggregates them into a single spanset value
  *
-
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o intspan_agg intspan_agg.c -L/usr/local/lib -lmeos

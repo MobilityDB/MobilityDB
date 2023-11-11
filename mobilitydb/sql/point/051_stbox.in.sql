@@ -169,7 +169,7 @@ CREATE FUNCTION geodstbox_zt(float, float, float, float, float, float,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
- 
+
 CREATE FUNCTION stbox(geometry, timestamptz)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geo_timestamptz_to_stbox'

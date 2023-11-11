@@ -324,7 +324,7 @@ PG_FUNCTION_INFO_V1(Geo_timestamptz_to_stbox);
  * @brief Return a spatiotemporal box constructed from a geometry/geography and
  * a timestamptz
  * @sqlfn stbox()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS)
@@ -345,6 +345,7 @@ PG_FUNCTION_INFO_V1(Geo_tstzspan_to_stbox);
  * @brief Return a spatiotemporal box constructed from a geometry/geography and
  * a timestamptz span
  * @sqlfn stbox()
+ * @sqlop @p ::
  */
 Datum
 Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS)
@@ -368,7 +369,7 @@ PG_FUNCTION_INFO_V1(Stbox_to_box2d);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a spatiotemporal box converted to a PostGIS @p box2d
  * @sqlfn box2d()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Stbox_to_box2d(PG_FUNCTION_ARGS)
@@ -384,7 +385,7 @@ PG_FUNCTION_INFO_V1(Stbox_to_box3d);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a spatiotemporal box converted to a PostGIS @p box3d
  * @sqlfn box3d()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Stbox_to_box3d(PG_FUNCTION_ARGS)
@@ -400,7 +401,7 @@ PG_FUNCTION_INFO_V1(Stbox_to_geo);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a spatiotemporal box converted to a PostGIS geometry/geography
  * @sqlfn geometry()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Stbox_to_geo(PG_FUNCTION_ARGS)
@@ -416,7 +417,7 @@ PG_FUNCTION_INFO_V1(Stbox_to_tstzspan);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a spatiotemporal box converted to a timestamptz span
  * @sqlfn period()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Stbox_to_tstzspan(PG_FUNCTION_ARGS)
@@ -434,7 +435,7 @@ PG_FUNCTION_INFO_V1(Box2d_to_stbox);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a PostGIS @p box2d converted to a spatiotemporal box
  * @sqlfn stbox()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Box2d_to_stbox(PG_FUNCTION_ARGS)
@@ -449,7 +450,7 @@ PG_FUNCTION_INFO_V1(Box3d_to_stbox);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a PostGIS @p box3d converted to a spatiotemporal box
  * @sqlfn stbox()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Box3d_to_stbox(PG_FUNCTION_ARGS)
@@ -464,7 +465,7 @@ PG_FUNCTION_INFO_V1(Geo_to_stbox);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a geometry/geography converted to a spatiotemporal box
  * @sqlfn stbox()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Geo_to_stbox(PG_FUNCTION_ARGS)
@@ -484,7 +485,7 @@ PG_FUNCTION_INFO_V1(Geoset_to_stbox);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a geometry/geography set converted to a spatiotemporal box
  * @sqlfn stbox()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Geoset_to_stbox(PG_FUNCTION_ARGS)
@@ -501,7 +502,7 @@ PG_FUNCTION_INFO_V1(Timestamptz_to_stbox);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a timestamptz converted to a spatiotemporal box
  * @sqlfn stbox()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Timestamptz_to_stbox(PG_FUNCTION_ARGS)
@@ -516,7 +517,7 @@ PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a timestamptz set converted to a spatiotemporal box
  * @sqlfn stbox()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Tstzset_to_stbox(PG_FUNCTION_ARGS)
@@ -531,7 +532,7 @@ PG_FUNCTION_INFO_V1(Tstzspan_to_stbox);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a timestamptz span converted to a spatiotemporal box
  * @sqlfn stbox()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Tstzspan_to_stbox(PG_FUNCTION_ARGS)
@@ -564,7 +565,7 @@ PG_FUNCTION_INFO_V1(Tstzspanset_to_stbox);
  * @ingroup mobilitydb_box_conversion
  * @brief Return a timestamptz span set converted to a spatiotemporal box
  * @sqlfn stbox()
- * @sqlfn @p ::
+ * @sqlop @p ::
  */
 Datum
 Tstzspanset_to_stbox(PG_FUNCTION_ARGS)

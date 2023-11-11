@@ -31,7 +31,7 @@
  * @brief A simple program that reads AIS data from a CSV file and outputs
  * a few of these records converted into temporal values.
  *
- * In the input file located in the data directory it is assumed that
+ * In the input file located in the `data/` subdirectory it is assumed that
  * - The coordinates are given in the WGS84 geographic coordinate system, and
  * - The timestamps are given in the GMT time zone.
  * This simple program does not cope with erroneous inputs, such as missing

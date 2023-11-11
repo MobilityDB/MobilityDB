@@ -288,7 +288,7 @@ Tcomp_point_tpoint(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -307,7 +307,7 @@ Tcomp_tpoint_point(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -326,7 +326,7 @@ Tcomp_tpoint_tpoint(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
