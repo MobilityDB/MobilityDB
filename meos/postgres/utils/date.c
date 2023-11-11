@@ -179,3 +179,30 @@ date2timestamptz(DateADT dateVal)
 {
   return date2timestamptz_opt_overflow(dateVal, NULL);
 }
+
+/* timestamptz_date()
+ * Convert timestamp with time zone to date data type.
+ */
+Date
+pg_timestamptz_date(TimestampTz timestamp)
+{
+  DateADT result;
+  struct pg_tm tt, *tm = &tt;
+  fsec_t fsec;
+  int tz;
+
+  if (TIMESTAMP_IS_NOBEGIN(timestamp))
+    DATE_NOBEGIN(result);
+  else if (TIMESTAMP_IS_NOEND(timestamp))
+    DATE_NOEND(result);
+  else
+  {
+    if (timestamp2tm(timestamp, &tz, tm, &fsec, NULL, NULL) != 0)
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+
+    result = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) - POSTGRES_EPOCH_JDATE;
+  }
+
+  return result;
+}

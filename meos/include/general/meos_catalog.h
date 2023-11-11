@@ -53,50 +53,54 @@ typedef enum
 {
   T_UNKNOWN        = 0,   /**< unknown type */
   T_BOOL           = 1,   /**< boolean type */
-  T_DOUBLE2        = 2,   /**< double2 type */
-  T_DOUBLE3        = 3,   /**< double3 type */
-  T_DOUBLE4        = 4,   /**< double4 type */
-  T_FLOAT8         = 5,   /**< float8 type */
-  T_FLOATSET       = 6,   /**< float8 set type */
-  T_FLOATSPAN      = 7,   /**< float8 span type */
-  T_FLOATSPANSET   = 8,   /**< float8 span set type */
-  T_INT4           = 9,   /**< int4 type */
-  T_INT4RANGE      = 10,  /**< PostgreSQL int4 range type */
-  T_INT4MULTIRANGE = 11,  /**< PostgreSQL int4 multirange type */
-  T_INTSET         = 12,  /**< int4 set type */
-  T_INTSPAN        = 13,  /**< int4 span type */
-  T_INTSPANSET     = 14,  /**< int4 span set type */
-  T_INT8           = 15,  /**< int8 type */
-  T_BIGINTSET      = 16,  /**< int8 set type */
-  T_BIGINTSPAN     = 17,  /**< int8 span type */
-  T_BIGINTSPANSET  = 18,  /**< int8 span set type */
-  T_STBOX          = 19,  /**< spatiotemporal box type */
-  T_TBOOL          = 20,  /**< temporal boolean type */
-  T_TBOX           = 21,  /**< temporal box type */
-  T_TDOUBLE2       = 22,  /**< temporal double2 type */
-  T_TDOUBLE3       = 23,  /**< temporal double3 type */
-  T_TDOUBLE4       = 24,  /**< temporal double4 type */
-  T_TEXT           = 25,  /**< text type */
-  T_TEXTSET        = 26,  /**< text type */
-  T_TFLOAT         = 27,  /**< temporal float type */
-  T_TIMESTAMPTZ    = 28,  /**< timestamp with time zone type */
-  T_TINT           = 29,  /**< temporal integer type */
-  T_TSTZMULTIRANGE = 30,  /**< PostgreSQL timestamp with time zone multirange type */
-  T_TSTZRANGE      = 31,  /**< PostgreSQL timestamp with time zone range type */
-  T_TSTZSET        = 32,  /**< timestamptz set type */
-  T_TSTZSPAN       = 33,  /**< timestamptz span type */
-  T_TSTZSPANSET    = 34,  /**< timestamptz span set type */
-  T_TTEXT          = 35,  /**< temporal text type */
-  T_GEOMETRY       = 36,  /**< geometry type */
-  T_GEOMSET        = 37,  /**< geometry set type */
-  T_GEOGRAPHY      = 38,  /**< geography type */
-  T_GEOGSET        = 39,  /**< geography set type */
-  T_TGEOMPOINT     = 40,  /**< temporal geometry point type */
-  T_TGEOGPOINT     = 41,  /**< temporal geography point type */
-  T_NPOINT         = 42,  /**< network point type */
-  T_NPOINTSET      = 43,  /**< network point set type */
-  T_NSEGMENT       = 44,  /**< network segment type */
-  T_TNPOINT        = 45,  /**< temporal network point type */
+  T_DATE           = 2,   /**< date type */
+  T_DATESET        = 3,   /**< float8 set type */
+  T_DATESPAN       = 4,   /**< float8 span type */
+  T_DATESPANSET    = 5,   /**< float8 span set type */
+  T_DOUBLE2        = 6,   /**< double2 type */
+  T_DOUBLE3        = 7,   /**< double3 type */
+  T_DOUBLE4        = 8,   /**< double4 type */
+  T_FLOAT8         = 9,   /**< float8 type */
+  T_FLOATSET       = 10,  /**< float8 set type */
+  T_FLOATSPAN      = 11,  /**< float8 span type */
+  T_FLOATSPANSET   = 12,  /**< float8 span set type */
+  T_INT4           = 13,  /**< int4 type */
+  T_INT4RANGE      = 14,  /**< PostgreSQL int4 range type */
+  T_INT4MULTIRANGE = 15,  /**< PostgreSQL int4 multirange type */
+  T_INTSET         = 16,  /**< int4 set type */
+  T_INTSPAN        = 17,  /**< int4 span type */
+  T_INTSPANSET     = 18,  /**< int4 span set type */
+  T_INT8           = 19,  /**< int8 type */
+  T_BIGINTSET      = 20,  /**< int8 set type */
+  T_BIGINTSPAN     = 21,  /**< int8 span type */
+  T_BIGINTSPANSET  = 22,  /**< int8 span set type */
+  T_STBOX          = 23,  /**< spatiotemporal box type */
+  T_TBOOL          = 24,  /**< temporal boolean type */
+  T_TBOX           = 25,  /**< temporal box type */
+  T_TDOUBLE2       = 26,  /**< temporal double2 type */
+  T_TDOUBLE3       = 27,  /**< temporal double3 type */
+  T_TDOUBLE4       = 28,  /**< temporal double4 type */
+  T_TEXT           = 29,  /**< text type */
+  T_TEXTSET        = 30,  /**< text type */
+  T_TFLOAT         = 31,  /**< temporal float type */
+  T_TIMESTAMPTZ    = 32,  /**< timestamp with time zone type */
+  T_TINT           = 33,  /**< temporal integer type */
+  T_TSTZMULTIRANGE = 34,  /**< PostgreSQL timestamp with time zone multirange type */
+  T_TSTZRANGE      = 35,  /**< PostgreSQL timestamp with time zone range type */
+  T_TSTZSET        = 36,  /**< timestamptz set type */
+  T_TSTZSPAN       = 37,  /**< timestamptz span type */
+  T_TSTZSPANSET    = 38,  /**< timestamptz span set type */
+  T_TTEXT          = 39,  /**< temporal text type */
+  T_GEOMETRY       = 40,  /**< geometry type */
+  T_GEOMSET        = 41,  /**< geometry set type */
+  T_GEOGRAPHY      = 42,  /**< geography type */
+  T_GEOGSET        = 43,  /**< geography set type */
+  T_TGEOMPOINT     = 44,  /**< temporal geometry point type */
+  T_TGEOGPOINT     = 45,  /**< temporal geography point type */
+  T_NPOINT         = 46,  /**< network point type */
+  T_NPOINTSET      = 47,  /**< network point set type */
+  T_NSEGMENT       = 48,  /**< network segment type */
+  T_TNPOINT        = 49,  /**< temporal network point type */
 } meosType;
 
 #define NO_MEOS_TYPES 46
@@ -218,6 +222,7 @@ extern bool set_type(meosType type);
 extern bool numset_type(meosType type);
 extern bool ensure_numset_type(meosType type);
 extern bool timeset_type(meosType type);
+extern bool ensure_timeset_type(meosType type);
 extern bool set_spantype(meosType type);
 extern bool ensure_set_spantype(meosType type);
 extern bool alphanumset_type(meosType settype);
@@ -235,10 +240,12 @@ extern bool numspan_type(meosType type);
 extern bool ensure_numspan_type(meosType type);
 extern bool timespan_basetype(meosType type);
 extern bool timespan_type(meosType type);
+extern bool ensure_timespan_type(meosType type);
 
 extern bool spanset_type(meosType type);
 extern bool numspanset_type(meosType type);
 extern bool timespanset_type(meosType type);
+extern bool ensure_timespanset_type(meosType type);
 
 extern bool temporal_type(meosType temptype);
 extern bool temporal_basetype(meosType basetype);

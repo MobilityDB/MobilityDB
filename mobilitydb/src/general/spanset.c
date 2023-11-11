@@ -414,86 +414,86 @@ Periodset_duration(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Periodset_num_timestamps(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_num_timestamps);
+PGDLLEXPORT Datum Periodset_num_times(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Periodset_num_times);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the number of timestamps of a period set
  * @sqlfunc numTimestamps()
  */
 Datum
-Periodset_num_timestamps(PG_FUNCTION_ARGS)
+Periodset_num_times(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  int result = periodset_num_timestamps(ps);
+  int result = periodset_num_times(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_INT32(result);
 }
 
-PGDLLEXPORT Datum Periodset_start_timestamp(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_start_timestamp);
+PGDLLEXPORT Datum Periodset_start_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Periodset_start_time);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the start timestamp of a period set
  * @sqlfunc startTimestamp()
  */
 Datum
-Periodset_start_timestamp(PG_FUNCTION_ARGS)
+Periodset_start_time(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  TimestampTz result = periodset_start_timestamp(ps);
+  TimestampTz result = periodset_start_time(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PGDLLEXPORT Datum Periodset_end_timestamp(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_end_timestamp);
+PGDLLEXPORT Datum Periodset_end_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Periodset_end_time);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the end timestamp of a period set
  * @sqlfunc endTimestamp()
  */
 Datum
-Periodset_end_timestamp(PG_FUNCTION_ARGS)
+Periodset_end_time(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  TimestampTz result = periodset_end_timestamp(ps);
+  TimestampTz result = periodset_end_time(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PGDLLEXPORT Datum Periodset_timestamp_n(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_timestamp_n);
+PGDLLEXPORT Datum Periodset_time_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Periodset_time_n);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the n-th timestamp of a period set
  * @sqlfunc timestampN()
  */
 Datum
-Periodset_timestamp_n(PG_FUNCTION_ARGS)
+Periodset_time_n(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TimestampTz result;
-  bool found = periodset_timestamp_n(ps, n, &result);
+  bool found = periodset_time_n(ps, n, &result);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PGDLLEXPORT Datum Periodset_timestamps(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_timestamps);
+PGDLLEXPORT Datum Periodset_times(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Periodset_times);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the array of timestamps of a period set
  * @sqlfunc timestamps()
  */
 Datum
-Periodset_timestamps(PG_FUNCTION_ARGS)
+Periodset_times(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
   int count;
-  TimestampTz *times = periodset_timestamps(ps, &count);
+  TimestampTz *times = periodset_times(ps, &count);
   ArrayType *result = timestamparr_to_array(times, count);
   pfree(times);
   PG_FREE_IF_COPY(ps, 0);

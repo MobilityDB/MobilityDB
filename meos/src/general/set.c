@@ -266,7 +266,20 @@ textset_in(const char *str)
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
-timestampset_in(const char *str)
+dateset_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return set_parse(&str, T_DATESET);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a set from its Well-Known Text (WKT) representation.
+ */
+Set *
+tstzset_in(const char *str)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
@@ -409,7 +422,20 @@ textset_out(const Set *s)
  * @brief Output a set of timestamps.
 */
 char *
-timestampset_out(const Set *s)
+dateset_out(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_DATESET))
+    return NULL;
+  return set_out(s, 0);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of timestamps.
+*/
+char *
+tstzset_out(const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
@@ -1168,12 +1194,28 @@ textset_start_value(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
+ * @brief Return the start value of a date set.
+ * @return On error return DATEVAL_NOEND
+ * @sqlfunc startDate()
+ */
+DateADT
+dateset_start_date(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_DATESET))
+    return DATEVAL_NOEND;
+  DateADT result = DatumGetDateADT(SET_VAL_N(s, 0));
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a timestamp set.
  * @return On error return DT_NOEND
  * @sqlfunc startTimestamp()
  */
 TimestampTz
-timestampset_start_timestamp(const Set *s)
+tstzset_start_timestamp(const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
@@ -1279,11 +1321,27 @@ textset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a timestamp set.
+ * @return On error return DATEVAL_NOEND
+ * @sqlfunc endDate()
+ */
+DateADT
+dateset_end_date(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_DATESET))
+    return DATEVAL_NOEND;
+  DateADT result = DatumGetDateADT(SET_VAL_N(s, s->count - 1));
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the end value of a timestamp set.
  * @return On error return DT_NOEND
  * @sqlfunc endTimestamp()
  */
 TimestampTz
-timestampset_end_timestamp(const Set *s)
+tstzset_end_timestamp(const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
@@ -1416,6 +1474,27 @@ textset_value_n(const Set *s, int n, text **result)
 
 /**
  * @ingroup libmeos_setspan_accessor
+ * @brief Compute the n-th value of a date set
+ * @param[in] s Timestamp set
+ * @param[in] n Number
+ * @param[out] result Date
+ * @result Return true if the date is found
+ * @note It is assumed that n is 1-based
+ * @sqlfunc dateN()
+ */
+bool
+dateset_date_n(const Set *s, int n, DateADT *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_set_has_type(s, T_DATESET) || n < 1 || n > s->count)
+    return false;
+  *result = DatumGetDateADT(SET_VAL_N(s, n - 1));
+  return true;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
  * @brief Compute the n-th value of a timestamp set
  * @param[in] s Timestamp set
  * @param[in] n Number
@@ -1425,7 +1504,7 @@ textset_value_n(const Set *s, int n, text **result)
  * @sqlfunc timestampN()
  */
 bool
-timestampset_timestamp_n(const Set *s, int n, TimestampTz *result)
+tstzset_timestamp_n(const Set *s, int n, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1553,10 +1632,29 @@ textset_values(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a timestamp set.
  * @return On error return NULL
+ * @sqlfunc dates()
+ */
+DateADT *
+dateset_values(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_DATESET))
+    return NULL;
+
+  DateADT *result = palloc(sizeof(DateADT) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetDateADT(SET_VAL_N(s, i));
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the array of values of a timestamp set.
+ * @return On error return NULL
  * @sqlfunc timestamps()
  */
 TimestampTz *
-timestampset_values(const Set *s)
+tstzset_values(const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))

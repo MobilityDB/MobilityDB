@@ -482,7 +482,6 @@ Timestampset_shift_scale(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  ensure_valid_duration(duration);
   Set *result = timestampset_shift_scale(s, shift, duration);
   PG_RETURN_POINTER(result);
 }

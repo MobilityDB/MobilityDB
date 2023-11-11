@@ -65,6 +65,10 @@ const char *_meosType_names[] =
 {
   [T_UNKNOWN] = "",
   [T_BOOL] = "bool",
+  [T_DATE] = "date",
+  [T_DATESET] = "dateset",
+  [T_DATESPAN] = "datespan",
+  [T_DATESPANSET] = "datespanset",
   [T_DOUBLE2] = "double2",
   [T_DOUBLE3] = "double3",
   [T_DOUBLE4] = "double4",
@@ -138,6 +142,7 @@ settype_catalog_struct _settype_catalog[] =
   {T_INTSET,        T_INT4},
   {T_BIGINTSET,     T_INT8},
   {T_FLOATSET,      T_FLOAT8},
+  {T_DATESET,       T_DATE},
   {T_TSTZSET,       T_TIMESTAMPTZ},
   {T_TEXTSET,       T_TEXT},
   {T_GEOMSET,       T_GEOMETRY},
@@ -154,6 +159,7 @@ spantype_catalog_struct _spantype_catalog[] =
   {T_INTSPAN,       T_INT4},
   {T_BIGINTSPAN,    T_INT8},
   {T_FLOATSPAN,     T_FLOAT8},
+  {T_DATESPAN,      T_DATE},
   {T_TSTZSPAN,      T_TIMESTAMPTZ},
 };
 
@@ -166,6 +172,7 @@ spansettype_catalog_struct _spansettype_catalog[] =
   {T_INTSPANSET,    T_INTSPAN},
   {T_BIGINTSPANSET, T_BIGINTSPAN},
   {T_FLOATSPANSET,  T_FLOATSPAN},
+  {T_DATESPANSET,   T_DATESPAN},
   {T_TSTZSPANSET,   T_TSTZSPAN},
 };
 
@@ -333,8 +340,8 @@ meostype_internal(meosType type)
 bool
 meos_basetype(meosType type)
 {
-  if (type == T_BOOL || type == T_TEXT || type == T_INT4 ||
-    type == T_INT8 || type == T_FLOAT8 || type == T_TIMESTAMPTZ ||
+  if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 || 
+    type == T_TEXT || type == T_DATE || type == T_TIMESTAMPTZ ||
     /* The doubleX are internal types used for temporal aggregation */
     type == T_DOUBLE2 || type == T_DOUBLE3 || type == T_DOUBLE4 ||
     type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT
@@ -352,7 +359,7 @@ basetype_byvalue(meosType type)
 {
   assert(meos_basetype(type));
   if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
-      type == T_TIMESTAMPTZ)
+      type == T_DATE || type == T_TIMESTAMPTZ)
     return true;
   return false;
 }
@@ -406,8 +413,8 @@ basetype_length(meosType type)
 bool
 alphanum_basetype(meosType type)
 {
-  if (type == T_BOOL || type == T_TEXT || type == T_INT4 ||
-      type == T_INT8 || type == T_FLOAT8 || type == T_TIMESTAMPTZ)
+  if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
+      type == T_TEXT || type == T_DATE || type == T_TIMESTAMPTZ)
     return true;
   return false;
 }
@@ -443,7 +450,8 @@ spatial_basetype(meosType type)
 bool
 time_type(meosType type)
 {
-  if (type == T_TIMESTAMPTZ || type == T_TSTZSET ||
+  if (type == T_DATE || type == T_DATESET || type == T_DATESPAN ||
+      type == T_DATESPANSET || type == T_TIMESTAMPTZ || type == T_TSTZSET ||
     type == T_TSTZSPAN || type == T_TSTZSPANSET)
     return true;
   return false;
@@ -459,9 +467,9 @@ time_type(meosType type)
 bool
 set_basetype(meosType type)
 {
-  if (type == T_TIMESTAMPTZ || type == T_INT4 || type == T_INT8 ||
-      type == T_FLOAT8 || type == T_TEXT || type == T_GEOMETRY ||
-      type == T_GEOGRAPHY || type == T_NPOINT)
+  if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 ||
+      type == T_INT8 || type == T_FLOAT8 || type == T_TEXT ||
+      type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT)
     return true;
   return false;
 }
@@ -473,9 +481,9 @@ set_basetype(meosType type)
 bool
 set_type(meosType type)
 {
-  if (type == T_TSTZSET || type == T_INTSET || type == T_BIGINTSET ||
-      type == T_FLOATSET || type == T_TEXTSET || type == T_GEOMSET ||
-      type == T_GEOGSET || type == T_NPOINTSET)
+  if (type == T_TSTZSET || type == T_DATESET || type == T_INTSET ||
+      type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET || 
+      type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET)
     return true;
   return false;
 }
@@ -497,9 +505,13 @@ numset_type(meosType type)
 bool
 ensure_numset_type(meosType type)
 {
-  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET)
-    return true;
-  return false;
+  if (! numset_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The set value must be a number set");
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -508,10 +520,26 @@ ensure_numset_type(meosType type)
 bool
 timeset_type(meosType type)
 {
-  if (type == T_TSTZSET)
+  if (type == T_DATESET || type == T_TSTZSET)
     return true;
   return false;
 }
+
+/**
+ * @brief Ensure that the type is a number set type
+ */
+bool
+ensure_timeset_type(meosType type)
+{
+  if (! timeset_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The set value must be a time set");
+    return false;
+  }
+  return true;
+}
+
 
 /**
  * @brief Return true if the type is a set type with a span as a bounding box
@@ -519,8 +547,8 @@ timeset_type(meosType type)
 bool
 set_spantype(meosType type)
 {
-  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
-    type == T_TSTZSET)
+  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET || 
+    type == T_DATESET || type == T_TSTZSET)
     return true;
   return false;
 }
@@ -546,8 +574,8 @@ ensure_set_spantype(meosType type)
 bool
 alphanumset_type(meosType type)
 {
-  if (type == T_TSTZSET || type == T_INTSET || type == T_BIGINTSET ||
-      type == T_FLOATSET || type == T_TEXTSET)
+  if (type == T_TSTZSET || type == T_DATESET || type == T_INTSET ||
+      type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET)
     return true;
   return false;
 }
@@ -614,8 +642,8 @@ ensure_spatialset_type(meosType type)
 bool
 span_basetype(meosType type)
 {
-  if (type == T_TIMESTAMPTZ || type == T_INT4 || type == T_INT8 ||
-      type == T_FLOAT8)
+  if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 ||
+      type == T_INT8 || type == T_FLOAT8)
     return true;
   return false;
 }
@@ -626,7 +654,7 @@ span_basetype(meosType type)
 bool
 span_canon_basetype(meosType type)
 {
-  if (type == T_INT4 || type == T_INT8)
+  if (type == T_DATE || T_INT4 || type == T_INT8)
     return true;
   return false;
 }
@@ -637,7 +665,7 @@ span_canon_basetype(meosType type)
 bool
 span_type(meosType type)
 {
-  if (type == T_TSTZSPAN || type == T_INTSPAN ||
+  if (type == T_TSTZSPAN || type == T_DATESPAN || type == T_INTSPAN ||
       type == T_BIGINTSPAN || type == T_FLOATSPAN)
     return true;
   return false;
@@ -701,7 +729,7 @@ ensure_numspan_type(meosType type)
 bool
 timespan_basetype(meosType type)
 {
-  if (type == T_TIMESTAMPTZ)
+  if (type == T_TIMESTAMPTZ || type == T_DATE)
     return true;
   return false;
 }
@@ -712,9 +740,24 @@ timespan_basetype(meosType type)
 bool
 timespan_type(meosType type)
 {
-  if (type == T_TSTZSPAN)
+  if (type == T_TSTZSPAN || type == T_DATESPAN)
     return true;
   return false;
+}
+
+/**
+ * @brief Ensure that a span is a numeric span type
+ */
+bool
+ensure_timespan_type(meosType type)
+{
+  if (! timespan_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The span value must be a time span type");
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************/
@@ -725,7 +768,7 @@ timespan_type(meosType type)
 bool
 spanset_type(meosType type)
 {
-  if (type == T_TSTZSPANSET || type == T_INTSPANSET ||
+  if (type == T_TSTZSPANSET || type == T_DATESPANSET || type == T_INTSPANSET ||
       type == T_BIGINTSPANSET || type == T_FLOATSPANSET)
     return true;
   return false;
@@ -751,10 +794,26 @@ numspanset_type(meosType type)
 bool
 timespanset_type(meosType type)
 {
-  if (type == T_TSTZSPANSET)
+  if (type == T_TSTZSPANSET || type == T_DATESPANSET)
     return true;
   return false;
 }
+
+/**
+ * @brief Ensure that a span is a numeric span type
+ */
+bool
+ensure_timespanset_type(meosType type)
+{
+  if (! timespanset_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The span value must be a time span set type");
+    return false;
+  }
+  return true;
+}
+
 
 /*****************************************************************************/
 

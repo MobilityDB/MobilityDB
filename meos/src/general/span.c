@@ -474,7 +474,21 @@ floatspan_out(const Span *s, int maxdd)
  * @return On error return NULL
  */
 char *
-period_out(const Span *s)
+datespan_out(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_DATESPAN))
+    return NULL;
+  return span_out(s, 0);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @return On error return NULL
+ */
+char *
+tstzspan_out(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
@@ -804,12 +818,27 @@ floatspan_lower(const Span *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the lower bound of a period
+ * @brief Return the lower bound of a date span
+ * @return On error return DATEVAL_NOEND
+ * @sqlfunc lower()
+ */
+DateADT
+datespan_lower(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_DATESPAN))
+    return DATEVAL_NOEND;
+  return DateADTGetDatum(s->lower);
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the lower bound of a timestamptz span
  * @return On error return DT_NOEND
  * @sqlfunc lower()
  */
 TimestampTz
-period_lower(const Span *s)
+tstzspan_lower(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
@@ -864,12 +893,27 @@ floatspan_upper(const Span *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the upper bound of a period
+ * @brief Return the upper bound of a date span
+ * @return On error return DATEVAL_NOEND
+ * @sqlfunc upper()
+ */
+DateADT
+datespan_upper(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_DATESPAN))
+    return DATEVAL_NOEND;
+  return TimestampTzGetDatum(s->upper);
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the upper bound of a timestamptz span
  * @return On error return DT_NOEND
  * @sqlfunc upper()
  */
 TimestampTz
-period_upper(const Span *s)
+tstzspan_upper(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
@@ -919,6 +963,20 @@ span_width(const Span *s)
   if (! ensure_not_null((void *) s))
     return -1.0;
   return distance_value_value(s->lower, s->upper, s->basetype);
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the duration of a period as an interval.
+ * @sqlfunc duration()
+ */
+Interval *
+datespan_duration(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_DATESPAN))
+    return NULL;
+  return pg_timestamp_mi(s->upper, s->lower);
 }
 
 /**
