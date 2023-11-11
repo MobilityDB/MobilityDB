@@ -49,48 +49,48 @@
  * Time precision functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Timestamp_tprecision(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestamp_tprecision);
+PGDLLEXPORT Datum Timestamptz_tprecision(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestamptz_tprecision);
 /**
  * @brief Return the initial timestamp of the bucket in which a timestamp falls.
  */
 Datum
-Timestamp_tprecision(PG_FUNCTION_ARGS)
+Timestamptz_tprecision(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  TimestampTz result = timestamp_tprecision(t, duration, origin);
+  TimestampTz result = timestamptz_tprecision(t, duration, origin);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PGDLLEXPORT Datum Period_tprecision(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_tprecision);
+PGDLLEXPORT Datum Tstzspan_tprecision(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_tprecision);
 /**
  * @brief Generate a bucket in a bucket list for periods.
 */
 Datum
-Period_tprecision(PG_FUNCTION_ARGS)
+Tstzspan_tprecision(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  Span *result = period_tprecision(s, duration, origin);
+  Span *result = tstzspan_tprecision(s, duration, origin);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Periodset_tprecision(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_tprecision);
+PGDLLEXPORT Datum Tstzspanset_tprecision(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_tprecision);
 /**
  * @brief Generate a bucket in a bucket list for periods.
 */
 Datum
-Periodset_tprecision(PG_FUNCTION_ARGS)
+Tstzspanset_tprecision(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  SpanSet *result = periodset_tprecision(ss, duration, origin);
+  SpanSet *result = tstzspanset_tprecision(ss, duration, origin);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
 }

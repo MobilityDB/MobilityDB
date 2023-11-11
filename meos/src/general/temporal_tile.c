@@ -89,7 +89,7 @@ span_no_buckets(const Span *s, Datum size, Datum origin, Datum *start_bucket,
  * @result Number of buckets
  */
 int
-period_no_buckets(const Span *s, const Interval *duration, TimestampTz torigin,
+tstzspan_no_buckets(const Span *s, const Interval *duration, TimestampTz torigin,
   Datum *start_bucket, Datum *end_bucket)
 {
   assert(start_bucket); assert(end_bucket);
@@ -490,7 +490,7 @@ floatspan_bucket_list(const Span *s, double size, double origin, int *count)
  * @param[out] count Number of elements in the output array
  */
 Span *
-period_bucket_list(const Span *s, const Interval *duration, TimestampTz origin,
+tstzspan_bucket_list(const Span *s, const Interval *duration, TimestampTz origin,
   int *count)
 {
   /* Ensure validity of the arguments */
@@ -554,7 +554,7 @@ tbox_tile_state_make(const TBox *box, Datum vsize, const Interval *duration,
   }
   if (tunits)
   {
-    period_no_buckets(&box->period, duration, torigin, &start_bucket,
+    tstzspan_no_buckets(&box->period, duration, torigin, &start_bucket,
       &end_bucket);
     span_set(start_bucket, end_bucket, true, false, T_TIMESTAMPTZ, &period);
   }
@@ -662,7 +662,7 @@ tbox_tile_list(const TBox *box, Datum vsize, const Interval *duration,
   /* Determine the number of time buckets */
   int64 tunits = duration ? interval_units(duration) : 0;
   if (tunits)
-    ncols = period_no_buckets(&box->period, duration, torigin, &start_bucket,
+    ncols = tstzspan_no_buckets(&box->period, duration, torigin, &start_bucket,
       &end_bucket);
   /* Total number of tiles */
   int count1 = nrows * ncols;
@@ -875,7 +875,7 @@ tsequence_time_split_iter(const TSequence *seq, TimestampTz start,
       upper += tunits;
       /* The second condition is needed for filtering unnecesary buckets for the
        * sequences composing a sequence set */
-      if (lower >= end || ! contains_period_timestamp(&seq->period, lower))
+      if (lower >= end || ! contains_span_timestamptz(&seq->period, lower))
         break;
       /* Reuse the end value of the previous bucket for the beginning of the bucket */
       if (lower < inst->t)
@@ -1082,8 +1082,8 @@ temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
 
   Datum start_bucket, end_bucket;
   Span s;
-  temporal_set_period(temp, &s);
-  int nbuckets = period_no_buckets(&s, duration, torigin, &start_bucket,
+  temporal_set_tstzspan(temp, &s);
+  int nbuckets = tstzspan_no_buckets(&s, duration, torigin, &start_bucket,
     &end_bucket);
   int64 tunits = interval_units(duration);
   return temporal_time_split1(temp, DatumGetTimestampTz(start_bucket),
@@ -1630,8 +1630,8 @@ tnumber_value_time_split(Temporal *temp, Datum size, Interval *duration,
   int value_count = span_no_buckets(&s, size, vorigin, &start_bucket,
       &end_bucket);
   /* Compute the time bounds */
-  temporal_set_period(temp, &s);
-  int time_count = period_no_buckets(&s, duration, torigin, &start_time_bucket,
+  temporal_set_tstzspan(temp, &s);
+  int time_count = tstzspan_no_buckets(&s, duration, torigin, &start_time_bucket,
       &end_time_bucket);
   TimestampTz start_time = DatumGetTimestampTz(start_time_bucket);
   TimestampTz end_time = DatumGetTimestampTz(end_time_bucket);

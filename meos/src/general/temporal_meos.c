@@ -490,13 +490,13 @@ temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
  * @sqlfunc atTime()
  */
 Temporal *
-temporal_at_timestampset(const Temporal *temp, const Set *s)
+temporal_at_tstzset(const Temporal *temp, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_set_has_type(s, T_TSTZSET))
     return NULL;
-  return temporal_restrict_timestampset(temp, s, REST_AT);
+  return temporal_restrict_tstzset(temp, s, REST_AT);
 }
 
 /**
@@ -505,13 +505,13 @@ temporal_at_timestampset(const Temporal *temp, const Set *s)
  * @sqlfunc minusTime()
  */
 Temporal *
-temporal_minus_timestampset(const Temporal *temp, const Set *s)
+temporal_minus_tstzset(const Temporal *temp, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_set_has_type(s, T_TSTZSET))
     return NULL;
-  return temporal_restrict_timestampset(temp, s, REST_MINUS);
+  return temporal_restrict_tstzset(temp, s, REST_MINUS);
 }
 
 /**
@@ -520,13 +520,13 @@ temporal_minus_timestampset(const Temporal *temp, const Set *s)
  * @sqlfunc atTime()
  */
 Temporal *
-temporal_at_period(const Temporal *temp, const Span *s)
+temporal_at_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
-  return temporal_restrict_period(temp, s, REST_AT);
+  return temporal_restrict_tstzspan(temp, s, REST_AT);
 }
 
 /**
@@ -535,13 +535,13 @@ temporal_at_period(const Temporal *temp, const Span *s)
  * @sqlfunc minusTime()
  */
 Temporal *
-temporal_minus_period(const Temporal *temp, const Span *s)
+temporal_minus_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
-  return temporal_restrict_period(temp, s, REST_MINUS);
+  return temporal_restrict_tstzspan(temp, s, REST_MINUS);
 }
 
 /**
@@ -550,13 +550,13 @@ temporal_minus_period(const Temporal *temp, const Span *s)
  * @sqlfunc atTime()
  */
 Temporal *
-temporal_at_periodset(const Temporal *temp, const SpanSet *ss)
+temporal_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) || 
       ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
-  return temporal_restrict_periodset(temp, ss, REST_AT);
+  return temporal_restrict_tstzspanset(temp, ss, REST_AT);
 }
 
 /**
@@ -565,13 +565,13 @@ temporal_at_periodset(const Temporal *temp, const SpanSet *ss)
  * @sqlfunc minusTime()
  */
 Temporal *
-temporal_minus_periodset(const Temporal *temp, const SpanSet *ss)
+temporal_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) || 
       ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
-  return temporal_restrict_periodset(temp, ss, REST_MINUS);
+  return temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
 }
 
 /*****************************************************************************/

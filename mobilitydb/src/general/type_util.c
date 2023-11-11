@@ -261,7 +261,7 @@ int64arr_to_array(const int64 *longints, int count)
  * @brief Convert a C array of timestamps into a PostgreSQL array
  */
 ArrayType *
-timestamparr_to_array(const TimestampTz *times, int count)
+tstzarr_to_array(const TimestampTz *times, int count)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID,

@@ -292,7 +292,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   if (oper == DIV)
   {
     SpanSet *ps = temporal_time(temp1);
-    Temporal *projtemp2 = temporal_restrict_periodset(temp2, ps, REST_AT);
+    Temporal *projtemp2 = temporal_restrict_tstzspanset(temp2, ps, REST_AT);
     if (projtemp2 == NULL)
       return NULL;
     if (temporal_ever_eq(projtemp2, Float8GetDatum(0.0)))

@@ -29,13 +29,17 @@
 
 /**
  * @brief A simple program that generates a given number of tfloat instants,
- * appends the instant into a sequence at each generation, and at the end
- * outputs the the number of instants and the time-weighted average.
+ * appends each generated instant into an output sequence, automatically
+ * expanding the sequence if no more free space is available, and at the end
+ * outputs the number of instants and the time-weighted average.
+ *
+ * This program and the program tfloat_expand.c in the same directory can be
+ * used to compare the two alternative strategies for 
+ * (1) assembling the sequence at the end from the input instants 
+ * (2) expanding the sequence at each input instant 
  *
  * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence. A compiler option allows to
- * either use expandable structures or to create a new sequence at every new
- * instant generated.
+ * instants will appear in the final sequence. 
  *
  * The program can be build as follows
  * @code
@@ -51,19 +55,17 @@
 #include <meos_internal.h>
 
 /* Maximum number of instants */
-#define MAX_INSTANTS 500000
-/* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 1000
+#define MAX_INSTANTS 1000000
 
 /* Main program */
 int main(void)
 {
-  /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
-
   /* Get start time */
   clock_t tm;
   tm = clock();
+
+  /* Initialize MEOS */ 
+  meos_initialize(NULL, NULL);
 
   /* Expandable sequence */
   Temporal *seq = NULL;
@@ -71,9 +73,6 @@ int main(void)
   Interval *oneday = pg_interval_in("1 day", -1);
   /* Iterator variable */
   int i;
-
-  printf("Generating the instants (one '*' marker every %d instants)\n",
-    NO_INSTANTS_BATCH);
 
   TimestampTz t = pg_timestamptz_in("1999-12-31", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
@@ -88,33 +87,27 @@ int main(void)
       seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1, 64,
         true, true, LINEAR, false);
     else
-      /* Append the instant to the temporal sequence so that if there is no
-       * more space the sequence automatically doubles its capacity */
+      /* Append the instant to the sequence so that if there is no more space
+       * the sequence is automatically exanded doubling its capacity */
       seq = temporal_append_tinstant(seq, inst, 0.0, NULL, true);
     free(inst);
-    /* Print a '*' marker every X instants generated */
-    if (i % NO_INSTANTS_BATCH == 0)
-    {
-      printf("*");
-      fflush(stdout);
-    }
   }
 
   /* Print information about the sequence */
   printf("Number of instants: %d, Time-weighted average: %lf\n",
     temporal_num_instants(seq), tnumber_twavg(seq));
 
-  /* Calculate the elapsed time */
-  tm = clock() - tm;
-  double time_taken = ((double) tm) / CLOCKS_PER_SEC;
-  printf("The program took %f seconds to execute\n", time_taken);
-  printf("Accumulating the instants and constructing the sequence at the end\n");
-
   /* Free memory */
   free(seq);
 
   /* Finalize MEOS */
   meos_finalize();
+
+  /* Calculate the elapsed time */
+  tm = clock() - tm;
+  double time_taken = ((double) tm) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
+  printf("It appends each instant to the output sequence automatically expanding it when more space is needed\n");
 
   return 0;
 }

@@ -263,7 +263,7 @@ srs_mfjson_buf(char *output, char *srs)
  * MF-JSON format
  */
 static size_t
-period_mfjson_size(void)
+tstzspan_mfjson_size(void)
 {
   /* The maximum size of a timestamptz is 35 characters, e.g.,
    * "2019-08-06 23:18:16.195062-09:30" */
@@ -277,7 +277,7 @@ period_mfjson_size(void)
  * @brief Write into the buffer the period bounding box represented in MF-JSON format
  */
 static size_t
-period_mfjson_buf(char *output, const Span *p)
+tstzspan_mfjson_buf(char *output, const Span *p)
 {
   char *ptr = output;
   ptr += sprintf(ptr, "\"period\":{\"begin\":");
@@ -404,7 +404,7 @@ bbox_mfjson_size(meosType temptype, bool hasz, int precision)
   {
     case T_TBOOL:
     case T_TTEXT:
-      size = period_mfjson_size();
+      size = tstzspan_mfjson_size();
       break;
     case T_TINT:
     case T_TFLOAT:
@@ -435,7 +435,7 @@ bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
   {
     case T_TBOOL:
     case T_TTEXT:
-      return period_mfjson_buf(output, (Span *) bbox);
+      return tstzspan_mfjson_buf(output, (Span *) bbox);
     case T_TINT:
     case T_TFLOAT:
       return tbox_mfjson_buf(output, (TBox *) bbox, precision);
@@ -1592,7 +1592,7 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
  * Well-Known Binary (WKB) format
  */
 uint8_t *
-timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
+timestamptz_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(TimestampTz) != MEOS_WKB_TIMESTAMP_SIZE)
   {
@@ -1682,7 +1682,7 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
       buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
       break;
     case T_TIMESTAMPTZ:
-      buf = timestamp_to_wkb_buf(DatumGetTimestampTz(value), buf, variant);
+      buf = timestamptz_to_wkb_buf(DatumGetTimestampTz(value), buf, variant);
       break;
     case T_TEXT:
       buf = text_to_wkb_buf(DatumGetTextP(value), buf, variant);
@@ -1812,8 +1812,8 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
       buf = double_to_wkb_buf(DatumGetFloat8(s->upper), buf, variant);
       break;
     case T_TIMESTAMPTZ:
-      buf = timestamp_to_wkb_buf(DatumGetTimestampTz(s->lower), buf, variant);
-      buf = timestamp_to_wkb_buf(DatumGetTimestampTz(s->upper), buf, variant);
+      buf = timestamptz_to_wkb_buf(DatumGetTimestampTz(s->lower), buf, variant);
+      buf = timestamptz_to_wkb_buf(DatumGetTimestampTz(s->upper), buf, variant);
       break;
   }
   return buf;
@@ -2062,7 +2062,7 @@ tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
   meosType basetype = temptype_basetype(inst->temptype);
   assert(temporal_basetype(basetype));
   buf = basevalue_to_wkb_buf(value, basetype, inst->flags, buf, variant);
-  buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+  buf = timestamptz_to_wkb_buf(inst->t, buf, variant);
   return buf;
 }
 

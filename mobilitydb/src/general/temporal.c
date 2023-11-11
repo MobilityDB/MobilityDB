@@ -706,8 +706,8 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tsequence_from_base_timestampset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tsequence_from_base_timestampset);
+PGDLLEXPORT Datum Tsequence_from_base_tstzset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tsequence_from_base_tstzset);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal discrete sequence from a base value and a
@@ -715,25 +715,25 @@ PG_FUNCTION_INFO_V1(Tsequence_from_base_timestampset);
  * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq()
  */
 Datum
-Tsequence_from_base_timestampset(PG_FUNCTION_ARGS)
+Tsequence_from_base_tstzset(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Set *ts = PG_GETARG_SET_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TSequence *result = tsequence_from_base_timestampset(value, temptype, ts);
+  TSequence *result = tsequence_from_base_tstzset(value, temptype, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tsequence_from_base_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tsequence_from_base_period);
+PGDLLEXPORT Datum Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tsequence_from_base_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence from a base value and a period
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq()
  */
 Datum
-Tsequence_from_base_period(PG_FUNCTION_ARGS)
+Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Span *p = PG_GETARG_SPAN_P(1);
@@ -746,12 +746,12 @@ Tsequence_from_base_period(PG_FUNCTION_ARGS)
     interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
-  TSequence *result = tsequence_from_base_period(value, temptype, p, interp);
+  TSequence *result = tsequence_from_base_tstzspan(value, temptype, p, interp);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tsequenceset_from_base_periodset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tsequenceset_from_base_periodset);
+PGDLLEXPORT Datum Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tsequenceset_from_base_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set from from a base value and a
@@ -759,7 +759,7 @@ PG_FUNCTION_INFO_V1(Tsequenceset_from_base_periodset);
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset()
  */
 Datum
-Tsequenceset_from_base_periodset(PG_FUNCTION_ARGS)
+Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   SpanSet *ps = PG_GETARG_SPANSET_P(1);
@@ -772,7 +772,7 @@ Tsequenceset_from_base_periodset(PG_FUNCTION_ARGS)
     interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
-  TSequenceSet *result = tsequenceset_from_base_periodset(value, temptype, ps,
+  TSequenceSet *result = tsequenceset_from_base_tstzspanset(value, temptype, ps,
     interp);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
@@ -816,8 +816,8 @@ Tfloat_to_tint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_to_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_to_period);
+PGDLLEXPORT Datum Temporal_to_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_to_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding period on which a temporal value is defined
@@ -827,11 +827,11 @@ PG_FUNCTION_INFO_V1(Temporal_to_period);
  * @sqlop @p ::
  */
 Datum
-Temporal_to_period(PG_FUNCTION_ARGS)
+Temporal_to_tstzspan(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *result = palloc(sizeof(Span));
-  temporal_set_period(temp, result);
+  temporal_set_tstzspan(temp, result);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
 }
@@ -1413,7 +1413,7 @@ Temporal_timestamps(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   TimestampTz *times = temporal_timestamps(temp, &count);
-  ArrayType *result = timestamparr_to_array(times, count);
+  ArrayType *result = tstzarr_to_array(times, count);
   pfree(times);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -2335,7 +2335,7 @@ Tnumber_minus_tbox(PG_FUNCTION_ARGS)
  * @brief Restrict a temporal value to (the complement of) a timestamp
  */
 static Datum
-temporal_restrict_timestamp_ext(FunctionCallInfo fcinfo, bool atfunc)
+temporal_restrict_timestamptz_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
@@ -2356,7 +2356,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_timestamp);
 Datum
 Temporal_at_timestamp(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_timestamp_ext(fcinfo, REST_AT);
+  return temporal_restrict_timestamptz_ext(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Temporal_minus_timestamp(PG_FUNCTION_ARGS);
@@ -2369,7 +2369,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_timestamp);
 Datum
 Temporal_minus_timestamp(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_timestamp_ext(fcinfo, REST_MINUS);
+  return temporal_restrict_timestamptz_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -2396,19 +2396,19 @@ Temporal_value_at_timestamp(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Temporal_at_timestampset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_at_timestampset);
+PGDLLEXPORT Datum Temporal_at_tstzset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_at_tstzset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a timestamp set
  * @sqlfunc atTime()
  */
 Datum
-Temporal_at_timestampset(PG_FUNCTION_ARGS)
+Temporal_at_tstzset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
-  Temporal *result = temporal_restrict_timestampset(temp, ts, REST_AT);
+  Temporal *result = temporal_restrict_tstzset(temp, ts, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   if (! result)
@@ -2416,19 +2416,19 @@ Temporal_at_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_minus_timestampset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_minus_timestampset);
+PGDLLEXPORT Datum Temporal_minus_tstzset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_minus_tstzset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp set
  * @sqlfunc minusTime()
  */
 Datum
-Temporal_minus_timestampset(PG_FUNCTION_ARGS)
+Temporal_minus_tstzset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
-  Temporal *result = temporal_restrict_timestampset(temp, ts, REST_MINUS);
+  Temporal *result = temporal_restrict_tstzset(temp, ts, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   if (! result)
@@ -2439,58 +2439,58 @@ Temporal_minus_timestampset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 static Datum
-temporal_restrict_period_ext(FunctionCallInfo fcinfo, bool atfunc)
+temporal_restrict_tstzspan_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *p = PG_GETARG_SPAN_P(1);
-  Temporal *result = temporal_restrict_period(temp, p, atfunc);
+  Temporal *result = temporal_restrict_tstzspan(temp, p, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_at_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_at_period);
+PGDLLEXPORT Datum Temporal_at_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_at_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a period
  * @sqlfunc atTime()
  */
 Datum
-Temporal_at_period(PG_FUNCTION_ARGS)
+Temporal_at_tstzspan(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_period_ext(fcinfo, REST_AT);
+  return temporal_restrict_tstzspan_ext(fcinfo, REST_AT);
 }
 
-PGDLLEXPORT Datum Temporal_minus_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_minus_period);
+PGDLLEXPORT Datum Temporal_minus_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_minus_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a period
  * @sqlfunc minusTime()
  */
 Datum
-Temporal_minus_period(PG_FUNCTION_ARGS)
+Temporal_minus_tstzspan(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_period_ext(fcinfo, REST_MINUS);
+  return temporal_restrict_tstzspan_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Temporal_at_periodset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_at_periodset);
+PGDLLEXPORT Datum Temporal_at_tstzspanset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_at_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a period set
  * @sqlfunc atTime()
  */
 Datum
-Temporal_at_periodset(PG_FUNCTION_ARGS)
+Temporal_at_tstzspanset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   SpanSet *ps = PG_GETARG_SPANSET_P(1);
-  Temporal *result = temporal_restrict_periodset(temp, ps, REST_AT);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ps, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
   if (! result)
@@ -2498,19 +2498,19 @@ Temporal_at_periodset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_minus_periodset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_minus_periodset);
+PGDLLEXPORT Datum Temporal_minus_tstzspanset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_minus_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a period set
  * @sqlfunc minusTime()
  */
 Datum
-Temporal_minus_periodset(PG_FUNCTION_ARGS)
+Temporal_minus_tstzspanset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   SpanSet *ps = PG_GETARG_SPANSET_P(1);
-  Temporal *result = temporal_restrict_periodset(temp, ps, REST_MINUS);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ps, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
   if (! result)
@@ -2580,20 +2580,20 @@ Temporal_delete_timestamp(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_delete_timestampset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_delete_timestampset);
+PGDLLEXPORT Datum Temporal_delete_tstzset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_delete_tstzset);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Delete a timestamp set from a temporal value
  * @sqlfunc deleteTime()
  */
 Datum
-Temporal_delete_timestampset(PG_FUNCTION_ARGS)
+Temporal_delete_tstzset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
   bool connect = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_delete_timestampset(temp, ts, connect);
+  Temporal *result = temporal_delete_tstzset(temp, ts, connect);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   if (! result)
@@ -2601,40 +2601,40 @@ Temporal_delete_timestampset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_delete_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_delete_period);
+PGDLLEXPORT Datum Temporal_delete_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_delete_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Delete a period from a temporal value
  * @sqlfunc deleteTime()
  */
 Datum
-Temporal_delete_period(PG_FUNCTION_ARGS)
+Temporal_delete_tstzspan(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *p = PG_GETARG_SPAN_P(1);
   bool connect = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_delete_period(temp, p, connect);
+  Temporal *result = temporal_delete_tstzspan(temp, p, connect);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Temporal_delete_periodset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_delete_periodset);
+PGDLLEXPORT Datum Temporal_delete_tstzspanset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_delete_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Delete a period set from a temporal value
  * @sqlfunc deleteTime()
  */
 Datum
-Temporal_delete_periodset(PG_FUNCTION_ARGS)
+Temporal_delete_tstzspanset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   SpanSet *ps = PG_GETARG_SPANSET_P(1);
   bool connect = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_delete_periodset(temp, ps, connect);
+  Temporal *result = temporal_delete_tstzspanset(temp, ps, connect);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
   if (! result)

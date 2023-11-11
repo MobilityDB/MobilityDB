@@ -97,11 +97,11 @@ extern void lower_upper_shift_scale_time(const Interval *shift,
   const Interval *duration, TimestampTz *lower, TimestampTz *upper);
 extern void numspan_delta_scale_iter(Span *s, Datum origin, Datum delta,
   bool hasdelta, double scale);
-extern void period_delta_scale_iter(Span *s, TimestampTz origin,
+extern void tstzspan_delta_scale_iter(Span *s, TimestampTz origin,
   TimestampTz delta, double scale);
 extern void numspan_shift_scale1(Span *s, Datum shift, Datum width,
   bool hasshift, bool haswidth, Datum *delta, double *scale);
-extern void period_shift_scale1(Span *s, const Interval *shift,
+extern void tstzspan_shift_scale1(Span *s, const Interval *shift,
   const Interval *duration, TimestampTz *delta, double *scale);
 
 extern size_t span_to_wkb_size(const Span *s);

@@ -50,19 +50,19 @@ CREATE TYPE tint;
 
 CREATE FUNCTION tcount_transfn(internal, timestamptz)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Timestamp_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Timestamptz_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, tstzset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Timestampset_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Tstzset_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, tstzspan)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Period_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Tstzspan_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, tstzspanset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Periodset_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tcount_combinefn(internal, internal)

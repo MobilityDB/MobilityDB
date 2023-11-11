@@ -85,7 +85,7 @@
  * @brief Transform the constant into a period
  */
 static bool
-temporal_const_to_period(Node *other, Span *period)
+temporal_const_to_tstzspan(Node *other, Span *period)
 {
   Oid consttype = ((Const *) other)->consttype;
   Datum constvalue = ((Const *) other)->constvalue;
@@ -103,7 +103,7 @@ temporal_const_to_period(Node *other, Span *period)
  * @brief Transform the constant into a temporal box
  */
 bool
-tnumber_const_to_span_period(const Node *other, Span **s, Span **p)
+tnumber_const_to_span_tstzspan(const Node *other, Span **s, Span **p)
 {
   Oid consttypid = ((Const *) other)->consttype;
   meosType type = oid_type(consttypid);
@@ -156,7 +156,7 @@ tpoint_const_to_stbox(Node *other, STBox *box)
   if (geo_basetype(type))
     geo_set_stbox(DatumGetGserializedP(constvalue), box);
   else if (type == T_TSTZSPAN)
-    period_set_stbox(DatumGetSpanP(constvalue), box);
+    tstzspan_set_stbox(DatumGetSpanP(constvalue), box);
   else if (type == T_STBOX)
     memcpy(box, DatumGetSTboxP(constvalue), sizeof(STBox));
   else if (tspatial_type(type))
@@ -471,7 +471,7 @@ temporal_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
  * <> are eqsel and neqsel, respectively.
  */
 Selectivity
-temporal_sel_period(VariableStatData *vardata, Span *period, meosOper oper)
+temporal_sel_tstzspan(VariableStatData *vardata, Span *period, meosOper oper)
 {
   float8 selec;
 
@@ -522,11 +522,11 @@ temporal_sel_period(VariableStatData *vardata, Span *period, meosOper oper)
  * neqsel, respectively.
  */
 Selectivity
-tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
+tnumber_sel_span_tstzspan(VariableStatData *vardata, Span *span, Span *period,
   meosOper oper)
 {
   double selec;
-  Oid value_oprid, period_oprid;
+  Oid value_oprid, tstzspan_oprid;
 
   /* Enable the multiplication of the selectivity of the value and time
    * dimensions since either may be missing */
@@ -553,12 +553,12 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
     /* Selectivity for the time dimension */
     if (period != NULL)
     {
-      period_oprid = oper_oid(EQ_OP, period->spantype, period->spantype);
+      tstzspan_oprid = oper_oid(EQ_OP, period->spantype, period->spantype);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-      selec *= var_eq_const(vardata, period_oprid, SpanPGetDatum(period),
+      selec *= var_eq_const(vardata, tstzspan_oprid, SpanPGetDatum(period),
         false, false, false);
 #else
-      selec *= var_eq_const(vardata, period_oprid, DEFAULT_COLLATION_OID,
+      selec *= var_eq_const(vardata, tstzspan_oprid, DEFAULT_COLLATION_OID,
         SpanPGetDatum(period), false, false, false);
 #endif
     }
@@ -690,23 +690,23 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   if (tempfamily == TEMPORALTYPE)
   {
     Span period;
-    if (! temporal_const_to_period(other, &period))
+    if (! temporal_const_to_tstzspan(other, &period))
       /* In the case of unknown constant */
       return temporal_sel_default(oper);
     /* Compute the selectivity */
-    selec = temporal_sel_period(&vardata, &period, oper);
+    selec = temporal_sel_tstzspan(&vardata, &period, oper);
   }
   else if (tempfamily == TNUMBERTYPE)
   {
     /* Transform the constant into a span and/or a period */
     Span *s = NULL;
     Span *p = NULL;
-    if (! tnumber_const_to_span_period(other, &s, &p))
+    if (! tnumber_const_to_span_tstzspan(other, &s, &p))
       /* In the case of unknown constant */
       return tnumber_sel_default(oper);
 
     /* Compute the selectivity */
-    selec = tnumber_sel_span_period(&vardata, s, p, oper);
+    selec = tnumber_sel_span_tstzspan(&vardata, s, p, oper);
     /* Free variables */
     if (s) pfree(s);
     if (p) pfree(p);
@@ -749,7 +749,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       memcpy(&period, &box.period, sizeof(Span));
 
       /* Compute the selectivity */
-      selec *= temporal_sel_period(&vardata, &period, oper);
+      selec *= temporal_sel_tstzspan(&vardata, &period, oper);
     }
   }
 

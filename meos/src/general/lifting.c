@@ -842,7 +842,7 @@ tfunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   for (int i = 0; i < seq2->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq2, i);
-    if (contains_period_timestamp(&seq1->period, inst->t))
+    if (contains_span_timestamptz(&seq1->period, inst->t))
     {
       Datum value1;
       tsequence_value_at_timestamp(seq1, inst->t, true, &value1);
@@ -889,7 +889,7 @@ tfunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
     const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-    if (contains_period_timestamp(&seq1->period, inst->t))
+    if (contains_span_timestamptz(&seq1->period, inst->t))
     {
       Datum value1;
       tsequenceset_value_at_timestamp(ss, inst->t, true, &value1);
@@ -1545,8 +1545,8 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 {
   /* Bounding box test */
   Span p1, p2;
-  temporal_set_period(temp1, &p1);
-  temporal_set_period(temp2, &p2);
+  temporal_set_tstzspan(temp1, &p1);
+  temporal_set_tstzspan(temp2, &p2);
   if (! overlaps_span_span(&p1, &p2))
     return NULL;
 
@@ -1791,7 +1791,7 @@ efunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   for (int i = 0; i < seq2->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq2, i);
-    if (contains_period_timestamp(&seq1->period, inst->t))
+    if (contains_span_timestamptz(&seq1->period, inst->t))
     {
       Datum value1;
       tsequence_value_at_timestamp(seq1, inst->t, true, &value1);
@@ -1834,7 +1834,7 @@ efunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
     const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-    if (contains_period_timestamp(&seq1->period, inst->t))
+    if (contains_span_timestamptz(&seq1->period, inst->t))
     {
       Datum value1;
       tsequenceset_value_at_timestamp(ss, inst->t, true, &value1);
@@ -2119,8 +2119,8 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 {
   /* Bounding box test */
   Span p1, p2;
-  temporal_set_period(temp1, &p1);
-  temporal_set_period(temp2, &p2);
+  temporal_set_tstzspan(temp1, &p1);
+  temporal_set_tstzspan(temp2, &p2);
   if (! overlaps_span_span(&p1, &p2))
     return -1;
 

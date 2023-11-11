@@ -28,56 +28,48 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that uses the MEOS library for creating some
- * temporal values and output them in MF-JSON format.
+ * @brief A simple program that uses the MEOS library for creating integer and
+ * float spanset values and convert them between float and integer spansets
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o tpointseq_make tpointseq_make.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o spanset_conv spanset_conv.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
 #include <stdio.h>  /* for printf */
-
+#include <stdlib.h>   /* for free */
 /* Include the MEOS API header */
 #include <meos.h>
 
-#define MAX_COUNT 20
-
 int main()
 {
-  double xcoords[MAX_COUNT] = {1, 2, 1, 2};
-  double ycoords[MAX_COUNT] = {1, 2, 1, 2};
-  double zcoords[MAX_COUNT] = {1, 2, 1, 2};
-  char *times_str[MAX_COUNT] = {"2000-01-01 00:00:00", "2000-01-02 00:00:00",
-    "2000-01-03 00:00:00", "2000-01-04 00:00:00"};
-  TimestampTz times[MAX_COUNT];
-
   /* Initialize MEOS */
   meos_initialize(NULL, NULL);
 
-  for (int i = 0; i < 4; i++)
-    times[i] = pg_timestamptz_in(times_str[i], -1);
+  /* Input spansets in WKT format */
+  char *iss_in = "{[1,3], [4,7]}";
+  char *fss_in = "{[1.5,3.5], [4.5,7.5]}";
 
-  /* Input temporal points in WKT format */
-  TSequence *seq1 = tpointseq_make_coords(xcoords, ycoords, zcoords, times,
-    4, 5676, false, true, true, true, true);
-  TSequence *seq2 = tpointseq_make_coords(xcoords, ycoords, NULL, times,
-    4, 5676, false, true, true, true, true);
-  TSequence *seq3 = tpointseq_make_coords(xcoords, ycoords, NULL, times,
-    4, 4326, true, true, true, true, true);
+  /* Read WKT into temporal point object */
+  SpanSet *iss = intspanset_in(iss_in);
+  SpanSet *fss = floatspanset_in(fss_in);
+  char *iss_out = intspanset_out(iss);
+  char *fss_out = floatspanset_out(fss, 3);
+  printf("Input integer span set: %s\n", iss_out);
+  printf("Input float span set: %s\n", fss_out);
 
-  /* Print result in WKT */
-  char *seq1_wkt = tpoint_as_ewkt((Temporal *) seq1, 2);
-  char *seq2_wkt = tpoint_as_ewkt((Temporal *) seq2, 2);
-  char *seq3_wkt = tpoint_as_ewkt((Temporal *) seq3, 2);
-  printf("\nseql: %s\nseq2: %s\nseq3: %s\n\n",
-    seq1_wkt, seq2_wkt, seq3_wkt);
+  /* Convert from int <-> float*/
+  SpanSet *iss_conv = intspanset_floatspanset(iss);
+  SpanSet *fss_conv = floatspanset_intspanset(fss);
+  char *iss_conv_out = floatspanset_out(iss_conv, 3);
+  char *fss_conv_out = intspanset_out(fss_conv);
+  printf("Integer span set converted to float span set: %s\n", iss_conv_out);
+  printf("Float span set converted to integer span: %s\n", fss_conv_out);
 
   /* Clean up allocated objects */
-  free(seq1); free(seq1_wkt);
-  free(seq2); free(seq2_wkt);
-  free(seq3); free(seq3_wkt);
+  free(iss_out); free(fss_out);
+  free(iss_conv_out); free(fss_conv_out);
 
   /* Finalize MEOS */
   meos_finalize();

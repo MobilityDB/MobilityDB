@@ -233,7 +233,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     Span p;
     span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
       true, false, T_TIMESTAMPTZ, &p);
-    TSequenceSet *proj = tsequenceset_restrict_period(ss, &p, REST_AT);
+    TSequenceSet *proj = tsequenceset_restrict_tstzspan(ss, &p, REST_AT);
     if (proj)
     {
       Datum value = twavg ? Float8GetDatum(tnumber_twavg((Temporal *) proj)) :

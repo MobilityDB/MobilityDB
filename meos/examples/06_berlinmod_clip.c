@@ -56,6 +56,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <meos.h>
 
 /* Maximum length in characters of a trip in the input data */
@@ -288,6 +289,10 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3],
 /* Main program */
 int main(void)
 {
+  /* Get start time */
+  clock_t t;
+  t = clock();
+  
   /* Initialize MEOS */
   meos_initialize(NULL, NULL);
 
@@ -399,6 +404,11 @@ int main(void)
 
   /* Finalize MEOS */
   meos_finalize();
+
+  /* Calculate the elapsed time */
+  t = clock() - t;
+  double time_taken = ((double) t) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
 
   return 0;
 }

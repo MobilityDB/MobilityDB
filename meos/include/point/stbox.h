@@ -61,8 +61,8 @@ extern bool ensure_has_T_stbox(const STBox *box);
 
 extern void point_get_coords(const GSERIALIZED *point, bool hasz,
   double *x, double *y, double *z);
-extern void timestampset_stbox_slice(Datum tsdatum, STBox *box);
-extern void periodset_stbox_slice(Datum psdatum, STBox *box);
+extern void tstzset_stbox_slice(Datum tsdatum, STBox *box);
+extern void tstzspanset_stbox_slice(Datum psdatum, STBox *box);
 
 /* SRID functions */
 

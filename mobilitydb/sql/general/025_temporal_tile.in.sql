@@ -88,7 +88,7 @@ CREATE TYPE index_tstzspan AS (
 
 CREATE FUNCTION bucketList(tstzspan, interval, timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tstzspan
-  AS 'MODULE_PATHNAME', 'Period_bucket_list'
+  AS 'MODULE_PATHNAME', 'Tstzspan_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- bucketing of timestamptz happens at UTC time
@@ -109,7 +109,7 @@ CREATE FUNCTION timeBucket("time" timestamptz, duration interval,
 CREATE FUNCTION periodBucket(timestamptz, interval,
   timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Period_bucket'
+  AS 'MODULE_PATHNAME', 'Tstzspan_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

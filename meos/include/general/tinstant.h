@@ -61,9 +61,9 @@ extern bool tnumberinst_restrict_span_test(const TInstant *inst,
   const Span *span, bool atfunc);
 extern bool tnumberinst_restrict_spanset_test(const TInstant *inst,
   const SpanSet *ss, bool atfunc);
-extern bool tinstant_restrict_timestampset_test(const TInstant *inst,
+extern bool tinstant_restrict_tstzset_test(const TInstant *inst,
   const Set *ts, bool atfunc);
-extern bool tinstant_restrict_periodset_test(const TInstant *inst,
+extern bool tinstant_restrict_tstzspanset_test(const TInstant *inst,
   const SpanSet *ps, bool atfunc);
 
 /* Intersection function */

@@ -28,16 +28,12 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that generates a given number of tgeompoint instants,
- * assembles the instants into a sequence at the end of the generation process,
- * and outputs the number of instants and the distance travelled.
- *
- * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence.
+ * @brief A simple program that applies multidimensional tiling to a temporal
+ * point according to value and/or time buckets. 
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o tfloat_split tfloat_split.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o tpoint_tile tpoint_tile.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -57,54 +53,57 @@ int main(void)
   /* Initialize MEOS */
   meos_initialize(NULL, NULL);
 
-  Temporal *tfloat = tfloat_in("[1@2020-03-01, 10@2020-03-10]");
+  Temporal *tpoint = tgeompoint_in("[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]");
   Interval *interv = pg_interval_in("2 days", -1);
-  double vorigin = 0.0;
+  GSERIALIZED *sorigin = pgis_geometry_in("Point(0 0 0)", -1);
   TimestampTz torigin = pg_timestamptz_in("2020-03-01", -1);
 
-  bool valuesplit = true; /* Set this parameter to enable/disable value split */
+  bool spacesplit = true; /* Set this parameter to enable/disable space split */
   bool timesplit = true; /* Set this parameter to enable/disable time split */
+  bool bitmatrix = true; /* Set this parameter to enable/disable the bit matrix */
 
-  double *value_buckets = NULL;
+  GSERIALIZED **space_buckets = NULL;
   TimestampTz *time_buckets = NULL;
   Temporal **result;
   int count;
-  if (valuesplit)
-    result = tfloat_value_time_split(tfloat, 2.0, timesplit ? interv : NULL,
-      vorigin, torigin, &value_buckets, &time_buckets, &count);
+  if (spacesplit)
+    result = tpoint_space_time_split(tpoint, 2.0, 2.0, 2.0,
+      timesplit ? interv : NULL, sorigin, torigin, bitmatrix,
+      &space_buckets, &time_buckets, &count);
   else
-    result = temporal_time_split(tfloat, interv, torigin, &time_buckets,
+    result = temporal_time_split(tpoint, interv, torigin, &time_buckets,
       &count);
 
   /* Print the input value to split */
-  char *tfloat_str = tfloat_out(tfloat, 3);
+  char *tpoint_str = tpoint_as_ewkt(tpoint, 3);
   printf("------------------\n");
   printf("| Value to split |\n");
   printf("------------------\n\n");
-  printf("%s\n\n", tfloat_str);
-  free(tfloat_str);
+  printf("%s\n\n", tpoint_str);
+  free(tpoint_str);
 
   /* Output the resulting fragments */
-  printf("----------\n");
-  printf("Fragments:\n");
-  printf("----------\n\n");
-  int i;
-  for (i = 0; i < count; i++)
+  printf("-------------\n");
+  printf("| Fragments |\n");
+  printf("-------------\n\n");
+  for (int i = 0; i < count; i++)
   {
+    char *space_str = spacesplit ?
+      gserialized_as_ewkt(space_buckets[i], 3) : "";
     char *time_str = timesplit ? pg_timestamptz_out(time_buckets[i]) : "";
-    char *temp_str = tfloat_out(result[i], 3);
-    if (valuesplit)
-      sprintf(output_buffer, "%f, %s%s%s\n", value_buckets[i],
-        time_str, timesplit ? ", " : "", temp_str);
-    else
-      sprintf(output_buffer, "%s, %s\n", time_str, temp_str);
+    char *temp_str = tpoint_as_ewkt(result[i], 3);
+    sprintf(output_buffer, "%s%s%s%s%s\n", space_str, spacesplit ? ", " : "",
+      time_str, timesplit ? ", " : "", temp_str);
     printf("%s", output_buffer);
+    if (spacesplit) free(space_str);
     if (timesplit) free(time_str);
     free(temp_str);
   }
 
   /* Print information about the result */
   printf("\nNumber of fragments: %d\n", count);
+  if (bitmatrix)
+    printf("Using a bitmatrix for the fragmentation\n");
 
   /* Finalize MEOS */
   meos_finalize();

@@ -205,7 +205,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   if (! overlaps_stbox_stbox(box1, box))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_period(datum_no, T_TBOOL, &seq->period,
+    result[0] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, &seq->period,
       STEP);
     *count = 1;
     return result;
@@ -217,7 +217,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   if (gserialized_is_empty(gsinter))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_period(datum_no, T_TBOOL, &seq->period,
+    result[0] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, &seq->period,
       STEP);
     pfree(DatumGetPointer(inter));
     *count = 1;
@@ -232,7 +232,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     datum_point_eq(tinstant_value(start), tinstant_value(end)))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_period(datum_yes, T_TBOOL, &seq->period,
+    result[0] = tsequence_from_base_tstzspan(datum_yes, T_TBOOL, &seq->period,
       STEP);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
     pfree(DatumGetPointer(inter));
@@ -246,7 +246,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   if (npers == 0)
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_period(datum_no, T_TBOOL, &seq->period,
+    result[0] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, &seq->period,
       STEP);
     pfree(gsinter);
     *count = 1;
@@ -268,14 +268,14 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     nseqs += ps->count;
   result = palloc(sizeof(TSequence *) * nseqs);
   for (int i = 0; i < npers; i++)
-    result[i] = tsequence_from_base_period(datum_yes, T_TBOOL, &periods[i],
+    result[i] = tsequence_from_base_tstzspan(datum_yes, T_TBOOL, &periods[i],
       STEP);
   if (ps != NULL)
   {
     for (int i = 0; i < ps->count; i++)
     {
       const Span *p = spanset_sp_n(ps, i);
-      result[i + npers] = tsequence_from_base_period(datum_no, T_TBOOL, p,
+      result[i + npers] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, p,
         STEP);
     }
     tseqarr_sort(result, nseqs);

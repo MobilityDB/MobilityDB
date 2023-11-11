@@ -278,7 +278,7 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
   if (type == T_TSTZSPAN)
   {
     Span *p = PG_GETARG_SPAN_P(1);
-    period_set_stbox(p, result);
+    tstzspan_set_stbox(p, result);
   }
   else if (type == T_STBOX)
   {

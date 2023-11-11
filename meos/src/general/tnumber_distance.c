@@ -286,14 +286,14 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   Span p, inter;
   if (hast)
   {
-    temporal_set_period(temp, &p);
+    temporal_set_tstzspan(temp, &p);
     if (! inter_span_span(&p, &box->period, &inter))
       return DBL_MAX;
   }
 
   /* Project the temporal number to the timespan of the box (if any) */
   Temporal *temp1 = hast ?
-    temporal_restrict_period(temp, &inter, REST_AT) : (Temporal *) temp;
+    temporal_restrict_tstzspan(temp, &inter, REST_AT) : (Temporal *) temp;
   /* Test if the bounding boxes overlap */
   TBox box1;
   temporal_set_bbox(temp1, &box1);

@@ -459,7 +459,7 @@ SpanSet *
 tinstant_time(const TInstant *inst)
 {
   assert(inst);
-  SpanSet *result = timestamp_to_periodset(inst->t);
+  SpanSet *result = timestamptz_to_spanset(inst->t);
   return result;
 }
 
@@ -470,7 +470,7 @@ tinstant_time(const TInstant *inst)
  * @sqlop @p ::
  */
 void
-tinstant_set_period(const TInstant *inst, Span *s)
+tinstant_set_tstzspan(const TInstant *inst, Span *s)
 {
   assert(inst); assert(s);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
@@ -837,7 +837,7 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
  * discrete sequence.
  */
 bool
-tinstant_restrict_timestampset_test(const TInstant *inst, const Set *s,
+tinstant_restrict_tstzset_test(const TInstant *inst, const Set *s,
   bool atfunc)
 {
   for (int i = 0; i < s->count; i++)
@@ -852,10 +852,10 @@ tinstant_restrict_timestampset_test(const TInstant *inst, const Set *s,
  * @sqlfunc atTstzSet(), minusTstzSet()
  */
 TInstant *
-tinstant_restrict_timestampset(const TInstant *inst, const Set *s, bool atfunc)
+tinstant_restrict_tstzset(const TInstant *inst, const Set *s, bool atfunc)
 {
   assert(inst); assert(s);
-  if (tinstant_restrict_timestampset_test(inst, s, atfunc))
+  if (tinstant_restrict_tstzset_test(inst, s, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -866,10 +866,10 @@ tinstant_restrict_timestampset(const TInstant *inst, const Set *s, bool atfunc)
  * @sqlfunc atPeriod(), minusPeriod()
  */
 TInstant *
-tinstant_restrict_period(const TInstant *inst, const Span *s, bool atfunc)
+tinstant_restrict_tstzspan(const TInstant *inst, const Span *s, bool atfunc)
 {
   assert(inst); assert(s);
-  bool contains = contains_period_timestamp(s, inst->t);
+  bool contains = contains_span_timestamptz(s, inst->t);
   if ((atfunc && ! contains) || (! atfunc && contains))
     return NULL;
   return tinstant_copy(inst);
@@ -882,11 +882,11 @@ tinstant_restrict_period(const TInstant *inst, const Span *s, bool atfunc)
  * discrete sequence.
  */
 bool
-tinstant_restrict_periodset_test(const TInstant *inst, const SpanSet *ss,
+tinstant_restrict_tstzspanset_test(const TInstant *inst, const SpanSet *ss,
   bool atfunc)
 {
   for (int i = 0; i < ss->count; i++)
-    if (contains_period_timestamp(spanset_sp_n(ss, i), inst->t))
+    if (contains_span_timestamptz(spanset_sp_n(ss, i), inst->t))
       return atfunc ? true : false;
   return atfunc ? false : true;
 }
@@ -897,11 +897,11 @@ tinstant_restrict_periodset_test(const TInstant *inst, const SpanSet *ss,
  * @sqlfunc atTime(), minusTime()
  */
 TInstant *
-tinstant_restrict_periodset(const TInstant *inst,const  SpanSet *ss,
+tinstant_restrict_tstzspanset(const TInstant *inst,const  SpanSet *ss,
   bool atfunc)
 {
   assert(inst); assert(ss);
-  if (tinstant_restrict_periodset_test(inst, ss, atfunc))
+  if (tinstant_restrict_tstzspanset_test(inst, ss, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }

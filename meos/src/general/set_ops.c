@@ -197,7 +197,7 @@ contains_set_value(const Set *s, Datum d, meosType basetype)
  * @sqlop @p \@>
  */
 bool
-contains_intset_int(const Set *s, int i)
+contains_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -211,7 +211,7 @@ contains_intset_int(const Set *s, int i)
  * @sqlop @p \@>
  */
 bool
-contains_bigintset_bigint(const Set *s, int64 i)
+contains_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -225,7 +225,7 @@ contains_bigintset_bigint(const Set *s, int64 i)
  * @sqlop @p \@>
  */
 bool
-contains_floatset_float(const Set *s, double d)
+contains_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -239,7 +239,7 @@ contains_floatset_float(const Set *s, double d)
  * @sqlop @p \@>
  */
 bool
-contains_textset_text(const Set *s, text *txt)
+contains_set_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -254,7 +254,7 @@ contains_textset_text(const Set *s, text *txt)
  * @sqlop @p \@>
  */
 bool
-contains_timestampset_timestamp(const Set *s, TimestampTz t)
+contains_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -269,7 +269,7 @@ contains_timestampset_timestamp(const Set *s, TimestampTz t)
  * @sqlop @p \@>
  */
 bool
-contains_geoset_geo(const Set *s, GSERIALIZED *gs)
+contains_set_geo(const Set *s, GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
@@ -339,7 +339,7 @@ contained_value_set(Datum d, meosType basetype, const Set *s)
  * @sqlop @p <@
  */
 bool
-contained_int_intset(int i, const Set *s)
+contained_int_set(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -353,7 +353,7 @@ contained_int_intset(int i, const Set *s)
  * @sqlop @p <@
  */
 bool
-contained_bigint_bigintset(int64 i, const Set *s)
+contained_bigint_set(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -367,7 +367,7 @@ contained_bigint_bigintset(int64 i, const Set *s)
  * @sqlop @p <@
  */
 bool
-contained_float_floatset(double d, const Set *s)
+contained_float_set(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -381,7 +381,7 @@ contained_float_floatset(double d, const Set *s)
  * @sqlop @p <@
  */
 bool
-contained_text_textset(text *txt, const Set *s)
+contained_text_set(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -396,7 +396,7 @@ contained_text_textset(text *txt, const Set *s)
  * @sqlop @p <@
  */
 bool
-contained_timestamp_timestampset(TimestampTz t, const Set *s)
+contained_timestamptz_set(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -411,7 +411,7 @@ contained_timestamp_timestampset(TimestampTz t, const Set *s)
  * @sqlop @p <@
  */
 bool
-contained_geo_geoset(GSERIALIZED *gs, const Set *s)
+contained_geo_set(GSERIALIZED *gs, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
@@ -496,7 +496,7 @@ left_value_set(Datum d, meosType basetype, const Set *s)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_int_intset(int i, const Set *s)
+left_int_set(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -510,7 +510,7 @@ left_int_intset(int i, const Set *s)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_bigint_bigintset(int64 i, const Set *s)
+left_bigint_set(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -524,7 +524,7 @@ left_bigint_bigintset(int64 i, const Set *s)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_float_floatset(double d, const Set *s)
+left_float_set(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -538,7 +538,7 @@ left_float_floatset(double d, const Set *s)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_text_textset(text *txt, const Set *s)
+left_text_set(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -553,7 +553,7 @@ left_text_textset(text *txt, const Set *s)
  * @sqlop @p <<#
  */
 bool
-before_timestamp_timestampset(TimestampTz t, const Set *s)
+before_timestamptz_set(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -582,7 +582,7 @@ left_set_value(const Set *s, Datum d, meosType basetype)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_intset_int(const Set *s, int i)
+left_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -597,7 +597,7 @@ left_intset_int(const Set *s, int i)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_bigintset_bigint(const Set *s, int64 i)
+left_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -611,7 +611,7 @@ left_bigintset_bigint(const Set *s, int64 i)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_floatset_float(const Set *s, double d)
+left_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -625,7 +625,7 @@ left_floatset_float(const Set *s, double d)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_textset_text(const Set *s, text *txt)
+left_set_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -640,7 +640,7 @@ left_textset_text(const Set *s, text *txt)
  * @sqlop @p <<, @p <<#
  */
 bool
-before_timestampset_timestamp(const Set *s, TimestampTz t)
+before_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -688,7 +688,7 @@ right_value_set(Datum d, meosType basetype, const Set *s)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_int_intset(int i, const Set *s)
+right_int_set(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -703,7 +703,7 @@ right_int_intset(int i, const Set *s)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_bigint_bigintset(int64 i, const Set *s)
+right_bigint_set(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -717,7 +717,7 @@ right_bigint_bigintset(int64 i, const Set *s)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_float_floatset(double d, const Set *s)
+right_float_set(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -731,7 +731,7 @@ right_float_floatset(double d, const Set *s)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_text_textset(text *txt, const Set *s)
+right_text_set(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -746,7 +746,7 @@ right_text_textset(text *txt, const Set *s)
  * @sqlop @p #>>
  */
 bool
-after_timestamp_timestampset(TimestampTz t, const Set *s)
+after_timestamptz_set(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -774,7 +774,7 @@ right_set_value(const Set *s, Datum d, meosType basetype)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_intset_int(const Set *s, int i)
+right_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -789,7 +789,7 @@ right_intset_int(const Set *s, int i)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_bigintset_bigint(const Set *s, int64 i)
+right_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -803,7 +803,7 @@ right_bigintset_bigint(const Set *s, int64 i)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_floatset_float(const Set *s, double d)
+right_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -817,7 +817,7 @@ right_floatset_float(const Set *s, double d)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_textset_text(const Set *s, text *txt)
+right_set_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -832,7 +832,7 @@ right_textset_text(const Set *s, text *txt)
  * @sqlop @p >>, @p #>>
  */
 bool
-after_timestampset_timestamp(const Set *s, TimestampTz t)
+after_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -881,7 +881,7 @@ overleft_value_set(Datum d, meosType basetype, const Set *s)
  * @sqlop @p &<, @p &<#
  */
 bool
-overleft_int_intset(int i, const Set *s)
+overleft_int_set(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -896,7 +896,7 @@ overleft_int_intset(int i, const Set *s)
  * @sqlop @p &<, @p &<#
  */
 bool
-overleft_bigint_bigintset(int64 i, const Set *s)
+overleft_bigint_set(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -910,7 +910,7 @@ overleft_bigint_bigintset(int64 i, const Set *s)
  * @sqlop @p &<, @p &<#
  */
 bool
-overleft_float_floatset(double d, const Set *s)
+overleft_float_set(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -924,7 +924,7 @@ overleft_float_floatset(double d, const Set *s)
  * @sqlop @p &<, @p &<#
  */
 bool
-overleft_text_textset(text *txt, const Set *s)
+overleft_text_set(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -939,7 +939,7 @@ overleft_text_textset(text *txt, const Set *s)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestamp_timestampset(TimestampTz t, const Set *s)
+overbefore_timestamptz_set(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -969,7 +969,7 @@ overleft_set_value(const Set *s, Datum d, meosType basetype)
  * @sqlop @p &<
  */
 bool
-overleft_intset_int(const Set *s, int i)
+overleft_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -984,7 +984,7 @@ overleft_intset_int(const Set *s, int i)
  * @sqlop @p &<
  */
 bool
-overleft_bigintset_bigint(const Set *s, int64 i)
+overleft_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -998,7 +998,7 @@ overleft_bigintset_bigint(const Set *s, int64 i)
  * @sqlop @p &<
  */
 bool
-overleft_floatset_float(const Set *s, double d)
+overleft_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -1012,7 +1012,7 @@ overleft_floatset_float(const Set *s, double d)
  * @sqlop @p &<#
  */
 bool
-overleft_textset_text(const Set *s, text *txt)
+overleft_set_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -1027,7 +1027,7 @@ overleft_textset_text(const Set *s, text *txt)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestampset_timestamp(const Set *s, TimestampTz t)
+overbefore_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -1079,7 +1079,7 @@ overright_value_set(Datum d, meosType basetype, const Set *s)
  * @sqlop @p &>
  */
 bool
-overright_int_intset(int i, const Set *s)
+overright_int_set(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -1094,7 +1094,7 @@ overright_int_intset(int i, const Set *s)
  * @sqlop @p &>
  */
 bool
-overright_bigint_bigintset(int64 i, const Set *s)
+overright_bigint_set(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -1109,7 +1109,7 @@ overright_bigint_bigintset(int64 i, const Set *s)
  * @sqlop @p &>
  */
 bool
-overright_float_floatset(double d, const Set *s)
+overright_float_set(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -1123,7 +1123,7 @@ overright_float_floatset(double d, const Set *s)
  * @sqlop @p #&>
  */
 bool
-overafter_timestamp_timestampset(TimestampTz t, const Set *s)
+overafter_timestamptz_set(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -1138,7 +1138,7 @@ overafter_timestamp_timestampset(TimestampTz t, const Set *s)
  * @sqlop @p &>
  */
 bool
-overright_text_textset(text *txt, const Set *s)
+overright_text_set(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -1168,7 +1168,7 @@ overright_set_value(const Set *s, Datum d, meosType basetype)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_intset_int(const Set *s, int i)
+overright_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -1183,7 +1183,7 @@ overright_intset_int(const Set *s, int i)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_bigintset_bigint(const Set *s, int64 i)
+overright_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -1197,7 +1197,7 @@ overright_bigintset_bigint(const Set *s, int64 i)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_floatset_float(const Set *s, double d)
+overright_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -1211,7 +1211,7 @@ overright_floatset_float(const Set *s, double d)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_textset_text(const Set *s, text *txt)
+overright_set_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||  ! ensure_not_null((void *) txt) ||
@@ -1226,7 +1226,7 @@ overright_textset_text(const Set *s, text *txt)
  * @sqlop @p &>, @p #&>
  */
 bool
-overafter_timestampset_timestamp(const Set *s, TimestampTz t)
+overafter_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -1298,7 +1298,7 @@ union_set_value(const Set *s, Datum d, meosType basetype)
  * @sqlop @p +
  */
 Set *
-union_intset_int(const Set *s, int i)
+union_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -1312,7 +1312,7 @@ union_intset_int(const Set *s, int i)
  * @sqlop @p +
  */
 Set *
-union_bigintset_bigint(const Set *s, int64 i)
+union_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -1326,7 +1326,7 @@ union_bigintset_bigint(const Set *s, int64 i)
  * @sqlop @p +
  */
 Set *
-union_floatset_float(const Set *s, double d)
+union_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -1340,7 +1340,7 @@ union_floatset_float(const Set *s, double d)
  * @sqlop @p +
  */
 Set *
-union_textset_text(const Set *s, const text *txt)
+union_set_text(const Set *s, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -1355,7 +1355,7 @@ union_textset_text(const Set *s, const text *txt)
  * @sqlop @p +
  */
 Set *
-union_timestampset_timestamp(const Set *s, const TimestampTz t)
+union_set_timestamptz(const Set *s, const TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -1370,7 +1370,7 @@ union_timestampset_timestamp(const Set *s, const TimestampTz t)
  * @sqlop @p +
  */
 Set *
-union_geoset_geo(const Set *s, const GSERIALIZED *gs)
+union_set_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
@@ -1426,7 +1426,7 @@ intersection_set_value(const Set *s, Datum d, meosType basetype, Datum *result)
  * @sqlop @p *
  */
 bool
-intersection_intset_int(const Set *s, int i, int *result)
+intersection_set_int(const Set *s, int i, int *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1446,7 +1446,7 @@ intersection_intset_int(const Set *s, int i, int *result)
  * @sqlop @p *
  */
 bool
-intersection_bigintset_bigint(const Set *s, int64 i, int64 *result)
+intersection_set_bigint(const Set *s, int64 i, int64 *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1466,7 +1466,7 @@ intersection_bigintset_bigint(const Set *s, int64 i, int64 *result)
  * @sqlop @p *
  */
 bool
-intersection_floatset_float(const Set *s, double d, double *result)
+intersection_set_float(const Set *s, double d, double *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1485,7 +1485,7 @@ intersection_floatset_float(const Set *s, double d, double *result)
  * @sqlop @p *
  */
 bool
-intersection_textset_text(const Set *s, const text *txt, text **result)
+intersection_set_text(const Set *s, const text *txt, text **result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -1506,8 +1506,7 @@ intersection_textset_text(const Set *s, const text *txt, text **result)
  * @sqlop @p *
  */
 bool
-intersection_timestampset_timestamp(const Set *s, TimestampTz t,
-  TimestampTz *result)
+intersection_set_timestamptz(const Set *s, TimestampTz t, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1527,7 +1526,7 @@ intersection_timestampset_timestamp(const Set *s, TimestampTz t,
  * @sqlop @p *
  */
 bool
-intersection_geoset_geo(const Set *s, const GSERIALIZED *gs,
+intersection_set_geo(const Set *s, const GSERIALIZED *gs,
   GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
@@ -1589,7 +1588,7 @@ minus_value_set(Datum d, meosType basetype, const Set *s, Datum *result)
  * @sqlop @p -
  */
 bool
-minus_int_intset(int i, const Set *s, int *result)
+minus_int_set(int i, const Set *s, int *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1609,7 +1608,7 @@ minus_int_intset(int i, const Set *s, int *result)
  * @sqlop @p -
  */
 bool
-minus_bigint_bigintset(int64 i, const Set *s, int64 *result)
+minus_bigint_set(int64 i, const Set *s, int64 *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1628,7 +1627,7 @@ minus_bigint_bigintset(int64 i, const Set *s, int64 *result)
  * @sqlop @p -
  */
 bool
-minus_float_floatset(double d, const Set *s, double *result)
+minus_float_set(double d, const Set *s, double *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1647,7 +1646,7 @@ minus_float_floatset(double d, const Set *s, double *result)
  * @sqlop @p -
  */
 bool
-minus_timestamp_timestampset(TimestampTz t, const Set *s, TimestampTz *result)
+minus_timestamptz_set(TimestampTz t, const Set *s, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1666,7 +1665,7 @@ minus_timestamp_timestampset(TimestampTz t, const Set *s, TimestampTz *result)
  * @sqlop @p -
  */
 bool
-minus_text_textset(const text *txt, const Set *s, text **result)
+minus_text_set(const text *txt, const Set *s, text **result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -1686,7 +1685,7 @@ minus_text_textset(const text *txt, const Set *s, text **result)
  * @sqlop @p -
  */
 bool
-minus_geo_geoset(const GSERIALIZED *gs, const Set *s, GSERIALIZED **result)
+minus_geo_set(const GSERIALIZED *gs, const Set *s, GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
@@ -1736,7 +1735,7 @@ minus_set_value(const Set *s, Datum d, meosType basetype)
  * @sqlop @p -
  */
 Set *
-minus_intset_int(const Set *s, int i)
+minus_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -1750,7 +1749,7 @@ minus_intset_int(const Set *s, int i)
  * @sqlop @p -
  */
 Set *
-minus_bigintset_bigint(const Set *s, int64 i)
+minus_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -1764,7 +1763,7 @@ minus_bigintset_bigint(const Set *s, int64 i)
  * @sqlop @p -
  */
 Set *
-minus_floatset_float(const Set *s, double d)
+minus_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -1778,7 +1777,7 @@ minus_floatset_float(const Set *s, double d)
  * @sqlop @p -
  */
 Set *
-minus_textset_text(const Set *s, const text *txt)
+minus_set_text(const Set *s, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
@@ -1793,7 +1792,7 @@ minus_textset_text(const Set *s, const text *txt)
  * @sqlop @p -
  */
 Set *
-minus_timestampset_timestamp(const Set *s, TimestampTz t)
+minus_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -1803,7 +1802,7 @@ minus_timestampset_timestamp(const Set *s, TimestampTz t)
   /* Bounding box test */
   Span s1;
   set_set_span(s, &s1);
-  if (! contains_period_timestamp(&s1, t))
+  if (! contains_span_timestamptz(&s1, t))
     return set_copy(s);
 
   Datum *values = palloc(sizeof(TimestampTz) * s->count);
@@ -1824,7 +1823,7 @@ minus_timestampset_timestamp(const Set *s, TimestampTz t)
  * @sqlop @p -
  */
 Set *
-minus_geoset_geo(const Set *s, const GSERIALIZED *gs)
+minus_set_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
@@ -1879,7 +1878,7 @@ distance_set_value(const Set *s, Datum d, meosType basetype)
  * @sqlop @p <->
  */
 double
-distance_intset_int(const Set *s, int i)
+distance_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
@@ -1895,7 +1894,7 @@ distance_intset_int(const Set *s, int i)
  * @sqlop @p <->
  */
 double
-distance_bigintset_bigint(const Set *s, int64 i)
+distance_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
@@ -1910,7 +1909,7 @@ distance_bigintset_bigint(const Set *s, int64 i)
  * @sqlop @p <->
  */
 double
-distance_floatset_float(const Set *s, double d)
+distance_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
@@ -1925,7 +1924,7 @@ distance_floatset_float(const Set *s, double d)
  * @sqlop @p <->
  */
 double
-distance_timestampset_timestamp(const Set *s, TimestampTz t)
+distance_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||

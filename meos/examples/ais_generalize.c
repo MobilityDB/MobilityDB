@@ -269,7 +269,7 @@ int main(void)
   printf("Tprec 1 %zu:%d, Tprec 10 %zu:%d\n",
     tprec_1s / 1024, no_tprec_1s, tprec_10s / 1024, no_tprec_10s);
 
-  printf("-------------------------------------------------------------------------------\n\n");
+  printf("-------------------------------------------------------------------------------\n");
 
   /* Calculate the elapsed time */
   t = clock() - t;

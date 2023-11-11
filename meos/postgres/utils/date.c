@@ -127,7 +127,7 @@ date2timestamptz_opt_overflow(DateADT dateVal, int *overflow)
       else
       {
         meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
-             "date out of range for timestamp");
+          "date out of range for timestamp");
         return 0;
       }
     }

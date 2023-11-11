@@ -397,104 +397,104 @@ Spanset_width(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-Datum  Periodset_duration(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_duration);
+Datum Tstzspanset_duration(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_duration);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the duration of a period set
  * @sqlfunc duration()
  */
 Datum
-Periodset_duration(PG_FUNCTION_ARGS)
+Tstzspanset_duration(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
   bool boundspan = PG_GETARG_BOOL(1);
-  Interval *result = periodset_duration(ps, boundspan);
-  PG_FREE_IF_COPY(ps, 0);
+  Interval *result = tstzspanset_duration(ss, boundspan);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Periodset_num_timestamps(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_num_timestamps);
+PGDLLEXPORT Datum Tstzspanset_num_timestamps(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_num_timestamps);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the number of timestamps of a period set
  * @sqlfunc numTimestamps()
  */
 Datum
-Periodset_num_timestamps(PG_FUNCTION_ARGS)
+Tstzspanset_num_timestamps(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  int result = periodset_num_timestamps(ps);
+  int result = tstzspanset_num_timestamps(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_INT32(result);
 }
 
-PGDLLEXPORT Datum Periodset_start_timestamp(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_start_timestamp);
+PGDLLEXPORT Datum Tstzspanset_start_timestamp(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_start_timestamp);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the start timestamp of a period set
  * @sqlfunc startTimestamp()
  */
 Datum
-Periodset_start_timestamp(PG_FUNCTION_ARGS)
+Tstzspanset_start_timestamp(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  TimestampTz result = periodset_start_timestamp(ps);
+  TimestampTz result = tstzspanset_start_timestamp(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PGDLLEXPORT Datum Periodset_end_timestamp(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_end_timestamp);
+PGDLLEXPORT Datum Tstzspanset_end_timestamp(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_end_timestamp);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the end timestamp of a period set
  * @sqlfunc endTimestamp()
  */
 Datum
-Periodset_end_timestamp(PG_FUNCTION_ARGS)
+Tstzspanset_end_timestamp(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  TimestampTz result = periodset_end_timestamp(ps);
+  TimestampTz result = tstzspanset_end_timestamp(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PGDLLEXPORT Datum Periodset_timestamp_n(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_timestamp_n);
+PGDLLEXPORT Datum Tstzspanset_timestamp_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_timestamp_n);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the n-th timestamp of a period set
  * @sqlfunc timestampN()
  */
 Datum
-Periodset_timestamp_n(PG_FUNCTION_ARGS)
+Tstzspanset_timestamp_n(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TimestampTz result;
-  bool found = periodset_timestamp_n(ps, n, &result);
+  bool found = tstzspanset_timestamp_n(ps, n, &result);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PGDLLEXPORT Datum Periodset_timestamps(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_timestamps);
+PGDLLEXPORT Datum Tstzspanset_timestamps(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_timestamps);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the array of timestamps of a period set
  * @sqlfunc timestamps()
  */
 Datum
-Periodset_timestamps(PG_FUNCTION_ARGS)
+Tstzspanset_timestamps(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
   int count;
-  TimestampTz *times = periodset_timestamps(ps, &count);
-  ArrayType *result = timestamparr_to_array(times, count);
+  TimestampTz *times = tstzspanset_timestamps(ps, &count);
+  ArrayType *result = tstzarr_to_array(times, count);
   pfree(times);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -606,19 +606,19 @@ Numspanset_shift(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Periodset_shift(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_shift);
+PGDLLEXPORT Datum Tstzspanset_shift(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift a period set by an interval
+ * @brief Shift a timestamptz span set by an interval
  * @sqlfunc shift()
  */
 Datum
-Periodset_shift(PG_FUNCTION_ARGS)
+Tstzspanset_shift(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  SpanSet *result = periodset_shift_scale(ss, shift, NULL);
+  SpanSet *result = tstzspanset_shift_scale(ss, shift, NULL);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
 }
@@ -640,19 +640,19 @@ Numspanset_scale(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Periodset_scale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_scale);
+PGDLLEXPORT Datum Tstzspanset_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift a period set by an interval
  * @sqlfunc scale()
  */
 Datum
-Periodset_scale(PG_FUNCTION_ARGS)
+Tstzspanset_scale(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  SpanSet *result = periodset_shift_scale(ss, NULL, duration);
+  SpanSet *result = tstzspanset_shift_scale(ss, NULL, duration);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
 }
@@ -675,20 +675,20 @@ Numspanset_shift_scale(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Periodset_shift_scale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_shift_scale);
+PGDLLEXPORT Datum Tstzspanset_shift_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift a period set by an interval
  * @sqlfunc shiftTscale()
  */
 Datum
-Periodset_shift_scale(PG_FUNCTION_ARGS)
+Tstzspanset_shift_scale(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  SpanSet *result = periodset_shift_scale(ss, shift, duration);
+  SpanSet *result = tstzspanset_shift_scale(ss, shift, duration);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
 }
