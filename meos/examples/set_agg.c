@@ -33,7 +33,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o test_setagg test_setagg.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o set_agg set_agg.c -L/usr/local/lib -lmeos
  * @endcode
  */
 

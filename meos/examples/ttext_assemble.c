@@ -33,9 +33,7 @@
  * number of instants and the last value of the sequence at the end.
  *
  * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence. A compiler option allows to
- * either use expandable structures or to create a new sequence at every new
- * instant generated.
+ * instants will appear in the final sequence.
  *
  * The program can be build as follows
  * @code
@@ -100,7 +98,7 @@ int main(void)
   // Uncomment the next line to see the resulting sequence value
   // printf("%s\n", ttext_out(seq));
   char *str = text2cstring(ttext_end_value(seq));
-  printf("\nNumber of instants: %d, Last value : %s\n",
+  printf("Number of instants: %d, Last value : %s\n",
     temporal_num_instants(seq), str);
 
   /* Free memory */

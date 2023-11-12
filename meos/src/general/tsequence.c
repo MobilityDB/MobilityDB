@@ -1546,7 +1546,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
       maxcount *= 2;
 #if DEBUG_EXPAND
       printf(" Sequence -> %d ", maxcount);
-#endif
+#endif /* DEBUG_EXPAND */
     }
   }
   else

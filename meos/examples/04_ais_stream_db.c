@@ -74,6 +74,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <libpq-fe.h>
 #include <meos.h>
 /* The expandable functions are in the internal MEOS API */
@@ -146,6 +147,10 @@ main(int argc, char **argv)
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
   int exit_value = 1;
 
+  /* Get start time */
+  clock_t t;
+  t = clock();
+  
   /***************************************************************************
    * Section 1: Connexion to the database
    ***************************************************************************/
@@ -332,6 +337,11 @@ main(int argc, char **argv)
   /* State that the program executed successfully */
   exit_value = 0;
   
+  /* Calculate the elapsed time */
+  t = clock() - t;
+  double time_taken = ((double) t) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
+
 /* Clean up */
 cleanup:
 
