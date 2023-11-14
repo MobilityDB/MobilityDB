@@ -287,7 +287,8 @@ CREATE AGGREGATE span_union(intspan) (
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
 #endif //POSTGRESQL_VERSION_NUMBER >= 160000
-  FINALFUNC = intspan_union_finalfn
+  FINALFUNC = intspan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(bigintspan) (
   SFUNC = array_agg_transfn,
@@ -297,7 +298,8 @@ CREATE AGGREGATE span_union(bigintspan) (
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
 #endif //POSTGRESQL_VERSION_NUMBER >= 160000
-  FINALFUNC = bigintspan_union_finalfn
+  FINALFUNC = bigintspan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(floatspan) (
   SFUNC = array_agg_transfn,
@@ -307,7 +309,8 @@ CREATE AGGREGATE span_union(floatspan) (
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
 #endif //POSTGRESQL_VERSION_NUMBER >= 160000
-  FINALFUNC = floatspan_union_finalfn
+  FINALFUNC = floatspan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(tstzspan) (
   SFUNC = array_agg_transfn,
@@ -317,7 +320,8 @@ CREATE AGGREGATE span_union(tstzspan) (
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
 #endif //POSTGRESQL_VERSION_NUMBER >= 160000
-  FINALFUNC = tstzspan_union_finalfn
+  FINALFUNC = tstzspan_union_finalfn,
+  PARALLEL = safe
 );
 
 /*****************************************************************************/
@@ -347,7 +351,8 @@ CREATE AGGREGATE span_union(intspanset) (
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
 #endif //POSTGRESQL_VERSION_NUMBER >= 160000
-  FINALFUNC = intspan_union_finalfn
+  FINALFUNC = intspan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(bigintspanset) (
   SFUNC = spanset_union_transfn,
@@ -357,7 +362,8 @@ CREATE AGGREGATE span_union(bigintspanset) (
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
 #endif //POSTGRESQL_VERSION_NUMBER >= 160000
-  FINALFUNC = bigintspan_union_finalfn
+  FINALFUNC = bigintspan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(floatspanset) (
   SFUNC = spanset_union_transfn,
@@ -367,7 +373,8 @@ CREATE AGGREGATE span_union(floatspanset) (
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
 #endif //POSTGRESQL_VERSION_NUMBER >= 160000
-  FINALFUNC = floatspan_union_finalfn
+  FINALFUNC = floatspan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(tstzspanset) (
   SFUNC = spanset_union_transfn,
@@ -377,7 +384,8 @@ CREATE AGGREGATE span_union(tstzspanset) (
   SERIALFUNC = array_agg_serialize,
   DESERIALFUNC = array_agg_deserialize,
 #endif //POSTGRESQL_VERSION_NUMBER >= 160000
-  FINALFUNC = tstzspan_union_finalfn
+  FINALFUNC = tstzspan_union_finalfn,
+  PARALLEL = safe
 );
 
 /*****************************************************************************/
