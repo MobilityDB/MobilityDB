@@ -98,12 +98,12 @@ typedef struct
 /* Main program */
 int main(void)
 {
-  /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
-
   /* Get start time */
   clock_t t;
   t = clock();
+
+  /* Initialize MEOS */
+  meos_initialize(NULL, NULL);
 
   /* Allocate space to build the trips */
   trip_output_record trips[MAX_TRIPS] = {0};

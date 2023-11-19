@@ -28,14 +28,18 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that generates a given number of ttext instants,
- * appends the instant into a sequence at each generation, and outputs the
- * number of instants and the last value of the sequence at the end.
+ * @brief A simple program that generates a given number of tfloat instants,
+ * accumulates each generated instants into an array, and at the end assembles 
+ * the sequence from the input instants and outputs the number of instants and
+ * the last value of the sequence.
+ *
+ * This program and the program tfloat_expand.c in the same directory can be
+ * used to compare the two alternative strategies for 
+ * (1) assembling the sequence at the end from the input instants 
+ * (2) expanding the sequence at each input instant 
  *
  * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence. A compiler option allows to
- * either use expandable structures or to create a new sequence at every new
- * instant generated.
+ * instants will appear in the final sequence. 
  *
  * The program can be build as follows
  * @code
@@ -49,18 +53,16 @@
 #include <meos.h>
 
 #define MAX_INSTANTS 1000000
-/* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 1000
 
 /* Main program */
 int main(void)
 {
-  /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
-
   /* Get start time */
   clock_t tm;
   tm = clock();
+
+  /* Initialize MEOS */ 
+  meos_initialize(NULL, NULL);
 
   /* Input instants that are accumulated */
   TInstant *instants[MAX_INSTANTS] = {0};
@@ -84,20 +86,20 @@ int main(void)
     true, true, STEP, true);
 
   /* Print information about the sequence */
-  printf("\nNumber of instants: %d, Time-weighted average: %f\n",
+  printf("Number of generated instants: %d, Time-weighted average: %f\n",
     temporal_num_instants(seq), tnumber_twavg(seq));
 
   /* Free memory */
   free(seq);
 
+  /* Finalize MEOS */
+  meos_finalize();
+
   /* Calculate the elapsed time */
   tm = clock() - tm;
   double time_taken = ((double) tm) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
-  printf("Accumulating the instants and constructing the sequence at the end\n");
-
-  /* Finalize MEOS */
-  meos_finalize();
+  printf("It accumulates the generated instants and constructs the ouput sequence at the end\n");
 
   return 0;
 }

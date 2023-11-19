@@ -49,6 +49,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <meos.h>
 
 /* Maximum length in characters of a trip in the input data */
@@ -80,12 +81,15 @@ int main(void)
   char trip_buffer[MAX_LENGTH_TRIP];
   char header_buffer[MAX_LENGTH_HEADER];
   char date_buffer[MAX_LENGTH_DATE];
-
   /* Number of records */
   int no_records = 0;
   int no_nulls = 0;
   /* Iterator variables */
   int i, k;
+
+  /* Get start time */
+  clock_t t;
+  t = clock();
 
   /* Initialize MEOS */
   meos_initialize(NULL, NULL);
@@ -233,11 +237,11 @@ int main(void)
   for (i = 0; i < no_speed_tiles; i++)
   {
     char *span_str = floatspan_out(&speed_tiles[k].span, 0);
-    char *period_str = period_out(&speed_tiles[k].period);
+    char *tstzspan_str = tstzspan_out(&speed_tiles[k].period);
     char *interval_str = pg_interval_out(&speed_splits[k].duration);
     printf("Tile: %d, Span: %s, Period: %s, Count: %d, Duration: %s\n",
-      i, span_str, period_str, speed_splits[k].count, interval_str);
-    free(span_str); free(period_str); free(interval_str);
+      i, span_str, tstzspan_str, speed_splits[k].count, interval_str);
+    free(span_str); free(tstzspan_str); free(interval_str);
     k++;
   }
 
@@ -252,6 +256,11 @@ int main(void)
 
   /* Finalize MEOS */
   meos_finalize();
+
+  /* Calculate the elapsed time */
+  t = clock() - t;
+  double time_taken = ((double) t) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
 
   return 0;
 }

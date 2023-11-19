@@ -373,7 +373,7 @@ floatspan_in(const char *str)
  * @return On error return NULL
  */
 Span *
-period_in(const char *str)
+tstzspan_in(const char *str)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
@@ -474,7 +474,7 @@ floatspan_out(const Span *s, int maxdd)
  * @return On error return NULL
  */
 char *
-period_out(const Span *s)
+tstzspan_out(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
@@ -550,10 +550,10 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a timestamp with time zone span from the bounds.
- * @sqlfunc period()
+ * @sqlfunc tstzspan()
  */
 Span *
-period_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
+tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
   bool upper_inc)
 {
   /* Note: zero-fill is done in the span_set function */
@@ -686,7 +686,7 @@ value_to_span(Datum d, meosType basetype)
  * @sqlop @p ::
  */
 Span *
-int_to_intspan(int i)
+int_to_span(int i)
 {
   Span *result = span_make(Int32GetDatum(i), Int32GetDatum(i), true, true,
     T_INT4);
@@ -699,7 +699,7 @@ int_to_intspan(int i)
  * @sqlop @p ::
  */
 Span *
-bigint_to_bigintspan(int i)
+bigint_to_span(int i)
 {
   Span *result = span_make(Int64GetDatum(i), Int64GetDatum(i), true, true,
     T_INT8);
@@ -712,7 +712,7 @@ bigint_to_bigintspan(int i)
  * @sqlop @p ::
  */
 Span *
-float_to_floatspan(double d)
+float_to_span(double d)
 {
   Span *result = span_make(Float8GetDatum(d), Float8GetDatum(d), true, true,
     T_FLOAT8);
@@ -721,11 +721,11 @@ float_to_floatspan(double d)
 
 /**
  * @ingroup libmeos_setspan_conversion
- * @brief Convert a timestamp as a period
+ * @brief Convert a timestamptz as a span
  * @sqlop @p ::
  */
 Span *
-timestamp_to_period(TimestampTz t)
+timestamptz_to_span(TimestampTz t)
 {
   Span *result = span_make(TimestampTzGetDatum(t), TimestampTzGetDatum(t),
     true, true, T_TIMESTAMPTZ);
@@ -809,7 +809,7 @@ floatspan_lower(const Span *s)
  * @sqlfunc lower()
  */
 TimestampTz
-period_lower(const Span *s)
+tstzspan_lower(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
@@ -869,7 +869,7 @@ floatspan_upper(const Span *s)
  * @sqlfunc upper()
  */
 TimestampTz
-period_upper(const Span *s)
+tstzspan_upper(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
@@ -927,7 +927,7 @@ span_width(const Span *s)
  * @sqlfunc duration()
  */
 Interval *
-period_duration(const Span *s)
+tstzspan_duration(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
@@ -1191,7 +1191,7 @@ numspan_delta_scale_iter(Span *s, Datum origin, Datum delta, bool hasdelta,
  * @brief Shift and/or scale a period by a delta and a scale
  */
 void
-period_delta_scale_iter(Span *s, TimestampTz origin, TimestampTz delta,
+tstzspan_delta_scale_iter(Span *s, TimestampTz origin, TimestampTz delta,
   double scale)
 {
   assert(s);
@@ -1269,7 +1269,7 @@ numspan_shift_scale1(Span *s, Datum shift, Datum width, bool hasshift,
  * @note Returns the delta and scale of the transformation
  */
 void
-period_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
+tstzspan_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
   TimestampTz *delta, double *scale)
 {
   assert(s); assert(delta); assert(scale);
@@ -1291,7 +1291,7 @@ period_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup libmeos_internal_setspan_transf
  * @brief Shift and/or scale a number span by the values.
  * @sqlfunc shift(), scale(), shiftScale()
  */
@@ -1375,7 +1375,7 @@ floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift,
  * @sqlfunc shift(), scale(), shiftScale()
  */
 Span *
-period_shift_scale(const Span *s, const Interval *shift,
+tstzspan_shift_scale(const Span *s, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure validity of the arguments */
@@ -1437,7 +1437,7 @@ span_ne(const Span *s1, const Span *s2)
  * @brief Return -1, 0, or 1 depending on whether the first span is less than,
  * equal, or greater than the second one.
  * @note Function used for B-tree comparison
- * @sqlfunc intspan_cmp(), bigintspan_cmp(), floatspan_cmp(), period_cmp()
+ * @sqlfunc intspan_cmp(), bigintspan_cmp(), floatspan_cmp(), tstzspan_cmp()
  */
 int
 span_cmp(const Span *s1, const Span *s2)
@@ -1516,7 +1516,7 @@ span_gt(const Span *s1, const Span *s2)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash of a span.
  * @return On error return INT_MAX
- * @sqlfunc intspan_hash(), bigintspan_hash(), floatspan_hash(), period_hash()
+ * @sqlfunc intspan_hash(), bigintspan_hash(), floatspan_hash(), tstzspan_hash()
  */
 uint32
 span_hash(const Span *s)

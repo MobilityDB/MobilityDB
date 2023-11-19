@@ -944,7 +944,7 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
 
   /* If "minus" restriction, compute the complement wrt time */
   SpanSet *ps = tsequenceset_time(result_at);
-  TSequenceSet *result = tcontseq_restrict_periodset(seq, ps, atfunc);
+  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ps, atfunc);
   pfree(ps);
   pfree(result_at);
   return result;
@@ -1285,7 +1285,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   assert(totalpers > 0);
   SpanSet *ps = spanset_make_free(allperiods, totalpers, NORMALIZE);
   /* Recover the Z values from the original sequence */
-  result = tcontseq_restrict_periodset(seq, ps, REST_AT);
+  result = tcontseq_restrict_tstzspanset(seq, ps, REST_AT);
   pfree(ps);
   return result;
 }
@@ -1319,7 +1319,7 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
 
   /* Restrict to the temporal dimension */
   TSequence *at_t = period ?
-    tcontseq_at_period(seq, period) : (TSequence *) seq;
+    tcontseq_at_tstzspan(seq, period) : (TSequence *) seq;
 
   /* Compute atGeometry for the sequence restricted to the time dimension */
   TSequenceSet *at_xyt = NULL;
@@ -1352,7 +1352,7 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
         if (tfloat_zspan)
         {
           SpanSet *ss = temporal_time(tfloat_zspan);
-          result_at = tsequenceset_restrict_periodset(at_xyt, ss, REST_AT);
+          result_at = tsequenceset_restrict_tstzspanset(at_xyt, ss, REST_AT);
           pfree(tfloat_zspan);
           pfree(ss);
         }
@@ -1372,7 +1372,7 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
     return tsequence_to_tsequenceset(seq);
 
   SpanSet *ps = tsequenceset_time(result_at);
-  TSequenceSet *result = tcontseq_restrict_periodset(seq, ps, atfunc);
+  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ps, atfunc);
   pfree(ps);
   pfree(result_at);
   return result;
@@ -2017,7 +2017,7 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
 
   /* If "minus" restriction, compute the complement wrt time */
   SpanSet *ps = tsequenceset_time(result_at);
-  TSequenceSet *result = tcontseq_restrict_periodset(seq, ps, atfunc);
+  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ps, atfunc);
   pfree(ps);
   pfree(result_at);
   return result;
@@ -2235,7 +2235,7 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
   /* Restrict to the temporal dimension */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   TSequence *at_t = hast ?
-    tcontseq_at_period(seq, &box->period) : (TSequence *) seq;
+    tcontseq_at_tstzspan(seq, &box->period) : (TSequence *) seq;
 
   /* Restrict to the spatial dimension */
   TSequenceSet *result_at = NULL;
@@ -2255,7 +2255,7 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
     return tsequence_to_tsequenceset(seq);
 
   SpanSet *ps = tsequenceset_time(result_at);
-  TSequenceSet *result = tcontseq_restrict_periodset(seq, ps, atfunc);
+  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ps, atfunc);
   pfree(ps);
   pfree(result_at);
   return result;
@@ -2391,7 +2391,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 
   /* Short-circuit restriction to only T dimension */
   if (hast && ! hasx)
-    return temporal_restrict_period(temp, &box->period, atfunc);
+    return temporal_restrict_tstzspan(temp, &box->period, atfunc);
 
   /* Parameter test */
   assert(tpoint_srid(temp) == stbox_srid(box));

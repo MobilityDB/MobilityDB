@@ -252,7 +252,7 @@ CREATE FUNCTION span_gist_same(tstzspan, tstzspan, internal)
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS period_rtree_ops
+CREATE OPERATOR CLASS tstzspan_rtree_ops
   DEFAULT FOR TYPE tstzspan USING gist AS
   -- overlaps
   OPERATOR  3    && (tstzspan, tstzspan),
@@ -470,14 +470,14 @@ CREATE OPERATOR CLASS floatspan_quadtree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION period_spgist_config(internal, internal)
+CREATE FUNCTION tstzspan_spgist_config(internal, internal)
   RETURNS void
-  AS 'MODULE_PATHNAME', 'Period_spgist_config'
+  AS 'MODULE_PATHNAME', 'Tstzspan_spgist_config'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS period_quadtree_ops
+CREATE OPERATOR CLASS tstzspan_quadtree_ops
   DEFAULT FOR TYPE tstzspan USING spgist AS
   -- overlaps
   OPERATOR  3    && (tstzspan, tstzspan),
@@ -515,7 +515,7 @@ CREATE OPERATOR CLASS period_quadtree_ops
   OPERATOR  31    #&> (tstzspan, tstzspan),
   OPERATOR  31    #&> (tstzspan, tstzspanset),
   -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  1  tstzspan_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
@@ -678,7 +678,7 @@ CREATE OPERATOR CLASS floatspan_kdtree_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS period_kdtree_ops
+CREATE OPERATOR CLASS tstzspan_kdtree_ops
   FOR TYPE tstzspan USING spgist AS
   -- overlaps
   OPERATOR  3    && (tstzspan, tstzspan),
@@ -716,7 +716,7 @@ CREATE OPERATOR CLASS period_kdtree_ops
   OPERATOR  31    #&> (tstzspan, tstzspan),
   OPERATOR  31    #&> (tstzspan, tstzspanset),
   -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  1  tstzspan_spgist_config(internal, internal),
   FUNCTION  2  span_kdtree_choose(internal, internal),
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),

@@ -97,35 +97,35 @@ CREATE FUNCTION asHexWKB(tbox, endianenconding text DEFAULT '')
 
 CREATE FUNCTION tbox(integer, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Number_timestamp_to_tbox'
+  AS 'MODULE_PATHNAME', 'Number_timestamptz_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(intspan, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Span_timestamp_to_tbox'
+  AS 'MODULE_PATHNAME', 'Numnumspan_timestamptz_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(float, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Number_timestamp_to_tbox'
+  AS 'MODULE_PATHNAME', 'Number_timestamptz_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(floatspan, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Span_timestamp_to_tbox'
+  AS 'MODULE_PATHNAME', 'Numnumspan_timestamptz_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(integer, tstzspan)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Number_period_to_tbox'
+  AS 'MODULE_PATHNAME', 'Number_tstzspan_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(intspan, tstzspan)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Span_period_to_tbox'
+  AS 'MODULE_PATHNAME', 'Numspan_tstzspan_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(float, tstzspan)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Number_period_to_tbox'
+  AS 'MODULE_PATHNAME', 'Number_tstzspan_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(floatspan, tstzspan)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Span_period_to_tbox'
+  AS 'MODULE_PATHNAME', 'Numspan_tstzspan_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -146,7 +146,7 @@ CREATE FUNCTION tbox(numeric)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Timestamp_to_tbox'
+  AS 'MODULE_PATHNAME', 'Timestamptz_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbox(intset)
@@ -213,7 +213,7 @@ CREATE FUNCTION floatspan(tbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSpan(tbox)
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Tbox_to_period'
+  AS 'MODULE_PATHNAME', 'Tbox_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tbox AS floatspan) WITH FUNCTION floatspan(tbox);

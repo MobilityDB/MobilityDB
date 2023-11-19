@@ -76,7 +76,7 @@ int main(void)
     boxes = stbox_tile_list(box, 5.0, 5.0, 5.0, timesplit ? interv : NULL,
       sorigin, torigin, &count);
   else
-    spans = period_bucket_list(&box->period, interv, torigin, &count);
+    spans = tstzspan_bucket_list(&box->period, interv, torigin, &count);
 
   /* Print the input value to split */
   char *box_str = stbox_out(box, 3);
@@ -93,7 +93,7 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     char *tile_str = spacesplit ?
-      stbox_out(&boxes[i], 3) : period_out(&spans[i]);
+      stbox_out(&boxes[i], 3) : tstzspan_out(&spans[i]);
     sprintf(output_buffer, "%d: %s\n", i + 1, tile_str);
     printf("%s", output_buffer);
     free(tile_str);

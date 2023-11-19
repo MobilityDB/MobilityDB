@@ -182,14 +182,14 @@ Span_bucket_list(PG_FUNCTION_ARGS)
   return Span_bucket_list_ext(fcinfo, true);
 }
 
-PGDLLEXPORT Datum Period_bucket_list(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_bucket_list);
+PGDLLEXPORT Datum Tstzspan_bucket_list(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_bucket_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate a period bucket list.
  */
 Datum
-Period_bucket_list(PG_FUNCTION_ARGS)
+Tstzspan_bucket_list(PG_FUNCTION_ARGS)
 {
   return Span_bucket_list_ext(fcinfo, false);
 }
@@ -214,14 +214,14 @@ Span_bucket(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Period_bucket(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_bucket);
+PGDLLEXPORT Datum Tstzspan_bucket(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate a bucket in a bucket list for periods.
 */
 Datum
-Period_bucket(PG_FUNCTION_ARGS)
+Tstzspan_bucket(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);

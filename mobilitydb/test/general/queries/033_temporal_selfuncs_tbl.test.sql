@@ -225,7 +225,7 @@ END LOOP;
 --Q7
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -245,7 +245,7 @@ END LOOP;
 --Q8
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -265,7 +265,7 @@ END LOOP;
 --Q9
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -285,7 +285,7 @@ END LOOP;
 --Q10
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -305,7 +305,7 @@ END LOOP;
 --Q11
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -325,7 +325,7 @@ END LOOP;
 --Q12
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -465,7 +465,7 @@ END LOOP;
 --Q19
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -485,7 +485,7 @@ END LOOP;
 --Q20
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -505,7 +505,7 @@ END LOOP;
 --Q21
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -525,7 +525,7 @@ END LOOP;
 --Q22
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -545,7 +545,7 @@ END LOOP;
 --Q23
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -565,7 +565,7 @@ END LOOP;
 --Q24
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -705,7 +705,7 @@ END LOOP;
 --Q31
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
@@ -725,7 +725,7 @@ END LOOP;
 --Q32
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
@@ -745,7 +745,7 @@ END LOOP;
 --Q33
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
@@ -765,7 +765,7 @@ END LOOP;
 --Q34
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
@@ -785,7 +785,7 @@ END LOOP;
 --Q35
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
@@ -805,7 +805,7 @@ END LOOP;
 --Q36
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
@@ -945,7 +945,7 @@ END LOOP;
 --Q43
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
@@ -965,7 +965,7 @@ END LOOP;
 --Q44
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
@@ -985,7 +985,7 @@ END LOOP;
 --Q45
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
@@ -1005,7 +1005,7 @@ END LOOP;
 --Q46
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
@@ -1025,7 +1025,7 @@ END LOOP;
 --Q47
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
@@ -1045,7 +1045,7 @@ END LOOP;
 --Q48
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
@@ -1189,7 +1189,7 @@ END LOOP;
 --Q55
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -1209,7 +1209,7 @@ END LOOP;
 --Q56
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -1229,7 +1229,7 @@ END LOOP;
 --Q57
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -1249,7 +1249,7 @@ END LOOP;
 --Q58
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -1269,7 +1269,7 @@ END LOOP;
 --Q59
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -1289,7 +1289,7 @@ END LOOP;
 --Q60
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -1429,7 +1429,7 @@ END LOOP;
 --Q67
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -1449,7 +1449,7 @@ END LOOP;
 --Q68
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -1469,7 +1469,7 @@ END LOOP;
 --Q69
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -1489,7 +1489,7 @@ END LOOP;
 --Q70
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -1509,7 +1509,7 @@ END LOOP;
 --Q71
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -1529,7 +1529,7 @@ END LOOP;
 --Q72
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -1669,7 +1669,7 @@ END LOOP;
 --Q79
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
@@ -1689,7 +1689,7 @@ END LOOP;
 --Q80
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
@@ -1709,7 +1709,7 @@ END LOOP;
 --Q81
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
@@ -1729,7 +1729,7 @@ END LOOP;
 --Q82
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
@@ -1749,7 +1749,7 @@ END LOOP;
 --Q83
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
@@ -1769,7 +1769,7 @@ END LOOP;
 --Q84
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
@@ -1909,7 +1909,7 @@ END LOOP;
 --Q91
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
@@ -1929,7 +1929,7 @@ END LOOP;
 --Q92
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
@@ -1949,7 +1949,7 @@ END LOOP;
 --Q93
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
@@ -1969,7 +1969,7 @@ END LOOP;
 --Q94
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
@@ -1989,7 +1989,7 @@ END LOOP;
 --Q95
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
@@ -2009,7 +2009,7 @@ END LOOP;
 --Q96
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
@@ -2152,7 +2152,7 @@ END LOOP;
 --Q103
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -2172,7 +2172,7 @@ END LOOP;
 --Q104
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -2192,7 +2192,7 @@ END LOOP;
 --Q105
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -2212,7 +2212,7 @@ END LOOP;
 --Q106
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -2232,7 +2232,7 @@ END LOOP;
 --Q107
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -2252,7 +2252,7 @@ END LOOP;
 --Q108
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -2392,7 +2392,7 @@ END LOOP;
 --Q115
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -2412,7 +2412,7 @@ END LOOP;
 --Q116
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -2432,7 +2432,7 @@ END LOOP;
 --Q117
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -2452,7 +2452,7 @@ END LOOP;
 --Q118
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -2472,7 +2472,7 @@ END LOOP;
 --Q119
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -2492,7 +2492,7 @@ END LOOP;
 --Q120
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -2632,7 +2632,7 @@ END LOOP;
 --Q127
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
@@ -2652,7 +2652,7 @@ END LOOP;
 --Q128
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
@@ -2672,7 +2672,7 @@ END LOOP;
 --Q129
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
@@ -2692,7 +2692,7 @@ END LOOP;
 --Q130
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
@@ -2712,7 +2712,7 @@ END LOOP;
 --Q131
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
@@ -2732,7 +2732,7 @@ END LOOP;
 --Q132
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
@@ -2872,7 +2872,7 @@ END LOOP;
 --Q139
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
@@ -2892,7 +2892,7 @@ END LOOP;
 --Q140
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
@@ -2912,7 +2912,7 @@ END LOOP;
 --Q141
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
@@ -2932,7 +2932,7 @@ END LOOP;
 --Q142
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
@@ -2952,7 +2952,7 @@ END LOOP;
 --Q143
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
@@ -2972,7 +2972,7 @@ END LOOP;
 --Q144
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
@@ -3115,7 +3115,7 @@ END LOOP;
 --Q151
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -3135,7 +3135,7 @@ END LOOP;
 --Q152
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -3155,7 +3155,7 @@ END LOOP;
 --Q153
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -3175,7 +3175,7 @@ END LOOP;
 --Q154
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -3195,7 +3195,7 @@ END LOOP;
 --Q155
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -3215,7 +3215,7 @@ END LOOP;
 --Q156
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -3355,7 +3355,7 @@ END LOOP;
 --Q163
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -3375,7 +3375,7 @@ END LOOP;
 --Q164
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -3395,7 +3395,7 @@ END LOOP;
 --Q165
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -3415,7 +3415,7 @@ END LOOP;
 --Q166
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -3435,7 +3435,7 @@ END LOOP;
 --Q167
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -3455,7 +3455,7 @@ END LOOP;
 --Q168
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -3595,7 +3595,7 @@ END LOOP;
 --Q175
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
@@ -3615,7 +3615,7 @@ END LOOP;
 --Q176
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
@@ -3635,7 +3635,7 @@ END LOOP;
 --Q177
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
@@ -3655,7 +3655,7 @@ END LOOP;
 --Q178
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
@@ -3675,7 +3675,7 @@ END LOOP;
 --Q179
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
@@ -3695,7 +3695,7 @@ END LOOP;
 --Q180
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
@@ -3835,7 +3835,7 @@ END LOOP;
 --Q187
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
@@ -3855,7 +3855,7 @@ END LOOP;
 --Q188
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
@@ -3875,7 +3875,7 @@ END LOOP;
 --Q189
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
@@ -3895,7 +3895,7 @@ END LOOP;
 --Q190
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
@@ -3915,7 +3915,7 @@ END LOOP;
 --Q191
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
@@ -3935,7 +3935,7 @@ END LOOP;
 --Q192
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints

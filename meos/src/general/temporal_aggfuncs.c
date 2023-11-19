@@ -296,13 +296,13 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   {
     span_set(TimestampTzGetDatum(lower1), TimestampTzGetDatum(lower),
       lower1_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
-    sequences[nseqs++] = tcontseq_at_period(seq1, &period);
+    sequences[nseqs++] = tcontseq_at_tstzspan(seq1, &period);
   }
   else if (cmp2 < 0 || (lower2_inc && !lower_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(lower2), TimestampTzGetDatum(lower),
       lower2_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
-    sequences[nseqs++] = tcontseq_at_period(seq2, &period);
+    sequences[nseqs++] = tcontseq_at_tstzspan(seq2, &period);
   }
 
   /*
@@ -342,13 +342,13 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper1),
       ! upper_inc, upper1_inc, T_TIMESTAMPTZ, &period);
-    sequences[nseqs++] = tcontseq_at_period(seq1, &period);
+    sequences[nseqs++] = tcontseq_at_tstzspan(seq1, &period);
   }
   else if (cmp2 < 0 || (! upper_inc && upper2_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper2),
       ! upper_inc, upper2_inc, T_TIMESTAMPTZ, &period);
-    sequences[nseqs++] = tcontseq_at_period(seq2, &period);
+    sequences[nseqs++] = tcontseq_at_tstzspan(seq2, &period);
   }
 
   /* Normalization */
@@ -969,7 +969,7 @@ timestamp_transform_tcount(TimestampTz t)
  * performing temporal count aggregation
  */
 static TInstant **
-timestampset_transform_tcount(const Set *s)
+tstzset_transform_tcount(const Set *s)
 {
   TInstant **result = palloc(sizeof(TInstant *) * s->count);
   for (int i = 0; i < s->count; i++)
@@ -985,7 +985,7 @@ timestampset_transform_tcount(const Set *s)
  * performing temporal count aggregation
  */
 static TSequence *
-period_transform_tcount(const Span *s)
+tstzspan_transform_tcount(const Span *s)
 {
   TSequence *result;
   Datum datum_one = Int32GetDatum(1);
@@ -1014,13 +1014,13 @@ period_transform_tcount(const Span *s)
  * performing temporal count aggregation
  */
 static TSequence **
-periodset_transform_tcount(const SpanSet *ss)
+tstzspanset_transform_tcount(const SpanSet *ss)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const Span *s = spanset_sp_n(ss, i);
-    result[i] = period_transform_tcount(s);
+    result[i] = tstzspan_transform_tcount(s);
   }
   return result;
 }
@@ -1143,7 +1143,7 @@ temporal_transform_tcount(const Temporal *temp, int *count)
  * @brief Transition function for temporal count aggregate of timestamps
  */
 SkipList *
-timestamp_tcount_transfn(SkipList *state, TimestampTz t)
+timestamptz_tcount_transfn(SkipList *state, TimestampTz t)
 {
   TInstant **instants = timestamp_transform_tcount(t);
   if (! state)
@@ -1165,7 +1165,7 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t)
  * @brief Transition function for temporal count aggregate of timestamp sets
  */
 SkipList *
-timestampset_tcount_transfn(SkipList *state, const Set *s)
+tstzset_tcount_transfn(SkipList *state, const Set *s)
 {
   /* Null set: return state */
   if (! s)
@@ -1174,7 +1174,7 @@ timestampset_tcount_transfn(SkipList *state, const Set *s)
   if (! ensure_set_has_type(s, T_TSTZSET))
     return NULL;
 
-  TInstant **instants = timestampset_transform_tcount(s);
+  TInstant **instants = tstzset_transform_tcount(s);
   if (! state)
     state = skiplist_make((void **) instants, s->count);
   else
@@ -1194,7 +1194,7 @@ timestampset_tcount_transfn(SkipList *state, const Set *s)
  * @brief Transition function for temporal count aggregate of periods
  */
 SkipList *
-period_tcount_transfn(SkipList *state, const Span *s)
+tstzspan_tcount_transfn(SkipList *state, const Span *s)
 {
   /* Null span: return state */
   if (! s)
@@ -1203,7 +1203,7 @@ period_tcount_transfn(SkipList *state, const Span *s)
   if (! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
 
-  TSequence *seq = period_transform_tcount(s);
+  TSequence *seq = tstzspan_transform_tcount(s);
   if (! state)
     state = skiplist_make((void **) &seq, 1);
   else
@@ -1222,7 +1222,7 @@ period_tcount_transfn(SkipList *state, const Span *s)
  * @brief Transition function for temporal count aggregate of period sets
  */
 SkipList *
-periodset_tcount_transfn(SkipList *state, const SpanSet *ss)
+tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)
 {
   /* Null span set: return state */
   if (! ss)
@@ -1231,7 +1231,7 @@ periodset_tcount_transfn(SkipList *state, const SpanSet *ss)
   if (! ensure_spanset_has_type(ss, T_TSTZSPANSET))
     return NULL;
 
-  TSequence **sequences = periodset_transform_tcount(ss);
+  TSequence **sequences = tstzspanset_transform_tcount(ss);
   int start = 0;
   if (! state)
   {
@@ -1383,12 +1383,12 @@ temporal_extent_transfn(Span *state, const Temporal *temp)
   if (! state)
   {
     Span *result = palloc0(sizeof(Span));
-    temporal_set_period(temp, result);
+    temporal_set_tstzspan(temp, result);
     return result;
   }
 
   Span s;
-  temporal_set_period(temp, &s);
+  temporal_set_tstzspan(temp, &s);
   span_expand(&s, state);
   return state;
 }

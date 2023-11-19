@@ -198,35 +198,35 @@ CREATE FUNCTION stbox(geogset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(timestamptz)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Timestamp_to_stbox'
+  AS 'MODULE_PATHNAME', 'Timestamptz_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(tstzset)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Timestampset_to_stbox'
+  AS 'MODULE_PATHNAME', 'Tstzset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(tstzspan)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Period_to_stbox'
+  AS 'MODULE_PATHNAME', 'Tstzspan_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(tstzspanset)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Periodset_to_stbox'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(geometry, timestamptz)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geo_timestamp_to_stbox'
+  AS 'MODULE_PATHNAME', 'Geo_timestamptz_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(geography, timestamptz)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geo_timestamp_to_stbox'
+  AS 'MODULE_PATHNAME', 'Geo_timestamptz_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(geometry, tstzspan)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geo_period_to_stbox'
+  AS 'MODULE_PATHNAME', 'Geo_tstzspan_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(geography, tstzspan)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geo_period_to_stbox'
+  AS 'MODULE_PATHNAME', 'Geo_tstzspan_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (box2d AS stbox) WITH FUNCTION stbox(box2d);
@@ -244,7 +244,7 @@ CREATE CAST (tstzspanset AS stbox) WITH FUNCTION stbox(tstzspanset);
 
 CREATE FUNCTION timeSpan(stbox)
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Stbox_to_period'
+  AS 'MODULE_PATHNAME', 'Stbox_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION box2d(stbox)
   RETURNS box2d

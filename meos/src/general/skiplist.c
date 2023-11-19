@@ -274,7 +274,7 @@ skiplist_print(const SkipList *list)
     else
     {
       Span p;
-      temporal_set_period(e->value, &p);
+      temporal_set_tstzspan(e->value, &p);
       /* The second argument of span_out is not used for spans */
       char *val = span_out(&p, Int32GetDatum(0));
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
@@ -405,7 +405,7 @@ skiplist_make(void **values, int count)
  * @brief Determine the relative position of a period and a timestamp
  */
 static RelativeTimePos
-pos_period_timestamp(const Span *p, TimestampTz t)
+pos_span_timestamptz(const Span *p, TimestampTz t)
 {
   if (left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
     return BEFORE;
@@ -418,7 +418,7 @@ pos_period_timestamp(const Span *p, TimestampTz t)
  * @brief Determine the relative position of two periods
  */
 static RelativeTimePos
-pos_period_period(const Span *p1, const Span *p2)
+pos_tstzspan_tstzspan(const Span *p1, const Span *p2)
 {
   if (left_span_span(p1, p2))
     return BEFORE;
@@ -440,9 +440,9 @@ skiplist_elempos(const SkipList *list, Span *p, int cur)
 
   Temporal *temp = (Temporal *) list->elems[cur].value;
   if (temp->subtype == TINSTANT)
-    return pos_period_timestamp(p, ((TInstant *) temp)->t);
+    return pos_span_timestamptz(p, ((TInstant *) temp)->t);
   else /* temp->subtype == TSEQUENCE */
-    return pos_period_period(p, &((TSequence *) temp)->period);
+    return pos_tstzspan_tstzspan(p, &((TSequence *) temp)->period);
 }
 
 /**

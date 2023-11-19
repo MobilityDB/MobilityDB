@@ -46,68 +46,68 @@
  * Aggregate transition functions for time types
  *****************************************************************************/
 
-PGDLLEXPORT Datum Timestamp_tcount_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestamp_tcount_transfn);
+PGDLLEXPORT Datum Timestamptz_tcount_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestamptz_tcount_transfn);
 /**
  * @brief Transition function for temporal count aggregate of timestamps
  */
 Datum
-Timestamp_tcount_transfn(PG_FUNCTION_ARGS)
+Timestamptz_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   store_fcinfo(fcinfo);
-  state = timestamp_tcount_transfn(state, t);
+  state = timestamptz_tcount_transfn(state, t);
   PG_RETURN_POINTER(state);
 }
 
-PGDLLEXPORT Datum Timestampset_tcount_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestampset_tcount_transfn);
+PGDLLEXPORT Datum Tstzset_tcount_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzset_tcount_transfn);
 /**
  * @brief Transition function for temporal count aggregate of timestamp sets
  */
 Datum
-Timestampset_tcount_transfn(PG_FUNCTION_ARGS)
+Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
   Set *ts = PG_GETARG_SET_P(1);
   store_fcinfo(fcinfo);
-  state = timestampset_tcount_transfn(state, ts);
+  state = tstzset_tcount_transfn(state, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(state);
 }
 
-PGDLLEXPORT Datum Period_tcount_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_tcount_transfn);
+PGDLLEXPORT Datum Tstzspan_tcount_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_tcount_transfn);
 /**
  * @brief Transition function for temporal count aggregate of periods
  */
 Datum
-Period_tcount_transfn(PG_FUNCTION_ARGS)
+Tstzspan_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
   Span *p = PG_GETARG_SPAN_P(1);
   store_fcinfo(fcinfo);
-  state = period_tcount_transfn(state, p);
+  state = tstzspan_tcount_transfn(state, p);
   PG_RETURN_POINTER(state);
 }
 
-PGDLLEXPORT Datum Periodset_tcount_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_tcount_transfn);
+PGDLLEXPORT Datum Tstzspanset_tcount_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_tcount_transfn);
 /**
  * @brief Transition function for temporal count aggregate of period sets
  */
 Datum
-Periodset_tcount_transfn(PG_FUNCTION_ARGS)
+Tstzspanset_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
   SpanSet *ps = PG_GETARG_SPANSET_P(1);
   store_fcinfo(fcinfo);
-  state = periodset_tcount_transfn(state, ps);
+  state = tstzspanset_tcount_transfn(state, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(state);
 }

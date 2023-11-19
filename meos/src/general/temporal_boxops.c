@@ -390,7 +390,7 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
  * @param[in] count Number of elements in the array
  */
 static void
-tseqarr_set_period(const TSequence **sequences, int count, Span *period)
+tseqarr_set_tstzspan(const TSequence **sequences, int count, Span *period)
 {
   const Span *first = &sequences[0]->period;
   const Span *last = &sequences[count - 1]->period;
@@ -425,7 +425,7 @@ tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
 {
   assert(temporal_type(sequences[0]->temptype));
   if (talpha_type(sequences[0]->temptype))
-    tseqarr_set_period(sequences, count, (Span *) box);
+    tseqarr_set_tstzspan(sequences, count, (Span *) box);
   else if (tnumber_type(sequences[0]->temptype))
     tnumberseqarr_set_tbox(sequences, count, (TBox *) box);
   else if (tspatial_type(sequences[0]->temptype))

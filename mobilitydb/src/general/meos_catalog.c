@@ -375,7 +375,7 @@ oper_oid(meosOper oper, meosType lt, meosType rt)
   if (! result)
   {
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Unknown MEOS operator: %s, ltype; %s, rtype; %s", 
+      errmsg("Unknown MEOS operator: %s, ltype; %s, rtype; %s",
         meosoper_name(oper), meostype_name(lt), meostype_name(rt))));
   }
   return _oper_oid[oper][lt][rt];

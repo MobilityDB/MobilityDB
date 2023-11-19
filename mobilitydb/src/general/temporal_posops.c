@@ -50,8 +50,8 @@
 /*****************************************************************************/
 /* <Time> op Temporal */
 
-PGDLLEXPORT Datum Before_period_temporal(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Before_period_temporal);
+PGDLLEXPORT Datum Before_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
  * @brief Return true if the period value is strictly before the temporal value
@@ -59,13 +59,13 @@ PG_FUNCTION_INFO_V1(Before_period_temporal);
  * @sqlop @p <<#
  */
 Datum
-Before_period_temporal(PG_FUNCTION_ARGS)
+Before_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &left_span_span);
+  return boxop_tstzspan_temporal_ext(fcinfo, &left_span_span);
 }
 
-PGDLLEXPORT Datum Overbefore_period_temporal(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Overbefore_period_temporal);
+PGDLLEXPORT Datum Overbefore_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
  * @brief Return true if the period value is not after the temporal value
@@ -73,13 +73,13 @@ PG_FUNCTION_INFO_V1(Overbefore_period_temporal);
  * @sqlop @p &<#
  */
 Datum
-Overbefore_period_temporal(PG_FUNCTION_ARGS)
+Overbefore_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &overleft_span_span);
+  return boxop_tstzspan_temporal_ext(fcinfo, &overleft_span_span);
 }
 
-PGDLLEXPORT Datum After_period_temporal(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(After_period_temporal);
+PGDLLEXPORT Datum After_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
  * @brief Return true if the period value is strictly after the temporal value
@@ -87,13 +87,13 @@ PG_FUNCTION_INFO_V1(After_period_temporal);
  * @sqlop @p #>>
  */
 Datum
-After_period_temporal(PG_FUNCTION_ARGS)
+After_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &right_span_span);
+  return boxop_tstzspan_temporal_ext(fcinfo, &right_span_span);
 }
 
-PGDLLEXPORT Datum Overafter_period_temporal(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Overafter_period_temporal);
+PGDLLEXPORT Datum Overafter_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
  * @brief Return true if the period value is not before the temporal value
@@ -101,16 +101,16 @@ PG_FUNCTION_INFO_V1(Overafter_period_temporal);
  * @sqlop @p #&>
  */
 Datum
-Overafter_period_temporal(PG_FUNCTION_ARGS)
+Overafter_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &overright_span_span);
+  return boxop_tstzspan_temporal_ext(fcinfo, &overright_span_span);
 }
 
 /*****************************************************************************/
 /* Temporal op Period */
 
-PGDLLEXPORT Datum Before_temporal_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Before_temporal_period);
+PGDLLEXPORT Datum Before_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
  * @brief Return true if the temporal value is strictly before the period value
@@ -118,13 +118,13 @@ PG_FUNCTION_INFO_V1(Before_temporal_period);
  * @sqlop @p <<#
  */
 Datum
-Before_temporal_period(PG_FUNCTION_ARGS)
+Before_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &left_span_span);
+  return boxop_temporal_tstzspan_ext(fcinfo, &left_span_span);
 }
 
-PGDLLEXPORT Datum Overbefore_temporal_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Overbefore_temporal_period);
+PGDLLEXPORT Datum Overbefore_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
  * @brief Return true if the temporal value is not after the period value
@@ -132,13 +132,13 @@ PG_FUNCTION_INFO_V1(Overbefore_temporal_period);
  * @sqlop @p &<#
  */
 Datum
-Overbefore_temporal_period(PG_FUNCTION_ARGS)
+Overbefore_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &overleft_span_span);
+  return boxop_temporal_tstzspan_ext(fcinfo, &overleft_span_span);
 }
 
-PGDLLEXPORT Datum After_temporal_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(After_temporal_period);
+PGDLLEXPORT Datum After_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
  * @brief Return true if the temporal value is strictly after the period value
@@ -146,13 +146,13 @@ PG_FUNCTION_INFO_V1(After_temporal_period);
  * @sqlop @p #>>
  */
 Datum
-After_temporal_period(PG_FUNCTION_ARGS)
+After_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &right_span_span);
+  return boxop_temporal_tstzspan_ext(fcinfo, &right_span_span);
 }
 
-PGDLLEXPORT Datum Overafter_temporal_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Overafter_temporal_period);
+PGDLLEXPORT Datum Overafter_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
  * @brief Return true if the temporal value is not before the period value
@@ -160,9 +160,9 @@ PG_FUNCTION_INFO_V1(Overafter_temporal_period);
  * @sqlop @p #&>
  */
 Datum
-Overafter_temporal_period(PG_FUNCTION_ARGS)
+Overafter_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &overright_span_span);
+  return boxop_temporal_tstzspan_ext(fcinfo, &overright_span_span);
 }
 
 /*****************************************************************************/

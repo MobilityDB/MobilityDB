@@ -83,13 +83,13 @@ temporal_max_header_size(void)
  * @param[in] func Bounding box function
  */
 Datum
-boxop_period_temporal_ext(FunctionCallInfo fcinfo,
+boxop_tstzspan_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *))
 {
   Span *p = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Span p1;
-  temporal_set_period(temp, &p1);
+  temporal_set_tstzspan(temp, &p1);
   bool result = func(p, &p1);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -101,13 +101,13 @@ boxop_period_temporal_ext(FunctionCallInfo fcinfo,
  * @param[in] func Bounding box function
  */
 Datum
-boxop_temporal_period_ext(FunctionCallInfo fcinfo,
+boxop_temporal_tstzspan_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *p = PG_GETARG_SPAN_P(1);
   Span p1;
-  temporal_set_period(temp, &p1);
+  temporal_set_tstzspan(temp, &p1);
   bool result = func(&p1, p);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -125,8 +125,8 @@ boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Span p1, p2;
-  temporal_set_period(temp1, &p1);
-  temporal_set_period(temp2, &p2);
+  temporal_set_tstzspan(temp1, &p1);
+  temporal_set_tstzspan(temp2, &p2);
   bool result = func(&p1, &p2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -137,8 +137,8 @@ boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
  * Bounding box operators for temporal types
  *****************************************************************************/
 
-PGDLLEXPORT Datum Contains_period_temporal(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Contains_period_temporal);
+PGDLLEXPORT Datum Contains_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if a period contains the bounding period of a temporal value
@@ -146,13 +146,13 @@ PG_FUNCTION_INFO_V1(Contains_period_temporal);
  * @sqlop @p \@>
  */
 Datum
-Contains_period_temporal(PG_FUNCTION_ARGS)
+Contains_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &contains_span_span);
+  return boxop_tstzspan_temporal_ext(fcinfo, &contains_span_span);
 }
 
-PGDLLEXPORT Datum Contains_temporal_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Contains_temporal_period);
+PGDLLEXPORT Datum Contains_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the bounding period of a temporal value contains a period
@@ -160,9 +160,9 @@ PG_FUNCTION_INFO_V1(Contains_temporal_period);
  * @sqlop @p \@>
  */
 Datum
-Contains_temporal_period(PG_FUNCTION_ARGS)
+Contains_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &contains_span_span);
+  return boxop_temporal_tstzspan_ext(fcinfo, &contains_span_span);
 }
 
 PGDLLEXPORT Datum Contains_temporal_temporal(PG_FUNCTION_ARGS);
@@ -182,8 +182,8 @@ Contains_temporal_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Contained_period_temporal(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Contained_period_temporal);
+PGDLLEXPORT Datum Contained_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if a period is contained the bounding period of the temporal
@@ -192,13 +192,13 @@ PG_FUNCTION_INFO_V1(Contained_period_temporal);
  * @sqlop @p <@
  */
 Datum
-Contained_period_temporal(PG_FUNCTION_ARGS)
+Contained_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &contained_span_span);
+  return boxop_tstzspan_temporal_ext(fcinfo, &contained_span_span);
 }
 
-PGDLLEXPORT Datum Contained_temporal_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Contained_temporal_period);
+PGDLLEXPORT Datum Contained_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the bounding period of a temporal value is contained in
@@ -207,9 +207,9 @@ PG_FUNCTION_INFO_V1(Contained_temporal_period);
  * @sqlop @p <@
  */
 Datum
-Contained_temporal_period(PG_FUNCTION_ARGS)
+Contained_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &contained_span_span);
+  return boxop_temporal_tstzspan_ext(fcinfo, &contained_span_span);
 }
 
 PGDLLEXPORT Datum Contained_temporal_temporal(PG_FUNCTION_ARGS);
@@ -229,8 +229,8 @@ Contained_temporal_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Overlaps_period_temporal(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
+PGDLLEXPORT Datum Overlaps_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if a period and the bounding period of a temporal value
@@ -239,13 +239,13 @@ PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
  * @sqlop @p &&
  */
 Datum
-Overlaps_period_temporal(PG_FUNCTION_ARGS)
+Overlaps_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &overlaps_span_span);
+  return boxop_tstzspan_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
-PGDLLEXPORT Datum Overlaps_temporal_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Overlaps_temporal_period);
+PGDLLEXPORT Datum Overlaps_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the bounding period of a temporal value and a period
@@ -254,9 +254,9 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_period);
  * @sqlop @p &&
  */
 Datum
-Overlaps_temporal_period(PG_FUNCTION_ARGS)
+Overlaps_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &overlaps_span_span);
+  return boxop_temporal_tstzspan_ext(fcinfo, &overlaps_span_span);
 }
 
 PGDLLEXPORT Datum Overlaps_temporal_temporal(PG_FUNCTION_ARGS);
@@ -275,8 +275,8 @@ Overlaps_temporal_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Same_period_temporal(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Same_period_temporal);
+PGDLLEXPORT Datum Same_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if a period and the bounding period of a temporal value
@@ -285,13 +285,13 @@ PG_FUNCTION_INFO_V1(Same_period_temporal);
  * @sqlop @p ~=
  */
 Datum
-Same_period_temporal(PG_FUNCTION_ARGS)
+Same_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &span_eq);
+  return boxop_tstzspan_temporal_ext(fcinfo, &span_eq);
 }
 
-PGDLLEXPORT Datum Same_temporal_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Same_temporal_period);
+PGDLLEXPORT Datum Same_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the bounding period of a temporal value and a period
@@ -300,9 +300,9 @@ PG_FUNCTION_INFO_V1(Same_temporal_period);
  * @sqlop @p ~=
  */
 Datum
-Same_temporal_period(PG_FUNCTION_ARGS)
+Same_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &span_eq);
+  return boxop_temporal_tstzspan_ext(fcinfo, &span_eq);
 }
 
 PGDLLEXPORT Datum Same_temporal_temporal(PG_FUNCTION_ARGS);
@@ -321,8 +321,8 @@ Same_temporal_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Adjacent_period_temporal(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Adjacent_period_temporal);
+PGDLLEXPORT Datum Adjacent_tstzspan_temporal(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if a period and the bounding period of a temporal value
@@ -331,13 +331,13 @@ PG_FUNCTION_INFO_V1(Adjacent_period_temporal);
  * @sqlop @p -|-
  */
 Datum
-Adjacent_period_temporal(PG_FUNCTION_ARGS)
+Adjacent_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal_ext(fcinfo, &adjacent_span_span);
+  return boxop_tstzspan_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
-PGDLLEXPORT Datum Adjacent_temporal_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Adjacent_temporal_period);
+PGDLLEXPORT Datum Adjacent_temporal_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the bounding period of a temporal value and a period
@@ -346,9 +346,9 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_period);
  * @sqlop @p -|-
  */
 Datum
-Adjacent_temporal_period(PG_FUNCTION_ARGS)
+Adjacent_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period_ext(fcinfo, &adjacent_span_span);
+  return boxop_temporal_tstzspan_ext(fcinfo, &adjacent_span_span);
 }
 
 PGDLLEXPORT Datum Adjacent_temporal_temporal(PG_FUNCTION_ARGS);

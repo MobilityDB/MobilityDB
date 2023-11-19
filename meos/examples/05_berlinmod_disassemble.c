@@ -55,6 +55,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <meos.h>
 
 /* Maximum length in characters of a trip in the input data */
@@ -87,6 +88,10 @@ int main(void)
   trip_record trips[MAX_NO_TRIPS] = {0};
   int curr_inst[MAX_NO_TRIPS];
 
+  /* Get start time */
+  clock_t t;
+  t = clock();
+  
   /* Initialize MEOS */
   meos_initialize(NULL, NULL);
 
@@ -204,8 +209,13 @@ int main(void)
       curr_inst[min_trip] = -1;
   }
 
-  printf("\n%d trip records read from file 'berlimod_trips.csv'.", records_in);
-  printf("\n%d observation records written in file 'berlimod_instants.csv'.\n\n", records_out);
+  printf("%d trip records read from file 'berlimod_trips.csv'.", records_in);
+  printf("\n%d observation records written in file 'berlimod_instants.csv'.\n", records_out);
+
+  /* Calculate the elapsed time */
+  t = clock() - t;
+  double time_taken = ((double) t) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
 
   /* Free memory */
   for (i = 0; i < records_in; i++)

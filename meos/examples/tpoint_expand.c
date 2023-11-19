@@ -64,6 +64,8 @@
 #define GEODETIC true
 /* Maximum number of instants */
 #define MAX_INSTANTS 1000000
+/* Number of instants in a batch for printing a marker */
+#define NO_INSTANTS_BATCH 10000
 /* Maximum length in characters of the input instant */
 #define MAX_LENGTH_INST 64
 
@@ -86,9 +88,17 @@ int main(void)
   /* Iterator variable */
   int i;
 
+  printf("Reading the instants (one '*' marker every %d instants)\n",
+    NO_INSTANTS_BATCH);
+
   TimestampTz t = pg_timestamptz_in("1999-12-31", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
   {
+    if (i % NO_INSTANTS_BATCH == 0)
+    {
+      printf("*");
+      fflush(stdout);
+    }
     t = pg_timestamp_pl_interval(t, oneday);
     char *time_str = pg_timestamptz_out(t);
     int value = i % 2 + 1;
@@ -103,17 +113,12 @@ int main(void)
       seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1,
         EXPAND ? 2 : 1, true, true, LINEAR, false);
     else
-    {
-      Temporal *oldseq = seq;
       seq = temporal_append_tinstant((Temporal *) seq, inst, 0.0, NULL, EXPAND);
-      if (oldseq != seq)
-        free(oldseq);
-    }
     free(inst);
   }
 
   /* Print information about the sequence */
-  printf("Number of instants: %d, Distance : %lf\n",
+  printf("\nNumber of instants: %d, Distance : %lf\n",
     temporal_num_instants(seq), tpoint_length(seq));
 
   /* Free memory */

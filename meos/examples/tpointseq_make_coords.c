@@ -28,41 +28,57 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that uses the MEOS library for creating some
- * temporal values and output them in MF-JSON format.
+ * @brief A simple program that assembles temporal points from temporal floats,
+ * one for each coordinate dimension.
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o test_periodset test_periodset.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o tpointseq_make_coords tpointseq_make_coords.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
-#include <stdio.h>   /* for printf */
-#include <stdlib.h>  /* for free */
-/* Include the MEOS API header */
+#include <stdio.h>  /* for printf */
+
 #include <meos.h>
+/* Include the MEOS API internal header for assembling the coordinates */
+#include <meos_internal.h>
+
+#define MAX_COUNT 20
 
 int main()
 {
+  double xcoords[MAX_COUNT] = {1, 2, 1, 2};
+  double ycoords[MAX_COUNT] = {1, 2, 1, 2};
+  double zcoords[MAX_COUNT] = {1, 2, 1, 2};
+  char *times_str[MAX_COUNT] = {"2000-01-01 00:00:00", "2000-01-02 00:00:00",
+    "2000-01-03 00:00:00", "2000-01-04 00:00:00"};
+  TimestampTz times[MAX_COUNT];
+
   /* Initialize MEOS */
   meos_initialize(NULL, NULL);
 
+  for (int i = 0; i < 4; i++)
+    times[i] = pg_timestamptz_in(times_str[i], -1);
+
   /* Input temporal points in WKT format */
-  char *period_wkt = "[2000-01-01, 2000-01-02]";
+  TSequence *seq1 = tpointseq_make_coords(xcoords, ycoords, zcoords, times,
+    4, 5676, false, true, true, true, true);
+  TSequence *seq2 = tpointseq_make_coords(xcoords, ycoords, NULL, times,
+    4, 5676, false, true, true, true, true);
+  TSequence *seq3 = tpointseq_make_coords(xcoords, ycoords, NULL, times,
+    4, 4326, true, true, true, true, true);
 
-  /* Read WKT into temporal point object */
-  Span *p = period_in(period_wkt);
-  SpanSet *ps = span_to_spanset(p);
-
-  /* Read WKT into temporal point object */
-  char *p_out = period_out(p);
-  char *ps_out = periodset_out(ps);
-
-  printf("Period: %s\n", p_out);
-  printf("PeriodSet: %s\n", ps_out);
+  /* Print result in WKT */
+  char *seq1_wkt = tpoint_as_ewkt((Temporal *) seq1, 2);
+  char *seq2_wkt = tpoint_as_ewkt((Temporal *) seq2, 2);
+  char *seq3_wkt = tpoint_as_ewkt((Temporal *) seq3, 2);
+  printf("\nSequence l: %s\nSequence 2: %s\nSequence 3: %s\n\n",
+    seq1_wkt, seq2_wkt, seq3_wkt);
 
   /* Clean up allocated objects */
-  // free(ss_step); free(ss_step_mfjson);
+  free(seq1); free(seq1_wkt);
+  free(seq2); free(seq2_wkt);
+  free(seq3); free(seq3_wkt);
 
   /* Finalize MEOS */
   meos_finalize();
