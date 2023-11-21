@@ -54,9 +54,9 @@ typedef enum
   T_UNKNOWN        = 0,   /**< unknown type */
   T_BOOL           = 1,   /**< boolean type */
   T_DATE           = 2,   /**< date type */
-  T_DATESET        = 3,   /**< float8 set type */
-  T_DATESPAN       = 4,   /**< float8 span type */
-  T_DATESPANSET    = 5,   /**< float8 span set type */
+  T_DATESET        = 3,   /**< date set type */
+  T_DATESPAN       = 4,   /**< date span type */
+  T_DATESPANSET    = 5,   /**< date span set type */
   T_DOUBLE2        = 6,   /**< double2 type */
   T_DOUBLE3        = 7,   /**< double3 type */
   T_DOUBLE4        = 8,   /**< double4 type */
