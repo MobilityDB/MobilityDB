@@ -210,7 +210,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
   else if (type == T_TSTZSPAN)
   {
     Span *p = PG_GETARG_SPAN_P(1);
-    period_set_tbox(p, result);
+    tstzspan_set_tbox(p, result);
   }
   else if (type == T_TBOX)
   {

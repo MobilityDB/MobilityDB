@@ -183,13 +183,13 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
           DatumGetFloat8(span_lower.val);
     }
     Span period;
-    temporal_set_period(temp, &period);
-    SpanBound period_lower, period_upper;
-    span_deserialize((Span *) &period, &period_lower, &period_upper);
-    time_lowers[non_null_cnt] = period_lower;
-    time_uppers[non_null_cnt] = period_upper;
-    time_lengths[non_null_cnt] = distance_value_value(period_upper.val,
-      period_lower.val, T_TIMESTAMPTZ);
+    temporal_set_tstzspan(temp, &period);
+    SpanBound tstzspan_lower, tstzspan_upper;
+    span_deserialize((Span *) &period, &tstzspan_lower, &tstzspan_upper);
+    time_lowers[non_null_cnt] = tstzspan_lower;
+    time_uppers[non_null_cnt] = tstzspan_upper;
+    time_lengths[non_null_cnt] = distance_value_value(tstzspan_upper.val,
+      tstzspan_lower.val, T_TIMESTAMPTZ);
 
     /* Increment non null count */
     non_null_cnt++;

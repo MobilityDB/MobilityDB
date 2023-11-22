@@ -115,8 +115,8 @@ Npointset_to_stbox(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Npoint_timestamp_to_stbox);
+PGDLLEXPORT Datum Npoint_timestamptz_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Npoint_timestamptz_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Transform a network point and a timestamp to a spatiotemporal box
@@ -124,17 +124,17 @@ PG_FUNCTION_INFO_V1(Npoint_timestamp_to_stbox);
  * @sqlop @p
  */
 Datum
-Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
+Npoint_timestamptz_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   STBox *result = palloc0(sizeof(STBox));
-  npoint_timestamp_set_stbox(np, t, result);
+  npoint_timestamptz_set_stbox(np, t, result);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Npoint_period_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Npoint_period_to_stbox);
+PGDLLEXPORT Datum Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Npoint_tstzspan_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Transform a network point and a period to a spatiotemporal box
@@ -142,12 +142,12 @@ PG_FUNCTION_INFO_V1(Npoint_period_to_stbox);
  * @sqlop @p
  */
 Datum
-Npoint_period_to_stbox(PG_FUNCTION_ARGS)
+Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Span *p = PG_GETARG_SPAN_P(1);
   STBox *result = palloc0(sizeof(STBox));
-  npoint_period_set_stbox(np, p, result);
+  npoint_tstzspan_set_stbox(np, p, result);
   PG_RETURN_POINTER(result);
 }
 

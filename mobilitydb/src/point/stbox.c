@@ -367,8 +367,8 @@ Stbox_to_geo(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PGDLLEXPORT Datum Stbox_to_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_to_period);
+PGDLLEXPORT Datum Stbox_to_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_to_tstzspan);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a spatiotemporal box as a period
@@ -376,10 +376,10 @@ PG_FUNCTION_INFO_V1(Stbox_to_period);
  * @sqlfunc @p ::
  */
 Datum
-Stbox_to_period(PG_FUNCTION_ARGS)
+Stbox_to_tstzspan(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  Span *result = stbox_to_period(box);
+  Span *result = stbox_to_tstzspan(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -459,8 +459,8 @@ Geoset_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Timestamp_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestamp_to_stbox);
+PGDLLEXPORT Datum Timestamptz_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestamptz_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Transform a timestampt to a spatiotemporal box
@@ -468,16 +468,16 @@ PG_FUNCTION_INFO_V1(Timestamp_to_stbox);
  * @sqlfunc @p ::
  */
 Datum
-Timestamp_to_stbox(PG_FUNCTION_ARGS)
+Timestamptz_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   STBox *result = palloc(sizeof(STBox));
-  timestamp_set_stbox(t, result);
+  timestamptz_set_stbox(t, result);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Timestampset_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
+PGDLLEXPORT Datum Tstzset_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Transform a timestamp set to a spatiotemporal box
@@ -485,16 +485,16 @@ PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
  * @sqlfunc @p ::
  */
 Datum
-Timestampset_to_stbox(PG_FUNCTION_ARGS)
+Tstzset_to_stbox(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
   STBox *result = palloc(sizeof(STBox));
-  timestampset_set_stbox(ts, result);
+  tstzset_set_stbox(ts, result);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Period_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_to_stbox);
+PGDLLEXPORT Datum Tstzspan_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Transform a period to a spatiotemporal box
@@ -502,11 +502,11 @@ PG_FUNCTION_INFO_V1(Period_to_stbox);
  * @sqlfunc @p ::
  */
 Datum
-Period_to_stbox(PG_FUNCTION_ARGS)
+Tstzspan_to_stbox(PG_FUNCTION_ARGS)
 {
   Span *p = PG_GETARG_SPAN_P(0);
   STBox *result = palloc(sizeof(STBox));
-  period_set_stbox(p, result);
+  tstzspan_set_stbox(p, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -515,7 +515,7 @@ Period_to_stbox(PG_FUNCTION_ARGS)
  * needs to be detoasted, extract only the header and not the full object.
  */
 void
-periodset_stbox_slice(Datum psdatum, STBox *box)
+tstzspanset_stbox_slice(Datum psdatum, STBox *box)
 {
   SpanSet *ps = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
@@ -523,13 +523,13 @@ periodset_stbox_slice(Datum psdatum, STBox *box)
       time_max_header_size());
   else
     ps = (SpanSet *) psdatum;
-  periodset_set_stbox(ps, box);
+  tstzspanset_set_stbox(ps, box);
   PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
 
-PGDLLEXPORT Datum Periodset_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Periodset_to_stbox);
+PGDLLEXPORT Datum Tstzspanset_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Transform a period set to a spatiotemporal box
@@ -537,18 +537,18 @@ PG_FUNCTION_INFO_V1(Periodset_to_stbox);
  * @sqlfunc @p ::
  */
 Datum
-Periodset_to_stbox(PG_FUNCTION_ARGS)
+Tstzspanset_to_stbox(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
   STBox *result = palloc(sizeof(STBox));
-  periodset_stbox_slice(psdatum, result);
+  tstzspanset_stbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Geo_timestamp_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_timestamp_to_stbox);
+PGDLLEXPORT Datum Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_timestamptz_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Transform a geometry/geography and a timestamp to a spatiotemporal box
@@ -556,30 +556,30 @@ PG_FUNCTION_INFO_V1(Geo_timestamp_to_stbox);
  * @sqlfunc @p ::
  */
 Datum
-Geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
+Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  STBox *result = geo_timestamp_to_stbox(gs, t);
+  STBox *result = geo_timestamptz_to_stbox(gs, t);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Geo_period_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_period_to_stbox);
+PGDLLEXPORT Datum Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_tstzspan_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Transform a geometry/geography and a period to a spatiotemporal box
  * @sqlfunc stbox()
  */
 Datum
-Geo_period_to_stbox(PG_FUNCTION_ARGS)
+Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Span *p = PG_GETARG_SPAN_P(1);
-  STBox *result = geo_period_to_stbox(gs, p);
+  STBox *result = geo_tstzspan_to_stbox(gs, p);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();

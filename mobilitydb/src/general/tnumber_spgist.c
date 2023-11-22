@@ -460,7 +460,7 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
   else if (type == T_TSTZSPAN)
   {
     Span *p = DatumGetSpanP(scankey->sk_argument);
-    period_set_tbox(p, result);
+    tstzspan_set_tbox(p, result);
   }
   else if (type == T_TBOX)
   {

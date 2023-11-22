@@ -115,7 +115,7 @@ contains_span_value(const Span *s, Datum d, meosType basetype)
  * @sqlop @p \@>
  */
 bool
-contains_intspan_int(const Span *s, int i)
+contains_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -129,7 +129,7 @@ contains_intspan_int(const Span *s, int i)
  * @sqlop @p \@>
  */
 bool
-contains_bigintspan_bigint(const Span *s, int64 i)
+contains_span_bigint(const Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -143,7 +143,7 @@ contains_bigintspan_bigint(const Span *s, int64 i)
  * @sqlop @p \@>
  */
 bool
-contains_floatspan_float(const Span *s, double d)
+contains_span_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -158,7 +158,7 @@ contains_floatspan_float(const Span *s, double d)
  * @sqlop @p \@>
  */
 bool
-contains_period_timestamp(const Span *s, TimestampTz t)
+contains_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -211,7 +211,7 @@ contained_value_span(Datum d, meosType basetype, const Span *s)
  * @sqlop @p <@
  */
 bool
-contained_int_intspan(int i, const Span *s)
+contained_int_span(int i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -225,7 +225,7 @@ contained_int_intspan(int i, const Span *s)
  * @sqlop @p <@
  */
 bool
-contained_bigint_bigintspan(int64 i, const Span *s)
+contained_bigint_span(int64 i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -239,7 +239,7 @@ contained_bigint_bigintspan(int64 i, const Span *s)
  * @sqlop @p <@
  */
 bool
-contained_float_floatspan(double d, const Span *s)
+contained_float_span(double d, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -253,7 +253,7 @@ contained_float_floatspan(double d, const Span *s)
  * @sqlop @p <@
  */
 bool
-contained_timestamp_period(TimestampTz t, const Span *s)
+contained_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -325,7 +325,7 @@ adjacent_span_value(const Span *s, Datum d, meosType basetype)
  * @sqlop @p -|-
  */
 bool
-adjacent_intspan_int(const Span *s, int i)
+adjacent_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -339,7 +339,7 @@ adjacent_intspan_int(const Span *s, int i)
  * @sqlop @p -|-
  */
 bool
-adjacent_bigintspan_bigint(const Span *s, int64 i)
+adjacent_span_bigint(const Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -353,7 +353,7 @@ adjacent_bigintspan_bigint(const Span *s, int64 i)
  * @sqlop @p -|-
  */
 bool
-adjacent_floatspan_float(const Span *s, double d)
+adjacent_span_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -367,7 +367,7 @@ adjacent_floatspan_float(const Span *s, double d)
  * @sqlop @p -|-
  */
 bool
-adjacent_period_timestamp(const Span *s, TimestampTz t)
+adjacent_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -424,7 +424,7 @@ left_value_span(Datum d, meosType basetype, const Span *s)
  * @sqlop @p <<
  */
 bool
-left_int_intspan(int i, const Span *s)
+left_int_span(int i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -439,7 +439,7 @@ left_int_intspan(int i, const Span *s)
  * @sqlop @p <<
  */
 bool
-left_bigint_bigintspan(int64 i, const Span *s)
+left_bigint_span(int64 i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -453,7 +453,7 @@ left_bigint_bigintspan(int64 i, const Span *s)
  * @sqlop @p <<
  */
 bool
-left_float_floatspan(double d, const Span *s)
+left_float_span(double d, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -467,7 +467,7 @@ left_float_floatspan(double d, const Span *s)
  * @sqlop @p <<
  */
 bool
-before_timestamp_period(TimestampTz t, const Span *s)
+before_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -496,7 +496,7 @@ left_span_value(const Span *s, Datum d, meosType basetype)
  * @sqlop @p <<
  */
 bool
-left_intspan_int(const Span *s, int i)
+left_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -510,7 +510,7 @@ left_intspan_int(const Span *s, int i)
  * @sqlop @p <<
  */
 bool
-left_bigintspan_bigint(const Span *s, int64 i)
+left_span_bigint(const Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -524,7 +524,7 @@ left_bigintspan_bigint(const Span *s, int64 i)
  * @sqlop @p <<
  */
 bool
-left_floatspan_float(const Span *s, double d)
+left_span_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -538,7 +538,7 @@ left_floatspan_float(const Span *s, double d)
  * @sqlop @p <<
  */
 bool
-before_period_timestamp(const Span *s, TimestampTz t)
+before_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -586,7 +586,7 @@ right_value_span(Datum d, meosType basetype, const Span *s)
  * @sqlop @p >>
  */
 bool
-right_int_intspan(int i, const Span *s)
+right_int_span(int i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -601,7 +601,7 @@ right_int_intspan(int i, const Span *s)
  * @sqlop @p >>
  */
 bool
-right_bigint_bigintspan(int64 i, const Span *s)
+right_bigint_span(int64 i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -615,7 +615,7 @@ right_bigint_bigintspan(int64 i, const Span *s)
  * @sqlop @p >>
  */
 bool
-right_float_floatspan(double d, const Span *s)
+right_float_span(double d, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -629,7 +629,7 @@ right_float_floatspan(double d, const Span *s)
  * @sqlop @p #>>
  */
 bool
-after_timestamp_period(TimestampTz t, const Span *s)
+after_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -656,7 +656,7 @@ right_span_value(const Span *s, Datum d, meosType basetype)
  * @sqlop @p >>
  */
 bool
-right_intspan_int(const Span *s, int i)
+right_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -671,7 +671,7 @@ right_intspan_int(const Span *s, int i)
  * @sqlop @p >>
  */
 bool
-right_bigintspan_bigint(const Span *s, int64 i)
+right_span_bigint(const Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -685,7 +685,7 @@ right_bigintspan_bigint(const Span *s, int64 i)
  * @sqlop @p >>
  */
 bool
-right_floatspan_float(const Span *s, double d)
+right_span_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -699,7 +699,7 @@ right_floatspan_float(const Span *s, double d)
  * @sqlop @p #>>
  */
 bool
-after_period_timestamp(const Span *s, TimestampTz t)
+after_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -744,7 +744,7 @@ overleft_value_span(Datum d, meosType basetype, const Span *s)
  * @sqlop @p &<
  */
 bool
-overleft_int_intspan(int i, const Span *s)
+overleft_int_span(int i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -759,7 +759,7 @@ overleft_int_intspan(int i, const Span *s)
  * @sqlop @p &<
  */
 bool
-overleft_bigint_bigintspan(int64 i, const Span *s)
+overleft_bigint_span(int64 i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -773,7 +773,7 @@ overleft_bigint_bigintspan(int64 i, const Span *s)
  * @sqlop @p &<
  */
 bool
-overleft_float_floatspan(double d, const Span *s)
+overleft_float_span(double d, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -787,7 +787,7 @@ overleft_float_floatspan(double d, const Span *s)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestamp_period(TimestampTz t, const Span *s)
+overbefore_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -819,7 +819,7 @@ overleft_span_value(const Span *s, Datum d, meosType basetype)
  * @sqlop @p &<
  */
 bool
-overleft_intspan_int(const Span *s, int i)
+overleft_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -834,7 +834,7 @@ overleft_intspan_int(const Span *s, int i)
  * @sqlop @p &<
  */
 bool
-overleft_bigintspan_bigint(const Span *s, int64 i)
+overleft_span_bigint(const Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -848,7 +848,7 @@ overleft_bigintspan_bigint(const Span *s, int64 i)
  * @sqlop @p &<
  */
 bool
-overleft_floatspan_float(const Span *s, double d)
+overleft_span_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -862,7 +862,7 @@ overleft_floatspan_float(const Span *s, double d)
  * @sqlop @p &<#
  */
 bool
-overbefore_period_timestamp(const Span *s, TimestampTz t)
+overbefore_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -913,7 +913,7 @@ overright_value_span(Datum d, meosType basetype, const Span *s)
  * @sqlop @p &>
  */
 bool
-overright_int_intspan(int i, const Span *s)
+overright_int_span(int i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -927,7 +927,7 @@ overright_int_intspan(int i, const Span *s)
  * @sqlop @p &>
  */
 bool
-overright_bigint_bigintspan(int64 i, const Span *s)
+overright_bigint_span(int64 i, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -941,7 +941,7 @@ overright_bigint_bigintspan(int64 i, const Span *s)
  * @sqlop @p &>
  */
 bool
-overright_float_floatspan(double d, const Span *s)
+overright_float_span(double d, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -955,7 +955,7 @@ overright_float_floatspan(double d, const Span *s)
  * @sqlop @p #&>
  */
 bool
-overafter_timestamp_period(TimestampTz t, const Span *s)
+overafter_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -983,7 +983,7 @@ overright_span_value(const Span *s, Datum d, meosType basetype)
  * @sqlop @p &>
  */
 bool
-overright_intspan_int(const Span *s, int i)
+overright_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -997,7 +997,7 @@ overright_intspan_int(const Span *s, int i)
  * @sqlop @p &>
  */
 bool
-overright_bigintspan_bigint(const Span *s, int64 i)
+overright_span_bigint(const Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||! ensure_same_span_basetype(s, T_INT8))
@@ -1011,7 +1011,7 @@ overright_bigintspan_bigint(const Span *s, int64 i)
  * @sqlop @p &>
  */
 bool
-overright_floatspan_float(const Span *s, double d)
+overright_span_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -1025,7 +1025,7 @@ overright_floatspan_float(const Span *s, double d)
  * @sqlop @p #&>
  */
 bool
-overafter_period_timestamp(const Span *s, TimestampTz t)
+overafter_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -1095,7 +1095,7 @@ union_span_value(const Span *s, Datum d, meosType basetype)
  * @sqlop @p +
  */
 SpanSet *
-union_intspan_int(const Span *s, int i)
+union_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -1109,7 +1109,7 @@ union_intspan_int(const Span *s, int i)
  * @sqlop @p +
  */
 SpanSet *
-union_bigintspan_bigint(const Span *s, int64 i)
+union_span_bigint(const Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -1123,7 +1123,7 @@ union_bigintspan_bigint(const Span *s, int64 i)
  * @sqlop @p +
  */
 SpanSet *
-union_floatspan_float(const Span *s, double d)
+union_span_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -1137,7 +1137,7 @@ union_floatspan_float(const Span *s, double d)
  * @sqlop @p +
  */
 SpanSet *
-union_period_timestamp(const Span *s, TimestampTz t)
+union_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -1213,7 +1213,7 @@ intersection_span_value(const Span *s, Datum d, meosType basetype,
  * @sqlop @p *
  */
 bool
-intersection_intspan_int(const Span *s, int i, int *result)
+intersection_span_int(const Span *s, int i, int *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -1232,7 +1232,7 @@ intersection_intspan_int(const Span *s, int i, int *result)
  * @sqlop @p *
  */
 bool
-intersection_bigintspan_bigint(const Span *s, int64 i, int64 *result)
+intersection_span_bigint(const Span *s, int64 i, int64 *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -1251,7 +1251,7 @@ intersection_bigintspan_bigint(const Span *s, int64 i, int64 *result)
  * @sqlop @p *
  */
 bool
-intersection_floatspan_float(const Span *s, double d, double *result)
+intersection_span_float(const Span *s, double d, double *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -1265,12 +1265,12 @@ intersection_floatspan_float(const Span *s, double d, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a period and a timestamp in the last
+ * @brief Compute the intersection of a span and a timestamptz in the last
  * argument
  * @sqlop @p *
  */
 bool
-intersection_period_timestamp(const Span *s, TimestampTz t,
+intersection_span_timestamptz(const Span *s, TimestampTz t,
   TimestampTz *result)
 {
   /* Ensure validity of the arguments */
@@ -1356,7 +1356,7 @@ minus_value_span(Datum d, meosType basetype, const Span *s,
  * @sqlop @p -
  */
 bool
-minus_int_intspan(int i, const Span *s, int *result)
+minus_int_span(int i, const Span *s, int *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1376,7 +1376,7 @@ minus_int_intspan(int i, const Span *s, int *result)
  * @sqlop @p -
  */
 bool
-minus_bigint_bigintspan(int64 i, const Span *s, int64 *result)
+minus_bigint_span(int64 i, const Span *s, int64 *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1395,7 +1395,7 @@ minus_bigint_bigintspan(int64 i, const Span *s, int64 *result)
  * @sqlop @p -
  */
 bool
-minus_float_floatspan(double d, const Span *s, double *result)
+minus_float_span(double d, const Span *s, double *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1414,7 +1414,7 @@ minus_float_floatspan(double d, const Span *s, double *result)
  * @sqlop @p -
  */
 bool
-minus_timestamp_period(TimestampTz t, const Span *s, TimestampTz *result)
+minus_timestamptz_span(TimestampTz t, const Span *s, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
@@ -1488,7 +1488,7 @@ minus_span_value(const Span *s, Datum d, meosType basetype)
  * @sqlop @p -
  */
 SpanSet *
-minus_intspan_int(const Span *s, int i)
+minus_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -1502,7 +1502,7 @@ minus_intspan_int(const Span *s, int i)
  * @sqlop @p -
  */
 SpanSet *
-minus_bigintspan_bigint(const Span *s, int64 i)
+minus_span_bigint(const Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -1516,7 +1516,7 @@ minus_bigintspan_bigint(const Span *s, int64 i)
  * @sqlop @p -
  */
 SpanSet *
-minus_floatspan_float(const Span *s, double d)
+minus_span_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -1530,7 +1530,7 @@ minus_floatspan_float(const Span *s, double d)
  * @sqlop @p -
  */
 SpanSet *
-minus_period_timestamp(const Span *s, TimestampTz t)
+minus_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
@@ -1689,7 +1689,7 @@ distance_span_value(const Span *s, Datum d, meosType basetype)
  * @sqlop @p <->
  */
 double
-distance_intspan_int(const Span *s, int i)
+distance_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT4))
@@ -1705,7 +1705,7 @@ distance_intspan_int(const Span *s, int i)
  * @sqlop @p <->
  */
 double
-distance_bigintspan_bigint(const Span *s, int64 i)
+distance_span_bigint(const Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_INT8))
@@ -1720,7 +1720,7 @@ distance_bigintspan_bigint(const Span *s, int64 i)
  * @sqlop @p <->
  */
 double
-distance_floatspan_float(const Span *s, double d)
+distance_span_float(const Span *s, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_FLOAT8))
@@ -1736,7 +1736,7 @@ distance_floatspan_float(const Span *s, double d)
  * @sqlop @p <->
  */
 double
-distance_period_timestamp(const Span *s, TimestampTz t)
+distance_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||

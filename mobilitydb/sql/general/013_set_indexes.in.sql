@@ -387,7 +387,7 @@ CREATE OPERATOR CLASS tstzset_quadtree_ops
   OPERATOR  31    #&> (tstzset, timestamptz),
   OPERATOR  31    #&> (tstzset, tstzset),
   -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  1  tstzspan_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
@@ -533,7 +533,7 @@ CREATE OPERATOR CLASS tstzset_kdtree_ops
   OPERATOR  31    #&> (tstzset, timestamptz),
   OPERATOR  31    #&> (tstzset, tstzset),
   -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  1  tstzspan_spgist_config(internal, internal),
   FUNCTION  2  span_kdtree_choose(internal, internal),
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),

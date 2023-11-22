@@ -45,6 +45,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <meos.h>
 
 typedef struct
@@ -72,6 +73,10 @@ int main(void)
   char header_buffer[MAX_LENGTH_HEADER];
   char date_buffer[MAX_LENGTH_DATE];
   char trip_buffer[MAX_LENGTH_TRIP];
+
+  /* Get start time */
+  clock_t t;
+  t = clock();
 
   /* Initialize MEOS */
   meos_initialize(NULL, NULL);
@@ -131,9 +136,9 @@ int main(void)
     /* Add the current value to the running aggregates */
     extent = tpoint_extent_transfn(extent, trip_rec.trip);
     /* Get the time of the trip at an hour granularity */
-    SpanSet *ps = periodset_tprecision(temporal_time(trip_rec.trip), interval, origin);
+    SpanSet *ps = tstzspanset_tprecision(temporal_time(trip_rec.trip), interval, origin);
     /* Aggregate the time of the trip */
-    state = periodset_tcount_transfn(state, ps);
+    state = tstzspanset_tcount_transfn(state, ps);
     /* Free memory */
     free(trip_rec.trip);
 
@@ -161,6 +166,11 @@ int main(void)
 
   /* Finalize MEOS */
   meos_finalize();
+
+  /* Calculate the elapsed time */
+  t = clock() - t;
+  double time_taken = ((double) t) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
 
   return 0;
 }

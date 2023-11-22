@@ -1680,7 +1680,7 @@ CREATE INDEX tbl_bigintspanset_kdtree_idx ON tbl_bigintspanset USING SPGIST(b bi
 CREATE INDEX
 CREATE INDEX tbl_floatspanset_kdtree_idx ON tbl_floatspanset USING SPGIST(f floatspanset_kdtree_ops);
 CREATE INDEX
-CREATE INDEX tbl_tstzspanset_kdtree_idx ON tbl_tstzspanset USING SPGIST(ps periodset_kdtree_ops);
+CREATE INDEX tbl_tstzspanset_kdtree_idx ON tbl_tstzspanset USING SPGIST(ps tstzspanset_kdtree_ops);
 CREATE INDEX
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE t1.i @> t2.i )

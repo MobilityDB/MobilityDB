@@ -155,69 +155,69 @@ Tbox_as_text(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Number_timestamp_to_tbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Number_timestamp_to_tbox);
+PGDLLEXPORT Datum Number_timestamptz_to_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Number_timestamptz_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Transform the integer and the timestamp to a temporal box
  * @sqlfunc tbox()
  */
 Datum
-Number_timestamp_to_tbox(PG_FUNCTION_ARGS)
+Number_timestamptz_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  TBox *result = number_timestamp_to_tbox(d, basetype, t);
+  TBox *result = number_timestamptz_to_tbox(d, basetype, t);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Number_period_to_tbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Number_period_to_tbox);
+PGDLLEXPORT Datum Number_tstzspan_to_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Number_tstzspan_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief  Transform the integer and the period to a temporal box
+ * @brief  Transform an integer and a timestamptz span to a temporal box
  * @sqlfunc tbox()
  */
 Datum
-Number_period_to_tbox(PG_FUNCTION_ARGS)
+Number_tstzspan_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *p = PG_GETARG_SPAN_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  TBox *result = number_period_to_tbox(d, basetype, p);
+  TBox *result = number_tstzspan_to_tbox(d, basetype, p);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Span_timestamp_to_tbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_timestamp_to_tbox);
+PGDLLEXPORT Datum Numnumspan_timestamptz_to_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numnumspan_timestamptz_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Transform the span and the timestamp to a temporal box
  * @sqlfunc tbox()
  */
 Datum
-Span_timestamp_to_tbox(PG_FUNCTION_ARGS)
+Numnumspan_timestamptz_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TBox *result = span_timestamp_to_tbox(span, t);
+  TBox *result = numspan_timestamptz_to_tbox(span, t);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Span_period_to_tbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_period_to_tbox);
+PGDLLEXPORT Datum Numspan_tstzspan_to_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_tstzspan_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Transform the span and the period to a temporal box
  * @sqlfunc tbox()
  */
 Datum
-Span_period_to_tbox(PG_FUNCTION_ARGS)
+Numspan_tstzspan_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
   Span *p = PG_GETARG_SPAN_P(1);
-  TBox *result = span_period_to_tbox(span, p);
+  TBox *result = numspan_tstzspan_to_tbox(span, p);
   PG_RETURN_POINTER(result);
 }
 
@@ -259,19 +259,19 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Timestamp_to_tbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestamp_to_tbox);
+PGDLLEXPORT Datum Timestamptz_to_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestamptz_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Transform the timestamp to a temporal box
  * @sqlfunc tbox()
  */
 Datum
-Timestamp_to_tbox(PG_FUNCTION_ARGS)
+Timestamptz_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   TBox *result = palloc(sizeof(TBox));
-  timestamp_set_tbox(t, result);
+  timestamptz_set_tbox(t, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -290,7 +290,7 @@ Set_to_tbox(PG_FUNCTION_ARGS)
   if (numset_type(s->settype))
     numset_set_tbox(s, result);
   else
-    timestampset_set_tbox(s, result);
+    tstzset_set_tbox(s, result);
   PG_FREE_IF_COPY_P(s, 0);
   PG_RETURN_POINTER(result);
 }
@@ -310,7 +310,7 @@ Span_to_tbox(PG_FUNCTION_ARGS)
   if (numspan_type(s->spantype))
     numspan_set_tbox(s, result);
   else
-    period_set_tbox(s, result);
+    tstzspan_set_tbox(s, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -330,7 +330,7 @@ spanset_tbox_slice(Datum ssdatum, TBox *box)
   if (numspan_type(ss->span.spantype))
     numspan_set_tbox(&ss->span, box);
   else
-    period_set_tbox(&ss->span, box);
+    tstzspan_set_tbox(&ss->span, box);
   PG_FREE_IF_COPY_P(ss, DatumGetPointer(ssdatum));
   return;
 }
@@ -370,18 +370,18 @@ Tbox_to_floatspan(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tbox_to_period(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_to_period);
+PGDLLEXPORT Datum Tbox_to_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_to_tstzspan);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a temporal box as a period
  * @sqlfunc period()
  */
 Datum
-Tbox_to_period(PG_FUNCTION_ARGS)
+Tbox_to_tstzspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  Span *result = tbox_to_period(box);
+  Span *result = tbox_to_tstzspan(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

@@ -215,7 +215,7 @@ CREATE FUNCTION span_gist_consistent(internal, tstzspanset, smallint, oid, inter
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS periodset_rtree_ops
+CREATE OPERATOR CLASS tstzspanset_rtree_ops
   DEFAULT FOR TYPE tstzspanset USING gist AS
   STORAGE tstzspan,
   -- overlaps
@@ -413,7 +413,7 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS periodset_quadtree_ops
+CREATE OPERATOR CLASS tstzspanset_quadtree_ops
   DEFAULT FOR TYPE tstzspanset USING spgist AS
   -- overlaps
   OPERATOR  3    && (tstzspanset, tstzspan),
@@ -451,7 +451,7 @@ CREATE OPERATOR CLASS periodset_quadtree_ops
   OPERATOR  31    #&> (tstzspanset, tstzspan),
   OPERATOR  31    #&> (tstzspanset, tstzspanset),
   -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  1  tstzspan_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
@@ -603,7 +603,7 @@ CREATE OPERATOR CLASS floatspanset_kdtree_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS periodset_kdtree_ops
+CREATE OPERATOR CLASS tstzspanset_kdtree_ops
   FOR TYPE tstzspanset USING spgist AS
   -- overlaps
   OPERATOR  3    && (tstzspanset, tstzspan),
@@ -641,7 +641,7 @@ CREATE OPERATOR CLASS periodset_kdtree_ops
   OPERATOR  31    #&> (tstzspanset, tstzspan),
   OPERATOR  31    #&> (tstzspanset, tstzspanset),
   -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  1  tstzspan_spgist_config(internal, internal),
   FUNCTION  2  span_kdtree_choose(internal, internal),
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),

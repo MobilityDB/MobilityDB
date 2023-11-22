@@ -255,14 +255,14 @@ SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspan '[2001-01-01, 2001-06-01]' &<# 
 
 -------------------------------------------------------------------------------
 
---SELECT period_statistics_validate();
+--SELECT tstzspan_statistics_validate();
 --VACUUM ANALYSE tbl_tstzspan;
 --VACUUM ANALYSE tbl_tstzspanset;
 --VACUUM ANALYSE tbl_tstzset;
 --SELECT COUNT(*) FROM execution_stats WHERE abs(PlanRows-ActualRows) > 10
 -- STATISTICS COLLECTION FUNCTIONS
 
-CREATE OR REPLACE FUNCTION period_statistics_validate()
+CREATE OR REPLACE FUNCTION tstzspan_statistics_validate()
 RETURNS CHAR(10) AS $$
 DECLARE
   Query CHAR(5);
@@ -337,7 +337,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -356,7 +356,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -375,7 +375,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -394,7 +394,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -493,7 +493,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -512,7 +512,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -531,7 +531,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -551,7 +551,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -631,7 +631,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -650,7 +650,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodSet:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodSet:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -669,7 +669,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -688,7 +688,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -707,7 +707,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -726,7 +726,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -768,7 +768,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -787,7 +787,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -806,7 +806,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -844,7 +844,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -882,7 +882,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -901,7 +901,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -1019,7 +1019,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -1038,7 +1038,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -1095,7 +1095,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -1114,7 +1114,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodSet:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodSet:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -1171,7 +1171,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -1190,7 +1190,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -1251,7 +1251,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -1270,7 +1270,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -1327,7 +1327,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -1346,7 +1346,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodSet:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodSet:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -1403,7 +1403,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -1422,7 +1422,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -1483,7 +1483,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -1502,7 +1502,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -1559,7 +1559,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -1578,7 +1578,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodSet:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodSet:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -1635,7 +1635,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -1654,7 +1654,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -1677,7 +1677,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -1734,7 +1734,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -1772,7 +1772,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -1848,7 +1848,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -1867,7 +1867,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -1886,7 +1886,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -1909,7 +1909,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -1928,7 +1928,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
@@ -1985,7 +1985,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -2004,7 +2004,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspan
@@ -2061,7 +2061,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandPeriod:= random_tstzspan('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset
@@ -2080,7 +2080,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandPeriodset:= random_tstzspanset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzspanset

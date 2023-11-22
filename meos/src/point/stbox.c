@@ -329,7 +329,7 @@ stbox_copy(const STBox *box)
  * @sqlfunc stbox()
  */
 STBox *
-geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
+geo_timestamptz_to_stbox(const GSERIALIZED *gs, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) gs))
@@ -351,7 +351,7 @@ geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
  * @sqlfunc stbox()
  */
 STBox *
-geo_period_to_stbox(const GSERIALIZED *gs, const Span *s)
+geo_tstzspan_to_stbox(const GSERIALIZED *gs, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||  
@@ -529,7 +529,7 @@ stbox_to_geo(const STBox *box)
  * @sqlop @p ::
  */
 Span *
-stbox_to_period(const STBox *box)
+stbox_to_tstzspan(const STBox *box)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_has_T_stbox(box))
@@ -724,7 +724,7 @@ geoarr_set_stbox(const Datum *values, int count, STBox *box)
  * @brief Set a spatiotemporal box from a timestamp.
  */
 void
-timestamp_set_stbox(TimestampTz t, STBox *box)
+timestamptz_set_stbox(TimestampTz t, STBox *box)
 {
   assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -745,10 +745,10 @@ timestamp_set_stbox(TimestampTz t, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-timestamp_to_stbox(TimestampTz t)
+timestamptz_to_stbox(TimestampTz t)
 {
   STBox *result = palloc(sizeof(STBox));
-  timestamp_set_stbox(t, result);
+  timestamptz_set_stbox(t, result);
   return result;
 }
 #endif /* MEOS */
@@ -758,7 +758,7 @@ timestamp_to_stbox(TimestampTz t)
  * @brief Set a spatiotemporal box from a timestamp set.
  */
 void
-timestampset_set_stbox(const Set *s, STBox *box)
+tstzset_set_stbox(const Set *s, STBox *box)
 {
   assert(s); assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -776,13 +776,13 @@ timestampset_set_stbox(const Set *s, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-timestampset_to_stbox(const Set *s)
+tstzset_to_stbox(const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
-  timestampset_set_stbox(s, result);
+  tstzset_set_stbox(s, result);
   return result;
 }
 #endif /* MEOS */
@@ -792,7 +792,7 @@ timestampset_to_stbox(const Set *s)
  * @brief Set a spatiotemporal box from a period.
  */
 void
-period_set_stbox(const Span *s, STBox *box)
+tstzspan_set_stbox(const Span *s, STBox *box)
 {
   assert(s); assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -810,13 +810,13 @@ period_set_stbox(const Span *s, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-period_to_stbox(const Span *s)
+tstzspan_to_stbox(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
-  period_set_stbox(s, result);
+  tstzspan_set_stbox(s, result);
   return result;
 }
 #endif /* MEOS */
@@ -826,7 +826,7 @@ period_to_stbox(const Span *s)
  * @brief Set a spatiotemporal box from a period set.
  */
 void
-periodset_set_stbox(const SpanSet *ss, STBox *box)
+tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
 {
   assert(ss); assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -844,7 +844,7 @@ periodset_set_stbox(const SpanSet *ss, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-periodset_to_stbox(const SpanSet *ss)
+tstzspanset_to_stbox(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
@@ -852,7 +852,7 @@ periodset_to_stbox(const SpanSet *ss)
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));
-  periodset_set_stbox(ss, result);
+  tstzspanset_set_stbox(ss, result);
   return result;
 }
 #endif /* MEOS */

@@ -426,7 +426,7 @@ CREATE FUNCTION shift(floatset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(tstzset, interval)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Timestampset_shift'
+  AS 'MODULE_PATHNAME', 'Tstzset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION scale(intset, int)
@@ -443,7 +443,7 @@ CREATE FUNCTION scale(floatset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION scale(tstzset, interval)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Timestampset_scale'
+  AS 'MODULE_PATHNAME', 'Tstzset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shiftScale(intset, int, int)
@@ -460,7 +460,7 @@ CREATE FUNCTION shiftScale(floatset, float, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shiftScale(tstzset, interval, interval)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Timestampset_shift_scale'
+  AS 'MODULE_PATHNAME', 'Tstzset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(floatset, integer DEFAULT 0)
@@ -722,16 +722,16 @@ CREATE FUNCTION floatset_union_finalfn(internal)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION textset_union_finalfn(internal)
-  RETURNS textset
-  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION dateset_union_finalfn(internal)
   RETURNS dateset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION timestampset_union_finalfn(internal)
+CREATE FUNCTION tstzset_union_finalfn(internal)
   RETURNS tstzset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION textset_union_finalfn(internal)
+  RETURNS textset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
@@ -768,7 +768,7 @@ CREATE AGGREGATE set_union(date) (
 CREATE AGGREGATE set_union(timestamptz) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  FINALFUNC = timestampset_union_finalfn,
+  FINALFUNC = tstzset_union_finalfn,
   PARALLEL = safe
 );
 
@@ -799,7 +799,7 @@ CREATE AGGREGATE set_union(dateset) (
 CREATE AGGREGATE set_union(tstzset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  FINALFUNC = timestampset_union_finalfn,
+  FINALFUNC = tstzset_union_finalfn,
   PARALLEL = safe
 );
 

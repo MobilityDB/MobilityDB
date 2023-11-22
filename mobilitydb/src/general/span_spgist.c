@@ -508,13 +508,13 @@ Floatspan_spgist_config(PG_FUNCTION_ARGS)
   PG_RETURN_VOID();
 }
 
-PGDLLEXPORT Datum Period_spgist_config(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_spgist_config);
+PGDLLEXPORT Datum Tstzspan_spgist_config(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_spgist_config);
 /**
  * @brief SP-GiST config function for span types
  */
 Datum
-Period_spgist_config(PG_FUNCTION_ARGS)
+Tstzspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_TSTZSPAN);  /* A type represented by its bounding box */

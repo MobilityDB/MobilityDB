@@ -28,12 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that generates a given number of tgeompoint instants,
- * assembles the instants into a sequence at the end of the generation process,
- * and outputs the number of instants and the distance travelled.
- *
- * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence.
+ * @brief A simple program that applies multidimensional tiling to a temporal
+ * float according to value and/or time buckets.
  *
  * The program can be build as follows
  * @code
@@ -59,6 +55,7 @@ int main(void)
 
   Temporal *tfloat = tfloat_in("[1@2020-03-01, 10@2020-03-10]");
   Interval *interv = pg_interval_in("2 days", -1);
+  double vorigin = 0.0;
   TimestampTz torigin = pg_timestamptz_in("2020-03-01", -1);
 
   bool valuesplit = true; /* Set this parameter to enable/disable value split */
@@ -70,12 +67,23 @@ int main(void)
   int count;
   if (valuesplit)
     result = tfloat_value_time_split(tfloat, 2.0, timesplit ? interv : NULL,
-      0.0, torigin, &value_buckets, &time_buckets, &count);
+      vorigin, torigin, &value_buckets, &time_buckets, &count);
   else
     result = temporal_time_split(tfloat, interv, torigin, &time_buckets,
       &count);
 
+  /* Print the input value to split */
+  char *tfloat_str = tfloat_out(tfloat, 3);
+  printf("------------------\n");
+  printf("| Value to split |\n");
+  printf("------------------\n\n");
+  printf("%s\n\n", tfloat_str);
+  free(tfloat_str);
+
   /* Output the resulting fragments */
+  printf("----------\n");
+  printf("Fragments:\n");
+  printf("----------\n\n");
   int i;
   for (i = 0; i < count; i++)
   {
@@ -92,7 +100,7 @@ int main(void)
   }
 
   /* Print information about the result */
-  printf("Number of fragments: %d\n", count);
+  printf("\nNumber of fragments: %d\n", count);
 
   /* Finalize MEOS */
   meos_finalize();

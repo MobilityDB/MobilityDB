@@ -28,13 +28,14 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that reads AIS data from a CSV file, constructs
- * trips from these records, and outputs for each trip the MMSI, the number of
- * instants, and the distance travelled.
+ * @brief A simple program that reads from a CSV file a set of records
+ * containing text sets, group them by the key % 10, and at the end apply a
+ * union aggregate to the groups.
+ * @note The function tests the expandable set data structure.
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o textset_expand textset_expand.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o textset_group_agg textset_group_agg.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -60,14 +61,14 @@ typedef struct
 int main(void)
 {
   /* Initialize MEOS */
-  meos_initialize("", NULL);
+  meos_initialize(NULL, NULL);
 
   /* Get start time */
   clock_t t;
   t = clock();
 
-  /* Spanset for aggregating the spans */
-  Set *state = NULL;
+  /* Array of sets for aggregating the input sets grouping them by k%10 */
+  Set *state[10] = {0};
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/textset.csv", "r");
@@ -107,43 +108,41 @@ int main(void)
 
     no_records++;
 
-    /* Transform the string representing the timestamp into a timestamp value */
+    /* Transform the string representing the set into a set value */
     rec.set = textset_in(set_buffer);
 
-    state = set_union_transfn(state, rec.set);
+    /* Aggregate the input set into the corresponding group */
+    state[rec.k % 10] = set_union_transfn(state[rec.k % 10], rec.set);
 
-    /*
-     * Create the instants and append them in the corresponding ship record.
-     * In the input file it is assumed that
-     * - The coordinates are given in the WGS84 geographic coordinate system
-     * - The timestamps are given in GMT time zone
-     */
-    char *set_out = textset_out(rec.set);
-    printf("k: %d, set: %s\n", rec.k, set_out);
-    free(set_out);
+    /* Free memory of the input set */
     free(rec.set);
   } while (!feof(file));
-
-  printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
 
   /* Close the file */
   fclose(file);
 
-  /* Compute the final result */
-  Set *final = set_union_finalfn(state);
+  printf("\n%d records read.\n%d incomplete record%s ignored.\n\n",
+    no_records, no_nulls, (no_nulls > 1) ? "s" : "");
 
-  /* Print the accumulated set */
-  char *set_out = textset_out(final);
-  printf("set: %d\n%s\n", final->count, set_out);
-  free(set_out);
-  free(state);
-  free(final);
+  /* Compute the final result */
+  for (int i = 0; i < 10; i++)
+  {
+    Set *final = set_union_finalfn(state[i]);
+    /* Print the accumulated set */
+    char *final_out = textset_out(final);
+    printf("-------------------------------\n");
+    printf("Set: %d, Number of elements: %d\n", i, final->count);
+    printf("-------------------------------\n");
+    printf("%s\n", final_out);
+    free(final_out);
+    free(final);    
+    free(state[i]);
+  }
 
   /* Calculate the elapsed time */
   t = clock() - t;
   double time_taken = ((double) t) / CLOCKS_PER_SEC;
-  printf("The program took %f seconds to execute\n", time_taken);
+  printf("\nThe program took %f seconds to execute\n", time_taken);
 
   /* Finalize MEOS */
   meos_finalize();

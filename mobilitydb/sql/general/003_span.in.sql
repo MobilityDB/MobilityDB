@@ -426,7 +426,7 @@ CREATE FUNCTION shift(floatspan, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(tstzspan, interval)
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Period_shift'
+  AS 'MODULE_PATHNAME', 'Tstzspan_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION scale(intspan, int)
@@ -443,7 +443,7 @@ CREATE FUNCTION scale(floatspan, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION scale(tstzspan, interval)
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Period_scale'
+  AS 'MODULE_PATHNAME', 'Tstzspan_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shiftScale(intspan, int, int)
@@ -460,7 +460,7 @@ CREATE FUNCTION shiftScale(floatspan, float, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shiftScale(tstzspan, interval, interval)
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Period_shift_scale'
+  AS 'MODULE_PATHNAME', 'Tstzspan_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(floatspan, integer DEFAULT 0)
@@ -575,7 +575,7 @@ CREATE FUNCTION duration(datespan)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION duration(tstzspan)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'Period_duration'
+  AS 'MODULE_PATHNAME', 'Tstzspan_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
