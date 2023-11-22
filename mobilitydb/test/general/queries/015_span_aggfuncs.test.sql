@@ -50,8 +50,8 @@ SELECT extent(temp) FROM (VALUES
 
 SELECT extent(t) FROM tbl_timestamptz;
 SELECT extent(t) FROM tbl_tstzset;
-SELECT extent(p) FROM tbl_tstzspan;
-SELECT extent(ps) FROM tbl_tstzspanset;
+SELECT extent(t) FROM tbl_tstzspan;
+SELECT extent(t) FROM tbl_tstzspanset;
 
 SELECT numValues(set_union(t)) from tbl_tstzset_big;
 SELECT extent(temp::tstzspan) FROM tbl_tfloat_big;
@@ -105,8 +105,8 @@ SELECT tcount(temp) FROM (VALUES
 
 SELECT numInstants(tcount(t)) FROM tbl_timestamptz;
 SELECT numInstants(tcount(t)) FROM tbl_tstzset;
-SELECT numInstants(tcount(p)) FROM tbl_tstzspan;
-SELECT numInstants(tcount(ps)) FROM tbl_tstzspanset;
+SELECT numInstants(tcount(t)) FROM tbl_tstzspan;
+SELECT numInstants(tcount(t)) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------
 
@@ -164,7 +164,7 @@ SELECT startValue(set_union(t)) FROM Temp;
 
 SELECT numValues(set_union(t)) FROM tbl_timestamptz;
 SELECT numValues(set_union(t)) FROM tbl_tstzset;
-SELECT numSpans(span_union(p)) FROM tbl_tstzspan;
-SELECT numSpans(span_union(ps)) FROM tbl_tstzspanset;
+SELECT numSpans(span_union(t)) FROM tbl_tstzspan;
+SELECT numSpans(span_union(t)) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------

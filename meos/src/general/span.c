@@ -735,6 +735,19 @@ float_to_span(double d)
 
 /**
  * @ingroup libmeos_setspan_conversion
+ * @brief Convert a date as a span
+ * @sqlop @p ::
+ */
+Span *
+date_to_span(DateADT d)
+{
+  Span *result = span_make(DateADTGetDatum(d), DateADTGetDatum(d),
+    true, true, T_DATE);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_conversion
  * @brief Convert a timestamptz as a span
  * @sqlop @p ::
  */
@@ -967,7 +980,7 @@ span_width(const Span *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the duration of a period as an interval.
+ * @brief Return the duration of a date span as an interval.
  * @sqlfunc duration()
  */
 Interval *
@@ -981,7 +994,7 @@ datespan_duration(const Span *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the duration of a period as an interval.
+ * @brief Return the duration of a timestamptz span as an interval.
  * @sqlfunc duration()
  */
 Interval *

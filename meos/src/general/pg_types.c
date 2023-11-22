@@ -293,17 +293,17 @@ int4_in(const char *str)
 static int
 mobdb_ltoa(int32 value, char *a)
 {
-	uint32		uvalue = (uint32) value;
-	int			len = 0;
+  uint32 uvalue = (uint32) value;
+  int len = 0;
 
-	if (value < 0)
-	{
-		uvalue = (uint32) 0 - uvalue;
-		a[len++] = '-';
-	}
-	len += pg_ultoa_n(uvalue, a + len);
-	a[len] = '\0';
-	return len;
+  if (value < 0)
+  {
+    uvalue = (uint32) 0 - uvalue;
+    a[len++] = '-';
+  }
+  len += pg_ultoa_n(uvalue, a + len);
+  a[len] = '\0';
+  return len;
 }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
@@ -829,11 +829,11 @@ pg_date_out(DateADT date)
 #endif /* MEOS */
 
 /**
- * @brief Add a number of days to a date, giving a new date.
+ * @brief Sub a number of days to a date, giving a new date.
  * Must handle both positive and negative numbers of days.
  */
 DateADT
-date_pl_int(DateADT d, int32 days)
+pg_date_pl_int(DateADT d, int32 days)
 {
   DateADT result;
 
@@ -856,7 +856,7 @@ date_pl_int(DateADT d, int32 days)
  * @brief Subtract a number of days from a date, giving a new date.
  */
 DateADT
-date_mi_int(DateADT d, int32 days)
+pg_date_mi_int(DateADT d, int32 days)
 {
   DateADT result;
 
@@ -872,6 +872,21 @@ date_mi_int(DateADT d, int32 days)
     return DATEVAL_NOEND;
   }
 
+  return result;
+}
+
+/**
+ * @brief Compute difference between two dates in days.
+ */
+Interval *
+pg_date_mi(DateADT d1, DateADT d2)
+{
+  if (DATE_NOT_FINITE(d1) || DATE_NOT_FINITE(d2))
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "cannot subtract infinite dates");
+
+  Interval *result = palloc0(sizeof(Interval));
+  result->day = (int32) (d1 - d2);
   return result;
 }
 

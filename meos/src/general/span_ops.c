@@ -1644,12 +1644,15 @@ distance_value_value(Datum l, Datum r, meosType type)
     return (double) llabs(DatumGetInt64(l) - DatumGetInt64(r));
   if (type == T_FLOAT8)
     return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
+  if (type == T_DATE)
+    return (double) (DatumGetDateADT(l) - DatumGetDateADT(r));
   if (type == T_TIMESTAMPTZ)
     /* Distance in seconds if the base type is TimestampTz */
     return (double) (llabs((DatumGetTimestampTz(l) -
       DatumGetTimestampTz(r)))) / USECS_PER_SEC;
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown types for distance between values of type: %d", type);
+    "Unknown types for distance between values of type: %s",
+    meostype_name(type));
   return DBL_MAX;
 }
 

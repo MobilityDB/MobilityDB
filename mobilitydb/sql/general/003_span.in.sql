@@ -345,15 +345,6 @@ CREATE CAST (float AS floatspan) WITH FUNCTION span(float);
 CREATE CAST (date AS datespan) WITH FUNCTION span(date);
 CREATE CAST (timestamptz AS tstzspan) WITH FUNCTION span(timestamptz);
 
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-CREATE FUNCTION tstzspan(date)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Date_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (date AS tstzspan) WITH FUNCTION tstzspan(date);
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-
 CREATE FUNCTION span(intset)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Set_span'
@@ -383,6 +374,10 @@ CREATE CAST (tstzset AS tstzspan) WITH FUNCTION span(tstzset);
 
 CREATE FUNCTION span(int4range)
   RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Range_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(daterange)
+  RETURNS datespan
   AS 'MODULE_PATHNAME', 'Range_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span(tstzrange)
@@ -571,7 +566,7 @@ CREATE FUNCTION width(floatspan)
 
 CREATE FUNCTION duration(datespan)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'Period_duration'
+  AS 'MODULE_PATHNAME', 'Datespan_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION duration(tstzspan)
   RETURNS interval
@@ -625,7 +620,7 @@ CREATE OR REPLACE FUNCTION _mobdb_span_joinsel(tbl1 regclass, col1 text,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Operators
+ * Comparison operators
  ******************************************************************************/
 
 CREATE FUNCTION span_eq(intspan, intspan)

@@ -519,4 +519,79 @@ fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
   PG_RETURN_VOID();
 }
 
+/*****************************************************************************
+ * Range and multirange catalog functions
+ *****************************************************************************/
+
+/**
+ * @brief Return true if the type is a base type of a built-in PostgreSQL range
+ * type
+ */
+bool
+range_basetype(meosType type)
+{
+  if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Ensure that a type is a built-in PostgreSQL range type
+ */
+bool
+ensure_range_basetype(meosType type)
+{
+  if (! range_basetype(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The value must be of a type compatible with a range type");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the range type of a base type
+ */
+meosType
+basetype_rangetype(meosType type)
+{
+  ensure_range_basetype(type);
+  if (type == T_INT4)
+    return type_oid(T_INT4RANGE);
+  else if (type == T_DATE)
+    return type_oid(T_DATERANGE);
+  else if (type ==  T_TIMESTAMPTZ)
+    return type_oid(T_TSTZRANGE);
+  else
+  {
+    /* We only arrive here on error */
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "type %s is not a base type of a range type", meostype_name(type));
+    return T_UNKNOWN;
+  }
+}
+
+/**
+ * @brief Return the range type of a base type
+ */
+meosType
+basetype_multirangetype(meosType type)
+{
+  ensure_range_basetype(type);
+  if (type == T_INT4)
+    return type_oid(T_INT4MULTIRANGE);
+  else if (type == T_DATE)
+    return type_oid(T_DATEMULTIRANGE);
+  else if (type ==  T_TIMESTAMPTZ)
+    return type_oid(T_TSTZMULTIRANGE);
+  else
+  {
+    /* We only arrive here on error */
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "type %s is not a base type of a multirange type", meostype_name(type));
+    return T_UNKNOWN;
+  }
+}
+
 /*****************************************************************************/

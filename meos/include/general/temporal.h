@@ -171,12 +171,13 @@ typedef enum
  *****************************************************************************/
 
 /* Data type size */
-#define MEOS_WKB_TIMESTAMP_SIZE   8
-#define MEOS_WKB_DOUBLE_SIZE      8
+#define MEOS_WKB_BYTE_SIZE        1
 #define MEOS_WKB_INT2_SIZE        2
 #define MEOS_WKB_INT4_SIZE        4
 #define MEOS_WKB_INT8_SIZE        8
-#define MEOS_WKB_BYTE_SIZE        1
+#define MEOS_WKB_DOUBLE_SIZE      8
+#define MEOS_WKB_DATE_SIZE        4
+#define MEOS_WKB_TIMESTAMP_SIZE   8
 
 /* Temporal subtype */
 enum MEOS_WKB_TSUBTYPE

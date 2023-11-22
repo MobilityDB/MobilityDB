@@ -59,6 +59,21 @@ SELECT span(timestamptz '2000-01-02', '2000-01-01');
 -- Casting
 -------------------------------------------------------------------------------
 
+SELECT range(datespan '[2000-01-01,2000-01-01]');
+SELECT range(datespan '[2000-01-01,2000-01-02]');
+SELECT range(datespan '(2000-01-01,2000-01-02]');
+SELECT range(datespan '[2000-01-01,2000-01-02)');
+SELECT range(datespan '(2000-01-01,2000-01-03)');
+
+SELECT span(daterange '[2000-01-01,2000-01-01]');
+SELECT span(daterange '[2000-01-01,2000-01-02]');
+SELECT span(daterange '(2000-01-01,2000-01-02]');
+SELECT span(daterange '[2000-01-01,2000-01-02)');
+SELECT span(daterange'(2000-01-01,2000-01-03)');
+
+SELECT span(date '2000-01-01');
+SELECT date '2000-01-01'::datespan;
+
 SELECT range(tstzspan '[2000-01-01,2000-01-01]');
 SELECT range(tstzspan '[2000-01-01,2000-01-02]');
 SELECT range(tstzspan '(2000-01-01,2000-01-02]');
@@ -158,6 +173,8 @@ SELECT span_hash_extended(tstzspan '[2000-01-01,2000-01-02]', 1) <> span_hash_ex
 -- canonicalize
 SELECT intspan '[1,2]';
 SELECT intspan '(1,2]';
+SELECT datespan '[2000-01-01,2000-01-02]';
+SELECT datespan '(2000-01-01,2000-01-02]';
 
 SELECT round(floatspan '[1.123456789,2.123456789]',6);
 SELECT round(floatspan '[-inf,2.123456789]',6);
@@ -196,5 +213,22 @@ SELECT 5.5 &> floatspan '[3.5, 5.5]';
 
 SELECT floatspan '[3.5, 5.5]' -|- 5.5;
 SELECT 5.5 -|- floatspan '[3.5, 5.5]';
+
+-------------------------------------------------------------------------------
+
+SELECT datespan '[2000-01-03,2000-01-05)' <<# date '2000-01-05';
+SELECT date '2000-01-05' <<# datespan '[2000-01-03,2000-01-05)';
+
+SELECT datespan '[2000-01-03,2000-01-05)' #>> date '2000-01-05';
+SELECT date '2000-01-05' #>> datespan '[2000-01-03,2000-01-05)';
+
+SELECT datespan '[2000-01-03,2000-01-05)' &<# date '2000-01-05';
+SELECT date '2000-01-05' &<# datespan '[2000-01-03,2000-01-05)';
+
+SELECT datespan '[2000-01-03,2000-01-05)' #&> date '2000-01-05';
+SELECT date '2000-01-05' #&> datespan '[2000-01-03,2000-01-05)';
+
+SELECT datespan '[2000-01-03,2000-01-05)' -|- date '2000-01-05';
+SELECT date '2000-01-05' -|- datespan '[2000-01-03,2000-01-05)';
 
 -------------------------------------------------------------------------------

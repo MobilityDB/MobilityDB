@@ -419,7 +419,7 @@ textset_out(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Output a set of timestamps.
+ * @brief Output a set of dates.
 */
 char *
 dateset_out(const Set *s)
@@ -988,6 +988,18 @@ text_to_set(text *txt)
 
 /**
  * @ingroup libmeos_setspan_conversion
+ * @brief Convert a date as a set
+ * @sqlop @p ::
+ */
+Set *
+date_to_set(DateADT d)
+{
+  Datum v = DateADTGetDatum(d);
+  return set_make(&v, 1, T_DATE, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_conversion
  * @brief Convert a timestamp as a set
  * @sqlop @p ::
  */
@@ -1320,7 +1332,7 @@ textset_end_value(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the end value of a timestamp set.
+ * @brief Return the end value of a date set.
  * @return On error return DATEVAL_NOEND
  * @sqlfunc endDate()
  */
@@ -1630,7 +1642,7 @@ textset_values(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the array of values of a timestamp set.
+ * @brief Return the array of values of a date set.
  * @return On error return NULL
  * @sqlfunc dates()
  */

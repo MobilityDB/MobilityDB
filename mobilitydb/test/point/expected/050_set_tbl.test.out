@@ -113,14 +113,14 @@ SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST
 DROP TABLE IF EXISTS test;
 NOTICE:  table "test" does not exist, skipping
 DROP TABLE
-CREATE TABLE test(ps) AS
-WITH test(ps) AS (
+CREATE TABLE test(t) AS
+WITH test(t) AS (
   SELECT span(day, day + interval '1 hour')
   FROM generate_series(timestamptz '2000-01-01', timestamptz '2000-04-01', '1 day') AS day )
-SELECT spanset(array_agg(ps)) FROM test;
+SELECT spanset(array_agg(t)) FROM test;
 SELECT 1
-SELECT ps::stbox FROM test;
-                                  ps                                   
+SELECT t::stbox FROM test;
+                                   t                                   
 -----------------------------------------------------------------------
  STBOX T([Sat Jan 01 00:00:00 2000 PST, Sat Apr 01 01:00:00 2000 PST))
 (1 row)

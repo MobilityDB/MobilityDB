@@ -812,17 +812,32 @@ CREATE OPERATOR &< (
   LEFTARG = floatset, RIGHTARG = floatset,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR &<# (
+CREATE OPERATOR &< (
   PROCEDURE = set_overleft,
-  LEFTARG = date, RIGHTARG = dateset
+  LEFTARG = text, RIGHTARG = textset
+);
+CREATE OPERATOR &< (
+  PROCEDURE = set_overleft,
+  LEFTARG = textset, RIGHTARG = text
+);
+CREATE OPERATOR &< (
+  PROCEDURE = set_overleft,
+  LEFTARG = textset, RIGHTARG = textset
 );
 CREATE OPERATOR &<# (
   PROCEDURE = set_overleft,
-  LEFTARG = dateset, RIGHTARG = date
+  LEFTARG = date, RIGHTARG = dateset,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
   PROCEDURE = set_overleft,
-  LEFTARG = dateset, RIGHTARG = dateset
+  LEFTARG = dateset, RIGHTARG = date,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &<# (
+  PROCEDURE = set_overleft,
+  LEFTARG = dateset, RIGHTARG = dateset,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
   PROCEDURE = set_overleft,
@@ -1563,6 +1578,23 @@ CREATE FUNCTION set_distance(floatset, floatset)
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION set_distance(date, date)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Distance_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(date, dateset)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Distance_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(dateset, date)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Distance_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(dateset, dateset)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Distance_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION set_distance(timestamptz, timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_value'
@@ -1640,6 +1672,27 @@ CREATE OPERATOR <-> (
 CREATE OPERATOR <-> (
   PROCEDURE = set_distance,
   LEFTARG = floatset, RIGHTARG = floatset,
+  COMMUTATOR = <->
+);
+
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = date, RIGHTARG = date,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = date, RIGHTARG = dateset,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = dateset, RIGHTARG = date,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = dateset, RIGHTARG = dateset,
   COMMUTATOR = <->
 );
 

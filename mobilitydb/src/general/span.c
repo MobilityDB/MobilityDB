@@ -194,26 +194,6 @@ Value_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-PGDLLEXPORT Datum Date_to_tstzspan(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Date_to_tstzspan);
-/**
- * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a date as a timestamptz span
- * @sqlfunc tstzspan()
- * @sqlop @p ::
- */
-Datum
-Date_to_tstzspan(PG_FUNCTION_ARGS)
-{
-  DateADT d = PG_GETARG_DATEADT(0);
-  Span *result = date_to_tstzspan(d);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-#endif 
-
 PGDLLEXPORT Datum Span_to_range(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_range);
 /**
@@ -226,7 +206,8 @@ Datum
 Span_to_range(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
-  assert(span->basetype == T_INT4 || span->basetype == T_TIMESTAMPTZ);
+  assert(span->basetype == T_INT4 || span->basetype == T_DATE ||
+    span->basetype == T_TIMESTAMPTZ);
   RangeType *range;
   range = range_make(span->lower, span->upper, span->lower_inc,
     span->upper_inc, span->basetype);
@@ -250,8 +231,13 @@ range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
   RangeBound lower, upper;
   bool empty;
   range_deserialize(typcache, range, &lower, &upper, &empty);
-  meosType basetype = (typcache->rngelemtype->type_id == INT4OID) ?
-    T_INT4 : T_TIMESTAMPTZ;
+  meosType basetype;
+  if (typcache->rngelemtype->type_id == INT4OID)
+    basetype = T_INT4;
+  else if (typcache->rngelemtype->type_id == DATEOID)
+    basetype = T_DATE;
+  else /* typcache->rngelemtype->type_id == TIMESTAMPTZOID */ 
+    basetype = T_TIMESTAMPTZ;
   span_set(lower.val, upper.val, lower.inclusive, upper.inclusive, basetype,
     result);
   return;
@@ -271,6 +257,7 @@ Range_to_span(PG_FUNCTION_ARGS)
   RangeType *range = PG_GETARG_RANGE_P(0);
   TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
   assert(typcache->rngelemtype->type_id == INT4OID ||
+    typcache->rngelemtype->type_id == DATEOID ||
     typcache->rngelemtype->type_id == TIMESTAMPTZOID);
   Span *result = palloc(sizeof(Span));
   range_set_span(range, typcache, result);
@@ -356,11 +343,26 @@ Span_width(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Datespan_duration(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Datespan_duration);
+/**
+ * @ingroup mobilitydb_setspan_accessor
+ * @brief Return the duration of the date span
+ * @sqlfunc duration()
+ */
+Datum
+Datespan_duration(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Interval *result = datespan_duration(s);
+  PG_RETURN_POINTER(result);
+}
+
 PGDLLEXPORT Datum Tstzspan_duration(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_duration);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the duration of the period
+ * @brief Return the duration of the timestamptz duration
  * @sqlfunc duration()
  */
 Datum

@@ -2137,7 +2137,7 @@ tnumber_valuespans(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the time frame of a temporal value as a period set.
+ * @brief Return the time frame of a temporal value as a span set.
  * @sqlfunc getTime
  */
 SpanSet *
@@ -3930,7 +3930,7 @@ temporal_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal value to (the complement of) a period set.
+ * @brief Restrict a temporal value to (the complement of) a span set.
  */
 Temporal *
 temporal_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
@@ -4195,7 +4195,7 @@ temporal_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
 
 /**
  * @ingroup libmeos_temporal_modif
- * @brief Delete a period set from a temporal value connecting the instants
+ * @brief Delete a span set from a temporal value connecting the instants
  * before and after the given timestamp (if any).
  * @sqlfunc deleteTime
  */

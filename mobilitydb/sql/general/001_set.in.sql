@@ -701,6 +701,10 @@ CREATE FUNCTION set_union_transfn(internal, floatset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_union_transfn(internal, textset)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION set_union_transfn(internal, dateset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
@@ -788,6 +792,12 @@ CREATE AGGREGATE set_union(floatset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = floatset_union_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE set_union(textset) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  FINALFUNC = textset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_union(dateset) (

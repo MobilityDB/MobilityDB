@@ -66,6 +66,8 @@ const char *_meosType_names[] =
   [T_UNKNOWN] = "",
   [T_BOOL] = "bool",
   [T_DATE] = "date",
+  [T_DATEMULTIRANGE] = "datemultirange",
+  [T_DATERANGE] = "daterange",
   [T_DATESET] = "dateset",
   [T_DATESPAN] = "datespan",
   [T_DATESPANSET] = "datespanset",
@@ -77,8 +79,8 @@ const char *_meosType_names[] =
   [T_FLOATSPAN] = "floatspan",
   [T_FLOATSPANSET] = "floatspanset",
   [T_INT4] = "int4",
-  [T_INT4RANGE] = "int4range",
   [T_INT4MULTIRANGE] = "int4multirange",
+  [T_INT4RANGE] = "int4range",
   [T_INTSET] = "intset",
   [T_INTSPAN] = "intspan",
   [T_INTSPANSET] = "intspanset",
@@ -244,7 +246,7 @@ spansettype_spantype(meosType spansettype)
 }
 
 /**
- * @brief Return the base type from the span type
+ * @brief Return the span type of a span type
  */
 meosType
 basetype_spantype(meosType basetype)
@@ -340,7 +342,7 @@ meostype_internal(meosType type)
 bool
 meos_basetype(meosType type)
 {
-  if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 || 
+  if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
     type == T_TEXT || type == T_DATE || type == T_TIMESTAMPTZ ||
     /* The doubleX are internal types used for temporal aggregation */
     type == T_DOUBLE2 || type == T_DOUBLE3 || type == T_DOUBLE4 ||
@@ -482,7 +484,7 @@ bool
 set_type(meosType type)
 {
   if (type == T_TSTZSET || type == T_DATESET || type == T_INTSET ||
-      type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET || 
+      type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET ||
       type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET)
     return true;
   return false;
@@ -547,7 +549,7 @@ ensure_timeset_type(meosType type)
 bool
 set_spantype(meosType type)
 {
-  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET || 
+  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
     type == T_DATESET || type == T_TSTZSET)
     return true;
   return false;
@@ -654,7 +656,7 @@ span_basetype(meosType type)
 bool
 span_canon_basetype(meosType type)
 {
-  if (type == T_DATE || T_INT4 || type == T_INT8)
+  if (type == T_DATE || type == T_INT4 || type == T_INT8)
     return true;
   return false;
 }
@@ -724,7 +726,7 @@ ensure_numspan_type(meosType type)
 }
 
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a time span type
  */
 bool
 timespan_basetype(meosType type)
@@ -735,7 +737,7 @@ timespan_basetype(meosType type)
 }
 
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a time span type
  */
 bool
 timespan_type(meosType type)
@@ -746,7 +748,7 @@ timespan_type(meosType type)
 }
 
 /**
- * @brief Ensure that a span is a numeric span type
+ * @brief Ensure that a span is a time span type
  */
 bool
 ensure_timespan_type(meosType type)
@@ -789,7 +791,7 @@ numspanset_type(meosType type)
 #endif
 
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a time span type
  */
 bool
 timespanset_type(meosType type)
@@ -800,7 +802,7 @@ timespanset_type(meosType type)
 }
 
 /**
- * @brief Ensure that a span is a numeric span type
+ * @brief Ensure that a span is a time span type
  */
 bool
 ensure_timespanset_type(meosType type)
@@ -808,12 +810,11 @@ ensure_timespanset_type(meosType type)
   if (! timespanset_type(type))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The span value must be a time span set type");
+      "The value must be a time span set type");
     return false;
   }
   return true;
 }
-
 
 /*****************************************************************************/
 

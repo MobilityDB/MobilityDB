@@ -118,7 +118,7 @@ CREATE OPERATOR ~ (
 -- when is a reserved word in SQL
 CREATE FUNCTION whenTrue(tbool)
   RETURNS tstzspanset
-  AS 'MODULE_PATHNAME', 'Tbool_when'
+  AS 'MODULE_PATHNAME', 'Tbool_when_true'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

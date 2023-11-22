@@ -1010,8 +1010,8 @@ tstzspan_transform_tcount(const Span *s)
 }
 
 /**
- * @brief Transform a period set value into a temporal integer value for
- * performing temporal count aggregation
+ * @brief Transform a timestamptz span set value into a temporal integer value
+ * for performing temporal count aggregation
  */
 static TSequence **
 tstzspanset_transform_tcount(const SpanSet *ss)
@@ -1219,7 +1219,7 @@ tstzspan_tcount_transfn(SkipList *state, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for temporal count aggregate of period sets
+ * @brief Transition function for temporal count aggregate of span sets
  */
 SkipList *
 tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)

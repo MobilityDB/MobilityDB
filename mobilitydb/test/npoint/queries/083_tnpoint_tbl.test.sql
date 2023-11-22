@@ -224,16 +224,16 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE minusTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
-WHERE atTime(temp, p) IS NOT NULL;
+WHERE atTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
-WHERE minusTime(temp, p) IS NOT NULL;
+WHERE minusTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
-WHERE atTime(temp, ps) IS NOT NULL;
+WHERE atTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
-WHERE minusTime(temp, ps) IS NOT NULL;
+WHERE minusTime(temp, t) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Stops function

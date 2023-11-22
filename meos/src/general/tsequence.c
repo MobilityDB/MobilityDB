@@ -2308,7 +2308,7 @@ tnumberseq_valuespans(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the time frame of a temporal sequence as a period set.
+ * @brief Return the time frame of a temporal sequence as a span set.
  * @sqlfunc getTime()
  */
 SpanSet *
@@ -4704,7 +4704,7 @@ tdiscseq_restrict_tstzspan(const TSequence *seq, const Span *s, bool atfunc)
 }
 
 /**
- * @brief Restrict a discrete temporal sequence to (the complement of) a period set.
+ * @brief Restrict a discrete temporal sequence to (the complement of) a span set.
  */
 TSequence *
 tdiscseq_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss,
@@ -4713,7 +4713,7 @@ tdiscseq_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss,
   assert(seq); assert(ss);
   const TInstant *inst;
 
-  /* Singleton period set */
+  /* Singleton span set */
   if (ss->count == 1)
     return tdiscseq_restrict_tstzspan(seq, spanset_sp_n(ss, 0), atfunc);
 
@@ -5279,9 +5279,9 @@ tsequence_restrict_tstzspan(const TSequence *seq, const Span *s, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal sequence to a period set
+ * @brief Restrict a temporal sequence to a span set
  * @param[in] seq Temporal sequence
- * @param[in] ss Period set
+ * @param[in] ss Span set
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of resulting sequences returned
@@ -5292,7 +5292,7 @@ int
 tcontseq_at_tstzspanset1(const TSequence *seq, const SpanSet *ss,
   TSequence **result)
 {
-  /* Singleton period set */
+  /* Singleton span set */
   if (ss->count == 1)
   {
     result[0] = tcontseq_at_tstzspan(seq, spanset_sp_n(ss, 0));
@@ -5331,22 +5331,22 @@ tcontseq_at_tstzspanset1(const TSequence *seq, const SpanSet *ss,
 }
 
 /**
- * @brief Restrict a temporal sequence to the complement of a period set
+ * @brief Restrict a temporal sequence to the complement of a span set
  * (iterator function).
  * @param[in] seq Temporal sequence
- * @param[in] ss Period set
+ * @param[in] ss Span set
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of elements in the output array
  * @note This function is called for each sequence of a temporal sequence set
  * @note To avoid roundoff errors in the loop we must use (1) compute the
- * complement of the period set and (2) compute the "at" function
+ * complement of the span set and (2) compute the "at" function
  */
 int
 tcontseq_minus_tstzspanset_iter(const TSequence *seq, const SpanSet *ss,
   TSequence **result)
 {
-  /* Singleton period set */
+  /* Singleton span set */
   if (ss->count == 1)
     return tcontseq_minus_tstzspan_iter(seq, spanset_sp_n(ss, 0), result);
 
@@ -5355,7 +5355,7 @@ tcontseq_minus_tstzspanset_iter(const TSequence *seq, const SpanSet *ss,
    *        |---| |---| |---|
    */
 
-  /* Compute the complement of the period set */
+  /* Compute the complement of the span set */
   SpanSet *ps1 = minus_span_spanset(&seq->period, ss);
   if (! ps1)
     return 0;
@@ -5370,9 +5370,9 @@ tcontseq_minus_tstzspanset_iter(const TSequence *seq, const SpanSet *ss,
 }
 
 /**
- * @brief Restrict a temporal sequence to (the complement of) a period set.
+ * @brief Restrict a temporal sequence to (the complement of) a span set.
  * @param[in] seq Temporal sequence
- * @param[in] ss Period set
+ * @param[in] ss Span set
  * @param[in] atfunc True if the restriction is at, false for minus
  */
 TSequenceSet *
@@ -5741,9 +5741,9 @@ tsequence_delete_tstzspan(const TSequence *seq, const Span *s, bool connect)
 }
 
 /**
- * @brief Delete a period set from a continuous temporal sequence.
+ * @brief Delete a span set from a continuous temporal sequence.
  * @param[in] seq Temporal sequence
- * @param[in] ss Period set
+ * @param[in] ss Span set
  */
 TSequence *
 tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
@@ -5762,7 +5762,7 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
     return tsequence_copy(seq);
   }
 
-  /* Singleton period set */
+  /* Singleton span set */
   if (ss->count == 1)
     return tcontseq_delete_tstzspan(seq, spanset_sp_n(ss, 0));
 
@@ -5776,7 +5776,7 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     if (! contains_spanset_timestamptz(ss, inst->t))
       instants[ninsts++] = (TInstant *) inst;
-    else /* instant is inside the period set */
+    else /* instant is inside the span set */
     {
       if (i == 0)
         lower_inc1 = true;
@@ -5797,8 +5797,8 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_modif
- * @brief Delete a period set from a temporal value connecting the instants
- * before and after the given period set (if any).
+ * @brief Delete a span set from a temporal value connecting the instants
+ * before and after the given span set (if any).
  * @sqlfunc deleteTime
  */
 Temporal *
@@ -5821,7 +5821,7 @@ tsequence_delete_tstzspanset(const TSequence *seq, const SpanSet *ss,
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal sequence to (the complement of) a period set.
+ * @brief Restrict a temporal sequence to (the complement of) a span set.
  */
 Temporal *
 tsequence_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss,

@@ -51,6 +51,11 @@ extern Oid oper_oid(meosOper op, meosType lt, meosType rt);
 extern meosType oid_type(Oid typid);
 extern meosOper oid_oper(Oid operOid, meosType *ltype, meosType *rtype);
 
+extern bool range_basetype(meosType type);
+extern bool ensure_range_basetype(meosType type);
+extern meosType basetype_rangetype(meosType type);
+extern meosType basetype_multirangetype(meosType type);
+
 /*****************************************************************************/
 
 #endif /* __PG_MEOS_CATALOG_H__ */

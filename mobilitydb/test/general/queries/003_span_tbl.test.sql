@@ -57,7 +57,7 @@ COPY tbl_tstzspan_tmp FROM '/tmp/tbl_tstzspan' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_tmp t2 WHERE t1.k = t2.k AND t1.p <> t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 
 DROP TABLE tbl_intspan_tmp;
 DROP TABLE tbl_bigintspan_tmp;
@@ -69,19 +69,19 @@ DROP TABLE tbl_tstzspan_tmp;
 SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromBinary(asBinary(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintspan WHERE bigintspanFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromBinary(asBinary(f)) <> f;
-SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromBinary(asBinary(p)) <> p;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromBinary(asBinary(t)) <> t;
 
 SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromHexWKB(asHexWKB(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintspan WHERE bigintspanFromHexWKB(asHexWKB(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromHexWKB(asHexWKB(f)) <> f;
-SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromHexWKB(asHexWKB(p)) <> p;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromHexWKB(asHexWKB(t)) <> t;
 
 -------------------------------------------------------------------------------
 -- Casting
 -------------------------------------------------------------------------------
 
 SELECT MAX(lower(i::int4range)) FROM tbl_intspan ORDER BY 1;
-SELECT MAX(lower(p::tstzrange)) FROM tbl_tstzspan ORDER BY 1;
+SELECT MAX(lower(t::tstzrange)) FROM tbl_tstzspan ORDER BY 1;
 SELECT MAX(lower(r::tstzspan)) FROM tbl_tstzrange ORDER BY 1;
 SELECT MAX(lower(t::tstzspan)) FROM tbl_timestamptz ORDER BY 1;
 
@@ -92,17 +92,17 @@ SELECT MAX(lower(t::tstzspan)) FROM tbl_timestamptz ORDER BY 1;
 SELECT MAX(lower(shift(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2;
 SELECT MAX(lower(shift(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2;
 SELECT round(MAX(lower(shift(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2;
-SELECT MAX(lower(shift(p, i))) FROM tbl_tstzspan, tbl_interval;
+SELECT MAX(lower(shift(t, i))) FROM tbl_tstzspan, tbl_interval;
 
 SELECT MAX(lower(scale(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2 WHERE t2.i > 0;
 SELECT MAX(lower(scale(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t2.b > 0;
 SELECT round(MAX(lower(scale(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2 WHERE t2.f > 0;
-SELECT MAX(lower(scale(p, i))) FROM tbl_tstzspan, tbl_interval;
+SELECT MAX(lower(scale(t, i))) FROM tbl_tstzspan, tbl_interval;
 
 SELECT MAX(lower(shiftScale(t1.i, t2.i, t3.i))) FROM tbl_intspan t1, tbl_int t2, tbl_int t3 WHERE t3.i > 0;
 SELECT MAX(lower(shiftScale(t1.b, t2.b, t3.b))) FROM tbl_bigintspan t1, tbl_bigint t2, tbl_bigint t3 WHERE t3.b > 0;
 SELECT round(MAX(lower(shiftScale(t1.f, t2.f, t3.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2, tbl_float t3 WHERE t3.f > 0;
-SELECT MAX(lower(shiftScale(p, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
+SELECT MAX(lower(shiftScale(t, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
 
 SELECT MAX(duration(span(t, t + i))) FROM tbl_timestamptz, tbl_interval;
 SELECT MAX(duration(span(t, t + i, true, true))) FROM tbl_timestamptz, tbl_interval;
@@ -120,36 +120,36 @@ SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;
 
 SELECT MAX(lower(i)) FROM tbl_intspan;
 SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspan;
-SELECT MAX(lower(p)) FROM tbl_tstzspan;
+SELECT MAX(lower(t)) FROM tbl_tstzspan;
 
 SELECT MAX(upper(i)) FROM tbl_intspan;
 SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspan;
-SELECT MAX(upper(p)) FROM tbl_tstzspan;
+SELECT MAX(upper(t)) FROM tbl_tstzspan;
 
 SELECT DISTINCT lower_inc(i) FROM tbl_intspan;
 SELECT DISTINCT lower_inc(f) FROM tbl_floatspan;
-SELECT DISTINCT lower_inc(p) FROM tbl_tstzspan;
+SELECT DISTINCT lower_inc(t) FROM tbl_tstzspan;
 
 SELECT DISTINCT upper_inc(i) FROM tbl_intspan;
 SELECT DISTINCT upper_inc(f) FROM tbl_floatspan;
-SELECT DISTINCT upper_inc(p) FROM tbl_tstzspan;
+SELECT DISTINCT upper_inc(t) FROM tbl_tstzspan;
 
-SELECT MAX(duration(p)) FROM tbl_tstzspan;
+SELECT MAX(duration(t)) FROM tbl_tstzspan;
 
-SELECT MAX(lower(shift(p, '5 min'))) FROM tbl_tstzspan;
+SELECT MAX(lower(shift(t, '5 min'))) FROM tbl_tstzspan;
 
 -------------------------------------------------------------------------------
 -- Comparison Functions
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE span_cmp(t1.p, t2.p) = -1;
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p < t2.p;
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <= t2.p;
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p > t2.p;
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p >= t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE span_cmp(t1.t, t2.t) = -1;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t < t2.t;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <= t2.t;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t > t2.t;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t >= t2.t;
 
-SELECT MAX(span_hash(p)) != 0 FROM tbl_tstzspan;
-SELECT MAX(span_hash_extended(p, 1)) != 0 FROM tbl_tstzspan;
+SELECT MAX(span_hash(t)) != 0 FROM tbl_tstzspan;
+SELECT MAX(span_hash_extended(t, 1)) != 0 FROM tbl_tstzspan;
 
 -------------------------------------------------------------------------------
 -- Aggregation functions

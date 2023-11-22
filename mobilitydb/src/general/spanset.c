@@ -214,7 +214,7 @@ PGDLLEXPORT Datum Set_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a timestamp set value as a period set
+ * @brief Convert a set value as a span set
  * @sqlfunc intspanset(), bigintspanset(), floatspanset(), periodset()
  */
 Datum
@@ -271,7 +271,8 @@ Datum
 Spanset_to_multirange(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  assert(ss->spantype == T_INTSPAN || ss->spantype == T_TSTZSPAN);
+  assert(ss->spantype == T_INTSPAN || ss->spantype == T_DATESPAN ||
+    ss->spantype == T_TSTZSPAN);
   MultirangeType *result = multirange_make(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
@@ -397,11 +398,28 @@ Spanset_width(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+Datum Datespanset_duration(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Datespanset_duration);
+/**
+ * @ingroup mobilitydb_setspan_accessor
+ * @brief Return the duration of a date span set
+ * @sqlfunc duration()
+ */
+Datum
+Datespanset_duration(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  bool boundspan = PG_GETARG_BOOL(1);
+  Interval *result = datespanset_duration(ss, boundspan);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_POINTER(result);
+}
+
 Datum Tstzspanset_duration(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_duration);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the duration of a period set
+ * @brief Return the duration of a timestamptz span set
  * @sqlfunc duration()
  */
 Datum
@@ -418,7 +436,7 @@ PGDLLEXPORT Datum Tstzspanset_num_timestamps(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_num_timestamps);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the number of timestamps of a period set
+ * @brief Return the number of timestamptz values of a span set
  * @sqlfunc numTimestamps()
  */
 Datum
@@ -434,7 +452,7 @@ PGDLLEXPORT Datum Tstzspanset_start_timestamp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_start_timestamp);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the start timestamp of a period set
+ * @brief Return the start timestamptz of a span set
  * @sqlfunc startTimestamp()
  */
 Datum
@@ -450,7 +468,7 @@ PGDLLEXPORT Datum Tstzspanset_end_timestamp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_end_timestamp);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the end timestamp of a period set
+ * @brief Return the end timestamptz of a span set
  * @sqlfunc endTimestamp()
  */
 Datum
@@ -466,7 +484,7 @@ PGDLLEXPORT Datum Tstzspanset_timestamp_n(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_timestamp_n);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the n-th timestamp of a period set
+ * @brief Return the n-th timestamptz of a span set
  * @sqlfunc timestampN()
  */
 Datum
@@ -485,7 +503,7 @@ PGDLLEXPORT Datum Tstzspanset_timestamps(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_timestamps);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the array of timestamps of a period set
+ * @brief Return the array of timestamptz values of a span set
  * @sqlfunc timestamps()
  */
 Datum
@@ -644,7 +662,7 @@ PGDLLEXPORT Datum Tstzspanset_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift a period set by an interval
+ * @brief Shift a timestamptz span set by an interval
  * @sqlfunc scale()
  */
 Datum
@@ -679,7 +697,7 @@ PGDLLEXPORT Datum Tstzspanset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift a period set by an interval
+ * @brief Shift a timestamptz span set by an interval
  * @sqlfunc shiftTscale()
  */
 Datum
@@ -717,7 +735,7 @@ PGDLLEXPORT Datum Spanset_cmp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_cmp);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return -1, 0, or 1 depending on whether the first period set
+ * @brief Return -1, 0, or 1 depending on whether the first span set
  * is less than, equal, or greater than the second one
  * @sqlfunc spanset_cmp()
  */
@@ -736,7 +754,7 @@ PGDLLEXPORT Datum Spanset_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_eq);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first period set is equal to the second one
+ * @brief Return true if the first span set is equal to the second one
  * @sqlfunc spanset_eq()
  * @sqlop @p =
  */
@@ -755,7 +773,7 @@ PGDLLEXPORT Datum Spanset_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_ne);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first period set is different from the second one
+ * @brief Return true if the first span set is different from the second one
  * @sqlfunc spanset_ne()
  * @sqlop @p <>
  */
@@ -776,7 +794,7 @@ PGDLLEXPORT Datum Spanset_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_lt);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first period set is less than the second one
+ * @brief Return true if the first span set is less than the second one
  * @sqlfunc spanset_lt()
  * @sqlop @p <
  */
@@ -795,7 +813,7 @@ PGDLLEXPORT Datum Spanset_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_le);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first period set is less than or equal to
+ * @brief Return true if the first span set is less than or equal to
  * the second one
  * @sqlfunc spanset_le()
  * @sqlop @p <=
@@ -815,7 +833,7 @@ PGDLLEXPORT Datum Spanset_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_ge);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first period set is greater than or equal to
+ * @brief Return true if the first span set is greater than or equal to
  * the second one
  * @sqlfunc spanset_ge()
  * @sqlop @p >=
@@ -835,7 +853,7 @@ PGDLLEXPORT Datum Spanset_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_gt);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first period set is greater than the second one
+ * @brief Return true if the first span set is greater than the second one
  * @sqlfunc spanset_gt()
  * @sqlop @p >
  */
@@ -860,7 +878,7 @@ PGDLLEXPORT Datum Spanset_hash(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_hash);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the 32-bit hash value of a period set
+ * @brief Return the 32-bit hash value of a span set
  * @sqlfunc spanset_hash()
  */
 Datum
@@ -875,7 +893,7 @@ PGDLLEXPORT Datum Spanset_hash_extended(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_hash_extended);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the 64-bit hash value of a period set using a seed
+ * @brief Return the 64-bit hash value of a span set using a seed
  * @sqlfunc spanset_hash_extended()
  */
 Datum
