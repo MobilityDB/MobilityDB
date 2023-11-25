@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - '.github/workflows/pgversion.yml'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
@@ -16,6 +17,7 @@ on:
     branch_ignore: gh-pages
   pull_request:
     paths:
+      - '.github/workflows/pgversion.yml'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
