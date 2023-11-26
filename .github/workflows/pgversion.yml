@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - '.github/workflows/pgversion.yml'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
@@ -16,6 +17,7 @@ on:
     branch_ignore: gh-pages
   pull_request:
     paths:
+      - '.github/workflows/pgversion.yml'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
@@ -47,7 +49,7 @@ jobs:
       - name: get postgres version
         run: |
           sudo service postgresql start
-          pgver=$(psql --version | grep -Po '(?<=psql \(PostgreSQL\) )[^;]+(?=\.\d \()')
+          pgver=$(psql --version | grep -Po '(?<=psql \(PostgreSQL\) )[^;]+(?=\.\d+ \()')
           echo "PGVER=${pgver}" >> $GITHUB_ENV
           PGP=5433
           if [ "${{ matrix.psql }}" == "${pgver}" ]; then PGP=5432; fi
