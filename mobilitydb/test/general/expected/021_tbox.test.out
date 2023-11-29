@@ -564,7 +564,13 @@ SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-
  TBOXFLOAT XT([1, 2],[Fri Dec 31 00:00:00 1999 PST, Fri Dec 31 01:00:00 1999 PST])
 (1 row)
 
-SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2);
+SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', 2);
+                                   expandvalue                                    
+----------------------------------------------------------------------------------
+ TBOXINT XT([-1, 5),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
                                     expandvalue                                     
 ------------------------------------------------------------------------------------
  TBOXFLOAT XT([-1, 4],[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
@@ -589,6 +595,12 @@ SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-1 hou
 ERROR:  The interval must be positive: -01:00:00
 SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
 ERROR:  The box must have value dimension
+SELECT expandValue(tbox 'TBOXINT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
+ERROR:  invalid input syntax for type integer: "1.0"
+LINE 1: SELECT expandValue(tbox 'TBOXINT XT([1.0,2.0],[2000-01-01,20...
+                                ^
+SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2);
+ERROR:  The span must be of type intspan
 SELECT expandTime(tbox 'TBOXFLOAT X([1,2])', interval '1 day');
 ERROR:  The box must have time dimension
 SELECT round(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);

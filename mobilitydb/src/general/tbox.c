@@ -667,19 +667,34 @@ Tbox_shift_scale_time(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tbox_expand_value(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_expand_value);
+PGDLLEXPORT Datum Tbox_expand_int(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_expand_int);
+/**
+ * @ingroup mobilitydb_box_transf
+ * @brief Return a temporal box expanded in the value dimension by an integer
+ * @sqlfunc expandValue()
+ */
+Datum
+Tbox_expand_int(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  int i = PG_GETARG_INT32(1);
+  PG_RETURN_POINTER(tbox_expand_int(box, i));
+}
+
+PGDLLEXPORT Datum Tbox_expand_float(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_expand_float);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box expanded in the value dimension by a double
  * @sqlfunc expandValue()
  */
 Datum
-Tbox_expand_value(PG_FUNCTION_ARGS)
+Tbox_expand_float(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  PG_RETURN_POINTER(tbox_expand_value(box, d));
+  PG_RETURN_POINTER(tbox_expand_float(box, d));
 }
 
 PGDLLEXPORT Datum Tbox_expand_time(PG_FUNCTION_ARGS);
