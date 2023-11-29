@@ -73,13 +73,13 @@ SELECT extent(t) FROM tbl_tstzset;
  [Mon Jan 01 17:48:00 2001 PST, Wed Dec 26 10:47:00 2001 PST]
 (1 row)
 
-SELECT extent(p) FROM tbl_tstzspan;
+SELECT extent(t) FROM tbl_tstzspan;
                             extent                            
 --------------------------------------------------------------
  (Wed Jan 10 05:55:00 2001 PST, Sat Dec 29 13:00:00 2001 PST]
 (1 row)
 
-SELECT extent(ps) FROM tbl_tstzspanset;
+SELECT extent(t) FROM tbl_tstzspanset;
                             extent                            
 --------------------------------------------------------------
  [Tue Jan 09 15:14:00 2001 PST, Sun Dec 30 04:25:00 2001 PST]
@@ -274,13 +274,13 @@ SELECT numInstants(tcount(t)) FROM tbl_tstzset;
          497
 (1 row)
 
-SELECT numInstants(tcount(p)) FROM tbl_tstzspan;
+SELECT numInstants(tcount(t)) FROM tbl_tstzspan;
  numinstants 
 -------------
          189
 (1 row)
 
-SELECT numInstants(tcount(ps)) FROM tbl_tstzspanset;
+SELECT numInstants(tcount(t)) FROM tbl_tstzspanset;
  numinstants 
 -------------
          906
@@ -408,13 +408,13 @@ SELECT numValues(set_union(t)) FROM tbl_tstzset;
        497
 (1 row)
 
-SELECT numSpans(span_union(p)) FROM tbl_tstzspan;
+SELECT numSpans(span_union(t)) FROM tbl_tstzspan;
  numspans 
 ----------
        99
 (1 row)
 
-SELECT numSpans(span_union(ps)) FROM tbl_tstzspanset;
+SELECT numSpans(span_union(t)) FROM tbl_tstzspanset;
  numspans 
 ----------
       479

@@ -41,6 +41,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <access/spgist.h>
+#include <utils/date.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
@@ -119,6 +120,11 @@ spannode_init(SpanNode *nodebox, meosType spantype, meosType basetype)
   {
     min = TimestampTzGetDatum(DT_NOBEGIN);
     max = TimestampTzGetDatum(DT_NOEND);
+  }
+  else if (spantype == T_DATE)
+  {
+    min = DateADTGetDatum(DATEVAL_NOBEGIN);
+    max = DateADTGetDatum(DATEVAL_NOEND);
   }
   else if (spantype == T_INTSPAN)
   {
@@ -288,7 +294,7 @@ overlap2D_kd(const SpanNode *nodebox, const Span *query, int level)
   if (level % 2)
   {
     span_set(nodebox->left.lower, nodebox->right.lower, nodebox->left.lower_inc,
-      nodebox->right.lower_inc, nodebox->left.basetype, &s);    
+      nodebox->right.lower_inc, nodebox->left.basetype, &s);
   }
   else
   {
@@ -320,7 +326,7 @@ contain2D_kd(const SpanNode *nodebox, const Span *query, int level)
   if (level % 2)
   {
     span_set(nodebox->left.lower, nodebox->right.lower, nodebox->left.lower_inc,
-      nodebox->right.lower_inc, nodebox->left.basetype, &s);    
+      nodebox->right.lower_inc, nodebox->left.basetype, &s);
   }
   else
   {
@@ -503,6 +509,23 @@ Floatspan_spgist_config(PG_FUNCTION_ARGS)
   cfg->prefixType = type_oid(T_FLOATSPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels. */
   cfg->leafType = type_oid(T_FLOATSPAN);
+  cfg->canReturnData = false;
+  cfg->longValuesOK = false;
+  PG_RETURN_VOID();
+}
+
+PGDLLEXPORT Datum Datespan_spgist_config(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Datespan_spgist_config);
+/**
+ * @brief SP-GiST config function for span types
+ */
+Datum
+Datespan_spgist_config(PG_FUNCTION_ARGS)
+{
+  spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
+  cfg->prefixType = type_oid(T_DATESPAN);  /* A type represented by its bounding box */
+  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->leafType = type_oid(T_DATESPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();
@@ -1076,7 +1099,7 @@ Set_spgist_compress(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Spanset_spgist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_spgist_compress);
 /**
- * @brief SP-GiST compress function for period sets
+ * @brief SP-GiST compress function for span sets
  */
 Datum
 Spanset_spgist_compress(PG_FUNCTION_ARGS)

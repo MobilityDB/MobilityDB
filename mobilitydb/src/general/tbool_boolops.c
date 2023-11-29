@@ -188,15 +188,16 @@ Tnot_tbool(PG_FUNCTION_ARGS)
  * Temporal when
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tbool_when(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbool_when);
+PGDLLEXPORT Datum Tbool_when_true(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbool_when_true);
 /**
  * @ingroup mobilitydb_temporal_bool
- * @brief Return the period set in which a temporal boolean takes value true
+ * @brief Return the timestamptz span set in which a temporal boolean takes
+ * value true
  * @sqlfunc when()
  */
 Datum
-Tbool_when(PG_FUNCTION_ARGS)
+Tbool_when_true(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   SpanSet *result = tbool_when_true(temp);

@@ -243,7 +243,20 @@ floatspanset_in(const char *str)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a period set from its Well-Known Text (WKT) representation.
+ * @brief Return a date set from its Well-Known Text (WKT) representation.
+ */
+SpanSet *
+datespanset_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return spanset_parse(&str, T_DATESPANSET);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a timestamptz set from its Well-Known Text (WKT) representation.
  */
 SpanSet *
 tstzspanset_in(const char *str)
@@ -320,6 +333,20 @@ floatspanset_out(const SpanSet *ss, int maxdd)
       ! ensure_spanset_has_type(ss, T_FLOATSPANSET))
     return NULL;
   return spanset_out(ss, maxdd);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span set.
+ */
+char *
+datespanset_out(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_DATESPANSET))
+    return NULL;
+  return spanset_out(ss, 0);
 }
 
 /**
@@ -526,7 +553,18 @@ float_to_spanset(double d)
 
 /**
  * @ingroup libmeos_setspan_conversion
- * @brief Convert a timestamp as a period set
+ * @brief Convert a date as a span set
+ * @sqlop @p ::
+ */
+SpanSet *
+date_to_spanset(DateADT d)
+{
+  return value_to_spanset(d, T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_conversion
+ * @brief Convert a timestamp as a span set
  * @sqlop @p ::
  */
 SpanSet *
@@ -558,7 +596,7 @@ set_to_spanset(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_conversion
- * @brief Convert a period as a period set.
+ * @brief Convert a period as a span set.
  * @sqlop @p ::
  */
 SpanSet *
@@ -625,6 +663,44 @@ floatspanset_intspanset(const SpanSet *ss)
   return result;
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a date span set to a timestamptz span set
+ */
+SpanSet *
+datespanset_tstzspanset(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_DATESPANSET))
+    return NULL;
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    datespan_set_tstzspan(&ss->elems[i], &spans[i]);
+  SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a timestamptz span set to a date span set
+ */
+SpanSet *
+tstzspanset_datespanset(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+    return NULL;
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    tstzspan_set_datespan(&ss->elems[i], &spans[i]);
+  int newcount;
+  Span *normspans = spanarr_normalize(spans, ss->count, false, &newcount);
+  SpanSet *result = spanset_make_free(normspans, newcount, NORMALIZE);
+  return result;
+}
 
 /**
  * @ingroup libmeos_internal_setspan_transf
@@ -749,7 +825,7 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
       (duration && ! ensure_valid_duration(duration)))
     return NULL;
 
-  /* Copy the input period set to the output period set */
+  /* Copy the input span set to the output span set */
   SpanSet *result = spanset_copy(ss);
 
   /* Shift and/or scale the bounding period */
@@ -842,7 +918,7 @@ intspanset_lower(const SpanSet *ss)
  * @return On error return INT_MAX
  * @sqlfunc lower()
  */
-int
+int64
 bigintspanset_lower(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
@@ -870,7 +946,7 @@ floatspanset_lower(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the lower bound of a period set
+ * @brief Return the lower bound of a span set
  * @return On error return DT_NOEND
  * @sqlfunc lower()
  */
@@ -879,7 +955,7 @@ tstzspanset_lower(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+      ! ensure_timespanset_type(ss->spansettype))
     return DT_NOEND;
   return TimestampTzGetDatum(ss->elems[0].lower);
 }
@@ -906,7 +982,7 @@ intspanset_upper(const SpanSet *ss)
  * @return On error return INT_MAX
  * @sqlfunc upper()
  */
-int
+int64
 bigintspanset_upper(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
@@ -943,7 +1019,7 @@ tstzspanset_upper(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+      ! ensure_timespanset_type(ss->spansettype))
     return DT_NOEND;
   return TimestampTzGetDatum(ss->elems[ss->count - 1].upper);
 }
@@ -1008,6 +1084,33 @@ spanset_width(const SpanSet *ss, bool boundspan)
 
 /**
  * @ingroup libmeos_setspan_accessor
+ * @brief Return the duration of a date span set
+ * @sqlfunc duration()
+ */
+Interval *
+datespanset_duration(const SpanSet *ss, bool boundspan)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_timespanset_type(ss->spansettype))
+    return NULL;
+
+  if (boundspan)
+    return pg_date_mi(ss->span.upper, ss->span.lower);
+
+  int nodays = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const Span *p = spanset_sp_n(ss, i);
+    nodays += (int32) (p->upper - p->lower);
+  }
+  Interval *result = palloc0(sizeof(Interval));
+  result->day = nodays;
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the duration of a timestamptz span set
  * @sqlfunc duration()
  */
@@ -1016,7 +1119,7 @@ tstzspanset_duration(const SpanSet *ss, bool boundspan)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+      ! ensure_timespanset_type(ss->spansettype))
     return NULL;
 
   if (boundspan)
@@ -1037,7 +1140,7 @@ tstzspanset_duration(const SpanSet *ss, bool boundspan)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the number of timestamps of a period set
+ * @brief Return the number of timestamps of a span set
  * @return On error return -1
  * @sqlfunc numTimestamps()
  */
@@ -1046,14 +1149,14 @@ tstzspanset_num_timestamps(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+      ! ensure_timespanset_type(ss->spansettype))
     return -1;
 
   const Span *p = spanset_sp_n(ss, 0);
-  TimestampTz prev = p->lower;
+  Datum prev = p->lower;
   bool start = false;
   int result = 1;
-  TimestampTz d;
+  Datum d;
   int i = 1;
   while (i < ss->count || !start)
   {
@@ -1079,16 +1182,16 @@ tstzspanset_num_timestamps(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the start timestamp of a period set.
+ * @brief Return the start timestamp of a span set.
  * @return On error return DT_NOEND
- * @sqlfunc startTimestamp()
+ * @sqlfunc startTime()
  */
 TimestampTz
 tstzspanset_start_timestamp(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+      ! ensure_timespanset_type(ss->spansettype))
     return DT_NOEND;
 
   const Span *p = spanset_sp_n(ss, 0);
@@ -1097,16 +1200,16 @@ tstzspanset_start_timestamp(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the end timestamp of a period set.
+ * @brief Return the end timestamp of a span set.
  * @return On error return DT_NOEND
- * @sqlfunc endTimestamp()
+ * @sqlfunc endTime()
  */
 TimestampTz
 tstzspanset_end_timestamp(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+      ! ensure_timespanset_type(ss->spansettype))
     return DT_NOEND;
 
   const Span *p = spanset_sp_n(ss, ss->count - 1);
@@ -1115,20 +1218,20 @@ tstzspanset_end_timestamp(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Compute the n-th timestamp of a period set
- * @param[in] ss Period set
+ * @brief Compute the n-th timestamp of a span set
+ * @param[in] ss Span set
  * @param[in] n Number
  * @param[out] result Timestamp
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
- * @sqlfunc timestampN()
+ * @sqlfunc timesN()
  */
 bool
 tstzspanset_timestamp_n(const SpanSet *ss, int n, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+      ! ensure_timespanset_type(ss->spansettype))
     return false;
 
   int pernum = 0;
@@ -1174,7 +1277,7 @@ tstzspanset_timestamp_n(const SpanSet *ss, int n, TimestampTz *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the array of timestamps of a period set
+ * @brief Return the array of timestamps of a span set
  * @return On error return NULL
  * @sqlfunc timestamps()
  */
@@ -1183,7 +1286,7 @@ tstzspanset_timestamps(const SpanSet *ss, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+      ! ensure_timespanset_type(ss->spansettype))
     return NULL;
 
   TimestampTz *result = palloc(sizeof(TimestampTz) * 2 * ss->count);

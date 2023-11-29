@@ -16,26 +16,18 @@
 	</para>
 
 	<para>
-		Los tipos de base que se utilizan para construir tipos de conjunto, de rango y de conjunto de rangos son los tipos <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, <varname>timestamptz</varname> (marca de tiempo con zona horaria) y <varname>text</varname> proporcionados por PostgreSQL, los tipos <varname>geometry</varname> y <varname>geography</varname> proporcionados por PostGIS, y el tipo <varname>npoint</varname > (punto de red) proporcionado por MobilityDB (ver <xref linkend="temporal_network_points" />). MobilityDB proporciona los siguientes tipos de conjunto y de rango:
+		Los tipos de base que se utilizan para construir tipos de conjunto, de rango y de conjunto de rangos son los tipos <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, <varname>text</varname>, <varname>date</varname>, and <varname>timestamptz</varname> (marca de tiempo con zona horaria) proporcionados por PostgreSQL, los tipos <varname>geometry</varname> y <varname>geography</varname> proporcionados por PostGIS, y el tipo <varname>npoint</varname > (punto de red) proporcionado por MobilityDB (ver <xref linkend="temporal_network_points" />). MobilityDB proporciona los siguientes tipos de conjunto y de rango:
 		<itemizedlist>
 			<listitem>
-				<para><varname>set</varname>: <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>textset</varname>, <varname>geomset</varname>, <varname>geogset</varname>, <varname>npointset</varname> (see <xref linkend="temporal_network_points" />).</para>
+				<para><varname>set</varname>: <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>textset</varname>, <varname>dateset</varname>, <varname>tstzset</varname>, <varname>geomset</varname>, <varname>geogset</varname>, <varname>npointset</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>span</varname>: <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname>, <varname>tstzspan</varname>.</para>
+				<para><varname>span</varname>: <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname>, <varname>datespan</varname>, <varname>tstzspan</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>spanset</varname>: <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname>, <varname>tstzspanset</varname>.</para>
+				<para><varname>spanset</varname>: <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname>, <varname>datespanset</varname>, <varname>tstzspanset</varname>.</para>
 			</listitem>
 		</itemizedlist>
-	</para>
-
-	<para>
-		Los tipos de <emphasis>conjunto</emphasis> son <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>tstzset</varname>, <varname>textset</varname>, <varname>geomset</varname> y <varname>geogset</varname> que representan, respectivamente, un conjunto de valores distintos de tipo <varname>integer</varname>, <varname>bigint</varname >, <varname>float</varname>, <varname>timestamptz</varname> (marca de tiempo con zona horaria), y <varname>text</varname>, así como los tipos PostGIS <varname>geometry</varname> y <varname>geography</varname>.
-	</para>
-
-	<para>
-		Los tipos de <emphasis>rango</emphasis> son <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname> y <varname>tstzspan</varname>, que representan, respectivamente, rangos de valores de tipo <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname> y <varname>timestamptz</varname> (marca de tiempo con zona horaria). Además, MobilityDB tiene los tipos conjunto de rangos correspondientes, a saber, <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname> y <varname>tstzspanset </varname>, que representan conjuntos de rangos disjuntos.
 	</para>
 
 	<para>

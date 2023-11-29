@@ -241,6 +241,69 @@ CREATE OPERATOR CLASS floatspan_rtree_ops
 
 /******************************************************************************/
 
+CREATE FUNCTION span_gist_consistent(internal, datespan, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_gist_same(datespan, datespan, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_gist_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_gist_distance(internal, datespan, smallint, oid, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS datespan_rtree_ops
+  DEFAULT FOR TYPE datespan USING gist AS
+  -- strictly left
+  OPERATOR  1     <<# (datespan, date),
+  OPERATOR  1     <<# (datespan, datespan),
+  OPERATOR  1     <<# (datespan, datespanset),
+  -- overlaps or left
+  OPERATOR  2     &<# (datespan, date),
+  OPERATOR  2     &<# (datespan, datespan),
+  OPERATOR  2     &<# (datespan, datespanset),
+  -- overlaps
+  OPERATOR  3     && (datespan, datespan),
+  OPERATOR  3     && (datespan, datespanset),
+  -- overlaps or right
+  OPERATOR  4     #&> (datespan, date),
+  OPERATOR  4     #&> (datespan, datespan),
+  OPERATOR  4     #&> (datespan, datespanset),
+  -- strictly right
+  OPERATOR  5     #>> (datespan, date),
+  OPERATOR  5     #>> (datespan, datespan),
+  OPERATOR  5     #>> (datespan, datespanset),
+  -- contains
+  OPERATOR  7     @> (datespan, date),
+  OPERATOR  7     @> (datespan, datespan),
+  OPERATOR  7     @> (datespan, datespanset),
+  -- contained by
+  OPERATOR  8     <@ (datespan, datespan),
+  OPERATOR  8     <@ (datespan, datespanset),
+  -- adjacent
+  OPERATOR  17    -|- (datespan, datespan),
+  OPERATOR  17    -|- (datespan, datespanset),
+  -- equals
+  OPERATOR  18    = (datespan, datespan),
+  -- nearest approach distance
+  -- OPERATOR  25    <-> (datespan, date) FOR ORDER BY pg_catalog.date_ops,
+  -- OPERATOR  25    <-> (datespan, datespan) FOR ORDER BY pg_catalog.date_ops,
+  -- OPERATOR  25    <-> (datespan, datespanset) FOR ORDER BY pg_catalog.date_ops,
+  -- functions
+  FUNCTION  1  span_gist_consistent(internal, datespan, smallint, oid, internal),
+  FUNCTION  2  span_gist_union(internal, internal),
+  FUNCTION  5  span_gist_penalty(internal, internal, internal),
+  FUNCTION  6  span_gist_picksplit(internal, internal),
+  FUNCTION  7  span_gist_same(datespan, datespan, internal),
+  FUNCTION  8  span_gist_distance(internal, datespan, smallint, oid, internal),
+  FUNCTION  9  span_gist_fetch(internal);
+
+/******************************************************************************/
+
 CREATE FUNCTION span_gist_consistent(internal, tstzspan, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
@@ -313,6 +376,16 @@ CREATE FUNCTION floatspan_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME', 'Floatspan_spgist_config'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION datespan_spgist_config(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME', 'Datespan_spgist_config'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tstzspan_spgist_config(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME', 'Tstzspan_spgist_config'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
 CREATE FUNCTION span_quadtree_choose(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME', 'Span_quadtree_choose'
@@ -470,10 +543,49 @@ CREATE OPERATOR CLASS floatspan_quadtree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION tstzspan_spgist_config(internal, internal)
-  RETURNS void
-  AS 'MODULE_PATHNAME', 'Tstzspan_spgist_config'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE OPERATOR CLASS datespan_quadtree_ops
+  DEFAULT FOR TYPE datespan USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (datespan, datespan),
+  OPERATOR  3    && (datespan, datespanset),
+  -- contains
+  OPERATOR  7    @> (datespan, date),
+  OPERATOR  7    @> (datespan, datespan),
+  OPERATOR  7    @> (datespan, datespanset),
+  -- contained by
+  OPERATOR  8    <@ (datespan, datespan),
+  OPERATOR  8    <@ (datespan, datespanset),
+  -- adjacent
+  OPERATOR  17    -|- (datespan, datespan),
+  OPERATOR  17    -|- (datespan, datespanset),
+  -- equals
+  OPERATOR  18    = (datespan, datespan),
+  -- nearest approach distance
+  -- OPERATOR  25    <->(datespan, date) FOR ORDER BY pg_catalog.date_ops,
+  -- OPERATOR  25    <->(datespan, datespan) FOR ORDER BY pg_catalog.date_ops,
+  -- OPERATOR  25    <->(datespan, datespanset) FOR ORDER BY pg_catalog.date_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (datespan, date),
+  OPERATOR  28    &<# (datespan, datespan),
+  OPERATOR  28    &<# (datespan, datespanset),
+  -- strictly before
+  OPERATOR  29    <<# (datespan, date),
+  OPERATOR  29    <<# (datespan, datespan),
+  OPERATOR  29    <<# (datespan, datespanset),
+  -- strictly after
+  OPERATOR  30    #>> (datespan, date),
+  OPERATOR  30    #>> (datespan, datespan),
+  OPERATOR  30    #>> (datespan, datespanset),
+  -- overlaps or after
+  OPERATOR  31    #&> (datespan, date),
+  OPERATOR  31    #&> (datespan, datespan),
+  OPERATOR  31    #&> (datespan, datespanset),
+  -- functions
+  FUNCTION  1  datespan_spgist_config(internal, internal),
+  FUNCTION  2  span_quadtree_choose(internal, internal),
+  FUNCTION  3  span_quadtree_picksplit(internal, internal),
+  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);
 
 /******************************************************************************/
 
@@ -671,6 +783,52 @@ CREATE OPERATOR CLASS floatspan_kdtree_ops
   OPERATOR  25    <-> (floatspan, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1  floatspan_spgist_config(internal, internal),
+  FUNCTION  2  span_kdtree_choose(internal, internal),
+  FUNCTION  3  span_kdtree_picksplit(internal, internal),
+  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS datespan_kdtree_ops
+  FOR TYPE datespan USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (datespan, datespan),
+  OPERATOR  3    && (datespan, datespanset),
+  -- contains
+  OPERATOR  7    @> (datespan, date),
+  OPERATOR  7    @> (datespan, datespan),
+  OPERATOR  7    @> (datespan, datespanset),
+  -- contained by
+  OPERATOR  8    <@ (datespan, datespan),
+  OPERATOR  8    <@ (datespan, datespanset),
+  -- adjacent
+  OPERATOR  17    -|- (datespan, datespan),
+  OPERATOR  17    -|- (datespan, datespanset),
+  -- equals
+  OPERATOR  18    = (datespan, datespan),
+  -- nearest approach distance
+  -- OPERATOR  25    <-> (datespan, date) FOR ORDER BY pg_catalog.date_ops,
+  -- OPERATOR  25    <-> (datespan, datespan) FOR ORDER BY pg_catalog.date_ops,
+  -- OPERATOR  25    <-> (datespan, datespanset) FOR ORDER BY pg_catalog.date_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (datespan, date),
+  OPERATOR  28    &<# (datespan, datespan),
+  OPERATOR  28    &<# (datespan, datespanset),
+  -- strictly before
+  OPERATOR  29    <<# (datespan, date),
+  OPERATOR  29    <<# (datespan, datespan),
+  OPERATOR  29    <<# (datespan, datespanset),
+  -- strictly after
+  OPERATOR  30    #>> (datespan, date),
+  OPERATOR  30    #>> (datespan, datespan),
+  OPERATOR  30    #>> (datespan, datespanset),
+  -- overlaps or after
+  OPERATOR  31    #&> (datespan, date),
+  OPERATOR  31    #&> (datespan, datespan),
+  OPERATOR  31    #&> (datespan, datespanset),
+  -- functions
+  FUNCTION  1  datespan_spgist_config(internal, internal),
   FUNCTION  2  span_kdtree_choose(internal, internal),
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),

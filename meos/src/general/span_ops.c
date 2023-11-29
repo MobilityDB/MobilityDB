@@ -55,15 +55,24 @@ Datum
 span_min_value(Datum l, Datum r, meosType type)
 {
   assert(span_basetype(type));
-  if (type == T_TIMESTAMPTZ)
-    return TimestampTzGetDatum(Min(DatumGetTimestampTz(l),
-      DatumGetTimestampTz(r)));
-  else if (type == T_INT4)
-    return Int32GetDatum(Min(DatumGetInt32(l), DatumGetInt32(r)));
-  else if (type == T_INT8)
-    return Int64GetDatum(Min(DatumGetInt64(l), DatumGetInt64(r)));
-  else /* type == T_FLOAT8 */
-    return Float8GetDatum(Min(DatumGetFloat8(l), DatumGetFloat8(r)));
+  switch (type)
+  {
+    case T_TIMESTAMPTZ:
+      return TimestampTzGetDatum(Min(DatumGetTimestampTz(l),
+        DatumGetTimestampTz(r)));
+    case T_DATE:
+      return DateADTGetDatum(Min(DatumGetDateADT(l), DatumGetDateADT(r)));
+    case T_INT4:
+      return Int32GetDatum(Min(DatumGetInt32(l), DatumGetInt32(r)));
+    case T_INT8:
+      return Int64GetDatum(Min(DatumGetInt64(l), DatumGetInt64(r)));
+    case T_FLOAT8:
+      return Float8GetDatum(Min(DatumGetFloat8(l), DatumGetFloat8(r)));
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown mininmum value function for base type: %s", meostype_name(type));
+    return 0;
+  }
 }
 
 /**
@@ -73,15 +82,24 @@ Datum
 span_max_value(Datum l, Datum r, meosType type)
 {
   assert(span_basetype(type));
-  if (type == T_TIMESTAMPTZ)
-    return TimestampTzGetDatum(Max(DatumGetTimestampTz(l),
-      DatumGetTimestampTz(r)));
-  else if (type == T_INT4) /** xx **/
-    return Int32GetDatum(Max(DatumGetInt32(l), DatumGetInt32(r)));
-  else if (type == T_INT8)
-    return Int64GetDatum(Max(DatumGetInt64(l), DatumGetInt64(r)));
-  else /* type == T_FLOAT8 */
-    return Float8GetDatum(Max(DatumGetFloat8(l), DatumGetFloat8(r)));
+  switch (type)
+  {
+    case T_TIMESTAMPTZ:
+      return TimestampTzGetDatum(Max(DatumGetTimestampTz(l),
+        DatumGetTimestampTz(r)));
+    case T_DATE:
+      return DateADTGetDatum(Max(DatumGetDateADT(l), DatumGetDateADT(r)));
+    case T_INT4:
+      return Int32GetDatum(Max(DatumGetInt32(l), DatumGetInt32(r)));
+    case T_INT8:
+      return Int64GetDatum(Max(DatumGetInt64(l), DatumGetInt64(r)));
+    case T_FLOAT8:
+      return Float8GetDatum(Max(DatumGetFloat8(l), DatumGetFloat8(r)));
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown maximum value function for base type: %s", meostype_name(type));
+    return 0;
+  }
 }
 
 /*****************************************************************************
@@ -154,7 +172,21 @@ contains_span_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a period contains a timestamp.
+ * @brief Return true if a date span contains a date.
+ * @sqlop @p \@>
+ */
+bool
+contains_span_date(const Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+  return contains_span_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a timestamptz span contains a timestamptz.
  * @sqlop @p \@>
  */
 bool
@@ -249,7 +281,21 @@ contained_float_span(double d, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamp is contained in a period
+ * @brief Return true if a date is contained in a date span
+ * @sqlop @p <@
+ */
+bool
+contained_date_span(DateADT d, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+  return contains_span_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a timestamp is contained in a timestamptz span
  * @sqlop @p <@
  */
 bool
@@ -363,7 +409,21 @@ adjacent_span_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a period and a timestamp are adjacent
+ * @brief Return true if a date span and a date are adjacent
+ * @sqlop @p -|-
+ */
+bool
+adjacent_span_date(const Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+  return adjacent_span_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a timestamptz span and a timestamptz are adjacent
  * @sqlop @p -|-
  */
 bool
@@ -463,7 +523,21 @@ left_float_span(double d, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is strictly before a period.
+ * @brief Return true if a date is strictly before a date span.
+ * @sqlop @p <<
+ */
+bool
+before_date_span(DateADT d, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+  return left_value_span(DateADTGetDatum(d), T_DATE, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is strictly before a timestamptz span.
  * @sqlop @p <<
  */
 bool
@@ -534,7 +608,20 @@ left_span_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is strictly before a timestamp.
+ * @brief Return true if a date span is strictly before a date.
+ * @sqlop @p <<
+ */
+bool
+before_span_date(const Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+  return left_span_value(s, DateADTGetDatum(d), T_DATE);
+}
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz span is strictly before a timestamptz.
  * @sqlop @p <<
  */
 bool
@@ -625,7 +712,21 @@ right_float_span(double d, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is strictly after a period.
+ * @brief Return true if a date is strictly after a date span.
+ * @sqlop @p #>>
+ */
+bool
+after_date_span(DateADT d, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+  return left_span_value(s, DatumGetDateADT(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is strictly after a timestamptz span.
  * @sqlop @p #>>
  */
 bool
@@ -695,7 +796,22 @@ right_span_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is strictly after a timestamp.
+ * @brief Return true if a date span is strictly after a date.
+ * @sqlop @p #>>
+ */
+bool
+after_span_date(const Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+  return left_value_span(DatumGetDateADT(d), T_DATE, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz span is strictly after a timestamptz.
  * @sqlop @p #>>
  */
 bool
@@ -783,7 +899,21 @@ overleft_float_span(double d, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is not after a period.
+ * @brief Return true if a date is not after a date span.
+ * @sqlop @p &<#
+ */
+bool
+overbefore_date_span(DateADT d, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+  return overleft_value_span(DateADTGetDatum(d), T_DATE, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is not after a timestamptz span.
  * @sqlop @p &<#
  */
 bool
@@ -858,7 +988,21 @@ overleft_span_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is not after a timestamp.
+ * @brief Return true if a date span is not after a date.
+ * @sqlop @p &<#
+ */
+bool
+overbefore_span_date(const Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+  return overleft_span_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz span is not after a timestamptz.
  * @sqlop @p &<#
  */
 bool
@@ -951,7 +1095,22 @@ overright_float_span(double d, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is not before a period.
+ * @brief Return true if a date is not before a date span.
+ * @sqlop @p #&>
+ */
+bool
+overafter_date_span(DateADT d, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_same_span_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return overright_value_span(DateADTGetDatum(d), T_DATE, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is not before a timestamptz span.
  * @sqlop @p #&>
  */
 bool
@@ -1021,7 +1180,21 @@ overright_span_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is not before a timestamp.
+ * @brief Return true if a date span is not before a date.
+ * @sqlop @p #&>
+ */
+bool
+overafter_span_date(const Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+  return overright_span_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz span is not before a timestamptz.
  * @sqlop @p #&>
  */
 bool
@@ -1133,7 +1306,20 @@ union_span_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a period and a timestamp
+ * @brief Return the union of a date span and a date
+ * @sqlop @p +
+ */
+SpanSet *
+union_span_date(const Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return NULL;
+  return union_span_value(s, DateADTGetDatum(d), T_DATE);
+}
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a timestamptz span and a timestamptz
  * @sqlop @p +
  */
 SpanSet *
@@ -1263,6 +1449,24 @@ intersection_span_float(const Span *s, double d, double *result)
   return true;
 }
 
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Compute the intersection of a span and a date in the last
+ * argument
+ * @sqlop @p *
+ */
+bool
+intersection_span_date(const Span *s, DateADT d, DateADT *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+
+  if (! contains_span_value(s, DateADTGetDatum(d), T_DATE))
+    return false;
+  *result = d;
+  return true;
+}
 /**
  * @ingroup libmeos_setspan_set
  * @brief Compute the intersection of a span and a timestamptz in the last
@@ -1410,7 +1614,26 @@ minus_float_span(double d, const Span *s, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a timestamp and a period
+ * @brief Compute the difference of a date and a date span
+ * @sqlop @p -
+ */
+bool
+minus_date_span(DateADT d, const Span *s, DateADT *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_span_basetype(s, T_DATE))
+    return false;
+
+  Datum v;
+  bool res = minus_value_span(DateADTGetDatum(d), T_DATE, s, &v);
+  *result = DatumGetDateADT(v);
+  return res;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Compute the difference of a timestamptz and a timestamptz span
  * @sqlop @p -
  */
 bool
@@ -1526,7 +1749,20 @@ minus_span_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a period and a timestamp
+ * @brief Return the difference of a date span and a date
+ * @sqlop @p -
+ */
+SpanSet *
+minus_span_date(const Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return NULL;
+  return minus_span_value(s, DateADTGetDatum(d), T_DATE);
+}
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a timestamptz span and a timestamptz
  * @sqlop @p -
  */
 SpanSet *
@@ -1638,19 +1874,26 @@ double
 distance_value_value(Datum l, Datum r, meosType type)
 {
   assert(span_basetype(type));
-  if (type == T_INT4)
-    return (double) abs(DatumGetInt32(l) - DatumGetInt32(r));
-  if (type == T_INT8)
-    return (double) llabs(DatumGetInt64(l) - DatumGetInt64(r));
-  if (type == T_FLOAT8)
-    return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
-  if (type == T_TIMESTAMPTZ)
-    /* Distance in seconds if the base type is TimestampTz */
-    return (double) (llabs((DatumGetTimestampTz(l) -
-      DatumGetTimestampTz(r)))) / USECS_PER_SEC;
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown types for distance between values of type: %d", type);
-  return DBL_MAX;
+  switch (type)
+  {
+    case T_INT4:
+      return (double) abs(DatumGetInt32(l) - DatumGetInt32(r));
+    case T_INT8:
+      return (double) llabs(DatumGetInt64(l) - DatumGetInt64(r));
+    case T_FLOAT8:
+      return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
+    case T_DATE:
+      return (double) abs(DatumGetDateADT(l) - DatumGetDateADT(r));
+    case T_TIMESTAMPTZ:
+      /* Distance in seconds if the base type is TimestampTz */
+      return (double) (llabs((DatumGetTimestampTz(l) -
+        DatumGetTimestampTz(r)))) / USECS_PER_SEC;
+    default:
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown types for distance between values of type: %s",
+        meostype_name(type));
+      return DBL_MAX;
+  }
 }
 
 /**
@@ -1730,8 +1973,24 @@ distance_span_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance in seconds between a period and a timestamp
- * as a double
+ * @brief Return the distance in seconds between a date span and a date as a
+ * double
+ * @return On error return -1.0
+ * @sqlop @p <->
+ */
+double
+distance_span_date(const Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_same_span_basetype(s, T_DATE))
+    return -1.0;
+  return distance_span_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance in seconds between a timestamptz span and a
+ * timestamptz as a double
  * @return On error return -1.0
  * @sqlop @p <->
  */

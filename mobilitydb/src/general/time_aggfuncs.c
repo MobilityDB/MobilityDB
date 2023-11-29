@@ -98,7 +98,7 @@ Tstzspan_tcount_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tstzspanset_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_tcount_transfn);
 /**
- * @brief Transition function for temporal count aggregate of period sets
+ * @brief Transition function for temporal count aggregate of span sets
  */
 Datum
 Tstzspanset_tcount_transfn(PG_FUNCTION_ARGS)

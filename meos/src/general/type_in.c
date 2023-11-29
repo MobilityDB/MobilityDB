@@ -1101,6 +1101,31 @@ double_from_wkb_state(wkb_parse_state *s)
 /**
  * @brief Read an 8-byte timestamp and advance the parse state forward
  */
+DateADT
+date_from_wkb_state(wkb_parse_state *s)
+{
+  int32_t d = 0;
+  /* Does the data we want to read exist? */
+  wkb_parse_state_check(s, MEOS_WKB_DATE_SIZE);
+  /* Get the data */
+  memcpy(&d, s->pos, MEOS_WKB_DATE_SIZE);
+  /* Swap? Copy into a stack-allocated timestamp */
+  if (s->swap_bytes)
+  {
+    for (int i = 0; i < MEOS_WKB_DATE_SIZE / 2; i++)
+    {
+      uint8_t tmp = ((uint8_t*)(&d))[i];
+      ((uint8_t*)(&d))[i] = ((uint8_t*)(&d))[MEOS_WKB_DATE_SIZE - i - 1];
+      ((uint8_t*)(&d))[MEOS_WKB_DATE_SIZE - i - 1] = tmp;
+    }
+  }
+  s->pos += MEOS_WKB_DATE_SIZE;
+  return (DateADT) d;
+}
+
+/**
+ * @brief Read an 8-byte timestamp and advance the parse state forward
+ */
 TimestampTz
 timestamp_from_wkb_state(wkb_parse_state *s)
 {
@@ -1112,7 +1137,7 @@ timestamp_from_wkb_state(wkb_parse_state *s)
   /* Swap? Copy into a stack-allocated timestamp */
   if (s->swap_bytes)
   {
-    for (int i = 0; i < MEOS_WKB_TIMESTAMP_SIZE/2; i++)
+    for (int i = 0; i < MEOS_WKB_TIMESTAMP_SIZE / 2; i++)
     {
       uint8_t tmp = ((uint8_t*)(&t))[i];
       ((uint8_t*)(&t))[i] = ((uint8_t*)(&t))[MEOS_WKB_TIMESTAMP_SIZE - i - 1];
@@ -1200,6 +1225,8 @@ basevalue_from_wkb_state(wkb_parse_state *s)
       return Int64GetDatum(int64_from_wkb_state(s));
     case T_FLOAT8:
       return Float8GetDatum(double_from_wkb_state(s));
+    case T_DATE:
+      return DateADTGetDatum(date_from_wkb_state(s));
     case T_TIMESTAMPTZ:
       return TimestampTzGetDatum(timestamp_from_wkb_state(s));
     case T_TEXT:
@@ -1214,7 +1241,7 @@ basevalue_from_wkb_state(wkb_parse_state *s)
 #endif /* NPOINT */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
-        "Unknown base type IN WKB string: %d", s->basetype);
+        "Unknown base type in WKB string: %d", s->basetype);
       return 0;
   }
 }
@@ -1731,7 +1758,7 @@ datum_from_hexwkb(const char *hexwkb, size_t size, meosType type)
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Binary (WKB)
  * representation.
- * @sqlfunc tstzsetFromBinary()
+ * @sqlfunc intsetFromBinary(), tstzsetFromBinary(), ...
  */
 Set *
 set_from_wkb(const uint8_t *wkb, size_t size)
@@ -1747,7 +1774,7 @@ set_from_wkb(const uint8_t *wkb, size_t size)
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its WKB representation in hex-encoded
  * ASCII.
- * @sqlfunc tstzsetFromHexWKB()
+ * @sqlfunc intsetFromHexWKB(), tstzsetFromHexWKB(), ...
  */
 Set *
 set_from_hexwkb(const char *hexwkb)
@@ -1798,9 +1825,9 @@ span_from_hexwkb(const char *hexwkb)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a period set from its Well-Known Binary (WKB)
+ * @brief Return a span set from its Well-Known Binary (WKB)
  * representation.
- * @sqlfunc periodsetFromBinary()
+ * @sqlfunc intspansetFromBinary(), tstzspansetFromBinary(), ...
  */
 SpanSet *
 spanset_from_wkb(const uint8_t *wkb, size_t size)
@@ -1814,8 +1841,8 @@ spanset_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a period set from its WKB representation in hex-encoded ASCII
- * @sqlfunc periodsetFromHexWKB()
+ * @brief Return a span set from its WKB representation in hex-encoded ASCII
+ * @sqlfunc intsetFromHexWKB(), tstzsetFromHexWKB(), ...
  */
 SpanSet *
 spanset_from_hexwkb(const char *hexwkb)

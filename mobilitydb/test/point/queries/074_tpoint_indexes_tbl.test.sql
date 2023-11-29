@@ -272,7 +272,7 @@ DROP INDEX tbl_tgeompoint3D_quadtree_idx;
 -------------------------------------------------------------------------------
 -- Coverage of all the same and order by logic in SP-GiST indexes
 
-CREATE TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint_seq(geometry 'Point(5 5 5)', p) AS temp FROM tbl_tstzspan_big;
+CREATE TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint_seq(geometry 'Point(5 5 5)', t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tgeompoint3D_big_allthesame_quadtree_idx ON tbl_tgeompoint3D_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tgeompoint3D_big_allthesame;
 

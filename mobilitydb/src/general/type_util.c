@@ -338,9 +338,12 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   meosType basetype)
 {
   Oid rangetypid = 0;
-  assert (basetype == T_INT4 || basetype == T_TIMESTAMPTZ);
+  assert(basetype == T_INT4 || basetype == T_DATE ||
+    basetype == T_TIMESTAMPTZ);
   if (basetype == T_INT4)
     rangetypid = type_oid(T_INT4RANGE);
+  else if (basetype == T_DATE)
+    rangetypid = type_oid(T_DATERANGE);
   else /* basetype == T_TIMESTAMPTZ */
     rangetypid = type_oid(T_TSTZRANGE);
 
@@ -371,19 +374,9 @@ multirange_make(const SpanSet *ss)
 {
   RangeType **ranges = palloc(sizeof(RangeType *) * ss->count);
   const Span *s = spanset_sp_n(ss, 0);
-  Oid rangetypid = 0, mrangetypid = 0;
-  assert (s->basetype == T_INT4 || s->basetype == T_TIMESTAMPTZ);
-  if (s->basetype == T_INT4)
-  {
-    rangetypid = type_oid(T_INT4RANGE);
-    mrangetypid = type_oid(T_INT4MULTIRANGE);
-  }
-  else /* basetype == T_TIMESTAMPTZ */
-  {
-    rangetypid = type_oid(T_TSTZRANGE);
-    mrangetypid = type_oid(T_TSTZMULTIRANGE);
-  }
-  TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
+  Oid rangetypid = basetype_rangetype(ss->basetype);
+  Oid mrangetypid = basetype_multirangetype(ss->basetype);;
+  TypeCacheEntry *typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
   for (int i = 0; i < ss->count; i++)
   {
     s = spanset_sp_n(ss, i);

@@ -256,12 +256,20 @@ Datum
 span_canon_upper(const Span *s)
 {
   Datum result;
-  if (s->basetype == T_INT4)
-    result = Int32GetDatum(DatumGetInt32(s->upper) - (int32) 1);
-  else if (s->basetype == T_INT8)
-    result = Int64GetDatum(DatumGetInt64(s->upper) - (int64) 1);
-  else
-    result = s->upper;
+  switch (s->basetype)
+  {
+    case T_INT4:
+      result = Int32GetDatum(DatumGetInt32(s->upper) - (int32) 1);
+      break;
+    case T_INT8:
+      result = Int64GetDatum(DatumGetInt64(s->upper) - (int64) 1);
+      break;
+    case T_DATE:
+      result = DateADTGetDatum(DatumGetDateADT(s->upper) - 1);
+      break;
+    default:
+      result = s->upper;
+  }
   return result;
 }
 
@@ -474,6 +482,20 @@ floatspan_out(const Span *s, int maxdd)
  * @return On error return NULL
  */
 char *
+datespan_out(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_DATESPAN))
+    return NULL;
+  return span_out(s, 0);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @return On error return NULL
+ */
+char *
 tstzspan_out(const Span *s)
 {
   /* Ensure validity of the arguments */
@@ -577,31 +599,49 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   /* Canonicalize */
   if (span_canon_basetype(basetype))
   {
-    if (basetype == T_INT4)
+    switch (basetype)
     {
-      if (! lower_inc)
-      {
-        lower = Int32GetDatum(DatumGetInt32(lower) + 1);
-        lower_inc = true;
-      }
-      if (upper_inc)
-      {
-        upper = Int32GetDatum(DatumGetInt32(upper) + 1);
-        upper_inc = false;
-      }
-    }
-    else /* basetype == T_INT8 */
-    {
-      if (! lower_inc)
-      {
-        lower = Int64GetDatum(DatumGetInt64(lower) + 1);
-        lower_inc = true;
-      }
-      if (upper_inc)
-      {
-        upper = Int64GetDatum(DatumGetInt64(upper) + 1);
-        upper_inc = false;
-      }
+      case T_INT4:
+        if (! lower_inc)
+        {
+          lower = Int32GetDatum(DatumGetInt32(lower) + 1);
+          lower_inc = true;
+        }
+        if (upper_inc)
+        {
+          upper = Int32GetDatum(DatumGetInt32(upper) + 1);
+          upper_inc = false;
+        }
+        break;
+      case T_INT8:
+        if (! lower_inc)
+        {
+          lower = Int64GetDatum(DatumGetInt64(lower) + 1);
+          lower_inc = true;
+        }
+        if (upper_inc)
+        {
+          upper = Int64GetDatum(DatumGetInt64(upper) + 1);
+          upper_inc = false;
+        }
+        break;
+      case T_DATE:
+        if (! lower_inc)
+        {
+          lower = DateADTGetDatum(DatumGetDateADT(lower) + 1);
+          lower_inc = true;
+        }
+        if (upper_inc)
+        {
+          upper = DateADTGetDatum(DatumGetDateADT(upper) + 1);
+          upper_inc = false;
+        }
+        break;
+      default:
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Unknown base type for canonicalize spans: %s",
+            meostype_name(basetype));
+        return;
     }
   }
 
@@ -721,6 +761,19 @@ float_to_span(double d)
 
 /**
  * @ingroup libmeos_setspan_conversion
+ * @brief Convert a date as a span
+ * @sqlop @p ::
+ */
+Span *
+date_to_span(DateADT d)
+{
+  Span *result = span_make(DateADTGetDatum(d), DateADTGetDatum(d),
+    true, true, T_DATE);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_conversion
  * @brief Convert a timestamptz as a span
  * @sqlop @p ::
  */
@@ -750,7 +803,7 @@ date_to_tstzspan(DateADT d)
     true, true, T_TIMESTAMPTZ);
   return result;
 }
-#endif 
+#endif
 
 /*****************************************************************************
  * Accessor functions
@@ -778,7 +831,7 @@ intspan_lower(const Span *s)
  * @return On error return INT_MAX
  * @sqlfunc lower()
  */
-int
+int64
 bigintspan_lower(const Span *s)
 {
   /* Ensure validity of the arguments */
@@ -804,7 +857,22 @@ floatspan_lower(const Span *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the lower bound of a period
+ * @brief Return the lower bound of a date span
+ * @return On error return DATEVAL_NOEND
+ * @sqlfunc lower()
+ */
+DateADT
+datespan_lower(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_DATESPAN))
+    return DATEVAL_NOEND;
+  return DateADTGetDatum(s->lower);
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the lower bound of a timestamptz span
  * @return On error return DT_NOEND
  * @sqlfunc lower()
  */
@@ -838,7 +906,7 @@ intspan_upper(const Span *s)
  * @return On error return INT_MAX
  * @sqlfunc upper()
  */
-int
+int64
 bigintspan_upper(const Span *s)
 {
   /* Ensure validity of the arguments */
@@ -864,7 +932,22 @@ floatspan_upper(const Span *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the upper bound of a period
+ * @brief Return the upper bound of a date span
+ * @return On error return DATEVAL_NOEND
+ * @sqlfunc upper()
+ */
+DateADT
+datespan_upper(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_DATESPAN))
+    return DATEVAL_NOEND;
+  return TimestampTzGetDatum(s->upper);
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the upper bound of a timestamptz span
  * @return On error return DT_NOEND
  * @sqlfunc upper()
  */
@@ -918,12 +1001,26 @@ span_width(const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s))
     return -1.0;
-  return distance_value_value(s->lower, s->upper, s->basetype);
+  return distance_value_value(s->upper, s->lower, s->basetype);
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the duration of a period as an interval.
+ * @brief Return the duration of a date span as an interval.
+ * @sqlfunc duration()
+ */
+Interval *
+datespan_duration(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_DATESPAN))
+    return NULL;
+  return pg_timestamp_mi(s->upper, s->lower);
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the duration of a timestamptz span as an interval.
  * @sqlfunc duration()
  */
 Interval *
@@ -1007,6 +1104,38 @@ floatspan_intspan(const Span *s)
   floatspan_set_intspan(s, result);
   return result;
 }
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a date span to a timestamptz span
+ * @return On error return NULL
+ */
+Span *
+datespan_tstzspan(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_DATESPAN))
+    return NULL;
+  Span *result = malloc(sizeof(Span));
+  datespan_set_tstzspan(s, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a timestamptz span to a date span
+ * @return On error return NULL
+ */
+Span *
+tstzspan_datespan(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
+    return NULL;
+  Span *result = malloc(sizeof(Span));
+  tstzspan_set_datespan(s, result);
+  return result;
+}
 #endif /* MEOS */
 
 /**
@@ -1042,6 +1171,41 @@ floatspan_set_intspan(const Span *s1, Span *s2)
   return;
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the second span with the first one transformed to a timetstamptz span
+ */
+void
+datespan_set_tstzspan(const Span *s1, Span *s2)
+{
+  assert(s1); assert(s2);
+  assert(s1->spantype == T_DATESPAN);
+  memset(s2, 0, sizeof(Span));
+  Datum lower =
+    TimestampTzGetDatum(pg_date_timestamptz(DatumGetDateADT(s1->lower)));
+  Datum upper =
+    TimestampTzGetDatum(pg_date_timestamptz(DatumGetDateADT(s1->upper)));
+  /* Date spans are always canonicalized */
+  span_set(lower, upper, true, false, T_TIMESTAMPTZ, s2);
+  return;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the second span with the first one transformed to a date span
+ */
+void
+tstzspan_set_datespan(const Span *s1, Span *s2)
+{
+  assert(s1); assert(s2);
+  assert(s1->spantype == T_TSTZSPAN);
+  memset(s2, 0, sizeof(Span));
+  Datum lower = DateADTGetDatum(pg_timestamptz_date(DatumGetTimestampTz(s1->lower)));
+  Datum upper = DateADTGetDatum(pg_timestamptz_date(DatumGetTimestampTz(s1->upper)) + 1);
+  span_set(lower, upper, true, false, T_DATE, s2);
+  return;
+}
 
 /**
  * @ingroup libmeos_internal_setspan_transf

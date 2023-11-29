@@ -516,6 +516,8 @@ ensure_not_negative_datum(Datum size, meosType basetype)
   if (! not_negative_datum(size, basetype))
   {
     char str[256];
+    assert(basetype == T_INT4 || basetype == T_FLOAT8 ||
+      basetype == T_TIMESTAMPTZ);
     if (basetype == T_INT4)
       sprintf(str, "%d", DatumGetInt32(size));
     else if (basetype == T_FLOAT8)
@@ -535,13 +537,16 @@ ensure_not_negative_datum(Datum size, meosType basetype)
 bool
 positive_datum(Datum size, meosType basetype)
 {
-  assert(span_basetype(basetype));
+  assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8 ||
+    basetype == T_TIMESTAMPTZ);
   if (basetype == T_INT4 && DatumGetInt32(size) <= 0)
     return false;
-  else if (basetype == T_FLOAT8 && DatumGetFloat8(size) <= 0.0)
+  if (basetype == T_INT8 && DatumGetInt64(size) <= 0)
+    return false;
+  if (basetype == T_FLOAT8 && DatumGetFloat8(size) <= 0.0)
     return false;
   /* basetype == T_TIMESTAMPTZ */
-  else if (DatumGetInt64(size) <= 0)
+  if (DatumGetInt64(size) <= 0)
     return false;
   return true;
 }
@@ -557,6 +562,8 @@ ensure_positive_datum(Datum size, meosType basetype)
     char str[256];
     if (basetype == T_INT4)
       sprintf(str, "%d", DatumGetInt32(size));
+    else if (basetype == T_INT8)
+      sprintf(str, "%ld", DatumGetInt64(size));
     else if (basetype == T_FLOAT8)
       sprintf(str, "%f", DatumGetFloat8(size));
     else /* basetype == T_TIMESTAMPTZ */
@@ -1090,7 +1097,7 @@ tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_not_empty(gs) || ! ensure_point_type(gs))
     return NULL;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_TGEOGPOINT : 
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_TGEOGPOINT :
     T_TGEOMPOINT;
   return temporal_from_base_temp(PointerGetDatum(gs), geotype, temp);
 }
@@ -1641,7 +1648,7 @@ temporal_to_tsequence(const Temporal *temp, interpType interp)
   else if (temp->subtype == TSEQUENCE)
   {
     interpType interp1 = MEOS_FLAGS_GET_INTERP(temp->flags);
-    if (interp1 == DISCRETE && interp != DISCRETE && 
+    if (interp1 == DISCRETE && interp != DISCRETE &&
       ((TSequence *) temp)->count > 1)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
@@ -2137,7 +2144,7 @@ tnumber_valuespans(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the time frame of a temporal value as a period set.
+ * @brief Return the time frame of a temporal value as a span set.
  * @sqlfunc getTime
  */
 SpanSet *
@@ -3930,7 +3937,7 @@ temporal_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal value to (the complement of) a period set.
+ * @brief Restrict a temporal value to (the complement of) a span set.
  */
 Temporal *
 temporal_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
@@ -4195,7 +4202,7 @@ temporal_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
 
 /**
  * @ingroup libmeos_temporal_modif
- * @brief Delete a period set from a temporal value connecting the instants
+ * @brief Delete a span set from a temporal value connecting the instants
  * before and after the given timestamp (if any).
  * @sqlfunc deleteTime
  */

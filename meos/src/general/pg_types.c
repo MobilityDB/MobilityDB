@@ -66,10 +66,12 @@
 #if ! MEOS
   extern Datum call_function1(PGFunction func, Datum arg1);
   extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3);
-  extern Datum timestamptz_in(PG_FUNCTION_ARGS);
+  extern Datum date_in(PG_FUNCTION_ARGS);
   extern Datum timestamp_in(PG_FUNCTION_ARGS);
-  extern Datum timestamptz_out(PG_FUNCTION_ARGS);
+  extern Datum timestamptz_in(PG_FUNCTION_ARGS);
+  extern Datum date_out(PG_FUNCTION_ARGS);
   extern Datum timestamp_out(PG_FUNCTION_ARGS);
+  extern Datum timestamptz_out(PG_FUNCTION_ARGS);
   extern Datum interval_out(PG_FUNCTION_ARGS);
 #endif /* ! MEOS */
 
@@ -291,17 +293,17 @@ int4_in(const char *str)
 static int
 mobdb_ltoa(int32 value, char *a)
 {
-	uint32		uvalue = (uint32) value;
-	int			len = 0;
+  uint32 uvalue = (uint32) value;
+  int len = 0;
 
-	if (value < 0)
-	{
-		uvalue = (uint32) 0 - uvalue;
-		a[len++] = '-';
-	}
-	len += pg_ultoa_n(uvalue, a + len);
-	a[len] = '\0';
-	return len;
+  if (value < 0)
+  {
+    uvalue = (uint32) 0 - uvalue;
+    a[len++] = '-';
+  }
+  len += pg_ultoa_n(uvalue, a + len);
+  a[len] = '\0';
+  return len;
 }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
@@ -684,7 +686,19 @@ pg_datan2(float8 arg1, float8 arg2)
  * Functions adapted from date.c
  *****************************************************************************/
 
-#if MEOS
+#if ! MEOS
+/**
+ * @brief Convert a string into a date.
+ * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
+ */
+DateADT
+pg_date_in(const char *str)
+{
+  Datum arg = CStringGetDatum(str);
+  TimestampTz result = DatumGetTimestampTz(call_function1(date_in, arg));
+  return result;
+}
+#else
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a string to a date in internal date format.
@@ -773,10 +787,21 @@ pg_date_in(const char *str)
 
   return date;
 }
+#endif /* MEOS */
 
-/* date_out()
- * Given internal format date, convert to text string.
+#if ! MEOS
+/**
+ * @brief Convert a string into a date.
+ * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
  */
+char *
+pg_date_out(DateADT date)
+{
+  Datum d = DateADTGetDatum(date);
+  char *result = DatumGetCString(call_function1(date_out, d));
+  return result;
+}
+#else
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a date in internal date format to a string.
@@ -802,6 +827,164 @@ pg_date_out(DateADT date)
   return result;
 }
 #endif /* MEOS */
+
+#if MEOS || POSTGRESQL_VERSION_NUMBER < 130000
+/*
+ * Promote date to timestamp with time zone.
+ *
+ * On successful conversion, *overflow is set to zero if it's not NULL.
+ *
+ * If the date is finite but out of the valid range for timestamptz, then:
+ * if overflow is NULL, we throw an out-of-range error.
+ * if overflow is not NULL, we store +1 or -1 there to indicate the sign
+ * of the overflow, and return the appropriate timestamptz infinity.
+ */
+TimestampTz
+date2timestamptz_opt_overflow(DateADT dateVal, int *overflow)
+{
+  TimestampTz result;
+  struct pg_tm tt, *tm = &tt;
+  int tz;
+
+  if (overflow)
+    *overflow = 0;
+
+  if (DATE_IS_NOBEGIN(dateVal))
+    TIMESTAMP_NOBEGIN(result);
+  else if (DATE_IS_NOEND(dateVal))
+    TIMESTAMP_NOEND(result);
+  else
+  {
+    /*
+     * Since dates have the same minimum values as timestamps, only upper
+     * boundary need be checked for overflow.
+     */
+    if (dateVal >= (TIMESTAMP_END_JULIAN - POSTGRES_EPOCH_JDATE))
+    {
+      if (overflow)
+      {
+        *overflow = 1;
+        TIMESTAMP_NOEND(result);
+        return result;
+      }
+      else
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "date out of range for timestamp");
+        return 0;
+      }
+    }
+
+    j2date(dateVal + POSTGRES_EPOCH_JDATE,
+         &(tm->tm_year), &(tm->tm_mon), &(tm->tm_mday));
+    tm->tm_hour = 0;
+    tm->tm_min = 0;
+    tm->tm_sec = 0;
+    tz = DetermineTimeZoneOffset(tm, session_timezone);
+
+    result = dateVal * USECS_PER_DAY + tz * USECS_PER_SEC;
+
+    /*
+     * Since it is possible to go beyond allowed timestamptz range because
+     * of time zone, check for allowed timestamp range after adding tz.
+     */
+    if (!IS_VALID_TIMESTAMP(result))
+    {
+      if (overflow)
+      {
+        if (result < MIN_TIMESTAMP)
+        {
+          *overflow = -1;
+          TIMESTAMP_NOBEGIN(result);
+        }
+        else
+        {
+          *overflow = 1;
+          TIMESTAMP_NOEND(result);
+        }
+      }
+      else
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "date out of range for timestamp");
+        return 0;
+      }
+    }
+  }
+  return result;
+}
+#endif /* MEOS || POSTGRESQL_VERSION_NUMBER < 130000 */
+
+/*
+ * Promote date to timestamptz, throwing error for overflow.
+ */
+TimestampTz
+pg_date_timestamptz(DateADT dateVal)
+{
+  return date2timestamptz_opt_overflow(dateVal, NULL);
+}
+
+/**
+ * @brief Sub a number of days to a date, giving a new date.
+ * Must handle both positive and negative numbers of days.
+ */
+DateADT
+pg_date_pl_int(DateADT d, int32 days)
+{
+  DateADT result;
+
+  if (DATE_NOT_FINITE(d))
+    return d; /* can't change infinity */
+
+  result = d + days;
+
+  /* Check for integer overflow and out-of-allowed-range */
+  if ((days >= 0 ? (result < d) : (result > d)) || !IS_VALID_DATE(result))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "date out of range");
+    return DATEVAL_NOEND;
+  }
+
+  return result;
+}
+
+/**
+ * @brief Subtract a number of days from a date, giving a new date.
+ */
+DateADT
+pg_date_mi_int(DateADT d, int32 days)
+{
+  DateADT result;
+
+  if (DATE_NOT_FINITE(d))
+    return d; /* can't change infinity */
+
+  result = d - days;
+
+  /* Check for integer overflow and out-of-allowed-range */
+  if ((days >= 0 ? (result > d) : (result < d)) || !IS_VALID_DATE(result))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "date out of range");
+    return DATEVAL_NOEND;
+  }
+
+  return result;
+}
+
+/**
+ * @brief Compute difference between two dates in days.
+ */
+Interval *
+pg_date_mi(DateADT d1, DateADT d2)
+{
+  if (DATE_NOT_FINITE(d1) || DATE_NOT_FINITE(d2))
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "cannot subtract infinite dates");
+
+  Interval *result = palloc0(sizeof(Interval));
+  result->day = (int32) (d1 - d2);
+  return result;
+}
 
 /*****************************************************************************
  *   Time ADT
@@ -1085,18 +1268,6 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
 
 /**
  * @ingroup libmeos_pg_types
- * @brief Convert a string to a timestamp with time zone.
- * @return On error return DT_NOEND
- * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
- */
-TimestampTz
-pg_timestamptz_in(const char *str, int32 typmod)
-{
-  return timestamp_in_common(str, typmod, true);
-}
-
-/**
- * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp without time zone.
  * @return On error return DT_NOEND
  * @note PostgreSQL function: Datum timestamp_in(PG_FUNCTION_ARGS)
@@ -1105,6 +1276,18 @@ Timestamp
 pg_timestamp_in(const char *str, int32 typmod)
 {
   return (Timestamp) timestamp_in_common(str, typmod, false);
+}
+
+/**
+ * @ingroup libmeos_pg_types
+ * @brief Convert a string to a timestamp with time zone.
+ * @return On error return DT_NOEND
+ * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
+ */
+TimestampTz
+pg_timestamptz_in(const char *str, int32 typmod)
+{
+  return timestamp_in_common(str, typmod, true);
 }
 #endif /* MEOS */
 
@@ -1174,6 +1357,33 @@ pg_timestamp_out(Timestamp dt)
   return timestamp_out_common((Timestamp) dt, false);
 }
 #endif /* MEOS */
+
+/* timestamptz_date()
+ * Convert timestamp with time zone to date data type.
+ */
+DateADT
+pg_timestamptz_date(TimestampTz timestamp)
+{
+  DateADT result;
+  struct pg_tm tt, *tm = &tt;
+  fsec_t fsec;
+  int tz;
+
+  if (TIMESTAMP_IS_NOBEGIN(timestamp))
+    DATE_NOBEGIN(result);
+  else if (TIMESTAMP_IS_NOEND(timestamp))
+    DATE_NOEND(result);
+  else
+  {
+    if (timestamp2tm(timestamp, &tz, tm, &fsec, NULL, NULL) != 0)
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+
+    result = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) - POSTGRES_EPOCH_JDATE;
+  }
+
+  return result;
+}
 
 /*****************************************************************************/
 

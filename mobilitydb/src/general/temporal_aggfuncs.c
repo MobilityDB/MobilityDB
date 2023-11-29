@@ -609,6 +609,7 @@ Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
   double maxdist = -1.0;
   Interval *maxt = NULL;
   /* Take into account the arguments for the gaps */
+  assert(PG_NARGS() <= 4);
   if (PG_NARGS() > 2)
   {
     if (PG_NARGS() == 3)

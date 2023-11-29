@@ -52,7 +52,7 @@ SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan_tmp t2 WHERE t1.k = t2.k AN
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_tmp t2 WHERE t1.k = t2.k AND t1.p <> t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
  count 
 -------
      0
@@ -84,7 +84,7 @@ SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromBinary(asBinary(f)) <> f;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromBinary(asBinary(p)) <> p;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromBinary(asBinary(t)) <> t;
  count 
 -------
      0
@@ -108,10 +108,28 @@ SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromHexWKB(asHexWKB(f)) <> f;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromHexWKB(asHexWKB(p)) <> p;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromHexWKB(asHexWKB(t)) <> t;
  count 
 -------
      0
+(1 row)
+
+SELECT MAX(lower(d::tstzspan)) FROM tbl_datespan ORDER BY 1;
+             max              
+------------------------------
+ Tue Dec 18 00:00:00 2001 PST
+(1 row)
+
+SELECT MAX(lower(t::datespan)) FROM tbl_tstzspan ORDER BY 1;
+    max     
+------------
+ 12-29-2001
+(1 row)
+
+SELECT COUNT(*) FROM tbl_datespan WHERE (d::tstzspan)::datespan <> d;
+ count 
+-------
+    99
 (1 row)
 
 SELECT MAX(lower(i::int4range)) FROM tbl_intspan ORDER BY 1;
@@ -120,7 +138,7 @@ SELECT MAX(lower(i::int4range)) FROM tbl_intspan ORDER BY 1;
   99
 (1 row)
 
-SELECT MAX(lower(p::tstzrange)) FROM tbl_tstzspan ORDER BY 1;
+SELECT MAX(lower(t::tstzrange)) FROM tbl_tstzspan ORDER BY 1;
              max              
 ------------------------------
  Sat Dec 29 12:53:00 2001 PST
@@ -156,7 +174,7 @@ SELECT round(MAX(lower(shift(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, t
  198.767557
 (1 row)
 
-SELECT MAX(lower(shift(p, i))) FROM tbl_tstzspan, tbl_interval;
+SELECT MAX(lower(shift(t, i))) FROM tbl_tstzspan, tbl_interval;
              max              
 ------------------------------
  Sat Dec 29 14:32:00 2001 PST
@@ -180,7 +198,7 @@ SELECT round(MAX(lower(scale(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, t
  99.383221
 (1 row)
 
-SELECT MAX(lower(scale(p, i))) FROM tbl_tstzspan, tbl_interval;
+SELECT MAX(lower(scale(t, i))) FROM tbl_tstzspan, tbl_interval;
              max              
 ------------------------------
  Sat Dec 29 12:53:00 2001 PST
@@ -204,7 +222,7 @@ SELECT round(MAX(lower(shiftScale(t1.f, t2.f, t3.f)))::numeric, 6) FROM tbl_floa
  198.767557
 (1 row)
 
-SELECT MAX(lower(shiftScale(p, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
+SELECT MAX(lower(shiftScale(t, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
              max              
 ------------------------------
  Sat Dec 29 14:32:00 2001 PST
@@ -264,7 +282,7 @@ SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspan;
  99.383221
 (1 row)
 
-SELECT MAX(lower(p)) FROM tbl_tstzspan;
+SELECT MAX(lower(t)) FROM tbl_tstzspan;
              max              
 ------------------------------
  Sat Dec 29 12:53:00 2001 PST
@@ -282,7 +300,7 @@ SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspan;
  106.033025
 (1 row)
 
-SELECT MAX(upper(p)) FROM tbl_tstzspan;
+SELECT MAX(upper(t)) FROM tbl_tstzspan;
              max              
 ------------------------------
  Sat Dec 29 13:00:00 2001 PST
@@ -302,7 +320,7 @@ SELECT DISTINCT lower_inc(f) FROM tbl_floatspan;
  t
 (2 rows)
 
-SELECT DISTINCT lower_inc(p) FROM tbl_tstzspan;
+SELECT DISTINCT lower_inc(t) FROM tbl_tstzspan;
  lower_inc 
 -----------
  
@@ -324,7 +342,7 @@ SELECT DISTINCT upper_inc(f) FROM tbl_floatspan;
  
 (2 rows)
 
-SELECT DISTINCT upper_inc(p) FROM tbl_tstzspan;
+SELECT DISTINCT upper_inc(t) FROM tbl_tstzspan;
  upper_inc 
 -----------
  
@@ -332,55 +350,55 @@ SELECT DISTINCT upper_inc(p) FROM tbl_tstzspan;
  t
 (3 rows)
 
-SELECT MAX(duration(p)) FROM tbl_tstzspan;
+SELECT MAX(duration(t)) FROM tbl_tstzspan;
    max    
 ----------
  00:09:00
 (1 row)
 
-SELECT MAX(lower(shift(p, '5 min'))) FROM tbl_tstzspan;
+SELECT MAX(lower(shift(t, '5 min'))) FROM tbl_tstzspan;
              max              
 ------------------------------
  Sat Dec 29 12:58:00 2001 PST
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE span_cmp(t1.p, t2.p) = -1;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE span_cmp(t1.t, t2.t) = -1;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p < t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t < t2.t;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <= t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <= t2.t;
  count 
 -------
   4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p > t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t > t2.t;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p >= t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t >= t2.t;
  count 
 -------
   4950
 (1 row)
 
-SELECT MAX(span_hash(p)) != 0 FROM tbl_tstzspan;
+SELECT MAX(span_hash(t)) != 0 FROM tbl_tstzspan;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT MAX(span_hash_extended(p, 1)) != 0 FROM tbl_tstzspan;
+SELECT MAX(span_hash_extended(t, 1)) != 0 FROM tbl_tstzspan;
  ?column? 
 ----------
  t

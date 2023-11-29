@@ -102,6 +102,28 @@ CREATE OPERATOR @> (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
+CREATE FUNCTION span_contains(datespan, date)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_contains(datespan, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+  PROCEDURE = span_contains,
+  LEFTARG = datespan, RIGHTARG = date,
+  COMMUTATOR = <@,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = span_contains,
+  LEFTARG = datespan, RIGHTARG = datespan,
+  COMMUTATOR = <@,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_contains(tstzspan, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_value'
@@ -192,6 +214,28 @@ CREATE OPERATOR <@ (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
+CREATE FUNCTION span_contained(date, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_contained(datespan, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <@ (
+  PROCEDURE = span_contained,
+  LEFTARG = date, RIGHTARG = datespan,
+  COMMUTATOR = @>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = span_contained,
+  LEFTARG = datespan, RIGHTARG = datespan,
+  COMMUTATOR = @>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_contained(timestamptz, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_span'
@@ -248,6 +292,18 @@ CREATE FUNCTION span_overlaps(floatspan, floatspan)
 CREATE OPERATOR && (
   PROCEDURE = span_overlaps,
   LEFTARG = floatspan, RIGHTARG = floatspan,
+  COMMUTATOR = &&,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+CREATE FUNCTION span_overlaps(datespan, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = span_overlaps,
+  LEFTARG = datespan, RIGHTARG = datespan,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -358,6 +414,38 @@ CREATE OPERATOR -|- (
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = floatspan, RIGHTARG = floatspan,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+CREATE FUNCTION span_adjacent(date, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_adjacent(datespan, date)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_adjacent(datespan, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
+  LEFTARG = date, RIGHTARG = datespan,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
+  LEFTARG = datespan, RIGHTARG = date,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
+  LEFTARG = datespan, RIGHTARG = datespan,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -494,6 +582,38 @@ CREATE OPERATOR << (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
+CREATE FUNCTION span_left(date, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_left(datespan, date)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_left(datespan, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  PROCEDURE = span_left,
+  LEFTARG = date, RIGHTARG = datespan,
+  COMMUTATOR = #>>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <<# (
+  PROCEDURE = span_left,
+  LEFTARG = datespan, RIGHTARG = date,
+  COMMUTATOR = #>>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <<# (
+  PROCEDURE = span_left,
+  LEFTARG = datespan, RIGHTARG = datespan,
+  COMMUTATOR = #>>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_left(timestamptz, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_value_span'
@@ -624,6 +744,38 @@ CREATE OPERATOR >> (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
+CREATE FUNCTION span_right(date, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_right(datespan, date)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_right(datespan, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR #>> (
+  PROCEDURE = span_right,
+  LEFTARG = date, RIGHTARG = datespan,
+  COMMUTATOR = <<#,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR #>> (
+  PROCEDURE = span_right,
+  LEFTARG = datespan, RIGHTARG = date,
+  COMMUTATOR = <<#,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR #>> (
+  PROCEDURE = span_right,
+  LEFTARG = datespan, RIGHTARG = datespan,
+  COMMUTATOR = <<#,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_right(timestamptz, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_value_span'
@@ -745,6 +897,35 @@ CREATE OPERATOR &< (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
+CREATE FUNCTION span_overleft(date, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_overleft(datespan, date)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_overleft(datespan, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR &<# (
+  PROCEDURE = span_overleft,
+  LEFTARG = date, RIGHTARG = datespan,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &<# (
+  PROCEDURE = span_overleft,
+  LEFTARG = datespan, RIGHTARG = date,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &<# (
+  PROCEDURE = span_overleft,
+  LEFTARG = datespan, RIGHTARG = datespan,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_overleft(timestamptz, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_value_span'
@@ -860,6 +1041,35 @@ CREATE OPERATOR &> (
 CREATE OPERATOR &> (
   PROCEDURE = span_overright,
   LEFTARG = floatspan, RIGHTARG = floatspan,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+CREATE FUNCTION span_overright(date, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_overright(datespan, date)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_overright(datespan, datespan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR #&> (
+  PROCEDURE = span_overright,
+  LEFTARG = date, RIGHTARG = datespan,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR #&> (
+  PROCEDURE = span_overright,
+  LEFTARG = datespan, RIGHTARG = date,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR #&> (
+  PROCEDURE = span_overright,
+  LEFTARG = datespan, RIGHTARG = datespan,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
@@ -984,6 +1194,35 @@ CREATE OPERATOR + (
   COMMUTATOR = +
 );
 
+CREATE FUNCTION span_union(date, datespan)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Union_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_union(datespan, date)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Union_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_union(datespan, datespan)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Union_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR + (
+  PROCEDURE = span_union,
+  LEFTARG = date, RIGHTARG = datespan,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = span_union,
+  LEFTARG = datespan, RIGHTARG = date,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = span_union,
+  LEFTARG = datespan, RIGHTARG = datespan,
+  COMMUTATOR = +
+);
+
 CREATE FUNCTION span_union(timestamptz, tstzspan)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Union_value_span'
@@ -1103,6 +1342,35 @@ CREATE OPERATOR * (
   COMMUTATOR = *
 );
 
+CREATE FUNCTION span_intersection(date, datespan)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Intersection_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_intersection(datespan, date)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Intersection_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_intersection(datespan, datespan)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Intersection_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR * (
+  PROCEDURE = span_intersection,
+  LEFTARG = date, RIGHTARG = datespan,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = span_intersection,
+  LEFTARG = datespan, RIGHTARG = date,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = span_intersection,
+  LEFTARG = datespan, RIGHTARG = datespan,
+  COMMUTATOR = *
+);
+
 CREATE FUNCTION span_intersection(timestamptz, tstzspan)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Intersection_value_span'
@@ -1112,7 +1380,7 @@ CREATE FUNCTION span_intersection(tstzspan, timestamptz)
   AS 'MODULE_PATHNAME', 'Intersection_span_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(tstzspan, tstzspan)
-  RETURNS floatspan
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Intersection_span_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -1220,6 +1488,32 @@ CREATE OPERATOR - (
   PROCEDURE = span_minus,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = -
+);
+
+CREATE FUNCTION span_minus(date, datespan)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Minus_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_minus(datespan, date)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Minus_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_minus(datespan, datespan)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Minus_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR - (
+  PROCEDURE = span_minus,
+  LEFTARG = date, RIGHTARG = datespan
+);
+CREATE OPERATOR - (
+  PROCEDURE = span_minus,
+  LEFTARG = datespan, RIGHTARG = date
+);
+CREATE OPERATOR - (
+  PROCEDURE = span_minus,
+  LEFTARG = datespan, RIGHTARG = datespan
 );
 
 CREATE FUNCTION span_minus(timestamptz, tstzspan)
@@ -1336,6 +1630,35 @@ CREATE OPERATOR <-> (
 CREATE OPERATOR <-> (
   PROCEDURE = span_distance,
   LEFTARG = floatspan, RIGHTARG = floatspan,
+  COMMUTATOR = <->
+);
+
+CREATE FUNCTION span_distance(date, datespan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_distance(datespan, date)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_distance(datespan, datespan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = span_distance,
+  LEFTARG = date, RIGHTARG = datespan,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = span_distance,
+  LEFTARG = datespan, RIGHTARG = date,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = span_distance,
+  LEFTARG = datespan, RIGHTARG = datespan,
   COMMUTATOR = <->
 );
 
