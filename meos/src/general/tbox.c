@@ -624,7 +624,7 @@ numspanset_to_tbox(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a temporal box from a period set.
+ * @brief Set a temporal box from a timestamptz span set.
  */
 void
 tstzspanset_set_tbox(const SpanSet *ss, TBox *box)
@@ -636,7 +636,7 @@ tstzspanset_set_tbox(const SpanSet *ss, TBox *box)
 
 /**
  * @ingroup libmeos_box_conversion
- * @brief Convert a period set to a temporal box.
+ * @brief Convert a timestamptz span set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */

@@ -34,6 +34,7 @@
 
 DROP INDEX IF EXISTS tbl_intset_gin_idx;
 DROP INDEX IF EXISTS tbl_bigintset_gin_idx;
+DROP INDEX IF EXISTS tbl_dateset_gin_idx;
 
 -------------------------------------------------------------------------------
 
@@ -52,31 +53,42 @@ INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE i && intset '{25, 35}';
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE b && bigintset '{25, 35}';
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'dateset', 'dateset', COUNT(*) FROM tbl_dateset WHERE d && dateset '{2000-01-01, 2000-02-01}';
 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'intset', 'int', COUNT(*) FROM tbl_intset WHERE i @> 25;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset WHERE b @> 25;
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'dateset', 'date', COUNT(*) FROM tbl_dateset WHERE d @> date '2000-01-25';
 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE i @> intset '{25, 35}';
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE b @> bigintset '{25, 35}';
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'dateset', 'dateset', COUNT(*) FROM tbl_dateset WHERE d @> dateset '{2000-01-01, 2000-02-01}';
 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE i <@ intset '{25, 35}';
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE b <@ bigintset '{25, 35}';
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'dateset', 'dateset', COUNT(*) FROM tbl_dateset WHERE d <@ dateset '{2000-01-01, 2000-02-01}';
 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '=', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE i = intset '{25, 35}';
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '=', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE b = bigintset '{25, 35}';
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '=', 'dateset', 'dateset', COUNT(*) FROM tbl_dateset WHERE d = dateset '{2000-01-01, 2000-02-01}';
 
 -------------------------------------------------------------------------------
 
 CREATE INDEX tbl_intset_gin_idx ON tbl_intset USING GIN(i);
 CREATE INDEX tbl_bigintset_gin_idx ON tbl_bigintset USING GIN(b);
+CREATE INDEX tbl_dateset_gin_idx ON tbl_dateset USING GIN(d);
 
 -------------------------------------------------------------------------------
 
@@ -86,6 +98,9 @@ WHERE op = '&&' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b && bigintset '{25, 35}' )
 WHERE op = '&&' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_dateset WHERE d && dateset '{2000-01-01, 2000-02-01}' )
+WHERE op = '&&' AND leftarg = 'dateset' AND rightarg = 'dateset';
 
 UPDATE test_setops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE i @> 25 )
@@ -93,6 +108,9 @@ WHERE op = '&&' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b @> 25 )
 WHERE op = '&&' AND leftarg = 'bigintset' AND rightarg = 'bigint';
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_dateset WHERE d @> date '2000-01-25' )
+WHERE op = '&&' AND leftarg = 'dateset' AND rightarg = 'date';
 
 UPDATE test_setops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE i @> intset '{25, 35}' )
@@ -100,6 +118,9 @@ WHERE op = '@>' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b @> bigintset '{25, 35}' )
 WHERE op = '@>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_dateset WHERE d @> dateset '{2000-01-01, 2000-02-01}' )
+WHERE op = '@>' AND leftarg = 'dateset' AND rightarg = 'dateset';
 
 UPDATE test_setops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE i <@ intset '{25, 35}' )
@@ -107,6 +128,9 @@ WHERE op = '<@' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b <@ bigintset '{25, 35}' )
 WHERE op = '<@' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_dateset WHERE d <@ dateset '{2000-01-01, 2000-02-01}' )
+WHERE op = '<@' AND leftarg = 'dateset' AND rightarg = 'dateset';
 
 UPDATE test_setops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE i = intset '{25, 35}' )
@@ -114,6 +138,9 @@ WHERE op = '=' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b = bigintset '{25, 35}' )
 WHERE op = '=' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_dateset WHERE d = dateset '{2000-01-01, 2000-02-01}' )
+WHERE op = '=' AND leftarg = 'dateset' AND rightarg = 'dateset';
 
 -------------------------------------------------------------------------------
 

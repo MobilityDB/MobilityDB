@@ -73,6 +73,13 @@
 					<entry><varname>tfloat</varname></entry>
 				</row>
 				<row>
+					<entry><emphasis role="bold"><varname>date</varname></emphasis></entry>
+					<entry><varname>dateset</varname></entry>
+					<entry><varname>datespan</varname></entry>
+					<entry><varname>datespanset</varname></entry>
+					<entry><varname></varname></entry>
+				</row>
+				<row>
 					<entry><emphasis role="bold"><varname>timestamptz</varname></emphasis></entry>
 					<entry><varname>tstzset</varname></entry>
 					<entry><varname>tstzspan</varname></entry>

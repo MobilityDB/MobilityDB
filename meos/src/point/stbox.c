@@ -823,7 +823,7 @@ tstzspan_to_stbox(const Span *s)
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a spatiotemporal box from a period set.
+ * @brief Set a spatiotemporal box from a timestamptz span set.
  */
 void
 tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
@@ -839,7 +839,7 @@ tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
 #if MEOS
 /**
  * @ingroup libmeos_box_conversion
- * @brief Convert a period set to a spatiotemporal box.
+ * @brief Convert a timestamptz span set to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
  */

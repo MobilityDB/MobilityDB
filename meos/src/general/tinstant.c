@@ -452,7 +452,7 @@ tnumberinst_valuespans(const TInstant *inst)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the time frame of a temporal instant as a period set.
+ * @brief Return the time frame of a temporal instant as a span set.
  * @sqlfunc getTime()
  */
 SpanSet *
@@ -893,7 +893,7 @@ tinstant_restrict_tstzspanset_test(const TInstant *inst, const SpanSet *ss,
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal instant to (the complement of) a period set.
+ * @brief Restrict a temporal instant to (the complement of) a span set.
  * @sqlfunc atTime(), minusTime()
  */
 TInstant *

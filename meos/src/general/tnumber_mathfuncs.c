@@ -490,6 +490,7 @@ static Datum
 delta_value(Datum value1, Datum value2, meosType basetype)
 {
   Datum result;
+  assert(basetype == T_INT4 || basetype == T_FLOAT8);
   if (basetype == T_INT4)
     result = Int32GetDatum(DatumGetInt32(value2) - DatumGetInt32(value1));
   else /* basetype == T_FLOAT8 */

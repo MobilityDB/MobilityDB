@@ -247,6 +247,14 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatset(1, 100, 10, 5, 10) AS f
 FROM generate_series(perc+1, size) AS k;
 
+DROP TABLE IF EXISTS tbl_dateset;
+CREATE TABLE tbl_dateset AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_dateset('2001-01-01', '2001-12-31', 10, 5, 10) AS t
+FROM generate_series(perc+1, size) AS k;
+
 DROP TABLE IF EXISTS tbl_tstzset;
 CREATE TABLE tbl_tstzset AS
 /* Add perc NULL values */
@@ -281,6 +289,14 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatspan(1, 100, 10, 5) AS f
 FROM generate_series(perc+1, size) AS k;
 
+DROP TABLE IF EXISTS tbl_datespan;
+CREATE TABLE tbl_datespan AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_datespan('2001-01-01', '2001-12-31', 10) AS t
+FROM generate_series(perc+1, size) AS k;
+
 DROP TABLE IF EXISTS tbl_tstzspan;
 CREATE TABLE tbl_tstzspan AS
 /* Add perc NULL values */
@@ -313,6 +329,14 @@ CREATE TABLE tbl_floatspanset AS
 SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatspanset(1, 100, 10, 5, 10) AS f
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_datespanset;
+CREATE TABLE tbl_datespanset AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_datespanset('2001-01-01', '2001-12-31', 10, 5, 10) AS t
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tstzspanset;

@@ -85,6 +85,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     GSERIALIZED *sorigin;
     int64 tunits = 0; /* make compiler quiet */
     TimestampTz torigin = 0; /* make compiler quiet */
+    assert(PG_NARGS() == 5 || PG_NARGS() == 7);
     if (PG_NARGS() == 5)
       sorigin = PG_GETARG_GSERIALIZED_P(4);
     else /* PG_NARGS() == 7 */
@@ -189,6 +190,7 @@ Stbox_tile(PG_FUNCTION_ARGS)
   GSERIALIZED *sorigin;
   TimestampTz torigin = 0; /* make compiler quiet */
   bool hast = false;
+  assert(PG_NARGS() == 5 || PG_NARGS() == 8);
   if (PG_NARGS() == 5)
   {
     xsize = PG_GETARG_FLOAT8(1);

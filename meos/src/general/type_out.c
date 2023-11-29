@@ -1069,6 +1069,8 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
       return MEOS_WKB_INT8_SIZE;
     case T_FLOAT8:
       return MEOS_WKB_DOUBLE_SIZE;
+    case T_DATE:
+      return MEOS_WKB_DATE_SIZE;
     case T_TIMESTAMPTZ:
       return MEOS_WKB_TIMESTAMP_SIZE;
     case T_TEXT:
@@ -1085,7 +1087,8 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 #endif /* NPOINT */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
-        "Unknown temporal base type in MFJSON output: %d", basetype);
+        "Unknown temporal base type in MFJSON output: %s",
+          meostype_name(basetype));
       return SIZE_MAX;
   }
 }
@@ -1592,6 +1595,23 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
  * Well-Known Binary (WKB) format
  */
 uint8_t *
+date_to_wkb_buf(const DateADT d, uint8_t *buf, uint8_t variant)
+{
+  if (sizeof(DateADT) != MEOS_WKB_DATE_SIZE)
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Machine date size is not %d bytes!", MEOS_WKB_DATE_SIZE);
+    return NULL;
+  }
+  char *tptr = (char *)(&d);
+  return bytes_to_wkb_buf(tptr, MEOS_WKB_DATE_SIZE, buf, variant);
+}
+
+/**
+ * @brief Write into the buffer the TimestampTz (aka int64) represented in
+ * Well-Known Binary (WKB) format
+ */
+uint8_t *
 timestamptz_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 {
   if (sizeof(TimestampTz) != MEOS_WKB_TIMESTAMP_SIZE)
@@ -1681,6 +1701,9 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
     case T_FLOAT8:
       buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
       break;
+    case T_DATE:
+      buf = date_to_wkb_buf(DatumGetDateADT(value), buf, variant);
+      break;
     case T_TIMESTAMPTZ:
       buf = timestamptz_to_wkb_buf(DatumGetTimestampTz(value), buf, variant);
       break;
@@ -1698,7 +1721,7 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
 #endif /* NPOINT */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
-        "unknown basetype in WKB output: %d", basetype);
+        "Unknown basetype in WKB output: %d", basetype);
       return NULL;
   }
   return buf;
@@ -2398,7 +2421,7 @@ set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a period set.
+ * @brief Return the WKB representation of a span set.
  * @sqlfunc asBinary()
  */
 uint8_t *

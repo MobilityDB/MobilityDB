@@ -187,6 +187,50 @@ CREATE OPERATOR CLASS floatset_rtree_ops
 
 /*****************************************************************************/
 
+CREATE FUNCTION span_gist_consistent(internal, dateset, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE OPERATOR CLASS dateset_rtree_ops
+  DEFAULT FOR TYPE dateset USING gist AS
+  STORAGE datespan,
+  -- overlaps
+  OPERATOR  3    && (dateset, dateset),
+  -- contains
+  OPERATOR  7    @> (dateset, date),
+  OPERATOR  7    @> (dateset, dateset),
+  -- contained by
+  OPERATOR  8    <@ (dateset, dateset),
+  -- equals
+  OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (dateset, date),
+  OPERATOR  28    &<# (dateset, dateset),
+  -- strictly before
+  OPERATOR  29    <<# (dateset, date),
+  OPERATOR  29    <<# (dateset, dateset),
+  -- strictly after
+  OPERATOR  30    #>> (dateset, date),
+  OPERATOR  30    #>> (dateset, dateset),
+  -- overlaps or after
+  OPERATOR  31    #&> (dateset, date),
+  OPERATOR  31    #&> (dateset, dateset),
+  -- functions
+  FUNCTION  1  span_gist_consistent(internal, dateset, smallint, oid, internal),
+  FUNCTION  2  span_gist_union(internal, internal),
+  FUNCTION  3  set_gist_compress(internal),
+  FUNCTION  5  span_gist_penalty(internal, internal, internal),
+  FUNCTION  6  span_gist_picksplit(internal, internal),
+  FUNCTION  7  span_gist_same(datespan, datespan, internal);
+
+/*****************************************************************************/
+
 CREATE FUNCTION span_gist_consistent(internal, tstzset, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
@@ -360,6 +404,42 @@ CREATE OPERATOR CLASS floatset_quadtree_ops
 
 /******************************************************************************/
 
+CREATE OPERATOR CLASS dateset_quadtree_ops
+  DEFAULT FOR TYPE dateset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (dateset, dateset),
+  -- contains
+  OPERATOR  7    @> (dateset, date),
+  OPERATOR  7    @> (dateset, dateset),
+  -- contained by
+  OPERATOR  8    <@ (dateset, dateset),
+  -- equals
+  OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (dateset, date),
+  OPERATOR  28    &<# (dateset, dateset),
+  -- strictly before
+  OPERATOR  29    <<# (dateset, date),
+  OPERATOR  29    <<# (dateset, dateset),
+  -- strictly after
+  OPERATOR  30    #>> (dateset, date),
+  OPERATOR  30    #>> (dateset, dateset),
+  -- overlaps or after
+  OPERATOR  31    #&> (dateset, date),
+  OPERATOR  31    #&> (dateset, dateset),
+  -- functions
+  FUNCTION  1  datespan_spgist_config(internal, internal),
+  FUNCTION  2  span_quadtree_choose(internal, internal),
+  FUNCTION  3  span_quadtree_picksplit(internal, internal),
+  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  set_spgist_compress(internal);
+
+/******************************************************************************/
+
 CREATE OPERATOR CLASS tstzset_quadtree_ops
   DEFAULT FOR TYPE tstzset USING spgist AS
   -- overlaps
@@ -395,7 +475,7 @@ CREATE OPERATOR CLASS tstzset_quadtree_ops
   FUNCTION  6  set_spgist_compress(internal);
 
 /******************************************************************************
- * Kd-tree SP-GiST indexes
+ * Kd-tree indexes
  ******************************************************************************/
 
 CREATE OPERATOR CLASS intset_kdtree_ops
@@ -506,6 +586,42 @@ CREATE OPERATOR CLASS floatset_kdtree_ops
 
 /******************************************************************************/
 
+CREATE OPERATOR CLASS dateset_kdtree_ops
+  FOR TYPE dateset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (dateset, dateset),
+  -- contains
+  OPERATOR  7    @> (dateset, date),
+  OPERATOR  7    @> (dateset, dateset),
+  -- contained by
+  OPERATOR  8    <@ (dateset, dateset),
+  -- equals
+  OPERATOR  18    = (dateset, dateset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (dateset, date) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (dateset, dateset) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (dateset, date),
+  OPERATOR  28    &<# (dateset, dateset),
+  -- strictly before
+  OPERATOR  29    <<# (dateset, date),
+  OPERATOR  29    <<# (dateset, dateset),
+  -- strictly after
+  OPERATOR  30    #>> (dateset, date),
+  OPERATOR  30    #>> (dateset, dateset),
+  -- overlaps or after
+  OPERATOR  31    #&> (dateset, date),
+  OPERATOR  31    #&> (dateset, dateset),
+  -- functions
+  FUNCTION  1  datespan_spgist_config(internal, internal),
+  FUNCTION  2  span_kdtree_choose(internal, internal),
+  FUNCTION  3  span_kdtree_picksplit(internal, internal),
+  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  set_spgist_compress(internal);
+
+/******************************************************************************/
+
 CREATE OPERATOR CLASS tstzset_kdtree_ops
   FOR TYPE tstzset USING spgist AS
   -- overlaps
@@ -541,7 +657,7 @@ CREATE OPERATOR CLASS tstzset_kdtree_ops
   FUNCTION  6  set_spgist_compress(internal);
 
 /******************************************************************************
- * Kd-tree SP-GiST indexes
+ * GIN indexes
  ******************************************************************************/
 
 CREATE FUNCTION set_gin_extract_value(int, internal)
@@ -615,6 +731,43 @@ CREATE OPERATOR CLASS bigintset_gin_ops
   FUNCTION   2    set_gin_extract_value(bigint, internal),
   FUNCTION   3    set_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal),
   FUNCTION   6    set_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal);
+
+/******************************************************************************/
+
+CREATE FUNCTION set_gin_extract_value(date, internal)
+RETURNS internal
+AS 'MODULE_PATHNAME', 'Set_gin_extract_value'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_gin_extract_query(date, internal, int2, internal, internal, internal, internal)
+RETURNS internal
+AS 'MODULE_PATHNAME', 'Set_gin_extract_query'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_gin_triconsistent(internal, int2, date, int4, internal, internal, internal)
+RETURNS char
+AS 'MODULE_PATHNAME', 'Set_gin_triconsistent'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS dateset_gin_ops
+  DEFAULT FOR TYPE dateset USING gin AS
+  STORAGE date,
+  -- overlaps
+  OPERATOR  10    && (dateset, dateset),
+  -- contains value
+  OPERATOR  20    @> (dateset, date),
+  -- contains set
+  OPERATOR  21    @> (dateset, dateset),
+  -- contained
+  OPERATOR  30    <@ (dateset, dateset),
+    -- same
+  OPERATOR  40    = (dateset, dateset),
+  -- functions
+  FUNCTION   2    set_gin_extract_value(date, internal),
+  FUNCTION   3    set_gin_extract_query(date, internal, int2, internal, internal, internal, internal),
+  FUNCTION   6    set_gin_triconsistent(internal, int2, date, int4, internal, internal, internal);
 
 /******************************************************************************/
 

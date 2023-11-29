@@ -78,6 +78,9 @@ datum_cmp(Datum l, Datum r, meosType type)
     case T_TIMESTAMPTZ:
       return timestamptz_cmp_internal(DatumGetTimestampTz(l),
         DatumGetTimestampTz(r));
+    case T_DATE:
+      return (DatumGetDateADT(l) < DatumGetDateADT(r)) ? -1 :
+        ((DatumGetDateADT(l) > DatumGetDateADT(r)) ? 1 : 0);
     case T_BOOL:
       return (DatumGetBool(l) < DatumGetBool(r)) ? -1 :
         ((DatumGetBool(l) > DatumGetBool(r)) ? 1 : 0);
@@ -108,7 +111,7 @@ datum_cmp(Datum l, Datum r, meosType type)
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown compare function for base type: %d", type);
+        "Unknown compare function for base type: %s", meostype_name(type));
     return INT_MAX;
   }
 }
@@ -126,6 +129,7 @@ datum_eq(Datum l, Datum r, meosType type)
   {
     /* For types passed by value */
     case T_TIMESTAMPTZ:
+    case T_DATE:
     case T_BOOL:
     case T_INT4:
     case T_INT8:
@@ -151,7 +155,7 @@ datum_eq(Datum l, Datum r, meosType type)
 #endif
     default: /* Error! */
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown equality function for base type: %d", type);
+      "Unknown equality function for base type: %s", meostype_name(type));
     return false;
   }
 }
@@ -278,7 +282,7 @@ datum_add(Datum l, Datum r, meosType type)
       return Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown add function for base type: %d", type);
+        "Unknown add function for base type: %s", meostype_name(type));
       return 0;
   }
 }
@@ -299,7 +303,7 @@ datum_sub(Datum l, Datum r, meosType type)
       return Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown subtract function for base type: %d", type);
+        "Unknown subtract function for base type: %s", meostype_name(type));
       return 0;
   }
 }
@@ -320,7 +324,8 @@ datum_mult(Datum l, Datum r, meosType type)
       return Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown multiplication function for base type: %d", type);
+        "Unknown multiplication function for base type: %s",
+          meostype_name(type));
       return 0;
   }
 }
@@ -341,7 +346,7 @@ datum_div(Datum l, Datum r, meosType type)
       return Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown division function for base type: %d", type);
+        "Unknown division function for base type: %s", meostype_name(type));
     return 0;
   }
 }
@@ -363,6 +368,8 @@ datum_hash(Datum d, meosType type)
   {
     case T_TIMESTAMPTZ:
       return pg_hashint8(TimestampTzGetDatum(d));
+    case T_DATE:
+      return hash_bytes_uint32(DateADTGetDatum(d));
     case T_BOOL:
       return hash_bytes_uint32((int32) DatumGetBool(d));
     case T_INT4:
@@ -400,6 +407,8 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
   {
     case T_TIMESTAMPTZ:
       return pg_hashint8extended(DatumGetTimestampTz(d), seed);
+    case T_DATE:
+      return hash_bytes_uint32_extended((int32) DatumGetDateADT(d), seed);
     case T_BOOL:
       return hash_bytes_uint32_extended((int32) DatumGetBool(d), seed);
     case T_INT4:
@@ -952,14 +961,14 @@ hypot4d(double x, double y, double z, double m)
  */
 bool 
 #if NPOINT
-basetype_in(const char *str, meosType basetype, bool end, Datum *result)
+basetype_in(const char *str, meosType type, bool end, Datum *result)
 #else
-basetype_in(const char *str, meosType basetype, 
+basetype_in(const char *str, meosType type, 
   bool end __attribute__((unused)), Datum *result)
 #endif
 {
-  assert(meos_basetype(basetype));
-  switch (basetype)
+  assert(meos_basetype(type));
+  switch (type)
   {
     case T_TIMESTAMPTZ:
     {
@@ -967,6 +976,14 @@ basetype_in(const char *str, meosType basetype,
       if (t == DT_NOEND)
         return false;
       *result = TimestampTzGetDatum(t);
+      return true;
+    }
+    case T_DATE:
+    {
+      DateADT d = pg_date_in(str);
+      if (d == DATEVAL_NOEND)
+        return false;
+      *result = DateADTGetDatum(d);
       return true;
     }
     case T_BOOL:
@@ -1037,7 +1054,7 @@ basetype_in(const char *str, meosType basetype,
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown input function for base type: %d", basetype);
+        "Unknown input function for base type: %s", meostype_name(type));
       return false;
   }
 }
@@ -1062,15 +1079,17 @@ text_out(const text *txt)
  * @return On error return NULL
  */
 char *
-basetype_out(Datum value, meosType basetype, int maxdd)
+basetype_out(Datum value, meosType type, int maxdd)
 {
-  assert(meos_basetype(basetype));
+  assert(meos_basetype(type));
   assert(maxdd >= 0);
 
-  switch (basetype)
+  switch (type)
   {
     case T_TIMESTAMPTZ:
       return pg_timestamptz_out(DatumGetTimestampTz(value));
+    case T_DATE:
+      return pg_date_out(DatumGetTimestampTz(value));
     case T_BOOL:
       return bool_out(DatumGetBool(value));
     case T_INT4:
@@ -1098,7 +1117,7 @@ basetype_out(Datum value, meosType basetype, int maxdd)
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown output function for base type: %d", basetype);
+        "Unknown output function for base type: %s", meostype_name(type));
       return NULL;
   }
 }

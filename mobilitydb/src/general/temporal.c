@@ -1110,7 +1110,7 @@ PGDLLEXPORT Datum Temporal_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_time);
 /**
  * @ingroup mobilitydb_temporal_accessor
- * @brief Return the time on which a temporal value is defined as a period set
+ * @brief Return the time on which a temporal value is defined as a span set
  * @sqlfunc getTime()
  */
 Datum
@@ -1462,7 +1462,7 @@ temporal_unnest_state_next(TempUnnestState *state)
 PGDLLEXPORT Datum Temporal_unnest(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_unnest);
 /**
- * @brief Generate a list of values and associated period sets.
+ * @brief Generate a list of values and associated span sets.
  */
 Datum
 Temporal_unnest(PG_FUNCTION_ARGS)
@@ -1514,7 +1514,7 @@ Temporal_unnest(PG_FUNCTION_ARGS)
 
   /* Get value */
   tuple_arr[0] = state->values[state->i];
-  /* Get period set */
+  /* Get span set */
   Temporal *rest = temporal_restrict_value(state->temp,
     state->values[state->i], REST_AT);
   if (!rest)
@@ -2482,7 +2482,7 @@ PGDLLEXPORT Datum Temporal_at_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to a period set
+ * @brief Restrict a temporal value to a span set
  * @sqlfunc atTime()
  */
 Datum
@@ -2502,7 +2502,7 @@ PGDLLEXPORT Datum Temporal_minus_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of a period set
+ * @brief Restrict a temporal value to the complement of a span set
  * @sqlfunc minusTime()
  */
 Datum
@@ -2625,7 +2625,7 @@ PGDLLEXPORT Datum Temporal_delete_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_delete_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_modif
- * @brief Delete a period set from a temporal value
+ * @brief Delete a span set from a temporal value
  * @sqlfunc deleteTime()
  */
 Datum

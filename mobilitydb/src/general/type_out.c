@@ -356,7 +356,7 @@ PGDLLEXPORT Datum Spanset_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_as_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output the period set in HexWKB format.
+ * @brief Output the span set in HexWKB format.
  * @sqlfunc asHexWKB()
  */
 Datum

@@ -743,6 +743,58 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
+ * Generate an ordered array of random date in a datespan
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the datespan
+ * @param[in] maxdays Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ * @param[in] fixstart True when this function is called for generating a
+ *    sequence set value and in this case the start timestamp is already fixed
+ */
+DROP FUNCTION IF EXISTS random_date_array;
+CREATE FUNCTION random_date_array(lowtime date, hightime date, maxdays int,
+  mincard int, maxcard int, fixstart bool DEFAULT false)
+  RETURNS date[] AS $$
+DECLARE
+  result date[];
+  card int;
+  d date;
+BEGIN
+  IF lowtime >= hightime THEN
+    RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
+      lowtime, hightime;
+  END IF;
+  IF mincard > maxcard THEN
+    RAISE EXCEPTION 'mincard must be less than or equal to maxcard: %, %',
+      mincard, maxcard;
+  END IF;
+  IF lowtime > hightime - maxdays * (maxcard - mincard) THEN
+    RAISE EXCEPTION 'The duration between lowtime and hightime is not enough to generate the temporal value';
+  END IF;
+  card = random_int(mincard, maxcard);
+  if fixstart THEN
+    d = lowtime;
+  ELSE
+    d = random_date(lowtime, hightime - maxdays * card);
+  END IF;
+  FOR i IN 1..card
+  LOOP
+    result[i] = d;
+    d = d + random_int(1, maxdays);
+  END LOOP;
+  RETURN result;
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_date_array('2001-01-01', '2002-01-01', 10, 5, 10) AS tarr
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * Generate an ordered array of random timestamptz in a tstzspan
  *
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -797,6 +849,49 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
+ * Generate a random datespan within a datespan
+ *
+ * @param[in] lowdate, highdate Inclusive bounds of the maximal datespan
+ * @param[in] maxdays Maximum number of days between the dates
+ * @param[in] fixstart True when this function is called for generating
+ *   a datespan set and in this case the start date is already fixed
+ * @note The date spans are generated canonicalized
+ */
+DROP FUNCTION IF EXISTS random_datespan;
+CREATE FUNCTION random_datespan(lowdate date, highdate date, maxdays int,
+  fixstart bool DEFAULT false)
+  RETURNS datespan AS $$
+DECLARE
+  d date;
+  d1 date;
+BEGIN
+  IF lowdate > highdate - maxdays THEN
+    RAISE EXCEPTION 'lowdate must be less than or equal to highdate - maxdays days: %, %, %',
+      lowdate, highdate, maxdays;
+  END IF;
+  if fixstart THEN
+    d = lowdate;
+  ELSE
+    d = random_date(lowdate, highdate - maxdays);
+  END IF;
+  /* Generate instantaneous periods with 0.1 probability */
+  IF random() < 0.1 THEN
+    RETURN span(d, d + 1, true, false);
+  ELSE
+    d1 = d + random_int(1, maxdays);
+    RETURN span(d, d1, true, false);
+  END IF;
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_datespan('2001-01-01', '2002-01-01', 10) AS p
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * Generate a random tstzspan within a tstzspan
  *
  * @param[in] lowtime, hightime Inclusive bounds of the maximal tstzspan
@@ -836,6 +931,48 @@ $$ LANGUAGE PLPGSQL STRICT;
 /*
 SELECT k, random_tstzspan('2001-01-01', '2002-01-01', 10) AS p
 FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate an array of random periods within a datespan
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal datespan
+ * @param[in] maxdays Maximum number of dates between the timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_datespan_array;
+CREATE FUNCTION random_datespan_array(lowtime date, hightime date,
+  maxdays int, mincard int, maxcard int)
+  RETURNS datespan[] AS $$
+DECLARE
+  result datespan[];
+  card int;
+  d1 date;
+  d2 date;
+BEGIN
+  IF lowtime > hightime - maxdays * 2 * (maxcard - mincard) THEN
+    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
+      'maxdays * 2 * (maxcard - mincard) days: %, %, %, %, %',
+      lowtime, hightime, maxdays, mincard, maxcard;
+  END IF;
+  card = random_int(mincard, maxcard);
+  d1 = lowtime;
+  d2 = hightime -  maxdays * (card - 1) * 2;
+  FOR i IN 1..card
+  LOOP
+    result[i] = random_datespan(d1, d2, maxdays, i > 1);
+    d1 = upper(result[i]) + random_int(1, maxdays);
+    d2 = d2 + maxdays * 2;
+  END LOOP;
+  RETURN result;
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_datespan_array('2001-01-01', '2002-01-01', 10, 5, 10) AS parr
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -884,6 +1021,27 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
+ * Generate a random daterange within a datespan
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal datespan
+ * @param[in] maxdays Maximum number of days between the dates
+ */
+DROP FUNCTION IF EXISTS random_daterange;
+CREATE FUNCTION random_daterange(lowtime date, hightime date, maxdays int)
+  RETURNS daterange AS $$
+BEGIN
+  RETURN random_datespan(lowtime, hightime, maxdays)::daterange;
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_daterange('2001-01-01', '2002-01-01', 10) AS r
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * Generate a random tstzrange within a tstzspan
  *
  * @param[in] lowtime, hightime Inclusive bounds of the maximal tstzspan
@@ -901,6 +1059,40 @@ $$ LANGUAGE PLPGSQL STRICT;
 /*
 SELECT k, random_tstzrange('2001-01-01', '2002-01-01', 10) AS r
 FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate an array of random daterange within a datespan
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal datespan
+ * @param[in] maxdays Maximum number of minutes between the dates
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_daterange_array;
+CREATE FUNCTION random_daterange_array(lowtime date, hightime date,
+  maxdays int, mincard int, maxcard int)
+  RETURNS daterange[] AS $$
+DECLARE
+  datespanarr datespan[];
+  result daterange[];
+  card int;
+BEGIN
+  SELECT random_datespan_array(lowtime, hightime, maxdays, mincard, maxcard)
+  INTO datespanarr;
+  card = array_length(datespanarr, 1);
+  FOR i IN 1..card
+  LOOP
+    result[i] = datespanarr[i]::daterange;
+  END LOOP;
+  RETURN result;
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_daterange_array('2001-01-01', '2002-01-01', 10, 5, 10) AS rarr
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -1078,6 +1270,29 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
+ * Generate a random dateset within a datespan
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal tstzspan
+ * @param[in] maxdays Maximum number of days between two consecutive days
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_dateset;
+CREATE FUNCTION random_dateset(lowtime date, hightime date, maxdays int,
+  mincard int, maxcard int)
+  RETURNS dateset AS $$
+BEGIN
+  RETURN set(random_date_array(lowtime, hightime, maxdays, mincard, maxcard));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_dateset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * Generate a random tstzset within a tstzspan
  *
  * @param[in] lowtime, hightime Inclusive bounds of the maximal tstzspan
@@ -1096,6 +1311,30 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tstzset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate a random datespanset within a datespan
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal datespan
+ * @param[in] maxdays Maximum number of minutes between two consecutive timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_datespanset;
+CREATE FUNCTION random_datespanset(lowtime date, hightime date, maxdays int,
+  mincard int, maxcard int)
+  RETURNS datespanset AS $$
+BEGIN
+  RETURN spanset(random_datespan_array(lowtime, hightime, maxdays, mincard,
+    maxcard));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_datespanset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
 FROM generate_series(1, 15) AS k;
 */
 

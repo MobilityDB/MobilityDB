@@ -16,6 +16,12 @@ SELECT floatset '{1.5,2.5,3.5}';
  {1.5, 2.5, 3.5}
 (1 row)
 
+SELECT dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+               dateset                
+--------------------------------------
+ {01-01-2000, 01-02-2000, 01-03-2000}
+(1 row)
+
 SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
                                              tstzset                                              
 --------------------------------------------------------------------------------------------------
@@ -40,6 +46,18 @@ SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
 /* Errors */
 SELECT asText(floatset '{1.12345678, 2.123456789}', -6);
 ERROR:  The value cannot be negative: -6
+SELECT set(ARRAY [date '2000-01-01', '2000-01-02', '2000-01-03']);
+                 set                  
+--------------------------------------
+ {01-01-2000, 01-02-2000, 01-03-2000}
+(1 row)
+
+SELECT set(ARRAY [date '2000-01-01', '2000-01-01', '2000-01-03']);
+           set            
+--------------------------
+ {01-01-2000, 01-03-2000}
+(1 row)
+
 SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
                                                set                                                
 --------------------------------------------------------------------------------------------------
@@ -70,6 +88,18 @@ SELECT set(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']);
 ERROR:  Only point geometries accepted
 SELECT set(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 ERROR:  Operation on mixed SRID
+SELECT set(date '2000-01-01');
+     set      
+--------------
+ {01-01-2000}
+(1 row)
+
+SELECT date '2000-01-01'::dateset;
+   dateset    
+--------------
+ {01-01-2000}
+(1 row)
+
 SELECT set(timestamptz '2000-01-01');
                set                
 ----------------------------------
@@ -80,6 +110,18 @@ SELECT timestamptz '2000-01-01'::tstzset;
              tstzset              
 ----------------------------------
  {"Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT memSize(dateset '{2000-01-01}');
+ memsize 
+---------
+      32
+(1 row)
+
+SELECT memSize(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ memsize 
+---------
+      48
 (1 row)
 
 SELECT memSize(tstzset '{2000-01-01}');
@@ -94,6 +136,18 @@ SELECT memSize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
       48
 (1 row)
 
+SELECT span(dateset '{2000-01-01}');
+           span           
+--------------------------
+ [01-01-2000, 01-02-2000)
+(1 row)
+
+SELECT span(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+           span           
+--------------------------
+ [01-01-2000, 01-04-2000)
+(1 row)
+
 SELECT span(tstzset '{2000-01-01}');
                              span                             
 --------------------------------------------------------------
@@ -104,6 +158,18 @@ SELECT span(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
                              span                             
 --------------------------------------------------------------
  [Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT numValues(dateset '{2000-01-01}');
+ numvalues 
+-----------
+         1
+(1 row)
+
+SELECT numValues(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ numvalues 
+-----------
+         3
 (1 row)
 
 SELECT numValues(tstzset '{2000-01-01}');
@@ -118,6 +184,18 @@ SELECT numValues(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
          3
 (1 row)
 
+SELECT startValue(dateset '{2000-01-01}');
+ startvalue 
+------------
+ 01-01-2000
+(1 row)
+
+SELECT startValue(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ startvalue 
+------------
+ 01-01-2000
+(1 row)
+
 SELECT startValue(tstzset '{2000-01-01}');
           startvalue          
 ------------------------------
@@ -130,6 +208,18 @@ SELECT startValue(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
  Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
+SELECT endValue(dateset '{2000-01-01}');
+  endvalue  
+------------
+ 01-01-2000
+(1 row)
+
+SELECT endValue(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+  endvalue  
+------------
+ 01-03-2000
+(1 row)
+
 SELECT endValue(tstzset '{2000-01-01}');
            endvalue           
 ------------------------------
@@ -140,6 +230,30 @@ SELECT endValue(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
            endvalue           
 ------------------------------
  Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT valueN(dateset '{2000-01-01}', 1);
+   valuen   
+------------
+ 01-01-2000
+(1 row)
+
+SELECT valueN(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
+   valuen   
+------------
+ 01-01-2000
+(1 row)
+
+SELECT valueN(dateset '{2000-01-01}', 2);
+ valuen 
+--------
+ 
+(1 row)
+
+SELECT valueN(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+ valuen 
+--------
+ 
 (1 row)
 
 SELECT valueN(tstzset '{2000-01-01}', 1);
@@ -164,6 +278,18 @@ SELECT valueN(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
  valuen 
 --------
  
+(1 row)
+
+SELECT getValues(dateset '{2000-01-01}');
+  getvalues   
+--------------
+ {01-01-2000}
+(1 row)
+
+SELECT getValues(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
+             getvalues              
+------------------------------------
+ {01-01-2000,01-02-2000,01-03-2000}
 (1 row)
 
 SELECT getValues(tstzset '{2000-01-01}');
@@ -214,6 +340,54 @@ SELECT shiftScale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 ho
  {"Sun Jan 02 00:00:00 2000 PST", "Sun Jan 02 00:30:00 2000 PST", "Sun Jan 02 01:00:00 2000 PST"}
 (1 row)
 
+SELECT set_cmp(dateset '{2000-01-01}', dateset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT dateset '{2000-01-01}' = dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT dateset '{2000-01-01}' <> dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT dateset '{2000-01-01}' < dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT dateset '{2000-01-01, 2000-01-02, 2000-01-03}' < dateset '{2000-01-01}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT dateset '{2000-01-01}' <= dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT dateset '{2000-01-01}' > dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT dateset '{2000-01-01}' >= dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT set_cmp(tstzset '{2000-01-01}', tstzset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
  ?column? 
 ----------
@@ -262,6 +436,18 @@ SELECT tstzset '{2000-01-01}' >= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
  f
 (1 row)
 
+SELECT set_hash(dateset '{2000-01-01,2000-01-02}') = set_hash(dateset '{2000-01-01,2000-01-02}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT set_hash(dateset '{2000-01-01,2000-01-02}') <> set_hash(dateset '{2000-01-01,2000-01-02}');
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') = set_hash(tstzset '{2000-01-01,2000-01-02}');
  ?column? 
 ----------
@@ -269,6 +455,18 @@ SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') = set_hash(tstzset '{2000-01-
 (1 row)
 
 SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') <> set_hash(tstzset '{2000-01-01,2000-01-02}');
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT set_hash_extended(dateset '{2000-01-01,2000-01-02}', 1) = set_hash_extended(dateset '{2000-01-01,2000-01-02}', 1);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT set_hash_extended(dateset '{2000-01-01,2000-01-02}', 1) <> set_hash_extended(dateset '{2000-01-01,2000-01-02}', 1);
  ?column? 
 ----------
  f

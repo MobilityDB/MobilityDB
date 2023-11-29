@@ -51,7 +51,7 @@
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of a timestamp according to time buckets.
+ * @brief Set the precision of a timestamptz according to time buckets.
  * @param[in] t Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -70,7 +70,7 @@ timestamptz_tprecision(TimestampTz t, const Interval *duration,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of a period according to period buckets.
+ * @brief Set the precision of a timestamptz span according to time buckets.
  * @param[in] s Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -88,7 +88,7 @@ tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin
   TimestampTz lower = DatumGetTimestampTz(s->lower);
   TimestampTz upper = DatumGetTimestampTz(s->upper);
   TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
+  /* We need to add tunits to obtain the end timestamptz of the last bucket */
   TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
     tunits;
   Span *result = span_make(TimestampTzGetDatum(lower_bucket),
@@ -98,7 +98,7 @@ tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of a timestamptz span set according to period buckets.
+ * @brief Set the precision of a timestamptz span set according to time buckets.
  * @param[in] ss Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -117,7 +117,7 @@ tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
   TimestampTz lower = DatumGetTimestampTz(ss->span.lower);
   TimestampTz upper = DatumGetTimestampTz(ss->span.upper);
   TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
+  /* We need to add tunits to obtain the end timestamptz of the last bucket */
   TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
     tunits;
   /* Number of buckets */
@@ -211,11 +211,26 @@ contains_spanset_float(const SpanSet *ss, double d)
     return false;
   return contains_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
 }
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a span set contains a date.
+ * @sqlop @p \@>
+ */
+bool
+contains_spanset_date(const SpanSet *ss, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+  return contains_spanset_value(ss, DateADTGetDatum(d), T_DATE);
+}
 #endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a period set contains a timestamp.
+ * @brief Return true if a span set contains a timestamptz.
  * @sqlop @p \@>
  */
 bool
@@ -371,7 +386,22 @@ contained_float_spanset(double d, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamp is contained in a periodset
+ * @brief Return true if a date is contained in a span set
+ * @sqlop @p \@>
+ */
+bool
+contained_date_spanset(DateADT d, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+  return contained_value_spanset(DateADTGetDatum(d), T_DATE, ss);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a timestamptz is contained in a span set
  * @sqlop @p \@>
  */
 bool
@@ -560,7 +590,22 @@ adjacent_spanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a period set a timestamp are adjacent
+ * @brief Return true if a span set and a date are adjacent
+ * @sqlop @p -|-
+ */
+bool
+adjacent_spanset_date(const SpanSet *ss, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+  return adjacent_spanset_value(ss, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a span set and a timestamptz are adjacent
  * @sqlop @p -|-
  */
 bool
@@ -687,7 +732,22 @@ left_float_spanset(double d, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is strictly before a period set.
+ * @brief Return true if a date is strictly before a span set.
+ * @sqlop @p <<#
+ */
+bool
+before_date_spanset(DateADT d, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+  return left_value_spanset(DateADTGetDatum(d), T_DATE, ss);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is strictly before a span set.
  * @sqlop @p <<#
  */
 bool
@@ -780,7 +840,22 @@ left_spanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period set is strictly before a timestamp.
+ * @brief Return true if a span set is strictly before a date.
+ * @sqlop @p <<#
+ */
+bool
+before_spanset_date(const SpanSet *ss, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+  return left_spanset_value(ss, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a span set is strictly before a timestamptz.
  * @sqlop @p <<#
  */
 bool
@@ -881,7 +956,18 @@ right_float_spanset(double d, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is strictly after a period set.
+ * @brief Return true if a date is strictly after a span set.
+ * @sqlop @p #&>
+ */
+bool
+after_date_spanset(DateADT d, const SpanSet *ss)
+{
+  return before_spanset_date(ss, d);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is strictly after a span set.
  * @sqlop @p #&>
  */
 bool
@@ -950,7 +1036,18 @@ right_spanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period set is strictly after a timestamp.
+ * @brief Return true if a span set is strictly after a date.
+ * @sqlop @p >>
+ */
+bool
+after_spanset_date(const SpanSet *ss, DateADT d)
+{
+  return before_date_spanset(d, ss);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a span set is strictly after a timestamptz.
  * @sqlop @p >>
  */
 bool
@@ -1050,7 +1147,22 @@ overleft_spanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period set is not after a timestamp.
+ * @brief Return true if a span set is not after a date.
+ * @sqlop @p &<#
+ */
+bool
+overbefore_spanset_date(const SpanSet *ss, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+  return overleft_spanset_value(ss, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a span set is not after a timestamptz.
  * @sqlop @p &<#
  */
 bool
@@ -1126,7 +1238,22 @@ overleft_float_spanset(double d, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is not after a period set.
+ * @brief Return true if a date is not after a span set.
+ * @sqlop @p &<#
+ */
+bool
+overbefore_date_spanset(DateADT d, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+  return overleft_value_spanset(DateADTGetDatum(d), T_DATE, ss);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is not after a span set.
  * @sqlop @p &<#
  */
 bool
@@ -1259,7 +1386,22 @@ overright_float_spanset(double d, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is not before a period set.
+ * @brief Return true if a date is not before a span set.
+ * @sqlop @p #&>
+ */
+bool
+overafter_date_spanset(DateADT d, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+  return overright_value_spanset(DateADTGetDatum(d), T_DATE, ss);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is not before a span set.
  * @sqlop @p #&>
  */
 bool
@@ -1352,7 +1494,21 @@ overright_spanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period set is before a timestamp.
+ * @brief Return true if a span set is before a date.
+ * @sqlop @p &>
+ */
+bool
+overafter_spanset_date(const SpanSet *ss, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+  return overright_spanset_value(ss, DateADTGetDatum(d), T_DATE);
+}
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a span set is before a timestamptz.
  * @sqlop @p &>
  */
 bool
@@ -1468,11 +1624,26 @@ union_spanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a period set and a timestamp.
+ * @brief Return the union of a span set and a date.
  * @sqlop @p +
  */
 SpanSet *
-union_spanset_timestamptz(SpanSet *ss, TimestampTz t)
+union_spanset_date(const SpanSet *ss, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return NULL;
+  return union_spanset_value(ss, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a span set and a timestamptz.
+ * @sqlop @p +
+ */
+SpanSet *
+union_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
@@ -1550,16 +1721,16 @@ union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
       {
         s1 = spanset_sp_n(ss1, i);
         s2 = spanset_sp_n(ss2, j);
-        bool over_p1_q = overlaps_span_span(s1, &q);
-        bool over_p2_q = overlaps_span_span(s2, &q);
-        if (! over_p1_q && ! over_p2_q)
+        bool over_s1_q = overlaps_span_span(s1, &q);
+        bool over_s2_q = overlaps_span_span(s2, &q);
+        if (! over_s1_q && ! over_s2_q)
           break;
-        if (over_p1_q)
+        if (over_s1_q)
         {
           span_expand(s1, &q);
           i++;
         }
-        if (over_p2_q)
+        if (over_s2_q)
         {
           span_expand(s2, &q);
           j++;
@@ -1683,7 +1854,27 @@ intersection_spanset_float(const SpanSet *ss, double d, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a period set and a timestamp in the last
+ * @brief Compute the intersection of a span set and a date in the last
+ * argument
+ * @sqlop @p *
+ */
+bool
+intersection_spanset_date(const SpanSet *ss, DateADT d, DateADT *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+
+  if (! contains_spanset_value(ss, DateADTGetDatum(d), T_DATE))
+    return false;
+  *result = d;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Compute the intersection of a span set and a timestamptz in the last
  * argument
  * @sqlop @p *
  */
@@ -1876,7 +2067,27 @@ minus_float_spanset(double d, const SpanSet *ss, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a timestamp and a period set in the last
+ * @brief Compute the difference of a date and a span set in the last
+ * argument
+ * @sqlop @p -
+ */
+bool
+minus_date_spanset(DateADT d, const SpanSet *ss, DateADT *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return false;
+
+  Datum v;
+  bool found = minus_value_spanset(DateADTGetDatum(d), T_DATE, ss, &v);
+  *result = DatumGetDateADT(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Compute the difference of a timestamptz and a span set in the last
  * argument
  * @sqlop @p -
  */
@@ -1890,10 +2101,10 @@ minus_timestamptz_spanset(TimestampTz t, const SpanSet *ss,
     return false;
 
   Datum v;
-  bool res = minus_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ss,
+  bool found = minus_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ss,
     &v);
   *result = DatumGetTimestampTz(v);
-  return res;
+  return found;
 }
 #endif /* MEOS */
 
@@ -2042,7 +2253,22 @@ minus_spanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a period set and a timestamp.
+ * @brief Return the difference of a span set and a date.
+ * @sqlop @p -
+ */
+SpanSet *
+minus_spanset_date(const SpanSet *ss, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return NULL;
+  return minus_spanset_value(ss, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a span set and a timestamptz.
  * @sqlop @p -
  */
 SpanSet *
@@ -2216,7 +2442,23 @@ distance_spanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance in seconds between a period set and a timestamp
+ * @brief Return the distance in seconds between a span set and a date
+ * as a double
+ * @sqlop @p <->
+ */
+double
+distance_spanset_date(const SpanSet *ss, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_same_spanset_basetype(ss, T_DATE))
+    return -1.0;
+  return distance_spanset_value(ss, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance in seconds between a span set and a timestamptz
  * as a double
  * @sqlop @p <->
  */

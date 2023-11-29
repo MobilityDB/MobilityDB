@@ -585,10 +585,10 @@ tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs)
 
 /**
  * @ingroup libmeos_internal_temporal_constructor
- * @brief Construct a temporal sequence set from a base value and a period set.
+ * @brief Construct a temporal sequence set from a base value and a span set.
  * @param[in] value Base value
  * @param[in] temptype Temporal type
- * @param[in] ss Period set
+ * @param[in] ss Span set
  * @param[in] interp Interpolation
  */
 TSequenceSet *
@@ -609,7 +609,7 @@ tsequenceset_from_base_tstzspanset(Datum value, meosType temptype,
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal boolean sequence set from a boolean and a
- * period set.
+ * span set.
  */
 TSequenceSet *
 tboolseqset_from_base_tstzspanset(bool b, const SpanSet *ss)
@@ -624,7 +624,7 @@ tboolseqset_from_base_tstzspanset(bool b, const SpanSet *ss)
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal integer sequence set from an integer and a
- * period set.
+ * span set.
  */
 TSequenceSet *
 tintseqset_from_base_tstzspanset(int i, const SpanSet *ss)
@@ -638,7 +638,7 @@ tintseqset_from_base_tstzspanset(int i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal float sequence set from a float and a period set.
+ * @brief Construct a temporal float sequence set from a float and a span set.
  */
 TSequenceSet *
 tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss, interpType interp)
@@ -653,7 +653,7 @@ tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss, interpType inter
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal text sequence set from a text and a period set.
+ * @brief Construct a temporal text sequence set from a text and a span set.
  */
 TSequenceSet *
 ttextseqset_from_base_tstzspanset(const text *txt, const SpanSet *ss)
@@ -669,7 +669,7 @@ ttextseqset_from_base_tstzspanset(const text *txt, const SpanSet *ss)
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal geometric point sequence set from a point and a
- * period set.
+ * span set.
  */
 TSequenceSet *
 tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
@@ -888,7 +888,7 @@ tsequenceset_max_value(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the time frame a temporal sequence set as a period set.
+ * @brief Return the time frame a temporal sequence set as a span set.
  * @sqlfunc getTime()
  */
 SpanSet *
@@ -2191,7 +2191,7 @@ tsequenceset_restrict_tstzspan(const TSequenceSet *ss, const Span *s,
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal sequence set to (the complement of) a period set.
+ * @brief Restrict a temporal sequence set to (the complement of) a span set.
  * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
@@ -2199,7 +2199,7 @@ tsequenceset_restrict_tstzspanset(const TSequenceSet *ss, const SpanSet *ps,
   bool atfunc)
 {
   assert(ss); assert(ps);
-  /* Singleton period set */
+  /* Singleton span set */
   if (ps->count == 1)
     return tsequenceset_restrict_tstzspan(ss, spanset_sp_n(ps, 0), atfunc);
 
@@ -2271,7 +2271,7 @@ tsequenceset_restrict_tstzspanset(const TSequenceSet *ss, const SpanSet *ps,
   }
   if (! atfunc)
   {
-    /* For minus copy the sequences after the period set */
+    /* For minus copy the sequences after the span set */
     while (i < ss->count)
       sequences[nseqs++] = tsequence_copy(TSEQUENCESET_SEQ_N(ss, i++));
   }

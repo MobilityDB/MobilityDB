@@ -185,6 +185,7 @@ stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
   if (hast)
   {
     meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, i));
+    assert(basetype == T_TSTZSPAN || basetype == T_TIMESTAMPTZ);
     if (basetype == T_TSTZSPAN)
       period = PG_GETARG_SPAN_P(i++);
     else /* basetype == T_TIMESTAMPTZ */
@@ -511,7 +512,7 @@ Tstzspan_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Peak into a period set datum to find the bounding box. If the datum
+ * @brief Peak into a span set datum to find the bounding box. If the datum
  * needs to be detoasted, extract only the header and not the full object.
  */
 void
@@ -532,7 +533,7 @@ PGDLLEXPORT Datum Tstzspanset_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Transform a period set to a spatiotemporal box
+ * @brief Transform a span set to a spatiotemporal box
  * @sqlfunc stbox()
  * @sqlfunc @p ::
  */

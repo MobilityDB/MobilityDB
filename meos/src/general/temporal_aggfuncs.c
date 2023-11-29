@@ -578,8 +578,8 @@ temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
       tdiscseq_tagg_transfn(state, (TSequence *) temp, func) :
       tcontseq_tagg_transfn(state, (TSequence *) temp, func, crossings);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_tagg_transfn(state, (TSequenceSet *) temp,
-      func, crossings);
+    result = tsequenceset_tagg_transfn(state, (TSequenceSet *) temp, func,
+      crossings);
   return result;
 }
 
@@ -891,6 +891,7 @@ temporal_transform_tagg(const Temporal *temp, int *count,
   TInstant *(*func)(const TInstant *))
 {
   Temporal **result;
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     result = palloc(sizeof(Temporal *));
@@ -1010,8 +1011,8 @@ tstzspan_transform_tcount(const Span *s)
 }
 
 /**
- * @brief Transform a period set value into a temporal integer value for
- * performing temporal count aggregation
+ * @brief Transform a timestamptz span set value into a temporal integer value
+ * for performing temporal count aggregation
  */
 static TSequence **
 tstzspanset_transform_tcount(const SpanSet *ss)
@@ -1107,6 +1108,7 @@ Temporal **
 temporal_transform_tcount(const Temporal *temp, int *count)
 {
   Temporal **result;
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     result = palloc(sizeof(Temporal *));
@@ -1219,7 +1221,7 @@ tstzspan_tcount_transfn(SkipList *state, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for temporal count aggregate of period sets
+ * @brief Transition function for temporal count aggregate of span sets
  */
 SkipList *
 tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)

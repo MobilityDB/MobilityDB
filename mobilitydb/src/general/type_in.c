@@ -152,8 +152,7 @@ PG_FUNCTION_INFO_V1(Spanset_from_wkb);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Input a span set from its WKB representation
- * @sqlfunc instspansetFromBinary(), floatspansetFromBinary(),
- * periodsetFromBinary()
+ * @sqlfunc instspansetFromBinary(), floatspansetFromBinary(), ...
  */
 Datum
 Spanset_from_wkb(PG_FUNCTION_ARGS)
@@ -169,8 +168,8 @@ PGDLLEXPORT Datum Spanset_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_from_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input a period set from its HexWKB representation
- * @sqlfunc periodsetFromHexWKB()
+ * @brief Input a span set from its HexWKB representation
+ * @sqlfunc intspansetFromHexWKB(), floatspansetFromHexWKB(), ...
  */
 Datum
 Spanset_from_hexwkb(PG_FUNCTION_ARGS)

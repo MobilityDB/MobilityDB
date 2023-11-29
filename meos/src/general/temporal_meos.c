@@ -546,7 +546,7 @@ temporal_minus_tstzspan(const Temporal *temp, const Span *s)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to a period set
+ * @brief Restrict a temporal value to a timestamptz span set
  * @sqlfunc atTime()
  */
 Temporal *
@@ -561,7 +561,7 @@ temporal_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to the complement of a period set
+ * @brief Restrict a temporal value to the complement of a timestamptz span set
  * @sqlfunc minusTime()
  */
 Temporal *

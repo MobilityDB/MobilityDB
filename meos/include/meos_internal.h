@@ -267,6 +267,7 @@ extern void value_set_span(Datum d, meosType basetype, Span *s);
 
 /* Transformation functions for set and span types */
 
+extern void datespan_set_tstzspan(const Span *s1, Span *s2);
 extern void floatspan_round_int(const Span *span, Datum size, Span *result);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
@@ -280,6 +281,7 @@ extern Set *set_shift(const Set *s, Datum shift);
 extern void span_expand(const Span *s1, Span *s2);
 extern void span_shift(Span *s, Datum value);
 extern void spanset_shift(SpanSet *s, Datum value);
+extern void tstzspan_set_datespan(const Span *s1, Span *s2);
 
 /*****************************************************************************/
 
@@ -385,9 +387,9 @@ extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
 
 /* Constructor functions for box types */
 
-extern TBox *number_tstzspan_to_tbox(Datum d, meosType basetype, const Span *p);
+extern TBox *number_tstzspan_to_tbox(Datum d, meosType basetype, const Span *s);
 extern TBox *number_timestamptz_to_tbox(Datum d, meosType basetype, TimestampTz t);
-extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *p, STBox *box);
+extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *s, STBox *box);
 extern void tbox_set(const Span *s, const Span *p, TBox *box);
 
 /*****************************************************************************/
@@ -402,16 +404,16 @@ extern void number_set_tbox(Datum d, meosType basetype, TBox *box);
 extern void numset_set_tbox(const Set *s, TBox *box);
 extern void numspan_set_tbox(const Span *span, TBox *box);
 extern void numspanset_set_tbox(const SpanSet *ss, TBox *box);
-extern void tstzspan_set_stbox(const Span *p, STBox *box);
-extern void tstzspan_set_tbox(const Span *p, TBox *box);
-extern void tstzspanset_set_stbox(const SpanSet *ps, STBox *box);
-extern void tstzspanset_set_tbox(const SpanSet *ps, TBox *box);
+extern void tstzspan_set_stbox(const Span *s, STBox *box);
+extern void tstzspan_set_tbox(const Span *s, TBox *box);
+extern void tstzspanset_set_stbox(const SpanSet *ss, STBox *box);
+extern void tstzspanset_set_tbox(const SpanSet *ss, TBox *box);
 extern void stbox_set_box3d(const STBox *box, BOX3D *box3d);
 extern void stbox_set_gbox(const STBox *box, GBOX *gbox);
 extern void timestamptz_set_stbox(TimestampTz t, STBox *box);
 extern void timestamptz_set_tbox(TimestampTz t, TBox *box);
-extern void tstzset_set_stbox(const Set *ts, STBox *box);
-extern void tstzset_set_tbox(const Set *ts, TBox *box);
+extern void tstzset_set_stbox(const Set *s, STBox *box);
+extern void tstzset_set_tbox(const Set *s, TBox *box);
 
 /*****************************************************************************/
 
@@ -562,7 +564,7 @@ extern TSequence *tsequence_compact(const TSequence *seq);
 extern void tsequence_restart(TSequence *seq, int last);
 extern TSequence *tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc, bool upper_inc);
 extern TSequence *tsequence_copy(const TSequence *seq);
-extern TSequence *tsequence_from_base_tstzspan(Datum value, meosType temptype, const Span *p, interpType interp);
+extern TSequence *tsequence_from_base_tstzspan(Datum value, meosType temptype, const Span *s, interpType interp);
 extern TSequence *tsequence_make_free(TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount, bool normalize);
 extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
@@ -570,16 +572,16 @@ extern TSequenceSet *tsequenceset_make_free(TSequence **sequences, int count, bo
 extern void tsequenceset_restart(TSequenceSet *ss, int last);
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ss);
 extern TSequenceSet *tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs);
-extern TSequenceSet *tsequenceset_from_base_tstzspanset(Datum value, meosType temptype, const SpanSet *ps, interpType interp);
+extern TSequenceSet *tsequenceset_from_base_tstzspanset(Datum value, meosType temptype, const SpanSet *ss, interpType interp);
 
 /*****************************************************************************/
 
 /* Conversion functions for temporal types */
 
-extern void temporal_set_tstzspan(const Temporal *temp, Span *p);
-extern void tinstant_set_tstzspan(const TInstant *inst, Span *p);
-extern void tsequence_set_tstzspan(const TSequence *seq, Span *p);
-extern void tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *p);
+extern void temporal_set_tstzspan(const Temporal *temp, Span *s);
+extern void tinstant_set_tstzspan(const TInstant *inst, Span *s);
+extern void tsequence_set_tstzspan(const TSequence *seq, Span *s);
+extern void tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *s);
 
 /*****************************************************************************/
 
@@ -701,17 +703,17 @@ extern TSequence *tsequenceset_to_tsequence(const TSequenceSet *ss);
 
 extern bool temporal_bbox_restrict_set(const Temporal *temp, const Set *set);
 extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc);
-extern Temporal *temporal_restrict_tstzspan(const Temporal *temp, const Span *p, bool atfunc);
-extern Temporal *temporal_restrict_tstzspanset(const Temporal *temp, const SpanSet *ps, bool atfunc);
+extern Temporal *temporal_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc);
+extern Temporal *temporal_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss, bool atfunc);
 extern Temporal *temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc);
-extern Temporal *temporal_restrict_tstzset(const Temporal *temp, const Set *ts, bool atfunc);
+extern Temporal *temporal_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc);
 extern Temporal *temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc);
 extern Temporal *temporal_restrict_values(const Temporal *temp, const Set *set, bool atfunc);
 extern bool temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict, Datum *result);
 extern TInstant *tinstant_restrict_tstzspan(const TInstant *inst, const Span *period, bool atfunc);
-extern TInstant *tinstant_restrict_tstzspanset(const TInstant *inst, const SpanSet *ps, bool atfunc);
+extern TInstant *tinstant_restrict_tstzspanset(const TInstant *inst, const SpanSet *ss, bool atfunc);
 extern TInstant *tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc);
-extern TInstant *tinstant_restrict_tstzset(const TInstant *inst, const Set *ts, bool atfunc);
+extern TInstant *tinstant_restrict_tstzset(const TInstant *inst, const Set *s, bool atfunc);
 extern TInstant *tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc);
 extern TInstant *tinstant_restrict_values(const TInstant *inst, const Set *set, bool atfunc);
 extern Temporal *tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc);
@@ -728,20 +730,20 @@ extern Temporal *tpointseq_restrict_geom_time(const TSequence *seq, const GSERIA
 extern Temporal *tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border_inc, bool atfunc);
 extern TSequenceSet *tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
 extern TSequenceSet *tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box, bool border_inc, bool atfunc);
-extern TSequence *tsequence_at_tstzspan(const TSequence *seq, const Span *p);
+extern TSequence *tsequence_at_tstzspan(const TSequence *seq, const Span *s);
 extern TInstant *tsequence_at_timestamp(const TSequence *seq, TimestampTz t);
 extern TSequenceSet *tsequence_restrict_minmax(const TSequence *seq, bool min, bool atfunc);
-extern Temporal *tsequence_restrict_tstzspan(const TSequence *seq, const Span *p, bool atfunc);
-extern Temporal *tsequence_restrict_tstzspanset(const TSequence *seq, const SpanSet *ps, bool atfunc);
+extern Temporal *tsequence_restrict_tstzspan(const TSequence *seq, const Span *s, bool atfunc);
+extern Temporal *tsequence_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss, bool atfunc);
 extern TInstant *tsequence_restrict_timestamp(const TSequence *seq, TimestampTz t, bool atfunc);
-extern TSequence *tsequence_restrict_tstzset(const TSequence *seq, const Set *ts, bool atfunc);
+extern TSequence *tsequence_restrict_tstzset(const TSequence *seq, const Set *s, bool atfunc);
 extern TSequenceSet *tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc);
 extern TSequenceSet *tsequence_restrict_values(const TSequence *seq, const Set *set, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_minmax(const TSequenceSet *ss, bool min, bool atfunc);
-extern TSequenceSet *tsequenceset_restrict_tstzspan(const TSequenceSet *ss, const Span *p, bool atfunc);
+extern TSequenceSet *tsequenceset_restrict_tstzspan(const TSequenceSet *ss, const Span *s, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_tstzspanset(const TSequenceSet *ss, const SpanSet *ps, bool atfunc);
 extern Temporal *tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t, bool atfunc);
-extern Temporal *tsequenceset_restrict_tstzset(const TSequenceSet *ss, const Set *ts, bool atfunc);
+extern Temporal *tsequenceset_restrict_tstzset(const TSequenceSet *ss, const Set *s, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ss, const Set *set, bool atfunc);
 
@@ -856,12 +858,12 @@ extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
 extern Temporal *tsequence_insert(const TSequence *seq1, const TSequence *seq2, bool connect);
 extern TSequenceSet *tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2);
 extern Temporal *tsequence_delete_timestamp(const TSequence *seq, TimestampTz t, bool connect);
-extern Temporal *tsequence_delete_tstzset(const TSequence *seq, const Set *ts, bool connect);
-extern Temporal *tsequence_delete_tstzspan(const TSequence *seq, const Span *p, bool connect);
-extern Temporal *tsequence_delete_tstzspanset(const TSequence *seq, const SpanSet *ps, bool connect);
+extern Temporal *tsequence_delete_tstzset(const TSequence *seq, const Set *s, bool connect);
+extern Temporal *tsequence_delete_tstzspan(const TSequence *seq, const Span *s, bool connect);
+extern Temporal *tsequence_delete_tstzspanset(const TSequence *seq, const SpanSet *ss, bool connect);
 extern TSequenceSet *tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t);
-extern TSequenceSet *tsequenceset_delete_tstzset(const TSequenceSet *ss, const Set *ts);
-extern TSequenceSet *tsequenceset_delete_tstzspan(const TSequenceSet *ss, const Span *p);
+extern TSequenceSet *tsequenceset_delete_tstzset(const TSequenceSet *ss, const Set *s);
+extern TSequenceSet *tsequenceset_delete_tstzspan(const TSequenceSet *ss, const Span *s);
 extern TSequenceSet *tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps);
 
 /*****************************************************************************/

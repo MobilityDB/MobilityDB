@@ -77,12 +77,12 @@ SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST
 
 -- Coverage of tstzspanset_stbox_slice
 DROP TABLE IF EXISTS test;
-CREATE TABLE test(ps) AS
-WITH test(ps) AS (
+CREATE TABLE test(t) AS
+WITH test(t) AS (
   SELECT span(day, day + interval '1 hour')
   FROM generate_series(timestamptz '2000-01-01', timestamptz '2000-04-01', '1 day') AS day )
-SELECT spanset(array_agg(ps)) FROM test;
-SELECT ps::stbox FROM test;
+SELECT spanset(array_agg(t)) FROM test;
+SELECT t::stbox FROM test;
 DROP TABLE test;
 
 -------------------------------------------------------------------------------

@@ -482,6 +482,7 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
 {
   int leftCount, rightCount;
   float4 ratio, overlap;
+  assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
 
   /*
    * Calculate entries distribution ratio assuming most uniform distribution
@@ -690,6 +691,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
   SplitInterval *intervalsLower, *intervalsUpper;
   CommonEntry *commonEntries;
   int nentries, commonEntriesCount, dim;
+  assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
 
   int maxdims = bbox_max_dims(bboxtype);
   size_t bbox_size = bbox_get_size(bboxtype);
@@ -944,6 +946,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
      * Get upper and lower bounds along selected axis.
      */
     box = DatumGetPointer(entryvec->vector[i].key);
+    assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
     if (bboxtype == T_TBOX)
     {
       if (context.dim == 0)

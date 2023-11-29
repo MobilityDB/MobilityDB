@@ -66,6 +66,23 @@ SELECT COUNT(*) FROM tbl_textset t1, tbl_textset_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_textset_tmp;
 DROP TABLE
+COPY tbl_dateset TO '/tmp/tbl_dateset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_dateset_tmp;
+NOTICE:  table "tbl_dateset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_dateset_tmp AS TABLE tbl_dateset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_dateset_tmp FROM '/tmp/tbl_dateset' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_dateset_tmp t2 WHERE t1.k = t2.k AND t1.d <> t2.d;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_dateset_tmp;
+DROP TABLE
 COPY tbl_tstzset TO '/tmp/tbl_tstzset' (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_tstzset_tmp;
@@ -107,6 +124,12 @@ SELECT COUNT(*) FROM tbl_textset WHERE textsetFromBinary(asBinary(t)) <> t;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_dateset WHERE datesetFromBinary(asBinary(d)) <> d;
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromBinary(asBinary(t)) <> t;
  count 
 -------
@@ -126,6 +149,18 @@ SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromHexWKB(asHexWKB(b)) <> b;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromHexWKB(asHexWKB(f)) <> f;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset WHERE textsetFromHexWKB(asHexWKB(t)) <> t;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_dateset WHERE datesetFromHexWKB(asHexWKB(d)) <> d;
  count 
 -------
      0
@@ -287,6 +322,12 @@ SELECT numValues(set_union(f)) FROM tbl_float;
         99
 (1 row)
 
+SELECT numValues(set_union(d)) FROM tbl_date;
+ numvalues 
+-----------
+        92
+(1 row)
+
 SELECT numValues(set_union(t)) FROM tbl_timestamptz;
  numvalues 
 -----------
@@ -330,20 +371,30 @@ SELECT COUNT(*) FROM test2 t1, tbl_floatset t2 WHERE t1.k = t2.k AND t1.f <> t2.
 (1 row)
 
 WITH test1(k, t) AS (
-  SELECT k, unnest(t) FROM tbl_tstzset ),
+  SELECT k, unnest(t) FROM tbl_textset ),
 test2 (k, t) AS (
   SELECT k, set_union(t) FROM test1 GROUP BY k )
-SELECT COUNT(*) FROM test2 t1, tbl_tstzset t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
+SELECT COUNT(*) FROM test2 t1, tbl_textset t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
+ count 
+-------
+     0
+(1 row)
+
+WITH test1(k, d) AS (
+  SELECT k, unnest(d) FROM tbl_dateset ),
+test2 (k, d) AS (
+  SELECT k, set_union(d) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_dateset t2 WHERE t1.k = t2.k AND t1.d <> t2.d;
  count 
 -------
      0
 (1 row)
 
 WITH test1(k, t) AS (
-  SELECT k, unnest(t) FROM tbl_textset ),
+  SELECT k, unnest(t) FROM tbl_tstzset ),
 test2 (k, t) AS (
   SELECT k, set_union(t) FROM test1 GROUP BY k )
-SELECT COUNT(*) FROM test2 t1, tbl_textset t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
+SELECT COUNT(*) FROM test2 t1, tbl_tstzset t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
  count 
 -------
      0
@@ -409,6 +460,18 @@ SELECT MAX(set_hash(f)) FROM tbl_floatset;
  2055509444
 (1 row)
 
+SELECT MAX(set_hash(t)) FROM tbl_textset;
+    max     
+------------
+ 2103330560
+(1 row)
+
+SELECT MAX(set_hash(d)) FROM tbl_dateset;
+    max     
+------------
+ 2110432128
+(1 row)
+
 SELECT MAX(set_hash(t)) FROM tbl_tstzset;
     max     
 ------------
@@ -431,6 +494,18 @@ SELECT MAX(set_hash_extended(f, 1)) FROM tbl_floatset;
          max         
 ---------------------
  9095733649313892665
+(1 row)
+
+SELECT MAX(set_hash_extended(t, 1)) FROM tbl_textset;
+         max         
+---------------------
+ 9062921563989445173
+(1 row)
+
+SELECT MAX(set_hash_extended(d, 1)) FROM tbl_dateset;
+         max         
+---------------------
+ 7923652065342676515
 (1 row)
 
 SELECT MAX(set_hash_extended(t, 1)) FROM tbl_tstzset;
@@ -463,6 +538,12 @@ SELECT numValues(set_union(t)) FROM tbl_text;
         99
 (1 row)
 
+SELECT numValues(set_union(d)) FROM tbl_date;
+ numvalues 
+-----------
+        92
+(1 row)
+
 SELECT k%2, numValues(set_union(i)) FROM tbl_intset GROUP BY k%2 ORDER BY k%2;
  ?column? | numvalues 
 ----------+-----------
@@ -489,5 +570,12 @@ SELECT k%2, numValues(set_union(t)) FROM tbl_textset GROUP BY k%2 ORDER BY k%2;
 ----------+-----------
         0 |       296
         1 |       330
+(2 rows)
+
+SELECT k%2, numValues(set_union(d)) FROM tbl_dateset GROUP BY k%2 ORDER BY k%2;
+ ?column? | numvalues 
+----------+-----------
+        0 |       216
+        1 |       221
 (2 rows)
 
