@@ -315,7 +315,7 @@ Span_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Peak into a span set datum to find the bounding box. If the datum 
+ * @brief Peak into a span set datum to find the bounding box. If the datum
  * needs to be detoasted, extract only the header and not the full object.
  */
 void
@@ -574,7 +574,7 @@ Tbox_shift_value(PG_FUNCTION_ARGS)
   TBox *box = PG_GETARG_TBOX_P(0);
   Datum shift = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  ensure_same_span_basetype(&box->span, basetype);
+  ensure_span_isof_basetype(&box->span, basetype);
   TBox *result = tbox_shift_scale_value(box, shift, 0, true, false);
   PG_RETURN_POINTER(result);
 }
@@ -608,7 +608,7 @@ Tbox_scale_value(PG_FUNCTION_ARGS)
   TBox *box = PG_GETARG_TBOX_P(0);
   Datum width = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  ensure_same_span_basetype(&box->span, basetype);
+  ensure_span_isof_basetype(&box->span, basetype);
   TBox *result = tbox_shift_scale_value(box, 0, width, false, true);
   PG_RETURN_POINTER(result);
 }
@@ -644,8 +644,8 @@ Tbox_shift_scale_value(PG_FUNCTION_ARGS)
   Datum width = PG_GETARG_DATUM(2);
   meosType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   meosType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 2));
-  ensure_same_span_basetype(&box->span, basetype1);
-  ensure_same_span_basetype(&box->span, basetype2);
+  ensure_span_isof_basetype(&box->span, basetype1);
+  ensure_span_isof_basetype(&box->span, basetype2);
   TBox *result = tbox_shift_scale_value(box, shift, width, true, true);
   PG_RETURN_POINTER(result);
 }

@@ -1146,9 +1146,9 @@ Distance_span_spanset(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum ss = PG_GETARG_DATUM(1);
-  Span p1;
-  spanset_span_slice(ss, &p1);
-  double result = distance_span_span(&p1, s);
+  Span sp1;
+  spanset_span_slice(ss, &sp1);
+  double result = distance_span_span(&sp1, s);
   PG_RETURN_FLOAT8(result);
 }
 

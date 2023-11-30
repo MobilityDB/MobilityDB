@@ -563,7 +563,7 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
 
   if (! span)
     return true;
-  span_set(lower, upper, lower_inc, upper_inc, basetype, span);
+  span_set(lower, upper, lower_inc, upper_inc, basetype, spantype, span);
   return true;
 }
 
@@ -601,8 +601,7 @@ spanset_parse(const char **str, meosType spansettype)
     span_parse(str, spantype, false, &spans[i]);
   }
   p_cbrace(str);
-  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
-  return result;
+  return spanset_make_free(spans, count, NORMALIZE);
 }
 
 /*****************************************************************************/

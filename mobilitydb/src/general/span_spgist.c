@@ -280,8 +280,8 @@ overlap2D_quad(const SpanNode *nodebox, const Span *query)
 {
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.basetype, &s);
-  return overlaps_span_span(&s, query);
+    nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
+  return over_span_span(&s, query);
 }
 
 /**
@@ -294,14 +294,14 @@ overlap2D_kd(const SpanNode *nodebox, const Span *query, int level)
   if (level % 2)
   {
     span_set(nodebox->left.lower, nodebox->right.lower, nodebox->left.lower_inc,
-      nodebox->right.lower_inc, nodebox->left.basetype, &s);
+      nodebox->right.lower_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
   }
   else
   {
     span_set(nodebox->left.upper, nodebox->right.upper, nodebox->left.upper_inc,
-      nodebox->right.upper_inc, nodebox->left.basetype, &s);
+      nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
   }
-  return overlaps_span_span(&s, query);
+  return over_span_span(&s, query);
 }
 
 /**
@@ -312,8 +312,8 @@ contain2D_quad(const SpanNode *nodebox, const Span *query)
 {
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.basetype, &s);
-  return contains_span_span(&s, query);
+    nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
+  return cont_span_span(&s, query);
 }
 
 /**
@@ -326,14 +326,14 @@ contain2D_kd(const SpanNode *nodebox, const Span *query, int level)
   if (level % 2)
   {
     span_set(nodebox->left.lower, nodebox->right.lower, nodebox->left.lower_inc,
-      nodebox->right.lower_inc, nodebox->left.basetype, &s);
+      nodebox->right.lower_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
   }
   else
   {
     span_set(nodebox->left.upper, nodebox->right.upper, nodebox->left.upper_inc,
-      nodebox->right.upper_inc, nodebox->left.basetype, &s);
+      nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
   }
-  return contains_span_span(&s, query);
+  return cont_span_span(&s, query);
 }
 
 /**
@@ -342,7 +342,7 @@ contain2D_kd(const SpanNode *nodebox, const Span *query, int level)
 static bool
 left2D(const SpanNode *nodebox, const Span *query)
 {
-  return left_span_span(&nodebox->right, query);
+  return lf_span_span(&nodebox->right, query);
 }
 
 /**
@@ -351,7 +351,7 @@ left2D(const SpanNode *nodebox, const Span *query)
 static bool
 overLeft2D(const SpanNode *nodebox, const Span *query)
 {
-  return overleft_span_span(&nodebox->right, query);
+  return ovlf_span_span(&nodebox->right, query);
 }
 
 /**
@@ -360,7 +360,7 @@ overLeft2D(const SpanNode *nodebox, const Span *query)
 static bool
 right2D(const SpanNode *nodebox, const Span *query)
 {
-  return right_span_span(&nodebox->left, query);
+  return ri_span_span(&nodebox->left, query);
 }
 
 /**
@@ -369,7 +369,7 @@ right2D(const SpanNode *nodebox, const Span *query)
 static bool
 overRight2D(const SpanNode *nodebox, const Span *query)
 {
-  return overright_span_span(&nodebox->left, query);
+  return ovri_span_span(&nodebox->left, query);
 }
 
 /**
@@ -378,7 +378,7 @@ overRight2D(const SpanNode *nodebox, const Span *query)
 static bool
 before2D(const SpanNode *nodebox, const Span *query)
 {
-  return left_span_span(&nodebox->right, query);
+  return lf_span_span(&nodebox->right, query);
 }
 
 /**
@@ -387,7 +387,7 @@ before2D(const SpanNode *nodebox, const Span *query)
 static bool
 overBefore2D(const SpanNode *nodebox, const Span *query)
 {
-  return overleft_span_span(&nodebox->right, query);
+  return ovlf_span_span(&nodebox->right, query);
 }
 
 /**
@@ -396,7 +396,7 @@ overBefore2D(const SpanNode *nodebox, const Span *query)
 static bool
 after2D(const SpanNode *nodebox, const Span *query)
 {
-  return right_span_span(&nodebox->left, query);
+  return ri_span_span(&nodebox->left, query);
 }
 
 /**
@@ -405,7 +405,7 @@ after2D(const SpanNode *nodebox, const Span *query)
 static bool
 overAfter2D(const SpanNode *nodebox, const Span *query)
 {
-  return overright_span_span(&nodebox->left, query);
+  return ovri_span_span(&nodebox->left, query);
 }
 
 /**
@@ -417,10 +417,10 @@ distance_span_nodespan(Span *query, SpanNode *nodebox)
   /* Determine the maximum span of the nodebox */
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.basetype, &s);
+    nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
 
   /* Compute the distance between the query span and the nodebox span */
-  return distance_span_span(query, &s);
+  return dist_span_span(query, &s);
 }
 
 /**
@@ -433,7 +433,8 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
   if (span_basetype(type))
   {
     Datum d = scankey->sk_argument;
-    span_set(d, d, true, true, type, result);
+    meosType spantype = basetype_spantype(type);
+    span_set(d, d, true, true, type, spantype, result);
   }
   else if (set_type(type))
   {
@@ -763,7 +764,7 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
   }
   qsort(sorted, (size_t) in->nTuples, sizeof(SortedSpan),
     (in->level % 2) ? span_lower_qsort_cmp : span_upper_qsort_cmp);
-  Span *centroid = span_copy(&sorted[median].s);
+  Span *centroid = span_cp(&sorted[median].s);
 
   /* Fill the output data structure */
   out->hasPrefix = true;
@@ -783,7 +784,7 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    Span *s = span_copy(&sorted[i].s);
+    Span *s = span_cp(&sorted[i].s);
     int n = sorted[i].i;
     out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
     out->leafTupleDatums[n] = SpanPGetDatum(s);
@@ -1069,7 +1070,7 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     {
       /* Convert the order by argument to a span and perform the test */
       span_spgist_get_span(&in->orderbys[i], &span);
-      distances[i] = distance_span_span(&span, key);
+      distances[i] = dist_span_span(&span, key);
     }
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;

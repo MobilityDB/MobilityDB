@@ -377,7 +377,7 @@ skiplist_make(void **values, int count)
   /* Fill values first */
   result->elems[0].value = NULL; /* set head value to NULL */
   for (int i = 0; i < count - 2; i++)
-    result->elems[i + 1].value = temporal_copy((Temporal *) values[i]);
+    result->elems[i + 1].value = temporal_cp((Temporal *) values[i]);
   result->elems[count - 1].value = NULL; /* set tail value to NULL */
   result->tail = count - 1;
 #if ! MEOS
@@ -418,11 +418,11 @@ pos_span_timestamptz(const Span *p, TimestampTz t)
  * @brief Determine the relative position of two periods
  */
 static RelativeTimePos
-pos_tstzspan_tstzspan(const Span *p1, const Span *p2)
+pos_span_span(const Span *s1, const Span *s2)
 {
-  if (left_span_span(p1, p2))
+  if (lf_span_span(s1, s2))
     return BEFORE;
-  if (right_span_span(p1, p2))
+  if (lf_span_span(s2, s1))
     return AFTER;
   return DURING;
 }
@@ -442,7 +442,7 @@ skiplist_elempos(const SkipList *list, Span *p, int cur)
   if (temp->subtype == TINSTANT)
     return pos_span_timestamptz(p, ((TInstant *) temp)->t);
   else /* temp->subtype == TSEQUENCE */
-    return pos_tstzspan_tstzspan(p, &((TSequence *) temp)->period);
+    return pos_span_span(p, &((TSequence *) temp)->period);
 }
 
 /**
@@ -496,14 +496,14 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     TInstant *first = (TInstant *) values[0];
     TInstant *last = (TInstant *) values[count - 1];
     span_set(TimestampTzGetDatum(first->t), TimestampTzGetDatum(last->t),
-      true, true, T_TIMESTAMPTZ, &p);
+      true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
   }
   else /* subtype == TSEQUENCE */
   {
     TSequence *first = (TSequence *) values[0];
     TSequence *last = (TSequence *) values[count - 1];
-    span_set(first->period.lower, last->period.upper,
-      first->period.lower_inc, last->period.upper_inc, T_TIMESTAMPTZ, &p);
+    span_set(first->period.lower, last->period.upper, first->period.lower_inc,
+      last->period.upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
   }
 
   /* Find the list values that are strictly before the span of new values */
@@ -612,7 +612,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 #if ! MEOS
     oldctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    newelm->value = temporal_copy(values[i]);
+    newelm->value = temporal_cp(values[i]);
 #if ! MEOS
     unset_aggregation_context(oldctx);
 #endif /* ! MEOS */
@@ -670,7 +670,7 @@ skiplist_temporal_values(SkipList *list)
   int count = 0;
   while (cur != list->tail)
   {
-    result[count++] = temporal_copy(list->elems[cur].value);
+    result[count++] = temporal_cp(list->elems[cur].value);
     cur = list->elems[cur].next[0];
   }
   return result;

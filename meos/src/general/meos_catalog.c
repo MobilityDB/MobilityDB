@@ -403,7 +403,7 @@ basetype_length(meosType type)
     return sizeof(Npoint);
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "unknown base type: %s", meostype_name(type));
+    "Unknown base type: %s", meostype_name(type));
   return SHRT_MAX;
 }
 

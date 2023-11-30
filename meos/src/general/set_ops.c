@@ -51,10 +51,9 @@
  * @brief Return true if the bounding box of two sets overlap
  */
 bool
-bbox_overlaps_set_set(const Set *s1, const Set *s2)
+over_set_set(const Set *s1, const Set *s2)
 {
-  assert(s1); assert(s2);
-  assert(s1->settype == s2->settype);
+  assert(s1); assert(s2); assert(s1->settype == s2->settype);
   Datum min1 = SET_VAL_N(s1, MINIDX);
   Datum min2 = SET_VAL_N(s2, MINIDX);
   Datum max1 = SET_VAL_N(s1, s1->MAXIDX);
@@ -71,8 +70,7 @@ bbox_overlaps_set_set(const Set *s1, const Set *s2)
 bool
 bbox_contains_set_set(const Set *s1, const Set *s2)
 {
-  assert(s1); assert(s2);
-  assert(s1->settype == s2->settype);
+  assert(s1); assert(s2); assert(s1->settype == s2->settype);
   Datum min1 = SET_VAL_N(s1, MINIDX);
   Datum min2 = SET_VAL_N(s2, MINIDX);
   Datum max1 = SET_VAL_N(s1, s1->MAXIDX);
@@ -88,7 +86,7 @@ bbox_contains_set_set(const Set *s1, const Set *s2)
 bool
 bbox_contains_set_value(const Set *s, Datum d, meosType basetype)
 {
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   Datum min = SET_VAL_N(s, MINIDX);
   Datum max = SET_VAL_N(s, s->MAXIDX);
   if (datum_le(min, d, basetype) && datum_le(d, max, basetype))
@@ -102,22 +100,22 @@ bbox_contains_set_value(const Set *s, Datum d, meosType basetype)
  * @brief Return the union, intersection, or difference of two sets
  */
 static Set *
-setop_set_set(const Set *s1, const Set *s2, SetOper setop)
+setop_set_set(const Set *s1, const Set *s2, SetOper op)
 {
-  assert(s1->settype == s2->settype);
-  if (setop == INTER || setop == MINUS)
+  assert(s1); assert(s2); assert(s1->settype == s2->settype);
+  if (op == INTER || op == MINUS)
   {
     /* Bounding box test */
-    if (! bbox_overlaps_set_set(s1, s2))
-      return setop == INTER ? NULL : set_copy(s1);
+    if (! over_set_set(s1, s2))
+      return op == INTER ? NULL : set_copy(s1);
   }
 
   int count;
-  if (setop == UNION)
+  if (op == UNION)
     count = s1->count + s2->count;
-  else if (setop == INTER)
+  else if (op == INTER)
     count = Min(s1->count, s2->count);
-  else /* setop == MINUS */
+  else /* op == MINUS */
     count = s1->count;
   Datum *values = palloc(sizeof(Datum) * count);
   int i = 0, j = 0, nvals = 0;
@@ -129,7 +127,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
     int cmp = datum_cmp(d1, d2, basetype);
     if (cmp == 0)
     {
-      if (setop == UNION || setop == INTER)
+      if (op == UNION || op == INTER)
         values[nvals++] = d1;
       i++; j++;
       if (i == s1->count || j == s2->count)
@@ -139,7 +137,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
     }
     else if (cmp < 0)
     {
-      if (setop == UNION || setop == MINUS)
+      if (op == UNION || op == MINUS)
         values[nvals++] = d1;
       i++;
       if (i == s1->count)
@@ -149,7 +147,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
     }
     else
     {
-      if (setop == UNION)
+      if (op == UNION)
         values[nvals++] = d2;
       j++;
       if (j == s2->count)
@@ -158,12 +156,12 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
         d2 = SET_VAL_N(s2, j);
     }
   }
-  if (setop == UNION || setop == MINUS)
+  if (op == UNION || op == MINUS)
   {
     while (i < s1->count)
       values[nvals++] = SET_VAL_N(s1, i++);
   }
-  if (setop == UNION)
+  if (op == UNION)
   {
     while (j < s2->count)
       values[nvals++] = SET_VAL_N(s2, j++);
@@ -182,7 +180,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
 bool
 contains_set_value(const Set *s, Datum d, meosType basetype)
 {
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   /* Bounding box test */
   if (! bbox_contains_set_value(s, d, basetype))
     return false;
@@ -200,7 +198,7 @@ bool
 contains_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
   return contains_set_value(s, Int32GetDatum(i), T_INT4);
 }
@@ -214,7 +212,7 @@ bool
 contains_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
   return contains_set_value(s, Int64GetDatum(i), T_INT8);
 }
@@ -228,7 +226,7 @@ bool
 contains_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
   return contains_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -243,14 +241,28 @@ contains_set_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
   return contains_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamp set contains a timestamp.
+ * @brief Return true if a date set contains a date.
+ * @sqlop @p \@>
+ */
+bool
+contains_set_date(const Set *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return contains_set_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a timestamptz set contains a timestamptz.
  * @sqlop @p \@>
  */
 bool
@@ -258,7 +270,7 @@ contains_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
   return contains_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -277,7 +289,7 @@ contains_set_geo(const Set *s, GSERIALIZED *gs)
       ! ensure_point_type(gs) )
     return false;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_set_basetype(s, geotype))
+  if (! ensure_set_isof_basetype(s, geotype))
     return false;
   return contains_set_value(s, PointerGetDatum(gs), geotype);
 }
@@ -342,7 +354,7 @@ bool
 contained_int_set(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
   return contained_value_set(Int32GetDatum(i), T_INT4, s);
 }
@@ -356,7 +368,7 @@ bool
 contained_bigint_set(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
   return contained_value_set(Int64GetDatum(i), T_INT8, s);
 }
@@ -370,7 +382,7 @@ bool
 contained_float_set(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
   return contained_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
@@ -385,14 +397,28 @@ contained_text_set(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
   return contained_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamp is contained in a timestamp set
+ * @brief Return true if a date is contained in a date set
+ * @sqlop @p <@
+ */
+bool
+contained_date_set(DateADT d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return contains_set_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a timestamptz is contained in a timestamptz set
  * @sqlop @p <@
  */
 bool
@@ -400,7 +426,7 @@ contained_timestamptz_set(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
   return contains_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -419,7 +445,7 @@ contained_geo_set(GSERIALIZED *gs, const Set *s)
       ! ensure_point_type(gs))
     return false;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_set_basetype(s, geotype))
+  if (! ensure_set_isof_basetype(s, geotype))
     return false;
   return contained_value_set(PointerGetDatum(gs), geotype, s);
 }
@@ -454,7 +480,7 @@ overlaps_set_set(const Set *s1, const Set *s2)
     return false;
 
   /* Bounding box test */
-  if (! bbox_overlaps_set_set(s1, s2))
+  if (! over_set_set(s1, s2))
     return false;
 
   int i = 0, j = 0;
@@ -484,7 +510,7 @@ overlaps_set_set(const Set *s1, const Set *s2)
 bool
 left_value_set(Datum d, meosType basetype, const Set *s)
 {
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, MINIDX);
   return datum_lt(d, d1, basetype);
 }
@@ -499,7 +525,7 @@ bool
 left_int_set(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
   return left_value_set(Int32GetDatum(i), T_INT4, s);
 }
@@ -513,7 +539,7 @@ bool
 left_bigint_set(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
   return left_value_set(Int64GetDatum(i), T_INT8, s);
 }
@@ -527,7 +553,7 @@ bool
 left_float_set(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
   return left_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
@@ -542,14 +568,28 @@ left_text_set(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
   return left_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is strictly before a timestamp set
+ * @brief Return true if a date is strictly before a date set
+ * @sqlop @p <<#
+ */
+bool
+before_date_set(DateADT d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return left_value_set(DateADTGetDatum(d), T_DATE, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is strictly before a timestamptz set
  * @sqlop @p <<#
  */
 bool
@@ -557,7 +597,7 @@ before_timestamptz_set(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
   return left_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
@@ -570,7 +610,7 @@ before_timestamptz_set(TimestampTz t, const Set *s)
 bool
 left_set_value(const Set *s, Datum d, meosType basetype)
 {
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, s->MAXIDX);
   return datum_lt(d1, d, basetype);
 }
@@ -585,7 +625,7 @@ bool
 left_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
   return left_set_value(s, Int32GetDatum(i), T_INT4);
 }
@@ -600,7 +640,7 @@ bool
 left_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
   return left_set_value(s, Int64GetDatum(i), T_INT8);
 }
@@ -614,7 +654,7 @@ bool
 left_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
   return left_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -629,14 +669,28 @@ left_set_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
   return left_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is strictly before a timestamp
+ * @brief Return true if a date set is strictly before a date
+ * @sqlop @p <<, @p <<#
+ */
+bool
+before_set_date(const Set *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return left_set_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz set is strictly before a timestamptz
  * @sqlop @p <<, @p <<#
  */
 bool
@@ -644,7 +698,7 @@ before_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
   return left_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -691,7 +745,7 @@ bool
 right_int_set(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
   return left_set_value(s, Int32GetDatum(i), T_INT4);
 }
@@ -706,7 +760,7 @@ bool
 right_bigint_set(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
   return left_set_value(s, Int64GetDatum(i), T_INT8);
 }
@@ -720,7 +774,7 @@ bool
 right_float_set(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
   return left_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -735,14 +789,27 @@ right_text_set(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
   return left_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is strictly after a timestamp set.
+ * @brief Return true if a date is strictly after a date set.
+ * @sqlop @p #>>
+ */
+bool
+after_date_set(DateADT d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return left_set_value(s, DateADTGetDatum(d), T_DATE);
+}
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is strictly after a timestamptz set.
  * @sqlop @p #>>
  */
 bool
@@ -750,7 +817,7 @@ after_timestamptz_set(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
   return left_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -777,9 +844,9 @@ bool
 right_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return right_set_value(s, Int32GetDatum(i), T_INT4);
+  return left_value_set(Int32GetDatum(i), T_INT4, s);
 }
 
 /**
@@ -792,9 +859,9 @@ bool
 right_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return right_set_value(s, Int64GetDatum(i), T_INT8);
+  return left_value_set(s, Int64GetDatum(i), T_INT8, s);
 }
 
 /**
@@ -806,9 +873,9 @@ bool
 right_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return right_set_value(s, Float8GetDatum(d), T_FLOAT8);
+  return left_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
 
 /**
@@ -821,14 +888,28 @@ right_set_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return right_set_value(s, PointerGetDatum(txt), T_TEXT);
+  return left_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is strictly after a timestamp.
+ * @brief Return true if a timestamptz set is strictly after a timestamptz.
+ * @sqlop @p >>, @p #>>
+ */
+bool
+after_set_date(const Set *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return left_value_set(DateADTGetDatum(d), T_DATE, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz set is strictly after a timestamptz.
  * @sqlop @p >>, @p #>>
  */
 bool
@@ -836,9 +917,9 @@ after_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return right_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return left_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
 
@@ -851,10 +932,6 @@ after_set_timestamptz(const Set *s, TimestampTz t)
 bool
 right_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
-    return false;
   return left_set_set(s2, s1);
 }
 
@@ -869,7 +946,7 @@ right_set_set(const Set *s1, const Set *s2)
 bool
 overleft_value_set(Datum d, meosType basetype, const Set *s)
 {
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, s->MAXIDX);
   return datum_le(d, d1, basetype);
 }
@@ -884,7 +961,7 @@ bool
 overleft_int_set(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
   return overleft_value_set(Int32GetDatum(i), T_INT4, s);
 }
@@ -899,7 +976,7 @@ bool
 overleft_bigint_set(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
   return overleft_value_set(Int64GetDatum(i), T_INT8, s);
 }
@@ -913,7 +990,7 @@ bool
 overleft_float_set(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
   return overleft_value_set(Float8GetDatum(d), T_FLOAT8, s);
 }
@@ -928,14 +1005,28 @@ overleft_text_set(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
   return overleft_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is not after a timestamp set.
+ * @brief Return true if a date is not after a date set.
+ * @sqlop @p &<#
+ */
+bool
+overbefore_date_set(DateADT d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return overleft_value_set(DateADTGetDatum(d), T_DATE, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is not after a timestamptz set.
  * @sqlop @p &<#
  */
 bool
@@ -943,7 +1034,7 @@ overbefore_timestamptz_set(TimestampTz t, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
   return overleft_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
@@ -957,7 +1048,7 @@ overbefore_timestamptz_set(TimestampTz t, const Set *s)
 bool
 overleft_set_value(const Set *s, Datum d, meosType basetype)
 {
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, s->MAXIDX);
   return datum_le(d1, d, basetype);
 }
@@ -972,7 +1063,7 @@ bool
 overleft_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
   return overleft_set_value(s, Int32GetDatum(i), T_INT4);
 }
@@ -987,7 +1078,7 @@ bool
 overleft_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
   return overleft_set_value(s, Int64GetDatum(i), T_INT8);
 }
@@ -1001,7 +1092,7 @@ bool
 overleft_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
   return overleft_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -1016,14 +1107,28 @@ overleft_set_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
   return overleft_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is not before a timestamp.
+ * @brief Return true if a date set is not before a date.
+ * @sqlop @p &<#
+ */
+bool
+overbefore_set_date(const Set *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return overleft_set_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz set is not before a timestamptz.
  * @sqlop @p &<#
  */
 bool
@@ -1031,7 +1136,7 @@ overbefore_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
   return overleft_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1066,7 +1171,7 @@ overleft_set_set(const Set *s1, const Set *s2)
 bool
 overright_value_set(Datum d, meosType basetype, const Set *s)
 {
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, MINIDX);
   return datum_ge(d, d1, basetype);
 }
@@ -1082,7 +1187,7 @@ bool
 overright_int_set(int i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
   return overright_value_set(Int32GetDatum(i), T_INT4, s);
 }
@@ -1097,7 +1202,7 @@ bool
 overright_bigint_set(int64 i, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
   return overright_value_set(Int64GetDatum(i), T_INT8, s);
 }
@@ -1112,24 +1217,9 @@ bool
 overright_float_set(double d, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
   return overright_value_set(Float8GetDatum(d), T_FLOAT8, s);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is not before a timestamp set
- * @sqlop @p #&>
- */
-bool
-overafter_timestamptz_set(TimestampTz t, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
-    return false;
-  return overright_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 
 /**
@@ -1142,9 +1232,38 @@ overright_text_set(text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
   return overright_set_value(s, PointerGetDatum(txt), T_TEXT);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a date is not before a date set
+ * @sqlop @p #&>
+ */
+bool
+overafter_date_set(DateADT d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return overright_value_set(DateADTGetDatum(d), T_DATE, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz is not before a timestamptz set
+ * @sqlop @p #&>
+ */
+bool
+overafter_timestamptz_set(TimestampTz t, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return overright_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
 #endif /* MEOS */
 
@@ -1155,7 +1274,7 @@ overright_text_set(text *txt, const Set *s)
 bool
 overright_set_value(const Set *s, Datum d, meosType basetype)
 {
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   Datum d1 = SET_VAL_N(s, MINIDX);
   return datum_ge(d1, d, basetype);
 }
@@ -1171,7 +1290,7 @@ bool
 overright_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
   return overright_set_value(s, Int32GetDatum(i), T_INT4);
 }
@@ -1186,7 +1305,7 @@ bool
 overright_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
   return overright_set_value(s, Int64GetDatum(i), T_INT8);
 }
@@ -1200,7 +1319,7 @@ bool
 overright_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
   return overright_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -1215,14 +1334,28 @@ overright_set_text(const Set *s, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||  ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
   return overright_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is not before a timestamp
+ * @brief Return true if a date set is not before a date
+ * @sqlop @p &>, @p #&>
+ */
+bool
+overafter_set_date(const Set *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return overright_set_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamptz set is not before a timestamptz
  * @sqlop @p &>, @p #&>
  */
 bool
@@ -1230,7 +1363,7 @@ overafter_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
   return overright_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1266,7 +1399,7 @@ overright_set_set(const Set *s1, const Set *s2)
 Set *
 union_set_value(const Set *s, Datum d, meosType basetype)
 {
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   Datum *values = palloc(sizeof(Datum *) * (s->count + 1));
   int nvals = 0;
   bool found = false;
@@ -1301,7 +1434,7 @@ Set *
 union_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return NULL;
   return union_set_value(s, Int32GetDatum(i), T_INT4);
 }
@@ -1315,7 +1448,7 @@ Set *
 union_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return NULL;
   return union_set_value(s, Int64GetDatum(i), T_INT8);
 }
@@ -1329,7 +1462,7 @@ Set *
 union_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return NULL;
   return union_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -1344,14 +1477,28 @@ union_set_text(const Set *s, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return NULL;
   return union_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a timestamp set and a timestamp
+ * @brief Return the union of a date set and a date
+ * @sqlop @p +
+ */
+Set *
+union_set_date(const Set *s, const DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return NULL;
+  return union_set_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a timestamptz set and a timestamptz
  * @sqlop @p +
  */
 Set *
@@ -1359,7 +1506,7 @@ union_set_timestamptz(const Set *s, const TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return NULL;
   return union_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1378,7 +1525,7 @@ union_set_geo(const Set *s, const GSERIALIZED *gs)
       ! ensure_point_type(gs))
     return NULL;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_set_basetype(s, geotype))
+  if (! ensure_set_isof_basetype(s, geotype))
     return NULL;
   return union_set_value(s, PointerGetDatum(gs), geotype);
 }
@@ -1410,8 +1557,7 @@ union_set_set(const Set *s1, const Set *s2)
 bool
 intersection_set_value(const Set *s, Datum d, meosType basetype, Datum *result)
 {
-  assert(s); assert(result);
-  assert(s->basetype == basetype);
+  assert(s); assert(result); assert(s->basetype == basetype);
   if (! contains_set_value(s, d, basetype))
     return false;
   *result  = d;
@@ -1430,7 +1576,7 @@ intersection_set_int(const Set *s, int i, int *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_same_set_basetype(s, T_INT4))
+      ! ensure_set_isof_basetype(s, T_INT4))
     return false;
 
   Datum v;
@@ -1450,7 +1596,7 @@ intersection_set_bigint(const Set *s, int64 i, int64 *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_same_set_basetype(s, T_INT8))
+      ! ensure_set_isof_basetype(s, T_INT8))
     return false;
 
   Datum v;
@@ -1470,7 +1616,7 @@ intersection_set_float(const Set *s, double d, double *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_same_set_basetype(s, T_FLOAT8))
+      ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
 
   Datum v;
@@ -1490,7 +1636,7 @@ intersection_set_text(const Set *s, const text *txt, text **result)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
        ! ensure_not_null((void *) result) ||
-       ! ensure_same_set_basetype(s, T_TEXT))
+       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
 
   Datum v;
@@ -1501,7 +1647,26 @@ intersection_set_text(const Set *s, const text *txt, text **result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a timestamp set and a timestamp in the
+ * @brief Compute the intersection of a date set and a date in the
+ * last argument
+ * @sqlop @p *
+ */
+bool
+intersection_set_date(const Set *s, DateADT d, DateADT *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+
+  Datum v;
+  bool found = intersection_set_value(s, DateADTGetDatum(d), T_DATE, &v);
+  *result = DatumGetDateADT(v);
+  return found;
+}
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Compute the intersection of a timestamptz set and a timestamptz in the
  * last argument
  * @sqlop @p *
  */
@@ -1510,7 +1675,7 @@ intersection_set_timestamptz(const Set *s, TimestampTz t, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
 
   Datum v;
@@ -1535,7 +1700,7 @@ intersection_set_geo(const Set *s, const GSERIALIZED *gs,
        ! ensure_not_empty(gs) || ! ensure_point_type(gs))
     return false;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_set_basetype(s, geotype))
+  if (! ensure_set_isof_basetype(s, geotype))
     return false;
 
   Datum v;
@@ -1573,8 +1738,7 @@ intersection_set_set(const Set *s1, const Set *s2)
 bool
 minus_value_set(Datum d, meosType basetype, const Set *s, Datum *result)
 {
-  assert(s); assert(result);
-  assert(s->basetype == basetype);
+  assert(s); assert(result); assert(s->basetype == basetype);
   if (contains_set_value(s, d, basetype))
     return false;
   *result = d;
@@ -1592,7 +1756,7 @@ minus_int_set(int i, const Set *s, int *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_same_set_basetype(s, T_INT4))
+      ! ensure_set_isof_basetype(s, T_INT4))
     return false;
 
   Datum v;
@@ -1612,7 +1776,7 @@ minus_bigint_set(int64 i, const Set *s, int64 *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_same_set_basetype(s, T_INT8))
+      ! ensure_set_isof_basetype(s, T_INT8))
     return false;
 
   Datum v;
@@ -1631,7 +1795,7 @@ minus_float_set(double d, const Set *s, double *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_same_set_basetype(s, T_FLOAT8))
+      ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
 
   Datum v;
@@ -1646,36 +1810,55 @@ minus_float_set(double d, const Set *s, double *result)
  * @sqlop @p -
  */
 bool
-minus_timestamptz_set(TimestampTz t, const Set *s, TimestampTz *result)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
-    return false;
-
-  Datum v;
-  bool found = minus_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s, &v);
-  *result = DatumGetTimestampTz(v);
-  return found;
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a text and a text set
- * @sqlop @p -
- */
-bool
 minus_text_set(const text *txt, const Set *s, text **result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_not_null((void *) result) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
 
   Datum v;
   bool found = minus_value_set(PointerGetDatum(txt), T_TEXT, s, &v);
   *result = DatumGetTextP(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Compute the difference of a date and a date set
+ * @sqlop @p -
+ */
+bool
+minus_date_set(DateADT d, const Set *s, DateADT *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+
+  Datum v;
+  bool found = minus_value_set(DateADTGetDatum(d), T_DATE, s, &v);
+  *result = DatumGetDateADT(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Compute the difference of a timestamptz and a timestamptz set
+ * @sqlop @p -
+ */
+bool
+minus_timestamptz_set(TimestampTz t, const Set *s, TimestampTz *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
+    return false;
+
+  Datum v;
+  bool found = minus_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s, &v);
+  *result = DatumGetTimestampTz(v);
   return found;
 }
 
@@ -1693,7 +1876,7 @@ minus_geo_set(const GSERIALIZED *gs, const Set *s, GSERIALIZED **result)
       ! ensure_not_empty(gs) || ! ensure_point_type(gs) )
     return false;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_set_basetype(s, geotype))
+  if (! ensure_set_isof_basetype(s, geotype))
     return false;
 
   Datum v;
@@ -1710,8 +1893,7 @@ minus_geo_set(const GSERIALIZED *gs, const Set *s, GSERIALIZED **result)
 Set *
 minus_set_value(const Set *s, Datum d, meosType basetype)
 {
-  assert(s);
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   /* Bounding box test */
   if (! bbox_contains_set_value(s, d, basetype))
     return set_copy(s);
@@ -1738,7 +1920,7 @@ Set *
 minus_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return NULL;
   return minus_set_value(s, Int32GetDatum(i), T_INT4);
 }
@@ -1752,7 +1934,7 @@ Set *
 minus_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return NULL;
   return minus_set_value(s, Int64GetDatum(i), T_INT8);
 }
@@ -1766,7 +1948,7 @@ Set *
 minus_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return NULL;
   return minus_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -1781,14 +1963,28 @@ minus_set_text(const Set *s, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_set_basetype(s, T_TEXT))
+      ! ensure_set_isof_basetype(s, T_TEXT))
     return NULL;
   return minus_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a timestamp set and a timestamp
+ * @brief Return the difference of a date set and a date
+ * @sqlop @p -
+ */
+Set *
+minus_set_date(const Set *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return NULL;
+  return minus_set_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a timestamptz set and a timestamptz
  * @sqlop @p -
  */
 Set *
@@ -1796,25 +1992,9 @@ minus_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return NULL;
-
-  /* Bounding box test */
-  Span s1;
-  set_set_span(s, &s1);
-  if (! contains_span_timestamptz(&s1, t))
-    return set_copy(s);
-
-  Datum *values = palloc(sizeof(TimestampTz) * s->count);
-  int nvals = 0;
-  Datum v = TimestampTzGetDatum(t);
-  for (int i = 0; i < s->count; i++)
-  {
-    Datum v1 = SET_VAL_N(s, i);
-    if (datum_ne(v, v1, T_TIMESTAMPTZ))
-      values[nvals++] = v1;
-  }
-  return set_make_free(values, nvals, T_TIMESTAMPTZ, ORDERED);
+  return minus_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1831,7 +2011,7 @@ minus_set_geo(const Set *s, const GSERIALIZED *gs)
       ! ensure_point_type(gs))
     return NULL;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_same_set_basetype(s, geotype))
+  if (! ensure_set_isof_basetype(s, geotype))
     return NULL;
   return minus_set_value(s, PointerGetDatum(gs), geotype);
 }
@@ -1864,7 +2044,7 @@ minus_set_set(const Set *s1, const Set *s2)
 double
 distance_set_value(const Set *s, Datum d, meosType basetype)
 {
-  assert(s->basetype == basetype);
+  assert(s); assert(s->basetype == basetype);
   Span sp;
   set_set_span(s, &sp);
   return distance_span_value(&sp, d, basetype);
@@ -1881,7 +2061,7 @@ double
 distance_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return -1.0;
   return distance_set_value(s, Int32GetDatum(i), T_INT4);
 }
@@ -1897,7 +2077,7 @@ double
 distance_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return -1.0;
   return distance_set_value(s, Int64GetDatum(i), T_INT8);
 }
@@ -1912,14 +2092,29 @@ double
 distance_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_same_set_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return -1.0;
   return distance_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance in seconds between a timestamp set and a timestamp
+ * @brief Return the distance in seconds between a date set and a date
+ * @result On error return -1.0
+ * @sqlop @p <->
+ */
+double
+distance_set_date(const Set *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return -1.0;
+  return distance_set_value(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance in seconds between a timestamptz set and a timestamptz
  * @result On error return -1.0
  * @sqlop @p <->
  */
@@ -1928,7 +2123,7 @@ distance_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_same_set_basetype(s, T_TIMESTAMPTZ))
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return -1.0;
   return distance_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1950,7 +2145,7 @@ distance_set_set(const Set *s1, const Set *s2)
   Span sp1, sp2;
   set_set_span(s1, &sp1);
   set_set_span(s2, &sp2);
-  return distance_span_span(&sp1, &sp2);
+  return dist_span_span(&sp1, &sp2);
 }
 #endif /* MEOS */
 

@@ -100,7 +100,7 @@ tnpointinst_set_stbox(const TInstant *inst, STBox *box)
 {
   npoint_set_stbox(DatumGetNpointP(tinstant_value(inst)), box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
-    true, true, T_TIMESTAMPTZ, &box->period);
+    true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -152,7 +152,7 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
     gserialized_line_substring(line, posmin, posmax);
   geo_set_stbox(gs, box);
   span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax),
-    true, true, T_TIMESTAMPTZ, &box->period);
+    true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
   pfree(line);
   if (posmin != 0 || posmax != 1)
@@ -203,7 +203,7 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
       gserialized_line_substring(line, posmin, posmax);
     geo_set_stbox(gs, &box);
     span_set(TimestampTzGetDatum(last->t), TimestampTzGetDatum(inst->t),
-      true, true, T_TIMESTAMPTZ, &box.period);
+      true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box.period);
     MEOS_FLAGS_SET_T(box.flags, true);
     pfree(line);
     if (posmin != 0 || posmax != 1)
@@ -238,7 +238,7 @@ npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
 {
   npoint_set_stbox(np, box);
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, &box->period);
+    T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
   return true;
 }

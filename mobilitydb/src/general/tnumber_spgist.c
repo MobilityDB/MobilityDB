@@ -736,8 +736,10 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 
   centroid = palloc0(sizeof(TBox));
   Span s, p;
-  span_set(lowXs[median], highXs[median], true, true, basetype, &s);
-  span_set(lowTs[median], highTs[median], true, true, T_TIMESTAMPTZ, &p);
+  meosType spantype = basetype_spantype(basetype);
+  span_set(lowXs[median], highXs[median], true, true, basetype, spantype, &s);
+  span_set(lowTs[median], highTs[median], true, true, T_TIMESTAMPTZ,
+    T_TSTZSPAN, &p);
   tbox_set(&s, &p, centroid);
 
   /* Fill the output */

@@ -79,7 +79,7 @@ extern char *text_to_cstring(const text *t);
 #define DISCONTINUOUS   true
 #define CONTINUOUS      false
 
-/** Symbolic constants for sets */
+/** Symbolic constants for sets and for normalizing spans */
 #define ORDERED         true
 #define ORDERED_NO      false
 
@@ -125,10 +125,6 @@ extern char *text_to_cstring(const text *t);
 
 #define NORMALIZE       true
 #define NORMALIZE_NO    false
-
-/** Symbolic constants for the normalizing spans */
-#define SORT            true
-#define SORT_NO         false
 
 /** Symbolic constants for spatial relationships */
 #define WITH_Z          true
@@ -367,7 +363,7 @@ extern bool ensure_same_interpolation(const Temporal *temp1, const Temporal *tem
 extern bool ensure_same_continuous_interpolation(int16 flags1, int16 flags2);
 extern bool ensure_nonlinear_interpolation(int16 flags);
 extern bool ensure_common_dimension(int16 flags1, int16 flags2);
-extern bool ensure_temporal_has_type(const Temporal *temp, meosType temptype);
+extern bool ensure_temporal_isof_type(const Temporal *temp, meosType temptype);
 extern bool ensure_same_temporal_type(const Temporal *temp1,
   const Temporal *temp2);
 extern bool ensure_same_temporal_basetype(const Temporal *temp,

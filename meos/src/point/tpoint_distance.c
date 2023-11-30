@@ -831,7 +831,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
+  if (hast && ! over_span_span(&box1->period, &box2->period))
       return DBL_MAX;
 
   /* If the boxes intersect in the value dimension return 0 */

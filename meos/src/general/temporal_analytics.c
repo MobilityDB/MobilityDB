@@ -232,7 +232,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   {
     Span p;
     span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
-      true, false, T_TIMESTAMPTZ, &p);
+      true, false, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
     TSequenceSet *proj = tsequenceset_restrict_tstzspan(ss, &p, REST_AT);
     if (proj)
     {
@@ -1072,7 +1072,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    result = temporal_copy(temp);
+    result = temporal_cp(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_min_dist((TSequence *) temp, dist);
   else /* temp->subtype == TSEQUENCESET */
@@ -1170,7 +1170,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    result = temporal_copy(temp);
+    result = temporal_cp(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_min_tdelta((TSequence *) temp,
       mint);
@@ -1506,7 +1506,7 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    result = temporal_copy(temp);
+    result = temporal_cp(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_max_dist((TSequence *) temp, dist,
       syncdist, 2);
@@ -1658,7 +1658,7 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    result = temporal_copy(temp);
+    result = temporal_cp(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist,
       syncdist, 2);

@@ -720,7 +720,7 @@ tfloat_round(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TFLOAT) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT) ||
       ! ensure_not_negative(maxdd))
     return NULL;
 
@@ -752,7 +752,7 @@ tfloatarr_round(const Temporal **temparr, int count, int maxdd)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temparr) ||
       /* Ensure that the FIRST element is a temporal float */
-      ! ensure_temporal_has_type(temparr[0], T_TFLOAT) ||
+      ! ensure_temporal_isof_type(temparr[0], T_TFLOAT) ||
       ! ensure_positive(count) || ! ensure_not_negative(maxdd))
     return NULL;
 
@@ -772,7 +772,7 @@ tfloat_degrees(const Temporal *temp, bool normalize)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TFLOAT))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
 
   /* We only need to fill these parameters for tfunc_temporal */
@@ -800,7 +800,7 @@ tfloat_radians(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TFLOAT))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
 
   /* We only need to fill these parameters for tfunc_temporal */
@@ -899,7 +899,7 @@ tfloat_derivative(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TFLOAT))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
 
   Temporal *result = NULL;

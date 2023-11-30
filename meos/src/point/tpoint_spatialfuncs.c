@@ -2393,7 +2393,7 @@ Temporal *
 tgeompoint_to_tgeogpoint(const Temporal *temp)
 {
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TGEOMPOINT))
+      ! ensure_temporal_isof_type(temp, T_TGEOMPOINT))
     return NULL;
   return tgeompoint_tgeogpoint(temp, GEOM_TO_GEOG);
 }
@@ -2408,7 +2408,7 @@ tgeogpoint_to_tgeompoint(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TGEOGPOINT))
+      ! ensure_temporal_isof_type(temp, T_TGEOGPOINT))
     return NULL;
   return tgeompoint_tgeogpoint(temp, GEOG_TO_GEOM);
 }

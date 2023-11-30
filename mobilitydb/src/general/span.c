@@ -274,8 +274,9 @@ range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
     basetype = T_DATE;
   else /* type_id == TIMESTAMPTZOID */
     basetype = T_TIMESTAMPTZ;
+  meosType spantype = basetype_spantype(basetype);
   span_set(lower.val, upper.val, lower.inclusive, upper.inclusive, basetype,
-    result);
+    spantype, result);
   return;
 }
 

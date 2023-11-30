@@ -87,7 +87,7 @@ tnot_tbool(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TBOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
 
   LiftedFunctionInfo lfinfo;
@@ -153,7 +153,7 @@ tbool_when_true(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TBOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
 
   Temporal *temp1 = temporal_restrict_value(temp, BoolGetDatum(true), REST_AT);

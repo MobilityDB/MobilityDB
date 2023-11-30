@@ -1309,7 +1309,8 @@ span_from_wkb_state_iter(wkb_parse_state *s, Span *result)
   /* Read the values and create the span */
   Datum lower = basevalue_from_wkb_state(s);
   Datum upper = basevalue_from_wkb_state(s);
-  span_set(lower, upper, lower_inc, upper_inc, s->basetype, result);
+  span_set(lower, upper, lower_inc, upper_inc, s->basetype, s->spantype,
+    result);
   return;
 }
 

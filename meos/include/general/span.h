@@ -77,9 +77,9 @@ typedef struct
 
 /* General functions */
 
-extern bool ensure_span_has_type(const Span *s, meosType spantype);
+extern bool ensure_span_isof_type(const Span *s, meosType spantype);
+extern bool ensure_span_isof_basetype(const Span *s, meosType basetype);
 extern bool ensure_same_span_type(const Span *s1, const Span *s2);
-extern bool ensure_same_span_basetype(const Span *s, meosType basetype);
 extern void span_deserialize(const Span *s, SpanBound *lower,
   SpanBound *upper);
 extern Span *span_serialize(SpanBound *lower, SpanBound *upper);
@@ -107,8 +107,8 @@ extern void tstzspan_shift_scale1(Span *s, const Interval *shift,
 extern size_t span_to_wkb_size(const Span *s);
 extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
 
-extern int minus_span_span_iter(const Span *s1, const Span *s2, Span *result);
-extern int minus_span_value_iter(const Span *s, Datum d, meosType basetype,
+extern int mi_span_span(const Span *s1, const Span *s2, Span *result);
+extern int mi_span_value(const Span *s, Datum d, meosType basetype,
   Span *result);
 
 /*****************************************************************************/

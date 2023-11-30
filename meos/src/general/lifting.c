@@ -1547,7 +1547,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Span p1, p2;
   temporal_set_tstzspan(temp1, &p1);
   temporal_set_tstzspan(temp2, &p2);
-  if (! overlaps_span_span(&p1, &p2))
+  if (! over_span_span(&p1, &p2))
     return NULL;
 
   Temporal *result = NULL;
@@ -2121,7 +2121,7 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Span p1, p2;
   temporal_set_tstzspan(temp1, &p1);
   temporal_set_tstzspan(temp2, &p2);
-  if (! overlaps_span_span(&p1, &p2))
+  if (! over_span_span(&p1, &p2))
     return -1;
 
   int result;

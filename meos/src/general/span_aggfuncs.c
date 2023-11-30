@@ -64,7 +64,7 @@ spanbase_extent_transfn(Span *s, Datum d, meosType basetype)
     return span_make(d, d, true, true, basetype);
 
   Span s1;
-  span_set(d, d, true, true, basetype, &s1);
+  span_set(d, d, true, true, basetype, s->spantype, &s1);
   span_expand(&s1, s);
   return s;
 }
@@ -78,7 +78,7 @@ Span *
 int_extent_transfn(Span *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (s && ! ensure_span_has_type(s, T_INTSPAN))
+  if (s && ! ensure_span_isof_type(s, T_INTSPAN))
     return NULL;
   return spanbase_extent_transfn(s, Int32GetDatum(i), T_INT4);
 }
@@ -91,7 +91,7 @@ Span *
 bigint_extent_transfn(Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (s && ! ensure_span_has_type(s, T_BIGINTSPAN))
+  if (s && ! ensure_span_isof_type(s, T_BIGINTSPAN))
     return NULL;
   return spanbase_extent_transfn(s, Int64GetDatum(i), T_INT8);
 }
@@ -104,7 +104,7 @@ Span *
 float_extent_transfn(Span *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (s && ! ensure_span_has_type(s, T_FLOATSPAN))
+  if (s && ! ensure_span_isof_type(s, T_FLOATSPAN))
     return NULL;
   return spanbase_extent_transfn(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -117,7 +117,7 @@ Span *
 timestamp_extent_transfn(Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  if (s && ! ensure_span_has_type(s, T_TSTZSPAN))
+  if (s && ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
   return spanbase_extent_transfn(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -142,7 +142,7 @@ set_extent_transfn(Span *span, const Set *set)
 
   /* Ensure validity of the arguments */
   if (! ensure_set_spantype(set->settype) ||
-      ! ensure_same_span_basetype(span, set->basetype))
+      ! ensure_span_isof_basetype(span, set->basetype))
     return NULL;
 
   Span s;
@@ -163,7 +163,7 @@ span_extent_transfn(Span *s1, const Span *s2)
     return NULL;
   /* Null span and non-null span, return the span */
   if (! s1)
-    return span_copy(s2);
+    return span_cp(s2);
   /* Non-null span and null span, return the span */
   if (! s2)
     return s1;
@@ -188,7 +188,7 @@ spanset_extent_transfn(Span *s, const SpanSet *ss)
     return NULL;
   /* Null  and non-null span set, return the bbox of the span set */
   if (! s)
-    return span_copy(&ss->span);
+    return span_cp(&ss->span);
   /* Non-null span and null temporal, return the span */
   if (! ss)
     return s;

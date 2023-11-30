@@ -204,7 +204,7 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
       DatumGetNpointP(value3), ratio);
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "unknown collinear operation for base type: %d", basetype);
+    "Unknown collinear operation for base type: %d", basetype);
   return false;
 }
 
@@ -808,8 +808,7 @@ tsequence_make_exp1(const TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize,
   void *bbox)
 {
-  assert(instants);
-  assert(maxcount >= count);
+  assert(instants); assert(maxcount >= count);
 
   /* Normalize the array of instants */
   TInstant **norminsts = (TInstant **) instants;
@@ -2291,16 +2290,17 @@ tnumberseq_valuespans(const TSequence *seq)
   {
     Span span;
     memcpy(&span, &((TBox *) TSEQUENCE_BBOX_PTR(seq))->span, sizeof(Span));
-    return span_to_spanset(&span);
+    return span_spanset(&span);
   }
 
   /* Temporal sequence number with discrete or step interpolation */
   int count;
   meosType basetype = temptype_basetype(seq->temptype);
+  meosType spantype = basetype_spantype(basetype);
   Datum *values = tsequence_values(seq, &count);
   Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
-    span_set(values[i], values[i], true, true, basetype, &spans[i]);
+    span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);
   SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
   pfree(values);
   return result;
@@ -2317,17 +2317,17 @@ tsequence_time(const TSequence *seq)
   assert(seq);
   /* Continuous sequence */
   if (! MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
-    return span_to_spanset(&seq->period);
+    return span_spanset(&seq->period);
 
   /* Discrete sequence */
   Span *periods = palloc(sizeof(Span) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    span_set(inst->t, inst->t, true, true, T_TIMESTAMPTZ, &periods[i]);
+    span_set(inst->t, inst->t, true, true, T_TIMESTAMPTZ, T_TSTZSPAN,
+      &periods[i]);
   }
-  SpanSet *result = spanset_make_free(periods, seq->count, NORMALIZE_NO);
-  return result;
+  return spanset_make_free(periods, seq->count, NORMALIZE_NO);
 }
 
 /**
@@ -2728,7 +2728,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   }
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "unknown interpolation function for continuous temporal type: %d",
+    "Unknown interpolation function for continuous temporal type: %d",
     inst1->temptype);
   return 0;
 }
@@ -2954,7 +2954,7 @@ intersection_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   assert(inter1); assert(inter2);
   /* The temporal types of the arguments may be different */
   /* Bounding period test */
-  if (!overlaps_span_span(&seq1->period, &seq2->period))
+  if (! over_span_span(&seq1->period, &seq2->period))
     return false;
 
   int count = Min(seq1->count, seq2->count);
@@ -3004,7 +3004,7 @@ intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   assert(inter1); assert(inter2);
   /* The temporal types of the arguments may be different */
   /* Test whether the bounding period of the two temporal values overlap */
-  if (! overlaps_span_span(&seq1->period, &seq2->period))
+  if (! over_span_span(&seq1->period, &seq2->period))
     return false;
 
   TInstant **instants1 = palloc(sizeof(TInstant *) * seq2->count);
@@ -3134,7 +3134,7 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "unknown intersection function for continuous temporal type: %d",
+      "Unknown intersection function for continuous temporal type: %d",
       inst1->temptype);
     return NULL;
   }
@@ -4110,6 +4110,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   meosType basetype = temptype_basetype(inst1->temptype);
+  meosType spantype = basetype_spantype(basetype);
   TInstant *instants[2];
   bool found;
 
@@ -4154,9 +4155,11 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   Span valuespan, inter;
   bool increasing = DatumGetFloat8(value1) < DatumGetFloat8(value2);
   if (increasing)
-    span_set(value1, value2, lower_inc, upper_inc, basetype, &valuespan);
+    span_set(value1, value2, lower_inc, upper_inc, basetype, spantype,
+      &valuespan);
   else
-    span_set(value2, value1, upper_inc, lower_inc, basetype, &valuespan);
+    span_set(value2, value1, upper_inc, lower_inc, basetype, spantype,
+      &valuespan);
   found = inter_span_span(&valuespan, s, &inter);
   /* The intersection is empty */
   if (! found)
@@ -4413,7 +4416,7 @@ tnumbercontseq_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
       bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
       for (int j = 0; j < ss->count; j++)
       {
-        const Span *s = spanset_sp_n(ss, j);
+        const Span *s = SPANSET_SP_N(ss, j);
         nseqs += tnumbersegm_restrict_span(inst1, inst2, interp, lower_inc,
           upper_inc, s, REST_AT, &result[nseqs]);
       }
@@ -4624,7 +4627,7 @@ tdiscseq_restrict_tstzset(const TSequence *seq, const Set *s, bool atfunc)
   /* Bounding box test */
   Span p;
   set_set_span(s, &p);
-  if (! overlaps_span_span(&seq->period, &p))
+  if (! over_span_span(&seq->period, &p))
     return atfunc ? NULL : tsequence_copy(seq);
 
   /* Instantaneous sequence */
@@ -4680,7 +4683,7 @@ tdiscseq_restrict_tstzspan(const TSequence *seq, const Span *s, bool atfunc)
 {
   assert(seq); assert(s);
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, s))
+  if (! over_span_span(&seq->period, s))
     return atfunc ? NULL : tsequence_copy(seq);
 
   /* Instantaneous sequence */
@@ -4715,10 +4718,10 @@ tdiscseq_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss,
 
   /* Singleton span set */
   if (ss->count == 1)
-    return tdiscseq_restrict_tstzspan(seq, spanset_sp_n(ss, 0), atfunc);
+    return tdiscseq_restrict_tstzspan(seq, SPANSET_SP_N(ss, 0), atfunc);
 
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ss->span))
+  if (! over_span_span(&seq->period, &ss->span))
     return atfunc ? NULL : tsequence_copy(seq);
 
   /* Instantaneous sequence */
@@ -4938,7 +4941,7 @@ tcontseq_at_tstzset(const TSequence *seq, const Set *s)
   /* Bounding box test */
   Span p;
   set_set_span(s, &p);
-  if (! overlaps_span_span(&seq->period, &p))
+  if (! over_span_span(&seq->period, &p))
     return NULL;
 
   inst = (TInstant *) TSEQUENCE_INST_N(seq, 0);
@@ -4993,7 +4996,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
   /* Bounding box test */
   Span p;
   set_set_span(s, &p);
-  if (! overlaps_span_span(&seq->period, &p))
+  if (! over_span_span(&seq->period, &p))
   {
     result[0] = tsequence_copy(seq);
     return 1;
@@ -5215,7 +5218,7 @@ tcontseq_minus_tstzspan_iter(const TSequence *seq, const Span *s,
   TSequence **result)
 {
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, s))
+  if (! over_span_span(&seq->period, s))
   {
     result[0] = tsequence_copy(seq);
     return 1;
@@ -5231,7 +5234,7 @@ tcontseq_minus_tstzspan_iter(const TSequence *seq, const Span *s,
     return 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const Span *p1 = spanset_sp_n(ss, i);
+    const Span *p1 = SPANSET_SP_N(ss, i);
     result[i] = tcontseq_at_tstzspan(seq, p1);
   }
   int count = ss->count;
@@ -5295,12 +5298,12 @@ tcontseq_at_tstzspanset1(const TSequence *seq, const SpanSet *ss,
   /* Singleton span set */
   if (ss->count == 1)
   {
-    result[0] = tcontseq_at_tstzspan(seq, spanset_sp_n(ss, 0));
+    result[0] = tcontseq_at_tstzspan(seq, SPANSET_SP_N(ss, 0));
     return 1;
   }
 
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ss->span))
+  if (! over_span_span(&seq->period, &ss->span))
     return 0;
 
   /* Instantaneous sequence */
@@ -5320,7 +5323,7 @@ tcontseq_at_tstzspanset1(const TSequence *seq, const SpanSet *ss,
   int nseqs = 0;
   for (int i = loc; i < ss->count; i++)
   {
-    const Span *s = spanset_sp_n(ss, i);
+    const Span *s = SPANSET_SP_N(ss, i);
     TSequence *seq1 = tcontseq_at_tstzspan(seq, s);
     if (seq1 != NULL)
       result[nseqs++] = seq1;
@@ -5348,7 +5351,7 @@ tcontseq_minus_tstzspanset_iter(const TSequence *seq, const SpanSet *ss,
 {
   /* Singleton span set */
   if (ss->count == 1)
-    return tcontseq_minus_tstzspan_iter(seq, spanset_sp_n(ss, 0), result);
+    return tcontseq_minus_tstzspan_iter(seq, SPANSET_SP_N(ss, 0), result);
 
   /* The sequence can be split at most into (count + 1) sequences
    *    |----------------------|
@@ -5362,7 +5365,7 @@ tcontseq_minus_tstzspanset_iter(const TSequence *seq, const SpanSet *ss,
   int nseqs = 0;
   for (int i = 0; i < ps1->count; i++)
   {
-    const Span *p1 = spanset_sp_n(ps1, i);
+    const Span *p1 = SPANSET_SP_N(ps1, i);
     result[nseqs++] = tcontseq_at_tstzspan(seq, p1);
   }
   pfree(ps1);
@@ -5381,7 +5384,7 @@ tcontseq_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss,
 {
   assert(seq); assert(ss);
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ss->span))
+  if (! over_span_span(&seq->period, &ss->span))
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
 
   /* Instantaneous sequence */
@@ -5431,7 +5434,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   const TSequence **sequences = palloc(sizeof(TSequence *) * 3);
   sequences[0] = seq1;
   int nseqs = 1;
-  if (left_span_span(&seq1->period, &seq2->period))
+  if (lf_span_span(&seq1->period, &seq2->period))
   {
     if (seq1->period.upper_inc && seq2->period.lower_inc)
     {
@@ -5588,7 +5591,7 @@ tcontseq_delete_tstzset(const TSequence *seq, const Set *s)
   /* Bounding box test */
   Span p;
   set_set_span(s, &p);
-  if (! overlaps_span_span(&seq->period, &p))
+  if (! over_span_span(&seq->period, &p))
     return tsequence_copy(seq);
 
   const TInstant *inst;
@@ -5683,7 +5686,7 @@ tcontseq_delete_tstzspan(const TSequence *seq, const Span *s)
 {
   assert(seq); assert(s);
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, s))
+  if (! over_span_span(&seq->period, s))
     return tsequence_copy(seq);
 
   /* Instantaneous sequence */
@@ -5750,7 +5753,7 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
 {
   assert(seq); assert(ss);
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ss->span))
+  if (! over_span_span(&seq->period, &ss->span))
     return tsequence_copy(seq);
 
   /* Instantaneous sequence */
@@ -5764,7 +5767,7 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
 
   /* Singleton span set */
   if (ss->count == 1)
-    return tcontseq_delete_tstzspan(seq, spanset_sp_n(ss, 0));
+    return tcontseq_delete_tstzspan(seq, SPANSET_SP_N(ss, 0));
 
   /* General case */
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);

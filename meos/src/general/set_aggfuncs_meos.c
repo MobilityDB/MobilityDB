@@ -79,8 +79,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "unknown set type for expanding bounding box: %d", basetype);
-    return;
+      "Unknown set type for expanding bounding box: %d", basetype);
   }
   return;
 }
@@ -185,7 +184,7 @@ Set *
 int_union_transfn(Set *state, int32 i)
 {
   /* Ensure validity of the arguments */
-  if (state && ! ensure_set_has_type(state, T_INTSET))
+  if (state && ! ensure_set_isof_type(state, T_INTSET))
     return NULL;
   return value_union_transfn(state, Int32GetDatum(i), T_INT4);
 }
@@ -198,7 +197,7 @@ Set *
 bigint_union_transfn(Set *state, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (state && ! ensure_set_has_type(state, T_BIGINTSET))
+  if (state && ! ensure_set_isof_type(state, T_BIGINTSET))
     return NULL;
   return value_union_transfn(state, Int64GetDatum(i), T_INT8);
 }
@@ -211,7 +210,7 @@ Set *
 float_union_transfn(Set *state, double d)
 {
   /* Ensure validity of the arguments */
-  if (state && ! ensure_set_has_type(state, T_FLOATSET))
+  if (state && ! ensure_set_isof_type(state, T_FLOATSET))
     return NULL;
   return value_union_transfn(state, Float8GetDatum(d), T_FLOAT8);
 }
@@ -224,7 +223,7 @@ Set *
 timestamp_union_transfn(Set *state, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  if (state && ! ensure_set_has_type(state, T_TSTZSET))
+  if (state && ! ensure_set_isof_type(state, T_TSTZSET))
     return NULL;
   return value_union_transfn(state, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -238,7 +237,7 @@ text_union_transfn(Set *state, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) txt) ||
-      (state && ! ensure_set_has_type(state, T_TEXTSET)))
+      (state && ! ensure_set_isof_type(state, T_TEXTSET)))
     return NULL;
   return value_union_transfn(state, PointerGetDatum(txt), T_TEXT);
 }

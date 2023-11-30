@@ -72,7 +72,7 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
    * free space */
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
   for (int i = 0; i < ss->count; i++)
-    spans[i] = *spanset_sp_n(ss, i);
+    spans[i] = *SPANSET_SP_N(ss, i);
   spans[ss->count] = *span;
   int maxcount = ss->maxcount * 2;
 #ifdef DEBUG_EXPAND
@@ -116,9 +116,9 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
   int count = ss1->count + ss2->count;
   Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < ss1->count; i++)
-    spans[i] = *spanset_sp_n(ss1, i);
+    spans[i] = *SPANSET_SP_N(ss1, i);
   for (int i = 0; i < ss2->count; i++)
-    spans[i + ss1->count] = *spanset_sp_n(ss2, i);
+    spans[i + ss1->count] = *SPANSET_SP_N(ss2, i);
   int maxcount = ss1->maxcount * 2;
   while (maxcount < count)
     maxcount *= 2;

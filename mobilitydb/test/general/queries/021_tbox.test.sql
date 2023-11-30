@@ -98,8 +98,6 @@ SELECT tbox(tstzspan '[2000-01-01,2000-01-02]');
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])'::floatspan;
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])'::tstzspan;
 SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::floatspan;
-SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
-SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
 SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::tstzspan;
 
 SELECT 1::tbox;
@@ -113,6 +111,9 @@ SELECT tstzspan '[2000-01-01,2000-01-02]'::tbox;
 SELECT intspanset '{[1,2]}'::tbox;
 SELECT floatspanset '{[1,2]}'::tbox;
 SELECT tstzspanset '{[2000-01-01,2000-01-02]}'::tbox;
+/* Errors */
+SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
+SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
 
 -------------------------------------------------------------------------------
 

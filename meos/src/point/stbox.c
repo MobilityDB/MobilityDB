@@ -340,7 +340,7 @@ geo_timestamptz_to_stbox(const GSERIALIZED *gs, TimestampTz t)
   STBox *result = palloc(sizeof(STBox));
   geo_set_stbox(gs, result);
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, &result->period);
+    T_TIMESTAMPTZ, T_TSTZSPAN, &result->period);
   MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
@@ -354,8 +354,8 @@ STBox *
 geo_tstzspan_to_stbox(const GSERIALIZED *gs, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||  
-      ! ensure_span_has_type(s, T_TSTZSPAN))
+  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
+      ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
 
   if (gserialized_is_empty(gs))
@@ -534,7 +534,7 @@ stbox_to_tstzspan(const STBox *box)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_has_T_stbox(box))
     return NULL;
-  return span_copy(&box->period);
+  return span_cp(&box->period);
 }
 
 /*****************************************************************************
@@ -550,7 +550,7 @@ STBox *
 gbox_to_stbox(const GBOX *box)
 {
   assert(box);
-  
+
   /* Note: zero-fill is required here, just as in heap tuples */
   STBox *result = palloc0(sizeof(STBox));
   bool hasz = (bool) FLAGS_GET_Z(box->flags);
@@ -730,7 +730,7 @@ timestamptz_set_stbox(TimestampTz t, STBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, &box->period);
+    T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_X(box->flags, false);
   MEOS_FLAGS_SET_Z(box->flags, false);
   MEOS_FLAGS_SET_T(box->flags, true);
@@ -779,7 +779,7 @@ STBox *
 tstzset_to_stbox(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
   tstzset_set_stbox(s, result);
@@ -813,7 +813,7 @@ STBox *
 tstzspan_to_stbox(const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
   tstzspan_set_stbox(s, result);
@@ -848,7 +848,7 @@ tstzspanset_to_stbox(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));
@@ -1694,7 +1694,7 @@ before_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_has_T_stbox(box1) || ! ensure_has_T_stbox(box2))
     return false;
-  return left_span_span(&box1->period, &box2->period);
+  return lf_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1710,7 +1710,7 @@ overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_has_T_stbox(box1) || ! ensure_has_T_stbox(box2))
     return false;
-  return overleft_span_span(&box1->period, &box2->period);
+  return ovlf_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1726,7 +1726,7 @@ after_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_has_T_stbox(box1) || ! ensure_has_T_stbox(box2))
     return false;
-  return right_span_span(&box1->period, &box2->period);
+  return ri_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1742,7 +1742,7 @@ overafter_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_has_T_stbox(box1) || ! ensure_has_T_stbox(box2))
     return false;
-  return overright_span_span(&box1->period, &box2->period);
+  return ovri_span_span(&box1->period, &box2->period);
 }
 
 /*****************************************************************************
@@ -1798,7 +1798,7 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
     (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax ||
       box1->ymin > box2->ymax || box2->ymin > box1->ymax)) ||
     (hasz && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
-    (hast && ! overlaps_span_span(&box1->period, &box2->period)))
+    (hast && ! over_span_span(&box1->period, &box2->period)))
     return false;
 
   if (hasx)

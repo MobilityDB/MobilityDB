@@ -887,7 +887,8 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
         {
           Span extend, inter;
           span_set(TimestampTzGetDatum(instants[ninsts - 1]->t),
-            TimestampTzGetDatum(inst->t), true, false, T_TIMESTAMPTZ, &extend);
+            TimestampTzGetDatum(inst->t), true, false, T_TIMESTAMPTZ,
+              T_TSTZSPAN, &extend);
           if (inter_span_span(&timespan, &extend, &inter))
           {
             if (TimestampTzGetDatum(inter.lower) !=
@@ -1114,7 +1115,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
       /* If the intersection is not at an exclusive bound */
       if ((seq->period.lower_inc || t1 > start->t) &&
           (seq->period.upper_inc || t1 < end->t))
-        span_set(t1, t1, true, true, T_TIMESTAMPTZ, &periods[npers++]);
+        span_set(t1, t1, true, true, T_TIMESTAMPTZ, T_TSTZSPAN,
+          &periods[npers++]);
     }
     else
     {
@@ -1133,7 +1135,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
       {
         if ((seq->period.lower_inc || t1 > start->t) &&
             (seq->period.upper_inc || t1 < end->t))
-          span_set(t1, t1, true, true, T_TIMESTAMPTZ, &periods[npers++]);
+          span_set(t1, t1, true, true, T_TIMESTAMPTZ, T_TSTZSPAN,
+            &periods[npers++]);
       }
       else
       {
@@ -1142,7 +1145,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
         bool lower_inc1 = (lower1 == start->t) ? seq->period.lower_inc : true;
         bool upper_inc1 = (upper1 == end->t) ? seq->period.upper_inc : true;
         span_set(lower1, upper1, lower_inc1, upper_inc1, T_TIMESTAMPTZ,
-          &periods[npers++]);
+          T_TSTZSPAN, &periods[npers++]);
       }
     }
   }
@@ -1161,7 +1164,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
   }
 
   int newcount;
-  result = spanarr_normalize(periods, npers, SORT, &newcount);
+  result = spanarr_normalize(periods, npers, ORDERED_NO, &newcount);
   pfree(periods);
   *count = newcount;
   return result;
@@ -1341,8 +1344,8 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
       tsequenceset_set_bbox(at_xyt, &box1);
       Span zspan1;
       span_set(Float8GetDatum(box1.zmin), Float8GetDatum(box1.zmax), true, true,
-        T_FLOAT8, &zspan1);
-      if (overlaps_span_span(&zspan1, zspan))
+        T_FLOAT8, T_FLOATSPAN, &zspan1);
+      if (over_span_span(&zspan1, zspan))
       {
         /* Get the Z coordinate values as a temporal float */
         Temporal *tfloat_z = tpoint_get_coord((Temporal *) at_xyt, 2);
@@ -1498,7 +1501,7 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   assert(temp); assert(gs);
   assert(tgeo_type(temp->temptype));
   if (gserialized_is_empty(gs))
-    return atfunc ? NULL : temporal_copy(temp);
+    return atfunc ? NULL : temporal_cp(temp);
   /* Ensure validity of the arguments */
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
@@ -1523,7 +1526,7 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   }
   bool overlaps = overlaps_stbox_stbox(&box1, &box2);
   if (! overlaps)
-    return atfunc ? NULL : temporal_copy(temp);
+    return atfunc ? NULL : temporal_cp(temp);
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -1960,7 +1963,8 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
         {
           Span extend, inter;
           span_set(TimestampTzGetDatum(instants[ninsts - 1]->t),
-            TimestampTzGetDatum(inst->t), true, false, T_TIMESTAMPTZ, &extend);
+            TimestampTzGetDatum(inst->t), true, false, T_TIMESTAMPTZ,
+            T_TSTZSPAN, &extend);
           if (inter_span_span(&timespan, &extend, &inter))
           {
             if (TimestampTzGetDatum(inter.lower) !=
@@ -2403,7 +2407,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   temporal_set_bbox(temp, &box1);
   bool overlaps = overlaps_stbox_stbox(&box1, box);
   if (! overlaps)
-    return atfunc ? NULL : temporal_copy(temp);
+    return atfunc ? NULL : temporal_cp(temp);
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
