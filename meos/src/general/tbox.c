@@ -40,6 +40,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/meos_catalog.h"
 #include "general/pg_types.h"
 #include "general/set.h"
 #include "general/spanset.h"
@@ -1001,14 +1002,34 @@ tbox_expand(const TBox *box1, TBox *box2)
 
 /**
  * @ingroup libmeos_box_transf
+ * @brief Return a temporal box expanded in the value dimension by an integer.
+ * @sqlfunc @p expandValue()
+ */
+TBox *
+tbox_expand_int(const TBox *box, const int i)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box) ||
+      ! ensure_span_isof_type(&box->span, T_INTSPAN))
+    return NULL;
+
+  TBox *result = tbox_copy(box);
+  result->span.lower = Int32GetDatum(DatumGetInt32(result->span.lower) - i);
+  result->span.upper = Int32GetDatum(DatumGetInt32(result->span.upper) + i);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_transf
  * @brief Return a temporal box expanded in the value dimension by a double.
  * @sqlfunc @p expandValue()
  */
 TBox *
-tbox_expand_value(const TBox *box, const double d)
+tbox_expand_float(const TBox *box, const double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box))
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box) ||
+      ! ensure_span_isof_type(&box->span, T_FLOATSPAN))
     return NULL;
 
   TBox *result = tbox_copy(box);
