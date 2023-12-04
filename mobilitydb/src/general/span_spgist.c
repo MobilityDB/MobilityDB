@@ -181,22 +181,22 @@ spannode_quadtree_next(const SpanNode *nodebox, const Span *centroid,
   if (quadrant & 0x2)
   {
     next_nodespan->left.lower = centroid->lower;
-    next_nodespan->left.lower_inc = centroid->lower_inc;
+    next_nodespan->left.lower_inc = true;
   }
   else
   {
     next_nodespan->left.upper = centroid->lower;
-    next_nodespan->left.upper_inc = centroid->lower_inc;
+    next_nodespan->left.upper_inc = true;
   }
   if (quadrant & 0x1)
   {
     next_nodespan->right.lower = centroid->upper;
-    next_nodespan->right.lower_inc = centroid->upper_inc;
+    next_nodespan->right.lower_inc = true;
   }
   else
   {
     next_nodespan->right.upper = centroid->upper;
-    next_nodespan->right.upper_inc = centroid->upper_inc;
+    next_nodespan->right.upper_inc = true;
   }
   return;
 }
@@ -276,7 +276,7 @@ get_quadrant2D(const Span *centroid, const Span *query)
  * @brief Can any span from nodebox overlap with the query?
  */
 static bool
-overlap2D_quad(const SpanNode *nodebox, const Span *query)
+overlap2D(const SpanNode *nodebox, const Span *query)
 {
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
@@ -285,54 +285,14 @@ overlap2D_quad(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * @brief Can any span from nodebox overlap with the query?
- */
-static bool
-overlap2D_kd(const SpanNode *nodebox, const Span *query, int level)
-{
-  Span s;
-  if (level % 2)
-  {
-    span_set(nodebox->left.lower, nodebox->right.lower, nodebox->left.lower_inc,
-      nodebox->right.lower_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  }
-  else
-  {
-    span_set(nodebox->left.upper, nodebox->right.upper, nodebox->left.upper_inc,
-      nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  }
-  return over_span_span(&s, query);
-}
-
-/**
  * @brief Can any span from nodebox contain the query?
  */
 static bool
-contain2D_quad(const SpanNode *nodebox, const Span *query)
+contain2D(const SpanNode *nodebox, const Span *query)
 {
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
     nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  return cont_span_span(&s, query);
-}
-
-/**
- * @brief Can any span from nodebox contain the query?
- */
-static bool
-contain2D_kd(const SpanNode *nodebox, const Span *query, int level)
-{
-  Span s;
-  if (level % 2)
-  {
-    span_set(nodebox->left.lower, nodebox->right.lower, nodebox->left.lower_inc,
-      nodebox->right.lower_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  }
-  else
-  {
-    span_set(nodebox->left.upper, nodebox->right.upper, nodebox->left.upper_inc,
-      nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  }
   return cont_span_span(&s, query);
 }
 
@@ -893,6 +853,7 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
   out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+  out->levelAdds = palloc(sizeof(int) * in->nNodes);
   out->traversalValues = palloc(sizeof(void *) * in->nNodes);
   if (in->norderbys > 0)
     out->distances = palloc(sizeof(double *) * in->nNodes);
@@ -911,7 +872,7 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
     if (idxtype == SPGIST_QUADTREE)
       spannode_quadtree_next(nodebox, centroid, node, &next_nodespan);
     else
-      spannode_kdtree_next(nodebox, centroid, node, (in->level) + 1,
+      spannode_kdtree_next(nodebox, centroid, node, in->level,
         &next_nodespan);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
@@ -922,16 +883,12 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
         case RTOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
-          flag = (idxtype == SPGIST_QUADTREE) ?
-            overlap2D_quad(&next_nodespan, &queries[i]) :
-            overlap2D_kd(&next_nodespan, &queries[i], in->level);
+          flag = overlap2D(&next_nodespan, &queries[i]);
           break;
         case RTContainsStrategyNumber:
         case RTEqualStrategyNumber:
         case RTSameStrategyNumber:
-          flag = (idxtype == SPGIST_QUADTREE) ?
-            contain2D_quad(&next_nodespan, &queries[i]) :
-            contain2D_kd(&next_nodespan, &queries[i], in->level);
+          flag = contain2D(&next_nodespan, &queries[i]);
           break;
         case RTLeftStrategyNumber:
           flag = ! overRight2D(&next_nodespan, &queries[i]);
@@ -970,6 +927,8 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
       /* Pass traversalValue and node */
       out->traversalValues[out->nNodes] = spannode_copy(&next_nodespan);
       out->nodeNumbers[out->nNodes] = node;
+      /* Increase level */
+      out->levelAdds[out->nNodes] = 1;
       /* Pass distances */
       if (in->norderbys > 0)
       {
