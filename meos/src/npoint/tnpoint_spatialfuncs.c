@@ -785,7 +785,7 @@ tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
 
   if (gserialized_is_empty(gs))
   {
-    Temporal *result = atfunc ? NULL : temporal_copy(temp);
+    Temporal *result = atfunc ? NULL : temporal_cp(temp);
     if (atfunc)
       return NULL;
     return result;

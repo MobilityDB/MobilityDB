@@ -205,18 +205,6 @@ SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::floatspan;
  [1, 2]
 (1 row)
 
-SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
- tstzspan 
-----------
- 
-(1 row)
-
-SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
- floatspan 
------------
- 
-(1 row)
-
 SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::tstzspan;
                            tstzspan                           
 --------------------------------------------------------------
@@ -289,6 +277,11 @@ SELECT tstzspanset '{[2000-01-01,2000-01-02]}'::tbox;
  TBOX T([Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
+/* Errors */
+SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
+ERROR:  The box must have value dimension
+SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
+ERROR:  The box must have time dimension
 SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan))::numeric, 6) FROM tbl_tboxfloat;
   round   
 ----------

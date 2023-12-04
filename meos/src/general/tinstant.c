@@ -445,9 +445,11 @@ tnumberinst_valuespans(const TInstant *inst)
 {
   assert(inst);
   Datum value = tinstant_value(inst);
+  meosType basetype = temptype_basetype(inst->temptype);
+  meosType spantype = basetype_spantype(basetype);
   Span s;
-  span_set(value, value, true, true, temptype_basetype(inst->temptype), &s);
-  return span_to_spanset(&s);
+  span_set(value, value, true, true, basetype, spantype, &s);
+  return span_spanset(&s);
 }
 
 /**
@@ -474,7 +476,7 @@ tinstant_set_tstzspan(const TInstant *inst, Span *s)
 {
   assert(inst); assert(s);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
-    true, true, T_TIMESTAMPTZ, s);
+    true, true, T_TIMESTAMPTZ, T_TSTZSPAN, s);
   return;
 }
 
@@ -790,7 +792,7 @@ tnumberinst_restrict_spanset_test(const TInstant *inst, const SpanSet *ss,
   meosType basetype = temptype_basetype(inst->temptype);
   for (int i = 0; i < ss->count; i++)
   {
-    const Span *s = spanset_sp_n(ss, i);
+    const Span *s = SPANSET_SP_N(ss, i);
     if (contains_span_value(s, d, basetype))
       return atfunc ? true : false;
   }
@@ -886,7 +888,7 @@ tinstant_restrict_tstzspanset_test(const TInstant *inst, const SpanSet *ss,
   bool atfunc)
 {
   for (int i = 0; i < ss->count; i++)
-    if (contains_span_timestamptz(spanset_sp_n(ss, i), inst->t))
+    if (contains_span_timestamptz(SPANSET_SP_N(ss, i), inst->t))
       return atfunc ? true : false;
   return atfunc ? false : true;
 }

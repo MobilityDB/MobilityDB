@@ -78,7 +78,7 @@ SELECT spanset(ARRAY [tstzspan '[2000-01-01, 2000-01-02]', '[2000-01-03,2000-01-
 
 /* Errors */
 SELECT spanset(ARRAY [tstzspan '[2000-01-01, 2000-01-03]', '[2000-01-02,2000-01-04]']);
-ERROR:  Invalid value for span set
+ERROR:  The spans composing a span set must be increasing: [Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST], [Sun Jan 02 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST]
 SELECT spanset('{}'::tstzspan[]);
 ERROR:  The input array cannot be empty
 SELECT spanset(date '2000-01-01');

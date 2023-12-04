@@ -89,7 +89,7 @@ textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_temporal_has_type(temp1, T_TTEXT) ||
+      ! ensure_temporal_isof_type(temp1, T_TTEXT) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
 
@@ -109,7 +109,7 @@ ttext_upper(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TTEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
 
   Temporal *result = textfunc_ttext(temp, &datum_upper);
@@ -126,7 +126,7 @@ ttext_lower(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TTEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
 
   Temporal *result = textfunc_ttext(temp, &datum_lower);

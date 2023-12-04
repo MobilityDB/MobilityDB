@@ -274,7 +274,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   {
     for (int i = 0; i < ps->count; i++)
     {
-      const Span *p = spanset_sp_n(ps, i);
+      const Span *p = SPANSET_SP_N(ps, i);
       result[i + npers] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, p,
         STEP);
     }

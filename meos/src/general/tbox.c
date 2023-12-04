@@ -247,9 +247,10 @@ TBox *
 number_timestamptz_to_tbox(Datum d, meosType basetype, TimestampTz t)
 {
   Span s, p;
-  span_set(d, d, true, true, basetype, &s);
+  meosType spantype = basetype_spantype(basetype);
+  span_set(d, d, true, true, basetype, spantype, &s);
   Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
   return tbox_make(&s, &p);
 }
 
@@ -286,8 +287,9 @@ TBox *
 number_tstzspan_to_tbox(Datum d, meosType basetype, const Span *s)
 {
   assert(s);
+  meosType spantype = basetype_spantype(basetype);
   Span s1;
-  span_set(d, d, true, true, basetype, &s1);
+  span_set(d, d, true, true, basetype, spantype, &s1);
   return tbox_make(&s1, s);
 }
 
@@ -301,7 +303,7 @@ TBox *
 int_tstzspan_to_tbox(int i, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
   return number_tstzspan_to_tbox(Int32GetDatum(i), T_INT4, s);
 }
@@ -315,7 +317,7 @@ TBox *
 float_tstzspan_to_tbox(double d, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN))
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
   return number_tstzspan_to_tbox(Float8GetDatum(d), T_FLOAT8, s);
 }
@@ -335,7 +337,7 @@ numspan_timestamptz_to_tbox(const Span *s, TimestampTz t)
 
   Datum dt = TimestampTzGetDatum(t);
   Span p;
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
   return tbox_make(s, &p);
 }
 
@@ -350,7 +352,7 @@ numspan_tstzspan_to_tbox(const Span *s, const Span *p)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) p) ||
       ! ensure_numspan_type(s->spantype) ||
-      ! ensure_span_has_type(p, T_TSTZSPAN))
+      ! ensure_span_isof_type(p, T_TSTZSPAN))
     return NULL;
   return tbox_make(s, p);
 }
@@ -367,10 +369,10 @@ numspan_tstzspan_to_tbox(const Span *s, const Span *p)
 void
 number_set_tbox(Datum value, meosType basetype, TBox *box)
 {
-  assert(box);
-  assert(tnumber_basetype(basetype));
+  assert(box); assert(tnumber_basetype(basetype));
   Span s;
-  span_set(value, value, true, true, basetype, &s);
+  meosType spantype = basetype_spantype(basetype);
+  span_set(value, value, true, true, basetype, spantype, &s);
   tbox_set(&s, NULL, box);
   return;
 }
@@ -437,7 +439,7 @@ timestamptz_set_tbox(TimestampTz t, TBox *box)
   assert(box);
   Span p;
   Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &p);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
   tbox_set(NULL, &p, box);
   return;
 }
@@ -517,7 +519,7 @@ TBox *
 tstzset_to_tbox(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_has_type(s, T_TSTZSET))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
@@ -582,7 +584,7 @@ tstzspan_to_tbox(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||
-      ! ensure_span_has_type(s, T_TSTZSPAN))
+      ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
@@ -645,7 +647,7 @@ tstzspanset_to_tbox(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
@@ -665,13 +667,11 @@ Span *
 tbox_to_floatspan(const TBox *box)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box))
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box))
     return NULL;
 
-  if (! MEOS_FLAGS_GET_X(box->flags))
-    return NULL;
   if (box->span.basetype == T_FLOAT8)
-    return span_copy(&box->span);
+    return span_cp(&box->span);
   /* Convert the integer span to a float span */
   Span *result = palloc(sizeof(Span));
   intspan_set_floatspan(&box->span, result);
@@ -687,12 +687,9 @@ Span *
 tbox_to_tstzspan(const TBox *box)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box))
+  if (! ensure_not_null((void *) box) || ! ensure_has_T_tbox(box))
     return NULL;
-
-  if (! MEOS_FLAGS_GET_T(box->flags))
-    return NULL;
-  return span_copy(&box->period);
+  return span_cp(&box->period);
 }
 
 /*****************************************************************************
@@ -935,7 +932,7 @@ tbox_shift_scale_int(const TBox *box, int shift, int width,
   bool hasshift, bool haswidth)
 {
   if (! ensure_not_null((void *) box) ||
-      ! ensure_same_span_basetype(&box->span, T_FLOAT8))
+      ! ensure_span_isof_basetype(&box->span, T_FLOAT8))
     return NULL;
 
   return tbox_shift_scale_value(box, Int32GetDatum(shift),
@@ -952,7 +949,7 @@ tbox_shift_scale_float(const TBox *box, double shift, double width,
   bool hasshift, bool haswidth)
 {
   if (! ensure_not_null((void *) box) ||
-      ! ensure_same_span_basetype(&box->span, T_FLOAT8))
+      ! ensure_span_isof_basetype(&box->span, T_FLOAT8))
     return NULL;
 
   return tbox_shift_scale_value(box, Float8GetDatum(shift),
@@ -1116,9 +1113,9 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
       ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
     return false;
 
-  if (hasx && ! contains_span_span(&box1->span, &box2->span))
+  if (hasx && ! cont_span_span(&box1->span, &box2->span))
     return false;
-  if (hast && ! contains_span_span(&box1->period, &box2->period))
+  if (hast && ! cont_span_span(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -1148,9 +1145,9 @@ overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
       ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
     return false;
 
-  if (hasx && ! overlaps_span_span(&box1->span, &box2->span))
+  if (hasx && ! over_span_span(&box1->span, &box2->span))
     return false;
-  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
+  if (hast && ! over_span_span(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -1193,9 +1190,9 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
   /* Boxes are adjacent if they are adjacent in at least one dimension */
   bool adjx = false, adjt = false;
   if (hasx)
-    adjx = adjacent_span_span(&box1->span, &box2->span);
+    adjx = adj_span_span(&box1->span, &box2->span);
   if (hast)
-    adjt = adjacent_span_span(&box1->period, &box2->period);
+    adjt = adj_span_span(&box1->period, &box2->period);
   return (adjx || adjt);
 }
 
@@ -1217,7 +1214,7 @@ left_tbox_tbox(const TBox *box1, const TBox *box2)
       ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
       ! ensure_same_span_type(&box1->span, &box2->span))
     return false;
-  return left_span_span(&box1->span, &box2->span);
+  return lf_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -1234,7 +1231,7 @@ overleft_tbox_tbox(const TBox *box1, const TBox *box2)
       ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
       ! ensure_same_span_type(&box1->span, &box2->span))
     return false;
-  return overleft_span_span(&box1->span, &box2->span);
+  return ovlf_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -1251,7 +1248,7 @@ right_tbox_tbox(const TBox *box1, const TBox *box2)
       ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
       ! ensure_same_span_type(&box1->span, &box2->span))
     return false;
-  return right_span_span(&box1->span, &box2->span);
+  return ri_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -1269,7 +1266,7 @@ overright_tbox_tbox(const TBox *box1, const TBox *box2)
       ! ensure_same_span_type(&box1->span, &box2->span))
     return false;
 
-  return overright_span_span(&box1->span, &box2->span);
+  return ovri_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -1285,7 +1282,7 @@ before_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_has_T_tbox(box1) || ! ensure_has_T_tbox(box2))
     return false;
-  return left_span_span(&box1->period, &box2->period);
+  return lf_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1301,7 +1298,7 @@ overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_has_T_tbox(box1) || ! ensure_has_T_tbox(box2))
     return false;
-  return overleft_span_span(&box1->period, &box2->period);
+  return ovlf_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1317,7 +1314,7 @@ after_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_has_T_tbox(box1) || ! ensure_has_T_tbox(box2))
     return false;
-  return right_span_span(&box1->period, &box2->period);
+  return ri_span_span(&box1->period, &box2->period);
 }
 
 /**
@@ -1333,7 +1330,7 @@ overafter_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_has_T_tbox(box1) || ! ensure_has_T_tbox(box2))
     return false;
-  return overright_span_span(&box1->period, &box2->period);
+  return ovri_span_span(&box1->period, &box2->period);
 }
 
 /*****************************************************************************
@@ -1390,8 +1387,8 @@ inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)
   /* If there is no common dimension */
   if ((! hasx && ! hast) ||
     /* If they do no intersect in one common dimension */
-    (hasx && ! overlaps_span_span(&box1->span, &box2->span)) ||
-    (hast && ! overlaps_span_span(&box1->period, &box2->period)))
+    (hasx && ! over_span_span(&box1->span, &box2->span)) ||
+    (hast && ! over_span_span(&box1->period, &box2->period)))
     return false;
 
   Span period, span;

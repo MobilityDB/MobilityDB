@@ -110,28 +110,28 @@ tnumber_const_to_span_tstzspan(const Node *other, Span **s, Span **p)
   if (numspan_type(type))
   {
     Span *span = DatumGetSpanP(((Const *) other)->constvalue);
-    *s = span_copy(span);
+    *s = span_cp(span);
   }
   else if (type == T_TSTZSPAN)
   {
     Span *period = DatumGetSpanP(((Const *) other)->constvalue);
-    *p = span_copy(period);
+    *p = span_cp(period);
   }
   else if (type == T_TBOX)
   {
     const TBox *box = DatumGetTboxP(((Const *) other)->constvalue);
     if (MEOS_FLAGS_GET_X(box->flags))
-      *s = span_copy(&box->span);
+      *s = span_cp(&box->span);
     if (MEOS_FLAGS_GET_T(box->flags))
-      *p = span_copy(&box->period);
+      *p = span_cp(&box->period);
   }
   else if (tnumber_type(type))
   {
     const Temporal *temp = DatumGetTemporalP(((Const *) other)->constvalue);
     TBox box;
     temporal_set_bbox(temp, &box);
-    *s = span_copy(&box.span);
-    *p = span_copy(&box.period);
+    *s = span_cp(&box.span);
+    *p = span_cp(&box.period);
   }
   else
   {

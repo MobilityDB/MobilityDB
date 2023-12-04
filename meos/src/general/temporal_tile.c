@@ -113,16 +113,17 @@ tstzspan_no_buckets(const Span *s, const Interval *duration, TimestampTz torigin
  * @brief Generate an integer or float span bucket from a bucket list
  * @param[in] lower Start value of the bucket
  * @param[in] size Size of the buckets
- * @param[in] type Type of the arguments
+ * @param[in] basetype Type of the arguments
  * @param[out] span Output span
  */
 void
-span_bucket_set(Datum lower, Datum size, meosType type, Span *span)
+span_bucket_set(Datum lower, Datum size, meosType basetype, Span *span)
 {
-  Datum upper = (type == T_TIMESTAMPTZ) ?
+  Datum upper = (basetype == T_TIMESTAMPTZ) ?
     TimestampTzGetDatum(DatumGetTimestampTz(lower) + DatumGetInt64(size)) :
-    datum_add(lower, size, type);
-  span_set(lower, upper, true, false, type, span);
+    datum_add(lower, size, basetype);
+  meosType spantype = basetype_spantype(basetype);
+  span_set(lower, upper, true, false, basetype, spantype, span);
   return;
 }
 
@@ -437,7 +438,7 @@ Span *
 intspan_bucket_list(const Span *s, int size, int origin, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_INTSPAN) ||
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN) ||
       ! ensure_not_null((void *) count) ||
       ! ensure_positive(size))
     return NULL;
@@ -465,7 +466,7 @@ Span *
 floatspan_bucket_list(const Span *s, double size, double origin, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_FLOATSPAN) ||
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN) ||
       ! ensure_not_null((void *) count) ||
       ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8))
     return NULL;
@@ -494,7 +495,7 @@ tstzspan_bucket_list(const Span *s, const Interval *duration, TimestampTz origin
   int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_has_type(s, T_TSTZSPAN) ||
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN) ||
       ! ensure_not_null((void *) count) ||
       ! ensure_valid_duration(duration))
     return NULL;
@@ -550,13 +551,15 @@ tbox_tile_state_make(const TBox *box, Datum vsize, const Interval *duration,
   if (size)
   {
     span_no_buckets(&box->span, vsize, vorigin, &start_bucket, &end_bucket);
-    span_set(start_bucket, end_bucket, true, false, box->span.basetype, &span);
+    span_set(start_bucket, end_bucket, true, false, box->span.basetype,
+      box->span.spantype, &span);
   }
   if (tunits)
   {
     tstzspan_no_buckets(&box->period, duration, torigin, &start_bucket,
       &end_bucket);
-    span_set(start_bucket, end_bucket, true, false, T_TIMESTAMPTZ, &period);
+    span_set(start_bucket, end_bucket, true, false, T_TIMESTAMPTZ, T_TSTZSPAN,
+      &period);
   }
   tbox_set(size ? &span : NULL, tunits ? &period : NULL, &state->box);
   state->value = state->box.span.lower;
@@ -587,10 +590,11 @@ tbox_tile_get(Datum value, TimestampTz t, Datum vsize, int64 tunits,
   memset(&period, 0, sizeof(Span));
   double size = (box->span.basetype == T_INT4) ? /** xx **/
     (double) DatumGetInt32(vsize) : DatumGetFloat8(vsize);
+  meosType spantype = basetype_spantype(basetype);
   if (size)
-    span_set(xmin, xmax, true, false, basetype, &span);
+    span_set(xmin, xmax, true, false, basetype, spantype, &span);
   if (tunits)
-    span_set(tmin, tmax, true, false, T_TIMESTAMPTZ, &period);
+    span_set(tmin, tmax, true, false, T_TIMESTAMPTZ, T_TSTZSPAN, &period);
   tbox_set(size ? &span : NULL, tunits ? &period : NULL, box);
   return;
 }
@@ -1304,6 +1308,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
 {
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   meosType basetype = temptype_basetype(seq->temptype);
+  meosType spantype = basetype_spantype(basetype);
   Datum value1, bucket_value1;
   int bucket_no1, seq_no;
   Span segspan;
@@ -1371,7 +1376,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
 
     /* Split the segment into buckets */
     span_set(min_value, max_value, lower_inc1, (cmp != 0) ? upper_inc1 : true,
-      basetype, &segspan);
+      basetype, spantype, &segspan);
     TInstant *bounds[2];
     bounds[first] = (cmp <= 0) ? (TInstant *) inst1 : (TInstant *) inst2;
     Datum bucket_lower = (cmp <= 0) ? bucket_value1 : bucket_value2;
@@ -1397,7 +1402,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
       if (j == first_bucket || j == last_bucket)
       {
         Span bucketspan;
-        span_set(bucket_lower, bucket_upper, true, false, basetype,
+        span_set(bucket_lower, bucket_upper, true, false, basetype, spantype,
           &bucketspan);
         Span inter;
         bool found = inter_span_span(&segspan, &bucketspan, &inter);
@@ -1620,6 +1625,7 @@ tnumber_value_time_split(Temporal *temp, Datum size, Interval *duration,
   TimestampTz **time_buckets, int *count)
 {
   meosType basetype = temptype_basetype(temp->temptype);
+  meosType spantype = basetype_spantype(basetype);
   ensure_positive_datum(size, basetype);
   ensure_valid_duration(duration);
 
@@ -1653,7 +1659,7 @@ tnumber_value_time_split(Temporal *temp, Datum size, Interval *duration,
   {
     Datum upper_value = datum_add(lower_value, size, basetype);
     Span s;
-    span_set(lower_value, upper_value, true, false, basetype, &s);
+    span_set(lower_value, upper_value, true, false, basetype, spantype, &s);
     Temporal *atspan = tnumber_restrict_span(temp, &s, REST_AT);
     if (atspan != NULL)
     {
@@ -1699,7 +1705,7 @@ tint_value_split(Temporal *temp, int size, int origin, int **buckets,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_has_type(temp, T_TINT) || ! ensure_positive(size))
+      ! ensure_temporal_isof_type(temp, T_TINT) || ! ensure_positive(size))
     return NULL;
 
   Datum *datum_buckets;
@@ -1731,7 +1737,7 @@ tfloat_value_split(Temporal *temp, double size, double origin,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_has_type(temp, T_TFLOAT) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT) ||
       ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8))
     return NULL;
 
@@ -1769,7 +1775,7 @@ tint_value_time_split(Temporal *temp, int size, Interval *duration,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_has_type(temp, T_TINT) || ! ensure_positive(size) ||
+      ! ensure_temporal_isof_type(temp, T_TINT) || ! ensure_positive(size) ||
       ! ensure_valid_duration(duration))
     return NULL;
   Datum *datum_buckets;
@@ -1808,7 +1814,7 @@ tfloat_value_time_split(Temporal *temp, double size, Interval *duration,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_has_type(temp, T_TFLOAT) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT) ||
       ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8) ||
       ! ensure_valid_duration(duration))
     return NULL;

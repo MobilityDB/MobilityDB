@@ -176,12 +176,13 @@
  * Functions for set and span types
  *****************************************************************************/
 
-/* Macros for speeding up access to component values of sets*/
+/* Macros for speeding up access to component values of sets and span sets */
 
 #ifdef DEBUG_BUILD
 extern void *SET_BBOX_PTR(const Set *s);
 extern size_t *SET_OFFSETS_PTR(const Set *s);
 extern Datum SET_VAL_N(const Set *s, int index);
+extern const Span *SPANSET_SP_N(const SpanSet *ss, int index);
 #else
 /**
  * @brief Return a pointer to the bounding box of a set (if any)
@@ -204,6 +205,14 @@ extern Datum SET_VAL_N(const Set *s, int index);
   PointerGetDatum( ((char *) (s)) + DOUBLE_PAD(sizeof(Set)) + \
     DOUBLE_PAD((s)->bboxsize) + (sizeof(size_t) * (s)->maxcount) + \
     (SET_OFFSETS_PTR(s))[index] ) ) )
+    
+/**
+ * @brief Return the n-th span of a span set.
+ * @pre The argument @p index is less than the number of spans in the span set
+ * @note This is the macro equivalent to #spanset_span_n.
+ * This function does not verify that the index is is in the correct bounds
+ */
+#define SPANSET_SP_N(ss, index) (const Span *) &((ss)->elems[(index)])
 #endif
 
 /*****************************************************************************/
@@ -233,9 +242,11 @@ extern Set *set_make(const Datum *values, int count, meosType basetype, bool ord
 extern Set *set_make_exp(const Datum *values, int count, int maxcount, meosType basetype, bool ordered);
 extern Set *set_make_free(Datum *values, int count, meosType basetype, bool ordered);
 extern char *set_out(const Set *s, int maxdd);
+extern Span *span_cp(const Span *s);
 extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype);
 extern char *span_out(const Span *s, int maxdd);
-extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype, Span *s);
+extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype, meosType spantype, Span *s);
+extern SpanSet *spanset_cp(const SpanSet *ss);
 extern SpanSet *spanset_compact(SpanSet *ss);
 extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool ordered);
 extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize);
@@ -245,6 +256,7 @@ extern char *spanset_out(const SpanSet *ss, int maxdd);
 
 /* Conversion functions for set and span types */
 
+extern SpanSet *span_spanset(const Span *s);
 extern Set *value_to_set(Datum d, meosType basetype);
 extern Span *value_to_span(Datum d, meosType basetype);
 extern SpanSet *value_to_spanset(Datum d, meosType basetype);
@@ -296,8 +308,10 @@ extern Set *value_union_transfn(Set *state, Datum d, meosType basetype);
 
 /* Topological functions for set and span types */
 
+extern bool adj_span_span(const Span *s1, const Span *s2);
 extern bool adjacent_span_value(const Span *s, Datum d, meosType basetype);
 extern bool adjacent_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
+extern bool cont_span_span(const Span *s1, const Span *s2);
 extern bool contains_span_value(const Span *s, Datum d, meosType basetype);
 extern bool contains_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
 extern bool contains_set_value(const Set *s, Datum d, meosType basetype);
@@ -306,6 +320,8 @@ extern bool contained_value_span(Datum d, meosType basetype, const Span *s);
 extern bool contained_value_set(Datum d, meosType basetype, const Set *s);
 extern bool contained_set_set(const Set *s1, const Set *s2);
 extern bool contained_value_spanset(Datum d, meosType basetype, const SpanSet *ss);
+extern bool over_span_span(const Span *s1, const Span *s2);
+extern bool over_adj_span_span(const Span *s1, const Span *s2);
 extern bool overlaps_value_span(Datum d, meosType basetype, const Span *s);
 extern bool overlaps_value_spanset(Datum d, meosType basetype, const SpanSet *ss);
 extern bool overlaps_span_value(const Span *s, Datum d, meosType basetype);
@@ -316,6 +332,7 @@ extern bool overlaps_set_set(const Set *s1, const Set *s2);
 
 /* Position functions for set and span types */
 
+extern bool left_notadj_span_span(const Span *s1, const Span *s2);
 extern bool left_set_set(const Set *s1, const Set *s2);
 extern bool left_set_value(const Set *s, Datum d, meosType basetype);
 extern bool left_span_value(const Span *s, Datum d, meosType basetype);
@@ -323,6 +340,8 @@ extern bool left_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
 extern bool left_value_set(Datum d, meosType basetype, const Set *s);
 extern bool left_value_span(Datum d, meosType basetype, const Span *s);
 extern bool left_value_spanset(Datum d, meosType basetype, const SpanSet *ss);
+extern bool lf_span_span(const Span *s1, const Span *s2);
+extern bool ri_span_span(const Span *s1, const Span *s2);
 extern bool right_value_set(Datum d, meosType basetype, const Set *s);
 extern bool right_set_value(const Set *s, Datum d, meosType basetype);
 extern bool right_set_set(const Set *s1, const Set *s2);
@@ -344,6 +363,8 @@ extern bool overright_value_span(Datum d, meosType basetype, const Span *s);
 extern bool overright_value_spanset(Datum d, meosType basetype, const SpanSet *ss);
 extern bool overright_span_value(const Span *s, Datum d, meosType basetype);
 extern bool overright_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
+extern bool ovlf_span_span(const Span *s1, const Span *s2);
+extern bool ovri_span_span(const Span *s1, const Span *s2);
 
 /*****************************************************************************/
 
@@ -367,6 +388,7 @@ extern SpanSet *union_spanset_value(const SpanSet *ss, Datum d, meosType basetyp
 
 /* Distance functions for set and span types */
 
+extern double dist_span_span(const Span *s1, const Span *s2);
 extern double distance_value_value(Datum l, Datum r, meosType basetype);
 extern double distance_span_value(const Span *s, Datum d, meosType basetype);
 extern double distance_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
@@ -554,6 +576,7 @@ extern TSequenceSet *ttextseqset_in(const char *str);
 
 /* Constructor functions for temporal types */
 
+extern Temporal *temporal_cp(const Temporal *temp);
 extern Temporal *temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, meosType temptype, TimestampTz t);
@@ -580,6 +603,7 @@ extern TSequenceSet *tsequenceset_from_base_tstzspanset(Datum value, meosType te
 
 extern void temporal_set_tstzspan(const Temporal *temp, Span *s);
 extern void tinstant_set_tstzspan(const TInstant *inst, Span *s);
+extern Span *tnumber_span(const Temporal *temp);
 extern void tsequence_set_tstzspan(const TSequence *seq, Span *s);
 extern void tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *s);
 

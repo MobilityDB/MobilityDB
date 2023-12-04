@@ -97,7 +97,7 @@ datum_cmp(Datum l, Datum r, meosType type)
 #if 0 /* not used */
     case T_DOUBLE2:
       return double2_cmp(DatumGetDouble2P(l), DatumGetDouble2P(r));
-    case type == T_DOUBLE3:
+    case T_DOUBLE3:
       return double3_cmp(DatumGetDouble3P(l), DatumGetDouble3P(r));
     case T_DOUBLE4:
       return double4_cmp(DatumGetDouble4P(l), DatumGetDouble4P(r));
@@ -389,7 +389,7 @@ datum_hash(Datum d, meosType type)
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "unknown hash function for base type: %d", type);
+        "Unknown hash function for base type: %d", type);
       return INT_MAX;
   }
 }
@@ -429,7 +429,7 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "unknown extended hash function for base type: %d", type);
+        "Unknown extended hash function for base type: %d", type);
       return INT_MAX;
   }
 }
@@ -473,7 +473,7 @@ datum_double(Datum d, meosType type)
       return DatumGetFloat8(d);
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "unknown conversion to double function for base type: %d", type);
+        "Unknown conversion to double function for base type: %d", type);
       return DBL_MAX;
   }
 }
@@ -495,8 +495,8 @@ double_datum(double d, meosType type)
       return Float8GetDatum(d);
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "unknown conversion to Datum function for base type: %d", type);
-      return 0;
+        "Unknown conversion to Datum function for base type: %d", type);
+      return (Datum) 0;
   }
 }
 

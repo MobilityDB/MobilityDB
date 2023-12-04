@@ -383,7 +383,7 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double xsize,
   if (hast)
   {
     span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t + tunits), true,
-      false, T_TIMESTAMPTZ, &p);
+      false, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
   }
   stbox_set(true, hasz, false, srid, xmin, xmax, ymin, ymax, zmin, zmax,
     hast ? &p : NULL, result);

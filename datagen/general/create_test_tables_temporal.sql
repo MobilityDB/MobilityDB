@@ -336,7 +336,7 @@ CREATE TABLE tbl_datespanset AS
 /* Add perc NULL values */
 SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_datespanset('2001-01-01', '2001-12-31', 10, 5, 10) AS t
+SELECT k, random_datespanset('2001-01-01', '2001-12-31', 10, 5, 10) AS d
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tstzspanset;

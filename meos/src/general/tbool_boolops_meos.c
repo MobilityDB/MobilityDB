@@ -81,7 +81,7 @@ tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_temporal_has_type(temp1, T_TBOOL) ||
+      ! ensure_temporal_isof_type(temp1, T_TBOOL) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
   return boolop_tbool_tbool(temp1, temp2, &datum_and);
@@ -131,7 +131,7 @@ tor_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_temporal_has_type(temp1, T_TBOOL) ||
+      ! ensure_temporal_isof_type(temp1, T_TBOOL) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
   return boolop_tbool_tbool(temp1, temp2, &datum_or);

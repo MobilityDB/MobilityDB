@@ -235,7 +235,7 @@ Span_union_finalfn(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   int newcount;
-  Span *normspans = spanarr_normalize(spans, k, true, &newcount);
+  Span *normspans = spanarr_normalize(spans, k, ORDERED_NO, &newcount);
   SpanSet *result = spanset_make_free(normspans, newcount, NORMALIZE_NO);
 
   /* Free memory */

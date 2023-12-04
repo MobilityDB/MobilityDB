@@ -72,28 +72,28 @@ span_index_consistent_leaf(const Span *key, const Span *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
-      return overlaps_span_span(key, query);
+      return over_span_span(key, query);
     case RTContainsStrategyNumber:
-      return contains_span_span(key, query);
+      return cont_span_span(key, query);
     case RTContainedByStrategyNumber:
-      return contains_span_span(query, key);
+      return cont_span_span(query, key);
     case RTEqualStrategyNumber:
     case RTSameStrategyNumber:
       return span_eq(key, query);
     case RTAdjacentStrategyNumber:
-      return adjacent_span_span(key, query);
+      return adj_span_span(key, query);
     case RTLeftStrategyNumber:
     case RTBeforeStrategyNumber:
-      return left_span_span(key, query);
+      return lf_span_span(key, query);
     case RTOverLeftStrategyNumber:
     case RTOverBeforeStrategyNumber:
-      return overleft_span_span(key, query);
+      return ovlf_span_span(key, query);
     case RTRightStrategyNumber:
     case RTAfterStrategyNumber:
-      return right_span_span(key, query);
+      return ri_span_span(key, query);
     case RTOverRightStrategyNumber:
     case RTOverAfterStrategyNumber:
-      return overright_span_span(key, query);
+      return ovri_span_span(key, query);
     default:
       elog(ERROR, "unrecognized span strategy: %d", strategy);
       return false;    /* keep compiler quiet */
@@ -115,25 +115,25 @@ span_gist_consistent(const Span *key, const Span *query,
   {
     case RTOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
-      return overlaps_span_span(key, query);
+      return over_span_span(key, query);
     case RTContainsStrategyNumber:
     case RTEqualStrategyNumber:
     case RTSameStrategyNumber:
-      return contains_span_span(key, query);
+      return cont_span_span(key, query);
     case RTAdjacentStrategyNumber:
-      return adjacent_span_span(key, query) || overlaps_span_span(key, query);
+      return adj_span_span(key, query) || overlaps_span_span(key, query);
     case RTLeftStrategyNumber:
     case RTBeforeStrategyNumber:
-      return ! overright_span_span(key, query);
+      return ! ovri_span_span(key, query);
     case RTOverLeftStrategyNumber:
     case RTOverBeforeStrategyNumber:
-      return ! right_span_span(key, query);
+      return ! ri_span_span(key, query);
     case RTRightStrategyNumber:
     case RTAfterStrategyNumber:
-      return ! overleft_span_span(key, query);
+      return ! ovlf_span_span(key, query);
     case RTOverRightStrategyNumber:
     case RTOverAfterStrategyNumber:
-      return ! left_span_span(key, query);
+      return ! lf_span_span(key, query);
     default:
       elog(ERROR, "unrecognized span strategy: %d", strategy);
       return false;    /* keep compiler quiet */
@@ -166,7 +166,8 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   {
     /* Since function span_gist_consistent is strict, d is not NULL */
     Datum d = PG_GETARG_DATUM(1);
-    span_set(d, d, true, true, type, result);
+    meosType spantype = basetype_spantype(type);
+    span_set(d, d, true, true, type, spantype, result);
   }
   else if (set_type(type))
   {
@@ -342,14 +343,14 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
  * @brief Return the bounding union of two spans.
  * @note The result of the function is always a span even if the spans do not
  * overlap
- * @note This function is similar to `bbox_union_span_span` with memory
+ * @note This function is similar to `bbox_union_span_span` **with** memory
  * allocation
  */
 static Span *
 super_union_span_span(const Span *s1, const Span *s2)
 {
-  assert(s1->spantype == s2->spantype);
-  Span *result = span_copy(s1);
+  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
+  Span *result = span_cp(s1);
   span_expand(s2, result);
   return result;
 }
@@ -910,7 +911,7 @@ Span_gist_distance(PG_FUNCTION_ARGS)
   if (! span_gist_get_span(fcinfo, &query, typid))
     PG_RETURN_FLOAT8(DBL_MAX);
 
-  distance = distance_span_span(key, &query);
+  distance = dist_span_span(key, &query);
 
   PG_RETURN_FLOAT8(distance);
 }

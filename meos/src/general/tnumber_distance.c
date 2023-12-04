@@ -260,10 +260,10 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
+  if (hast && ! over_span_span(&box1->period, &box2->period))
     return DBL_MAX;
 
-  return distance_span_span(&box1->span, &box2->span);
+  return dist_span_span(&box1->span, &box2->span);
 }
 
 /**

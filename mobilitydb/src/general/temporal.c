@@ -1439,7 +1439,7 @@ temporal_unnest_state_make(const Temporal *temp, Datum *values, int count)
   state->i = 0;
   state->count = count;
   state->values = values;
-  state->temp = temporal_copy(temp);
+  state->temp = temporal_cp(temp);
   return state;
 }
 

@@ -777,7 +777,8 @@ span_const_to_span(Node *other, Span *span)
     /* The right argument is a set or span base constant. We convert it into
      * a singleton span */
     Datum value = ((Const *) other)->constvalue;
-    span_set(value, value, true, true, type, span);
+    meosType spantype = basetype_spantype(type);
+    span_set(value, value, true, true, type, spantype, span);
   }
   else if (set_spantype(type))
   {

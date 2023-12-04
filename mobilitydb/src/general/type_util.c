@@ -373,13 +373,13 @@ MultirangeType *
 multirange_make(const SpanSet *ss)
 {
   RangeType **ranges = palloc(sizeof(RangeType *) * ss->count);
-  const Span *s = spanset_sp_n(ss, 0);
+  const Span *s = SPANSET_SP_N(ss, 0);
   Oid rangetypid = basetype_rangetype(ss->basetype);
   Oid mrangetypid = basetype_multirangetype(ss->basetype);;
   TypeCacheEntry *typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
   for (int i = 0; i < ss->count; i++)
   {
-    s = spanset_sp_n(ss, i);
+    s = SPANSET_SP_N(ss, i);
     RangeBound lower;
     RangeBound upper;
     lower.val = s->lower;

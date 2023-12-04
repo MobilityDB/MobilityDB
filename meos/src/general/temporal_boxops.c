@@ -126,7 +126,7 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
     // a problem still remains (result != 0) even with the _cmp function
     return stbox_cmp((STBox *) box1, (STBox *) box2) == 0;
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "unknown temporal type for bounding box function: %d", temptype);
+    "Unknown temporal type for bounding box function: %d", temptype);
   return false;
 }
 
@@ -148,7 +148,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
   if (tspatial_type(temptype))
     return stbox_cmp((STBox *) box1, (STBox *) box2);
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "unknown temporal type for bounding box function: %d", temptype);
+    "Unknown temporal type for bounding box function: %d", temptype);
   return INT_MAX;
 }
 
@@ -170,7 +170,7 @@ temporal_bbox_size(meosType temptype)
   if (tspatial_type(temptype))
     return sizeof(STBox);
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "unknown temporal type for bounding box function: %d", temptype);
+    "Unknown temporal type for bounding box function: %d", temptype);
   return SIZE_MAX; /* make compiler quiet */
 }
 
@@ -188,16 +188,17 @@ tinstant_set_bbox(const TInstant *inst, void *box)
   assert(temporal_type(inst->temptype));
   if (talpha_type(inst->temptype))
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
-      true, true, T_TIMESTAMPTZ, (Span *) box);
+      true, true, T_TIMESTAMPTZ, T_TSTZSPAN, (Span *) box);
   else if (tnumber_type(inst->temptype))
   {
     meosType basetype = temptype_basetype(inst->temptype);
+    meosType spantype = basetype_spantype(basetype);
     Datum value = tinstant_value(inst);
     Datum time = TimestampTzGetDatum(inst->t);
     TBox *tbox = (TBox *) box;
     memset(tbox, 0, sizeof(TBox));
-    span_set(value, value, true, true, basetype, &tbox->span);
-    span_set(time, time, true, true, T_TIMESTAMPTZ, &tbox->period);
+    span_set(value, value, true, true, basetype, spantype, &tbox->span);
+    span_set(time, time, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &tbox->period);
     MEOS_FLAGS_SET_X(tbox->flags, true);
     MEOS_FLAGS_SET_T(tbox->flags, true);
   }
@@ -209,7 +210,7 @@ tinstant_set_bbox(const TInstant *inst, void *box)
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "unknown temporal type for bounding box function: %d", inst->temptype);
+      "Unknown temporal type for bounding box function: %d", inst->temptype);
   return;
 }
 
@@ -228,6 +229,7 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, bool lower_inc,
 {
   assert(tnumber_type(instants[0]->temptype));
   meosType basetype = temptype_basetype(instants[0]->temptype);
+  meosType spantype = basetype_spantype(basetype);
   /* For discrete or step interpolation the bounds are always inclusive */
   bool lower_inc1 = lower_inc;
   bool upper_inc1 = upper_inc;
@@ -265,11 +267,11 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, bool lower_inc,
   {
     min_inc = max_inc = true;
   }
-  span_set(min, max, min_inc, max_inc, basetype, &box->span);
+  span_set(min, max, min_inc, max_inc, basetype, spantype, &box->span);
   /* Compute the time span */
   span_set(TimestampTzGetDatum(instants[0]->t),
     TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
-    T_TIMESTAMPTZ, &box->period);
+    T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   /* Set the flags */
   MEOS_FLAGS_SET_X(box->flags, true);
   MEOS_FLAGS_SET_T(box->flags, true);
@@ -293,7 +295,7 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   if (talpha_type(temptype))
     span_set(TimestampTzGetDatum(instants[0]->t),
       TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
-      T_TIMESTAMPTZ, (Span *) box);
+      T_TIMESTAMPTZ, T_TSTZSPAN, (Span *) box);
   else if (tnumber_type(temptype))
     tnumberinstarr_set_tbox(instants, count, lower_inc, upper_inc,
       interp, (TBox *) box);
@@ -306,7 +308,7 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "unknown temporal type for bounding box function: %d", temptype);
+      "Unknown temporal type for bounding box function: %d", temptype);
     return;
   }
   /* Set the lower_inc and upper_inc bounds of the period at the beginning
@@ -343,7 +345,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   if (talpha_type(seq->temptype))
     span_set(TimestampTzGetDatum((TSEQUENCE_INST_N(seq, 0))->t),
       TimestampTzGetDatum(inst->t), seq->period.lower_inc, true, T_TIMESTAMPTZ,
-      (Span *) TSEQUENCE_BBOX_PTR(seq));
+      T_TSTZSPAN, (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))
     tnumberseq_expand_tbox(seq, inst);
   else if (tgeo_type(seq->temptype))
@@ -354,7 +356,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "unknown temporal type for bounding box function: %d", seq->temptype);
+      "Unknown temporal type for bounding box function: %d", seq->temptype);
   return;
 }
 
@@ -379,7 +381,7 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
       (STBox *) TSEQUENCE_BBOX_PTR(ss));
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "unknown temporal type for bounding box function: %d", ss->temptype);
+      "Unknown temporal type for bounding box function: %d", ss->temptype);
   return;
 }
 
@@ -395,7 +397,7 @@ tseqarr_set_tstzspan(const TSequence **sequences, int count, Span *period)
   const Span *first = &sequences[0]->period;
   const Span *last = &sequences[count - 1]->period;
   span_set(first->lower, last->upper, first->lower_inc, last->upper_inc,
-    T_TIMESTAMPTZ, period);
+    T_TIMESTAMPTZ, T_TSTZSPAN, period);
   return;
 }
 
@@ -432,7 +434,7 @@ tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
     tpointseqarr_set_stbox(sequences, count, (STBox *) box);
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "unknown temporal type for bounding box function: %d",
+      "Unknown temporal type for bounding box function: %d",
       sequences[0]->temptype);
   return;
 }

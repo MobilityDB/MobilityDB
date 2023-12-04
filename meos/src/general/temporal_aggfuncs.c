@@ -295,13 +295,13 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   if (cmp1 < 0 || (lower1_inc && !lower_inc && cmp1 == 0))
   {
     span_set(TimestampTzGetDatum(lower1), TimestampTzGetDatum(lower),
-      lower1_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
+      lower1_inc, ! lower_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &period);
     sequences[nseqs++] = tcontseq_at_tstzspan(seq1, &period);
   }
   else if (cmp2 < 0 || (lower2_inc && !lower_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(lower2), TimestampTzGetDatum(lower),
-      lower2_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
+      lower2_inc, ! lower_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &period);
     sequences[nseqs++] = tcontseq_at_tstzspan(seq2, &period);
   }
 
@@ -341,13 +341,13 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   if (cmp1 < 0 || (!upper_inc && upper1_inc && cmp1 == 0))
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper1),
-      ! upper_inc, upper1_inc, T_TIMESTAMPTZ, &period);
+      ! upper_inc, upper1_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &period);
     sequences[nseqs++] = tcontseq_at_tstzspan(seq1, &period);
   }
   else if (cmp2 < 0 || (! upper_inc && upper2_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper2),
-      ! upper_inc, upper2_inc, T_TIMESTAMPTZ, &period);
+      ! upper_inc, upper2_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &period);
     sequences[nseqs++] = tcontseq_at_tstzspan(seq2, &period);
   }
 
@@ -649,7 +649,7 @@ tbool_tand_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TBOOL))
+  if (! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_and, CROSSINGS_NO);
 }
@@ -666,7 +666,7 @@ tbool_tor_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TBOOL))
+  if (! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_or, CROSSINGS_NO);
 }
@@ -683,7 +683,7 @@ tint_tmin_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TINT))
+  if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_int32, CROSSINGS_NO);
 }
@@ -700,7 +700,7 @@ tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TFLOAT))
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_float8, CROSSINGS);
 }
@@ -717,7 +717,7 @@ tint_tmax_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TINT))
+  if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_int32, CROSSINGS_NO);
 }
@@ -734,7 +734,7 @@ tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TFLOAT))
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_float8, CROSSINGS);
 }
@@ -751,7 +751,7 @@ tint_tsum_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TINT))
+  if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_sum_int32, CROSSINGS_NO);
 }
@@ -768,7 +768,7 @@ tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TFLOAT))
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_sum_float8, CROSSINGS_NO);
 }
@@ -803,7 +803,7 @@ ttext_tmin_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TTEXT))
+  if (! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_text, CROSSINGS_NO);
 }
@@ -820,7 +820,7 @@ ttext_tmax_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TTEXT))
+  if (! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_text, CROSSINGS_NO);
 }
@@ -1020,7 +1020,7 @@ tstzspanset_transform_tcount(const SpanSet *ss)
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    const Span *s = spanset_sp_n(ss, i);
+    const Span *s = SPANSET_SP_N(ss, i);
     result[i] = tstzspan_transform_tcount(s);
   }
   return result;
@@ -1173,7 +1173,7 @@ tstzset_tcount_transfn(SkipList *state, const Set *s)
   if (! s)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_set_has_type(s, T_TSTZSET))
+  if (! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
 
   TInstant **instants = tstzset_transform_tcount(s);
@@ -1202,7 +1202,7 @@ tstzspan_tcount_transfn(SkipList *state, const Span *s)
   if (! s)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_span_has_type(s, T_TSTZSPAN))
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
 
   TSequence *seq = tstzspan_transform_tcount(s);
@@ -1230,7 +1230,7 @@ tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)
   if (! ss)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+  if (! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
 
   TSequence **sequences = tstzspanset_transform_tcount(ss);

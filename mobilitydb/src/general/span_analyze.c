@@ -328,8 +328,8 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* We found only nulls; assume the column is entirely null */
     stats->stats_valid = true;
     stats->stanullfrac = 1.0;
-    stats->stawidth = 0;       /* "unknown" */
-    stats->stadistinct = 0.0;  /* "unknown" */
+    stats->stawidth = 0;       /* unknown */
+    stats->stadistinct = 0.0;  /* unknown */
   }
 
   pfree(lowers); pfree(uppers); pfree(lengths);
