@@ -1217,6 +1217,7 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
   out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+  out->levelAdds = palloc(sizeof(int) * in->nNodes);
   out->traversalValues = palloc(sizeof(void *) * in->nNodes);
   if (in->norderbys > 0)
     out->distances = palloc(sizeof(double *) * in->nNodes);
@@ -1235,7 +1236,7 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
     if (idxtype == SPGIST_QUADTREE)
       stboxnode_quadtree_next(nodebox, centroid, (uint8) node, &next_nodebox);
     else
-      stboxnode_kdtree_next(nodebox, centroid, (uint8) node, (in->level) + 1,
+      stboxnode_kdtree_next(nodebox, centroid, (uint8) node, in->level,
         &next_nodebox);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
@@ -1317,6 +1318,8 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
       /* Pass traversalValue and node */
       out->traversalValues[out->nNodes] = stboxnode_copy(&next_nodebox);
       out->nodeNumbers[out->nNodes] = node;
+      /* Increase level */
+      out->levelAdds[out->nNodes] = 1;
       /* Pass distances */
       if (in->norderbys > 0)
       {
