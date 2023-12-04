@@ -111,10 +111,23 @@ float_extent_transfn(Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for span extent aggregate of timestamps
+ * @brief Transition function for span extent aggregate of dates
  */
 Span *
-timestamp_extent_transfn(Span *s, TimestampTz t)
+date_extent_transfn(Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (s && ! ensure_span_isof_type(s, T_DATESPAN))
+    return NULL;
+  return spanbase_extent_transfn(s, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for span extent aggregate of timestamptz
+ */
+Span *
+timestamptz_extent_transfn(Span *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (s && ! ensure_span_isof_type(s, T_TSTZSPAN))
@@ -135,7 +148,7 @@ set_extent_transfn(Span *span, const Set *set)
     return NULL;
   /* Null period and non-null set: return the bbox of the timestamp set */
   if (! span)
-    return set_span(set);
+    return set_to_span(set);
   /* Non-null period and null set: return the period */
   if (! set)
     return span;

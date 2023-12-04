@@ -91,6 +91,7 @@ typedef struct
   uint8 basetype;       /**< span basetype */
   bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
   bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
+  char padding[4];      /**< Not used */
   Datum lower;          /**< lower bound value */
   Datum upper;          /**< upper bound value */
 } Span;
@@ -451,7 +452,7 @@ extern char *tstzspanset_out(const SpanSet *ss);
 
 extern Set *bigintset_make(const int64 *values, int count);
 extern Span *bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc);
-extern Set *dateset_make(const TimestampTz *values, int count);
+extern Set *dateset_make(const DateADT *values, int count);
 extern Span *datespan_make(DateADT lower, DateADT upper, bool lower_inc, bool upper_inc);
 extern Set *floatset_make(const double *values, int count);
 extern Span *floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc);
@@ -533,7 +534,7 @@ extern int intspanset_upper(const SpanSet *ss);
 extern uint32 set_hash(const Set *s);
 extern uint64 set_hash_extended(const Set *s, uint64 seed);
 extern int set_num_values(const Set *s);
-extern Span *set_span(const Set *s);
+extern Span *set_to_span(const Set *s);
 extern uint32 span_hash(const Span *s);
 extern uint64 span_hash_extended(const Span *s, uint64 seed);
 extern bool span_lower_inc(const Span *s);
@@ -550,7 +551,7 @@ extern const Span **spanset_spans(const SpanSet *ss);
 extern Span *spanset_start_span(const SpanSet *ss);
 extern bool spanset_upper_inc(const SpanSet *ss);
 extern double spanset_width(const SpanSet *ss, bool boundspan);
-extern STBox *spatialset_stbox(const Set *s);
+extern STBox *spatialset_to_stbox(const Set *s);
 extern text *textset_end_value(const Set *s);
 extern text *textset_start_value(const Set *s);
 extern bool textset_value_n(const Set *s, int n, text **result);
@@ -578,28 +579,38 @@ extern TimestampTz tstzspanset_upper(const SpanSet *ss);
 extern Set *bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift, bool haswidth);
 extern Span *bigintspan_shift_scale(const Span *s, int64 shift, int64 width, bool hasshift, bool haswidth);
 extern SpanSet *bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width, bool hasshift, bool haswidth);
-extern SpanSet *datespanset_tstzspanset(const SpanSet *ss);
+extern Set *dateset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
+extern Set *dateset_to_tstzset(const Set *s);
+extern Span *datespan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
+extern Span *datespan_to_tstzspan(const Span *s);
+extern SpanSet *datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
+extern SpanSet *datespanset_to_tstzspanset(const SpanSet *ss);
 extern Set *floatset_round(const Set *s, int maxdd);
 extern Set *floatset_shift_scale(const Set *s, double shift, double width, bool hasshift, bool haswidth);
-extern Span *floatspan_intspan(const Span *s);
+extern Set *floatset_to_intset(const Set *s);
 extern Span *floatspan_round(const Span *s, int maxdd);
 extern Span *floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift, bool haswidth);
-extern SpanSet *floatspanset_intspanset(const SpanSet *ss);
+extern Span *floatspan_to_intspan(const Span *s);
+extern SpanSet *floatspanset_to_intspanset(const SpanSet *ss);
 extern SpanSet *floatspanset_round(const SpanSet *ss, int maxdd);
 extern SpanSet *floatspanset_shift_scale(const SpanSet *ss, double shift, double width, bool hasshift, bool haswidth);
 extern Set *geoset_round(const Set *s, int maxdd);
 extern Set *intset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
-extern Span *intspan_floatspan(const Span *s);
+extern Set *intset_to_floatset(const Set *s);
 extern Span *intspan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
-extern SpanSet *intspanset_floatspanset(const SpanSet *ss);
+extern Span *intspan_to_floatspan(const Span *s);
+extern SpanSet *intspanset_to_floatspanset(const SpanSet *ss);
 extern SpanSet *intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
 extern Set *textset_lower(const Set *s);
 extern Set *textset_upper(const Set *s);
 extern TimestampTz timestamptz_tprecision(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Set *tstzset_shift_scale(const Set *s, const Interval *shift, const Interval *duration);
+extern Span *datespan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
 extern Span *tstzspan_shift_scale(const Span *s, const Interval *shift, const Interval *duration);
 extern Span *tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
-extern SpanSet *tstzspanset_datespanset(const SpanSet *ss);
+extern Set *tstzset_to_dateset(const Set *s);
+extern Span *tstzspan_to_datespan(const Span *s);
+extern SpanSet *tstzspanset_to_datespanset(const SpanSet *ss);
 extern SpanSet *tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift, const Interval *duration);
 extern SpanSet *tstzspanset_tprecision(const SpanSet *ss, const Interval *duration, TimestampTz torigin);
 
@@ -667,6 +678,7 @@ extern bool minus_text_set(const text *txt, const Set *s, text **result);
 extern bool minus_timestamptz_span(TimestampTz t, const Span *s, TimestampTz *result);
 extern bool minus_timestamptz_spanset(TimestampTz t, const SpanSet *ss, TimestampTz *result);
 extern bool minus_timestamptz_set(TimestampTz t, const Set *s, TimestampTz *result);
+extern Span *super_union_span_span(const Span *s1, const Span *s2);
 extern Set *union_set_bigint(const Set *s, int64 i);
 extern Set *union_set_date(const Set *s, DateADT d);
 extern Set *union_set_float(const Set *s, double d);

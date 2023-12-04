@@ -484,7 +484,7 @@ floatspan_bucket_list(const Span *s, double size, double origin, int *count)
 
 /**
  * @ingroup libmeos_temporal_analytics_tile
- * @brief Return the bucket list from a period
+ * @brief Return the bucket list from a timestamptz span
  * @param[in] s Input span to split
  * @param[in] duration Interval defining the size of the buckets
  * @param[in] origin Origin of the buckets

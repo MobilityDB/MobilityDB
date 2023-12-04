@@ -96,7 +96,7 @@ Timestamptz_bucket(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 Datum
-Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
+Span_bucket_list(FunctionCallInfo fcinfo, bool valuelist)
 {
   FuncCallContext *funcctx;
   SpanBucketState *state;
@@ -170,40 +170,40 @@ Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Span_bucket_list(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_bucket_list);
+PGDLLEXPORT Datum Valuespan_bucket_list(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Valuespan_bucket_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Generate a span bucket list.
+ * @brief Generate a value span bucket list.
  */
 Datum
-Span_bucket_list(PG_FUNCTION_ARGS)
+Valuespan_bucket_list(PG_FUNCTION_ARGS)
 {
-  return Span_bucket_list_ext(fcinfo, true);
+  return Span_bucket_list(fcinfo, true);
 }
 
 PGDLLEXPORT Datum Tstzspan_bucket_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_bucket_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Generate a period bucket list.
+ * @brief Generate a timestamptz span bucket list.
  */
 Datum
 Tstzspan_bucket_list(PG_FUNCTION_ARGS)
 {
-  return Span_bucket_list_ext(fcinfo, false);
+  return Span_bucket_list(fcinfo, false);
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Span_bucket(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_bucket);
+PGDLLEXPORT Datum Valuespan_bucket(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Valuespan_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate an integer or float span bucket in a bucket list for spans.
 */
 Datum
-Span_bucket(PG_FUNCTION_ARGS)
+Valuespan_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);

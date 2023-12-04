@@ -109,8 +109,7 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
-  return result;
+  return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 /*****************************************************************************/

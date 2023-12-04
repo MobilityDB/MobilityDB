@@ -1298,11 +1298,11 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   Form_pg_statistic stats1 = NULL, stats2 = NULL;
   double selec;
   bool have_hist1 = false, have_hist2 = false;
-  int bounds_hist = value ? STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM : 
+  int bounds_hist = value ? STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM :
     STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
   int lengths_hist = value ? STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
     STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
-  
+
   memset(&hslot1, 0, sizeof(hslot1));
   memset(&hslot2, 0, sizeof(hslot2));
 

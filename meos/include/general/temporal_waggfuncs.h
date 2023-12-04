@@ -28,22 +28,30 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for set of disjoint spans.
+ * @brief Temporal aggregate functions
  */
 
-#ifndef __PG_SPANSET_H__
-#define __PG_SPANSET_H__
+#ifndef __TEMPORAL_WAGGFUNCS_H__
+#define __TEMPORAL_WAGGFUNCS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include "general/span.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
-/* General functions */
-
-extern void spanset_span_slice(Datum d, Span *s);
+extern TSequence **temporal_extend(Temporal *temp, Interval *interval,
+  bool min, int *count);
+extern TSequence **temporal_transform_wcount(const Temporal *temp,
+  const Interval *interval, int *count);
+extern TSequence **tnumber_transform_wavg(const Temporal *temp,
+  const Interval *interval, int *count);
+extern SkipList *temporal_wagg_transfn(SkipList *state, Temporal *temp,
+  Interval *interval, datum_func2 func, bool min, bool crossings);
+extern SkipList *temporal_wagg_transform_transfn(SkipList *state,
+  Temporal *temp, Interval *interval, datum_func2 func,
+  TSequence ** (*transform)(const Temporal *, const Interval *, int *));
 
 /*****************************************************************************/
 

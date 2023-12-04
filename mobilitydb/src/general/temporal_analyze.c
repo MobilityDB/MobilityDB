@@ -57,9 +57,10 @@
  *     - `stavalues` stores the length of the histogram of periods for the time dimension.
  *     - `numvalues` contains the number of buckets in the histogram.
  *
- * In the case of temporal types having a Period as bounding box, that is,
- * tbool and ttext, no statistics are collected for the value dimension and
- * the statistics for the temporal part are stored in slots 1 and 2.
+ * In the case of temporal types having a timestamptz span as bounding box,
+ * that is, tbool and ttext, no statistics are collected for the value
+ * dimension and the statistics for the temporal dimension are stored in slots
+ * 1 and 2.
  */
 
 #include "pg_general/temporal_analyze.h"

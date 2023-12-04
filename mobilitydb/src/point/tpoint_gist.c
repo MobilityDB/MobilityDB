@@ -277,8 +277,8 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
 {
   if (type == T_TSTZSPAN)
   {
-    Span *p = PG_GETARG_SPAN_P(1);
-    tstzspan_set_stbox(p, result);
+    Span *s = PG_GETARG_SPAN_P(1);
+    tstzspan_set_stbox(s, result);
   }
   else if (type == T_STBOX)
   {
@@ -370,7 +370,7 @@ Stbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
-  STBox *result = stbox_copy(DatumGetSTboxP(ent[0].key));
+  STBox *result = stbox_cp(DatumGetSTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     stbox_adjust(result, DatumGetSTboxP(ent[i].key));
   PG_RETURN_SPAN_P(result);
@@ -542,7 +542,7 @@ PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
 Datum
 Stbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
-  return bbox_gist_picksplit_ext(fcinfo, T_STBOX, &stbox_adjust, &stbox_penalty);
+  return bbox_gist_picksplit(fcinfo, T_STBOX, &stbox_adjust, &stbox_penalty);
 }
 /*****************************************************************************
  * GiST same method

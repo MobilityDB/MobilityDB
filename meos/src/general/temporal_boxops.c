@@ -142,7 +142,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
 {
   assert(temporal_type(temptype));
   if (talpha_type(temptype))
-    return span_cmp((Span *) box1, (Span *) box2);
+    return span_cmp1((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
     return tbox_cmp((TBox *) box1, (TBox *) box2);
   if (tspatial_type(temptype))
@@ -313,9 +313,9 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   }
   /* Set the lower_inc and upper_inc bounds of the period at the beginning
    * of the bounding box */
-  Span *p = (Span *) box;
-  p->lower_inc = lower_inc;
-  p->upper_inc = upper_inc;
+  Span *s = (Span *) box;
+  s->lower_inc = lower_inc;
+  s->upper_inc = upper_inc;
   return;
 }
 
@@ -386,18 +386,18 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
 }
 
 /**
- * @brief Set the period from the array of temporal sequence values
- * @param[in] period Period
+ * @brief Set the timestamptz span from the array of temporal sequence values
  * @param[in] sequences Temporal instants
  * @param[in] count Number of elements in the array
+ * @param[out] s Result
  */
 static void
-tseqarr_set_tstzspan(const TSequence **sequences, int count, Span *period)
+tseqarr_set_tstzspan(const TSequence **sequences, int count, Span *s)
 {
   const Span *first = &sequences[0]->period;
   const Span *last = &sequences[count - 1]->period;
   span_set(first->lower, last->upper, first->lower_inc, last->upper_inc,
-    T_TIMESTAMPTZ, T_TSTZSPAN, period);
+    T_TIMESTAMPTZ, T_TSTZSPAN, s);
   return;
 }
 

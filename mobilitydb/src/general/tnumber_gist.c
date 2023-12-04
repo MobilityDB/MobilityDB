@@ -209,8 +209,8 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
   }
   else if (type == T_TSTZSPAN)
   {
-    Span *p = PG_GETARG_SPAN_P(1);
-    tstzspan_set_tbox(p, result);
+    Span *s = PG_GETARG_SPAN_P(1);
+    tstzspan_set_tbox(s, result);
   }
   else if (type == T_TBOX)
   {
@@ -310,7 +310,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
-  TBox *result = tbox_copy(DatumGetTboxP(ent[0].key));
+  TBox *result = tbox_cp(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     tbox_adjust((void *)result, DatumGetPointer(ent[i].key));
   PG_RETURN_POINTER(result);
@@ -680,7 +680,7 @@ bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 Datum
-bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
+bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *))
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
@@ -1081,7 +1081,7 @@ PG_FUNCTION_INFO_V1(Tbox_gist_picksplit);
 Datum
 Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
-  return bbox_gist_picksplit_ext(fcinfo, T_TBOX, &tbox_adjust, &tbox_penalty);
+  return bbox_gist_picksplit(fcinfo, T_TBOX, &tbox_adjust, &tbox_penalty);
 }
 /*****************************************************************************
  * GiST same method

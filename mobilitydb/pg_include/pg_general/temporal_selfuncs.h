@@ -62,7 +62,7 @@
 
 extern Selectivity scalarineqsel(PlannerInfo *root, Oid operid, bool isgt,
   bool iseq, VariableStatData *vardata, Datum constval, Oid consttypid);
-extern Selectivity temporal_sel_tstzspan(VariableStatData *vardata, Span *period,
+extern Selectivity temporal_sel_tstzspan(VariableStatData *vardata, Span *s,
   meosOper oper);
 
 /*****************************************************************************
@@ -71,14 +71,13 @@ extern Selectivity temporal_sel_tstzspan(VariableStatData *vardata, Span *period
 
 extern float8 temporal_sel(PlannerInfo *root, Oid operid, List *args,
   int varRelid, TemporalFamily tempfamily);
-extern double temporal_sel_ext(FunctionCallInfo fcinfo,
+extern double temporal_sel_family(FunctionCallInfo fcinfo,
   TemporalFamily tempfamily);
 
 extern double temporal_joinsel(PlannerInfo *root, Oid operid,
   List *args, JoinType jointype, SpecialJoinInfo *sjinfo,
   TemporalFamily tempfamily);
-
-extern double temporal_joinsel_ext(FunctionCallInfo fcinfo,
+extern double temporal_joinsel_family(FunctionCallInfo fcinfo,
   TemporalFamily tempfamily);
 
 /*****************************************************************************/

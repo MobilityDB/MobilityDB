@@ -82,18 +82,18 @@
  *****************************************************************************/
 
 /**
- * @brief Transform the constant into a period
+ * @brief Transform the constant into a timestamptz span
  */
 static bool
-temporal_const_to_tstzspan(Node *other, Span *period)
+temporal_const_to_tstzspan(Node *other, Span *s)
 {
   Oid consttype = ((Const *) other)->consttype;
   Datum constvalue = ((Const *) other)->constvalue;
   meosType type = oid_type(consttype);
   if (time_type(type))
-    span_const_to_span(other, period);
+    span_const_to_span(other, s);
   else if (talpha_type(type))
-    temporal_set_bbox(DatumGetTemporalP(constvalue), period);
+    temporal_set_bbox(DatumGetTemporalP(constvalue), s);
   else
     return false;
   return true;
@@ -114,8 +114,8 @@ tnumber_const_to_span_tstzspan(const Node *other, Span **s, Span **p)
   }
   else if (type == T_TSTZSPAN)
   {
-    Span *period = DatumGetSpanP(((Const *) other)->constvalue);
-    *p = span_cp(period);
+    Span *s = DatumGetSpanP(((Const *) other)->constvalue);
+    *p = span_cp(s);
   }
   else if (type == T_TBOX)
   {
@@ -471,7 +471,7 @@ temporal_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
  * <> are eqsel and neqsel, respectively.
  */
 Selectivity
-temporal_sel_tstzspan(VariableStatData *vardata, Span *period, meosOper oper)
+temporal_sel_tstzspan(VariableStatData *vardata, Span *s, meosOper oper)
 {
   float8 selec;
 
@@ -483,11 +483,11 @@ temporal_sel_tstzspan(VariableStatData *vardata, Span *period, meosOper oper)
   {
     Oid operid = oper_oid(EQ_OP, T_TSTZSPAN, T_TSTZSPAN);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    selec = var_eq_const(vardata, operid, SpanPGetDatum(period),
+    selec = var_eq_const(vardata, operid, SpanPGetDatum(s),
       false, false, false);
 #else
     selec = var_eq_const(vardata, operid, DEFAULT_COLLATION_OID,
-      SpanPGetDatum(period), false, false, false);
+      SpanPGetDatum(s), false, false, false);
 #endif
   }
   else if (oper == OVERLAPS_OP || oper == CONTAINS_OP ||
@@ -503,7 +503,7 @@ temporal_sel_tstzspan(VariableStatData *vardata, Span *period, meosOper oper)
     oper == GT_OP || oper == GE_OP)
   {
     /* Convert the period as a span to call the span selectivity functions */
-    selec = span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
+    selec = span_sel_hist(vardata, s, oper, TIME_SEL);
   }
   else /* Unknown operator */
   {
@@ -606,7 +606,7 @@ tnumber_sel_span_tstzspan(VariableStatData *vardata, Span *span, Span *period,
 
 /**
  * @brief Estimate the selectivity value of the operators for temporal types
- * whose bounding box is a period, that is, tbool and ttext
+ * whose bounding box is a timestamptz span, that is, tbool and ttext
  */
 float8
 temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
@@ -698,7 +698,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   }
   else if (tempfamily == TNUMBERTYPE)
   {
-    /* Transform the constant into a span and/or a period */
+    /* Transform the constant into a value and/or a timestamptz span */
     Span *s = NULL;
     Span *p = NULL;
     if (! tnumber_const_to_span_tstzspan(other, &s, &p))
@@ -744,7 +744,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
      */
     if (MEOS_FLAGS_GET_T(box.flags))
     {
-      /* Transform the STBox into a Period */
+      /* Transform the STBox into a timestamptz span */
       Span period;
       memcpy(&period, &box.period, sizeof(Span));
 
@@ -763,7 +763,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
  * various families of temporal types.
  */
 float8
-temporal_sel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+temporal_sel_family(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid operid = PG_GETARG_OID(1);
@@ -780,12 +780,12 @@ PGDLLEXPORT Datum Temporal_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_sel);
 /**
  * @brief Estimate the selectivity value of the operators for temporal types
- * whose bounding box is a period, that is, tbool and ttext.
+ * whose bounding box is a timestamptz span, that is, tbool and ttext.
  */
 Datum
 Temporal_sel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_sel_ext(fcinfo, TEMPORALTYPE));
+  return Float8GetDatum(temporal_sel_family(fcinfo, TEMPORALTYPE));
 }
 
 PGDLLEXPORT Datum Tnumber_sel(PG_FUNCTION_ARGS);
@@ -796,7 +796,7 @@ PG_FUNCTION_INFO_V1(Tnumber_sel);
 Datum
 Tnumber_sel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_sel_ext(fcinfo, TNUMBERTYPE));
+  return Float8GetDatum(temporal_sel_family(fcinfo, TNUMBERTYPE));
 }
 
 PGDLLEXPORT Datum Tpoint_sel(PG_FUNCTION_ARGS);
@@ -808,7 +808,7 @@ PG_FUNCTION_INFO_V1(Tpoint_sel);
 Datum
 Tpoint_sel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_sel_ext(fcinfo, TPOINTTYPE));
+  return Float8GetDatum(temporal_sel_family(fcinfo, TPOINTTYPE));
 }
 
 PGDLLEXPORT Datum Tnpoint_sel(PG_FUNCTION_ARGS);
@@ -820,7 +820,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_sel);
 Datum
 Tnpoint_sel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_sel_ext(fcinfo, TNPOINTTYPE));
+  return Float8GetDatum(temporal_sel_family(fcinfo, TNPOINTTYPE));
 }
 
 /*****************************************************************************
@@ -1042,7 +1042,7 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
  * alphanumeric types and temporal number types.
  */
 float8
-temporal_joinsel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+temporal_joinsel_family(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid operid = PG_GETARG_OID(1);
@@ -1067,12 +1067,12 @@ PGDLLEXPORT Datum Temporal_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_joinsel);
 /*
  * Estimate the join selectivity value of the operators for temporal types
- * whose bounding box is a period, that is, tbool and ttext.
+ * whose bounding box is a timestamptz span, that is, tbool and ttext.
  */
 Datum
 Temporal_joinsel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TEMPORALTYPE));
+  return Float8GetDatum(temporal_joinsel_family(fcinfo, TEMPORALTYPE));
 }
 
 PGDLLEXPORT Datum Tnumber_joinsel(PG_FUNCTION_ARGS);
@@ -1084,7 +1084,7 @@ PG_FUNCTION_INFO_V1(Tnumber_joinsel);
 Datum
 Tnumber_joinsel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TNUMBERTYPE));
+  return Float8GetDatum(temporal_joinsel_family(fcinfo, TNUMBERTYPE));
 }
 
 PGDLLEXPORT Datum Tnpoint_joinsel(PG_FUNCTION_ARGS);
@@ -1096,7 +1096,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_joinsel);
 Datum
 Tnpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TNPOINTTYPE));
+  return Float8GetDatum(temporal_joinsel_family(fcinfo, TNPOINTTYPE));
 }
 
 PGDLLEXPORT Datum Tpoint_joinsel(PG_FUNCTION_ARGS);
@@ -1108,7 +1108,7 @@ PG_FUNCTION_INFO_V1(Tpoint_joinsel);
 Datum
 Tpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TPOINTTYPE));
+  return Float8GetDatum(temporal_joinsel_family(fcinfo, TPOINTTYPE));
 }
 
 /*****************************************************************************/

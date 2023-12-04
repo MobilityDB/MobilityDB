@@ -85,7 +85,7 @@ pgis_intersects2d(Datum geom1, Datum geom2)
  * @param[in] func1, func2 Spatial relationship for geometric/geographic points
  */
 static Datum
-espatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
+Espatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
   Datum (*func1)(Datum, Datum), Datum (*func2)(Datum, Datum))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -188,7 +188,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_tpoint_tpoint);
 Datum
 Edisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_ne,
+  return Espatialrel_tpoint_tpoint(fcinfo, &datum2_point_ne,
     &datum2_point_nsame);
 }
 
@@ -250,7 +250,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tpoint_tpoint);
 Datum
 Eintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_eq,
+  return Espatialrel_tpoint_tpoint(fcinfo, &datum2_point_eq,
     &datum2_point_same);
 }
 

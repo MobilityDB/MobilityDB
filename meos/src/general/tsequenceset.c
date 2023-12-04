@@ -742,8 +742,8 @@ tnumberseqset_valuespans(const TSequenceSet *ss)
     spans = palloc(sizeof(Span) * count);
     for (i = 0; i < count; i++)
       span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);
-    SpanSet *result = spanset_make(spans, count, NORMALIZE);
-    pfree(values); pfree(spans);
+    SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
+    pfree(values);
     return result;
   }
 
@@ -902,9 +902,7 @@ tsequenceset_time(const TSequenceSet *ss)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     periods[i] = seq->period;
   }
-  SpanSet *result = spanset_make(periods, ss->count, NORMALIZE_NO);
-  pfree(periods);
-  return result;
+  return spanset_make_free(periods, ss->count, NORMALIZE_NO);
 }
 
 /**
@@ -943,13 +941,13 @@ tsequenceset_duration(const TSequenceSet *ss, bool boundspan)
  * @sqlop @p ::
  */
 void
-tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *p)
+tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *s)
 {
-  assert(ss); assert(p);
+  assert(ss); assert(s);
   const TSequence *start = TSEQUENCESET_SEQ_N(ss, 0);
   const TSequence *end = TSEQUENCESET_SEQ_N(ss, ss->count - 1);
   span_set(start->period.lower, end->period.upper, start->period.lower_inc,
-    end->period.upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, p);
+    end->period.upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, s);
   return;
 }
 
@@ -2107,7 +2105,8 @@ tsequenceset_restrict_tstzset(const TSequenceSet *ss, const Set *s,
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal sequence set to (the complement of) a period.
+ * @brief Restrict a temporal sequence set to (the complement of) a timestamptz
+ * span.
  * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
@@ -2228,31 +2227,31 @@ tsequenceset_restrict_tstzspanset(const TSequenceSet *ss, const SpanSet *ps,
   while (i < ss->count && j < ps->count)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    const Span *p = SPANSET_SP_N(ps, j);
+    const Span *s = SPANSET_SP_N(ps, j);
     /* The sequence and the period do not overlap */
-    if (lf_span_span(&seq->period, p))
+    if (lf_span_span(&seq->period, s))
     {
       if (! atfunc)
         /* Copy the sequence */
         sequences[nseqs++] = tsequence_copy(seq);
       i++;
     }
-    else if (over_span_span(&seq->period, p))
+    else if (over_span_span(&seq->period, s))
     {
       if (atfunc)
       {
         /* Compute the restriction of the sequence and the period */
-        TSequence *seq1 = tcontseq_at_tstzspan(seq, p);
+        TSequence *seq1 = tcontseq_at_tstzspan(seq, s);
         if (seq1 != NULL)
           sequences[nseqs++] = seq1;
         int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq->period.upper),
-          DatumGetTimestampTz(p->upper));
-        if (cmp == 0 && seq->period.upper_inc == p->upper_inc)
+          DatumGetTimestampTz(s->upper));
+        if (cmp == 0 && seq->period.upper_inc == s->upper_inc)
         {
           i++; j++;
         }
         else if (cmp < 0 ||
-          (cmp == 0 && ! seq->period.upper_inc && p->upper_inc))
+          (cmp == 0 && ! seq->period.upper_inc && s->upper_inc))
           i++;
         else
           j++;
@@ -3207,7 +3206,7 @@ tsequenceset_delete_tstzset(const TSequenceSet *ss, const Set *s)
 
 /**
  * @ingroup libmeos_internal_temporal_modif
- * @brief Delete a period from a temporal sequence set.
+ * @brief Delete a timestamptz span from a temporal sequence set.
  * @sqlfunc deleteTime()
  */
 TSequenceSet *
@@ -3222,7 +3221,7 @@ tsequenceset_delete_tstzspan(const TSequenceSet *ss, const Span *s)
 
 /**
  * @ingroup libmeos_internal_temporal_modif
- * @brief Delete a period from a temporal sequence set.
+ * @brief Delete a timestamptz span from a temporal sequence set.
  * @sqlfunc deleteTime()
  */
 TSequenceSet *
@@ -3256,7 +3255,7 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
   TSequence **tofree = palloc(sizeof(TSequence *) * (minus->count - 1));
   const TInstant *instants[2] = {0};
   sequences[0] = seq = (TSequence *) TSEQUENCESET_SEQ_N(minus, 0);
-  const Span *p = SPANSET_SP_N(ps, 0);
+  const Span *s = SPANSET_SP_N(ps, 0);
   int i = 1,    /* current composing sequence */
     j = 0,      /* current composing period */
     nseqs = 1,  /* number of sequences in the currently constructed sequence */
@@ -3264,15 +3263,15 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
   /* Skip all composing periods that are before or adjacent to seq */
   while (j < ps->count)
   {
-    if (timestamptz_cmp_internal(DatumGetTimestampTz(p->upper),
+    if (timestamptz_cmp_internal(DatumGetTimestampTz(s->upper),
           DatumGetTimestampTz(seq->period.lower)) > 0)
       break;
-    p = SPANSET_SP_N(ps, j++);
+    s = SPANSET_SP_N(ps, j++);
   }
   seq = (TSequence *) TSEQUENCESET_SEQ_N(minus, 1);
   while (i < ss->count && j < ps->count)
   {
-    if (timestamptz_cmp_internal(DatumGetTimestampTz(p->upper),
+    if (timestamptz_cmp_internal(DatumGetTimestampTz(s->upper),
           DatumGetTimestampTz(seq->period.lower) <= 0))
     {
       instants[0] = TSEQUENCE_INST_N(sequences[nseqs - 1],
@@ -3287,7 +3286,7 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
     }
     sequences[nseqs++] = seq;
     seq = (TSequence *) TSEQUENCESET_SEQ_N(minus, ++i);
-    p = SPANSET_SP_N(ps, j++);
+    s = SPANSET_SP_N(ps, j++);
   }
   /* Add remaining sequences to the result */
   while (i < ss->count)

@@ -1255,7 +1255,7 @@ tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
 
 /**
  * @ingroup libmeos_internal_temporal_constructor
- * @brief Construct a temporal sequence from a base value and a period.
+ * @brief Construct a temporal sequence from a base value and a timestamptz span.
  * @param[in] value Base value
  * @param[in] temptype Temporal type
  * @param[in] s Period
@@ -1285,7 +1285,8 @@ tsequence_from_base_tstzspan(Datum value, meosType temptype, const Span *s,
 #if MEOS
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal boolean sequence from a boolean and a period.
+ * @brief Construct a temporal boolean sequence from a boolean and a
+ $ timestamptz span.
  */
 TSequence *
 tboolseq_from_base_tstzspan(bool b, const Span *s)
@@ -1298,7 +1299,8 @@ tboolseq_from_base_tstzspan(bool b, const Span *s)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal integer sequence from an integer and a period.
+ * @brief Construct a temporal integer sequence from an integer and a
+ * timestamptz span.
  */
 TSequence *
 tintseq_from_base_tstzspan(int i, const Span *s)
@@ -1311,7 +1313,8 @@ tintseq_from_base_tstzspan(int i, const Span *s)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal float sequence from a float and a period.
+ * @brief Construct a temporal float sequence from a float and a timestamptz
+ * span.
  */
 TSequence *
 tfloatseq_from_base_tstzspan(double d, const Span *s, interpType interp)
@@ -1324,7 +1327,7 @@ tfloatseq_from_base_tstzspan(double d, const Span *s, interpType interp)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal text sequence from a text and a period.
+ * @brief Construct a temporal text sequence from a text and a timestamptz span.
  */
 TSequence *
 ttextseq_from_base_tstzspan(const text *txt, const Span *s)
@@ -1662,8 +1665,8 @@ tsequence_merge(const TSequence *seq1, const TSequence *seq2)
  * may be a period. For this reason two passes are necessary.
  * @param[in] sequences Array of values
  * @param[in] count Number of elements in the array
- * @result Result value that can be either a temporal instant or a
- * temporal discrete sequence
+ * @result Result value that can be either a temporal instant or a temporal
+ * discrete sequence
  */
 Temporal *
 tdiscseq_merge_array(const TSequence **sequences, int count)
@@ -1707,8 +1710,7 @@ tdiscseq_merge_array(const TSequence **sequences, int count)
 TSequence **
 tseqarr_normalize(const TSequence **sequences, int count, int *newcount)
 {
-  assert(sequences); assert(newcount);
-  assert(count > 0);
+  assert(sequences); assert(newcount); assert(count > 0);
   TSequence **result = palloc(sizeof(TSequence *) * count);
   /* seq1 is the sequence to which we try to join subsequent seq2 */
   TSequence *seq1 = (TSequence *) sequences[0];
@@ -3561,7 +3563,7 @@ tsequence_always_lt(const TSequence *seq, Datum value)
     for (i = 0; i < seq->count; i++)
     {
       value1 = tinstant_value(TSEQUENCE_INST_N(seq, i));
-      if (! datum_lt(value1, value, basetype))
+      if (datum_ge(value1, value, basetype))
         return false;
     }
     return true;
@@ -4676,7 +4678,8 @@ tdiscseq_restrict_tstzset(const TSequence *seq, const Set *s, bool atfunc)
 }
 
 /**
- * @brief Restrict a temporal discrete sequence to (the complement of) a period.
+ * @brief Restrict a temporal discrete sequence to (the complement of) a
+ * timestamptz span.
  */
 TSequence *
 tdiscseq_restrict_tstzspan(const TSequence *seq, const Span *s, bool atfunc)
@@ -5115,7 +5118,7 @@ tcontseq_minus_tstzset(const TSequence *seq, const Set *s)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a continuous temporal sequence to a period.
+ * @brief Restrict a continuous temporal sequence to a timestamptz span.
  */
 TSequence *
 tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
@@ -5190,7 +5193,7 @@ tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
 #if MEOS
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal sequence to a period.
+ * @brief Restrict a temporal sequence to a timestamptz span.
  * @sqlfunc atPeriod()
  */
 TSequence *
@@ -5205,7 +5208,7 @@ tsequence_at_tstzspan(const TSequence *seq, const Span *s)
 #endif /* MEOS */
 
 /**
- * @brief Restrict a temporal sequence to the complement of a period.
+ * @brief Restrict a temporal sequence to the complement of a timestamptz span.
  * (iterator function).
  * @param[in] seq Temporal sequence
  * @param[in] s Period
@@ -5234,8 +5237,8 @@ tcontseq_minus_tstzspan_iter(const TSequence *seq, const Span *s,
     return 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const Span *p1 = SPANSET_SP_N(ss, i);
-    result[i] = tcontseq_at_tstzspan(seq, p1);
+    const Span *s1 = SPANSET_SP_N(ss, i);
+    result[i] = tcontseq_at_tstzspan(seq, s1);
   }
   int count = ss->count;
   pfree(ss);
@@ -5243,7 +5246,7 @@ tcontseq_minus_tstzspan_iter(const TSequence *seq, const Span *s,
 }
 
 /**
- * @brief Restrict a temporal sequence to the complement of a period.
+ * @brief Restrict a temporal sequence to the complement of a timestamptz span.
  */
 TSequenceSet *
 tcontseq_minus_tstzspan(const TSequence *seq, const Span *s)
@@ -5262,7 +5265,7 @@ tcontseq_minus_tstzspan(const TSequence *seq, const Span *s)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal value to (the complement of) a period.
+ * @brief Restrict a temporal value to (the complement of) a timestamptz span.
  * @sqlfunc atTime, minusTime
  */
 Temporal *
@@ -5677,7 +5680,7 @@ tsequence_delete_tstzset(const TSequence *seq, const Set *s, bool connect)
 }
 
 /**
- * @brief Delete a period from a continuous temporal sequence.
+ * @brief Delete a timestamptz span from a continuous temporal sequence.
  * @param[in] seq Temporal sequence
  * @param[in] s Period
  */
@@ -5724,7 +5727,7 @@ tcontseq_delete_tstzspan(const TSequence *seq, const Span *s)
 
 /**
  * @ingroup libmeos_internal_temporal_modif
- * @brief Delete a period from a temporal value connecting the instants
+ * @brief Delete a timestamptz span from a temporal value connecting the instants
  * before and after the given period (if any).
  * @sqlfunc deleteTime
  */

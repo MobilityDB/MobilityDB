@@ -83,8 +83,7 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
   if (s2 && ! s1)
     PG_RETURN_POINTER(s2);
   /* Non-strict union */
-  Span *result = palloc(sizeof(Span));
-  bbox_union_span_span(s1, s2, result);
+  Span *result = super_union_span_span(s1, s2);
   PG_RETURN_POINTER(result);
 }
 
@@ -187,11 +186,9 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
   if (! PG_ARGISNULL(1))
   {
     SpanSet *ss = PG_GETARG_SPANSET_P(1);
-    const Span **spans = spanset_spans(ss);
     for (int i = 0; i < ss->count; i++)
-      accumArrayResult(state, SpanPGetDatum(spans[i]), false, spanoid,
-        aggContext);
-    pfree(spans);
+      accumArrayResult(state, SpanPGetDatum(SPANSET_SP_N(ss, i)), false,
+        spanoid, aggContext);
   }
   PG_RETURN_POINTER(state);
 }

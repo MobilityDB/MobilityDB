@@ -158,7 +158,7 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
     values[i] = typlen > 0 ? state->dvalues[i] :
       PointerGetDatum(PG_DETOAST_DATUM(state->dvalues[i]));
 
-  Set *result = set_make_exp(values, count, count, basetype, ORDERED);
+  Set *result = set_make_exp(values, count, count, basetype, ORDERED_NO);
 
   /* Free memory */
   if (typbyval)

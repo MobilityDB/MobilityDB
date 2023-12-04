@@ -61,9 +61,9 @@ Temporal_gist_compress(PG_FUNCTION_ARGS)
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Span *period = palloc(sizeof(Span));
-    temporal_bbox_slice(entry->key, period);
-    gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
+    Span *s = palloc(sizeof(Span));
+    temporal_bbox_slice(entry->key, s);
+    gistentryinit(*retval, PointerGetDatum(s), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
   }

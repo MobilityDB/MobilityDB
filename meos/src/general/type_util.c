@@ -117,6 +117,42 @@ datum_cmp(Datum l, Datum r, meosType type)
 }
 
 /**
+ * @brief Return true if the first value is less than the second one
+ */
+bool
+datum_lt(Datum l, Datum r, meosType type)
+{
+  return datum_cmp(l, r, type) < 0;
+}
+
+/**
+ * @brief Return true if the first value is less than or equal to the second one
+ */
+bool
+datum_le(Datum l, Datum r, meosType type)
+{
+  return datum_cmp(l, r, type) <= 0;
+}
+
+/**
+ * @brief Return true if the first value is greater than the second one
+ */
+bool
+datum_gt(Datum l, Datum r, meosType type)
+{
+  return datum_cmp(l, r, type) > 0;
+}
+
+/**
+ * @brief Return true if the first value is greater than or equal to the second one
+ */
+bool
+datum_ge(Datum l, Datum r, meosType type)
+{
+  return datum_cmp(l, r, type) >= 0;
+}
+
+/**
  * @brief Return true if the values are equal
  * @note This function should be faster than the function datum_cmp
  * @pre For geometry and geography types it us supposed that the type is a POINT
@@ -169,41 +205,6 @@ datum_ne(Datum l, Datum r, meosType type)
   return ! datum_eq(l, r, type);
 }
 
-/**
- * @brief Return true if the first value is less than the second one
- */
-bool
-datum_lt(Datum l, Datum r, meosType type)
-{
-  return datum_cmp(l, r, type) < 0;
-}
-
-/**
- * @brief Return true if the first value is less than or equal to the second one
- */
-bool
-datum_le(Datum l, Datum r, meosType type)
-{
-  return datum_cmp(l, r, type) <= 0;
-}
-
-/**
- * @brief Return true if the first value is greater than the second one
- */
-bool
-datum_gt(Datum l, Datum r, meosType type)
-{
-  return datum_cmp(l, r, type) > 0;
-}
-
-/**
- * @brief Return true if the first value is greater than or equal to the second one
- */
-bool
-datum_ge(Datum l, Datum r, meosType type)
-{
-  return datum_cmp(l, r, type) >= 0;
-}
 
 /*****************************************************************************/
 
@@ -280,6 +281,9 @@ datum_add(Datum l, Datum r, meosType type)
       return Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
     case T_FLOAT8:
       return Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
+    case T_DATE:
+      /* For dates we ALWAYS add integers */
+      return DateADTGetDatum(DatumGetDateADT(l) + DatumGetInt32(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown add function for base type: %s", meostype_name(type));
@@ -301,6 +305,9 @@ datum_sub(Datum l, Datum r, meosType type)
       return Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
     case T_FLOAT8:
       return Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
+    case T_DATE:
+      /* For dates we ALWAYS substract integers */
+      return DateADTGetDatum(DatumGetDateADT(l) - DatumGetInt32(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown subtract function for base type: %s", meostype_name(type));
@@ -471,6 +478,8 @@ datum_double(Datum d, meosType type)
       return (double) DatumGetInt64(d);
     case T_FLOAT8:
       return DatumGetFloat8(d);
+    case T_DATE:
+      return (double) DatumGetDateADT(d);
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown conversion to double function for base type: %d", type);
@@ -493,6 +502,8 @@ double_datum(double d, meosType type)
       return Int64GetDatum((int64) d);
     case T_FLOAT8:
       return Float8GetDatum(d);
+    case T_DATE:
+      return DateADTGetDatum((DateADT) d);
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown conversion to Datum function for base type: %d", type);
@@ -544,7 +555,7 @@ tseqarr_sort_cmp(TSequence **l, TSequence **r)
 {
   Span lp = (*l)->period;
   Span rp = (*r)->period;
-  return span_cmp(&lp, &rp);
+  return span_cmp1(&lp, &rp);
 }
 
 /*****************************************************************************/
@@ -596,7 +607,7 @@ void
 spanarr_sort(Span *spans, int count)
 {
   qsort(spans, (size_t) count, sizeof(Span),
-    (qsort_comparator) &span_cmp);
+    (qsort_comparator) &span_cmp1);
 }
 
 /**
@@ -959,11 +970,11 @@ hypot4d(double x, double y, double z, double m)
 /**
  * @brief Call input function of the base type
  */
-bool 
+bool
 #if NPOINT
 basetype_in(const char *str, meosType type, bool end, Datum *result)
 #else
-basetype_in(const char *str, meosType type, 
+basetype_in(const char *str, meosType type,
   bool end __attribute__((unused)), Datum *result)
 #endif
 {

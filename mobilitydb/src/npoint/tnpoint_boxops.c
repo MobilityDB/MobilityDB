@@ -71,8 +71,7 @@ Datum
 Npoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  STBox *result = palloc0(sizeof(STBox));
-  npoint_set_stbox(np, result);
+  STBox *result = npoint_to_stbox(np);
   PG_RETURN_POINTER(result);
 }
 
@@ -88,8 +87,7 @@ Datum
 Nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  STBox *result = palloc(sizeof(STBox));
-  nsegment_set_stbox(ns, result);
+  STBox *result = nsegment_to_stbox(ns);
   PG_RETURN_POINTER(result);
 }
 
@@ -107,8 +105,7 @@ Datum
 Npointset_to_stbox(PG_FUNCTION_ARGS)
 {
   Set *set = PG_GETARG_SET_P(0);
-  STBox *result = palloc(sizeof(STBox));
-  spatialset_set_stbox(set, result);
+  STBox *result = spatialset_to_stbox(set);
   PG_FREE_IF_COPY(set, 0);
   PG_RETURN_POINTER(result);
 }
@@ -128,8 +125,7 @@ Npoint_timestamptz_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  STBox *result = palloc0(sizeof(STBox));
-  npoint_timestamptz_set_stbox(np, t, result);
+  STBox *result = npoint_timestamptz_to_stbox(np, t);
   PG_RETURN_POINTER(result);
 }
 
@@ -137,7 +133,8 @@ PGDLLEXPORT Datum Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_tstzspan_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Transform a network point and a period to a spatiotemporal box
+ * @brief Transform a network point and a timestamptz span to a spatiotemporal
+ * box
  * @sqlfunc stbox()
  * @sqlop @p
  */
@@ -145,9 +142,8 @@ Datum
 Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  Span *p = PG_GETARG_SPAN_P(1);
-  STBox *result = palloc0(sizeof(STBox));
-  npoint_tstzspan_set_stbox(np, p, result);
+  Span *s = PG_GETARG_SPAN_P(1);
+  STBox *result = npoint_tstzspan_to_stbox(np, s);
   PG_RETURN_POINTER(result);
 }
 
@@ -180,7 +176,7 @@ Tnpoint_to_stbox(PG_FUNCTION_ARGS)
  * @param[in] func Function
  */
 Datum
-boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
+Boxop_stbox_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *))
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -198,7 +194,7 @@ boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
+Boxop_tnpoint_stbox(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -216,7 +212,7 @@ boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-boxop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
+Boxop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -246,7 +242,7 @@ PG_FUNCTION_INFO_V1(Overlaps_stbox_tnpoint);
 Datum
 Overlaps_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint_ext(fcinfo, &overlaps_stbox_stbox);
+  return Boxop_stbox_tpoint(fcinfo, &overlaps_stbox_stbox);
 }
 
 PGDLLEXPORT Datum Overlaps_tnpoint_stbox(PG_FUNCTION_ARGS);
@@ -261,7 +257,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tnpoint_stbox);
 Datum
 Overlaps_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox_ext(fcinfo, &overlaps_stbox_stbox);
+  return Boxop_tpoint_stbox(fcinfo, &overlaps_stbox_stbox);
 }
 
 PGDLLEXPORT Datum Overlaps_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -276,7 +272,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tnpoint_tnpoint);
 Datum
 Overlaps_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint_ext(fcinfo, &overlaps_stbox_stbox);
+  return Boxop_tpoint_tpoint(fcinfo, &overlaps_stbox_stbox);
 }
 
 /*****************************************************************************
@@ -295,7 +291,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_tnpoint);
 Datum
 Contains_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint_ext(fcinfo, &contains_stbox_stbox);
+  return Boxop_stbox_tpoint(fcinfo, &contains_stbox_stbox);
 }
 
 PGDLLEXPORT Datum Contains_tnpoint_stbox(PG_FUNCTION_ARGS);
@@ -310,7 +306,7 @@ PG_FUNCTION_INFO_V1(Contains_tnpoint_stbox);
 Datum
 Contains_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox_ext(fcinfo, &contains_stbox_stbox);
+  return Boxop_tpoint_stbox(fcinfo, &contains_stbox_stbox);
 }
 
 PGDLLEXPORT Datum Contains_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -325,7 +321,7 @@ PG_FUNCTION_INFO_V1(Contains_tnpoint_tnpoint);
 Datum
 Contains_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint_ext(fcinfo, &contains_stbox_stbox);
+  return Boxop_tpoint_tpoint(fcinfo, &contains_stbox_stbox);
 }
 
 /*****************************************************************************
@@ -344,7 +340,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_tnpoint);
 Datum
 Contained_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint_ext(fcinfo, &contained_stbox_stbox);
+  return Boxop_stbox_tpoint(fcinfo, &contained_stbox_stbox);
 }
 
 PGDLLEXPORT Datum Contained_tnpoint_stbox(PG_FUNCTION_ARGS);
@@ -359,7 +355,7 @@ PG_FUNCTION_INFO_V1(Contained_tnpoint_stbox);
 Datum
 Contained_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox_ext(fcinfo, &contained_stbox_stbox);
+  return Boxop_tpoint_stbox(fcinfo, &contained_stbox_stbox);
 }
 
 PGDLLEXPORT Datum Contained_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -374,7 +370,7 @@ PG_FUNCTION_INFO_V1(Contained_tnpoint_tnpoint);
 Datum
 Contained_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint_ext(fcinfo, &contained_stbox_stbox);
+  return Boxop_tpoint_tpoint(fcinfo, &contained_stbox_stbox);
 }
 
 /*****************************************************************************
@@ -393,7 +389,7 @@ PG_FUNCTION_INFO_V1(Same_stbox_tnpoint);
 Datum
 Same_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint_ext(fcinfo, &same_stbox_stbox);
+  return Boxop_stbox_tpoint(fcinfo, &same_stbox_stbox);
 }
 
 PGDLLEXPORT Datum Same_tnpoint_stbox(PG_FUNCTION_ARGS);
@@ -408,7 +404,7 @@ PG_FUNCTION_INFO_V1(Same_tnpoint_stbox);
 Datum
 Same_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox_ext(fcinfo, &same_stbox_stbox);
+  return Boxop_tpoint_stbox(fcinfo, &same_stbox_stbox);
 }
 
 PGDLLEXPORT Datum Same_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -423,7 +419,7 @@ PG_FUNCTION_INFO_V1(Same_tnpoint_tnpoint);
 Datum
 Same_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint_ext(fcinfo, &same_stbox_stbox);
+  return Boxop_tpoint_tpoint(fcinfo, &same_stbox_stbox);
 }
 
 /*****************************************************************************
@@ -442,7 +438,7 @@ PG_FUNCTION_INFO_V1(Adjacent_stbox_tnpoint);
 Datum
 Adjacent_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint_ext(fcinfo, &adjacent_stbox_stbox);
+  return Boxop_stbox_tpoint(fcinfo, &adjacent_stbox_stbox);
 }
 
 PGDLLEXPORT Datum Adjacent_tnpoint_stbox(PG_FUNCTION_ARGS);
@@ -457,7 +453,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tnpoint_stbox);
 Datum
 Adjacent_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox_ext(fcinfo, &adjacent_stbox_stbox);
+  return Boxop_tpoint_stbox(fcinfo, &adjacent_stbox_stbox);
 }
 
 PGDLLEXPORT Datum Adjacent_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -472,7 +468,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tnpoint_tnpoint);
 Datum
 Adjacent_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint_ext(fcinfo, &adjacent_stbox_stbox);
+  return Boxop_tpoint_tpoint(fcinfo, &adjacent_stbox_stbox);
 }
 
 /*****************************************************************************/

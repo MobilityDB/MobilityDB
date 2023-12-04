@@ -289,7 +289,7 @@ temporal_basetype_parse(const char **str, meosType basetype,
   }
   if ((*str)[delim] == '\0')
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse temporal value: %s", origstr);
     return false;
   }
@@ -455,7 +455,7 @@ elem_parse(const char **str, meosType basetype, Datum *result)
   str1[delim] = '\0';
   bool success = basetype_in(str1, basetype, false, result);
   pfree(str1);
-  if (! success) 
+  if (! success)
     return false;
   *str += delim + dquote;
   return true;
@@ -497,7 +497,7 @@ set_parse(const char **str, meosType settype)
     elem_parse(str, basetype, &values[i]);
   }
   p_cbrace(str);
-  return set_make_free(values, count, basetype, ORDERED);
+  return set_make_free(values, count, basetype, ORDERED_NO);
 }
 
 /**
@@ -615,8 +615,8 @@ spanset_parse(const char **str, meosType spansettype)
  * no more input after the instant
  * @param[out] result New instant, may be NULL
  */
-bool 
-tinstant_parse(const char **str, meosType temptype, bool end, 
+bool
+tinstant_parse(const char **str, meosType temptype, bool end,
   TInstant **result)
 {
   p_whitespace(str);
@@ -641,7 +641,7 @@ tinstant_parse(const char **str, meosType temptype, bool end,
  * @param[in] str Input string
  * @param[in] temptype Base type
  */
-TSequence * 
+TSequence *
 tdiscseq_parse(const char **str, meosType temptype)
 {
   const char *type_str = "temporal";
@@ -686,7 +686,7 @@ tdiscseq_parse(const char **str, meosType temptype)
  * no more input after the sequence
  * @param[out] result New sequence, may be NULL
  */
-bool 
+bool
 tcontseq_parse(const char **str, meosType temptype, interpType interp,
   bool end, TSequence **result)
 {

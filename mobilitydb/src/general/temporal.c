@@ -729,14 +729,14 @@ PGDLLEXPORT Datum Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequence_from_base_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence from a base value and a period
+ * @brief Construct a temporal sequence from a base value and a timestamptz span
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq()
  */
 Datum
 Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  Span *p = PG_GETARG_SPAN_P(1);
+  Span *s = PG_GETARG_SPAN_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
@@ -746,7 +746,7 @@ Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS)
     interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
-  TSequence *result = tsequence_from_base_tstzspan(value, temptype, p, interp);
+  TSequence *result = tsequence_from_base_tstzspan(value, temptype, s, interp);
   PG_RETURN_POINTER(result);
 }
 
@@ -830,8 +830,7 @@ Datum
 Temporal_to_tstzspan(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Span *result = palloc(sizeof(Span));
-  temporal_set_tstzspan(temp, result);
+  Span *result = temporal_to_tstzspan(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
 }
@@ -966,8 +965,7 @@ Temporal_valueset(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(temp, 0);
     PG_RETURN_POINTER(result);
   }
-  Set *result = set_make(values, count, basetype, ORDERED);
-  pfree(values);
+  Set *result = set_make_free(values, count, basetype, ORDERED);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1540,7 +1538,7 @@ Temporal_unnest(PG_FUNCTION_ARGS)
  * @param[in] func Specific function for the ever/always comparison
  */
 static Datum
-temporal_ev_al_comp_ext(FunctionCallInfo fcinfo,
+Temporal_ev_al_comp(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, Datum))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -1563,7 +1561,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_eq);
 Datum
 Temporal_ever_eq(PG_FUNCTION_ARGS)
 {
-  return temporal_ev_al_comp_ext(fcinfo, &temporal_ever_eq);
+  return Temporal_ev_al_comp(fcinfo, &temporal_ever_eq);
 }
 
 PGDLLEXPORT Datum Temporal_always_eq(PG_FUNCTION_ARGS);
@@ -1577,7 +1575,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_eq);
 Datum
 Temporal_always_eq(PG_FUNCTION_ARGS)
 {
-  return temporal_ev_al_comp_ext(fcinfo, &temporal_always_eq);
+  return Temporal_ev_al_comp(fcinfo, &temporal_always_eq);
 }
 
 PGDLLEXPORT Datum Temporal_ever_ne(PG_FUNCTION_ARGS);
@@ -1591,7 +1589,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_ne);
 Datum
 Temporal_ever_ne(PG_FUNCTION_ARGS)
 {
-  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_always_eq);
+  return ! Temporal_ev_al_comp(fcinfo, &temporal_always_eq);
 }
 
 PGDLLEXPORT Datum Temporal_always_ne(PG_FUNCTION_ARGS);
@@ -1605,7 +1603,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_ne);
 Datum
 Temporal_always_ne(PG_FUNCTION_ARGS)
 {
-  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_ever_eq);
+  return ! Temporal_ev_al_comp(fcinfo, &temporal_ever_eq);
 }
 
 /*****************************************************************************/
@@ -1621,7 +1619,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_lt);
 Datum
 Temporal_ever_lt(PG_FUNCTION_ARGS)
 {
-  return temporal_ev_al_comp_ext(fcinfo, &temporal_ever_lt);
+  return Temporal_ev_al_comp(fcinfo, &temporal_ever_lt);
 }
 
 PGDLLEXPORT Datum Temporal_always_lt(PG_FUNCTION_ARGS);
@@ -1635,7 +1633,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_lt);
 Datum
 Temporal_always_lt(PG_FUNCTION_ARGS)
 {
-  return temporal_ev_al_comp_ext(fcinfo, &temporal_always_lt);
+  return Temporal_ev_al_comp(fcinfo, &temporal_always_lt);
 }
 
 PGDLLEXPORT Datum Temporal_ever_le(PG_FUNCTION_ARGS);
@@ -1649,7 +1647,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_le);
 Datum
 Temporal_ever_le(PG_FUNCTION_ARGS)
 {
-  return temporal_ev_al_comp_ext(fcinfo, &temporal_ever_le);
+  return Temporal_ev_al_comp(fcinfo, &temporal_ever_le);
 }
 
 PGDLLEXPORT Datum Temporal_always_le(PG_FUNCTION_ARGS);
@@ -1663,7 +1661,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_le);
 Datum
 Temporal_always_le(PG_FUNCTION_ARGS)
 {
-  return temporal_ev_al_comp_ext(fcinfo, &temporal_always_le);
+  return Temporal_ev_al_comp(fcinfo, &temporal_always_le);
 }
 
 PGDLLEXPORT Datum Temporal_ever_gt(PG_FUNCTION_ARGS);
@@ -1677,7 +1675,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_gt);
 Datum
 Temporal_ever_gt(PG_FUNCTION_ARGS)
 {
-  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_always_le);
+  return ! Temporal_ev_al_comp(fcinfo, &temporal_always_le);
 }
 
 PGDLLEXPORT Datum Temporal_always_gt(PG_FUNCTION_ARGS);
@@ -1691,7 +1689,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_gt);
 Datum
 Temporal_always_gt(PG_FUNCTION_ARGS)
 {
-  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_ever_le);
+  return ! Temporal_ev_al_comp(fcinfo, &temporal_ever_le);
 }
 
 PGDLLEXPORT Datum Temporal_ever_ge(PG_FUNCTION_ARGS);
@@ -1706,7 +1704,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_ge);
 Datum
 Temporal_ever_ge(PG_FUNCTION_ARGS)
 {
-  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_always_lt);
+  return ! Temporal_ev_al_comp(fcinfo, &temporal_always_lt);
 }
 
 PGDLLEXPORT Datum Temporal_always_ge(PG_FUNCTION_ARGS);
@@ -1721,7 +1719,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_ge);
 Datum
 Temporal_always_ge(PG_FUNCTION_ARGS)
 {
-  return ! temporal_ev_al_comp_ext(fcinfo, &temporal_ever_lt);
+  return ! Temporal_ev_al_comp(fcinfo, &temporal_ever_lt);
 }
 
 /*****************************************************************************
@@ -2040,7 +2038,7 @@ Temporal_merge_array(PG_FUNCTION_ARGS)
  * @brief Restrict a temporal value to (the complement of) an array of base values
  */
 static Datum
-temporal_restrict_value_ext(FunctionCallInfo fcinfo, bool atfunc)
+Temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
@@ -2063,7 +2061,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_value);
 Datum
 Temporal_at_value(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_value_ext(fcinfo, REST_AT);
+  return Temporal_restrict_value(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Temporal_minus_value(PG_FUNCTION_ARGS);
@@ -2076,7 +2074,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_value);
 Datum
 Temporal_minus_value(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_value_ext(fcinfo, REST_MINUS);
+  return Temporal_restrict_value(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -2085,7 +2083,7 @@ Temporal_minus_value(PG_FUNCTION_ARGS)
  * @brief Restrict a temporal value to (the complement of) an array of base values
  */
 static Datum
-temporal_restrict_values_ext(FunctionCallInfo fcinfo, bool atfunc)
+Temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *set = PG_GETARG_SET_P(1);
@@ -2112,7 +2110,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_values);
 Datum
 Temporal_at_values(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_values_ext(fcinfo, REST_AT);
+  return Temporal_restrict_values(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Temporal_minus_values(PG_FUNCTION_ARGS);
@@ -2125,13 +2123,13 @@ PG_FUNCTION_INFO_V1(Temporal_minus_values);
 Datum
 Temporal_minus_values(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_values_ext(fcinfo, REST_MINUS);
+  return Temporal_restrict_values(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
 
 static Datum
-tnumber_restrict_span_ext(FunctionCallInfo fcinfo, bool atfunc)
+Tnumber_restrict_span(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *span = PG_GETARG_SPAN_P(1);
@@ -2152,7 +2150,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_span);
 Datum
 Tnumber_at_span(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_span_ext(fcinfo, REST_AT);
+  return Tnumber_restrict_span(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Tnumber_minus_span(PG_FUNCTION_ARGS);
@@ -2165,7 +2163,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_span);
 Datum
 Tnumber_minus_span(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_span_ext(fcinfo, REST_MINUS);
+  return Tnumber_restrict_span(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -2175,7 +2173,7 @@ Tnumber_minus_span(PG_FUNCTION_ARGS)
  * of base values
  */
 static Datum
-tnumber_restrict_spanset_ext(FunctionCallInfo fcinfo, bool atfunc)
+Tnumber_restrict_spanset(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);  \
   SpanSet *ss = PG_GETARG_SPANSET_P(1); \
@@ -2197,7 +2195,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_spanset);
 Datum
 Tnumber_at_spanset(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_spanset_ext(fcinfo, REST_AT);
+  return Tnumber_restrict_spanset(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Tnumber_minus_spanset(PG_FUNCTION_ARGS);
@@ -2210,7 +2208,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_spanset);
 Datum
 Tnumber_minus_spanset(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_spanset_ext(fcinfo, REST_MINUS);
+  return Tnumber_restrict_spanset(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -2291,7 +2289,7 @@ Temporal_minus_max(PG_FUNCTION_ARGS)
  * @brief Restrict a temporal value to (the complement of) a temporal box
   */
 static Datum
-tnumber_restrict_tbox_ext(FunctionCallInfo fcinfo, bool atfunc)
+Tnumber_restrict_tbox(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TBox *box = PG_GETARG_TBOX_P(1);
@@ -2313,7 +2311,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_tbox);
 Datum
 Tnumber_at_tbox(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_tbox_ext(fcinfo, REST_AT);
+  return Tnumber_restrict_tbox(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Tnumber_minus_tbox(PG_FUNCTION_ARGS);
@@ -2326,7 +2324,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_tbox);
 Datum
 Tnumber_minus_tbox(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_tbox_ext(fcinfo, REST_MINUS);
+  return Tnumber_restrict_tbox(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -2335,7 +2333,7 @@ Tnumber_minus_tbox(PG_FUNCTION_ARGS)
  * @brief Restrict a temporal value to (the complement of) a timestamp
  */
 static Datum
-temporal_restrict_timestamptz_ext(FunctionCallInfo fcinfo, bool atfunc)
+Temporal_restrict_timestamptz(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
@@ -2356,7 +2354,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_timestamp);
 Datum
 Temporal_at_timestamp(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_timestamptz_ext(fcinfo, REST_AT);
+  return Temporal_restrict_timestamptz(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Temporal_minus_timestamp(PG_FUNCTION_ARGS);
@@ -2369,7 +2367,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_timestamp);
 Datum
 Temporal_minus_timestamp(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_timestamptz_ext(fcinfo, REST_MINUS);
+  return Temporal_restrict_timestamptz(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -2439,11 +2437,11 @@ Temporal_minus_tstzset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 static Datum
-temporal_restrict_tstzspan_ext(FunctionCallInfo fcinfo, bool atfunc)
+Temporal_restrict_tstzspan(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Span *p = PG_GETARG_SPAN_P(1);
-  Temporal *result = temporal_restrict_tstzspan(temp, p, atfunc);
+  Span *s = PG_GETARG_SPAN_P(1);
+  Temporal *result = temporal_restrict_tstzspan(temp, s, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -2454,26 +2452,26 @@ PGDLLEXPORT Datum Temporal_at_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to a period
+ * @brief Restrict a temporal value to a timestamptz span
  * @sqlfunc atTime()
  */
 Datum
 Temporal_at_tstzspan(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_tstzspan_ext(fcinfo, REST_AT);
+  return Temporal_restrict_tstzspan(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Temporal_minus_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of a period
+ * @brief Restrict a temporal value to the complement of a timestamptz span
  * @sqlfunc minusTime()
  */
 Datum
 Temporal_minus_tstzspan(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_tstzspan_ext(fcinfo, REST_MINUS);
+  return Temporal_restrict_tstzspan(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -2605,16 +2603,16 @@ PGDLLEXPORT Datum Temporal_delete_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_delete_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_modif
- * @brief Delete a period from a temporal value
+ * @brief Delete a timestamptz span from a temporal value
  * @sqlfunc deleteTime()
  */
 Datum
 Temporal_delete_tstzspan(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Span *p = PG_GETARG_SPAN_P(1);
+  Span *s = PG_GETARG_SPAN_P(1);
   bool connect = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_delete_tstzspan(temp, p, connect);
+  Temporal *result = temporal_delete_tstzspan(temp, s, connect);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();

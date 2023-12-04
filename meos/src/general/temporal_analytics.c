@@ -71,12 +71,12 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
   assert(valid_duration(duration));
   TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
   Datum value = tinstant_value(inst);
-  TInstant *result = tinstant_make(value, inst->temptype, lower);
-  return result;
+  return tinstant_make(value, inst->temptype, lower);
 }
 
 /**
- * @brief Set the precision of a temporal value according to period buckets.
+ * @brief Set the precision of a temporal value according to timestamptz span
+ * buckets.
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -110,7 +110,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   /* New instants computing the value at the beginning/end of the bucket */
   TInstant *start = NULL, *end = NULL;
   /* Sequence for computing the twAvg/twCentroid of each bucket */
-  TSequence *seq1;  
+  TSequence *seq1;
   Datum value;
   int i = 0;   /* Instant of the input sequence being processed */
   int k = 0;   /* Number of instants for computing the twAvg/twCentroid */
@@ -158,7 +158,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       }
       if (interp != DISCRETE)
       {
-        /* The instant at the end of the current bucket is the start of the next  
+        /* The instant at the end of the current bucket is the start of the next
          * one excepted when the last bucket is empty */
         if (i < seq->count || seq->period.upper_inc)
         {
@@ -183,7 +183,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
     if (! twavg)
       pfree(DatumGetPointer(value));
   }
-  /* The lower and upper bounds are both true since the tprecision operation 
+  /* The lower and upper bounds are both true since the tprecision operation
    * amounts to a granularity change */
   TSequence *result = tsequence_make_free(outinsts, l, true, true, interp,
     NORMALIZE);
@@ -248,7 +248,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
       /* Close the previous sequence if any and start a new one */
       if (ninsts > 0)
       {
-        /* The lower and upper bounds are both true since the tprecision 
+        /* The lower and upper bounds are both true since the tprecision
          * operation amounts to a granularity change */
         sequences[nseqs++] = tsequence_make((const TInstant **) instants,
           ninsts, true, true, interp, NORMALIZE);
@@ -263,7 +263,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   /* Close the last sequence if any */
   if (ninsts > 0)
   {
-    /* The lower and upper bounds are both true since the tprecision 
+    /* The lower and upper bounds are both true since the tprecision
      * operation amounts to a granularity change */
     sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
       true, true, interp, NORMALIZE);

@@ -317,8 +317,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = (oper == MULT || oper == DIV) && linear1 && linear2 ?
     tpfunc : NULL;
-  Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
-  return result;
+  return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 /*****************************************************************************
@@ -343,8 +342,7 @@ tnumberinst_abs(const TInstant *inst)
     absvalue = Int32GetDatum(abs(DatumGetInt32(value)));
   else /* basetype == T_FLOAT8 */
     absvalue = Float8GetDatum(fabs(DatumGetFloat8(value)));
-  TInstant *result = tinstant_make(absvalue, inst->temptype, inst->t);
-  return result;
+  return tinstant_make(absvalue, inst->temptype, inst->t);
 }
 
 /**
@@ -362,9 +360,8 @@ tnumberseq_iter_abs(const TSequence *seq)
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     instants[i] = tnumberinst_abs(inst);
   }
-  TSequence *result = tsequence_make_free(instants, seq->count,
+  return tsequence_make_free(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
-  return result;
 }
 
 /**
@@ -430,9 +427,8 @@ tnumberseq_abs(const TSequence *seq)
 {
   assert(seq);
   assert(tnumber_type(seq->temptype));
-  TSequence *result = MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
+  return MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
     tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
-  return result;
 }
 
 /**
@@ -736,8 +732,7 @@ tfloat_round(const Temporal *temp, int maxdd)
   lfinfo.restype = T_TFLOAT;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
+  return tfunc_temporal(temp, &lfinfo);
 }
 
 /**
@@ -813,8 +808,7 @@ tfloat_radians(const Temporal *temp)
   lfinfo.restype = T_TFLOAT;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
+  return tfunc_temporal(temp, &lfinfo);
 }
 
 /*****************************************************************************

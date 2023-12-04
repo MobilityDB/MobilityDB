@@ -810,8 +810,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
   lfinfo.restype = T_TFLOAT;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
+  return tfunc_temporal(temp, &lfinfo);
 }
 
 /**
@@ -5189,8 +5188,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = &tpoint_geo_min_bearing_at_timestamp;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
-  return result;
+  return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 
 /**
@@ -5223,8 +5221,7 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = lfinfo.reslinear ?
     &tpointsegm_min_bearing_at_timestamp : NULL;
-  Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
-  return result;
+  return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 /*****************************************************************************/

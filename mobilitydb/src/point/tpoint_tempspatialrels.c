@@ -74,7 +74,7 @@
  * geometry and a temporal point
  */
 static Datum
-tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
+Tinterrel_geo_tpoint(FunctionCallInfo fcinfo, bool tinter)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
     PG_RETURN_NULL();
@@ -103,7 +103,7 @@ tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
  * geometry and a temporal point
  */
 static Datum
-tinterrel_tpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
+Tinterrel_tpoint_geo(FunctionCallInfo fcinfo, bool tinter)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
     PG_RETURN_NULL();
@@ -178,7 +178,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_geo_tpoint);
 Datum
 Tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return tinterrel_geo_tpoint_ext(fcinfo, TDISJOINT);
+  return Tinterrel_geo_tpoint(fcinfo, TDISJOINT);
 }
 
 PGDLLEXPORT Datum Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS);
@@ -192,7 +192,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tpoint_geo);
 Datum
 Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tpoint_geo_ext(fcinfo, TDISJOINT);
+  return Tinterrel_tpoint_geo(fcinfo, TDISJOINT);
 }
 
 /*****************************************************************************
@@ -211,7 +211,7 @@ PG_FUNCTION_INFO_V1(Tintersects_geo_tpoint);
 Datum
 Tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return tinterrel_geo_tpoint_ext(fcinfo, TINTERSECTS);
+  return Tinterrel_geo_tpoint(fcinfo, TINTERSECTS);
 }
 
 PGDLLEXPORT Datum Tintersects_tpoint_geo(PG_FUNCTION_ARGS);
@@ -225,7 +225,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tpoint_geo);
 Datum
 Tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tpoint_geo_ext(fcinfo, TINTERSECTS);
+  return Tinterrel_tpoint_geo(fcinfo, TINTERSECTS);
 }
 
 /*****************************************************************************

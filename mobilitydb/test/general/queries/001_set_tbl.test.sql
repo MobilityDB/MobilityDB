@@ -102,6 +102,14 @@ SELECT numValues(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHE
 
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tstzset IS NOT NULL;
 
+SELECT MAX(startValue(i::floatset)) FROM tbl_intset ORDER BY 1;
+SELECT MAX(startValue(f::intset)) FROM tbl_floatset ORDER BY 1;
+SELECT MAX(startValue(d::tstzset)) FROM tbl_dateset ORDER BY 1;
+SELECT MAX(startValue(t::dateset)) FROM tbl_tstzset ORDER BY 1;
+
+SELECT COUNT(*) FROM tbl_intset WHERE (i::floatset)::intset <> i;
+SELECT COUNT(*) FROM tbl_dateset WHERE (d::tstzset)::dateset <> d;
+
 -------------------------------------------------------------------------------
 -- Transformation functions
 

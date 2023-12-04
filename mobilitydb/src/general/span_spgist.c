@@ -88,9 +88,9 @@ typedef struct SortedSpan
 static int
 span_lower_qsort_cmp(const void *a, const void *b)
 {
-  Span *pa = (Span *) a;
-  Span *pb = (Span *) b;
-  return span_lower_cmp(pa, pb);
+  Span *sa = (Span *) a;
+  Span *sb = (Span *) b;
+  return span_lower_cmp(sa, sb);
 }
 
 /**
@@ -99,9 +99,9 @@ span_lower_qsort_cmp(const void *a, const void *b)
 static int
 span_upper_qsort_cmp(const void *a, const void *b)
 {
-  Span *pa = (Span *) a;
-  Span *pb = (Span *) b;
-  return span_upper_cmp(pa, pb);
+  Span *sa = (Span *) a;
+  Span *sb = (Span *) b;
+  return span_upper_cmp(sa, sb);
 }
 
 /**
@@ -410,7 +410,7 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
   {
     spanset_span_slice(scankey->sk_argument, result);
   }
-  /* For temporal types whose bounding box is a period */
+  /* For temporal types whose bounding box is a timestamptz span */
   else if (temporal_type(type))
   {
     temporal_bbox_slice(scankey->sk_argument, result);
@@ -1051,8 +1051,7 @@ Datum
 Set_spgist_compress(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Span *result = palloc(sizeof(Span));
-  set_set_span(s, result);
+  Span *result = set_span(s);
   PG_RETURN_SPAN_P(result);
 }
 

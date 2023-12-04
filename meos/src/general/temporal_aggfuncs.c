@@ -238,7 +238,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   {
     const TSequence *sequences[2];
     /* The two sequences do not intersect: copy the sequences in the right order */
-    if (span_cmp(&seq1->period, &seq2->period) < 0)
+    if (span_cmp1(&seq1->period, &seq2->period) < 0)
     {
       sequences[0] = (TSequence *) seq1;
       sequences[1] = (TSequence *) seq2;
@@ -982,17 +982,17 @@ tstzset_transform_tcount(const Set *s)
 }
 
 /**
- * @brief Transform a period value into a temporal integer value for
+ * @brief Transform a a timestamptz span into a temporal integer value for
  * performing temporal count aggregation
  */
 static TSequence *
 tstzspan_transform_tcount(const Span *s)
 {
-  TSequence *result;
   Datum datum_one = Int32GetDatum(1);
   TInstant *instants[2];
   TimestampTz t = s->lower;
   instants[0] = tinstant_make(datum_one, T_TINT, t);
+  TSequence *result;
   if (s->lower == s->upper)
   {
     result = tsequence_make((const TInstant **) instants, 1, s->lower_inc,

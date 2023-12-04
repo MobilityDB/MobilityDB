@@ -648,10 +648,7 @@ Distance_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
   Set *s2 = PG_GETARG_SET_P(1);
-  Span sp1, sp2;
-  set_set_span(s1, &sp1);
-  set_set_span(s2, &sp2);
-  double result = distance_span_span(&sp1, &sp2);
+  double result = distance_set_set(s1, s2);
   PG_FREE_IF_COPY(s1, 0);
   PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_FLOAT8(result);

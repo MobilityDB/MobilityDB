@@ -61,7 +61,7 @@ PG_FUNCTION_INFO_V1(Before_tstzspan_temporal);
 Datum
 Before_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_tstzspan_temporal_ext(fcinfo, &left_span_span);
+  return Boxop_tstzspan_temporal(fcinfo, &left_span_span);
 }
 
 PGDLLEXPORT Datum Overbefore_tstzspan_temporal(PG_FUNCTION_ARGS);
@@ -75,7 +75,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tstzspan_temporal);
 Datum
 Overbefore_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_tstzspan_temporal_ext(fcinfo, &overleft_span_span);
+  return Boxop_tstzspan_temporal(fcinfo, &overleft_span_span);
 }
 
 PGDLLEXPORT Datum After_tstzspan_temporal(PG_FUNCTION_ARGS);
@@ -89,7 +89,7 @@ PG_FUNCTION_INFO_V1(After_tstzspan_temporal);
 Datum
 After_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_tstzspan_temporal_ext(fcinfo, &right_span_span);
+  return Boxop_tstzspan_temporal(fcinfo, &right_span_span);
 }
 
 PGDLLEXPORT Datum Overafter_tstzspan_temporal(PG_FUNCTION_ARGS);
@@ -103,7 +103,7 @@ PG_FUNCTION_INFO_V1(Overafter_tstzspan_temporal);
 Datum
 Overafter_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_tstzspan_temporal_ext(fcinfo, &overright_span_span);
+  return Boxop_tstzspan_temporal(fcinfo, &overright_span_span);
 }
 
 /*****************************************************************************/
@@ -120,7 +120,7 @@ PG_FUNCTION_INFO_V1(Before_temporal_tstzspan);
 Datum
 Before_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_tstzspan_ext(fcinfo, &left_span_span);
+  return Boxop_temporal_tstzspan(fcinfo, &left_span_span);
 }
 
 PGDLLEXPORT Datum Overbefore_temporal_tstzspan(PG_FUNCTION_ARGS);
@@ -134,7 +134,7 @@ PG_FUNCTION_INFO_V1(Overbefore_temporal_tstzspan);
 Datum
 Overbefore_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_tstzspan_ext(fcinfo, &overleft_span_span);
+  return Boxop_temporal_tstzspan(fcinfo, &overleft_span_span);
 }
 
 PGDLLEXPORT Datum After_temporal_tstzspan(PG_FUNCTION_ARGS);
@@ -148,7 +148,7 @@ PG_FUNCTION_INFO_V1(After_temporal_tstzspan);
 Datum
 After_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_tstzspan_ext(fcinfo, &right_span_span);
+  return Boxop_temporal_tstzspan(fcinfo, &right_span_span);
 }
 
 PGDLLEXPORT Datum Overafter_temporal_tstzspan(PG_FUNCTION_ARGS);
@@ -162,7 +162,7 @@ PG_FUNCTION_INFO_V1(Overafter_temporal_tstzspan);
 Datum
 Overafter_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_tstzspan_ext(fcinfo, &overright_span_span);
+  return Boxop_temporal_tstzspan(fcinfo, &overright_span_span);
 }
 
 /*****************************************************************************/
@@ -179,7 +179,7 @@ PG_FUNCTION_INFO_V1(Before_temporal_temporal);
 Datum
 Before_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &left_span_span);
+  return Boxop_temporal_temporal(fcinfo, &left_span_span);
 }
 
 PGDLLEXPORT Datum Overbefore_temporal_temporal(PG_FUNCTION_ARGS);
@@ -193,7 +193,7 @@ PG_FUNCTION_INFO_V1(Overbefore_temporal_temporal);
 Datum
 Overbefore_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &overleft_span_span);
+  return Boxop_temporal_temporal(fcinfo, &overleft_span_span);
 }
 
 PGDLLEXPORT Datum After_temporal_temporal(PG_FUNCTION_ARGS);
@@ -207,7 +207,7 @@ PG_FUNCTION_INFO_V1(After_temporal_temporal);
 Datum
 After_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &right_span_span);
+  return Boxop_temporal_temporal(fcinfo, &right_span_span);
 }
 
 PGDLLEXPORT Datum Overafter_temporal_temporal(PG_FUNCTION_ARGS);
@@ -221,7 +221,7 @@ PG_FUNCTION_INFO_V1(Overafter_temporal_temporal);
 Datum
 Overafter_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal_ext(fcinfo, &overright_span_span);
+  return Boxop_temporal_temporal(fcinfo, &overright_span_span);
 }
 
 /*****************************************************************************/
@@ -238,7 +238,7 @@ PG_FUNCTION_INFO_V1(Left_numspan_tnumber);
 Datum
 Left_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_numspan_tnumber_ext(fcinfo, &left_span_span);
+  return Boxop_numspan_tnumber(fcinfo, &left_span_span);
 }
 
 PGDLLEXPORT Datum Overleft_numspan_tnumber(PG_FUNCTION_ARGS);
@@ -252,7 +252,7 @@ PG_FUNCTION_INFO_V1(Overleft_numspan_tnumber);
 Datum
 Overleft_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_numspan_tnumber_ext(fcinfo, &overleft_span_span);
+  return Boxop_numspan_tnumber(fcinfo, &overleft_span_span);
 }
 
 PGDLLEXPORT Datum Right_numspan_tnumber(PG_FUNCTION_ARGS);
@@ -266,7 +266,7 @@ PG_FUNCTION_INFO_V1(Right_numspan_tnumber);
 Datum
 Right_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_numspan_tnumber_ext(fcinfo, &right_span_span);
+  return Boxop_numspan_tnumber(fcinfo, &right_span_span);
 }
 
 PGDLLEXPORT Datum Overright_numspan_tnumber(PG_FUNCTION_ARGS);
@@ -280,7 +280,7 @@ PG_FUNCTION_INFO_V1(Overright_numspan_tnumber);
 Datum
 Overright_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_numspan_tnumber_ext(fcinfo, &overright_span_span);
+  return Boxop_numspan_tnumber(fcinfo, &overright_span_span);
 }
 
 /*****************************************************************************/
@@ -297,7 +297,7 @@ PG_FUNCTION_INFO_V1(Left_tnumber_numspan);
 Datum
 Left_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_numspan_ext(fcinfo, &left_span_span);
+  return Boxop_tnumber_numspan(fcinfo, &left_span_span);
 }
 
 PGDLLEXPORT Datum Overleft_tnumber_numspan(PG_FUNCTION_ARGS);
@@ -311,7 +311,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnumber_numspan);
 Datum
 Overleft_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_numspan_ext(fcinfo, &overleft_span_span);
+  return Boxop_tnumber_numspan(fcinfo, &overleft_span_span);
 }
 
 PGDLLEXPORT Datum Right_tnumber_numspan(PG_FUNCTION_ARGS);
@@ -325,7 +325,7 @@ PG_FUNCTION_INFO_V1(Right_tnumber_numspan);
 Datum
 Right_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_numspan_ext(fcinfo, &right_span_span);
+  return Boxop_tnumber_numspan(fcinfo, &right_span_span);
 }
 
 PGDLLEXPORT Datum Overright_tnumber_numspan(PG_FUNCTION_ARGS);
@@ -339,7 +339,7 @@ PG_FUNCTION_INFO_V1(Overright_tnumber_numspan);
 Datum
 Overright_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_numspan_ext(fcinfo, &overright_span_span);
+  return Boxop_tnumber_numspan(fcinfo, &overright_span_span);
 }
 
 /*****************************************************************************/
@@ -356,7 +356,7 @@ PG_FUNCTION_INFO_V1(Left_tbox_tnumber);
 Datum
 Left_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber_ext(fcinfo, &left_tbox_tbox);
+  return Boxop_tbox_tnumber(fcinfo, &left_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overleft_tbox_tnumber(PG_FUNCTION_ARGS);
@@ -370,7 +370,7 @@ PG_FUNCTION_INFO_V1(Overleft_tbox_tnumber);
 Datum
 Overleft_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber_ext(fcinfo, &overleft_tbox_tbox);
+  return Boxop_tbox_tnumber(fcinfo, &overleft_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Right_tbox_tnumber(PG_FUNCTION_ARGS);
@@ -384,7 +384,7 @@ PG_FUNCTION_INFO_V1(Right_tbox_tnumber);
 Datum
 Right_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber_ext(fcinfo, &right_tbox_tbox);
+  return Boxop_tbox_tnumber(fcinfo, &right_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overright_tbox_tnumber(PG_FUNCTION_ARGS);
@@ -398,7 +398,7 @@ PG_FUNCTION_INFO_V1(Overright_tbox_tnumber);
 Datum
 Overright_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber_ext(fcinfo, &overright_tbox_tbox);
+  return Boxop_tbox_tnumber(fcinfo, &overright_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Before_tbox_tnumber(PG_FUNCTION_ARGS);
@@ -412,7 +412,7 @@ PG_FUNCTION_INFO_V1(Before_tbox_tnumber);
 Datum
 Before_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber_ext(fcinfo, &before_tbox_tbox);
+  return Boxop_tbox_tnumber(fcinfo, &before_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overbefore_tbox_tnumber(PG_FUNCTION_ARGS);
@@ -426,7 +426,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tbox_tnumber);
 Datum
 Overbefore_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber_ext(fcinfo, &overbefore_tbox_tbox);
+  return Boxop_tbox_tnumber(fcinfo, &overbefore_tbox_tbox);
 }
 
 PGDLLEXPORT Datum After_tbox_tnumber(PG_FUNCTION_ARGS);
@@ -440,7 +440,7 @@ PG_FUNCTION_INFO_V1(After_tbox_tnumber);
 Datum
 After_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber_ext(fcinfo, &after_tbox_tbox);
+  return Boxop_tbox_tnumber(fcinfo, &after_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overafter_tbox_tnumber(PG_FUNCTION_ARGS);
@@ -454,7 +454,7 @@ PG_FUNCTION_INFO_V1(Overafter_tbox_tnumber);
 Datum
 Overafter_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber_ext(fcinfo, &overafter_tbox_tbox);
+  return Boxop_tbox_tnumber(fcinfo, &overafter_tbox_tbox);
 }
 
 /*****************************************************************************/
@@ -471,7 +471,7 @@ PG_FUNCTION_INFO_V1(Left_tnumber_tbox);
 Datum
 Left_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox_ext(fcinfo, &left_tbox_tbox);
+  return Boxop_tnumber_tbox(fcinfo, &left_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overleft_tnumber_tbox(PG_FUNCTION_ARGS);
@@ -485,7 +485,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnumber_tbox);
 Datum
 Overleft_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox_ext(fcinfo, &overleft_tbox_tbox);
+  return Boxop_tnumber_tbox(fcinfo, &overleft_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Right_tnumber_tbox(PG_FUNCTION_ARGS);
@@ -499,7 +499,7 @@ PG_FUNCTION_INFO_V1(Right_tnumber_tbox);
 Datum
 Right_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox_ext(fcinfo, &right_tbox_tbox);
+  return Boxop_tnumber_tbox(fcinfo, &right_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overright_tnumber_tbox(PG_FUNCTION_ARGS);
@@ -513,7 +513,7 @@ PG_FUNCTION_INFO_V1(Overright_tnumber_tbox);
 Datum
 Overright_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox_ext(fcinfo, &overright_tbox_tbox);
+  return Boxop_tnumber_tbox(fcinfo, &overright_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Before_tnumber_tbox(PG_FUNCTION_ARGS);
@@ -527,7 +527,7 @@ PG_FUNCTION_INFO_V1(Before_tnumber_tbox);
 Datum
 Before_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox_ext(fcinfo, &before_tbox_tbox);
+  return Boxop_tnumber_tbox(fcinfo, &before_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overbefore_tnumber_tbox(PG_FUNCTION_ARGS);
@@ -541,7 +541,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tnumber_tbox);
 Datum
 Overbefore_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox_ext(fcinfo, &overbefore_tbox_tbox);
+  return Boxop_tnumber_tbox(fcinfo, &overbefore_tbox_tbox);
 }
 
 PGDLLEXPORT Datum After_tnumber_tbox(PG_FUNCTION_ARGS);
@@ -555,7 +555,7 @@ PG_FUNCTION_INFO_V1(After_tnumber_tbox);
 Datum
 After_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox_ext(fcinfo, &after_tbox_tbox);
+  return Boxop_tnumber_tbox(fcinfo, &after_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overafter_tnumber_tbox(PG_FUNCTION_ARGS);
@@ -569,7 +569,7 @@ PG_FUNCTION_INFO_V1(Overafter_tnumber_tbox);
 Datum
 Overafter_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox_ext(fcinfo, &overafter_tbox_tbox);
+  return Boxop_tnumber_tbox(fcinfo, &overafter_tbox_tbox);
 }
 
 /*****************************************************************************/
@@ -587,7 +587,7 @@ PG_FUNCTION_INFO_V1(Left_tnumber_tnumber);
 Datum
 Left_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber_ext(fcinfo, &left_tbox_tbox);
+  return Boxop_tnumber_tnumber(fcinfo, &left_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overleft_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -602,7 +602,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnumber_tnumber);
 Datum
 Overleft_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber_ext(fcinfo, &overleft_tbox_tbox);
+  return Boxop_tnumber_tnumber(fcinfo, &overleft_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Right_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -617,7 +617,7 @@ PG_FUNCTION_INFO_V1(Right_tnumber_tnumber);
 Datum
 Right_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber_ext(fcinfo, &right_tbox_tbox);
+  return Boxop_tnumber_tnumber(fcinfo, &right_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overright_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -632,7 +632,7 @@ PG_FUNCTION_INFO_V1(Overright_tnumber_tnumber);
 Datum
 Overright_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber_ext(fcinfo, &overright_tbox_tbox);
+  return Boxop_tnumber_tnumber(fcinfo, &overright_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Before_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -647,7 +647,7 @@ PG_FUNCTION_INFO_V1(Before_tnumber_tnumber);
 Datum
 Before_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber_ext(fcinfo, &before_tbox_tbox);
+  return Boxop_tnumber_tnumber(fcinfo, &before_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overbefore_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -661,7 +661,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tnumber_tnumber);
 Datum
 Overbefore_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber_ext(fcinfo, &overbefore_tbox_tbox);
+  return Boxop_tnumber_tnumber(fcinfo, &overbefore_tbox_tbox);
 }
 
 PGDLLEXPORT Datum After_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -676,7 +676,7 @@ PG_FUNCTION_INFO_V1(After_tnumber_tnumber);
 Datum
 After_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber_ext(fcinfo, &after_tbox_tbox);
+  return Boxop_tnumber_tnumber(fcinfo, &after_tbox_tbox);
 }
 
 PGDLLEXPORT Datum Overafter_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -690,7 +690,7 @@ PG_FUNCTION_INFO_V1(Overafter_tnumber_tnumber);
 Datum
 Overafter_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber_ext(fcinfo, &overafter_tbox_tbox);
+  return Boxop_tnumber_tnumber(fcinfo, &overafter_tbox_tbox);
 }
 
 /*****************************************************************************/

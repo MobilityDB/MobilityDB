@@ -215,13 +215,13 @@ Set_constructor(PG_FUNCTION_ARGS)
   int count;
   Datum *values = datumarr_extract(array, &count);
   meosType basetype = settype_basetype(settype);
-  Set *result = set_make_free(values, count, basetype, ORDERED);
+  Set *result = set_make_free(values, count, basetype, ORDERED_NO);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
- * Conversion function
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Value_to_set(PG_FUNCTION_ARGS);
@@ -243,6 +243,74 @@ Value_to_set(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Intset_to_floatset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Intset_to_floatset);
+/**
+ * @ingroup mobilitydb_setset_conversion
+ * @brief Convert an int set as a float set
+ * @sqlfunc floatset()
+ * @sqlop @p ::
+ */
+Datum
+Intset_to_floatset(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = intset_to_floatset(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Floatset_to_intset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatset_to_intset);
+/**
+ * @ingroup mobilitydb_setset_conversion
+ * @brief Convert a float set as a int set
+ * @sqlfunc intset()
+ * @sqlop @p ::
+ */
+Datum
+Floatset_to_intset(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = floatset_to_intset(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Dateset_to_tstzsset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Dateset_to_tstzset);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a date set as a timestamptz set
+ * @sqlfunc tstzset()
+ * @sqlop @p ::
+ */
+Datum
+Dateset_to_tstzset(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = dateset_to_tstzset(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tstzset_to_dateset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzset_to_dateset);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a timestamptz set as a date set
+ * @sqlfunc dateset()
+ * @sqlop @p ::
+ */
+Datum
+Tstzset_to_dateset(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = tstzset_to_dateset(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
+}
+
 PGDLLEXPORT Datum Set_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_span);
 /**
@@ -254,8 +322,7 @@ Datum
 Set_span(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Span *result = palloc(sizeof(Span));
-  set_set_span(s, result);
+  Span *result = set_to_span(s);
   PG_RETURN_POINTER(result);
 }
 
@@ -538,7 +605,7 @@ set_unnest_state_make(const Set *set, Datum *values, int count)
   state->i = 0;
   state->count = count;
   state->values = values;
-  state->set = set_copy(set);
+  state->set = set_cp(set);
   return state;
 }
 

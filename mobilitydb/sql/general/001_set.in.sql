@@ -408,6 +408,30 @@ CREATE CAST (text AS textset) WITH FUNCTION set(text);
 CREATE CAST (date AS dateset) WITH FUNCTION set(date);
 CREATE CAST (timestamptz AS tstzset) WITH FUNCTION set(timestamptz);
 
+CREATE FUNCTION intset(floatset)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Floatset_to_intset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatset(intset)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Intset_to_floatset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (intset AS floatset) WITH FUNCTION floatset(intset);
+CREATE CAST (floatset AS intset) WITH FUNCTION intset(floatset);
+
+CREATE FUNCTION dateset(tstzset)
+  RETURNS dateset
+  AS 'MODULE_PATHNAME', 'Tstzset_to_dateset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tstzset(dateset)
+  RETURNS tstzset
+  AS 'MODULE_PATHNAME', 'Dateset_to_tstzset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (dateset AS tstzset) WITH FUNCTION tstzset(dateset);
+CREATE CAST (tstzset AS dateset) WITH FUNCTION dateset(tstzset);
+
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
@@ -422,6 +446,10 @@ CREATE FUNCTION shift(bigintset, bigint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(floatset, float)
   RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Numset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(dateset, int)
+  RETURNS dateset
   AS 'MODULE_PATHNAME', 'Numset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(tstzset, interval)
@@ -441,6 +469,10 @@ CREATE FUNCTION scale(floatset, float)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Numset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(dateset, int)
+  RETURNS dateset
+  AS 'MODULE_PATHNAME', 'Numset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION scale(tstzset, interval)
   RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Tstzset_scale'
@@ -456,6 +488,10 @@ CREATE FUNCTION shiftScale(bigintset, bigint, bigint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shiftScale(floatset, float, float)
   RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Numset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(dateset, int, int)
+  RETURNS dateset
   AS 'MODULE_PATHNAME', 'Numset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shiftScale(tstzset, interval, interval)

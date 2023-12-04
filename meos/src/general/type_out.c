@@ -277,15 +277,15 @@ tstzspan_mfjson_size(void)
  * @brief Write into the buffer the period bounding box represented in MF-JSON format
  */
 static size_t
-tstzspan_mfjson_buf(char *output, const Span *p)
+tstzspan_mfjson_buf(char *output, const Span *s)
 {
   char *ptr = output;
   ptr += sprintf(ptr, "\"period\":{\"begin\":");
-  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(p->lower));
+  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(s->lower));
   ptr += sprintf(ptr, ",\"end\":");
-  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(p->upper));
+  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(s->upper));
   ptr += sprintf(ptr, ",\"lower_inc\":%s,\"upper_inc\":%s},",
-    p->lower_inc ? "true" : "false", p->upper_inc ? "true" : "false");
+    s->lower_inc ? "true" : "false", s->upper_inc ? "true" : "false");
   return (ptr - output);
 }
 
@@ -1094,7 +1094,7 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 }
 
 /**
- * @brief Return the size of the WKB representation of the base value of an ordered
+ * @brief Return the size of the WKB representation of the base value of a
  * set type.
  */
 static size_t
@@ -1147,7 +1147,8 @@ set_to_wkb_size(const Set *set, uint8_t variant)
 /*****************************************************************************/
 
 /**
- * @brief Return the size of the WKB representation of the base value of a span type.
+ * @brief Return the size of the WKB representation of the base value of a span
+ * type.
  */
 static size_t
 span_basetype_to_wkb_size(const Span *s)
@@ -1834,10 +1835,18 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
       buf = double_to_wkb_buf(DatumGetFloat8(s->lower), buf, variant);
       buf = double_to_wkb_buf(DatumGetFloat8(s->upper), buf, variant);
       break;
+    case T_DATE:
+      buf = date_to_wkb_buf(DatumGetDateADT(s->lower), buf, variant);
+      buf = date_to_wkb_buf(DatumGetDateADT(s->upper), buf, variant);
+      break;
     case T_TIMESTAMPTZ:
       buf = timestamptz_to_wkb_buf(DatumGetTimestampTz(s->lower), buf, variant);
       buf = timestamptz_to_wkb_buf(DatumGetTimestampTz(s->upper), buf, variant);
       break;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+        "Unknown span base type in WKB output: %d", s->basetype);
+      return NULL;
   }
   return buf;
 }
@@ -1915,7 +1924,7 @@ spanset_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
   buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Write the periods */
   for (int i = 0; i < ss->count; i++)
-    buf = span_to_wkb_buf_int_iter(&ss->elems[i], buf, variant);
+    buf = span_to_wkb_buf_int_iter(SPANSET_SP_N(ss, i), buf, variant);
   /* Write the temporal dimension if any */
   return buf;
 }
@@ -2349,7 +2358,7 @@ datum_as_hexwkb(Datum value, meosType type, uint8_t variant, size_t *size)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a span.
+ * @brief Return the Well-Known Binary (WKB) representation of a span.
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2366,7 +2375,8 @@ span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a span in hex-encoded ASCII.
+ * @brief Return the Well-Known Binary (WKB) representation of a span in
+ * hex-encoded ASCII.
  * @sqlfunc asHexWKB()
  */
 char *
@@ -2385,7 +2395,7 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a set.
+ * @brief Return the Well-Known Binary (WKB) representation of a set.
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2402,7 +2412,8 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a set in hex-encoded ASCII.
+ * @brief Return the Well-Known Binary (WKB) representation of a set in hex-encoded
+ * ASCII.
  * @sqlfunc asHexWKB()
  */
 char *
@@ -2421,7 +2432,7 @@ set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a span set.
+ * @brief Return the Well-Known Binary (WKB) representation of a span set.
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2438,7 +2449,8 @@ spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a span set in hex-encoded ASCII.
+ * @brief Return the Well-Known Binary (WKB) representation of a span set in
+ * hex-encoded ASCII.
  * @sqlfunc asHexWKB()
  */
 char *
@@ -2457,7 +2469,7 @@ spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Return the WKB representation of a temporal box.
+ * @brief Return the Well-Known Binary (WKB) representation of a temporal box.
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2474,7 +2486,8 @@ tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_box_inout
- * @brief Return the WKB representation of a temporal box in hex-encoded ASCII.
+ * @brief Return the Well-Known Binary (WKB) representation of a temporal box in
+ * hex-encoded ASCII.
  * @sqlfunc asHexWKB()
  */
 char *
@@ -2493,7 +2506,7 @@ tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Return the WKB representation of a spatiotemporal box.
+ * @brief Return the Well-Known Binary (WKB) representation of a spatiotemporal box.
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2510,7 +2523,8 @@ stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_box_inout
- * @brief Return the WKB representation of a spatiotemporal box in hex-encoded ASCII.
+ * @brief Return the Well-Known Binary (WKB) representation of a spatiotemporal
+ * box in hex-encoded ASCII.
  * @sqlfunc asHexWKB()
  */
 char *
@@ -2529,7 +2543,7 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return the WKB representation of a temporal value.
+ * @brief Return the Well-Known Binary (WKB) representation of a temporal value.
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2546,7 +2560,8 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return the WKB representation of a temporal value in hex-encoded ASCII.
+ * @brief Return the Well-Known Binary (WKB) representation of a temporal value
+ * in hex-encoded ASCII.
  * @sqlfunc asHexWKB()
  */
 char *

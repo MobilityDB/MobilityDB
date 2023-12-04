@@ -157,7 +157,7 @@ tinstant_in(const char *str, meosType temptype)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant boolean from its Well-Known Text (WKT)
+ * @brief Return a temporal boolean instant from its Well-Known Text (WKT)
  * representation.
  */
 TInstant *
@@ -168,7 +168,7 @@ tboolinst_in(const char *str)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant integer from its Well-Known Text (WKT)
+ * @brief Return a temporal integer instant from its Well-Known Text (WKT)
  * representation.
  */
 TInstant *
@@ -179,7 +179,7 @@ tintinst_in(const char *str)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant float from its Well-Known Text (WKT)
+ * @brief Return a temporal float instant from its Well-Known Text (WKT)
  * representation.
  */
 TInstant *
@@ -190,7 +190,7 @@ tfloatinst_in(const char *str)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant text from its Well-Known Text (WKT)
+ * @brief Return a temporal text instant from its Well-Known Text (WKT)
  * representation.
  */
 TInstant *
@@ -339,7 +339,7 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
 #if MEOS
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant boolean from the arguments.
+ * @brief Construct a temporal boolean instant from the arguments.
  * @sqlfunc tbool_inst()
  */
 TInstant *
@@ -350,7 +350,7 @@ tboolinst_make(bool b, TimestampTz t)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant integer from the arguments.
+ * @brief Construct a temporal integer instant from the arguments.
  * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
 TInstant *
@@ -361,7 +361,7 @@ tintinst_make(int i, TimestampTz t)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant float from the arguments.
+ * @brief Construct a temporal float instant from the arguments.
  * @sqlfunc tfloat_inst()
  */
 TInstant *
@@ -372,7 +372,7 @@ tfloatinst_make(double d, TimestampTz t)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal instant text from the arguments.
+ * @brief Construct a temporal text instant from the arguments.
  * @sqlfunc tint_inst()
  */
 TInstant *
@@ -864,7 +864,7 @@ tinstant_restrict_tstzset(const TInstant *inst, const Set *s, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal instant to (the complement of) a period.
+ * @brief Restrict a temporal instant to (the complement of) a timestamptz span.
  * @sqlfunc atPeriod(), minusPeriod()
  */
 TInstant *

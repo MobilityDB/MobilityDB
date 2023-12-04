@@ -183,9 +183,9 @@ Datum
 Number_tstzspan_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Span *p = PG_GETARG_SPAN_P(1);
+  Span *s = PG_GETARG_SPAN_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  TBox *result = number_tstzspan_to_tbox(d, basetype, p);
+  TBox *result = number_tstzspan_to_tbox(d, basetype, s);
   PG_RETURN_POINTER(result);
 }
 
@@ -215,9 +215,9 @@ PG_FUNCTION_INFO_V1(Numspan_tstzspan_to_tbox);
 Datum
 Numspan_tstzspan_to_tbox(PG_FUNCTION_ARGS)
 {
-  Span *span = PG_GETARG_SPAN_P(0);
+  Span *s = PG_GETARG_SPAN_P(0);
   Span *p = PG_GETARG_SPAN_P(1);
-  TBox *result = numspan_tstzspan_to_tbox(span, p);
+  TBox *result = numspan_tstzspan_to_tbox(s, p);
   PG_RETURN_POINTER(result);
 }
 
@@ -237,8 +237,7 @@ Number_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  TBox *result = palloc(sizeof(TBox));
-  number_set_tbox(d, basetype, result);
+  TBox *result = number_to_tbox(d, basetype);
   PG_RETURN_POINTER(result);
 }
 
@@ -254,8 +253,7 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum num = PG_GETARG_DATUM(0);
   Datum d = call_function1(numeric_float8, num);
-  TBox *result = palloc(sizeof(TBox));
-  number_set_tbox(d, T_FLOAT8, result);
+  TBox *result = number_to_tbox(d, T_FLOAT8);
   PG_RETURN_POINTER(result);
 }
 
@@ -270,8 +268,7 @@ Datum
 Timestamptz_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TBox *result = palloc(sizeof(TBox));
-  timestamptz_set_tbox(t, result);
+  TBox *result = timestamptz_to_tbox(t);
   PG_RETURN_POINTER(result);
 }
 
@@ -286,11 +283,11 @@ Datum
 Set_to_tbox(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  TBox *result = palloc(sizeof(TBox));
+  TBox *result;
   if (numset_type(s->settype))
-    numset_set_tbox(s, result);
+    result = numset_to_tbox(s);
   else
-    tstzset_set_tbox(s, result);
+    result = tstzset_to_tbox(s);
   PG_FREE_IF_COPY_P(s, 0);
   PG_RETURN_POINTER(result);
 }
@@ -306,11 +303,11 @@ Datum
 Span_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  TBox *result = palloc(sizeof(TBox));
+  TBox *result;
   if (numspan_type(s->spantype))
-    numspan_set_tbox(s, result);
+    result = numspan_to_tbox(s);
   else
-    tstzspan_set_tbox(s, result);
+    result = tstzspan_to_tbox(s);
   PG_RETURN_POINTER(result);
 }
 
@@ -374,7 +371,7 @@ PGDLLEXPORT Datum Tbox_to_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_tstzspan);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a temporal box as a period
+ * @brief Convert a temporal box as a timestamptz span
  * @sqlfunc period()
  */
 Datum
@@ -1026,7 +1023,7 @@ Tbox_extent_combinefn(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(box2);
   /* Both boxes are not null */
   ensure_same_dimensionality_tbox(box1, box2);
-  TBox *result = tbox_copy(box1);
+  TBox *result = tbox_cp(box1);
   tbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }

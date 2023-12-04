@@ -669,12 +669,15 @@ SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 				<indexterm><primary><varname>shift</varname></primary></indexterm>
 				<para>Desplazar el conjunto o el span con un valor o intervalo de tiempo</para>
 				<para><varname>shift({numset,numspans},base) → {numset,numspans}</varname></para>
+				<para><varname>shift({dateset,datespans},int) → {dateset,datespans}</varname></para>
 				<para><varname>shift({tstzset,tstzspans},interval) → {tstzset,tstzspans}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT shift(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', interval '1 day');
 -- {2001-01-02, 2001-01-04, 2001-01-06}
-SELECT shift(intspan '[1, 3]', -1);
+SELECT shift(intspan '[1, 4)', -1);
 -- [0, 3)
+SELECT shift(datespan '[2001-01-01, 2001-01-04)', -1);
+-- [2000-12-31, 2001-01-03)
 SELECT shift(tstzspan '[2001-01-01, 2001-01-03]', interval '1 day');
 -- [2001-01-02, 2001-01-04]
 SELECT shift(floatspanset '{[1, 2], [3, 4]}', -1);
@@ -689,6 +692,7 @@ SELECT shift(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 				<indexterm><primary><varname>scale</varname></primary></indexterm>
 				<para>Escalear el conjunto o el rango con un valor o intervalo</para>
 				<para><varname>scale({numset,numspans},width) → {numset,numspans}</varname></para>
+				<para><varname>scale({dateset,datespans},int) → {dateset,datespans}</varname></para>
 				<para><varname>scale({tstzset,tstzspans},interval) → {tstzset,tstzspans}</varname></para>
 				<para>Si el ancho o el lapso de tiempo del valor de entrada es cero (por ejemplo, para un conjunto de marcas de tiempo único), el resultado es el valor de entrada. El valor o intervalo de tiempo dado debe ser estrictamente mayor que cero.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -696,8 +700,10 @@ SELECT scale(tstzset '{2001-01-01}', interval '1 day');
 -- {2001-01-01}
 SELECT scale(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '2 days');
 -- {2001-01-01, 2001-01-02, 2001-01-03}
-SELECT scale(intspan '[1, 3]', 4);
--- [1, 5)
+SELECT scale(intspan '[1, 4)', 4);
+-- [1, 6)
+SELECT scale(datespan '[2001-01-01, 2001-01-04)', 4);
+-- [2001-01-01, 2001-01-06)
 SELECT scale(tstzspan '[2001-01-01, 2001-01-03]', '1 day');
 -- [2001-01-01, 2001-01-02]
 SELECT scale(floatspanset '{[1, 2], [3, 4]}', 6);
@@ -714,6 +720,7 @@ SELECT scale(tstzset '{2001-01-01}', '-1 day');
 				<indexterm><primary><varname>shiftScale</varname></primary></indexterm>
 				<para>Desplazar y escalear el conjunto o rango con los valores o intervalos</para>
 				<para><varname>shiftScale({numset,numspans},base,base) → {numset,numspans}</varname></para>
+				<para><varname>shiftScale({dateset,datespans},int) → {dateset,datespans}</varname></para>
 				<para><varname>shiftScale({tstzset,tstzspans},interval,interval) →</varname></para>
 				<para><varname>  {tstzset,tstzspans}</varname></para>
 				<para>Estas funciones combinan las funciones <link linkend="setspan_shift"><varname>shift</varname></link> y <link linkend="setspan_scale"><varname>scale</varname></link>.</para>
@@ -722,8 +729,10 @@ SELECT shiftScale(tstzset '{2001-01-01}', '1 day', '1 day');
 -- {2001-01-02}
 SELECT shiftScale(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day','2 days');
 -- {2001-01-02, 2001-01-03, 2001-01-04}
-SELECT shiftScale(intspan '[1, 3]', -1, 4);
--- [0, 4)
+SELECT shiftScale(intspan '[1, 4)', -1, 4);
+-- [0, 5)
+SELECT shiftScale(datespan '[2001-01-01, 2001-01-04)', -1, 4);
+-- [2000-12-31, 2001-01-05)
 SELECT shiftScale(tstzspan '[2001-01-01, 2001-01-03]', '1 day', '1 day');
 -- [2001-01-02, 2001-01-03]
 SELECT shiftScale(floatspanset '{[1, 3], [4 6]}', -1, 6);

@@ -99,6 +99,7 @@ SELECT tstzrange 'empty'::tstzspan;
 -------------------------------------------------------------------------------
 
 SELECT shift(intspan '[1,2)', 2);
+SELECT shift(datespan '[2000-01-01,2000-01-02)', 2);
 
 SELECT shift(tstzspan '[2000-01-01,2000-01-01]', '5 min');
 SELECT shift(tstzspan '[2000-01-01,2000-01-02]', '5 min');
@@ -106,11 +107,17 @@ SELECT shift(tstzspan '(2000-01-01,2000-01-02]', '5 min');
 SELECT shift(tstzspan '[2000-01-01,2000-01-02)', '5 min');
 SELECT shift(tstzspan '(2000-01-01,2000-01-02)', '5 min');
 
+SELECT scale(intspan '[1,2)', 4);
+SELECT scale(datespan '[2000-01-01,2000-01-02)', 4);
+
 SELECT scale(tstzspan '[2000-01-01,2000-01-01]', '1 hour');
 SELECT scale(tstzspan '[2000-01-01,2000-01-02]', '1 hour');
 SELECT scale(tstzspan '(2000-01-01,2000-01-02]', '1 hour');
 SELECT scale(tstzspan '[2000-01-01,2000-01-02)', '1 hour');
 SELECT scale(tstzspan '(2000-01-01,2000-01-02)', '1 hour');
+
+SELECT shiftScale(intspan '[1,2)', 4, 4);
+SELECT shiftScale(datespan '[2000-01-01,2000-01-02)', 4, 4);
 
 SELECT shiftScale(tstzspan '[2000-01-01,2000-01-01]', '5 min', '1 hour');
 SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02]', '5 min', '1 hour');

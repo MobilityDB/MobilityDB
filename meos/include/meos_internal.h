@@ -164,13 +164,16 @@
   ((bool) (MEOS_FLAGS_GET_INTERP((flags)) == STEP || MEOS_FLAGS_GET_INTERP((flags)) == LINEAR))
 
 /*****************************************************************************
- * Miscellaneous functions
+ * Generic type functions
  *****************************************************************************/
 
 #if MEOS
 #define TimestampTzGetDatum(X) Int64GetDatum(X)
 #define DatumGetTimestampTz(X)((TimestampTz) DatumGetInt64(X))
 #endif /* MEOS */
+
+extern uint32 datum_hash(Datum d, meosType basetype);
+extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
 
 /*****************************************************************************
  * Functions for set and span types
@@ -205,7 +208,7 @@ extern const Span *SPANSET_SP_N(const SpanSet *ss, int index);
   PointerGetDatum( ((char *) (s)) + DOUBLE_PAD(sizeof(Set)) + \
     DOUBLE_PAD((s)->bboxsize) + (sizeof(size_t) * (s)->maxcount) + \
     (SET_OFFSETS_PTR(s))[index] ) ) )
-    
+
 /**
  * @brief Return the n-th span of a span set.
  * @pre The argument @p index is less than the number of spans in the span set
@@ -214,13 +217,6 @@ extern const Span *SPANSET_SP_N(const SpanSet *ss, int index);
  */
 #define SPANSET_SP_N(ss, index) (const Span *) &((ss)->elems[(index)])
 #endif
-
-/*****************************************************************************/
-
-/* Generic type functions */
-
-extern uint32 datum_hash(Datum d, meosType basetype);
-extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
 
 /*****************************************************************************/
 
@@ -238,6 +234,7 @@ extern char *spanset_out(const SpanSet *ss, int maxdd);
 /* Constructor functions for set and span types */
 
 extern Set *set_compact(const Set *s);
+extern Set *set_cp(const Set *s);
 extern Set *set_make(const Datum *values, int count, meosType basetype, bool ordered);
 extern Set *set_make_exp(const Datum *values, int count, int maxcount, meosType basetype, bool ordered);
 extern Set *set_make_free(Datum *values, int count, meosType basetype, bool ordered);
@@ -267,7 +264,8 @@ extern SpanSet *value_to_spanset(Datum d, meosType basetype);
 
 extern Datum set_end_value(const Set *s);
 extern int set_mem_size(const Set *s);
-extern void set_set_span(const Set *os, Span *s);
+extern void set_set_span(const Set *s, Span *sp);
+extern Span *set_span(const Set *s);
 extern Datum set_start_value(const Set *s);
 extern bool set_value_n(const Set *s, int n, Datum *result);
 extern Datum *set_values(const Set *s);
@@ -280,7 +278,7 @@ extern void value_set_span(Datum d, meosType basetype, Span *s);
 /* Transformation functions for set and span types */
 
 extern void datespan_set_tstzspan(const Span *s1, Span *s2);
-extern void floatspan_round_int(const Span *span, Datum size, Span *result);
+extern void floatspan_rnd(const Span *span, Datum size, Span *result);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
@@ -294,6 +292,17 @@ extern void span_expand(const Span *s1, Span *s2);
 extern void span_shift(Span *s, Datum value);
 extern void spanset_shift(SpanSet *s, Datum value);
 extern void tstzspan_set_datespan(const Span *s1, Span *s2);
+
+/*****************************************************************************/
+
+/* Comparison functions for set and span types */
+
+extern int set_cmp1(const Set *s1, const Set *s2);
+extern bool set_eq1(const Set *s1, const Set *s2);
+extern int span_cmp1(const Span *s1, const Span *s2);
+extern bool span_eq1(const Span *s1, const Span *s2);
+extern int spanset_cmp1(const SpanSet *ss1, const SpanSet *ss2);
+extern bool spanset_eq1(const SpanSet *ss1, const SpanSet *ss2);
 
 /*****************************************************************************/
 
@@ -388,13 +397,13 @@ extern SpanSet *union_spanset_value(const SpanSet *ss, Datum d, meosType basetyp
 
 /* Distance functions for set and span types */
 
+extern double dist_set_set(const Set *s1, const Set *s2);
 extern double dist_span_span(const Span *s1, const Span *s2);
 extern double distance_value_value(Datum l, Datum r, meosType basetype);
 extern double distance_span_value(const Span *s, Datum d, meosType basetype);
 extern double distance_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
 extern double distance_value_set(Datum d, meosType basetype, const Set *s);
 extern double distance_set_value(const Set *s, Datum d, meosType basetype);
-extern double distance_set_set(const Set *s1, const Set *s2);
 
 /*****************************************************************************/
 
@@ -411,7 +420,9 @@ extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
 
 extern TBox *number_tstzspan_to_tbox(Datum d, meosType basetype, const Span *s);
 extern TBox *number_timestamptz_to_tbox(Datum d, meosType basetype, TimestampTz t);
+extern STBox *stbox_cp(const STBox *box);
 extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *s, STBox *box);
+extern TBox *tbox_cp(const TBox *box);
 extern void tbox_set(const Span *s, const Span *p, TBox *box);
 
 /*****************************************************************************/
@@ -423,6 +434,7 @@ extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
 extern void geoarr_set_stbox(const Datum *values, int count, STBox *box);
 extern void int_set_tbox(int i, TBox *box);
 extern void number_set_tbox(Datum d, meosType basetype, TBox *box);
+extern TBox *number_to_tbox(Datum value, meosType basetype);
 extern void numset_set_tbox(const Set *s, TBox *box);
 extern void numspan_set_tbox(const Span *span, TBox *box);
 extern void numspanset_set_tbox(const SpanSet *ss, TBox *box);

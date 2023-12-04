@@ -43,12 +43,16 @@
 /*****************************************************************************/
 
 extern bool npoint_set_stbox(const Npoint *np, STBox *box);
+extern STBox *npoint_to_stbox(const Npoint *np);
 extern void npointarr_set_stbox(const Datum *values, int count, STBox *box);
 extern bool nsegment_set_stbox(const Nsegment *ns, STBox *box);
+extern STBox *nsegment_to_stbox(const Nsegment *ns);
 extern bool npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t,
   STBox *box);
-extern bool npoint_tstzspan_set_stbox(const Npoint *np, const Span *p,
+extern STBox *npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t);
+extern bool npoint_tstzspan_set_stbox(const Npoint *np, const Span *s,
   STBox *box);
+extern STBox *npoint_tstzspan_to_stbox(const Npoint *np, const Span *s);
 
 extern void tnpointinst_set_stbox(const TInstant *inst, STBox *box);
 extern void tnpointinstarr_set_stbox(const TInstant **inst, int count,

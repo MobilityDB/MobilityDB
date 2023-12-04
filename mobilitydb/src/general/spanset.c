@@ -258,6 +258,40 @@ Spanset_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Intspanset_to_floatspanset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Intspanset_to_floatspanset);
+/**
+ * @ingroup mobilitydb_setspanset_conversion
+ * @brief Convert an int spanset as a float spanset
+ * @sqlfunc floatspanset()
+ * @sqlop @p ::
+ */
+Datum
+Intspanset_to_floatspanset(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  SpanSet *result = intspanset_to_floatspanset(ss);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Floatspanset_to_intspanset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspanset_to_intspanset);
+/**
+ * @ingroup mobilitydb_setspanset_conversion
+ * @brief Convert a float spanset as a int spanset
+ * @sqlfunc intspanset()
+ * @sqlop @p ::
+ */
+Datum
+Floatspanset_to_intspanset(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  SpanSet *result = floatspanset_to_intspanset(ss);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_POINTER(result);
+}
+
 PGDLLEXPORT Datum Datespanset_to_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Datespanset_to_tstzspanset);
 /**
@@ -270,7 +304,7 @@ Datum
 Datespanset_to_tstzspanset(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  SpanSet *result = datespanset_tstzspanset(ss);
+  SpanSet *result = datespanset_to_tstzspanset(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
 }
@@ -279,7 +313,7 @@ PGDLLEXPORT Datum Tstzspanset_to_datespanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_to_datespanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a timestamptz span set as a date span set 
+ * @brief Convert a timestamptz span set as a date span set
  * @sqlfunc datespanset()
  * @sqlop @p ::
  */
@@ -287,7 +321,7 @@ Datum
 Tstzspanset_to_datespanset(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  SpanSet *result = tstzspanset_datespanset(ss);
+  SpanSet *result = tstzspanset_to_datespanset(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
 }
@@ -333,8 +367,7 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
     RangeType *range = multirange_get_range(typcache->rngtype, mrange, i);
     range_set_span(range, typcache->rngtype, &spans[i]);
   }
-  SpanSet *ss = spanset_make(spans, mrange->rangeCount, NORMALIZE);
-  pfree(spans);
+  SpanSet *ss = spanset_make_free(spans, mrange->rangeCount, NORMALIZE);
   PG_FREE_IF_COPY(mrange, 0);
   PG_RETURN_POINTER(ss);
 }

@@ -169,8 +169,7 @@ npointset_round(const Set *s, Datum prec)
     Datum value = SET_VAL_N(s, i);
     values[i] = datum_npoint_round(value, prec);
   }
-  Set *result = set_make(values, s->count, s->basetype, ORDERED);
-  pfree(values);
+  Set *result = set_make_free(values, s->count, s->basetype, ORDERED);
   return result;
 }
 

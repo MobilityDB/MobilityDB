@@ -97,7 +97,7 @@ stbox_expand(const STBox *box1, STBox *box2)
  *****************************************************************************/
 
 /**
- * @brief Ensure that the temporal value has XY dimension
+ * @brief Ensure that the spatiotemporal box has XY dimension
  */
 bool
 ensure_has_X_stbox(const STBox *box)
@@ -112,7 +112,7 @@ ensure_has_X_stbox(const STBox *box)
 }
 
 /**
- * @brief Ensure that the temporal value has T dimension
+ * @brief Ensure that the spatiotemporal box has T dimension
  */
 bool
 ensure_has_T_stbox(const STBox *box)
@@ -307,6 +307,19 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 }
 
 /**
+ * @ingroup libmeos_internal_box_constructor
+ * @brief Return a copy of a spatiotemporal box.
+ */
+STBox *
+stbox_cp(const STBox *box)
+{
+  assert(box);
+  STBox *result = palloc(sizeof(STBox));
+  memcpy(result, box, sizeof(STBox));
+  return result;
+}
+
+/**
  * @ingroup libmeos_box_constructor
  * @brief Return a copy of a spatiotemporal box.
  */
@@ -316,16 +329,14 @@ stbox_copy(const STBox *box)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box))
     return NULL;
-  STBox *result = palloc(sizeof(STBox));
-  memcpy(result, box, sizeof(STBox));
-  return result;
+  return stbox_cp(box);
 }
 
 /*****************************************************************************/
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a spatiotemporal box from a geometry/geography and a timestamp.
+ * @brief Return a spatiotemporal box from a geometry/geography and a timestamptz.
  * @sqlfunc stbox()
  */
 STBox *
@@ -347,7 +358,8 @@ geo_timestamptz_to_stbox(const GSERIALIZED *gs, TimestampTz t)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a spatiotemporal box from a geometry/geography and a period
+ * @brief Return a spatiotemporal box from a geometry/geography and a
+ * timestamptz span
  * @sqlfunc stbox()
  */
 STBox *
@@ -525,7 +537,7 @@ stbox_to_geo(const STBox *box)
 
 /**
  * @ingroup libmeos_box_conversion
- * @brief Convert a temporal box as a period
+ * @brief Convert a spatiotemporal box as a timestamptz span
  * @sqlop @p ::
  */
 Span *
@@ -721,7 +733,7 @@ geoarr_set_stbox(const Datum *values, int count, STBox *box)
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a spatiotemporal box from a timestamp.
+ * @brief Set a spatiotemporal box from a timestamptz.
  */
 void
 timestamptz_set_stbox(TimestampTz t, STBox *box)
@@ -737,10 +749,9 @@ timestamptz_set_stbox(TimestampTz t, STBox *box)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_box_conversion
- * @brief Convert a timestamp to a spatiotemporal box.
+ * @brief Convert a timestamptz to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
  */
@@ -751,11 +762,10 @@ timestamptz_to_stbox(TimestampTz t)
   timestamptz_set_stbox(t, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a spatiotemporal box from a timestamp set.
+ * @brief Set a spatiotemporal box from a timestamptz set.
  */
 void
 tstzset_set_stbox(const Set *s, STBox *box)
@@ -768,10 +778,9 @@ tstzset_set_stbox(const Set *s, STBox *box)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_box_conversion
- * @brief Convert a timestamp set to a spatiotemporal box.
+ * @brief Convert a timestamptz set to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
  */
@@ -785,11 +794,10 @@ tstzset_to_stbox(const Set *s)
   tstzset_set_stbox(s, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a spatiotemporal box from a period.
+ * @brief Set a spatiotemporal box from a timestamptz span.
  */
 void
 tstzspan_set_stbox(const Span *s, STBox *box)
@@ -802,10 +810,9 @@ tstzspan_set_stbox(const Span *s, STBox *box)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_box_conversion
- * @brief Convert a period to a spatiotemporal box.
+ * @brief Convert a timestamptz span to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
  */
@@ -819,7 +826,6 @@ tstzspan_to_stbox(const Span *s)
   tstzspan_set_stbox(s, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_box_conversion
@@ -836,7 +842,6 @@ tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a timestamptz span set to a spatiotemporal box.
@@ -850,12 +855,10 @@ tstzspanset_to_stbox(const SpanSet *ss)
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
-
   STBox *result = palloc(sizeof(STBox));
   tstzspanset_set_stbox(ss, result);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -1043,7 +1046,7 @@ stbox_zmax(const STBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum timestamp of a spatiotemporal box.
+ * @brief Return the minimum timestamptz of a spatiotemporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin()
@@ -1063,7 +1066,7 @@ stbox_tmin(const STBox *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the minimum timestamp of a spatiotemporal box is
+ * @brief Return true if the minimum timestamptz of a spatiotemporal box is
  * inclusive.
  * @param[in] box Box
  * @param[out] result Result
@@ -1084,7 +1087,7 @@ stbox_tmin_inc(const STBox *box, bool *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Compute the maximum timestamp of a spatiotemporal box.
+ * @brief Compute the maximum timestamptz of a spatiotemporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax()
@@ -1104,7 +1107,7 @@ stbox_tmax(const STBox *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the maximum timestamp of a spatiotemporal box is
+ * @brief Return true if the maximum timestamptz of a spatiotemporal box is
  * inclusive.
  * @param[in] box Box
  * @param[out] result Result
@@ -1152,7 +1155,7 @@ stbox_set_srid(const STBox *box, int32 srid)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
     return NULL;
-  STBox *result = stbox_copy(box);
+  STBox *result = stbox_cp(box);
   result->srid = srid;
   return result;
 }
@@ -1163,7 +1166,8 @@ stbox_set_srid(const STBox *box, int32 srid)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Shift and/or scale the period of a spatiotemporal box by the intervals.
+ * @brief Shift and/or scale the time span of a spatiotemporal box by the
+ * intervals.
  * @sqlfunc shiftTime(), scaleTime(), shiftScaleTime()
  */
 STBox *
@@ -1177,7 +1181,7 @@ stbox_shift_scale_time(const STBox *box, const Interval *shift,
     return NULL;
 
   /* Copy the input period to the result */
-  STBox *result = stbox_copy(box);
+  STBox *result = stbox_cp(box);
   /* Shift and/or scale the resulting period */
   TimestampTz lower = DatumGetTimestampTz(box->period.lower);
   TimestampTz upper = DatumGetTimestampTz(box->period.upper);
@@ -1209,7 +1213,7 @@ stbox_get_space(const STBox *box)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Return a spatiotemporal box expanded in the spatial dimension by a
+ * @brief Return a spatiotemporal box expanded in the space dimension by a
  * double.
  * @sqlfunc expandSpace()
  */
@@ -1220,7 +1224,7 @@ stbox_expand_space(const STBox *box, double d)
   if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
     return NULL;
 
-  STBox *result = stbox_copy(box);
+  STBox *result = stbox_cp(box);
   result->xmin -= d;
   result->ymin -= d;
   result->xmax += d;
@@ -1235,7 +1239,7 @@ stbox_expand_space(const STBox *box, double d)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Return a spatiotemporal box expanded in the temporal dimension by
+ * @brief Return a spatiotemporal box expanded in the time dimension by
  * an interval
  * @sqlfunc expandTime()
  */
@@ -1247,7 +1251,7 @@ stbox_expand_time(const STBox *box, const Interval *interval)
       ! ensure_has_T_stbox(box))
     return NULL;
 
-  STBox *result = stbox_copy(box);
+  STBox *result = stbox_cp(box);
   TimestampTz tmin = pg_timestamp_mi_interval(DatumGetTimestampTz(
     box->period.lower), interval);
   TimestampTz tmax = pg_timestamp_pl_interval(DatumGetTimestampTz(
@@ -1269,7 +1273,7 @@ stbox_round(const STBox *box, int maxdd)
       ! ensure_not_negative(maxdd))
     return NULL;
 
-  STBox *result = stbox_copy(box);
+  STBox *result = stbox_cp(box);
   Datum size = Int32GetDatum(maxdd);
   result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin), size));
   result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), size));
@@ -1530,7 +1534,7 @@ right_stbox_stbox(const STBox *box1, const STBox *box2)
 
 /**
  * @ingroup libmeos_box_bbox_pos
- * @brief Return true if the first spatio temporal box does not extend to the
+ * @brief Return true if the first spatiotemporal box does not extend to the
  * left of the second one.
  * @sqlop @p &>
  */
@@ -1699,7 +1703,7 @@ before_stbox_stbox(const STBox *box1, const STBox *box2)
 
 /**
  * @ingroup libmeos_box_bbox_pos
- * @brief Return true if the first temporal box does not extend after the
+ * @brief Return true if the first spatiotemporal box does not extend after the
  * second one
  * @sqlop @p &<#
  */
@@ -1731,7 +1735,7 @@ after_stbox_stbox(const STBox *box1, const STBox *box2)
 
 /**
  * @ingroup libmeos_box_bbox_pos
- * @brief Return true if the first temporal box does not extend before the
+ * @brief Return true if the first spatiotemporal box does not extend before the
  * second one.
  * @sqlop @p #&>
  */
@@ -1772,7 +1776,7 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
     return NULL;
   }
 
-  STBox *result = stbox_copy(box1);
+  STBox *result = stbox_cp(box1);
   stbox_expand(box2, result);
   return result;
 }
@@ -1993,7 +1997,7 @@ stbox_cmp(const STBox *box1, const STBox *box2)
   stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
   if (hast)
   {
-    int cmp = span_cmp(&box1->period, &box2->period);
+    int cmp = span_cmp1(&box1->period, &box2->period);
     /* Compare the box minima */
     if (cmp != 0)
       return cmp;

@@ -94,8 +94,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
 Set *
 set_append_value(Set *set, Datum d, meosType basetype)
 {
-  assert(set);
-  assert(set->basetype == basetype);
+  assert(set); assert(set->basetype == basetype);
 
   /* Account for expandable structures
    * A while is used instead of an if to enable to break the loop if there is
@@ -217,10 +216,23 @@ float_union_transfn(Set *state, double d)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for set union aggregate of timestamps
+ * @brief Transition function for set union aggregate of dates
  */
 Set *
-timestamp_union_transfn(Set *state, TimestampTz t)
+date_union_transfn(Set *state, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (state && ! ensure_set_isof_type(state, T_DATESET))
+    return NULL;
+  return value_union_transfn(state, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for set union aggregate of timestamptz
+ */
+Set *
+timestamptz_union_transfn(Set *state, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (state && ! ensure_set_isof_type(state, T_TSTZSET))

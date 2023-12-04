@@ -20,6 +20,7 @@ add_library(general OBJECT
   temporal_boxops.c
   temporal_compops.c
   temporal_tile.c
+  temporal_waggfuncs.c
   tinstant.c
   tnumber_distance.c
   tnumber_mathfuncs.c

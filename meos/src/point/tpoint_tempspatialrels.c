@@ -258,8 +258,8 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   else
   {
     /* It is necessary to sort the periods */
-    spanarr_sort(periods, npers);
-    SpanSet *ps1 = spanset_make(periods, npers, NORMALIZE);
+    SpanSet *ps1 = spanset_make_exp(periods, npers, npers, NORMALIZE,
+      ORDERED_NO);
     ps = minus_span_spanset(&seq->period, ps1);
     pfree(ps1);
   }
@@ -274,8 +274,8 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   {
     for (int i = 0; i < ps->count; i++)
     {
-      const Span *p = SPANSET_SP_N(ps, i);
-      result[i + npers] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, p,
+      const Span *s = SPANSET_SP_N(ps, i);
+      result[i + npers] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, s,
         STEP);
     }
     tseqarr_sort(result, nseqs);
@@ -423,7 +423,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
 {
   /* Ensure validity of the arguments */
   if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags)) 
+      ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags))
     return NULL;
 
   /* Bounding box test */

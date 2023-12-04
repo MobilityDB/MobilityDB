@@ -111,7 +111,7 @@ pnstrdup(const char *in, Size size)
   }
 
   len = strnlen(in, size);
-  tmp = malloc(len + 1);
+  tmp = palloc(len + 1);
   if (tmp == NULL)
   {
     fprintf(stderr, "out of memory\n");

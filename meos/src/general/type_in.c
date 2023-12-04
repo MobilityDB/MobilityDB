@@ -1757,8 +1757,7 @@ datum_from_hexwkb(const char *hexwkb, size_t size, meosType type)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a set from its Well-Known Binary (WKB)
- * representation.
+ * @brief Return a set from its Well-Known Binary (WKB) representation.
  * @sqlfunc intsetFromBinary(), tstzsetFromBinary(), ...
  */
 Set *
@@ -1773,8 +1772,8 @@ set_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a set from its WKB representation in hex-encoded
- * ASCII.
+ * @brief Return a set from its Well-Known Binary (WKB) representation in
+ * hex-encoded ASCII.
  * @sqlfunc intsetFromHexWKB(), tstzsetFromHexWKB(), ...
  */
 Set *
@@ -1808,7 +1807,8 @@ span_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a span from its WKB representation in hex-encoded ASCII.
+ * @brief Return a span from its Well-Known Binary (WKB) representation in
+ * hex-encoded ASCII.
  * @sqlfunc intspanFromHexWKB(), floatspanFromHexWKB(), periodFromHexWKB(),
  */
 Span *
@@ -1826,8 +1826,7 @@ span_from_hexwkb(const char *hexwkb)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a span set from its Well-Known Binary (WKB)
- * representation.
+ * @brief Return a span set from its Well-Known Binary (WKB) representation.
  * @sqlfunc intspansetFromBinary(), tstzspansetFromBinary(), ...
  */
 SpanSet *
@@ -1842,7 +1841,8 @@ spanset_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a span set from its WKB representation in hex-encoded ASCII
+ * @brief Return a span set from its Well-Known Binary (WKB) representation in
+ * hex-encoded ASCII
  * @sqlfunc intsetFromHexWKB(), tstzsetFromHexWKB(), ...
  */
 SpanSet *
@@ -1875,7 +1875,8 @@ tbox_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Return a temporal box from its WKB representation in hex-encoded ASCII
+ * @brief Return a temporal box from its Well-Known Binary (WKB) representation
+ * in hex-encoded ASCII
  * @sqlfunc tboxFromHexWKB()
  */
 TBox *
@@ -1907,9 +1908,9 @@ stbox_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Return a spatiotemporal box from its WKB representation in
- * hex-encoded ASCII
- * @sqlfunc stboxFromWKB()
+ * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
+ * representation in hex-encoded ASCII
+ * @sqlfunc stboxFromHexWKB()
  */
 STBox *
 stbox_from_hexwkb(const char *hexwkb)
@@ -1943,7 +1944,8 @@ temporal_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return a temporal value from its HexEWKB representation
+ * @brief Return a temporal value from its Extended Well-Known Binary (EWKB)
+ * representation in hex-encoded ASCII
  * @return On error return NULL
  * @sqlfunc tboolFromHexWKB(), tintFromHexWKB(), tfloatFromHexWKB(),
  * ttextFromHexWKB(), etc.

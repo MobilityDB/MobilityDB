@@ -62,7 +62,7 @@
  * @param[in] oper Enumeration that states the arithmetic operator
  */
 static Datum
-arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
+Arithop_number_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
   Datum (*func)(Datum, Datum, meosType))
 {
   Datum value = PG_GETARG_DATUM(0);
@@ -81,7 +81,7 @@ arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  * @param[in] oper Enumeration that states the arithmetic operator
  */
 static Datum
-arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
+Arithop_tnumber_number(FunctionCallInfo fcinfo, TArithmetic oper,
   Datum (*func)(Datum, Datum, meosType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -101,7 +101,7 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  * @param[in] tpfunc Function determining the turning point
  */
 static Datum
-arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
+Arithop_tnumber_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
   Datum (*func)(Datum, Datum, meosType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
@@ -131,7 +131,7 @@ PG_FUNCTION_INFO_V1(Add_number_tnumber);
 Datum
 Add_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_number_tnumber_ext(fcinfo, ADD, &datum_add);
+  return Arithop_number_tnumber(fcinfo, ADD, &datum_add);
 }
 
 PGDLLEXPORT Datum Add_tnumber_number(PG_FUNCTION_ARGS);
@@ -145,7 +145,7 @@ PG_FUNCTION_INFO_V1(Add_tnumber_number);
 Datum
 Add_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_number_ext(fcinfo, ADD, &datum_add);
+  return Arithop_tnumber_number(fcinfo, ADD, &datum_add);
 }
 
 PGDLLEXPORT Datum Add_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -159,7 +159,7 @@ PG_FUNCTION_INFO_V1(Add_tnumber_tnumber);
 Datum
 Add_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber_ext(fcinfo, ADD, &datum_add, NULL);
+  return Arithop_tnumber_tnumber(fcinfo, ADD, &datum_add, NULL);
 }
 
 /*****************************************************************************
@@ -177,7 +177,7 @@ PG_FUNCTION_INFO_V1(Sub_number_tnumber);
 Datum
 Sub_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_number_tnumber_ext(fcinfo, SUB, &datum_sub);
+  return Arithop_number_tnumber(fcinfo, SUB, &datum_sub);
 }
 
 PGDLLEXPORT Datum Sub_tnumber_number(PG_FUNCTION_ARGS);
@@ -191,7 +191,7 @@ PG_FUNCTION_INFO_V1(Sub_tnumber_number);
 Datum
 Sub_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_number_ext(fcinfo, SUB, &datum_sub);
+  return Arithop_tnumber_number(fcinfo, SUB, &datum_sub);
 }
 
 PGDLLEXPORT Datum Sub_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -205,7 +205,7 @@ PG_FUNCTION_INFO_V1(Sub_tnumber_tnumber);
 Datum
 Sub_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber_ext(fcinfo, SUB, &datum_sub, NULL);
+  return Arithop_tnumber_tnumber(fcinfo, SUB, &datum_sub, NULL);
 }
 
 /*****************************************************************************
@@ -223,7 +223,7 @@ PG_FUNCTION_INFO_V1(Mult_number_tnumber);
 Datum
 Mult_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_number_tnumber_ext(fcinfo, MULT, &datum_mult);
+  return Arithop_number_tnumber(fcinfo, MULT, &datum_mult);
 }
 
 PGDLLEXPORT Datum Mult_tnumber_number(PG_FUNCTION_ARGS);
@@ -237,7 +237,7 @@ PG_FUNCTION_INFO_V1(Mult_tnumber_number);
 Datum
 Mult_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_number_ext(fcinfo, MULT, &datum_mult);
+  return Arithop_tnumber_number(fcinfo, MULT, &datum_mult);
 }
 
 PGDLLEXPORT Datum Mult_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -251,7 +251,7 @@ PG_FUNCTION_INFO_V1(Mult_tnumber_tnumber);
 Datum
 Mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber_ext(fcinfo, MULT, &datum_mult,
+  return Arithop_tnumber_tnumber(fcinfo, MULT, &datum_mult,
     &tnumber_mult_tp_at_timestamp);
 }
 
@@ -270,7 +270,7 @@ PG_FUNCTION_INFO_V1(Div_number_tnumber);
 Datum
 Div_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_number_tnumber_ext(fcinfo, DIV, &datum_div);
+  return Arithop_number_tnumber(fcinfo, DIV, &datum_div);
 }
 
 PGDLLEXPORT Datum Div_tnumber_number(PG_FUNCTION_ARGS);
@@ -284,7 +284,7 @@ PG_FUNCTION_INFO_V1(Div_tnumber_number);
 Datum
 Div_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_number_ext(fcinfo, DIV, &datum_div);
+  return Arithop_tnumber_number(fcinfo, DIV, &datum_div);
 }
 
 PGDLLEXPORT Datum Div_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -298,7 +298,7 @@ PG_FUNCTION_INFO_V1(Div_tnumber_tnumber);
 Datum
 Div_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber_ext(fcinfo, DIV, &datum_div,
+  return Arithop_tnumber_tnumber(fcinfo, DIV, &datum_div,
     &tnumber_div_tp_at_timestamp);
 }
 

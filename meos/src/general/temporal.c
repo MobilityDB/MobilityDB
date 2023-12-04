@@ -474,6 +474,7 @@ ensure_positive(int i)
   return true;
 }
 
+#if 0 /* not used */
 /**
  * @brief Ensure that the first value is less or equal than the second one
  */
@@ -489,6 +490,7 @@ ensure_less_equal(int i, int j)
   }
   return true;
 }
+#endif /* not used */
 
 /**
  * @brief Return true if the number is not negative
@@ -538,12 +540,15 @@ bool
 positive_datum(Datum size, meosType basetype)
 {
   assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8 ||
-    basetype == T_TIMESTAMPTZ);
+    basetype == T_DATE || basetype == T_TIMESTAMPTZ);
   if (basetype == T_INT4 && DatumGetInt32(size) <= 0)
     return false;
   if (basetype == T_INT8 && DatumGetInt64(size) <= 0)
     return false;
   if (basetype == T_FLOAT8 && DatumGetFloat8(size) <= 0.0)
+    return false;
+  /* For dates the value expected are integers */
+  if (basetype == T_DATE && DatumGetInt32(size) <= 0.0)
     return false;
   /* basetype == T_TIMESTAMPTZ */
   if (DatumGetInt64(size) <= 0)
@@ -1507,7 +1512,6 @@ temporal_set_tstzspan(const Temporal *temp, Span *s)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_temporal_conversion
  * @brief Return the bounding period of a temporal value.
@@ -1520,12 +1524,10 @@ temporal_to_tstzspan(const Temporal *temp)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-
   Span *result = palloc(sizeof(Span));
   temporal_set_tstzspan(temp, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
@@ -3933,7 +3935,7 @@ temporal_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal value to (the complement of) a period.
+ * @brief Restrict a temporal value to (the complement of) a timestamptz span.
  * @sqlfunc atTime, minusTime
  */
 Temporal *
@@ -4191,8 +4193,8 @@ temporal_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 
 /**
  * @ingroup libmeos_temporal_modif
- * @brief Delete a period from a temporal value connecting the instants
- * before and after the given timestamp (if any).
+ * @brief Delete a timestamptz span from a temporal value connecting the
+ * instants before and after the given timestamptz (if any).
  * @sqlfunc deleteTime
  */
 Temporal *
@@ -4636,7 +4638,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
   Span p1, p2;
   temporal_set_tstzspan(temp1, &p1);
   temporal_set_tstzspan(temp2, &p2);
-  int result = span_cmp(&p1, &p2);
+  int result = span_cmp1(&p1, &p2);
   if (result)
     return result;
 

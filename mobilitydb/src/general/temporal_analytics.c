@@ -94,7 +94,7 @@ Temporal_tsample(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 Datum
-temporal_similarity_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
+Temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
@@ -119,7 +119,7 @@ PG_FUNCTION_INFO_V1(Temporal_frechet_distance);
 Datum
 Temporal_frechet_distance(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_ext(fcinfo, FRECHET);
+  return Temporal_similarity(fcinfo, FRECHET);
 }
 
 PGDLLEXPORT Datum Temporal_dynamic_time_warp(PG_FUNCTION_ARGS);
@@ -133,7 +133,7 @@ PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp);
 Datum
 Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_ext(fcinfo, DYNTIMEWARP);
+  return Temporal_similarity(fcinfo, DYNTIMEWARP);
 }
 
 PGDLLEXPORT Datum Temporal_hausdorff_distance(PG_FUNCTION_ARGS);
@@ -147,7 +147,7 @@ PG_FUNCTION_INFO_V1(Temporal_hausdorff_distance);
 Datum
 Temporal_hausdorff_distance(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_ext(fcinfo, HAUSDORFF);
+  return Temporal_similarity(fcinfo, HAUSDORFF);
 }
 
 /*****************************************************************************
@@ -200,7 +200,7 @@ similarity_path_state_next(SimilarityPathState *state)
  * @brief Compute the Dynamic Time Match (DTW) path between two temporal values.
  */
 Datum
-temporal_similarity_path_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
+Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
   FuncCallContext *funcctx;
   SimilarityPathState *state;
@@ -274,7 +274,7 @@ PG_FUNCTION_INFO_V1(Temporal_frechet_path);
 Datum
 Temporal_frechet_path(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_path_ext(fcinfo, FRECHET);
+  return Temporal_similarity_path(fcinfo, FRECHET);
 }
 
 PGDLLEXPORT Datum Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS);
@@ -287,7 +287,7 @@ PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp_path);
 Datum
 Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_path_ext(fcinfo, DYNTIMEWARP);
+  return Temporal_similarity_path(fcinfo, DYNTIMEWARP);
 }
 
 /*****************************************************************************/

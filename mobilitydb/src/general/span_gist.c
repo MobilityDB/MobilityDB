@@ -186,7 +186,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     Datum psdatum = PG_GETARG_DATUM(1);
     spanset_span_slice(psdatum, result);
   }
-  /* For temporal types whose bounding box is a period */
+  /* For temporal types whose bounding box is a timestamptz span */
   else if (talpha_type(type))
   {
     Datum tempdatum = PG_GETARG_DATUM(1);
@@ -267,8 +267,7 @@ Set_gist_compress(PG_FUNCTION_ARGS)
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Span *span = palloc(sizeof(Span));
-    set_set_span(DatumGetSetP(entry->key), span);
+    Span *span = set_span(DatumGetSetP(entry->key));
     gistentryinit(*retval, PointerGetDatum(span), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -338,22 +337,6 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * GiST picksplit method for span types
  *****************************************************************************/
-
-/**
- * @brief Return the bounding union of two spans.
- * @note The result of the function is always a span even if the spans do not
- * overlap
- * @note This function is similar to `bbox_union_span_span` **with** memory
- * allocation
- */
-static Span *
-super_union_span_span(const Span *s1, const Span *s2)
-{
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-  Span *result = span_cp(s1);
-  span_expand(s2, result);
-  return result;
-}
 
 /* Helper macros to place an entry in the left or right group during split */
 /* Note direct access to variables v, left_span, right_span */

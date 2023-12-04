@@ -293,7 +293,7 @@ strarr_to_textarray(char **strarr, int count)
     textarr[i] = cstring_to_text(strarr[i]);
   ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
     false, 'i');
-  pfree_array((void **)textarr, count);
+  pfree_array((void **) textarr, count);
   return result;
 }
 

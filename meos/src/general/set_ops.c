@@ -107,7 +107,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper op)
   {
     /* Bounding box test */
     if (! over_set_set(s1, s2))
-      return op == INTER ? NULL : set_copy(s1);
+      return op == INTER ? NULL : set_cp(s1);
   }
 
   int count;
@@ -191,7 +191,7 @@ contains_set_value(const Set *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if an integer set contains an integer.
+ * @brief Return true if a set contains an integer.
  * @sqlop @p \@>
  */
 bool
@@ -205,7 +205,7 @@ contains_set_int(const Set *s, int i)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a big integer set contains a big integer.
+ * @brief Return true if a set contains a big integer.
  * @sqlop @p \@>
  */
 bool
@@ -219,7 +219,7 @@ contains_set_bigint(const Set *s, int64 i)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a float set contains a float.
+ * @brief Return true if a set contains a float.
  * @sqlop @p \@>
  */
 bool
@@ -233,7 +233,7 @@ contains_set_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a text set contains a text.
+ * @brief Return true if a set contains a text.
  * @sqlop @p \@>
  */
 bool
@@ -248,7 +248,7 @@ contains_set_text(const Set *s, text *txt)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a date set contains a date.
+ * @brief Return true if a set contains a date.
  * @sqlop @p \@>
  */
 bool
@@ -262,7 +262,7 @@ contains_set_date(const Set *s, DateADT d)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamptz set contains a timestamptz.
+ * @brief Return true if a set contains a timestamptz.
  * @sqlop @p \@>
  */
 bool
@@ -277,7 +277,7 @@ contains_set_timestamptz(const Set *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a geoset contains a geometry/geography.
+ * @brief Return true if a set contains a geometry/geography.
  * @sqlop @p \@>
  */
 bool
@@ -347,7 +347,7 @@ contained_value_set(Datum d, meosType basetype, const Set *s)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if an integer is contained in an integer set
+ * @brief Return true if an integer is contained in a set
  * @sqlop @p <@
  */
 bool
@@ -361,7 +361,7 @@ contained_int_set(int i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a big integer is contained in a big integer set
+ * @brief Return true if a big integer is contained in a set
  * @sqlop @p <@
  */
 bool
@@ -375,7 +375,7 @@ contained_bigint_set(int64 i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a float is contained in a float set
+ * @brief Return true if a float is contained in a set
  * @sqlop @p <@
  */
 bool
@@ -389,7 +389,7 @@ contained_float_set(double d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a text is contained in a text set
+ * @brief Return true if a text is contained in a set
  * @sqlop @p <@
  */
 bool
@@ -404,7 +404,7 @@ contained_text_set(text *txt, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a date is contained in a date set
+ * @brief Return true if a date is contained in a set
  * @sqlop @p <@
  */
 bool
@@ -418,7 +418,7 @@ contained_date_set(DateADT d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamptz is contained in a timestamptz set
+ * @brief Return true if a timestamptz is contained in a set
  * @sqlop @p <@
  */
 bool
@@ -433,7 +433,7 @@ contained_timestamptz_set(TimestampTz t, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a geometry/geography is contained in a geoset
+ * @brief Return true if a geometry/geography is contained in a set
  * @sqlop @p <@
  */
 bool
@@ -518,7 +518,7 @@ left_value_set(Datum d, meosType basetype, const Set *s)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer is strictly to the left of an integer set.
+ * @brief Return true if an integer is strictly to the left of a set.
  * @sqlop @p <<, @p <<#
  */
 bool
@@ -532,7 +532,7 @@ left_int_set(int i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer is strictly to the left of a big integer set.
+ * @brief Return true if a big integer is strictly to the left of a set.
  * @sqlop @p <<, @p <<#
  */
 bool
@@ -546,7 +546,7 @@ left_bigint_set(int64 i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float is strictly to the left of a float set.
+ * @brief Return true if a float is strictly to the left of a set.
  * @sqlop @p <<, @p <<#
  */
 bool
@@ -560,7 +560,7 @@ left_float_set(double d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a text is strictly to the left of a text set.
+ * @brief Return true if a text is strictly to the left of a set.
  * @sqlop @p <<, @p <<#
  */
 bool
@@ -575,7 +575,7 @@ left_text_set(text *txt, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a date is strictly before a date set
+ * @brief Return true if a date is strictly before a set
  * @sqlop @p <<#
  */
 bool
@@ -589,7 +589,7 @@ before_date_set(DateADT d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamptz is strictly before a timestamptz set
+ * @brief Return true if a timestamptz is strictly before a set
  * @sqlop @p <<#
  */
 bool
@@ -618,7 +618,7 @@ left_set_value(const Set *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer set is strictly to the left of an integer
+ * @brief Return true if a set is strictly to the left of an integer
  * @sqlop @p <<, @p <<#
  */
 bool
@@ -632,7 +632,7 @@ left_set_int(const Set *s, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer set is strictly to the left of a big
+ * @brief Return true if a set is strictly to the left of a big
  * integer.
  * @sqlop @p <<, @p <<#
  */
@@ -647,7 +647,7 @@ left_set_bigint(const Set *s, int64 i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float set is strictly to the left of a float.
+ * @brief Return true if a set is strictly to the left of a float.
  * @sqlop @p <<, @p <<#
  */
 bool
@@ -661,7 +661,7 @@ left_set_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a text set is strictly to the left of a text.
+ * @brief Return true if a set is strictly to the left of a text.
  * @sqlop @p <<, @p <<#
  */
 bool
@@ -676,7 +676,7 @@ left_set_text(const Set *s, text *txt)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a date set is strictly before a date
+ * @brief Return true if a set is strictly before a date
  * @sqlop @p <<, @p <<#
  */
 bool
@@ -690,7 +690,7 @@ before_set_date(const Set *s, DateADT d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamptz set is strictly before a timestamptz
+ * @brief Return true if a set is strictly before a timestamptz
  * @sqlop @p <<, @p <<#
  */
 bool
@@ -738,7 +738,7 @@ right_value_set(Datum d, meosType basetype, const Set *s)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer is strictly to the right of an integer set
+ * @brief Return true if an integer is strictly to the right of a set
  * @sqlop @p >>, @p #>>
  */
 bool
@@ -752,8 +752,7 @@ right_int_set(int i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer is strictly to the right of a big
- * integer set
+ * @brief Return true if a big integer is strictly to the right of a set
  * @sqlop @p >>, @p #>>
  */
 bool
@@ -767,7 +766,7 @@ right_bigint_set(int64 i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float is strictly to the right of a float set.
+ * @brief Return true if a float is strictly to the right of a set.
  * @sqlop @p >>, @p #>>
  */
 bool
@@ -781,7 +780,7 @@ right_float_set(double d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a text is strictly to the right of a text set.
+ * @brief Return true if a text is strictly to the right of a set.
  * @sqlop @p >>, @p #>>
  */
 bool
@@ -796,7 +795,7 @@ right_text_set(text *txt, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a date is strictly after a date set.
+ * @brief Return true if a date is strictly after a set.
  * @sqlop @p #>>
  */
 bool
@@ -809,7 +808,7 @@ after_date_set(DateADT d, const Set *s)
 }
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamptz is strictly after a timestamptz set.
+ * @brief Return true if a timestamptz is strictly after a set.
  * @sqlop @p #>>
  */
 bool
@@ -837,7 +836,7 @@ right_set_value(const Set *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer set is strictly to the right of an integer
+ * @brief Return true if a set is strictly to the right of an integer
  * @sqlop @p >>, @p #>>
  */
 bool
@@ -851,7 +850,7 @@ right_set_int(const Set *s, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer set is strictly to the right of a big
+ * @brief Return true if a set is strictly to the right of a big
  * integer
  * @sqlop @p >>, @p #>>
  */
@@ -861,12 +860,12 @@ right_set_bigint(const Set *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return left_value_set(s, Int64GetDatum(i), T_INT8, s);
+  return left_value_set(Int64GetDatum(i), T_INT8, s);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float set is strictly to the right of a float.
+ * @brief Return true if a set is strictly to the right of a float.
  * @sqlop @p >>, @p #>>
  */
 bool
@@ -880,7 +879,7 @@ right_set_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a text set is strictly to the right of a text.
+ * @brief Return true if a set is strictly to the right of a text.
  * @sqlop @p >>, @p #>>
  */
 bool
@@ -895,7 +894,7 @@ right_set_text(const Set *s, text *txt)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamptz set is strictly after a timestamptz.
+ * @brief Return true if a set is strictly after a timestamptz.
  * @sqlop @p >>, @p #>>
  */
 bool
@@ -909,7 +908,7 @@ after_set_date(const Set *s, DateADT d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamptz set is strictly after a timestamptz.
+ * @brief Return true if a set is strictly after a timestamptz.
  * @sqlop @p >>, @p #>>
  */
 bool
@@ -954,7 +953,7 @@ overleft_value_set(Datum d, meosType basetype, const Set *s)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer does not extend to the right of an integer set
+ * @brief Return true if an integer does not extend to the right of a set
  * @sqlop @p &<, @p &<#
  */
 bool
@@ -968,8 +967,7 @@ overleft_int_set(int i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer does not extend to the right of a big
- * integer set
+ * @brief Return true if a big integer does not extend to the right of a set
  * @sqlop @p &<, @p &<#
  */
 bool
@@ -983,7 +981,7 @@ overleft_bigint_set(int64 i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float does not extend to the right of a float set
+ * @brief Return true if a float does not extend to the right of a set
  * @sqlop @p &<, @p &<#
  */
 bool
@@ -997,7 +995,7 @@ overleft_float_set(double d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a text does not extend to the right of a text set.
+ * @brief Return true if a text does not extend to the right of a set.
  * @sqlop @p &<, @p &<#
  */
 bool
@@ -1012,7 +1010,7 @@ overleft_text_set(text *txt, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a date is not after a date set.
+ * @brief Return true if a date is not after a set.
  * @sqlop @p &<#
  */
 bool
@@ -1026,7 +1024,7 @@ overbefore_date_set(DateADT d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamptz is not after a timestamptz set.
+ * @brief Return true if a timestamptz is not after a set.
  * @sqlop @p &<#
  */
 bool
@@ -1056,7 +1054,7 @@ overleft_set_value(const Set *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer set does not extend to the right of an integer.
+ * @brief Return true if a set does not extend to the right of an integer.
  * @sqlop @p &<
  */
 bool
@@ -1070,8 +1068,7 @@ overleft_set_int(const Set *s, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer set does not extend to the right of a
- * big integer
+ * @brief Return true if a set does not extend to the right of a big integer
  * @sqlop @p &<
  */
 bool
@@ -1085,7 +1082,7 @@ overleft_set_bigint(const Set *s, int64 i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float set does not extend to the right of a float.
+ * @brief Return true if a set does not extend to the right of a float.
  * @sqlop @p &<
  */
 bool
@@ -1099,7 +1096,7 @@ overleft_set_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a text set does not extend to the right of a text.
+ * @brief Return true if a set does not extend to the right of a text.
  * @sqlop @p &<#
  */
 bool
@@ -1114,7 +1111,7 @@ overleft_set_text(const Set *s, text *txt)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a date set is not before a date.
+ * @brief Return true if a set is not before a date.
  * @sqlop @p &<#
  */
 bool
@@ -1128,7 +1125,7 @@ overbefore_set_date(const Set *s, DateADT d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamptz set is not before a timestamptz.
+ * @brief Return true if a set is not before a timestamptz.
  * @sqlop @p &<#
  */
 bool
@@ -1155,9 +1152,8 @@ overleft_set_set(const Set *s1, const Set *s2)
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
     return false;
-  Datum d1 = SET_VAL_N(s1, s1->count - 1);
-  Datum d2 = SET_VAL_N(s2, s2->count - 1);
-  return datum_le(d1, d2, s1->basetype);
+  return datum_le(SET_VAL_N(s1, s1->count - 1), SET_VAL_N(s2, s2->count - 1),
+    s1->basetype);
 }
 
 /*****************************************************************************
@@ -1179,8 +1175,7 @@ overright_value_set(Datum d, meosType basetype, const Set *s)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer does not extend to the the left of an
- * integer set
+ * @brief Return true if an integer does not extend to the the left of a set
  * @sqlop @p &>
  */
 bool
@@ -1194,8 +1189,7 @@ overright_int_set(int i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer does not extend to the the left of a big
- * integer set
+ * @brief Return true if a big integer does not extend to the the left of a set
  * @sqlop @p &>
  */
 bool
@@ -1209,8 +1203,7 @@ overright_bigint_set(int64 i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float value does not extend to the left of a
- * float set
+ * @brief Return true if a float does not extend to the left of a set
  * @sqlop @p &>
  */
 bool
@@ -1224,7 +1217,7 @@ overright_float_set(double d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a text does not extend to the left of a text set.
+ * @brief Return true if a text does not extend to the left of a set.
  * @sqlop @p &>
  */
 bool
@@ -1239,7 +1232,7 @@ overright_text_set(text *txt, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a date is not before a date set
+ * @brief Return true if a date is not before a set
  * @sqlop @p #&>
  */
 bool
@@ -1253,7 +1246,7 @@ overafter_date_set(DateADT d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamptz is not before a timestamptz set
+ * @brief Return true if a timestamptz is not before a set
  * @sqlop @p #&>
  */
 bool
@@ -1282,7 +1275,7 @@ overright_set_value(const Set *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer set does not extend to the left of an
+ * @brief Return true if a set does not extend to the left of an
  * integer
  * @sqlop @p &>, @p #&>
  */
@@ -1297,7 +1290,7 @@ overright_set_int(const Set *s, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a big integer set does not extend to the left of a big
+ * @brief Return true if a set does not extend to the left of a big
  * integer
  * @sqlop @p &>, @p #&>
  */
@@ -1312,7 +1305,7 @@ overright_set_bigint(const Set *s, int64 i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float set does not extend to the left of a float.
+ * @brief Return true if a set does not extend to the left of a float.
  * @sqlop @p &>, @p #&>
  */
 bool
@@ -1326,7 +1319,7 @@ overright_set_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a text set does not extend to the left of a text.
+ * @brief Return true if a set does not extend to the left of a text.
  * @sqlop @p &>, @p #&>
  */
 bool
@@ -1341,7 +1334,7 @@ overright_set_text(const Set *s, text *txt)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a date set is not before a date
+ * @brief Return true if a set is not before a date
  * @sqlop @p &>, @p #&>
  */
 bool
@@ -1355,7 +1348,7 @@ overafter_set_date(const Set *s, DateADT d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamptz set is not before a timestamptz
+ * @brief Return true if a set is not before a timestamptz
  * @sqlop @p &>, @p #&>
  */
 bool
@@ -1382,10 +1375,7 @@ overright_set_set(const Set *s1, const Set *s2)
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
     return false;
-
-  Datum d1 = SET_VAL_N(s1, 0);
-  Datum d2 = SET_VAL_N(s2, 0);
-  return datum_ge(d1, d2, s1->basetype);
+  return datum_ge(SET_VAL_N(s1, 0), SET_VAL_N(s2, 0), s1->basetype);
 }
 
 /*****************************************************************************
@@ -1427,7 +1417,7 @@ union_set_value(const Set *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of an integer set and an integer
+ * @brief Return the union of a set and an integer
  * @sqlop @p +
  */
 Set *
@@ -1441,7 +1431,7 @@ union_set_int(const Set *s, int i)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a big integer set and a big integer
+ * @brief Return the union of a set and a big integer
  * @sqlop @p +
  */
 Set *
@@ -1455,7 +1445,7 @@ union_set_bigint(const Set *s, int64 i)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a float set and a float
+ * @brief Return the union of a set and a float
  * @sqlop @p +
  */
 Set *
@@ -1469,7 +1459,7 @@ union_set_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a text set and a text
+ * @brief Return the union of a set and a text
  * @sqlop @p +
  */
 Set *
@@ -1484,7 +1474,7 @@ union_set_text(const Set *s, const text *txt)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a date set and a date
+ * @brief Return the union of a set and a date
  * @sqlop @p +
  */
 Set *
@@ -1498,7 +1488,7 @@ union_set_date(const Set *s, const DateADT d)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a timestamptz set and a timestamptz
+ * @brief Return the union of a set and a timestamptz
  * @sqlop @p +
  */
 Set *
@@ -1513,7 +1503,7 @@ union_set_timestamptz(const Set *s, const TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a geoset and a geometry/geography
+ * @brief Return the union of a set and a geometry/geography
  * @sqlop @p +
  */
 Set *
@@ -1567,7 +1557,7 @@ intersection_set_value(const Set *s, Datum d, meosType basetype, Datum *result)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of an integer set and an integer in the last
+ * @brief Compute the intersection of a set and an integer in the last
  * argument
  * @sqlop @p *
  */
@@ -1587,8 +1577,8 @@ intersection_set_int(const Set *s, int i, int *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a big integer set and a big integer in
- * the last argument
+ * @brief Compute the intersection of a set and a big integer in the last
+ * argument
  * @sqlop @p *
  */
 bool
@@ -1607,8 +1597,7 @@ intersection_set_bigint(const Set *s, int64 i, int64 *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a float set and a float in the last
- * argument
+ * @brief Compute the intersection of a set and a float in the last argument
  * @sqlop @p *
  */
 bool
@@ -1627,7 +1616,7 @@ intersection_set_float(const Set *s, double d, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a text set and a text
+ * @brief Compute the intersection of a set and a text in the last argument
  * @sqlop @p *
  */
 bool
@@ -1647,8 +1636,7 @@ intersection_set_text(const Set *s, const text *txt, text **result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a date set and a date in the
- * last argument
+ * @brief Compute the intersection of a set and a date in the last argument
  * @sqlop @p *
  */
 bool
@@ -1666,8 +1654,8 @@ intersection_set_date(const Set *s, DateADT d, DateADT *result)
 }
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a timestamptz set and a timestamptz in the
- * last argument
+ * @brief Compute the intersection of a set and a timestamptz in the last
+ * argument
  * @sqlop @p *
  */
 bool
@@ -1687,7 +1675,8 @@ intersection_set_timestamptz(const Set *s, TimestampTz t, TimestampTz *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a geoset and a geometry/geography
+ * @brief Compute the intersection of a set and a geometry/geography in the
+ * last argument
  * @sqlop @p *
  */
 bool
@@ -1732,7 +1721,7 @@ intersection_set_set(const Set *s1, const Set *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the difference of a value and a set
+ * @brief Compute the difference of a value and a set in the last argument
  * @sqlop @p -
  */
 bool
@@ -1748,7 +1737,8 @@ minus_value_set(Datum d, meosType basetype, const Set *s, Datum *result)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of an integer and an integer set
+ * @brief Compute the difference of an integer and a set in the last
+ * argument
  * @sqlop @p -
  */
 bool
@@ -1767,8 +1757,8 @@ minus_int_set(int i, const Set *s, int *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a big integer and a big integer set in the
- * last argument
+ * @brief Compute the difference of a big integer and a set in the last
+ * argument
  * @sqlop @p -
  */
 bool
@@ -1787,7 +1777,7 @@ minus_bigint_set(int64 i, const Set *s, int64 *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a float and a float set
+ * @brief Compute the difference of a float and a set in the last argument
  * @sqlop @p -
  */
 bool
@@ -1806,7 +1796,7 @@ minus_float_set(double d, const Set *s, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a text and a text set
+ * @brief Compute the difference of a text and a set in the last argument
  * @sqlop @p -
  */
 bool
@@ -1826,7 +1816,7 @@ minus_text_set(const text *txt, const Set *s, text **result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a date and a date set
+ * @brief Compute the difference of a date and a set in the last argument
  * @sqlop @p -
  */
 bool
@@ -1845,7 +1835,8 @@ minus_date_set(DateADT d, const Set *s, DateADT *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a timestamptz and a timestamptz set
+ * @brief Compute the difference of a timestamptz and a set in the last
+ * argument
  * @sqlop @p -
  */
 bool
@@ -1864,7 +1855,7 @@ minus_timestamptz_set(TimestampTz t, const Set *s, TimestampTz *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a geo and a geoset
+ * @brief Compute the difference of a geo and a set in the last argument
  * @sqlop @p -
  */
 bool
@@ -1896,16 +1887,15 @@ minus_set_value(const Set *s, Datum d, meosType basetype)
   assert(s); assert(s->basetype == basetype);
   /* Bounding box test */
   if (! bbox_contains_set_value(s, d, basetype))
-    return set_copy(s);
+    return set_cp(s);
 
   Datum *values = palloc(sizeof(TimestampTz) * s->count);
   int nvals = 0;
-  Datum v = d;
   for (int i = 0; i < s->count; i++)
   {
-    Datum v1 = SET_VAL_N(s, i);
-    if (datum_ne(v, v1, basetype))
-      values[nvals++] = v1;
+    Datum d1 = SET_VAL_N(s, i);
+    if (datum_ne(d, d1, basetype))
+      values[nvals++] = d1;
   }
   return set_make_free(values, nvals, basetype, ORDERED);
 }
@@ -1913,7 +1903,7 @@ minus_set_value(const Set *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of an integer set and an integer
+ * @brief Return the difference of a set and an integer
  * @sqlop @p -
  */
 Set *
@@ -1927,7 +1917,7 @@ minus_set_int(const Set *s, int i)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a big integer set and a big integer.
+ * @brief Return the difference of a set and a big integer.
  * @sqlop @p -
  */
 Set *
@@ -1941,7 +1931,7 @@ minus_set_bigint(const Set *s, int64 i)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a float set and a float
+ * @brief Return the difference of a set and a float
  * @sqlop @p -
  */
 Set *
@@ -1955,7 +1945,7 @@ minus_set_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a text set and a text
+ * @brief Return the difference of a set and a text
  * @sqlop @p -
  */
 Set *
@@ -1970,7 +1960,7 @@ minus_set_text(const Set *s, const text *txt)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a date set and a date
+ * @brief Return the difference of a set and a date
  * @sqlop @p -
  */
 Set *
@@ -1984,7 +1974,7 @@ minus_set_date(const Set *s, DateADT d)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a timestamptz set and a timestamptz
+ * @brief Return the difference of a set and a timestamptz
  * @sqlop @p -
  */
 Set *
@@ -1999,7 +1989,7 @@ minus_set_timestamptz(const Set *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a text set and a text
+ * @brief Return the difference of a set and a text
  * @sqlop @p -
  */
 Set *
@@ -2052,8 +2042,7 @@ distance_set_value(const Set *s, Datum d, meosType basetype)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between an integer set and an integer expressed
- * as a double
+ * @brief Return the distance between a set and an integer as a double
  * @result On error return -1.0
  * @sqlop @p <->
  */
@@ -2068,8 +2057,7 @@ distance_set_int(const Set *s, int i)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a big integer set and a big integer
- * as a double
+ * @brief Return the distance between a set and a big integer as a double
  * @result On error return -1.0
  * @sqlop @p <->
  */
@@ -2084,7 +2072,7 @@ distance_set_bigint(const Set *s, int64 i)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a float set and a float
+ * @brief Return the distance between a set and a float
  * @result On error return -1.0
  * @sqlop @p <->
  */
@@ -2099,7 +2087,7 @@ distance_set_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance in seconds between a date set and a date
+ * @brief Return the distance in seconds between a set and a date
  * @result On error return -1.0
  * @sqlop @p <->
  */
@@ -2114,7 +2102,7 @@ distance_set_date(const Set *s, DateADT d)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance in seconds between a timestamptz set and a timestamptz
+ * @brief Return the distance in seconds between a set and a timestamptz
  * @result On error return -1.0
  * @sqlop @p <->
  */
@@ -2126,6 +2114,21 @@ distance_set_timestamptz(const Set *s, TimestampTz t)
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return -1.0;
   return distance_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_setspan_dist
+ * @brief Return the distance between two sets as a double
+ */
+double
+dist_set_set(const Set *s1, const Set *s2)
+{
+  assert(s1); assert(s2); assert(s1->settype == s2->settype);
+  Span sp1, sp2;
+  set_set_span(s1, &sp1);
+  set_set_span(s2, &sp2);
+  return dist_span_span(&sp1, &sp2);
 }
 
 /**
@@ -2141,12 +2144,7 @@ distance_set_set(const Set *s1, const Set *s2)
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
     return -1.0;
-
-  Span sp1, sp2;
-  set_set_span(s1, &sp1);
-  set_set_span(s2, &sp2);
-  return dist_span_span(&sp1, &sp2);
+  return dist_set_set(s1, s2);
 }
-#endif /* MEOS */
 
 /******************************************************************************/

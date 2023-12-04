@@ -215,7 +215,7 @@ get_endian_variant(const text *txt)
  * @brief Output a generic value in WKB or EWKB format
  */
 static bytea *
-datum_as_wkb_ext(FunctionCallInfo fcinfo, Datum value, meosType type,
+Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, meosType type,
   bool extended)
 {
   uint8_t variant = 0;
@@ -242,7 +242,7 @@ datum_as_wkb_ext(FunctionCallInfo fcinfo, Datum value, meosType type,
  * @brief Output a generic value in WKB or EWKB format as hex-encoded ASCII
  */
 static text *
-datum_as_hexwkb_ext(FunctionCallInfo fcinfo, Datum value, meosType type)
+Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value, meosType type)
 {
   uint8_t variant = 0;
   /* If user specified endianness, respect it */
@@ -273,7 +273,7 @@ Datum
 Span_as_wkb(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(s), s->spantype,
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), s->spantype,
     false);
   PG_RETURN_BYTEA_P(result);
 }
@@ -289,7 +289,7 @@ Datum
 Span_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(s), s->spantype);
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(s), s->spantype);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -308,7 +308,7 @@ Set_as_wkb(PG_FUNCTION_ARGS)
   /* Ensure that the value is detoasted if necessary */
   Set *s = PG_GETARG_SET_P(0);
   meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(s), settype,
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), settype,
     true);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BYTEA_P(result);
@@ -327,7 +327,7 @@ Set_as_hexwkb(PG_FUNCTION_ARGS)
   /* Ensure that the value is detoasted if necessary */
   Set *s = PG_GETARG_SET_P(0);
   meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(s), settype);
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(s), settype);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -346,7 +346,7 @@ Spanset_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(ss),
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(ss),
     ss->spansettype, false);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BYTEA_P(result);
@@ -364,7 +364,7 @@ Spanset_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(ss),
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(ss),
     ss->spansettype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_TEXT_P(result);
@@ -383,7 +383,7 @@ Datum
 Tbox_as_wkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  bytea *result = datum_as_wkb_ext(fcinfo, box, T_TBOX, false);
+  bytea *result = Datum_as_wkb(fcinfo, box, T_TBOX, false);
   PG_RETURN_BYTEA_P(result);
 }
 
@@ -398,7 +398,7 @@ Datum
 Tbox_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  text *result = datum_as_hexwkb_ext(fcinfo, box, T_TBOX);
+  text *result = Datum_as_hexwkb(fcinfo, box, T_TBOX);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -416,7 +416,7 @@ Stbox_as_wkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
   /* A spatiotemporal box always outputs the SRID */
-  bytea *result = datum_as_wkb_ext(fcinfo, box, T_STBOX, true);
+  bytea *result = Datum_as_wkb(fcinfo, box, T_STBOX, true);
   PG_RETURN_BYTEA_P(result);
 }
 
@@ -431,7 +431,7 @@ Datum
 Stbox_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  text *result = datum_as_hexwkb_ext(fcinfo, box, T_STBOX);
+  text *result = Datum_as_hexwkb(fcinfo, box, T_STBOX);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -450,7 +450,7 @@ Temporal_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(temp),
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(temp),
     temp->temptype, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BYTEA_P(result);
@@ -469,8 +469,8 @@ Tpoint_as_ewkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(temp),
-    temp->temptype, true);
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(temp), temp->temptype,
+    true);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BYTEA_P(result);
 }
@@ -488,7 +488,7 @@ Temporal_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(temp),
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(temp),
     temp->temptype);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);

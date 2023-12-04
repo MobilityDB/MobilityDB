@@ -89,9 +89,9 @@ Tstzspan_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
-  Span *p = PG_GETARG_SPAN_P(1);
+  Span *s = PG_GETARG_SPAN_P(1);
   store_fcinfo(fcinfo);
-  state = tstzspan_tcount_transfn(state, p);
+  state = tstzspan_tcount_transfn(state, s);
   PG_RETURN_POINTER(state);
 }
 

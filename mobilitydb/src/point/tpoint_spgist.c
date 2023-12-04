@@ -605,7 +605,8 @@ overBack8D(const STboxNode *nodebox, const STBox *query)
 static bool
 before8D(const STboxNode *nodebox, const STBox *query)
 {
-  return datum_lt(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
+  return datum_lt(nodebox->right.period.upper, query->period.lower,
+    T_TIMESTAMPTZ);
 }
 
 /**
@@ -614,7 +615,8 @@ before8D(const STboxNode *nodebox, const STBox *query)
 static bool
 overBefore8D(const STboxNode *nodebox, const STBox *query)
 {
-  return datum_le(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ);
+  return datum_le(nodebox->right.period.upper, query->period.upper,
+    T_TIMESTAMPTZ);
 }
 
 /**
@@ -623,7 +625,8 @@ overBefore8D(const STboxNode *nodebox, const STBox *query)
 static bool
 after8D(const STboxNode *nodebox, const STBox *query)
 {
-  return datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ);
+  return datum_gt(nodebox->left.period.lower, query->period.upper,
+    T_TIMESTAMPTZ);
 }
 
 /**
@@ -632,7 +635,8 @@ after8D(const STboxNode *nodebox, const STBox *query)
 static bool
 overAfter8D(const STboxNode *nodebox, const STBox *query)
 {
-  return datum_ge(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
+  return datum_ge(nodebox->left.period.lower, query->period.lower,
+    T_TIMESTAMPTZ);
 }
 
 /**
@@ -695,8 +699,8 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
   meosType type = oid_type(scankey->sk_subtype);
   if (type == T_TSTZSPAN)
   {
-    Span *p = DatumGetSpanP(scankey->sk_argument);
-    tstzspan_set_stbox(p, result);
+    Span *s = DatumGetSpanP(scankey->sk_argument);
+    tstzspan_set_stbox(s, result);
   }
   else if (type == T_STBOX)
   {
@@ -1093,7 +1097,7 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     qsortfn = (qsort_comparator) &stbox_tmax_cmp;
   qsort(sorted, in->nTuples, sizeof(SortedSTbox), qsortfn);
   int median = in->nTuples >> 1;
-  STBox *centroid = stbox_copy(&sorted[median].box);
+  STBox *centroid = stbox_cp(&sorted[median].box);
 
   /* Fill the output data structure */
   out->hasPrefix = true;
@@ -1113,7 +1117,7 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    STBox *box = stbox_copy(&sorted[i].box);
+    STBox *box = stbox_cp(&sorted[i].box);
     int n = sorted[i].i;
     out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
     out->leafTupleDatums[n] = STboxPGetDatum(box);

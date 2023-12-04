@@ -194,6 +194,38 @@ Value_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Intspan_to_floatspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Intspan_to_floatspan);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert an int span as a float span
+ * @sqlfunc floatspan()
+ * @sqlop @p ::
+ */
+Datum
+Intspan_to_floatspan(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Span *result = intspan_to_floatspan(s);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Floatspan_to_intspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspan_to_intspan);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a float span as a int span
+ * @sqlfunc intspan()
+ * @sqlop @p ::
+ */
+Datum
+Floatspan_to_intspan(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Span *result = floatspan_to_intspan(s);
+  PG_RETURN_POINTER(result);
+}
+
 PGDLLEXPORT Datum Datespan_to_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Datespan_to_tstzspan);
 /**
@@ -206,8 +238,7 @@ Datum
 Datespan_to_tstzspan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Span *result = palloc(sizeof(Span));
-  datespan_set_tstzspan(s, result);
+  Span *result = datespan_to_tstzspan(s);
   PG_RETURN_POINTER(result);
 }
 
@@ -223,8 +254,7 @@ Datum
 Tstzspan_to_datespan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Span *result = palloc(sizeof(Span));
-  tstzspan_set_datespan(s, result);
+  Span *result = tstzspan_to_datespan(s);
   PG_RETURN_POINTER(result);
 }
 

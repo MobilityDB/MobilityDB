@@ -75,7 +75,7 @@ extern float non_negative(float val);
 extern void bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
   meosType bboxtype, double rightLower, int minLeftCount, double leftUpper,
   int maxLeftCount);
-extern Datum bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
+extern Datum bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *));
 
 /* The following functions are also called by tnumber_spgist.c */

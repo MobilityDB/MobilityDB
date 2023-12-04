@@ -164,18 +164,18 @@ tboxnode_init(TBox *centroid, TboxNode *nodebox)
   }
   nodebox->left.span.lower = nodebox->right.span.lower = neginf;
   nodebox->left.span.upper = nodebox->right.span.upper = posinf;
-  nodebox->left.span.spantype = nodebox->right.span.spantype = 
+  nodebox->left.span.spantype = nodebox->right.span.spantype =
     centroid->span.spantype;
-  nodebox->left.span.basetype = nodebox->right.span.basetype = 
+  nodebox->left.span.basetype = nodebox->right.span.basetype =
     centroid->span.basetype;
 
   nodebox->left.period.lower = nodebox->right.period.lower =
     TimestampTzGetDatum(DT_NOBEGIN);
   nodebox->left.period.upper = nodebox->right.period.upper =
     TimestampTzGetDatum(DT_NOEND);
-  nodebox->left.period.spantype = nodebox->right.period.spantype = 
+  nodebox->left.period.spantype = nodebox->right.period.spantype =
     centroid->period.spantype;
-  nodebox->left.period.basetype = nodebox->right.period.basetype = 
+  nodebox->left.period.basetype = nodebox->right.period.basetype =
     centroid->period.basetype;
   nodebox->left.flags = nodebox->right.flags = centroid->flags;
   return;
@@ -347,7 +347,8 @@ contain4D(const TboxNode *nodebox, const TBox *query)
 static bool
 left4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_lt(nodebox->right.span.upper, query->span.lower, query->span.basetype);
+  return datum_lt(nodebox->right.span.upper, query->span.lower,
+    query->span.basetype);
 }
 
 /**
@@ -357,7 +358,8 @@ left4D(const TboxNode *nodebox, const TBox *query)
 static bool
 overLeft4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_le(nodebox->right.span.upper, query->span.upper, query->span.basetype);
+  return datum_le(nodebox->right.span.upper, query->span.upper,
+    query->span.basetype);
 }
 
 /**
@@ -376,7 +378,8 @@ right4D(const TboxNode *nodebox, const TBox *query)
 static bool
 overRight4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_ge(nodebox->left.span.lower, query->span.lower, query->span.basetype);
+  return datum_ge(nodebox->left.span.lower, query->span.lower,
+    query->span.basetype);
 }
 
 /**
@@ -385,7 +388,8 @@ overRight4D(const TboxNode *nodebox, const TBox *query)
 static bool
 before4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_lt(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
+  return datum_lt(nodebox->right.period.upper, query->period.lower,
+    T_TIMESTAMPTZ);
 }
 
 /**
@@ -394,7 +398,8 @@ before4D(const TboxNode *nodebox, const TBox *query)
 static bool
 overBefore4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_le(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ);
+  return datum_le(nodebox->right.period.upper, query->period.upper,
+    T_TIMESTAMPTZ);
 }
 
 /**
@@ -403,7 +408,8 @@ overBefore4D(const TboxNode *nodebox, const TBox *query)
 static bool
 after4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ);
+  return datum_gt(nodebox->left.period.lower, query->period.upper,
+    T_TIMESTAMPTZ);
 }
 
 /**
@@ -412,7 +418,8 @@ after4D(const TboxNode *nodebox, const TBox *query)
 static bool
 overAfter4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_ge(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
+  return datum_ge(nodebox->left.period.lower, query->period.lower,
+    T_TIMESTAMPTZ);
 }
 
 /**
@@ -459,8 +466,8 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
   }
   else if (type == T_TSTZSPAN)
   {
-    Span *p = DatumGetSpanP(scankey->sk_argument);
-    tstzspan_set_tbox(p, result);
+    Span *s = DatumGetSpanP(scankey->sk_argument);
+    tstzspan_set_tbox(s, result);
   }
   else if (type == T_TBOX)
   {
@@ -725,9 +732,9 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     highTs[i] = DatumGetTimestampTz(box->period.upper);
   }
 
-  qsort(lowXs, (size_t) in->nTuples, sizeof(Datum), 
+  qsort(lowXs, (size_t) in->nTuples, sizeof(Datum),
     (basetype == T_INT4) ? compareInt4 : compareFloat8);
-  qsort(highXs, (size_t) in->nTuples, sizeof(Datum), 
+  qsort(highXs, (size_t) in->nTuples, sizeof(Datum),
     (basetype == T_INT4) ? compareInt4 : compareFloat8);
   qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
   qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
@@ -801,7 +808,7 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     qsortfn = (qsort_comparator) &tbox_tmax_cmp;
   qsort(sorted, in->nTuples, sizeof(SortedTbox), qsortfn);
   int median = in->nTuples >> 1;
-  TBox *centroid = tbox_copy(&sorted[median].box);
+  TBox *centroid = tbox_cp(&sorted[median].box);
 
   /* Fill the output data structure */
   out->hasPrefix = true;
@@ -821,7 +828,7 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    TBox *box = tbox_copy(&sorted[i].box);
+    TBox *box = tbox_cp(&sorted[i].box);
     int n = sorted[i].i;
     out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
     out->leafTupleDatums[n] = TboxPGetDatum(box);

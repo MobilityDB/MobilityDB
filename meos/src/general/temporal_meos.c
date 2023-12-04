@@ -399,7 +399,7 @@ tnumber_at_span(const Temporal *temp, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_span(temp, s))
     return NULL;
   return tnumber_restrict_span(temp, s, REST_AT);
@@ -415,7 +415,7 @@ tnumber_minus_span(const Temporal *temp, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_span(temp, s))
     return NULL;
   return tnumber_restrict_span(temp, s, REST_MINUS);
@@ -431,7 +431,7 @@ tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_spanset(temp, ss))
     return NULL;
   return tnumber_restrict_spanset(temp, ss, REST_AT);
@@ -448,7 +448,7 @@ tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_spanset(temp, ss))
     return NULL;
   return tnumber_restrict_spanset(temp, ss, REST_MINUS);
@@ -516,7 +516,7 @@ temporal_minus_tstzset(const Temporal *temp, const Set *s)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to a period
+ * @brief Restrict a temporal value to a timestamptz span
  * @sqlfunc atTime()
  */
 Temporal *
@@ -531,7 +531,7 @@ temporal_at_tstzspan(const Temporal *temp, const Span *s)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to the complement of a period
+ * @brief Restrict a temporal value to the complement of a timestamptz span
  * @sqlfunc minusTime()
  */
 Temporal *
@@ -553,7 +553,7 @@ Temporal *
 temporal_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) || 
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
   return temporal_restrict_tstzspanset(temp, ss, REST_AT);
@@ -568,7 +568,7 @@ Temporal *
 temporal_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) || 
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
   return temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
