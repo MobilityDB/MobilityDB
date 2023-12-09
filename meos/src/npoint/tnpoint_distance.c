@@ -138,7 +138,7 @@ nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
-  temporal_value_at_timestamp(temp, resultgeom->t, false, &value);
+  temporal_value_at_timestamptz(temp, resultgeom->t, false, &value);
   TInstant *result = tinstant_make(value, temp->temptype, resultgeom->t);
   pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
   return result;
@@ -157,7 +157,7 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
-  temporal_value_at_timestamp(temp, resultgeom->t, false, &value);
+  temporal_value_at_timestamptz(temp, resultgeom->t, false, &value);
   TInstant *result = tinstant_make(value, temp->temptype, resultgeom->t);
   pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
   pfree(geom);
@@ -177,7 +177,7 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
     const TInstant *min = temporal_min_instant((const Temporal *) dist);
     /* The closest point may be at an exclusive bound. */
     Datum value;
-    temporal_value_at_timestamp(temp1, min->t, false, &value);
+    temporal_value_at_timestamptz(temp1, min->t, false, &value);
     result = tinstant_make(value, temp1->temptype, min->t);
     pfree(dist); pfree(DatumGetPointer(value));
   }

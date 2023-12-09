@@ -258,6 +258,21 @@ int64arr_to_array(const int64 *longints, int count)
 }
 
 /**
+ * @brief Convert a C array of dates into a PostgreSQL array
+ */
+ArrayType *
+datearr_to_array(const DateADT *dates, int count)
+{
+  assert(count > 0);
+  Datum *values = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    values[i] = DateADTGetDatum(dates[i]);
+  ArrayType *result = construct_array(values, count, DATEOID, 4, true, 'i');
+  pfree(values);
+  return result;
+}
+
+/**
  * @brief Convert a C array of timestamps into a PostgreSQL array
  */
 ArrayType *

@@ -135,7 +135,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       if (interp != DISCRETE &&
           timestamptz_cmp_internal(ininsts[k - 1]->t, upper) < 0)
       {
-        tsequence_value_at_timestamp(seq, upper, false, &value);
+        tsequence_value_at_timestamptz(seq, upper, false, &value);
         ininsts[k++] = end = tinstant_make(value, seq->temptype, upper);
       }
       seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
@@ -386,7 +386,7 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
       if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
           (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
       {
-        Datum value = tsegment_value_at_timestamp(start, end, interp, lower);
+        Datum value = tsegment_value_at_timestamptz(start, end, interp, lower);
         result[ninsts++] = tinstant_make(value, seq->temptype, lower);
         /* Advance the bucket */
         lower += tunits;
@@ -1214,7 +1214,7 @@ tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
     double value = DatumGetFloat8(tinstant_value(inst));
     /*
      * The following is equivalent to
-     * tsegment_value_at_timestamp(start, end, LINEAR, inst->t);
+     * #tsegment_value_at_timestamptz(start, end, LINEAR, inst->t);
      */
     double duration1 = (double) (inst->t - start->t);
     double ratio = duration1 / duration2;
@@ -1371,7 +1371,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
       p3k = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value(inst));
       if (syncdist)
       {
-        value = tsegment_value_at_timestamp(start, end, interp, inst->t);
+        value = tsegment_value_at_timestamptz(start, end, interp, inst->t);
         p3_sync = (POINT3DZ *) DATUM_POINT3DZ_P(value);
         d_tmp = dist3d_pt_pt(p3k, p3_sync);
         pfree(DatumGetPointer(value));
@@ -1384,7 +1384,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
       p2k = (POINT2D *) DATUM_POINT2D_P(tinstant_value(inst));
       if (syncdist)
       {
-        value = tsegment_value_at_timestamp(start, end, interp, inst->t);
+        value = tsegment_value_at_timestamptz(start, end, interp, inst->t);
         p2_sync = (POINT2D *) DATUM_POINT2D_P(value);
         d_tmp = dist2d_pt_pt(p2k, p2_sync);
         pfree(DatumGetPointer(value));

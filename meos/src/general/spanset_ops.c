@@ -797,7 +797,6 @@ left_span_spanset(const Span *s, const SpanSet *ss)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-
   const Span *s1 = SPANSET_SP_N(ss, 0);
   return lf_span_span(s, s1);
 }
@@ -905,7 +904,6 @@ left_spanset_span(const SpanSet *ss, const Span *s)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-
   const Span *s1 = SPANSET_SP_N(ss, ss->count - 1);
   return lf_span_span(s1, s);
 }
@@ -923,7 +921,6 @@ left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_same_spanset_type(ss1, ss2))
     return false;
-
   const Span *s1 = SPANSET_SP_N(ss1, ss1->count - 1);
   const Span *s2 = SPANSET_SP_N(ss2, 0);
   return lf_span_span(s1, s2);
@@ -1301,7 +1298,6 @@ overleft_span_spanset(const Span *s, const SpanSet *ss)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-
   const Span *s1 = SPANSET_SP_N(ss, ss->count - 1);
   return ovlf_span_span(s, s1);
 }
@@ -1318,7 +1314,6 @@ overleft_spanset_span(const SpanSet *ss, const Span *s)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-
   const Span *s1 = SPANSET_SP_N(ss, ss->count - 1);
   return ovlf_span_span(s1, s);
 }
@@ -1336,7 +1331,6 @@ overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_same_spanset_type(ss1, ss2))
     return false;
-
   const Span *s1 = SPANSET_SP_N(ss1, ss1->count - 1);
   const Span *s2 = SPANSET_SP_N(ss2, ss2->count - 1);
   return ovlf_span_span(s1, s2);
@@ -1447,7 +1441,6 @@ overright_span_spanset(const Span *s, const SpanSet *ss)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-
   const Span *s1 = SPANSET_SP_N(ss, 0);
   return ovri_span_span(s, s1);
 }

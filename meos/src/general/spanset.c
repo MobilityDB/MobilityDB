@@ -664,24 +664,6 @@ spanset_compact(SpanSet *ss)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Shift a span set by a value.
- * @pre The value is of the same type as the span base type
- * @sqlfunc shift()
- */
-void
-spanset_shift(SpanSet *ss, Datum shift)
-{
-  assert(ss);
-  for (int i = 0; i < ss->count; i++)
-  {
-    Span *s = (Span *) SPANSET_SP_N(ss, i);
-    span_shift(s, shift);
-  }
-  return;
-}
-
-/**
- * @ingroup libmeos_internal_setspan_transf
  * @brief Return a number set shifted and/or scaled by the intervals.
  * @sqlfunc shift(), scale(), shiftScale()
  */
@@ -1132,7 +1114,7 @@ datespanset_duration(const SpanSet *ss, bool boundspan)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_timespanset_type(ss->spansettype))
+      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return NULL;
 
   if (boundspan)
@@ -1159,7 +1141,7 @@ tstzspanset_duration(const SpanSet *ss, bool boundspan)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_timespanset_type(ss->spansettype))
+      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
 
   if (boundspan)
@@ -1175,6 +1157,111 @@ tstzspanset_duration(const SpanSet *ss, bool boundspan)
     pfree(result); pfree(interval1);
     result = interval2;
   }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the number of dates of a span set
+ * @return On error return -1
+ * @sqlfunc numTimestamps()
+ */
+int
+datespanset_num_dates(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
+    return -1;
+  /* Date span sets are always canonicalized */
+  return ss->count * 2;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the start datetz of a span set.
+ * @return On error return DATEVAL_NOEND
+ * @sqlfunc startTime()
+ */
+DateADT
+datespanset_start_date(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
+    return DATEVAL_NOEND;
+  const Span *s = SPANSET_SP_N(ss, 0);
+  return DatumGetDateADT(s->lower);
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the end datetz of a span set.
+ * @return On error return DATEVAL_NOEND
+ * @sqlfunc endTime()
+ */
+DateADT
+datespanset_end_date(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_timespanset_type(ss->spansettype))
+    return DATEVAL_NOEND;
+  const Span *s = SPANSET_SP_N(ss, ss->count - 1);
+  return DatumGetDateADT(s->upper);
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Set the last argument to the n-th date of a span set
+ * @param[in] ss Span set
+ * @param[in] n Number
+ * @param[out] result Date
+ * @result Return true if the date is found
+ * @note It is assumed that n is 1-based
+ * @sqlfunc timesN()
+ */
+bool
+datespanset_date_n(const SpanSet *ss, int n, DateADT *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
+    return false;
+  if (n < 1 || n > ss->count * 2)
+    return false;
+  /* Date span sets are always canonicalized */
+  int i = n / 2; /* 1-based */
+  int j = (i * 2  < n) ? i : i - 1;
+  const Span *s = SPANSET_SP_N(ss, j);
+  *result = (i * 2  < n) ?
+    DatumGetDateADT(s->lower) : DatumGetDateADT(s->upper);
+  return true;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the array of dates of a span set
+ * @return On error return NULL
+ * @sqlfunc dates()
+ */
+DateADT *
+datespanset_dates(const SpanSet *ss, int *count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
+      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
+    return NULL;
+
+  DateADT *result = palloc(sizeof(DateADT) * 2 * ss->count);
+  int ndates = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const Span *s = SPANSET_SP_N(ss, i);
+    result[ndates++] = DatumGetDateADT(s->lower);
+    result[ndates++] = DatumGetDateADT(s->upper);
+  }
+  *count = ndates;
   return result;
 }
 
@@ -1235,7 +1322,7 @@ tstzspanset_start_timestamp(const SpanSet *ss)
     return DT_NOEND;
 
   const Span *s = SPANSET_SP_N(ss, 0);
-  return s->lower;
+  return DatumGetTimestampTz(s->lower);
 }
 
 /**
@@ -1253,7 +1340,7 @@ tstzspanset_end_timestamp(const SpanSet *ss)
     return DT_NOEND;
 
   const Span *s = SPANSET_SP_N(ss, ss->count - 1);
-  return s->upper;
+  return DatumGetTimestampTz(s->upper);
 }
 
 /**
@@ -1274,27 +1361,27 @@ tstzspanset_timestamp_n(const SpanSet *ss, int n, TimestampTz *result)
       ! ensure_timespanset_type(ss->spansettype))
     return false;
 
-  int pernum = 0;
-  const Span *s = SPANSET_SP_N(ss, pernum);
-  TimestampTz d = s->lower;
+  int i = 0;
+  const Span *s = SPANSET_SP_N(ss, i);
+  Datum d = s->lower;
   if (n == 1)
   {
-    *result = d;
+    *result = DatumGetTimestampTz(d);
     return true;
   }
 
   bool start = false;
-  int i = 1;
-  TimestampTz prev = d;
-  while (i < n)
+  int j = 1;
+  Datum prev = d;
+  while (j < n)
   {
     if (start)
     {
-      pernum++;
-      if (pernum == ss->count)
+      i++;
+      if (i == ss->count)
         break;
 
-      s = SPANSET_SP_N(ss, pernum);
+      s = SPANSET_SP_N(ss, i);
       d = s->lower;
       start = !start;
     }
@@ -1305,13 +1392,13 @@ tstzspanset_timestamp_n(const SpanSet *ss, int n, TimestampTz *result)
     }
     if (prev != d)
     {
-      i++;
+      j++;
       prev = d;
     }
   }
-  if (i != n)
+  if (j != n)
     return false;
-  *result = d;
+  *result = DatumGetTimestampTz(d);
   return true;
 }
 

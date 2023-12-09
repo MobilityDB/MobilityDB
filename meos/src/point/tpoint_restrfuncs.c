@@ -2146,7 +2146,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         {
           if (t1 != inst1->t)
           {
-            inter1 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t1);
+            inter1 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t1);
             instants[ninsts] = tinstant_make(inter1, inst1->temptype, t1);
             tofree[nfree++] = instants[ninsts++];
             free1 = true;
@@ -2158,7 +2158,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         {
           if (t2 != inst2->t)
           {
-            inter2 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t2);
+            inter2 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t2);
             if (! free1 || ! gspoint_eq(DatumGetGserializedP(inter1),
                   DatumGetGserializedP(inter2)))
             {

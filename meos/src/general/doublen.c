@@ -303,8 +303,7 @@ double4_add(const double4 *d1, const double4 *d2)
 bool
 double4_eq(const double4 *d1, const double4 *d2)
 {
-  return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c &&
-    d1->d == d2->d);
+  return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c && d1->d == d2->d);
 }
 
 #if 0 /* not used */

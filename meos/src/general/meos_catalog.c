@@ -529,6 +529,7 @@ timeset_type(meosType type)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * @brief Ensure that the type is a number set type
  */
@@ -543,7 +544,7 @@ ensure_timeset_type(meosType type)
   }
   return true;
 }
-
+#endif /* not used */
 
 /**
  * @brief Return true if the type is a set type with a span as a bounding box
@@ -749,6 +750,7 @@ timespan_type(meosType type)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * @brief Ensure that a span is a time span type
  */
@@ -763,6 +765,7 @@ ensure_timespan_type(meosType type)
   }
   return true;
 }
+#endif /* not used */
 
 /*****************************************************************************/
 

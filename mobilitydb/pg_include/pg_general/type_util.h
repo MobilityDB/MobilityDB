@@ -87,6 +87,7 @@ extern Temporal **temporalarr_extract(ArrayType *array, int *count);
 
 extern ArrayType *datumarr_to_array(Datum *values, int count, meosType type);
 extern ArrayType *int64arr_to_array(const int64 *longints, int count);
+extern ArrayType *datearr_to_array(const DateADT *dates, int count);
 extern ArrayType *tstzarr_to_array(const TimestampTz *times, int count);
 extern ArrayType *spanarr_to_array(const Span **spans, int count);
 extern ArrayType *strarr_to_textarray(char **strarr, int count);

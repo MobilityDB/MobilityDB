@@ -115,6 +115,14 @@ SELECT tstzspanset '{[2000-01-01,2000-01-02]}'::tbox;
 SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
 SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
 
+SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
+SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
+/* Errors */
+SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::intspan;
+SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::floatspan;
+
 -------------------------------------------------------------------------------
 
 SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan))::numeric, 6) FROM tbl_tboxfloat;

@@ -780,6 +780,31 @@ CREATE FUNCTION spans(tstzspanset)
   AS 'MODULE_PATHNAME', 'Spanset_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION numDates(datespanset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Datespanset_num_dates'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startDate(datespanset)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Datespanset_start_date'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endDate(datespanset)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Datespanset_end_date'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION dateN(datespanset, integer)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Datespanset_date_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION dates(datespanset)
+  RETURNS date[]
+  AS 'MODULE_PATHNAME', 'Datespanset_dates'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION numTimestamps(tstzspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Tstzspanset_num_timestamps'

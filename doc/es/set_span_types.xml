@@ -542,7 +542,7 @@ SELECT numValues(intset '{1,3,5,7}');
 				<indexterm><primary><varname>startValue</varname></primary></indexterm>
 				<indexterm><primary><varname>endValue</varname></primary></indexterm>
 				<indexterm><primary><varname>valueN</varname></primary></indexterm>
-				<para>Obtener el valor inicial/final/enésimo</para>
+				<para>Obtener el valor inicial, final o enésimo</para>
 				<para><varname>startValue(set) → base</varname></para>
 				<para><varname>endValue(set) → base</varname></para>
 				<para><varname>valueN(set,integer) → base</varname></para>
@@ -583,7 +583,7 @@ SELECT numSpans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04]
 				<indexterm><primary><varname>startSpan</varname></primary></indexterm>
 				<indexterm><primary><varname>endSpan</varname></primary></indexterm>
 				<indexterm><primary><varname>spanN</varname></primary></indexterm>
-				<para>Obtener el rango inicial/final/enésimo</para>
+				<para>Obtener el rango inicial, final o enésimo</para>
 				<para><varname>startSpan(spanset) → span</varname></para>
 				<para><varname>endSpan(spanset) → span</varname></para>
 				<para><varname>spanN(spanset,integer) → span</varname></para>
@@ -620,26 +620,36 @@ SELECT spans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 			</listitem>
 
 			<listitem id="setspan_numTimestamps">
+				<indexterm><primary><varname>numDates</varname></primary></indexterm>
 				<indexterm><primary><varname>numTimestamps</varname></primary></indexterm>
-				<para>Obtener el número de marcas de tiempo diferentes</para>
+				<para>Obtener el número de fechas o marcas de tiempo diferentes</para>
+				<para><varname>numDates(datespanset) → integer</varname></para>
 				<para><varname>numTimestamps(tstzspanset) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
+SELECT numDates(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
+-- 4
 SELECT numTimestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
 -- 3
 </programlisting>
 			</listitem>
 
 			<listitem id="setspan_startTimestamp">
+				<indexterm><primary><varname>startDate</varname></primary></indexterm>
+				<indexterm><primary><varname>endDate</varname></primary></indexterm>
+				<indexterm><primary><varname>dateN</varname></primary></indexterm>
 				<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
 				<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
 				<indexterm><primary><varname>timestampN</varname></primary></indexterm>
-				<para>Obtener la marca de tiempo inicial/final/enémsima</para>
+				<para>Obtener la fecha o marca de tiempo inicial, final o enésima</para>
+				<para><varname>startDate(datespanset) → date</varname></para>
+				<para><varname>endDate(datespanset) → date</varname></para>
+				<para><varname>dateN(datespanset,integer) → date</varname></para>
 				<para><varname>startTimestamp(tstzspanset) → timestamptz</varname></para>
 				<para><varname>endTimestamp(tstzspanset) → timestamptz</varname></para>
 				<para><varname>timestampN(tstzspanset,integer) → timestamptz</varname></para>
 				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT startTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
+SELECT startDate(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 -- 2001-01-01
 SELECT endTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
 -- 2001-01-05
@@ -649,13 +659,17 @@ SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 			</listitem>
 
 			<listitem id="setspan_timestamps">
+				<indexterm><primary><varname>dates</varname></primary></indexterm>
 				<indexterm><primary><varname>timestamps</varname></primary></indexterm>
-				<para>Obtener las marcas de tiempo diferentes</para>
-				<para><varname>timestamps(tstzspanset) → tstzset</varname></para>
+				<para>Obtener las fechas o marcas de tiempo diferentes</para>
+				<para><varname>dates(datespanset) → date[]</varname></para>
+				<para><varname>timestamps(tstzspanset) → timestamptz[]</varname></para>
 				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<programlisting language="sql" xml:space="preserve">
+SELECT dates(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
+-- {2001-01-01, 2001-01-02, 2001-01-03, 2001-01-04}
 SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
--- {"2001-01-01", "2001-01-03", "2001-01-05"}
+-- {"2001-01-01 00:00:00", "2001-01-03 00:00:00", "2001-01-05 00:00:00"}
 </programlisting>
 			</listitem>
 		</itemizedlist>

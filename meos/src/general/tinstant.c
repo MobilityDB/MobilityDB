@@ -520,7 +520,8 @@ tinstant_instants(const TInstant *inst, int *count)
  * @sqlfunc valueAtTimestamp()
  */
 bool
-tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
+tinstant_value_at_timestamptz(const TInstant *inst, TimestampTz t,
+  Datum *result)
 {
   assert(inst); assert(result);
   if (t != inst->t)
@@ -823,7 +824,7 @@ tnumberinst_restrict_spanset(const TInstant *inst, const SpanSet *ss,
  * @sqlfunc atTimestamp(), minusTimestamp()
  */
 TInstant *
-tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
+tinstant_restrict_timestamptz(const TInstant *inst, TimestampTz t, bool atfunc)
 {
   assert(inst);
   if (inst->t == t)

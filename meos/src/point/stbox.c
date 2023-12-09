@@ -319,6 +319,7 @@ stbox_cp(const STBox *box)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_box_constructor
  * @brief Return a copy of a spatiotemporal box.
@@ -331,6 +332,7 @@ stbox_copy(const STBox *box)
     return NULL;
   return stbox_cp(box);
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 

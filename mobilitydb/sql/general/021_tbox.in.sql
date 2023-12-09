@@ -207,6 +207,10 @@ CREATE CAST (tstzspanset AS tbox) WITH FUNCTION tbox(tstzspanset);
 
 /*****************************************************************************/
 
+CREATE FUNCTION intspan(tbox)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Tbox_to_intspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspan(tbox)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Tbox_to_floatspan'
@@ -216,6 +220,7 @@ CREATE FUNCTION timeSpan(tbox)
   AS 'MODULE_PATHNAME', 'Tbox_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE CAST (tbox AS intspan) WITH FUNCTION intspan(tbox);
 CREATE CAST (tbox AS floatspan) WITH FUNCTION floatspan(tbox);
 CREATE CAST (tbox AS tstzspan) WITH FUNCTION timeSpan(tbox);
 

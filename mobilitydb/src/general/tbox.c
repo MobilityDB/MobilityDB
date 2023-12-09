@@ -350,6 +350,21 @@ Spanset_to_tbox(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_to_intspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_to_intspan);
+/**
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a temporal box as a float span
+ * @sqlfunc floatspan()
+ */
+Datum
+Tbox_to_intspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *result = tbox_to_intspan(box);
+  PG_RETURN_POINTER(result);
+}
+
 PGDLLEXPORT Datum Tbox_to_floatspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_floatspan);
 /**
@@ -362,8 +377,6 @@ Tbox_to_floatspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Span *result = tbox_to_floatspan(box);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

@@ -703,6 +703,7 @@ span_cp(const Span *s)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Return a copy of a span.
@@ -715,6 +716,7 @@ span_copy(const Span *s)
     return NULL;
   return span_cp(s);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Conversion
@@ -1178,8 +1180,8 @@ floatspan_set_intspan(const Span *s1, Span *s2)
 {
   assert(s1); assert(s2); assert(s1->spantype == T_FLOATSPAN);
   Datum lower = Int32GetDatum((int) DatumGetFloat8(s1->lower));
-  Datum upper = Int32GetDatum((int) (DatumGetFloat8(s1->upper)) + 1);
-  span_set(lower, upper, true, false, T_INT4, T_INTSPAN, s2);
+  Datum upper = Int32GetDatum((int) (DatumGetFloat8(s1->upper)));
+  span_set(lower, upper, s1->lower_inc, s1->upper_inc, T_INT4, T_INTSPAN, s2);
   return;
 }
 
@@ -1241,21 +1243,6 @@ span_expand(const Span *s1, Span *s2)
   s2->lower_inc = lower1 ? s2->lower_inc : s1->lower_inc;
   s2->upper = upper1 ? s2->upper : s1->upper;
   s2->upper_inc = upper1 ? s2->upper_inc : s1->upper_inc;
-  return;
-}
-
-/**
- * @ingroup libmeos_internal_setspan_transf
- * @brief Shift a span by a value.
- * @pre The value is of the same type as the span base type
- * @sqlfunc shift()
- */
-void
-span_shift(Span *s, Datum shift)
-{
-  assert(s);
-  s->lower = datum_add(s->lower, shift, s->basetype);
-  s->upper = datum_add(s->upper, shift, s->basetype);
   return;
 }
 

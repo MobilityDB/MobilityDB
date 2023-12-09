@@ -3849,26 +3849,26 @@ temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
  * @sqlfunc atTime, minusTime
  */
 Temporal *
-temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
+temporal_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 {
   assert(temp);
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_restrict_timestamp((TInstant *) temp, t, atfunc);
+    result = (Temporal *) tinstant_restrict_timestamptz((TInstant *) temp, t, atfunc);
   else if (temp->subtype == TSEQUENCE)
   {
     if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
       result = atfunc ?
-        (Temporal *) tdiscseq_at_timestamp((TSequence *) temp, t) :
-        (Temporal *) tdiscseq_minus_timestamp((TSequence *) temp, t);
+        (Temporal *) tdiscseq_at_timestamptz((TSequence *) temp, t) :
+        (Temporal *) tdiscseq_minus_timestamptz((TSequence *) temp, t);
     else
       result = atfunc ?
-        (Temporal *) tcontseq_at_timestamp((TSequence *) temp, t) :
-        (Temporal *) tcontseq_minus_timestamp((TSequence *) temp, t);
+        (Temporal *) tcontseq_at_timestamptz((TSequence *) temp, t) :
+        (Temporal *) tcontseq_minus_timestamptz((TSequence *) temp, t);
   }
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_restrict_timestamp((TSequenceSet *) temp,
+    result = (Temporal *) tsequenceset_restrict_timestamptz((TSequenceSet *) temp,
       t, atfunc);
   return result;
 }
@@ -3881,20 +3881,20 @@ temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
  * @sqlfunc valueAtTimestamp
  */
 bool
-temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
+temporal_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   Datum *result)
 {
   assert(temp); assert(result);
   bool found = false;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    found = tinstant_value_at_timestamp((TInstant *) temp, t, result);
+    found = tinstant_value_at_timestamptz((TInstant *) temp, t, result);
   else if (temp->subtype == TSEQUENCE)
     found = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-      tdiscseq_value_at_timestamp((TSequence *) temp, t, result) :
-      tsequence_value_at_timestamp((TSequence *) temp, t, strict, result);
+      tdiscseq_value_at_timestamptz((TSequence *) temp, t, result) :
+      tsequence_value_at_timestamptz((TSequence *) temp, t, strict, result);
   else /* subtype == TSEQUENCESET */
-    found = tsequenceset_value_at_timestamp((TSequenceSet *) temp, t, strict,
+    found = tsequenceset_value_at_timestamptz((TSequenceSet *) temp, t, strict,
       result);
   return found;
 }
@@ -4136,7 +4136,7 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
  * @sqlfunc deleteTime
  */
 Temporal *
-temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
+temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
@@ -4145,17 +4145,17 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_restrict_timestamp((TInstant *) temp, t,
+    result = (Temporal *) tinstant_restrict_timestamptz((TInstant *) temp, t,
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_delete_timestamp((TSequence *) temp, t,
+    result = (Temporal *) tsequence_delete_timestamptz((TSequence *) temp, t,
       connect);
   else /* temp->subtype == TSEQUENCESET */
   {
     result = connect ?
-      (Temporal *) tsequenceset_restrict_timestamp((TSequenceSet *) temp, t,
+      (Temporal *) tsequenceset_restrict_timestamptz((TSequenceSet *) temp, t,
         REST_MINUS) :
-      (Temporal *) tsequenceset_delete_timestamp((TSequenceSet *) temp, t);
+      (Temporal *) tsequenceset_delete_timestamptz((TSequenceSet *) temp, t);
   }
   return result;
 }

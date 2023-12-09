@@ -1232,7 +1232,7 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
  * @sqlfunc valueAtTimestamp()
  */
 bool
-tsequenceset_value_at_timestamp(const TSequenceSet *ss, TimestampTz t,
+tsequenceset_value_at_timestamptz(const TSequenceSet *ss, TimestampTz t,
   bool strict, Datum *result)
 {
   assert(ss); assert(result);
@@ -1241,7 +1241,7 @@ tsequenceset_value_at_timestamp(const TSequenceSet *ss, TimestampTz t,
   {
     /* Singleton sequence set */
     if (ss->count == 1)
-      return tsequence_value_at_timestamp(TSEQUENCESET_SEQ_N(ss, 0), t, false,
+      return tsequence_value_at_timestamptz(TSEQUENCESET_SEQ_N(ss, 0), t, false,
         result);
 
     for (int i = 0; i < ss->count; i++)
@@ -1250,13 +1250,13 @@ tsequenceset_value_at_timestamp(const TSequenceSet *ss, TimestampTz t,
       /* Test whether the timestamp is at one of the bounds */
       const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
       if (inst->t == t)
-        return tinstant_value_at_timestamp(inst, t, result);
+        return tinstant_value_at_timestamptz(inst, t, result);
       inst = TSEQUENCE_INST_N(seq, seq->count - 1);
       if (inst->t == t)
-        return tinstant_value_at_timestamp(inst, t, result);
+        return tinstant_value_at_timestamptz(inst, t, result);
       /* Call the function on the sequence with strict set to true */
       if (contains_span_timestamptz(&seq->period, t))
-        return tsequence_value_at_timestamp(seq, t, true, result);
+        return tsequence_value_at_timestamptz(seq, t, true, result);
     }
     /* Since this function is always called with a timestamp that appears
      * in the sequence set the next statement is never reached */
@@ -1265,14 +1265,14 @@ tsequenceset_value_at_timestamp(const TSequenceSet *ss, TimestampTz t,
 
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tsequence_value_at_timestamp(TSEQUENCESET_SEQ_N(ss, 0), t, true,
+    return tsequence_value_at_timestamptz(TSEQUENCESET_SEQ_N(ss, 0), t, true,
       result);
 
   /* General case */
   int loc;
   if (! tsequenceset_find_timestamp(ss, t, &loc))
     return false;
-  return tsequence_value_at_timestamp(TSEQUENCESET_SEQ_N(ss, loc), t, true,
+  return tsequence_value_at_timestamptz(TSEQUENCESET_SEQ_N(ss, loc), t, true,
     result);
 }
 
@@ -1973,7 +1973,7 @@ tsequenceset_restrict_minmax(const TSequenceSet *ss, bool min, bool atfunc)
  * @sqlfunc atTimestamp(), minusTimestamp()
  */
 Temporal *
-tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
+tsequenceset_restrict_timestamptz(const TSequenceSet *ss, TimestampTz t,
   bool atfunc)
 {
   assert(ss);
@@ -1984,8 +1984,8 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
   /* Singleton sequence set */
   if (ss->count == 1)
     return atfunc ?
-      (Temporal *) tcontseq_at_timestamp(TSEQUENCESET_SEQ_N(ss, 0), t) :
-      (Temporal *) tcontseq_minus_timestamp(TSEQUENCESET_SEQ_N(ss, 0), t);
+      (Temporal *) tcontseq_at_timestamptz(TSEQUENCESET_SEQ_N(ss, 0), t) :
+      (Temporal *) tcontseq_minus_timestamptz(TSEQUENCESET_SEQ_N(ss, 0), t);
 
   /* General case */
   const TSequence *seq;
@@ -1995,7 +1995,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
     if (! tsequenceset_find_timestamp(ss, t, &loc))
       return NULL;
     seq = TSEQUENCESET_SEQ_N(ss, loc);
-    return (Temporal *) tsequence_at_timestamp(seq, t);
+    return (Temporal *) tsequence_at_timestamptz(seq, t);
   }
   else
   {
@@ -2035,7 +2035,7 @@ tsequenceset_restrict_tstzset(const TSequenceSet *ss, const Set *s,
   /* Singleton timestamp set */
   if (s->count == 1)
   {
-    Temporal *temp = tsequenceset_restrict_timestamp(ss,
+    Temporal *temp = tsequenceset_restrict_timestamptz(ss,
       DatumGetTimestampTz(SET_VAL_N(s, 0)), atfunc);
     if (atfunc && temp != NULL)
     {
@@ -2072,7 +2072,7 @@ tsequenceset_restrict_tstzset(const TSequenceSet *ss, const Set *s,
       TimestampTz t = DatumGetTimestampTz(SET_VAL_N(s, i));
       if (contains_span_timestamptz(&seq->period, t))
       {
-        instants[count++] = tsequence_at_timestamp(seq, t);
+        instants[count++] = tsequence_at_timestamptz(seq, t);
         i++;
       }
       else
@@ -2694,7 +2694,7 @@ intersection_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
   /* The temporal types of the arguments may be different */
   assert(inter1); assert(inter2);
   TInstant *inst1 = (TInstant *)
-    tsequenceset_restrict_timestamp(ss, inst->t, REST_AT);
+    tsequenceset_restrict_timestamptz(ss, inst->t, REST_AT);
   if (inst1 == NULL)
     return false;
 
@@ -2742,7 +2742,7 @@ intersection_tsequenceset_tdiscseq(const TSequenceSet *ss,
     const TInstant *inst = TSEQUENCE_INST_N(seq, j);
     if (contains_span_timestamptz(&seq1->period, inst->t))
     {
-      instants1[ninsts] = tsequence_at_timestamp(seq1, inst->t);
+      instants1[ninsts] = tsequence_at_timestamptz(seq1, inst->t);
       instants2[ninsts++] = inst;
     }
     int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq1->period.upper),
@@ -3120,7 +3120,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
  * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
-tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
+tsequenceset_delete_timestamptz(const TSequenceSet *ss, TimestampTz t)
 {
   assert(ss);
   /* Bounding box test */
@@ -3133,7 +3133,7 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
   if (ss->count == 1)
   {
     TSequenceSet *result = NULL;
-    seq1 = tcontseq_delete_timestamp(TSEQUENCESET_SEQ_N(ss, 0), t);
+    seq1 = tcontseq_delete_timestamptz(TSEQUENCESET_SEQ_N(ss, 0), t);
     if (seq1)
     {
       result = tsequence_to_tsequenceset(seq1);
@@ -3148,7 +3148,7 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    seq1 = tcontseq_delete_timestamp(seq, t);
+    seq1 = tcontseq_delete_timestamptz(seq, t);
     if (seq1)
       sequences[nseqs++] = seq1;
   }
@@ -3167,7 +3167,7 @@ tsequenceset_delete_tstzset(const TSequenceSet *ss, const Set *s)
   assert(ss); assert(s);
   /* Singleton timestamp set */
   if (s->count == 1)
-    return tsequenceset_delete_timestamp(ss,
+    return tsequenceset_delete_timestamptz(ss,
       DatumGetTimestampTz(SET_VAL_N(s, 0)));
 
   /* Bounding box test */

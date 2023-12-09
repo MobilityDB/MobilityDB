@@ -207,7 +207,7 @@ lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
  * @note The parameter basetype is not needed for temporal points
  */
 static bool
-tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
+tpoint_geo_min_dist_at_timestamptz(const TInstant *start, const TInstant *end,
   Datum point, meosType basetype __attribute__((unused)), Datum *value,
   TimestampTz *t)
 {
@@ -306,7 +306,7 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
  * @pre The segments are not both constants.
  */
 static bool
-tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
+tgeompoint_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *mindist, TimestampTz *t)
 {
   double fraction;
@@ -335,8 +335,8 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   double duration = end1->t - start1->t;
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* We know that this function is called only for linear segments */
-  Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
-  Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
+  Datum value1 = tsegment_value_at_timestamptz(start1, end1, LINEAR, *t);
+  Datum value2 = tsegment_value_at_timestamptz(start2, end2, LINEAR, *t);
   *mindist = hasz ? geom_distance3d(value1, value2) :
     geom_distance2d(value1, value2);
   return true;
@@ -354,7 +354,7 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @pre The segments are not both constants.
  */
 bool
-tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
+tgeogpoint_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *mindist, TimestampTz *t)
 {
   const POINT2D *p1 = DATUM_POINT2D_P(tinstant_value(start1));
@@ -421,13 +421,13 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @pre The segments are not both constants.
  */
 bool
-tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
+tpoint_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
   if (MEOS_FLAGS_GET_GEODETIC(start1->flags))
-    return tgeogpoint_min_dist_at_timestamp(start1, end1, start2, end2, value, t);
+    return tgeogpoint_min_dist_at_timestamptz(start1, end1, start2, end2, value, t);
   else
-    return tgeompoint_min_dist_at_timestamp(start1, end1, start2, end2, value, t);
+    return tgeompoint_min_dist_at_timestamptz(start1, end1, start2, end2, value, t);
 }
 
 /*****************************************************************************/
@@ -457,7 +457,7 @@ distance_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = lfinfo.reslinear ?
-    &tpoint_geo_min_dist_at_timestamp : NULL;
+    &tpoint_geo_min_dist_at_timestamptz : NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
   return result;
@@ -486,7 +486,7 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_dist_at_timestamp : NULL;
+  lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_dist_at_timestamptz : NULL;
   Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
@@ -672,7 +672,7 @@ nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
   nai_tpointseq_linear_geo_iter(seq, geo, DBL_MAX, &t);
   /* The closest point may be at an exclusive bound */
   Datum value;
-  tsequence_value_at_timestamp(seq, t, false, &value);
+  tsequence_value_at_timestamptz(seq, t, false, &value);
   TInstant *result = tinstant_make(value, seq->temptype, t);
   pfree(DatumGetPointer(value));
   return result;
@@ -702,7 +702,7 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
   }
   /* The closest point may be at an exclusive bound. */
   Datum value;
-  tsequenceset_value_at_timestamp(ss, t, false, &value);
+  tsequenceset_value_at_timestamptz(ss, t, false, &value);
   TInstant *result = tinstant_make(value, ss->temptype, t);
   pfree(DatumGetPointer(value));
   return result;
@@ -761,7 +761,7 @@ nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
     const TInstant *min = temporal_min_instant(dist);
     /* The closest point may be at an exclusive bound => 3rd argument = false */
     Datum value;
-    temporal_value_at_timestamp(temp1, min->t, false, &value);
+    temporal_value_at_timestamptz(temp1, min->t, false, &value);
     result = tinstant_make(value, temp1->temptype, min->t);
     pfree(dist); pfree(DatumGetPointer(value));
   }
@@ -974,8 +974,8 @@ shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value1, value2;
-  temporal_value_at_timestamp(temp1, inst->t, false, &value1);
-  temporal_value_at_timestamp(temp2, inst->t, false, &value2);
+  temporal_value_at_timestamptz(temp1, inst->t, false, &value1);
+  temporal_value_at_timestamptz(temp2, inst->t, false, &value2);
   LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
   *result = geo_serialize(line);
   lwgeom_free(line);

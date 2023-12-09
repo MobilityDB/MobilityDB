@@ -245,7 +245,7 @@ Span_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
-  Span *result = span_copy(DatumGetSpanP(ent[0].key));
+  Span *result = span_cp(DatumGetSpanP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     span_expand(DatumGetSpanP(ent[i].key), result);
   PG_RETURN_SPAN_P(result);

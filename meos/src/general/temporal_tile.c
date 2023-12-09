@@ -859,7 +859,7 @@ tsequence_time_split_iter(const TSequence *seq, TimestampTz start,
       if (instants[ninsts - 1]->t < upper)
       {
         if (interp == LINEAR)
-          tofree[nfree] = tsegment_at_timestamp(instants[ninsts - 1], inst,
+          tofree[nfree] = tsegment_at_timestamptz(instants[ninsts - 1], inst,
             interp, upper);
         else
         {

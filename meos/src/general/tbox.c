@@ -234,6 +234,7 @@ tbox_cp(const TBox *box)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_box_constructor
  * @brief Return a copy of a temporal box.
@@ -246,6 +247,7 @@ tbox_copy(const TBox *box)
     return NULL;
   return tbox_cp(box);
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -672,6 +674,26 @@ tstzspanset_to_tbox(const SpanSet *ss)
 #endif /* MEOS */
 
 /*****************************************************************************/
+
+/**
+ * @ingroup libmeos_box_conversion
+ * @brief Convert a temporal box as an integer span.
+ * @sqlop @p ::
+ */
+Span *
+tbox_to_intspan(const TBox *box)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box))
+    return NULL;
+
+  if (box->span.basetype == T_INT4)
+    return span_cp(&box->span);
+  /* Convert the integer span to a float span */
+  Span *result = palloc(sizeof(Span));
+  floatspan_set_intspan(&box->span, result);
+  return result;
+}
 
 /**
  * @ingroup libmeos_box_conversion

@@ -1177,24 +1177,6 @@ tstzset_to_dateset(const Set *s)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_accessor
- * @brief Return the bounding box of a spatial set.
- * @sqlfunc stbox()
- * @sqlop @p ::
- */
-STBox *
-spatialset_to_stbox(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
-    return NULL;
-
-  STBox *result = palloc(sizeof(STBox));
-  spatialset_set_stbox(s, result);
-  return result;
-}
-
-/**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Set the last argument to the bounding box of a spatial set.
  */
@@ -1206,6 +1188,23 @@ spatialset_set_stbox(const Set *s, STBox *box)
   memset(box, 0, sizeof(STBox));
   memcpy(box, SET_BBOX_PTR(s), sizeof(STBox));
   return;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the bounding box of a spatial set.
+ * @sqlfunc stbox()
+ * @sqlop @p ::
+ */
+STBox *
+spatialset_to_stbox(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
+    return NULL;
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(s, result);
+  return result;
 }
 
 /*****************************************************************************

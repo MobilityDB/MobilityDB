@@ -86,9 +86,9 @@ PG_FUNCTION_INFO_V1(Spanset_out);
 Datum
 Spanset_out(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  char *result = spanset_out(ps, Int32GetDatum(OUT_DEFAULT_DECIMAL_DIGITS));
-  PG_FREE_IF_COPY(ps, 0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  char *result = spanset_out(ss, Int32GetDatum(OUT_DEFAULT_DECIMAL_DIGITS));
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_CSTRING(result);
 }
 
@@ -119,10 +119,10 @@ PG_FUNCTION_INFO_V1(Spanset_send);
 Datum
 Spanset_send(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
   uint8_t variant = 0;
-  size_t wkb_size = VARSIZE_ANY_EXHDR(ps);
-  uint8_t *wkb = spanset_as_wkb(ps, variant, &wkb_size);
+  size_t wkb_size = VARSIZE_ANY_EXHDR(ss);
+  uint8_t *wkb = spanset_as_wkb(ss, variant, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
@@ -499,6 +499,92 @@ Tstzspanset_duration(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Datespanset_num_dates(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Datespanset_num_dates);
+/**
+ * @ingroup mobilitydb_setspan_accessor
+ * @brief Return the number of dates of a span set
+ * @sqlfunc numDates()
+ */
+Datum
+Datespanset_num_dates(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int result = datespanset_num_dates(ss);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Datespanset_start_date(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Datespanset_start_date);
+/**
+ * @ingroup mobilitydb_setspan_accessor
+ * @brief Return the start date of a span set
+ * @sqlfunc startDate()
+ */
+Datum
+Datespanset_start_date(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  DateADT result = datespanset_start_date(ss);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_DATEADT(result);
+}
+
+PGDLLEXPORT Datum Datespanset_end_date(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Datespanset_end_date);
+/**
+ * @ingroup mobilitydb_setspan_accessor
+ * @brief Return the end date of a span set
+ * @sqlfunc endDate()
+ */
+Datum
+Datespanset_end_date(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  DateADT result = datespanset_end_date(ss);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_DATEADT(result);
+}
+
+PGDLLEXPORT Datum Datespanset_date_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Datespanset_date_n);
+/**
+ * @ingroup mobilitydb_setspan_accessor
+ * @brief Return the n-th date of a span set
+ * @sqlfunc dateN()
+ */
+Datum
+Datespanset_date_n(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int n = PG_GETARG_INT32(1); /* Assume 1-based */
+  DateADT result;
+  bool found = datespanset_date_n(ss, n, &result);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATEADT(result);
+}
+
+PGDLLEXPORT Datum Datespanset_dates(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Datespanset_dates);
+/**
+ * @ingroup mobilitydb_setspan_accessor
+ * @brief Return the array of dates of a span set
+ * @sqlfunc dates()
+ */
+Datum
+Datespanset_dates(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int count;
+  DateADT *times = datespanset_dates(ss, &count);
+  ArrayType *result = datearr_to_array(times, count);
+  pfree(times);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 PGDLLEXPORT Datum Tstzspanset_num_timestamps(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_num_timestamps);
 /**
@@ -525,9 +611,9 @@ PG_FUNCTION_INFO_V1(Tstzspanset_start_timestamp);
 Datum
 Tstzspanset_start_timestamp(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  TimestampTz result = tstzspanset_start_timestamp(ps);
-  PG_FREE_IF_COPY(ps, 0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  TimestampTz result = tstzspanset_start_timestamp(ss);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
@@ -541,9 +627,9 @@ PG_FUNCTION_INFO_V1(Tstzspanset_end_timestamp);
 Datum
 Tstzspanset_end_timestamp(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  TimestampTz result = tstzspanset_end_timestamp(ps);
-  PG_FREE_IF_COPY(ps, 0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  TimestampTz result = tstzspanset_end_timestamp(ss);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
@@ -557,10 +643,10 @@ PG_FUNCTION_INFO_V1(Tstzspanset_timestamp_n);
 Datum
 Tstzspanset_timestamp_n(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TimestampTz result;
-  bool found = tstzspanset_timestamp_n(ps, n, &result);
+  bool found = tstzspanset_timestamp_n(ss, n, &result);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);
@@ -576,12 +662,12 @@ PG_FUNCTION_INFO_V1(Tstzspanset_timestamps);
 Datum
 Tstzspanset_timestamps(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int count;
-  TimestampTz *times = tstzspanset_timestamps(ps, &count);
+  TimestampTz *times = tstzspanset_timestamps(ss, &count);
   ArrayType *result = tstzarr_to_array(times, count);
   pfree(times);
-  PG_FREE_IF_COPY(ps, 0);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -595,9 +681,9 @@ PG_FUNCTION_INFO_V1(Spanset_num_spans);
 Datum
 Spanset_num_spans(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  int result = spanset_num_spans(ps);
-  PG_FREE_IF_COPY(ps, 0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int result = spanset_num_spans(ss);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_INT32(result);
 }
 
@@ -611,9 +697,9 @@ PG_FUNCTION_INFO_V1(Spanset_start_span);
 Datum
 Spanset_start_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  Span *result = spanset_start_span(ps);
-  PG_FREE_IF_COPY(ps, 0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Span *result = spanset_start_span(ss);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
 }
 
@@ -627,9 +713,9 @@ PG_FUNCTION_INFO_V1(Spanset_end_span);
 Datum
 Spanset_end_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  Span *result = spanset_end_span(ps);
-  PG_FREE_IF_COPY(ps, 0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Span *result = spanset_end_span(ss);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
 }
 
@@ -643,10 +729,10 @@ PG_FUNCTION_INFO_V1(Spanset_span_n);
 Datum
 Spanset_span_n(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int i = PG_GETARG_INT32(1); /* Assume 1-based */
-  Span *result = spanset_span_n(ps, i);
-  PG_FREE_IF_COPY(ps, 0);
+  Span *result = spanset_span_n(ss, i);
+  PG_FREE_IF_COPY(ss, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -662,11 +748,11 @@ PG_FUNCTION_INFO_V1(Spanset_spans);
 Datum
 Spanset_spans(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  const Span **spans = spanset_spans(ps);
-  ArrayType *result = spanarr_to_array(spans, ps->count);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  const Span **spans = spanset_spans(ss);
+  ArrayType *result = spanarr_to_array(spans, ss->count);
   pfree(spans);
-  PG_FREE_IF_COPY(ps, 0);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -951,8 +1037,8 @@ PG_FUNCTION_INFO_V1(Spanset_hash);
 Datum
 Spanset_hash(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  uint32 result = spanset_hash(ps);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  uint32 result = spanset_hash(ss);
   PG_RETURN_UINT32(result);
 }
 
@@ -966,9 +1052,9 @@ PG_FUNCTION_INFO_V1(Spanset_hash_extended);
 Datum
 Spanset_hash_extended(PG_FUNCTION_ARGS)
 {
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
   uint64 seed = PG_GETARG_INT64(1);
-  uint64 result = spanset_hash_extended(ps, seed);
+  uint64 result = spanset_hash_extended(ss, seed);
   PG_RETURN_UINT64(result);
 }
 
