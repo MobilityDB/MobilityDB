@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate function for span types.
+ * @brief Aggregate function for span types
  */
 
 /* C */
@@ -92,7 +92,8 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Spanbase_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
 /**
- * @brief Transition function for extent aggregation of base values of span types
+ * @brief Transition function for extent aggregation of base values of span
+ * types
  */
 Datum
 Spanbase_extent_transfn(PG_FUNCTION_ARGS)
@@ -196,7 +197,7 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_union_finalfn);
 /*
- * @brief Final function that merges overlapping/adjacent spans.
+ * @brief Final function for union aggregation of spans.
  * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
  */
 Datum

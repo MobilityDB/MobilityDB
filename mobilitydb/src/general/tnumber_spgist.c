@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief SP-GiST implementation of 4-dimensional quad-tree and kd-tree over
- * temporal integers and temporal floats.
+ * temporal integers and temporal floats
  *
  * These functions are based on those in the file ``geo_spgist.c`. from
  * PostgreSQL. This module provides SP-GiST implementation for temporal
@@ -342,7 +342,7 @@ contain4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox be left of this argument?
+ * @brief Can any rectangle from nodebox be to the left of this argument?
  */
 static bool
 left4D(const TboxNode *nodebox, const TBox *query)
@@ -352,7 +352,7 @@ left4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox does not extend the right of this
+ * @brief Can any rectangle from nodebox does not extend to the right of this
  * argument?
  */
 static bool
@@ -372,7 +372,7 @@ right4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox does not extend the left of this
+ * @brief Can any rectangle from nodebox does not extend to the left of this
  * argument?
  */
 static bool
@@ -393,7 +393,7 @@ before4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox does not extend after this argument?
+ * @brief Can any rectangle from nodebox be not after this argument?
  */
 static bool
 overBefore4D(const TboxNode *nodebox, const TBox *query)
@@ -413,7 +413,7 @@ after4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox does not extend before this argument?
+ * @brief Can any rectangle from nodebox be not before this argument?
  */
 static bool
 overAfter4D(const TboxNode *nodebox, const TBox *query)
@@ -423,7 +423,7 @@ overAfter4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Lower bound for the distance between query and nodebox.
+ * @brief Lower bound for the distance between query and nodebox
  * @note The temporal dimension is not taken into the account since it is not
  * possible to mix different units in the computation. As a consequence, the
  * filtering is not very restrictive.
@@ -453,7 +453,7 @@ distance_tbox_nodebox(const TBox *query, const TboxNode *nodebox)
 }
 
 /**
- * @brief Transform a query argument into a TBox.
+ * @brief Transform a query argument into a temporal box
  */
 static bool
 tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
@@ -602,7 +602,7 @@ Tbox_quadtree_choose(PG_FUNCTION_ARGS)
 
 /**
  * @brief Determine which half a 4D-mapped temporal box falls into, relative to
- * the centroid and the level number.
+ * the centroid and the level number
  *
  * Halves are numbered 0 and 1, and depending on the value of level number
  * modulo 4 is even or odd, the halves will be as follows:
@@ -780,7 +780,7 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_kdtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_kdtree_picksplit);
 /**
- * @brief K-d tree pick-split function for time types
+ * @brief K-d tree pick-split function for temporal number
  */
 Datum
 Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)

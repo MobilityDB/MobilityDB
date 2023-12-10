@@ -30,8 +30,8 @@
 
 /**
  * @file
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
- * for temporal number.
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees,
+ * ...) for temporal numbers
  */
 
 /* C */
@@ -56,7 +56,7 @@
  *****************************************************************************/
 
 /**
- * @brief Generic arithmetic operator on a number an a temporal number
+ * @brief Generic arithmetic operator on a number and a temporal number
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
  * @param[in] oper Enumeration that states the arithmetic operator
@@ -94,7 +94,7 @@ Arithop_tnumber_number(FunctionCallInfo fcinfo, TArithmetic oper,
 }
 
 /**
- * @brief Generic arithmetic operator on a temporal numbers
+ * @brief Generic arithmetic operator on two temporal numbers
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] func Arithmetic function
@@ -152,7 +152,7 @@ PGDLLEXPORT Datum Add_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Add_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the temporal addition of the temporal numbers
+ * @brief Return the temporal addition of two temporal numbers
  * @sqlfunc tnumber_add()
  * @sqlop @p +
  */
@@ -198,7 +198,7 @@ PGDLLEXPORT Datum Sub_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Sub_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the temporal subtraction of the temporal numbers
+ * @brief Return the temporal subtraction of two temporal numbers
  * @sqlfunc tnumber_sub()
  * @sqlop @p -
  */
@@ -244,7 +244,7 @@ PGDLLEXPORT Datum Mult_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Mult_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the temporal multiplication of the temporal numbers
+ * @brief Return the temporal multiplication of two temporal numbers
  * @sqlfunc tnumber_mult()
  * @sqlop @p *
  */
@@ -291,7 +291,7 @@ PGDLLEXPORT Datum Div_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Div_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the temporal multiplication of the temporal numbers
+ * @brief Return the temporal multiplication of two temporal numbers
  * @sqlfunc tnumber_div()
  * @sqlop @p /
  */
@@ -303,11 +303,11 @@ Div_tnumber_tnumber(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Miscellaneous temporal functions
+ * Miscellaneous functions
  *****************************************************************************/
 
 /**
- * @brief Round a number to a given number of decimal places
+ * @brief Return a number rounded to a given number of decimal places
  */
 Datum
 datum_round_float(Datum value, Datum size)

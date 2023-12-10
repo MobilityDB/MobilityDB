@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief General functions for temporal points.
+ * @brief General functions for temporal points
  */
 
 #include "point/tpoint.h"
@@ -415,7 +415,7 @@ PG_FUNCTION_INFO_V1(Tpointinst_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant point value from the arguments
- * @sqlfunc tgeompoint_inst(), tgeogpoint_inst(),
+ * @sqlfunc tgeompoint_inst(), tgeogpoint_inst()
  */
 Datum
 Tpointinst_constructor(PG_FUNCTION_ARGS)
@@ -461,8 +461,8 @@ PGDLLEXPORT Datum Geo_expand_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_expand_space);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Return the bounding box of a temporal point expanded on the
- * spatial dimension
+ * @brief Return the bounding box of a geometry/geograph expanded on the
+ * spatial dimension by a value
  * @sqlfunc expandSpace()
  */
 Datum
@@ -482,7 +482,7 @@ PG_FUNCTION_INFO_V1(Tpoint_expand_space);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return the bounding box of a temporal point expanded on the
- * spatial dimension
+ * spatial dimension by a value
  * @sqlfunc expandSpace()
  */
 Datum

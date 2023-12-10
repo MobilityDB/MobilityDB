@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Index support functions for temporal types.
+ * @brief Index support functions for temporal types
  */
 
 #include "pg_general/temporal_supportfn.h"

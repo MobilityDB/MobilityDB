@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Quad-tree SP-GiST index for temporal boolean and temporal text types.
+ * @brief Quad-tree SP-GiST index for temporal boolean and temporal text types
  *
  * These functions are based on those in the file `rangetypes_spgist.c`.
  */

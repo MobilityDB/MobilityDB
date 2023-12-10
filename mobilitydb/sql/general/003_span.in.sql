@@ -29,7 +29,7 @@
 
 /*
  * span.sql
- * SQL definitions for spans (a.k.a. ranges)
+ * SQL definitions for spans of values (a.k.a. ranges)
  */
 
 CREATE TYPE intspan;
@@ -130,7 +130,7 @@ CREATE FUNCTION tstzspan_send(tstzspan)
   AS 'MODULE_PATHNAME', 'Span_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* span_analyze function defined in file 001_set.in.sql */
+/* The span_analyze function is defined in file 001_set.in.sql */
 
 CREATE TYPE intspan (
   internallength = 24,
@@ -182,7 +182,9 @@ CREATE TYPE tstzspan (
   analyze = span_analyze
 );
 
--- Input/output in WKB and HexWKB format
+/******************************************************************************/
+
+-- Input/output in WKT, WKB and HexWKB format
 
 CREATE FUNCTION intspanFromBinary(bytea)
   RETURNS intspan
@@ -290,7 +292,7 @@ CREATE FUNCTION asHexWKB(tstzspan, endianenconding text DEFAULT '')
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Constructors
+ * Constructor functions
  ******************************************************************************/
 
 CREATE FUNCTION span(int, int, boolean DEFAULT true, boolean DEFAULT false)
@@ -315,7 +317,7 @@ CREATE FUNCTION span(timestamptz, timestamptz, boolean DEFAULT true, boolean DEF
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Coversions
+ * Conversion functions
  ******************************************************************************/
 
 CREATE FUNCTION span(integer)
@@ -428,78 +430,6 @@ CREATE CAST (intspan AS int4range) WITH FUNCTION range(intspan);
 CREATE CAST (datespan AS daterange) WITH FUNCTION range(datespan);
 CREATE CAST (tstzspan AS tstzrange) WITH FUNCTION range(tstzspan);
 
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-CREATE FUNCTION shift(intspan, int)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Numspan_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(bigintspan, bigint)
-  RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Numspan_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(floatspan, float)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Numspan_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(datespan, int)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Numspan_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(tstzspan, interval)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Tstzspan_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION scale(intspan, int)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Numspan_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION scale(bigintspan, bigint)
-  RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Numspan_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION scale(floatspan, float)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Numspan_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION scale(datespan, int)
-  RETURNS datespan
-  AS 'MODULE_PATHNAME', 'Numspan_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION scale(tstzspan, interval)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Tstzspan_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION shiftScale(intspan, int, int)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftScale(bigintspan, bigint, bigint)
-  RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftScale(floatspan, float, float)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftScale(datespan, int, int)
-  RETURNS datespan
-  AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftScale(tstzspan, interval, interval)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Tstzspan_shift_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION round(floatspan, integer DEFAULT 0)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Floatspan_round'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/
@@ -608,6 +538,78 @@ CREATE FUNCTION duration(datespan)
 CREATE FUNCTION duration(tstzspan)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Tstzspan_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+CREATE FUNCTION shift(intspan, int)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Numspan_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(bigintspan, bigint)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Numspan_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(floatspan, float)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Numspan_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(datespan, int)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Numspan_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(tstzspan, interval)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Tstzspan_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION scale(intspan, int)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Numspan_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(bigintspan, bigint)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Numspan_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(floatspan, float)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Numspan_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(datespan, int)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Numspan_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(tstzspan, interval)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Tstzspan_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftScale(intspan, int, int)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(bigintspan, bigint, bigint)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(floatspan, float, float)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(datespan, int, int)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(tstzspan, interval, interval)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Tstzspan_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION round(floatspan, integer DEFAULT 0)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Floatspan_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

@@ -696,8 +696,9 @@ bstring2bytea(const uint8_t *wkb, size_t size)
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a C string into a text value
- * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
- * @note Function taken from PostGIS file lwgeom_in_geojson.c
+ * @note We don't include `<utils/builtins.h>` to avoid collisions with 
+ * `json-c/json.h`
+ * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
  */
 text *
 cstring2text(const char *cstring)
@@ -716,8 +717,9 @@ cstring2text(const char *cstring)
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a text value into a C string
- * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
- * @note Function taken from PostGIS file lwgeom_in_geojson.c
+ * @note We don't include `<utils/builtins.h>` to avoid collisions with
+ * `json-c/json.h`
+ * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
  */
 char *
 text2cstring(const text *textptr)

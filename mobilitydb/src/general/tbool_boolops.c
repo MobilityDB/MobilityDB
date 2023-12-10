@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal Boolean operators: and, or, not.
+ * @brief Temporal Boolean operators: and, or, not
  */
 
 #include "general/tbool_boolops.h"
@@ -85,7 +85,7 @@ PGDLLEXPORT Datum Tand_tbool_tbool(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tand_tbool_tbool);
 /**
  * @ingroup mobilitydb_temporal_bool
- * @brief Return the boolean and of the temporal booleans
+ * @brief Return the boolean and of two temporal booleans
  * @sqlfunc temporal_and()
  * @sqlop @p &
  */
@@ -146,7 +146,7 @@ PGDLLEXPORT Datum Tor_tbool_tbool(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tor_tbool_tbool);
 /**
  * @ingroup mobilitydb_temporal_bool
- * @brief Return the boolean or of the temporal booleans
+ * @brief Return the boolean or of two temporal booleans
  * @sqlfunc temporal_or()
  * @sqlop @p |
  */

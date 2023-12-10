@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate functions for set types.
+ * @brief Aggregate functions for set types
  */
 
 /* C */

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Analytics for temporal values.
+ * @brief Analytics for time and temporal values
  */
 
 #include "general/temporal_analytics.h"
@@ -48,14 +48,69 @@
 #include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
- Temporal reduction
+ * Time precision functions for time types
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Timestamptz_tprecision(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestamptz_tprecision);
+/**
+ * @ingroup libmeos_temporal_analytics_reduction
+ * @brief Return the initial timestamptz of the bucket in which a timestamptz
+ * falls
+ */
+Datum
+Timestamptz_tprecision(PG_FUNCTION_ARGS)
+{
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  TimestampTz result = timestamptz_tprecision(t, duration, origin);
+  PG_RETURN_TIMESTAMPTZ(result);
+}
+
+PGDLLEXPORT Datum Tstzspan_tprecision(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_tprecision);
+/**
+ * @ingroup libmeos_temporal_analytics_reduction
+ * @brief Return the initial timestamptz of the bucket in which a timestamptz
+ * span falls
+ */
+Datum
+Tstzspan_tprecision(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  Span *result = tstzspan_tprecision(s, duration, origin);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tstzspanset_tprecision(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_tprecision);
+/**
+ * @ingroup libmeos_temporal_analytics_reduction
+ * @brief Generate a bucket in a bucket list for timestamptz span sets
+ */
+Datum
+Tstzspanset_tprecision(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  SpanSet *result = tstzspanset_tprecision(ss, duration, origin);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Time precision and sample functions for temporal types
  *****************************************************************************/
 
 PGDLLEXPORT Datum Temporal_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Set the precision of a temporal value according to period buckets.
+ * @brief Set the precision of a temporal value according to period buckets
  * @sqlfunc tprecision()
  */
 Datum
@@ -73,7 +128,7 @@ PGDLLEXPORT Datum Temporal_tsample(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tsample);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Sample a temporal value according to period buckets.
+ * @brief Sample a temporal value according to period buckets
  * @sqlfunc tsample()
  */
 Datum
@@ -113,7 +168,7 @@ PGDLLEXPORT Datum Temporal_frechet_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_frechet_distance);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
- * @brief Compute the discrete Frechet distance between two temporal values.
+ * @brief Return the discrete Frechet distance between two temporal values
  * @sqlfunc frechetDistance()
  */
 Datum
@@ -126,8 +181,8 @@ PGDLLEXPORT Datum Temporal_dynamic_time_warp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
- * @brief Compute the Dynamic Time Match (DTW) distance between two temporal
- * values.
+ * @brief Return the Dynamic Time Warp (DTW) distance between two temporal
+ * values
  * @sqlfunc dynamicTimeWarp()
  */
 Datum
@@ -140,8 +195,7 @@ PGDLLEXPORT Datum Temporal_hausdorff_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_hausdorff_distance);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
- * @brief Compute the Hausdorff distance between two temporal
- * values.
+ * @brief Return the Hausdorff distance between two temporal values
  * @sqlfunc hausdorffDistance()
  */
 Datum
@@ -151,8 +205,7 @@ Temporal_hausdorff_distance(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Compute the similarity path between two temporal values from the distance
- * matrix
+ * Similarity path between two temporal values from the distance matrix
  *****************************************************************************/
 
 /**
@@ -197,7 +250,7 @@ similarity_path_state_next(SimilarityPathState *state)
  *****************************************************************************/
 
 /**
- * @brief Compute the Dynamic Time Match (DTW) path between two temporal values.
+ * @brief Compute the Dynamic Time Warp (DTW) path between two temporal values
  */
 Datum
 Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
@@ -268,7 +321,7 @@ PGDLLEXPORT Datum Temporal_frechet_path(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_frechet_path);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
- * @brief Compute the Frechet path between two temporal values.
+ * @brief Return the Frechet path between two temporal values
  * @sqlfunc frechetDistancePath()
  */
 Datum
@@ -281,7 +334,7 @@ PGDLLEXPORT Datum Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp_path);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
- * @brief Compute the Dynamic Time Warp (DTW) path between two temporal values.
+ * @brief Return the Dynamic Time Warp (DTW) path between two temporal values
  * @sqlfunc dynamicTimeWarpPath()
  */
 Datum

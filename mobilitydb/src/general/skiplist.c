@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions manipulating skiplists.
+ * @brief Functions for manipulating skiplists
  */
 
 #include "general/skiplist.h"

@@ -690,7 +690,7 @@ span_bbox_type(meosType type)
 #endif
 
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a number span type
  */
 bool
 numspan_basetype(meosType type)
@@ -703,7 +703,7 @@ numspan_basetype(meosType type)
 }
 
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a number span type
  */
 bool
 numspan_type(meosType type)
@@ -714,7 +714,7 @@ numspan_type(meosType type)
 }
 
 /**
- * @brief Ensure that a span is a numeric span type
+ * @brief Ensure that a span is a number span type
  */
 bool
 ensure_numspan_type(meosType type)
@@ -722,7 +722,7 @@ ensure_numspan_type(meosType type)
   if (! numspan_type(type))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The span value must be a numeric span type");
+      "The span value must be a number span type");
     return false;
   }
   return true;
@@ -783,7 +783,7 @@ spanset_type(meosType type)
 
 #if 0 /* not used */
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a number span type
  */
 bool
 numspanset_type(meosType type)

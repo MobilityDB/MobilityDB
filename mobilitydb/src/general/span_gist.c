@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief R-tree GiST index for span and span set types.
+ * @brief R-tree GiST index for span and span set types
  *
  * These functions are based on those in the file `rangetypes_gist.c`.
  */
@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * @brief Leaf-level consistency for span types.
+ * @brief Leaf-level consistency for span types
  *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
@@ -303,7 +303,7 @@ Spanset_gist_compress(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_penalty);
 /**
- * @brief GiST page split penalty function for spans.
+ * @brief GiST page split penalty function for spans
  *
  * The penalty function has the following goals (in order from most to least
  * important):
@@ -360,7 +360,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 
 /**
  * @brief Trivial split: half of entries will be placed on one page
- * and the other half on the other page.
+ * and the other half on the other page
  */
 static void
 span_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
@@ -407,7 +407,7 @@ typedef struct
 
 /**
  * @brief Consider replacement of currently selected split with a better one
- * during span_gist_double_sorting_split.
+ * during #span_gist_double_sorting_split
  */
 static void
 span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
@@ -480,7 +480,7 @@ span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
 
 /**
  * @brief Structure keeping the bounds extracted from a span, for use in the
- * function span_gist_double_sorting_split
+ * function #span_gist_double_sorting_split
  */
 typedef struct
 {
@@ -489,7 +489,7 @@ typedef struct
 } SpanBounds;
 
 /**
- * @brief Compare SpanBounds by lower bound.
+ * @brief Compare span bounds by lower bound
  */
 static int
 spanbounds_cmp_lower(const void *a, const void *b)
@@ -500,7 +500,7 @@ spanbounds_cmp_lower(const void *a, const void *b)
 }
 
 /**
- * @brief Compare SpanBounds by upper bound.
+ * @brief Compare span bounds by upper bound
  */
 static int
 spanbounds_cmp_upper(const void *a, const void *b)
@@ -511,8 +511,8 @@ spanbounds_cmp_upper(const void *a, const void *b)
 }
 
 /**
- * @brief Compare CommonEntrys by their deltas.
- * (We assume the deltas can't be NaN.)
+ * @brief Compare common entries by their deltas
+ * @note We assume the deltas can't be NaN
  */
 int
 common_entry_cmp(const void *i1, const void *i2)
@@ -528,7 +528,7 @@ common_entry_cmp(const void *i1, const void *i2)
 }
 
 /**
- * @brief Double sorting split algorithm.
+ * @brief Double sorting split algorithm
  *
  * The algorithm considers dividing spans into two groups. The first (left)
  * group contains general left bound. The second (right) group contains
@@ -870,8 +870,8 @@ Span_gist_same(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_distance);
 /**
- * @brief GiST support function. Take in a query and an entry and return the
- * "distance" between them.
+ * @brief GiST distance method for span types
+ * @note Take in a query and an entry and return the "distance" between them
 */
 Datum
 Span_gist_distance(PG_FUNCTION_ARGS)
@@ -906,7 +906,7 @@ Span_gist_distance(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_gist_fetch(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_fetch);
 /**
- * @brief GiST fetch method for span types (result in a span)
+ * @brief GiST fetch method for span types, which result in a span
  */
 Datum
 Span_gist_fetch(PG_FUNCTION_ARGS)

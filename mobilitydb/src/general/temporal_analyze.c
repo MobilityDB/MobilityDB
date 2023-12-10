@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Functions for gathering statistics from temporal alphanumeric
- * columns.
+ * columns
  *
  * Various kind of statistics are collected for both the value and the time
  * dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h
@@ -240,8 +240,8 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  *****************************************************************************/
 
 /**
- * @brief Collect extra information about the temporal type and its base and time
- * types.
+ * @brief Collect extra information about the temporal type and its base and
+ * time types
  */
 static void
 temporal_extra_info(VacAttrStats *stats)

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal points.
+ * @brief Spatial functions for temporal points
  */
 
 /* C */
@@ -255,7 +255,6 @@ tpointseq_transform(const TSequence *seq, int srid)
 
 /**
  * @brief Transform a temporal point into another spatial reference system
- *
  * @note In order to do a SINGLE call to the PostGIS transform function we do
  * not iterate through the sequences and call the transform for the sequence
  */
@@ -405,7 +404,7 @@ PGDLLEXPORT Datum Geo_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_round);
 /**
  * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Sets the precision of the coordinates of the geometry
+ * @brief Sets the precision of the coordinates of a geometry
  * @sqlfunc round()
  */
 Datum
@@ -422,7 +421,7 @@ PGDLLEXPORT Datum Geoset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_round);
 /**
  * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Sets the precision of the coordinates of the geometry set
+ * @brief Sets the precision of the coordinates of a geometry set
  * @sqlfunc round()
  */
 Datum
@@ -510,7 +509,7 @@ PG_FUNCTION_INFO_V1(Geo_to_tpoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Convert the PostGIS trajectory geometry or geography where the M
- * coordinates encode the timestamps in Unix epoch into a temporal point.
+ * coordinates encode the timestamps in Unix epoch into a temporal point
  */
 Datum
 Geo_to_tpoint(PG_FUNCTION_ARGS)
@@ -605,7 +604,7 @@ PGDLLEXPORT Datum Tpoint_get_x(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_get_x);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Get the X coordinates of a temporal point
+ * @brief Get the X coordinates of a temporal point as a temporal float
  * @sqlfunc getX()
  */
 Datum
@@ -621,7 +620,7 @@ PGDLLEXPORT Datum Tpoint_get_y(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_get_y);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Get the Y coordinates of a temporal point
+ * @brief Get the Y coordinates of a temporal point as a temporal float
  * @sqlfunc getY()
  */
 Datum
@@ -637,7 +636,7 @@ PGDLLEXPORT Datum Tpoint_get_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_get_z);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Get the Z coordinates of a temporal point
+ * @brief Get the Z coordinates of a temporal point as a temporal float
  * @sqlfunc getZ()
  */
 Datum
@@ -673,7 +672,8 @@ PGDLLEXPORT Datum Tpoint_cumulative_length(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_cumulative_length);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Return the cumulative length traversed by a temporal point
+ * @brief Return the cumulative length traversed by a temporal sequence (set)
+ * point
  * @sqlfunc cumulativeLength()
  */
 Datum
@@ -927,7 +927,7 @@ PGDLLEXPORT Datum Tpoint_is_simple(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_is_simple);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Return true if a temporal point does not self-intersect.
+ * @brief Return true if a temporal point does not self-intersect
  * @sqlfunc isSimple()
  */
 Datum
@@ -964,7 +964,7 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
 
 /**
  * @brief Restrict a temporal point to (the complement of) a geometry and
- * possibly a timestamptz span.
+ * possibly a timestamptz span
  * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations.
  * However the geometry must be in 2D.
  */

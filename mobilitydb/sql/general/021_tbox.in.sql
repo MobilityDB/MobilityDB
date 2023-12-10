@@ -92,7 +92,7 @@ CREATE FUNCTION asHexWKB(tbox, endianenconding text DEFAULT '')
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Constructors
+ * Constructor functions
  ******************************************************************************/
 
 CREATE FUNCTION tbox(integer, timestamptz)
@@ -129,7 +129,7 @@ CREATE FUNCTION tbox(floatspan, tstzspan)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Casting
+ * Conversion functions
  *****************************************************************************/
 
 CREATE FUNCTION tbox(integer)
@@ -205,8 +205,6 @@ CREATE CAST (intspanset AS tbox) WITH FUNCTION tbox(intspanset);
 CREATE CAST (floatspanset AS tbox) WITH FUNCTION tbox(floatspanset);
 CREATE CAST (tstzspanset AS tbox) WITH FUNCTION tbox(tstzspanset);
 
-/*****************************************************************************/
-
 CREATE FUNCTION intspan(tbox)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Tbox_to_intspan'
@@ -223,7 +221,6 @@ CREATE FUNCTION timeSpan(tbox)
 CREATE CAST (tbox AS intspan) WITH FUNCTION intspan(tbox);
 CREATE CAST (tbox AS floatspan) WITH FUNCTION floatspan(tbox);
 CREATE CAST (tbox AS tstzspan) WITH FUNCTION timeSpan(tbox);
-
 
 /*****************************************************************************
  * Accessor functions
@@ -274,7 +271,6 @@ CREATE FUNCTION Tmax_inc(tbox)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
-
 
 CREATE FUNCTION shiftValue(tbox, int)
   RETURNS tbox

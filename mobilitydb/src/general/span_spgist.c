@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Quad-tree SP-GiST index for span types.
+ * @brief Quad-tree SP-GiST index for span types
  *
  * The functions in this file are based on those in the file
  * `rangetypes_spgist.c`.
@@ -161,7 +161,7 @@ spannode_copy(const SpanNode *orig)
 
 /**
  * @brief Compute the next traversal value for a quadtree given the bounding
- * box and the centroid of the current node and the quadrant number (0 to 3).
+ * box and the centroid of the current node and the quadrant number (0 to 3)
  *
  * For example, given the bounding box of the root node (level 0) and
  * the centroid as follows
@@ -204,7 +204,7 @@ spannode_quadtree_next(const SpanNode *nodebox, const Span *centroid,
 /**
  * @brief Compute the next traversal value for a k-d tree given the bounding
  * box and the centroid of the current node, the half number (0 or 1), and the
- * level.
+ * level
  *
  * For example, given the bounding box of the root node (level 0) and
  * the centroid as follows
@@ -297,7 +297,7 @@ contain2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * @brief Can any span from nodebox be left the query?
+ * @brief Can any span from nodebox be to the left of the query?
  */
 static bool
 left2D(const SpanNode *nodebox, const Span *query)
@@ -306,7 +306,7 @@ left2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * @brief Can any span from nodebox does not extend right the query?
+ * @brief Can any span from nodebox does not extend to the right of the query?
  */
 static bool
 overLeft2D(const SpanNode *nodebox, const Span *query)
@@ -324,7 +324,7 @@ right2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * @brief Can any span from nodebox does not extend left the query?
+ * @brief Can any span from nodebox does not extend to the left of the query?
  */
 static bool
 overRight2D(const SpanNode *nodebox, const Span *query)
@@ -342,7 +342,7 @@ before2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * @brief Can any period from nodebox does not extend after the query?
+ * @brief Can any period from nodebox be not after the query?
  */
 static bool
 overBefore2D(const SpanNode *nodebox, const Span *query)
@@ -384,7 +384,7 @@ distance_span_nodespan(Span *query, SpanNode *nodebox)
 }
 
 /**
- * @brief Transform a query argument into a span.
+ * @brief Transform a query argument into a span
  */
 static bool
 span_spgist_get_span(const ScanKeyData *scankey, Span *result)
@@ -515,7 +515,7 @@ Tstzspan_spgist_config(PG_FUNCTION_ARGS)
 
 /**
  * @brief Determine which quadrant a 2D-mapped span falls into, relative to the
- * centroid.
+ * centroid
  *
  * Quadrants are numbered as follows:
  * @code
@@ -575,7 +575,7 @@ Span_quadtree_choose(PG_FUNCTION_ARGS)
 
 /**
  * @brief Determine which half a 2D-mapped span falls into, relative to the
- * centroid and the level number.
+ * centroid and the level number
  *
  * Halves are numbered 0 and 1, and depending on whether the level number is
  * even or odd, respectively, they will be as follows:
@@ -1045,7 +1045,7 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Set_spgist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_spgist_compress);
 /**
- * @brief SP-GiST compress function for timestamp sets
+ * @brief SP-GiST compress function for sets
  */
 Datum
 Set_spgist_compress(PG_FUNCTION_ARGS)

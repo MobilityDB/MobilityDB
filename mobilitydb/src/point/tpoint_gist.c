@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief R-tree GiST index for temporal points.
+ * @brief R-tree GiST index for temporal points
  */
 
 #include "pg_point/tpoint_gist.h"
@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * @brief Leaf-level consistency for temporal points.
+ * @brief Leaf-level consistency for temporal points
  *
  * Since spatiotemporal boxes do not distinguish between inclusive and
  * exclusive bounds it is necessary to generalize the tests, e.g.,
@@ -152,7 +152,7 @@ stbox_index_consistent_leaf(const STBox *key, const STBox *query,
 }
 
 /**
- * @brief Internal-page consistent method for temporal points.
+ * @brief Internal-page consistent method for temporal points
  *
  * Return false if for all data items x below entry, the predicate
  * x op query must be false, where op is the oper corresponding to strategy
@@ -406,7 +406,7 @@ Tpoint_gist_compress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Calculate the union of two tboxes.
+ * @brief Calculate the union of two spatiotemporal boxes
  * @param[in] a,b Input boxes
  * @param[out] new Resulting box
  */
@@ -431,7 +431,8 @@ stbox_union_rt(const STBox *a, const STBox *b, STBox *new)
 
 /**
  * @brief Return the size of a spatiotemporal box for penalty-calculation
- * purposes. The result can be +Infinity, but not NaN.
+ * purposes
+ * @note The result can be +Infinity, but not NaN
  */
 static double
 stbox_size(const STBox *box)
@@ -479,7 +480,8 @@ stbox_size(const STBox *box)
 
 /**
  * @brief Return the amount by which the union of the two boxes is larger than
- * the original STBox's volume.  The result can be +Infinity, but not NaN.
+ * the original STBox's volume
+ * @note The result can be +Infinity, but not NaN
  */
 double
 stbox_penalty(void *bbox1, void *bbox2)
@@ -494,8 +496,8 @@ stbox_penalty(void *bbox1, void *bbox2)
 PGDLLEXPORT Datum Stbox_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_penalty);
 /**
- * @brief GiST penalty method for temporal points.
- * As in the R-tree paper, we use change in area as our penalty metric
+ * @brief GiST penalty method for temporal points
+ * @note As in the R-tree paper, we use change in area as our penalty metric
  */
 Datum
 Stbox_gist_penalty(PG_FUNCTION_ARGS)
@@ -516,7 +518,7 @@ Stbox_gist_penalty(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
 /**
- * @brief GiST picksplit method for temporal points.
+ * @brief GiST picksplit method for temporal points
  *
  * The algorithm finds split of boxes by considering splits along each axis.
  * Each entry is first projected as an interval on the X-axis, and different
@@ -551,7 +553,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_same);
 /**
- * @brief GiST same method for temporal points.
+ * @brief GiST same method for temporal points
  *
  * Return true only when boxes are exactly the same.  We can't use fuzzy
  * comparisons here without breaking index consistency; therefore, this isn't
@@ -582,8 +584,8 @@ Stbox_gist_same(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_distance);
 /**
- * @brief GiST support function. Take in a query and an entry and return the
- * "distance" between them.
+ * @brief GiST distance for temporal points
+ * @note Take in a query and an entry and return the "distance" between them
 */
 Datum
 Stbox_gist_distance(PG_FUNCTION_ARGS)

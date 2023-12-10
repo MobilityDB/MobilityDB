@@ -210,7 +210,7 @@ CREATE CAST (tfloat AS tfloat) WITH FUNCTION tfloat(tfloat, integer) AS IMPLICIT
 CREATE CAST (ttext AS ttext) WITH FUNCTION ttext(ttext, integer) AS IMPLICIT;
 
 /******************************************************************************
- * Constructors
+ * Constructor functions
  ******************************************************************************/
 
 CREATE FUNCTION tbool_inst(boolean, timestamptz)
@@ -342,7 +342,7 @@ CREATE FUNCTION ttext_seqset_gaps(ttext[], maxt interval DEFAULT NULL)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
- * Casting
+ * Conversion functions
  ******************************************************************************/
 
 CREATE FUNCTION timeSpan(tbool)
@@ -916,7 +916,7 @@ CREATE FUNCTION timestamps(ttext)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Unnest Function
+ * Transform a temporal value to a set of records
  *****************************************************************************/
 
 CREATE TYPE int_tstzspanset AS (

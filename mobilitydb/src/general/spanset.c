@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief General functions for set of disjoint spans.
+ * @brief General functions for span set types composed of a set of disjoint
+ * spans
  */
 
 /* C */
@@ -64,7 +65,7 @@ PGDLLEXPORT Datum Spanset_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_in);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Return a span set from its string representation
+ * @brief Input function for span sets
  * @sqlfunc spanset_in()
  */
 Datum
@@ -80,7 +81,7 @@ PGDLLEXPORT Datum Spanset_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_out);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Return the string representation of a span set
+ * @brief Output function for span sets
  * @sqlfunc spanset_out()
  */
 Datum
@@ -96,7 +97,7 @@ PGDLLEXPORT Datum Spanset_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_recv);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Receive function for span set
+ * @brief Receive function for span sets
  * @sqlfunc spanset_recv()
  */
 Datum
@@ -113,7 +114,7 @@ PGDLLEXPORT Datum Spanset_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_send);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Send function for span set
+ * @brief Send function for span sets
  * @sqlfunc spanset_send()
  */
 Datum
@@ -129,30 +130,6 @@ Spanset_send(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Output in WKT format
- *****************************************************************************/
-
-PGDLLEXPORT Datum Spanset_as_text(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Spanset_as_text);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Output function for spans
- * @sqlfunc asText()
- */
-Datum
-Spanset_as_text(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = spanset_out(ss, Int32GetDatum(dbl_dig_for_wkt));
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_RETURN_TEXT_P(result);
-}
-
-/*****************************************************************************
  * Constructor functions
  ****************************************************************************/
 
@@ -160,7 +137,7 @@ PGDLLEXPORT Datum Spanset_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_constructor);
 /**
  * @ingroup mobilitydb_setspan_constructor
- * @brief Construct a span set from an array of span values
+ * @brief Construct a span set from an array of spans
  * @sqlfunc spanset()
  */
 Datum
@@ -183,8 +160,8 @@ PGDLLEXPORT Datum Value_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a value as a span set
- * @sqlfunc intspanset(), bigintspanset(), floatspanset(), periodset()
+ * @brief Convert a value to a span set
+ * @sqlfunc intspanset(), floatspanset(), ...
  */
 Datum
 Value_to_spanset(PG_FUNCTION_ARGS)
@@ -195,27 +172,12 @@ Value_to_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Span_to_spanset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_to_spanset);
-/**
- * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a span value as a span set
- * @sqlfunc instspanset(), floatspanset(), periodset()
- */
-Datum
-Span_to_spanset(PG_FUNCTION_ARGS)
-{
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *result = span_to_spanset(s);
-  PG_RETURN_POINTER(result);
-}
-
 PGDLLEXPORT Datum Set_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a set value as a span set
- * @sqlfunc intspanset(), bigintspanset(), floatspanset(), periodset()
+ * @brief Convert a set to a span set
+ * @sqlfunc intspanset(), floatspanset(), ...
  */
 Datum
 Set_to_spanset(PG_FUNCTION_ARGS)
@@ -225,9 +187,26 @@ Set_to_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Span_to_spanset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_to_spanset);
 /**
- * @brief Peak into a span set datum to find the bounding box. If the datum
- * needs to be detoasted, extract only the header and not the full object.
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a span to a span set
+ * @sqlfunc instspanset(), floatspanset(), ...
+ */
+Datum
+Span_to_spanset(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  SpanSet *result = span_to_spanset(s);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @brief Peak into a span set datum to find the bounding box
+ * 
+ * If the datum needs to be detoasted, extract only the header and not the
+ * full object.
  */
 void
 spanset_span_slice(Datum d, Span *s)
@@ -245,8 +224,8 @@ spanset_span_slice(Datum d, Span *s)
 PGDLLEXPORT Datum Spanset_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_span);
 /**
- * @ingroup mobilitydb_setspan_accessor
- * @brief Return the bounding span on which a span set is defined
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a span set to a span
  * @sqlfunc span()
  */
 Datum
@@ -261,8 +240,8 @@ Spanset_span(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Intspanset_to_floatspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intspanset_to_floatspanset);
 /**
- * @ingroup mobilitydb_setspanset_conversion
- * @brief Convert an int spanset as a float spanset
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert an integer span set to a float spanset
  * @sqlfunc floatspanset()
  * @sqlop @p ::
  */
@@ -278,8 +257,8 @@ Intspanset_to_floatspanset(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Floatspanset_to_intspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspanset_to_intspanset);
 /**
- * @ingroup mobilitydb_setspanset_conversion
- * @brief Convert a float spanset as a int spanset
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a float span set as an integer spanset
  * @sqlfunc intspanset()
  * @sqlop @p ::
  */
@@ -296,7 +275,7 @@ PGDLLEXPORT Datum Datespanset_to_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Datespanset_to_tstzspanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a date span set as a timestamptz span set
+ * @brief Convert a date span set to a timestamptz span set
  * @sqlfunc tstzspanset()
  * @sqlop @p ::
  */
@@ -313,7 +292,7 @@ PGDLLEXPORT Datum Tstzspanset_to_datespanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_to_datespanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a timestamptz span set as a date span set
+ * @brief Convert a timestamptz span set to a date span set
  * @sqlfunc datespanset()
  * @sqlop @p ::
  */
@@ -326,12 +305,14 @@ Tstzspanset_to_datespanset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/*****************************************************************************/
+
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 PGDLLEXPORT Datum Spanset_to_multirange(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_to_multirange);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert the integer span as a integer range value
+ * @brief Convert a span set to a multirange 
  * @sqlfunc int4range(), tstzrange()
  * @sqlop @p ::
  */
@@ -350,8 +331,8 @@ PGDLLEXPORT Datum Multirange_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Multirange_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert the multi range value as a span set
- * @sqlfunc intspanset(), periodset()
+ * @brief Convert a multirange to a span set
+ * @sqlfunc intspanset(), tstzspanset()
  * @sqlop @p ::
  */
 Datum
@@ -395,7 +376,7 @@ PGDLLEXPORT Datum Spanset_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_lower);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the lower bound value
+ * @brief Return the lower bound of a span set
  * @sqlfunc lower()
  */
 Datum
@@ -409,7 +390,7 @@ PGDLLEXPORT Datum Spanset_upper(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_upper);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the upper bound value
+ * @brief Return the upper bound of a span set
  * @sqlfunc upper()
  */
 Datum
@@ -425,7 +406,7 @@ PGDLLEXPORT Datum Spanset_lower_inc(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_lower_inc);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return true if the lower bound value is inclusive
+ * @brief Return true if the lower bound of a span set is inclusive
  * @sqlfunc lower_inc()
  */
 Datum
@@ -439,7 +420,7 @@ Datum Spanset_upper_inc(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_upper_inc);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return true if the upper bound value is inclusive
+ * @brief Return true if the upper bound of a span set is inclusive
  * @sqlfunc lower_inc()
  */
 Datum
@@ -453,7 +434,7 @@ PGDLLEXPORT Datum Spanset_width(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_width);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the width of a numeric span set
+ * @brief Return the width of a number span set
  * @sqlfunc width()
  */
 Datum
@@ -742,7 +723,7 @@ PGDLLEXPORT Datum Spanset_spans(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_spans);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the spans of a span set
+ * @brief Return the array of spans of a span set
  * @sqlfunc spans()
  */
 Datum
@@ -764,7 +745,7 @@ PGDLLEXPORT Datum Numspanset_shift(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numspanset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift a span set by a value
+ * @brief Return a number span set shifted by a value
  * @sqlfunc shift()
  */
 Datum
@@ -781,7 +762,7 @@ PGDLLEXPORT Datum Tstzspanset_shift(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift a timestamptz span set by an interval
+ * @brief Return a timestamptz span set shifted by an interval
  * @sqlfunc shift()
  */
 Datum
@@ -798,7 +779,7 @@ PGDLLEXPORT Datum Numspanset_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numspanset_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift a span set by a value
+ * @brief Return a number span set scaled by a value
  * @sqlfunc scale()
  */
 Datum
@@ -815,7 +796,7 @@ PGDLLEXPORT Datum Tstzspanset_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift a timestamptz span set by an interval
+ * @brief Return a timestamptz span set scaled by an interval
  * @sqlfunc scale()
  */
 Datum
@@ -832,7 +813,7 @@ PGDLLEXPORT Datum Numspanset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numspanset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift and scale a span set by the values
+ * @brief Return a number span set shifted and scaled by the values
  * @sqlfunc shiftTscale()
  */
 Datum
@@ -850,7 +831,7 @@ PGDLLEXPORT Datum Tstzspanset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift a timestamptz span set by an interval
+ * @brief Return a timestamptz span set shifted and scaled by the intervals
  * @sqlfunc shiftTscale()
  */
 Datum
@@ -868,7 +849,8 @@ PGDLLEXPORT Datum Floatspanset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspanset_round);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Set the precision of the float span set to the number of decimal places
+ * @brief Return a float span set where the precision of the values is set to
+ * a number of decimal places
  * @sqlfunc round()
  */
 Datum
@@ -881,7 +863,7 @@ Floatspanset_round(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * B-tree support
+ * Comparison functions for defining B-tree indexes
  *****************************************************************************/
 
 PGDLLEXPORT Datum Spanset_cmp(PG_FUNCTION_ARGS);

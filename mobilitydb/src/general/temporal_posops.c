@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Position operators for temporal types.
+ * @brief Position operators for temporal types
  *
  * The following operators are defined:
  * - `left`, `overleft`, `right`, `overright` for the value dimension
@@ -54,7 +54,7 @@ PGDLLEXPORT Datum Before_tstzspan_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Before_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the period value is strictly before the temporal value
+ * @brief Return true if a timestamptz span is before a temporal value
  * @sqlfunc temporal_before()
  * @sqlop @p <<#
  */
@@ -68,7 +68,7 @@ PGDLLEXPORT Datum Overbefore_tstzspan_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overbefore_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the period value is not after the temporal value
+ * @brief Return true if a timestamptz span is not after a temporal value
  * @sqlfunc temporal_overbefore()
  * @sqlop @p &<#
  */
@@ -82,7 +82,7 @@ PGDLLEXPORT Datum After_tstzspan_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(After_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the period value is strictly after the temporal value
+ * @brief Return true if a timestamptz span is after a temporal value
  * @sqlfunc temporal_after()
  * @sqlop @p #>>
  */
@@ -96,7 +96,7 @@ PGDLLEXPORT Datum Overafter_tstzspan_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overafter_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the period value is not before the temporal value
+ * @brief Return true if a timestamptz span is not before a temporal value
  * @sqlfunc temporal_overafter()
  * @sqlop @p #&>
  */
@@ -113,7 +113,7 @@ PGDLLEXPORT Datum Before_temporal_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Before_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the temporal value is strictly before the period value
+ * @brief Return true if a temporal value is before a timestamptz span
  * @sqlfunc temporal_before()
  * @sqlop @p <<#
  */
@@ -127,7 +127,7 @@ PGDLLEXPORT Datum Overbefore_temporal_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overbefore_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the temporal value is not after the period value
+ * @brief Return true if a temporal value is not after a timestamptz span
  * @sqlfunc temporal_overbefore()
  * @sqlop @p &<#
  */
@@ -141,7 +141,7 @@ PGDLLEXPORT Datum After_temporal_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(After_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the temporal value is strictly after the period value
+ * @brief Return true if a temporal value is after a timestamptz span
  * @sqlfunc temporal_after()
  * @sqlop @p #>>
  */
@@ -155,7 +155,7 @@ PGDLLEXPORT Datum Overafter_temporal_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overafter_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the temporal value is not before the period value
+ * @brief Return true if a temporal value is not before a timestamptz span
  * @sqlfunc temporal_overafter()
  * @sqlop @p #&>
  */
@@ -172,7 +172,7 @@ PGDLLEXPORT Datum Before_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Before_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal value is strictly before the second one
+ * @brief Return true if the first temporal value is before the second one
  * @sqlfunc temporal_before()
  * @sqlop @p <<#
  */
@@ -200,7 +200,7 @@ PGDLLEXPORT Datum After_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(After_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal value is strictly after the second one
+ * @brief Return true if the first temporal value is after the second one
  * @sqlfunc temporal_after()
  * @sqlop @p #>>
  */
@@ -231,7 +231,7 @@ PGDLLEXPORT Datum Left_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a number span is strictly to the left of a temporal number
+ * @brief Return true if a number span is to the left of a temporal number
  * @sqlfunc temporal_left()
  * @sqlop @p <<
  */
@@ -259,7 +259,7 @@ PGDLLEXPORT Datum Right_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a number span is strictly to the right of a temporal number
+ * @brief Return true if a number span is to the right of a temporal number
  * @sqlfunc temporal_right()
  * @sqlop @p >>
  */
@@ -290,7 +290,7 @@ PGDLLEXPORT Datum Left_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal number is strictly to the left of a number span
+ * @brief Return true if a temporal number is to the left of a number span
  * @sqlfunc temporal_left()
  * @sqlop @p <<
  */
@@ -318,7 +318,7 @@ PGDLLEXPORT Datum Right_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal number is strictly to the right of a number span
+ * @brief Return true if a temporal number is to the right of a number span
  * @sqlfunc temporal_right()
  * @sqlop @p >>
  */
@@ -349,7 +349,7 @@ PGDLLEXPORT Datum Left_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal box is strictly to the left of a temporal number
+ * @brief Return true if a temporal box is to the left of a temporal number
  * @sqlfunc temporal_left()
  * @sqlop @p <<
  */
@@ -377,7 +377,7 @@ PGDLLEXPORT Datum Right_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal box is strictly to the right of a temporal number
+ * @brief Return true if a temporal box is to the right of a temporal number
  * @sqlfunc temporal_right()
  * @sqlop @p >>
  */
@@ -405,7 +405,7 @@ PGDLLEXPORT Datum Before_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Before_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal box is strictly before a temporal number
+ * @brief Return true if a temporal box is before a temporal number
  * @sqlfunc temporal_before()
  * @sqlop @p <<#
  */
@@ -433,7 +433,7 @@ PGDLLEXPORT Datum After_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(After_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal box is strictly after a temporal number
+ * @brief Return true if a temporal box is after a temporal number
  * @sqlfunc temporal_after()
  * @sqlop @p #>>
  */
@@ -464,7 +464,7 @@ PGDLLEXPORT Datum Left_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal number is strictly to the left of a temporal box
+ * @brief Return true if a temporal number is to the left of a temporal box
  * @sqlfunc temporal_left()
  * @sqlop @p <<
  */
@@ -492,7 +492,7 @@ PGDLLEXPORT Datum Right_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal number is strictly to the right of a temporal box
+ * @brief Return true if a temporal number is to the right of a temporal box
  * @sqlfunc temporal_right()
  * @sqlop @p >>
  */
@@ -520,7 +520,7 @@ PGDLLEXPORT Datum Before_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Before_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal number is strictly before a temporal box
+ * @brief Return true if a temporal number is before a temporal box
  * @sqlfunc temporal_before()
  * @sqlop @p <<#
  */
@@ -548,7 +548,7 @@ PGDLLEXPORT Datum After_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(After_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal number is strictly after a temporal box
+ * @brief Return true if a temporal number is after a temporal box
  * @sqlfunc temporal_after()
  * @sqlop @p #>>
  */
@@ -579,8 +579,8 @@ PGDLLEXPORT Datum Left_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal number is strictly to the left of
- * the second one
+ * @brief Return true if the first temporal number is to the left of the
+ * second one
  * @sqlfunc temporal_left()
  * @sqlop @p <<
  */
@@ -594,8 +594,8 @@ PGDLLEXPORT Datum Overleft_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal number is not to the right of
- * the second one
+ * @brief Return true if the first temporal number is not to the right of the
+ * second one
  * @sqlfunc temporal_overleft()
  * @sqlop @p &<
  */
@@ -609,8 +609,8 @@ PGDLLEXPORT Datum Right_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal number is strictly to the right of
- * the second one
+ * @brief Return true if the first temporal number is to the right of the
+ * second one
  * @sqlfunc temporal_right()
  * @sqlop @p >>
  */
@@ -624,8 +624,8 @@ PGDLLEXPORT Datum Overright_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal number is not to the left of
- * the second one
+ * @brief Return true if the first temporal number is not to the left of the
+ * second one
  * @sqlfunc temporal_overright()
  * @sqlop @p &>
  */
@@ -639,8 +639,7 @@ PGDLLEXPORT Datum Before_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Before_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal number is strictly before
- * the second one
+ * @brief Return true if the first temporal number is before the second one
  * @sqlfunc temporal_before()
  * @sqlop @p <<#
  */
@@ -668,8 +667,7 @@ PGDLLEXPORT Datum After_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(After_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal number is strictly after
- * the second one
+ * @brief Return true if the first temporal number is after the second one
  * @sqlfunc temporal_after()
  * @sqlop @p #>>
  */
