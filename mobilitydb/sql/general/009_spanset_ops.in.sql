@@ -2262,7 +2262,7 @@ CREATE OPERATOR - (
 );
 
 CREATE FUNCTION span_minus(date, datespanset)
-  RETURNS date
+  RETURNS datespanset
   AS 'MODULE_PATHNAME', 'Minus_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(datespan, datespanset)
@@ -2304,7 +2304,7 @@ CREATE OPERATOR - (
 );
 
 CREATE FUNCTION span_minus(timestamptz, tstzspanset)
-  RETURNS timestamptz
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Minus_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(tstzspan, tstzspanset)
@@ -2489,7 +2489,7 @@ CREATE OPERATOR * (
 );
 
 CREATE FUNCTION span_intersection(date, datespanset)
-  RETURNS date
+  RETURNS datespanset
   AS 'MODULE_PATHNAME', 'Intersection_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(datespan, datespanset)
@@ -2536,7 +2536,7 @@ CREATE OPERATOR * (
 );
 
 CREATE FUNCTION span_intersection(timestamptz, tstzspanset)
-  RETURNS timestamptz
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Intersection_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(tstzspan, tstzspanset)
@@ -2544,7 +2544,7 @@ CREATE FUNCTION span_intersection(tstzspan, tstzspanset)
   AS 'MODULE_PATHNAME', 'Intersection_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(tstzspanset, timestamptz)
-  RETURNS timestamptz
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Intersection_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(tstzspanset, tstzspan)

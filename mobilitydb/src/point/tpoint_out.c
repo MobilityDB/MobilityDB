@@ -57,7 +57,7 @@
 
 /**
  * @brief Output a temporal point in the Well-Known Text (WKT) representation
- * @sqlfunc asText()
+ * @sqlfn asText()
  */
 static Datum
 Tpoint_as_text_ext(FunctionCallInfo fcinfo, bool extended)
@@ -80,7 +80,7 @@ PG_FUNCTION_INFO_V1(Tpoint_as_text);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point in the Well-Known Text (WKT) representation
- * @sqlfunc asText()
+ * @sqlfn asText()
  */
 Datum
 Tpoint_as_text(PG_FUNCTION_ARGS)
@@ -94,7 +94,7 @@ PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point in the Extended Well-Known Text (EWKT)
  * representation, that is, in the WKT representation prefixed with the SRID
- * @sqlfunc asEWKT()
+ * @sqlfn asEWKT()
  */
 Datum
 Tpoint_as_ewkt(PG_FUNCTION_ARGS)
@@ -149,7 +149,7 @@ PG_FUNCTION_INFO_V1(Geoarr_as_text);
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a geometry/geography array in the Well-Known Text (WKT)
  * representation
- * @sqlfunc asText()
+ * @sqlfn asText()
  */
 Datum
 Geoarr_as_text(PG_FUNCTION_ARGS)
@@ -163,7 +163,7 @@ PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a geometry/geography array in the Extended Well-Known Text
  * (EWKT) representation, that is, in WKT representation prefixed with the SRID
- * @sqlfunc asEWKT()
+ * @sqlfn asEWKT()
  */
 Datum
 Geoarr_as_ewkt(PG_FUNCTION_ARGS)
@@ -177,7 +177,7 @@ PG_FUNCTION_INFO_V1(Tpointarr_as_text);
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point array in the Well-Known Text (WKT)
  * representation
- * @sqlfunc asText()
+ * @sqlfn asText()
  */
 Datum
 Tpointarr_as_text(PG_FUNCTION_ARGS)
@@ -191,7 +191,7 @@ PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point array in the Extended Well-Known Text (EWKT)
  * representation, that is, in WKT representation prefixed with the SRID
- * @sqlfunc asEWKT()
+ * @sqlfn asEWKT()
  */
 Datum
 Tpointarr_as_ewkt(PG_FUNCTION_ARGS)

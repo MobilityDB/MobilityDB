@@ -52,12 +52,119 @@
  * Output in WKT and EWKT representation
  *****************************************************************************/
 
+PGDLLEXPORT Datum Set_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output a set in its Well-Known Text (WKT) representation
+ * @sqlfn asText()
+ */
+Datum
+Set_as_text(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = set_out(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Geoset_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geoset_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output a geo set in its Well-Known Text (WKT) representation
+ * @sqlfn asText()
+ */
+Datum
+Geoset_as_text(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = geoset_as_text(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Geoset_as_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geoset_as_ewkt);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output a geo set in its Extended Well-Known Text (EWKT) representation
+ * @sqlfn asEWKT()
+ */
+Datum
+Geoset_as_ewkt(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = geoset_as_ewkt(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Span_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output a span in its Well-Known Text (WKT) representation
+ * @sqlfn asText()
+ */
+Datum
+Span_as_text(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = span_out(s, Int32GetDatum(dbl_dig_for_wkt));
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Spanset_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output a span set in its Well-Known Text (WKT) representation
+ * @sqlfn asText()
+ */
+Datum
+Spanset_as_text(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = spanset_out(ss, Int32GetDatum(dbl_dig_for_wkt));
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
+ * Output in WKT and EWKT representation
+ *****************************************************************************/
+
 PGDLLEXPORT Datum Temporal_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_as_text);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal value in the Well-Known Text (WKT) representation
- * @sqlfunc asText()
+ * @sqlfn asText()
  */
 Datum
 Temporal_as_text(PG_FUNCTION_ARGS)
@@ -81,7 +188,7 @@ PG_FUNCTION_INFO_V1(Temporalarr_as_text);
  * @ingroup mobilitydb_temporal_inout
  * @brief Output an array of temporal values in the Well-Known Text (WKT)
  * representation
- * @sqlfunc asText()
+ * @sqlfn asText()
  */
 Datum
 Temporalarr_as_text(PG_FUNCTION_ARGS)
@@ -117,7 +224,7 @@ PG_FUNCTION_INFO_V1(Temporal_as_mfjson);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal value in the MF-JSON representation
- * @sqlfunc asMFJSON()
+ * @sqlfn asMFJSON()
  */
 Datum
 Temporal_as_mfjson(PG_FUNCTION_ARGS)
@@ -272,7 +379,7 @@ PG_FUNCTION_INFO_V1(Set_as_wkb);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Output a set in the Well-Known Binary (WKB) representation.
- * @sqlfunc asBinary()
+ * @sqlfn asBinary()
  */
 Datum
 Set_as_wkb(PG_FUNCTION_ARGS)
@@ -292,7 +399,7 @@ PG_FUNCTION_INFO_V1(Set_as_hexwkb);
  * @ingroup mobilitydb_setspan_inout
  * @brief Output a set in the hex-encoded ASCII Well-Known Binary (HexWKB)
  * representation 
- * @sqlfunc asHexWKB()
+ * @sqlfn asHexWKB()
  */
 Datum
 Set_as_hexwkb(PG_FUNCTION_ARGS)
@@ -312,7 +419,7 @@ PG_FUNCTION_INFO_V1(Span_as_wkb);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Output a span in the Well-Known Binary (WKB) representation.
- * @sqlfunc asBinary()
+ * @sqlfn asBinary()
  */
 Datum
 Span_as_wkb(PG_FUNCTION_ARGS)
@@ -329,7 +436,7 @@ PG_FUNCTION_INFO_V1(Span_as_hexwkb);
  * @ingroup mobilitydb_setspan_inout
  * @brief Output a span in the hex-encoded ASCII Well-Known Binary (HexWKB)
  * representation
- * @sqlfunc asHexWKB()
+ * @sqlfn asHexWKB()
  */
 Datum
 Span_as_hexwkb(PG_FUNCTION_ARGS)
@@ -346,7 +453,7 @@ PG_FUNCTION_INFO_V1(Spanset_as_wkb);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Output a span set in the Well-Known Binary (WKB) representation
- * @sqlfunc asBinary()
+ * @sqlfn asBinary()
  */
 Datum
 Spanset_as_wkb(PG_FUNCTION_ARGS)
@@ -365,7 +472,7 @@ PG_FUNCTION_INFO_V1(Spanset_as_hexwkb);
  * @ingroup mobilitydb_setspan_inout
  * @brief Output a span set in the hex-encoded ASCII Well-Known Binary (HexWKB)
  * representation
- * @sqlfunc asHexWKB()
+ * @sqlfn asHexWKB()
  */
 Datum
 Spanset_as_hexwkb(PG_FUNCTION_ARGS)
@@ -385,7 +492,7 @@ PG_FUNCTION_INFO_V1(Tbox_as_wkb);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Output a temporal box in the Well-Known Binary (WKB) representation
- * @sqlfunc asBinary()
+ * @sqlfn asBinary()
  */
 Datum
 Tbox_as_wkb(PG_FUNCTION_ARGS)
@@ -401,7 +508,7 @@ PG_FUNCTION_INFO_V1(Tbox_as_hexwkb);
  * @ingroup mobilitydb_box_inout
  * @brief Output a temporal box in the hex-encoded ASCII Well-Known Binary
  * (HexWKB) representation
- * @sqlfunc asHexWKB()
+ * @sqlfn asHexWKB()
  */
 Datum
 Tbox_as_hexwkb(PG_FUNCTION_ARGS)
@@ -419,7 +526,7 @@ PG_FUNCTION_INFO_V1(Stbox_as_wkb);
  * @ingroup mobilitydb_box_inout
  * @brief Output a spatiotemporal box in the Well-Known Binary (WKB)
  * representation
- * @sqlfunc asBinary()
+ * @sqlfn asBinary()
  */
 Datum
 Stbox_as_wkb(PG_FUNCTION_ARGS)
@@ -436,7 +543,7 @@ PG_FUNCTION_INFO_V1(Stbox_as_hexwkb);
  * @ingroup mobilitydb_box_inout
  * @brief Output a spatiotemporal box in the hex-encoded ASCII Well-Known
  * Binary (HexWKB) representation
- * @sqlfunc asHexWKB()
+ * @sqlfn asHexWKB()
  */
 Datum
 Stbox_as_hexwkb(PG_FUNCTION_ARGS)
@@ -454,7 +561,7 @@ PG_FUNCTION_INFO_V1(Temporal_as_wkb);
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal value in the Well-Known Binary (WKB) representation
  * @note This will have no 'SRID=#;' for temporal points
- * @sqlfunc asBinary()
+ * @sqlfn asBinary()
  */
 Datum
 Temporal_as_wkb(PG_FUNCTION_ARGS)
@@ -474,7 +581,7 @@ PG_FUNCTION_INFO_V1(Tpoint_as_ewkb);
  * @brief Output a temporal point in the Extended Well-Known Binary (WKB)
  * representation
  * @note This will have 'SRID=#;' for temporal points
- * @sqlfunc asEWKB()
+ * @sqlfn asEWKB()
  */
 Datum
 Tpoint_as_ewkb(PG_FUNCTION_ARGS)
@@ -494,7 +601,7 @@ PG_FUNCTION_INFO_V1(Temporal_as_hexwkb);
  * @brief Output a temporal value in the hex-encoded ASCII Well-Known Binary
  * (HexWKB) representation
  * @note This will have 'SRID=#;' for temporal points
- * @sqlfunc asHexWKB()
+ * @sqlfn asHexWKB()
  */
 Datum
 Temporal_as_hexwkb(PG_FUNCTION_ARGS)

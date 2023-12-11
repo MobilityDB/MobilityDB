@@ -101,7 +101,7 @@ CREATE FUNCTION tbox(integer, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(intspan, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Numnumspan_timestamptz_to_tbox'
+  AS 'MODULE_PATHNAME', 'Numspan_timestamptz_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(float, timestamptz)
   RETURNS tbox
@@ -109,7 +109,7 @@ CREATE FUNCTION tbox(float, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(floatspan, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Numnumspan_timestamptz_to_tbox'
+  AS 'MODULE_PATHNAME', 'Numspan_timestamptz_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(integer, tstzspan)
   RETURNS tbox

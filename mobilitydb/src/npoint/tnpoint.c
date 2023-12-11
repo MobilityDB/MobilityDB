@@ -91,7 +91,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_in);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Input function for temporal network points
- * @sqlfunc tnpoint_in()
+ * @sqlfn tnpoint_in()
  */
 Datum
 Tnpoint_in(PG_FUNCTION_ARGS)
@@ -111,7 +111,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_to_tgeompoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal network point as a temporal geometric point
- * @sqlfunc tgeompoint()
+ * @sqlfn tgeompoint()
  */
 Datum
 Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS)
@@ -127,7 +127,7 @@ PG_FUNCTION_INFO_V1(Tgeompoint_to_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal geometric point as a temporal network point
- * @sqlfunc tnpoint()
+ * @sqlfn tnpoint()
  */
 Datum
 Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
@@ -170,7 +170,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_round);
  * @ingroup mobilitydb_temporal_transf
  * @brief Set the precision of the fraction of the temporal network point to
  * the number of decimal places.
- * @sqlfunc round()
+ * @sqlfn round()
  */
 Datum
 Tnpoint_round(PG_FUNCTION_ARGS)
@@ -187,7 +187,7 @@ PG_FUNCTION_INFO_V1(Npointset_round);
 /**
  * @ingroup mobilitydb_temporal_spatial_transf
  * @brief Set the precision of the coordinates of the geometry set
- * @sqlfunc round()
+ * @sqlfn round()
  */
 Datum
 Npointset_round(PG_FUNCTION_ARGS)
@@ -206,7 +206,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_positions);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the network segments covered by the temporal network point
- * @sqlfunc positions()
+ * @sqlfn positions()
  */
 Datum
 Tnpoint_positions(PG_FUNCTION_ARGS)
@@ -225,7 +225,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_route);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the route of a temporal network point
- * @sqlfunc route()
+ * @sqlfn route()
  */
 Datum
 Tnpoint_route(PG_FUNCTION_ARGS)
@@ -241,7 +241,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_routes);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the array of routes of a temporal network point
- * @sqlfunc routes()
+ * @sqlfn routes()
  */
 Datum
 Tnpoint_routes(PG_FUNCTION_ARGS)

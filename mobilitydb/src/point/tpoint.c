@@ -167,7 +167,7 @@ PG_FUNCTION_INFO_V1(Tpoint_in);
  * { [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 ) ,
  *   [ Point(1 1) @ 2012-01-01 08:20:00 , Point(0 0) @ 2012-01-01 08:30:00 ] }
  * @endcode
- * @sqlfunc tpoint_in()
+ * @sqlfn tpoint_in()
  */
 Datum
 Tpoint_in(PG_FUNCTION_ARGS)
@@ -415,7 +415,7 @@ PG_FUNCTION_INFO_V1(Tpointinst_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant point value from the arguments
- * @sqlfunc tgeompoint_inst(), tgeogpoint_inst()
+ * @sqlfn tgeompoint_inst(), tgeogpoint_inst()
  */
 Datum
 Tpointinst_constructor(PG_FUNCTION_ARGS)
@@ -441,7 +441,7 @@ PG_FUNCTION_INFO_V1(Tpoint_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding box of a temporal point
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  * @sqlop @p ::
  */
 Datum
@@ -463,7 +463,7 @@ PG_FUNCTION_INFO_V1(Geo_expand_space);
  * @ingroup mobilitydb_temporal_transf
  * @brief Return the bounding box of a geometry/geograph expanded on the
  * spatial dimension by a value
- * @sqlfunc expandSpace()
+ * @sqlfn expandSpace()
  */
 Datum
 Geo_expand_space(PG_FUNCTION_ARGS)
@@ -483,7 +483,7 @@ PG_FUNCTION_INFO_V1(Tpoint_expand_space);
  * @ingroup mobilitydb_temporal_transf
  * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension by a value
- * @sqlfunc expandSpace()
+ * @sqlfn expandSpace()
  */
 Datum
 Tpoint_expand_space(PG_FUNCTION_ARGS)

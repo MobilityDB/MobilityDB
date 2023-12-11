@@ -465,7 +465,7 @@ tpointseq_discstep_is_simple(const TSequence *seq)
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
  * @param[in] seq Temporal point
- * @sqlfunc isSimple();
+ * @sql-cfn #Tpoint_is_simple()
  */
 bool
 tpointseq_is_simple(const TSequence *seq)
@@ -488,7 +488,7 @@ tpointseq_is_simple(const TSequence *seq)
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
  * @param[in] ss Temporal point
- * @sqlfunc isSimple()
+ * @sql-cfn #Tpoint_is_simple()
  */
 bool
 tpointseqset_is_simple(const TSequenceSet *ss)
@@ -509,7 +509,7 @@ tpointseqset_is_simple(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
- * @sqlfunc isSimple()
+ * @sql-cfn #Tpoint_is_simple()
  */
 bool
 tpoint_is_simple(const Temporal *temp)
@@ -632,7 +632,7 @@ tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
  * @param[in] seq Temporal sequence point
  * @param[out] count Number of elements in the resulting array
  * @note This function is called for each sequence of a sequence set
- * @sqlfunc makeSimple()
+ * @sql-cfn #Tpoint_make_simple()
  */
 TSequence **
 tpointseq_make_simple(const TSequence *seq, int *count)
@@ -678,7 +678,7 @@ tpointseq_make_simple(const TSequence *seq, int *count)
  * self-intersecting fragments.
  * @param[in] ss Temporal sequence set point
  * @param[out] count Number of elements in the output array
- * @sqlfunc makeSimple()
+ * @sql-cfn #Tpoint_make_simple()
  */
 TSequence **
 tpointseqset_make_simple(const TSequenceSet *ss, int *count)
@@ -712,7 +712,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
  * @param[out] count Number of elements in the output array
  * @see tpointseq_make_simple
  * @see tpointseqset_make_simple
- * @sqlfunc makeSimple()
+ * @sql-cfn #Tpoint_make_simple()
  */
 Temporal **
 tpoint_make_simple(const Temporal *temp, int *count)
@@ -784,7 +784,6 @@ tpointinst_restrict_geom_time_iter(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] zspan Span of values to restrict the Z dimension
  * @param[in] period Period to restrict the T dimension
  * @param[in] atfunc True if the restriction is at, false for minus
- * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
  */
 TInstant *
 tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
@@ -1389,7 +1388,6 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
  * @param[in] zspan Span of values to restrict the Z dimension
  * @param[in] period Period to restrict the T dimension
  * @param[in] atfunc True if the restriction is at, false for minus
- * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
  */
 Temporal *
 tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
@@ -1430,7 +1428,6 @@ tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] zspan Span of values to restrict the Z dimension
  * @param[in] period Period to restrict the T dimension
  * @param[in] atfunc True if the restriction is at, false for minus
- * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
  */
 TSequenceSet *
 tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
@@ -1491,7 +1488,6 @@ tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
  * @param[in] zspan Span of values to restrict the Z dimension
  * @param[in] period Period to restrict the T dimension
  * @param[in] atfunc True if the restriction is at, false for minus
- * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
  */
 Temporal *
 tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
@@ -1545,7 +1541,7 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to a geometry.
- * @sqlfunc atGeometry()
+ * @sql-cfn #Tpoint_at_geom_time()
  */
 Temporal *
 tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs,
@@ -1560,7 +1556,7 @@ tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
- * @sqlfunc minusGeometry()
+ * @sql-cfn #Tpoint_minus_geom_time()
  */
 Temporal *
 tpoint_minus_geom_time(const Temporal *temp, const GSERIALIZED *gs,
@@ -1861,7 +1857,7 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
- * @sqlfunc atStbox(), minusStbox()
+ * @sql-cfn #Tpoint_at_stbox(), minus_stbox()
  */
 TInstant *
 tpointinst_restrict_stbox(const TInstant *inst, const STBox *box,
@@ -2274,7 +2270,7 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
- * @sqlfunc atStbox(), minusStbox()
+ * @sql-cfn #Tpoint_at_stbox(), minus_stbox()
  */
 Temporal *
 tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border_inc,
@@ -2316,7 +2312,7 @@ tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border_inc
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
- * @sqlfunc atStbox(), minusStbox()
+ * @sql-cfn #Tpoint_at_stbox(), minus_stbox()
  */
 TSequenceSet *
 tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
@@ -2374,7 +2370,6 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
  * @param[in] atfunc True if the restriction is at, false for minus
  * @note It is possible to mix 2D/3D geometries, the Z dimension is only
  * considered if both the temporal point and the box have Z dimension
- * @sqlfunc atStbox(), minusStbox()
  */
 Temporal *
 tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
@@ -2426,7 +2421,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to a spatiotemporal box.
- * @sqlfunc atStbox(), minusGeometry()
+ * @sql-cfn #Tpoint_at_stbox()
  */
 Temporal *
 tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
@@ -2441,7 +2436,7 @@ tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to the complement of a spatiotemporal box.
- * @sqlfunc minusStbox()
+ * @sql-cfn #Tpoint_minus_stbox()
  */
 Temporal *
 tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)

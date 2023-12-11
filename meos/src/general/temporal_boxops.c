@@ -179,8 +179,6 @@ temporal_bbox_size(meosType temptype)
  * @brief Compute the bounding box of a temporal instant
  * @param[in] box Bounding box
  * @param[in] inst Temporal value
- * @sqlfunc period(), tbox(), stbox()
- * @sqlop @p ::
  */
 void
 tinstant_set_bbox(const TInstant *inst, void *box)

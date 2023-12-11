@@ -63,7 +63,7 @@ PG_FUNCTION_INFO_V1(Stbox_in);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Input function for spatiotemporal boxes
- * @sqlfunc stbox_in()
+ * @sqlfn stbox_in()
  */
 Datum
 Stbox_in(PG_FUNCTION_ARGS)
@@ -77,7 +77,7 @@ PG_FUNCTION_INFO_V1(Stbox_out);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Output function for spatiotemporal boxes
- * @sqlfunc stbox_out()
+ * @sqlfn stbox_out()
  */
 Datum
 Stbox_out(PG_FUNCTION_ARGS)
@@ -91,7 +91,7 @@ PG_FUNCTION_INFO_V1(Stbox_recv);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Receive function for spatiotemporal boxes
- * @sqlfunc stbox_recv()
+ * @sqlfn stbox_recv()
  */
 Datum
 Stbox_recv(PG_FUNCTION_ARGS)
@@ -108,7 +108,7 @@ PG_FUNCTION_INFO_V1(Stbox_send);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Send function for spatiotemporal boxes
- * @sqlfunc stbox_send()
+ * @sqlfn stbox_send()
  */
 Datum
 Stbox_send(PG_FUNCTION_ARGS)
@@ -132,7 +132,7 @@ PG_FUNCTION_INFO_V1(Stbox_as_text);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Output function for spatiotemporal boxes
- * @sqlfunc asText()
+ * @sqlfn asText()
  */
 Datum
 Stbox_as_text(PG_FUNCTION_ARGS)
@@ -210,7 +210,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_x);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  */
 Datum
 Stbox_constructor_x(PG_FUNCTION_ARGS)
@@ -223,7 +223,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_z);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc stbox_z()
+ * @sqlfn stbox_z()
  */
 Datum
 Stbox_constructor_z(PG_FUNCTION_ARGS)
@@ -236,7 +236,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_t);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc stbox_t()
+ * @sqlfn stbox_t()
  */
 Datum
 Stbox_constructor_t(PG_FUNCTION_ARGS)
@@ -249,7 +249,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_xt);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc stbox_xt()
+ * @sqlfn stbox_xt()
  */
 Datum
 Stbox_constructor_xt(PG_FUNCTION_ARGS)
@@ -262,7 +262,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_zt);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc stbox_zt()
+ * @sqlfn stbox_zt()
  */
 Datum
 Stbox_constructor_zt(PG_FUNCTION_ARGS)
@@ -278,7 +278,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_z);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc geodstbox_z()
+ * @sqlfn geodstbox_z()
  */
 Datum
 Geodstbox_constructor_z(PG_FUNCTION_ARGS)
@@ -291,7 +291,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc geodstbox_t()
+ * @sqlfn geodstbox_t()
  */
 Datum
 Geodstbox_constructor_t(PG_FUNCTION_ARGS)
@@ -304,7 +304,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_zt);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
- * @sqlfunc geodstbox_zt()
+ * @sqlfn geodstbox_zt()
  */
 Datum
 Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
@@ -321,8 +321,8 @@ PG_FUNCTION_INFO_V1(Stbox_to_box2d);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a spatiotemporal box to a PostGIS GBOX
- * @sqlfunc box2d()
- * @sqlfunc @p ::
+ * @sqlfn box2d()
+ * @sqlfn @p ::
  */
 Datum
 Stbox_to_box2d(PG_FUNCTION_ARGS)
@@ -339,8 +339,8 @@ PG_FUNCTION_INFO_V1(Stbox_to_box3d);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a spatiotemporal box to a PostGIS BOX3D
- * @sqlfunc box3d()
- * @sqlfunc @p ::
+ * @sqlfn box3d()
+ * @sqlfn @p ::
  */
 Datum
 Stbox_to_box3d(PG_FUNCTION_ARGS)
@@ -357,8 +357,8 @@ PG_FUNCTION_INFO_V1(Stbox_to_geo);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a spatiotemporal box to a PostGIS geometry/geography
- * @sqlfunc geometry()
- * @sqlfunc @p ::
+ * @sqlfn geometry()
+ * @sqlfn @p ::
  */
 Datum
 Stbox_to_geo(PG_FUNCTION_ARGS)
@@ -373,8 +373,8 @@ PG_FUNCTION_INFO_V1(Stbox_to_tstzspan);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a spatiotemporal box to a timestamptz span
- * @sqlfunc period()
- * @sqlfunc @p ::
+ * @sqlfn period()
+ * @sqlfn @p ::
  */
 Datum
 Stbox_to_tstzspan(PG_FUNCTION_ARGS)
@@ -395,8 +395,8 @@ PG_FUNCTION_INFO_V1(Box2d_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a box2d to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
+ * @sqlfn stbox()
+ * @sqlfn @p ::
  */
 Datum
 Box2d_to_stbox(PG_FUNCTION_ARGS)
@@ -411,8 +411,8 @@ PG_FUNCTION_INFO_V1(Box3d_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a box3d to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
+ * @sqlfn stbox()
+ * @sqlfn @p ::
  */
 Datum
 Box3d_to_stbox(PG_FUNCTION_ARGS)
@@ -427,8 +427,8 @@ PG_FUNCTION_INFO_V1(Geo_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a geometry/geography to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
+ * @sqlfn stbox()
+ * @sqlfn @p ::
  */
 Datum
 Geo_to_stbox(PG_FUNCTION_ARGS)
@@ -447,8 +447,8 @@ PG_FUNCTION_INFO_V1(Geoset_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a geometry/geography to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
+ * @sqlfn stbox()
+ * @sqlfn @p ::
  */
 Datum
 Geoset_to_stbox(PG_FUNCTION_ARGS)
@@ -464,8 +464,8 @@ PG_FUNCTION_INFO_V1(Timestamptz_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a timestamptz to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
+ * @sqlfn stbox()
+ * @sqlfn @p ::
  */
 Datum
 Timestamptz_to_stbox(PG_FUNCTION_ARGS)
@@ -480,8 +480,8 @@ PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a timestamptz set to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
+ * @sqlfn stbox()
+ * @sqlfn @p ::
  */
 Datum
 Tstzset_to_stbox(PG_FUNCTION_ARGS)
@@ -496,8 +496,8 @@ PG_FUNCTION_INFO_V1(Tstzspan_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a timestamptz span to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
+ * @sqlfn stbox()
+ * @sqlfn @p ::
  */
 Datum
 Tstzspan_to_stbox(PG_FUNCTION_ARGS)
@@ -530,8 +530,8 @@ PG_FUNCTION_INFO_V1(Tstzspanset_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a timestamptz span set to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
+ * @sqlfn stbox()
+ * @sqlfn @p ::
  */
 Datum
 Tstzspanset_to_stbox(PG_FUNCTION_ARGS)
@@ -549,8 +549,8 @@ PG_FUNCTION_INFO_V1(Geo_timestamptz_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a geometry/geography and a timestamptz to a spatiotemporal box
- * @sqlfunc stbox()
- * @sqlfunc @p ::
+ * @sqlfn stbox()
+ * @sqlfn @p ::
  */
 Datum
 Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS)
@@ -570,7 +570,7 @@ PG_FUNCTION_INFO_V1(Geo_tstzspan_to_stbox);
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a geometry/geography and a timestamptz span to a
  * spatiotemporal box
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  */
 Datum
 Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS)
@@ -593,7 +593,7 @@ PG_FUNCTION_INFO_V1(Stbox_hasx);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if a spatiotemporal box has value dimension
- * @sqlfunc hasX()
+ * @sqlfn hasX()
  */
 Datum
 Stbox_hasx(PG_FUNCTION_ARGS)
@@ -607,7 +607,7 @@ PG_FUNCTION_INFO_V1(Stbox_hasz);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if a spatiotemporal box has Z dimension
- * @sqlfunc hasZ()
+ * @sqlfn hasZ()
  */
 Datum
 Stbox_hasz(PG_FUNCTION_ARGS)
@@ -621,7 +621,7 @@ PG_FUNCTION_INFO_V1(Stbox_hast);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if a spatiotemporal box has time dimension
- * @sqlfunc hasT()
+ * @sqlfn hasT()
  */
 Datum
 Stbox_hast(PG_FUNCTION_ARGS)
@@ -635,7 +635,7 @@ PG_FUNCTION_INFO_V1(Stbox_isgeodetic);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if a spatiotemporal box is geodetic
- * @sqlfunc isGeodetic()
+ * @sqlfn isGeodetic()
  */
 Datum
 Stbox_isgeodetic(PG_FUNCTION_ARGS)
@@ -649,7 +649,7 @@ PG_FUNCTION_INFO_V1(Stbox_xmin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum X value of a spatiotemporal box, if any
- * @sqlfunc Xmin()
+ * @sqlfn Xmin()
  */
 Datum
 Stbox_xmin(PG_FUNCTION_ARGS)
@@ -666,7 +666,7 @@ PG_FUNCTION_INFO_V1(Stbox_xmax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum X value of a spatiotemporal box, if any
- * @sqlfunc Xmax()
+ * @sqlfn Xmax()
  */
 Datum
 Stbox_xmax(PG_FUNCTION_ARGS)
@@ -683,7 +683,7 @@ PG_FUNCTION_INFO_V1(Stbox_ymin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum Y value of a spatiotemporal box, if any
- * @sqlfunc Ymin()
+ * @sqlfn Ymin()
  */
 Datum
 Stbox_ymin(PG_FUNCTION_ARGS)
@@ -700,7 +700,7 @@ PG_FUNCTION_INFO_V1(Stbox_ymax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum Y value of a spatiotemporal box, if any
- * @sqlfunc Ymax()
+ * @sqlfn Ymax()
  */
 Datum
 Stbox_ymax(PG_FUNCTION_ARGS)
@@ -717,7 +717,7 @@ PG_FUNCTION_INFO_V1(Stbox_zmin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum Z value of a spatiotemporal box, if any
- * @sqlfunc Zmin()
+ * @sqlfn Zmin()
  */
 Datum
 Stbox_zmin(PG_FUNCTION_ARGS)
@@ -734,7 +734,7 @@ PG_FUNCTION_INFO_V1(Stbox_zmax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum Z value of a spatiotemporal box, if any
- * @sqlfunc Zmax()
+ * @sqlfn Zmax()
  */
 Datum
 Stbox_zmax(PG_FUNCTION_ARGS)
@@ -751,7 +751,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum timestamptz value of a spatiotemporal box, if any
- * @sqlfunc Tmin()
+ * @sqlfn Tmin()
  */
 Datum
 Stbox_tmin(PG_FUNCTION_ARGS)
@@ -769,7 +769,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmin_inc);
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the minimum timestamptz value of a spatiotemporal box
  * is inclusive
- * @sqlfunc Tmin_inc()
+ * @sqlfn Tmin_inc()
  */
 Datum
 Stbox_tmin_inc(PG_FUNCTION_ARGS)
@@ -786,7 +786,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum T value of a spatiotemporal box, if any
- * @sqlfunc Tmax()
+ * @sqlfn Tmax()
  */
 Datum
 Stbox_tmax(PG_FUNCTION_ARGS)
@@ -804,7 +804,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmax_inc);
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the maximum timestamptz value of a spatiotemporal box is
  * inclusive
- * @sqlfunc Tmax_inc()
+ * @sqlfn Tmax_inc()
  */
 Datum
 Stbox_tmax_inc(PG_FUNCTION_ARGS)
@@ -825,7 +825,7 @@ PG_FUNCTION_INFO_V1(Stbox_get_srid);
 /**
  * @ingroup mobilitydb_box_spatial
  * @brief Return the SRID of a spatiotemporal box
- * @sqlfunc SRID()
+ * @sqlfn SRID()
  */
 Datum
 Stbox_get_srid(PG_FUNCTION_ARGS)
@@ -839,7 +839,7 @@ PG_FUNCTION_INFO_V1(Stbox_set_srid);
 /**
  * @ingroup mobilitydb_box_spatial
  * @brief Sets the SRID of a spatiotemporal box
- * @sqlfunc setSRID()
+ * @sqlfn setSRID()
  */
 Datum
 Stbox_set_srid(PG_FUNCTION_ARGS)
@@ -900,7 +900,7 @@ PG_FUNCTION_INFO_V1(Stbox_transform);
 /**
  * @ingroup mobilitydb_box_spatial
  * @brief Transform a spatiotemporal box into another spatial reference system
- * @sqlfunc transform()
+ * @sqlfn transform()
  */
 Datum
 Stbox_transform(PG_FUNCTION_ARGS)
@@ -922,7 +922,7 @@ PG_FUNCTION_INFO_V1(Stbox_shift_time);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box with the time span shifted by an interval
- * @sqlfunc shiftTime()
+ * @sqlfn shiftTime()
  */
 Datum
 Stbox_shift_time(PG_FUNCTION_ARGS)
@@ -938,7 +938,7 @@ PG_FUNCTION_INFO_V1(Stbox_scale_time);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box with the time span scaled by an interval
- * @sqlfunc scaleTime()
+ * @sqlfn scaleTime()
  */
 Datum
 Stbox_scale_time(PG_FUNCTION_ARGS)
@@ -955,7 +955,7 @@ PG_FUNCTION_INFO_V1(Stbox_shift_scale_time);
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box with the time span shifted and scaled by 
  * the intervals
- * @sqlfunc shiftScaleTime()
+ * @sqlfn shiftScaleTime()
  */
 Datum
 Stbox_shift_scale_time(PG_FUNCTION_ARGS)
@@ -972,7 +972,7 @@ PG_FUNCTION_INFO_V1(Stbox_get_space);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box with only the space bounds
- * @sqlfunc getSpace()
+ * @sqlfn getSpace()
  */
 Datum
 Stbox_get_space(PG_FUNCTION_ARGS)
@@ -986,7 +986,7 @@ PG_FUNCTION_INFO_V1(Stbox_expand_space);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box with the space bounds expanded by a double
- * @sqlfunc expandSpace()
+ * @sqlfn expandSpace()
  */
 Datum
 Stbox_expand_space(PG_FUNCTION_ARGS)
@@ -1001,7 +1001,7 @@ PG_FUNCTION_INFO_V1(Stbox_expand_time);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box with the time span expanded by an interval
- * @sqlfunc Stbox_expand_time()
+ * @sqlfn Stbox_expand_time()
  */
 Datum
 Stbox_expand_time(PG_FUNCTION_ARGS)
@@ -1017,7 +1017,7 @@ PG_FUNCTION_INFO_V1(Stbox_round);
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box with the precision of the space bounds
  * set to a number of decimal values
- * @sqlfunc round()
+ * @sqlfn round()
  */
 Datum
 Stbox_round(PG_FUNCTION_ARGS)
@@ -1036,7 +1036,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_topo
  * @brief Return true if the first spatiotemporal box contains the second one
- * @sqlfunc stbox_contains()
+ * @sqlfn stbox_contains()
  * @sqlop @p \@>
  */
 Datum
@@ -1053,7 +1053,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_stbox);
  * @ingroup mobilitydb_box_topo
  * @brief Return true if the first spatiotemporal box is contained in the
  * second one
- * @sqlfunc stbox_contained()
+ * @sqlfn stbox_contained()
  * @sqlop @p <@
  */
 Datum
@@ -1069,7 +1069,7 @@ PG_FUNCTION_INFO_V1(Overlaps_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_topo
  * @brief Return true if two spatiotemporal boxes overlap
- * @sqlfunc stbox_overlaps()
+ * @sqlfn stbox_overlaps()
  * @sqlop @p &&
  */
 Datum
@@ -1086,7 +1086,7 @@ PG_FUNCTION_INFO_V1(Same_stbox_stbox);
  * @ingroup mobilitydb_box_topo
  * @brief Return true if two spatiotemporal boxes are equal in the common
  * dimensions
- * @sqlfunc stbox_same()
+ * @sqlfn stbox_same()
  * @sqlop @p ~=
  */
 Datum
@@ -1102,7 +1102,7 @@ PG_FUNCTION_INFO_V1(Adjacent_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_topo
  * @brief Return true if two spatiotemporal boxes are adjacent
- * @sqlfunc stbox_adjacent()
+ * @sqlfn stbox_adjacent()
  * @sqlop @p -|-
  */
 Datum
@@ -1123,7 +1123,7 @@ PG_FUNCTION_INFO_V1(Left_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box is to the left of the
  * second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p >>
  */
 Datum
@@ -1140,7 +1140,7 @@ PG_FUNCTION_INFO_V1(Overleft_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * right of the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p &>
  */
 Datum
@@ -1157,7 +1157,7 @@ PG_FUNCTION_INFO_V1(Right_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box is to the right of the
  * second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p <<
  */
 Datum
@@ -1174,7 +1174,7 @@ PG_FUNCTION_INFO_V1(Overright_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatio temporal box does not extend to the
  * left of the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p &<
  */
 Datum
@@ -1191,7 +1191,7 @@ PG_FUNCTION_INFO_V1(Below_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box is below of the second
  * one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p <<|
  */
 Datum
@@ -1208,7 +1208,7 @@ PG_FUNCTION_INFO_V1(Overbelow_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box does not extend above of
  * the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p &<|
  */
 Datum
@@ -1225,7 +1225,7 @@ PG_FUNCTION_INFO_V1(Above_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box is above of the second
  * one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p |>>
  */
 Datum
@@ -1242,7 +1242,7 @@ PG_FUNCTION_INFO_V1(Overabove_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box does not extend below of
  * the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p |&>
  */
 Datum
@@ -1259,7 +1259,7 @@ PG_FUNCTION_INFO_V1(Front_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box is in front of the second
  * one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p <</
  */
 Datum
@@ -1276,7 +1276,7 @@ PG_FUNCTION_INFO_V1(Overfront_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * back of the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p &</
  */
 Datum
@@ -1292,7 +1292,7 @@ PG_FUNCTION_INFO_V1(Back_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box is back of the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p />>
  */
 Datum
@@ -1309,7 +1309,7 @@ PG_FUNCTION_INFO_V1(Overback_stbox_stbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * front of the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p /&>
  */
 Datum
@@ -1325,7 +1325,7 @@ PG_FUNCTION_INFO_V1(Before_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box is before the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p <<#
  */
 Datum
@@ -1341,7 +1341,7 @@ PG_FUNCTION_INFO_V1(Overbefore_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is not after the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p &<#
  */
 Datum
@@ -1357,7 +1357,7 @@ PG_FUNCTION_INFO_V1(After_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first spatiotemporal box is after the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p #>>
  */
 Datum
@@ -1373,7 +1373,7 @@ PG_FUNCTION_INFO_V1(Overafter_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is not before the second one
- * @sqlfunc temporal_below()
+ * @sqlfn temporal_below()
  * @sqlop @p #&>
  */
 Datum
@@ -1393,7 +1393,7 @@ PG_FUNCTION_INFO_V1(Union_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_set
  * @brief Return the union of two spatiotemporal boxes
- * @sqlfunc stbox_union()
+ * @sqlfn stbox_union()
  * @sqlop @p +
  */
 Datum
@@ -1410,7 +1410,7 @@ PG_FUNCTION_INFO_V1(Intersection_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_set
  * @brief Return the intersection of two spatiotemporal boxes
- * @sqlfunc stbox_intersection()
+ * @sqlfn stbox_intersection()
  * @sqlop @p *
  */
 Datum
@@ -1433,7 +1433,7 @@ PG_FUNCTION_INFO_V1(Stbox_quad_split);
 /**
  * @ingroup mobilitydb_box_set
  * @brief Return the intersection of two spatiotemporal boxes
- * @sqlfunc stbox_intersection()
+ * @sqlfn stbox_intersection()
  * @sqlop @p *
  */
 Datum
@@ -1520,7 +1520,7 @@ PG_FUNCTION_INFO_V1(Stbox_cmp);
  * @ingroup mobilitydb_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal box
  * is less than, equal, or greater than the second one
- * @sqlfunc stbox_cmp()
+ * @sqlfn stbox_cmp()
  */
 Datum
 Stbox_cmp(PG_FUNCTION_ARGS)
@@ -1536,7 +1536,7 @@ PG_FUNCTION_INFO_V1(Stbox_lt);
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first spatiotemporal box is less than the second
  * one
- * @sqlfunc stbox_lt()
+ * @sqlfn stbox_lt()
  * @sqlop @p <
  */
 Datum
@@ -1553,7 +1553,7 @@ PG_FUNCTION_INFO_V1(Stbox_le);
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first spatiotemporal box is less than or equal to
  * the second one
- * @sqlfunc stbox_le()
+ * @sqlfn stbox_le()
  * @sqlop @p <=
  */
 Datum
@@ -1570,7 +1570,7 @@ PG_FUNCTION_INFO_V1(Stbox_ge);
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first spatiotemporal box is greater than or equal
  * to the second one
- * @sqlfunc stbox_ge()
+ * @sqlfn stbox_ge()
  * @sqlop @p >=
  */
 Datum
@@ -1587,7 +1587,7 @@ PG_FUNCTION_INFO_V1(Stbox_gt);
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first spatiotemporal box is greater than the
  * second one
- * @sqlfunc stbox_gt()
+ * @sqlfn stbox_gt()
  * @sqlop @p >
  */
 Datum
@@ -1603,7 +1603,7 @@ PG_FUNCTION_INFO_V1(Stbox_eq);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return true if two spatiotemporal boxes are equal
- * @sqlfunc stbox_eq()
+ * @sqlfn stbox_eq()
  * @sqlop @p =
  */
 Datum
@@ -1619,7 +1619,7 @@ PG_FUNCTION_INFO_V1(Stbox_ne);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return true if two spatiotemporal boxes are different
- * @sqlfunc stbox_ne()
+ * @sqlfn stbox_ne()
  * @sqlop @p <>
  */
 Datum

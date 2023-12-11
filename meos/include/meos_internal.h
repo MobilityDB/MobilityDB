@@ -378,15 +378,15 @@ extern bool ovri_span_span(const Span *s1, const Span *s2);
 /* Set functions for set and span types */
 
 extern bool inter_span_span(const Span *s1, const Span *s2, Span *result);
-extern bool intersection_set_value(const Set *s, Datum d, meosType basetype, Datum *result);
-extern bool intersection_span_value(const Span *s, Datum d, meosType basetype, Datum *result);
-extern bool intersection_spanset_value(const SpanSet *ss, Datum d, meosType basetype, Datum *result);
+extern Set *intersection_set_value(const Set *s, Datum d, meosType basetype);
+extern Span *intersection_span_value(const Span *s, Datum d, meosType basetype);
+extern SpanSet *intersection_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
 extern Set *minus_set_value(const Set *s, Datum d, meosType basetype);
 extern SpanSet *minus_span_value(const Span *s, Datum d, meosType basetype);
 extern SpanSet *minus_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
-extern bool minus_value_set(Datum d, meosType basetype, const Set *s, Datum *result);
-extern bool minus_value_span(Datum d, meosType basetype, const Span *s, Datum *result);
-extern bool minus_value_spanset(Datum d, meosType basetype, const SpanSet *ss, Datum *result);
+extern Set *minus_value_set(Datum d, meosType basetype, const Set *s);
+extern SpanSet *minus_value_span(Datum d, meosType basetype, const Span *s);
+extern SpanSet *minus_value_spanset(Datum d, meosType basetype, const SpanSet *ss);
 extern Set *union_set_value(const Set *s, const Datum d, meosType basetype);
 extern SpanSet *union_span_value(const Span *s, Datum v, meosType basetype);
 extern SpanSet *union_spanset_value(const SpanSet *ss, Datum d, meosType basetype);

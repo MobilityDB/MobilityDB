@@ -354,7 +354,7 @@ PG_FUNCTION_INFO_V1(Mobilitydb_version);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Version of the MobilityDB extension
- * @sqlfunc mobilitydb_version()
+ * @sqlfn mobilitydb_version()
  */
 Datum
 Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)))
@@ -369,7 +369,7 @@ PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Versions of the MobilityDB extension and its dependencies
- * @sqlfunc mobilitydb_full_version()
+ * @sqlfn mobilitydb_full_version()
  */
 Datum
 Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
@@ -476,7 +476,7 @@ PG_FUNCTION_INFO_V1(Temporal_in);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Input function for temporal types
- * @sqlfunc int_in(), tfloat_in(), ...
+ * @sqlfn int_in(), tfloat_in(), ...
  */
 Datum
 Temporal_in(PG_FUNCTION_ARGS)
@@ -497,7 +497,7 @@ PG_FUNCTION_INFO_V1(Temporal_out);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Output function for temporal types
- * @sqlfunc tint_out(), tfloat_out(), ...
+ * @sqlfn tint_out(), tfloat_out(), ...
  */
 Datum
 Temporal_out(PG_FUNCTION_ARGS)
@@ -551,7 +551,7 @@ PG_FUNCTION_INFO_V1(Temporal_recv);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Receive function for temporal types
- * @sqlfunc tint_recv(), tfloat_recv(), ...
+ * @sqlfn tint_recv(), tfloat_recv(), ...
  */
 Datum
 Temporal_recv(PG_FUNCTION_ARGS)
@@ -568,7 +568,7 @@ PG_FUNCTION_INFO_V1(Temporal_send);
 /*
  * @ingroup mobilitydb_temporal_inout
  * @brief Send function for temporal types
- * @sqlfunc tint_send(), tfloat_send(), ...
+ * @sqlfn tint_send(), tfloat_send(), ...
  */
 Datum
 Temporal_send(PG_FUNCTION_ARGS)
@@ -593,7 +593,7 @@ PG_FUNCTION_INFO_V1(Tinstant_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant from the arguments
- * @sqlfunc tint_inst(), tfloat_inst(), ...
+ * @sqlfn tint_inst(), tfloat_inst(), ...
  */
 Datum
 Tinstant_constructor(PG_FUNCTION_ARGS)
@@ -610,7 +610,7 @@ PG_FUNCTION_INFO_V1(Tsequence_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence from an array of temporal instants
- * @sqlfunc tint_seq(), tfloat_seq(), ...
+ * @sqlfn tint_seq(), tfloat_seq(), ...
  */
 Datum
 Tsequence_constructor(PG_FUNCTION_ARGS)
@@ -645,7 +645,7 @@ PG_FUNCTION_INFO_V1(Tsequenceset_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set from the array of temporal sequences
- * @sqlfunc tint_seqset(), tfloat_seqset(), ...
+ * @sqlfn tint_seqset(), tfloat_seqset(), ...
  */
 Datum
 Tsequenceset_constructor(PG_FUNCTION_ARGS)
@@ -668,7 +668,7 @@ PG_FUNCTION_INFO_V1(Tsequenceset_constructor_gaps);
  * @brief Construct a temporal sequence set from an array of temporal instants
  * accounting for potential gaps
  * @note The SQL function is not strict
- * @sqlfunc tint_seqset_gaps(), tfloat_seqset_gaps(), tgeompoint_seqset_gaps()
+ * @sqlfn tint_seqset_gaps(), tfloat_seqset_gaps(), tgeompoint_seqset_gaps()
  */
 Datum
 Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
@@ -714,7 +714,7 @@ PG_FUNCTION_INFO_V1(Tsequence_from_base_tstzset);
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal discrete sequence from a base value and a
  * timestamptz set
- * @sqlfunc tint_discseq(), tfloat_discseq(), ...
+ * @sqlfn tint_discseq(), tfloat_discseq(), ...
  */
 Datum
 Tsequence_from_base_tstzset(PG_FUNCTION_ARGS)
@@ -732,7 +732,7 @@ PG_FUNCTION_INFO_V1(Tsequence_from_base_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence from a base value and a timestamptz span
- * @sqlfunc tint_seq(), tfloat_seq(), ...
+ * @sqlfn tint_seq(), tfloat_seq(), ...
  */
 Datum
 Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS)
@@ -758,7 +758,7 @@ PG_FUNCTION_INFO_V1(Tsequenceset_from_base_tstzspanset);
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set from from a base value and a
  * timestamptz set
- * @sqlfunc tint_seqset(), tfloat_seqset(), ...
+ * @sqlfn tint_seqset(), tfloat_seqset(), ...
  */
 Datum
 Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
@@ -789,7 +789,7 @@ PG_FUNCTION_INFO_V1(Tint_to_tfloat);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal integer as a temporal float
- * @sqlfunc tfloat()
+ * @sqlfn tfloat()
  * @sqlop @p ::
  */
 Datum
@@ -806,7 +806,7 @@ PG_FUNCTION_INFO_V1(Tfloat_to_tint);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal float as a temporal integer
- * @sqlfunc tint()
+ * @sqlfn tint()
  * @sqlop @p ::
  */
 Datum
@@ -825,7 +825,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tstzspan);
  * @brief Return the bounding period of a temporal value 
  * @note We cannot detoast only the header since we don't know whether the
  * lower and upper bounds of the period are inclusive or not
- * @sqlfunc timeSpan()
+ * @sqlfn timeSpan()
  * @sqlop @p ::
  */
 Datum
@@ -842,7 +842,7 @@ PG_FUNCTION_INFO_V1(Tnumber_to_span);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding value span of a temporal number
- * @sqlfunc valueSpan()
+ * @sqlfn valueSpan()
  * @sqlop @p ::
  */
 Datum
@@ -859,7 +859,7 @@ PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding box of a temporal number
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  * @sqlop @p ::
  */
 Datum
@@ -880,7 +880,7 @@ PG_FUNCTION_INFO_V1(Temporal_subtype);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the string representation of the subtype of a temporal value
- * @sqlfunc tempSubtype()
+ * @sqlfn tempSubtype()
  */
 Datum
 Temporal_subtype(PG_FUNCTION_ARGS)
@@ -899,7 +899,7 @@ PG_FUNCTION_INFO_V1(Temporal_interp);
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the string representation of the interpolation of a temporal
  * value
- * @sqlfunc interp()
+ * @sqlfn interp()
  */
 Datum
 Temporal_interp(PG_FUNCTION_ARGS)
@@ -917,7 +917,7 @@ PG_FUNCTION_INFO_V1(Temporal_mem_size);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the memory size in bytes of a temporal value
- * @sqlfunc memSize()
+ * @sqlfn memSize()
  */
 Datum
 Temporal_mem_size(PG_FUNCTION_ARGS)
@@ -931,7 +931,7 @@ PG_FUNCTION_INFO_V1(Tinstant_get_value);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base value of a temporal instant
- * @sqlfunc getValue()
+ * @sqlfn getValue()
  */
 Datum
 Tinstant_get_value(PG_FUNCTION_ARGS)
@@ -951,7 +951,7 @@ PG_FUNCTION_INFO_V1(Temporal_valueset);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base values of a temporal value as a set
- * @sqlfunc getValues()
+ * @sqlfn getValues()
  */
 Datum
 Temporal_valueset(PG_FUNCTION_ARGS)
@@ -978,7 +978,7 @@ PG_FUNCTION_INFO_V1(Tnumber_valuespans);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base values of a temporal float as a span set
- * @sqlfunc getValues()
+ * @sqlfn getValues()
  */
 Datum
 Tnumber_valuespans(PG_FUNCTION_ARGS)
@@ -994,7 +994,7 @@ PG_FUNCTION_INFO_V1(Temporal_start_value);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the start base value of a temporal value
- * @sqlfunc startValue()
+ * @sqlfn startValue()
  */
 Datum
 Temporal_start_value(PG_FUNCTION_ARGS)
@@ -1010,7 +1010,7 @@ PG_FUNCTION_INFO_V1(Temporal_end_value);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the end base value of a temporal value
- * @sqlfunc endValue()
+ * @sqlfn endValue()
  */
 Datum
 Temporal_end_value(PG_FUNCTION_ARGS)
@@ -1026,7 +1026,7 @@ PG_FUNCTION_INFO_V1(Temporal_min_value);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the minimum base value of a temporal value
- * @sqlfunc minValue()
+ * @sqlfn minValue()
  */
 Datum
 Temporal_min_value(PG_FUNCTION_ARGS)
@@ -1042,7 +1042,7 @@ PG_FUNCTION_INFO_V1(Temporal_max_value);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the maximum base value of a temporal value
- * @sqlfunc maxValue()
+ * @sqlfn maxValue()
  */
 Datum
 Temporal_max_value(PG_FUNCTION_ARGS)
@@ -1058,7 +1058,7 @@ PG_FUNCTION_INFO_V1(Temporal_min_instant);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the instant with the minimum base value of a temporal value
- * @sqlfunc minInstant()
+ * @sqlfn minInstant()
  */
 Datum
 Temporal_min_instant(PG_FUNCTION_ARGS)
@@ -1074,7 +1074,7 @@ PG_FUNCTION_INFO_V1(Temporal_max_instant);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the instant with maximum base value of a temporal value
- * @sqlfunc maxInstant()
+ * @sqlfn maxInstant()
  */
 Datum
 Temporal_max_instant(PG_FUNCTION_ARGS)
@@ -1090,7 +1090,7 @@ PG_FUNCTION_INFO_V1(Tinstant_timestamp);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the timestamptz of a temporal instant
- * @sqlfunc getTimestamp()
+ * @sqlfn getTimestamp()
  */
 Datum
 Tinstant_timestamp(PG_FUNCTION_ARGS)
@@ -1110,7 +1110,7 @@ PG_FUNCTION_INFO_V1(Temporal_time);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the time on which a temporal value is defined as a span set
- * @sqlfunc getTime()
+ * @sqlfn getTime()
  */
 Datum
 Temporal_time(PG_FUNCTION_ARGS)
@@ -1126,7 +1126,7 @@ PG_FUNCTION_INFO_V1(Temporal_duration);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the duration of a temporal value
- * @sqlfunc duration()
+ * @sqlfn duration()
  */
 Datum
 Temporal_duration(PG_FUNCTION_ARGS)
@@ -1143,7 +1143,7 @@ PG_FUNCTION_INFO_V1(Temporal_num_sequences);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the number of sequences of a temporal sequence (set)
- * @sqlfunc numSequences()
+ * @sqlfn numSequences()
  */
 Datum
 Temporal_num_sequences(PG_FUNCTION_ARGS)
@@ -1159,7 +1159,7 @@ PG_FUNCTION_INFO_V1(Temporal_start_sequence);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the start sequence of a temporal sequence (set)
- * @sqlfunc startSequence()
+ * @sqlfn startSequence()
  */
 Datum
 Temporal_start_sequence(PG_FUNCTION_ARGS)
@@ -1175,7 +1175,7 @@ PG_FUNCTION_INFO_V1(Temporal_end_sequence);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the end sequence of a temporal sequence (set)
- * @sqlfunc endSequence()
+ * @sqlfn endSequence()
  */
 Datum
 Temporal_end_sequence(PG_FUNCTION_ARGS)
@@ -1191,7 +1191,7 @@ PG_FUNCTION_INFO_V1(Temporal_sequence_n);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence (set)
- * @sqlfunc sequenceN()
+ * @sqlfn sequenceN()
  */
 Datum
 Temporal_sequence_n(PG_FUNCTION_ARGS)
@@ -1210,7 +1210,7 @@ PG_FUNCTION_INFO_V1(Temporal_sequences);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the array of sequences of a temporal sequence (set)
- * @sqlfunc sequences()
+ * @sqlfn sequences()
  */
 Datum
 Temporal_sequences(PG_FUNCTION_ARGS)
@@ -1230,7 +1230,7 @@ PG_FUNCTION_INFO_V1(Temporal_segments);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the array of segments of a temporal sequence (set)
- * @sqlfunc segments()
+ * @sqlfn segments()
  */
 Datum
 Temporal_segments(PG_FUNCTION_ARGS)
@@ -1249,7 +1249,7 @@ PG_FUNCTION_INFO_V1(Temporal_num_instants);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the number of distinct instants of a temporal value
- * @sqlfunc numInstants()
+ * @sqlfn numInstants()
  */
 Datum
 Temporal_num_instants(PG_FUNCTION_ARGS)
@@ -1265,7 +1265,7 @@ PG_FUNCTION_INFO_V1(Temporal_start_instant);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the start instant of a temporal value
- * @sqlfunc startInstant()
+ * @sqlfn startInstant()
  */
 Datum
 Temporal_start_instant(PG_FUNCTION_ARGS)
@@ -1281,7 +1281,7 @@ PG_FUNCTION_INFO_V1(Temporal_end_instant);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the end instant of a temporal value
- * @sqlfunc endInstant()
+ * @sqlfn endInstant()
  */
 Datum
 Temporal_end_instant(PG_FUNCTION_ARGS)
@@ -1297,7 +1297,7 @@ PG_FUNCTION_INFO_V1(Temporal_instant_n);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the n-th instant of a temporal value
- * @sqlfunc instantN()
+ * @sqlfn instantN()
  */
 Datum
 Temporal_instant_n(PG_FUNCTION_ARGS)
@@ -1317,7 +1317,7 @@ PG_FUNCTION_INFO_V1(Temporal_instants);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the array of distinct instants of a temporal value
- * @sqlfunc instants()
+ * @sqlfn instants()
  */
 Datum
 Temporal_instants(PG_FUNCTION_ARGS)
@@ -1337,7 +1337,7 @@ PG_FUNCTION_INFO_V1(Temporal_num_timestamps);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the number of distinct timestamps of a temporal value
- * @sqlfunc numTimestamps()
+ * @sqlfn numTimestamps()
  */
 Datum
 Temporal_num_timestamps(PG_FUNCTION_ARGS)
@@ -1353,7 +1353,7 @@ PG_FUNCTION_INFO_V1(Temporal_start_timestamp);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the start timestamptz of a temporal value
- * @sqlfunc startTimestamp()
+ * @sqlfn startTimestamp()
  */
 Datum
 Temporal_start_timestamp(PG_FUNCTION_ARGS)
@@ -1369,7 +1369,7 @@ PG_FUNCTION_INFO_V1(Temporal_end_timestamp);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the end timestamptz of a temporal value
- * @sqlfunc endTimestamp()
+ * @sqlfn endTimestamp()
  */
 Datum
 Temporal_end_timestamp(PG_FUNCTION_ARGS)
@@ -1385,7 +1385,7 @@ PG_FUNCTION_INFO_V1(Temporal_timestamp_n);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the n-th distinct timestamptz of a temporal value
- * @sqlfunc timestampN()
+ * @sqlfn timestampN()
  */
 Datum
 Temporal_timestamp_n(PG_FUNCTION_ARGS)
@@ -1404,7 +1404,7 @@ PG_FUNCTION_INFO_V1(Temporal_timestamps);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the array of distinct timestamps of a temporal value
- * @sqlfunc timestamps()
+ * @sqlfn timestamps()
  */
 Datum
 Temporal_timestamps(PG_FUNCTION_ARGS)
@@ -1557,7 +1557,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_eq);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever equal to a base value
- * @sqlfunc ever_eq()
+ * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
 Datum
@@ -1571,7 +1571,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_eq);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always equal to a base value
- * @sqlfunc always_eq()
+ * @sqlfn always_eq()
  * @sqlop @p %=
  */
 Datum
@@ -1585,7 +1585,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_ne);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever different from a base value
- * @sqlfunc ever_eq()
+ * @sqlfn ever_eq()
  * @sqlop @p ?<>
  */
 Datum
@@ -1599,7 +1599,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_ne);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always different from a base value
- * @sqlfunc always_ne()
+ * @sqlfn always_ne()
  * @sqlop @p %<>
  */
 Datum
@@ -1615,7 +1615,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_lt);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than a base value
- * @sqlfunc ever_lt()
+ * @sqlfn ever_lt()
  * @sqlop @p ?<
  */
 Datum
@@ -1629,7 +1629,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_lt);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always less than a base value
- * @sqlfunc always_lt()
+ * @sqlfn always_lt()
  * @sqlop @p %<
  */
 Datum
@@ -1644,7 +1644,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_le);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than or equal to a base
  * value
- * @sqlfunc ever_le()
+ * @sqlfn ever_le()
  * @sqlop @p ?<=
  */
 Datum
@@ -1659,7 +1659,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_le);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always less than or equal to a
  * base value
- * @sqlfunc always_le()
+ * @sqlfn always_le()
  * @sqlop @p %<=
  */
 Datum
@@ -1673,7 +1673,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_gt);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than a base value
- * @sqlfunc ever_gt()
+ * @sqlfn ever_gt()
  * @sqlop @p ?>
  */
 Datum
@@ -1687,7 +1687,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_gt);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than a base value
- * @sqlfunc always_gt()
+ * @sqlfn always_gt()
  * @sqlop @p %>
  */
 Datum
@@ -1702,7 +1702,7 @@ PG_FUNCTION_INFO_V1(Temporal_ever_ge);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than or equal to a 
  * base value
- * @sqlfunc ever_ge()
+ * @sqlfn ever_ge()
  * @sqlop @p ?>=
  */
 Datum
@@ -1717,7 +1717,7 @@ PG_FUNCTION_INFO_V1(Temporal_always_ge);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than or equal to a
  * base value
- * @sqlfunc always_ge()
+ * @sqlfn always_ge()
  * @sqlop @p %>=
  */
 Datum
@@ -1735,7 +1735,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tinstant);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal instant
- * @sqlfunc  tint_inst(), tfloat_inst(), ...
+ * @sqlfn  tint_inst(), tfloat_inst(), ...
  */
 Datum
 Temporal_to_tinstant(PG_FUNCTION_ARGS)
@@ -1752,7 +1752,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tsequence);
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal sequence
  * @note The SQL function is not strict
- * @sqlfunc tint_seq(), tfloat_seq(), ...
+ * @sqlfn tint_seq(), tfloat_seq(), ...
  */
 Datum
 Temporal_to_tsequence(PG_FUNCTION_ARGS)
@@ -1787,7 +1787,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tsequenceset);
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal sequence set
  * @note The SQL function is not strict
- * @sqlfunc tint_seqset(), tfloat_seqset(), ...
+ * @sqlfn tint_seqset(), tfloat_seqset(), ...
  */
 Datum
 Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
@@ -1821,7 +1821,7 @@ PG_FUNCTION_INFO_V1(Temporal_set_interp);
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value with continuous base type from step
  * to linear interpolation
- * @sqlfunc toLinear()
+ * @sqlfn toLinear()
  */
 Datum
 Temporal_set_interp(PG_FUNCTION_ARGS)
@@ -1843,7 +1843,7 @@ PG_FUNCTION_INFO_V1(Tnumber_shift_value);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value a shifted by an interval
- * @sqlfunc shiftValue()
+ * @sqlfn shiftValue()
  */
 Datum
 Tnumber_shift_value(PG_FUNCTION_ARGS)
@@ -1862,7 +1862,7 @@ PG_FUNCTION_INFO_V1(Tnumber_scale_value);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value scaled by an interval
- * @sqlfunc scaleValue()
+ * @sqlfn scaleValue()
  */
 Datum
 Tnumber_scale_value(PG_FUNCTION_ARGS)
@@ -1881,7 +1881,7 @@ PG_FUNCTION_INFO_V1(Tnumber_shift_scale_value);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value shifted and scaled by the intervals
- * @sqlfunc shiftScaleValue()
+ * @sqlfn shiftScaleValue()
  */
 Datum
 Tnumber_shift_scale_value(PG_FUNCTION_ARGS)
@@ -1905,7 +1905,7 @@ PG_FUNCTION_INFO_V1(Temporal_shift_time);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value shifted by an interval
- * @sqlfunc shiftTime()
+ * @sqlfn shiftTime()
  */
 Datum
 Temporal_shift_time(PG_FUNCTION_ARGS)
@@ -1922,7 +1922,7 @@ PG_FUNCTION_INFO_V1(Temporal_scale_time);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value scaled by an interval
- * @sqlfunc scaleTime()
+ * @sqlfn scaleTime()
  */
 Datum
 Temporal_scale_time(PG_FUNCTION_ARGS)
@@ -1939,7 +1939,7 @@ PG_FUNCTION_INFO_V1(Temporal_shift_scale_time);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value shifted and scaled by the intervals
- * @sqlfunc shiftScaleTime()
+ * @sqlfn shiftScaleTime()
  */
 Datum
 Temporal_shift_scale_time(PG_FUNCTION_ARGS)
@@ -1961,7 +1961,7 @@ PG_FUNCTION_INFO_V1(Temporal_append_tinstant);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Append an instant to a temporal value
- * @sqlfunc appendInstant()
+ * @sqlfn appendInstant()
  */
 Datum
 Temporal_append_tinstant(PG_FUNCTION_ARGS)
@@ -1979,7 +1979,7 @@ PG_FUNCTION_INFO_V1(Temporal_append_tsequence);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Append a sequence to a temporal value
- * @sqlfunc appendSequence()
+ * @sqlfn appendSequence()
  */
 Datum
 Temporal_append_tsequence(PG_FUNCTION_ARGS)
@@ -1997,7 +1997,7 @@ PG_FUNCTION_INFO_V1(Temporal_merge);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Merge two temporal values
- * @sqlfunc merge()
+ * @sqlfn merge()
  */
 Datum
 Temporal_merge(PG_FUNCTION_ARGS)
@@ -2019,7 +2019,7 @@ PG_FUNCTION_INFO_V1(Temporal_merge_array);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Merge an array of temporal values
- * @sqlfunc merge()
+ * @sqlfn merge()
  */
 Datum
 Temporal_merge_array(PG_FUNCTION_ARGS)
@@ -2061,7 +2061,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_value);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a base value
- * @sqlfunc atValue()
+ * @sqlfn atValue()
  */
 Datum
 Temporal_at_value(PG_FUNCTION_ARGS)
@@ -2074,7 +2074,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_value);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a base value
- * @sqlfunc minusValue()
+ * @sqlfn minusValue()
  */
 Datum
 Temporal_minus_value(PG_FUNCTION_ARGS)
@@ -2111,7 +2111,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_values);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to an array of base values
- * @sqlfunc atValues()
+ * @sqlfn atValues()
  */
 Datum
 Temporal_at_values(PG_FUNCTION_ARGS)
@@ -2125,7 +2125,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_values);
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of an array of base
  * values
- * @sqlfunc minusValues()
+ * @sqlfn minusValues()
  */
 Datum
 Temporal_minus_values(PG_FUNCTION_ARGS)
@@ -2152,7 +2152,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_span);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a span of base values
- * @sqlfunc atSpan()
+ * @sqlfn atSpan()
  */
 Datum
 Tnumber_at_span(PG_FUNCTION_ARGS)
@@ -2165,7 +2165,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_span);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a span of base values
- * @sqlfunc minusSpan()
+ * @sqlfn minusSpan()
  */
 Datum
 Tnumber_minus_span(PG_FUNCTION_ARGS)
@@ -2197,7 +2197,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_spanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a span set of base values
- * @sqlfunc atSpanset()
+ * @sqlfn atSpanset()
  */
 Datum
 Tnumber_at_spanset(PG_FUNCTION_ARGS)
@@ -2211,7 +2211,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_spanset);
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a span set of base
  * values
- * @sqlfunc minusSpanset()
+ * @sqlfn minusSpanset()
  */
 Datum
 Tnumber_minus_spanset(PG_FUNCTION_ARGS)
@@ -2226,7 +2226,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_min);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to its minimum base value
- * @sqlfunc atMin()
+ * @sqlfn atMin()
  */
 Datum
 Temporal_at_min(PG_FUNCTION_ARGS)
@@ -2244,7 +2244,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_min);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of its minimum base value
- * @sqlfunc minusMin()
+ * @sqlfn minusMin()
  */
 Datum
 Temporal_minus_min(PG_FUNCTION_ARGS)
@@ -2262,7 +2262,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_max);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to its maximum base value
- * @sqlfunc atMax()
+ * @sqlfn atMax()
  */
 Datum
 Temporal_at_max(PG_FUNCTION_ARGS)
@@ -2279,7 +2279,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_max);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of its maximum base value
- * @sqlfunc minusMax()
+ * @sqlfn minusMax()
  */
 Datum
 Temporal_minus_max(PG_FUNCTION_ARGS)
@@ -2314,7 +2314,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_tbox);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a temporal box
- * @sqlfunc atTbox()
+ * @sqlfn atTbox()
  */
 Datum
 Tnumber_at_tbox(PG_FUNCTION_ARGS)
@@ -2327,7 +2327,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_tbox);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a temporal box
- * @sqlfunc minusTbox()
+ * @sqlfn minusTbox()
  */
 Datum
 Tnumber_minus_tbox(PG_FUNCTION_ARGS)
@@ -2357,7 +2357,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_timestamptz);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a timestamptz
- * @sqlfunc atTime()
+ * @sqlfn atTime()
  */
 Datum
 Temporal_at_timestamptz(PG_FUNCTION_ARGS)
@@ -2370,7 +2370,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_timestamptz);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamptz
- * @sqlfunc minusTime()
+ * @sqlfn minusTime()
  */
 Datum
 Temporal_minus_timestamptz(PG_FUNCTION_ARGS)
@@ -2385,7 +2385,7 @@ PG_FUNCTION_INFO_V1(Temporal_value_at_timestamptz);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base value of a temporal value at a timestamptz
- * @sqlfunc valueAtTimestamp()
+ * @sqlfn valueAtTimestamp()
  */
 Datum
 Temporal_value_at_timestamptz(PG_FUNCTION_ARGS)
@@ -2407,7 +2407,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_tstzset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a timestamptz set
- * @sqlfunc atTime()
+ * @sqlfn atTime()
  */
 Datum
 Temporal_at_tstzset(PG_FUNCTION_ARGS)
@@ -2427,7 +2427,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_tstzset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamptz set
- * @sqlfunc minusTime()
+ * @sqlfn minusTime()
  */
 Datum
 Temporal_minus_tstzset(PG_FUNCTION_ARGS)
@@ -2464,7 +2464,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a timestamptz span
- * @sqlfunc atTime()
+ * @sqlfn atTime()
  */
 Datum
 Temporal_at_tstzspan(PG_FUNCTION_ARGS)
@@ -2477,7 +2477,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamptz span
- * @sqlfunc minusTime()
+ * @sqlfn minusTime()
  */
 Datum
 Temporal_minus_tstzspan(PG_FUNCTION_ARGS)
@@ -2492,7 +2492,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a timestamptz span set
- * @sqlfunc atTime()
+ * @sqlfn atTime()
  */
 Datum
 Temporal_at_tstzspanset(PG_FUNCTION_ARGS)
@@ -2512,7 +2512,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a span set
- * @sqlfunc minusTime()
+ * @sqlfn minusTime()
  */
 Datum
 Temporal_minus_tstzspanset(PG_FUNCTION_ARGS)
@@ -2536,7 +2536,7 @@ PG_FUNCTION_INFO_V1(Temporal_insert);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Insert the second temporal value into the first one
- * @sqlfunc insert()
+ * @sqlfn insert()
  */
 Datum
 Temporal_insert(PG_FUNCTION_ARGS)
@@ -2555,7 +2555,7 @@ PG_FUNCTION_INFO_V1(Temporal_update);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Update the first temporal value with the second one
- * @sqlfunc update()
+ * @sqlfn update()
  */
 Datum
 Temporal_update(PG_FUNCTION_ARGS)
@@ -2574,7 +2574,7 @@ PG_FUNCTION_INFO_V1(Temporal_delete_timestamptz);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Delete a timestamptz from a temporal value
- * @sqlfunc deleteTime()
+ * @sqlfn deleteTime()
  */
 Datum
 Temporal_delete_timestamptz(PG_FUNCTION_ARGS)
@@ -2594,7 +2594,7 @@ PG_FUNCTION_INFO_V1(Temporal_delete_tstzset);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Delete a timestamptz set from a temporal value
- * @sqlfunc deleteTime()
+ * @sqlfn deleteTime()
  */
 Datum
 Temporal_delete_tstzset(PG_FUNCTION_ARGS)
@@ -2615,7 +2615,7 @@ PG_FUNCTION_INFO_V1(Temporal_delete_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Delete a timestamptz span from a temporal value
- * @sqlfunc deleteTime()
+ * @sqlfn deleteTime()
  */
 Datum
 Temporal_delete_tstzspan(PG_FUNCTION_ARGS)
@@ -2635,7 +2635,7 @@ PG_FUNCTION_INFO_V1(Temporal_delete_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Delete a timestamptz span set from a temporal value
- * @sqlfunc deleteTime()
+ * @sqlfn deleteTime()
  */
 Datum
 Temporal_delete_tstzspanset(PG_FUNCTION_ARGS)
@@ -2658,7 +2658,7 @@ PG_FUNCTION_INFO_V1(Temporal_stops);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return the constant segments of a temporal value
- * @sqlfunc stops()
+ * @sqlfn stops()
  */
 Datum
 Temporal_stops(PG_FUNCTION_ARGS)
@@ -2685,7 +2685,7 @@ PG_FUNCTION_INFO_V1(Tnumber_integral);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Return the integral (area under the curve) of a temporal number
- * @sqlfunc integral()
+ * @sqlfn integral()
  */
 Datum
 Tnumber_integral(PG_FUNCTION_ARGS)
@@ -2701,7 +2701,7 @@ PG_FUNCTION_INFO_V1(Tnumber_twavg);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Return the time-weighted average of a temporal number
- * @sqlfunc twAvg()
+ * @sqlfn twAvg()
  */
 Datum
 Tnumber_twavg(PG_FUNCTION_ARGS)
@@ -2721,7 +2721,7 @@ PG_FUNCTION_INFO_V1(Temporal_eq);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the temporal values are equal
- * @sqlfunc tint_eq(), tfloat_eq(), ...
+ * @sqlfn tint_eq(), tfloat_eq(), ...
  * @sqlop =
  */
 Datum
@@ -2740,7 +2740,7 @@ PG_FUNCTION_INFO_V1(Temporal_ne);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the temporal values are different
- * @sqlfunc tint_ne(), tfloat_ne(), ...
+ * @sqlfn tint_ne(), tfloat_ne(), ...
  * @sqlop <>
  */
 Datum
@@ -2762,7 +2762,7 @@ PG_FUNCTION_INFO_V1(Temporal_cmp);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal value
  * is less than, equal, or greater than the second temporal value
- * @sqlfunc tint_cmp(), tfloat_cmp(), ...
+ * @sqlfn tint_cmp(), tfloat_cmp(), ...
  */
 Datum
 Temporal_cmp(PG_FUNCTION_ARGS)
@@ -2780,7 +2780,7 @@ PG_FUNCTION_INFO_V1(Temporal_lt);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is less than the second one
- * @sqlfunc tint_lt(), tfloat_lt(), ...
+ * @sqlfn tint_lt(), tfloat_lt(), ...
  * @sqlop @p <
  */
 Datum
@@ -2800,7 +2800,7 @@ PG_FUNCTION_INFO_V1(Temporal_le);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
- * @sqlfunc tint_le(), tfloat_le(), ...
+ * @sqlfn tint_le(), tfloat_le(), ...
  * @sqlop @p <=
  */
 Datum
@@ -2820,7 +2820,7 @@ PG_FUNCTION_INFO_V1(Temporal_ge);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
- * @sqlfunc tint_ge(), tfloat_ge(), ...
+ * @sqlfn tint_ge(), tfloat_ge(), ...
  * @sqlop =@p >=
  */
 Datum
@@ -2839,7 +2839,7 @@ PG_FUNCTION_INFO_V1(Temporal_gt);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than the second one
- * @sqlfunc tint_gt(), tfloat_gt(), ...
+ * @sqlfn tint_gt(), tfloat_gt(), ...
  * @sqlop @p >
  */
 Datum
@@ -2862,7 +2862,7 @@ PG_FUNCTION_INFO_V1(Temporal_hash);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the hash value of a temporal value
- * @sqlfunc tint_hash(), tfloat_hash(), ...
+ * @sqlfn tint_hash(), tfloat_hash(), ...
  */
 Datum
 Temporal_hash(PG_FUNCTION_ARGS)

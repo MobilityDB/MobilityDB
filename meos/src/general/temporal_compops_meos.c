@@ -46,89 +46,8 @@
 
 /**
  * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of a boolean and a temporal boolean.
- * @sqlop @p #=
- */
-Temporal *
-teq_bool_tbool(bool b, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_BOOL))
-    return NULL;
-  return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_eq,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of an integer and a temporal integer.
- * @sqlop @p #=
- */
-Temporal *
-teq_int_tint(int i, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
-    return NULL;
-  return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_eq,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of a float and a temporal float.
- * @sqlop @p #=
- */
-Temporal *
-teq_float_tfloat(double d, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
-    return NULL;
-  return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_eq,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of a text and a temporal text.
- * @sqlop @p #=
- */
-Temporal *
-teq_text_ttext(const text *txt, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
-    return NULL;
-  return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_eq,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of a point and a temporal point.
- * @sqlop @p #=
- */
-Temporal *
-teq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return NULL;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), geotype, &datum2_eq,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal equality of a temporal boolean and a boolean.
- * @sqlop @p #=
+ * @sql-cfn #Teq_temporal_base()
  */
 Temporal *
 teq_tbool_bool(const Temporal *temp, bool b)
@@ -144,7 +63,7 @@ teq_tbool_bool(const Temporal *temp, bool b)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal equality of a temporal integer and an integer.
- * @sqlop @p #=
+ * @sql-cfn #Teq_temporal_base()
  */
 Temporal *
 teq_tint_int(const Temporal *temp, int i)
@@ -160,7 +79,7 @@ teq_tint_int(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal equality of a temporal float and a float.
- * @sqlop @p #=
+ * @sql-cfn #Teq_temporal_base()
  */
 Temporal *
 teq_tfloat_float(const Temporal *temp, double d)
@@ -176,7 +95,7 @@ teq_tfloat_float(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal equality of a temporal text and a text.
- * @sqlop @p #=
+ * @sql-cfn #Teq_temporal_base()
  */
 Temporal *
 teq_ttext_text(const Temporal *temp, const text *txt)
@@ -192,7 +111,7 @@ teq_ttext_text(const Temporal *temp, const text *txt)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal equality of a temporal point and a point.
- * @sqlop @p #=
+ * @sql-cfn #Teq_temporal_base()
  */
 Temporal *
 teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
@@ -209,7 +128,7 @@ teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal equality of the temporal values.
- * @sqlop @p #=
+ * @sql-cfn #Teq_temporal_temporal()
  */
 Temporal *
 teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -227,89 +146,8 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal inequality of a boolean and a temporal boolean.
- * @sqlop @p #<>
- */
-Temporal *
-tne_bool_tbool(bool b, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_BOOL))
-    return NULL;
-  return tcomp_temporal_base(temp, BoolGetDatum(b), T_BOOL, &datum2_ne,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal inequality of an integer and a temporal integer.
- * @sqlop @p #<>
- */
-Temporal *
-tne_int_tint(int i, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
-    return NULL;
-  return tcomp_temporal_base(temp, Int32GetDatum(i), T_INT4, &datum2_ne,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal inequality of a float and a temporal float.
- * @sqlop @p #<>
- */
-Temporal *
-tne_float_tfloat(double d, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
-    return NULL;
-  return tcomp_temporal_base(temp, Float8GetDatum(d), T_FLOAT8, &datum2_ne,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal inequality of a text and a temporal text.
- * @sqlop @p #<>
- */
-Temporal *
-tne_text_ttext(const text *txt, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
-    return NULL;
-  return tcomp_temporal_base(temp, PointerGetDatum(txt), T_TEXT, &datum2_ne,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal inequality of a point and a temporal point.
- * @sqlop @p #<>
- */
-Temporal *
-tne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return NULL;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), geotype, &datum2_ne,
-    INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal inequality of a temporal boolean and a boolean.
- * @sqlop @p #<>
+ * @sql-cfn #Tne_temporal_base()
  */
 Temporal *
 tne_tbool_bool(const Temporal *temp, bool b)
@@ -325,7 +163,7 @@ tne_tbool_bool(const Temporal *temp, bool b)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal inequality of a temporal integer and an integer.
- * @sqlop @p #<>
+ * @sql-cfn #Tne_temporal_base()
  */
 Temporal *
 tne_tint_int(const Temporal *temp, int i)
@@ -341,7 +179,7 @@ tne_tint_int(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal inequality of a temporal float and a float.
- * @sqlop @p #<>
+ * @sql-cfn #Tne_temporal_base()
  */
 Temporal *
 tne_tfloat_float(const Temporal *temp, double d)
@@ -357,7 +195,7 @@ tne_tfloat_float(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal inequality of a temporal text and a text.
- * @sqlop @p #<>
+ * @sql-cfn #Tne_temporal_base()
  */
 Temporal *
 tne_ttext_text(const Temporal *temp, const text *txt)
@@ -373,7 +211,7 @@ tne_ttext_text(const Temporal *temp, const text *txt)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal equality of a temporal point and a point.
- * @sqlop @p #<>
+ * @sql-cfn #Tne_temporal_base()
  */
 Temporal *
 tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
@@ -390,7 +228,7 @@ tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal inequality of the temporal values.
- * @sqlop @p #<>
+ * @sql-cfn #Tne_temporal_temporal()
  */
 Temporal *
 tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -409,7 +247,7 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than of an integer and a temporal integer.
- * @sqlop @p #<
+ * @sql-cfn #Tlt_base_temporal()
  */
 Temporal *
 tlt_int_tint(int i, const Temporal *temp)
@@ -425,7 +263,7 @@ tlt_int_tint(int i, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than of a float and a temporal float.
- * @sqlop @p #<
+ * @sql-cfn #Tlt_base_temporal()
  */
 Temporal *
 tlt_float_tfloat(double d, const Temporal *temp)
@@ -441,7 +279,7 @@ tlt_float_tfloat(double d, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than of a text and a temporal text.
- * @sqlop @p #<
+ * @sql-cfn #Tlt_base_temporal()
  */
 Temporal *
 tlt_text_ttext(const text *txt, const Temporal *temp)
@@ -457,7 +295,7 @@ tlt_text_ttext(const text *txt, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than of a temporal integer and an integer.
- * @sqlop @p #<
+ * @sql-cfn #Tlt_temporal_base()
  */
 Temporal *
 tlt_tint_int(const Temporal *temp, int i)
@@ -473,7 +311,7 @@ tlt_tint_int(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than of a temporal float and a float.
- * @sqlop @p #<
+ * @sql-cfn #Tlt_temporal_base()
  */
 Temporal *
 tlt_tfloat_float(const Temporal *temp, double d)
@@ -489,7 +327,7 @@ tlt_tfloat_float(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than of a temporal text and a text.
- * @sqlop @p #<
+ * @sql-cfn #Tlt_temporal_base()
  */
 Temporal *
 tlt_ttext_text(const Temporal *temp, const text *txt)
@@ -505,7 +343,7 @@ tlt_ttext_text(const Temporal *temp, const text *txt)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than of the temporal values.
- * @sqlop @p #<
+ * @sql-cfn #Tlt_temporal_temporal()
  */
 Temporal *
 tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -525,7 +363,7 @@ tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of an integer and a
  * temporal integer.
- * @sqlop @p #<=
+ * @sql-cfn #Tle_base_temporal()
  */
 Temporal *
 tle_int_tint(int i, const Temporal *temp)
@@ -542,7 +380,7 @@ tle_int_tint(int i, const Temporal *temp)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of a float and a temporal
  * float.
- * @sqlop @p #<=
+ * @sql-cfn #Tle_base_temporal()
  */
 Temporal *
 tle_float_tfloat(double d, const Temporal *temp)
@@ -559,7 +397,7 @@ tle_float_tfloat(double d, const Temporal *temp)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less or equal to than of a text and a temporal
  * text.
- * @sqlop @p #<=
+ * @sql-cfn #Tle_base_temporal()
  */
 Temporal *
 tle_text_ttext(const text *txt, const Temporal *temp)
@@ -576,7 +414,7 @@ tle_text_ttext(const text *txt, const Temporal *temp)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of a temporal integer and
  * an integer.
- * @sqlop @p #<=
+ * @sql-cfn #Tle_temporal_base()
  */
 Temporal *
 tle_tint_int(const Temporal *temp, int i)
@@ -593,7 +431,7 @@ tle_tint_int(const Temporal *temp, int i)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of a temporal float and a
  * float.
- * @sqlop @p #<=
+ * @sql-cfn #Tle_temporal_base()
  */
 Temporal *
 tle_tfloat_float(const Temporal *temp, double d)
@@ -610,7 +448,7 @@ tle_tfloat_float(const Temporal *temp, double d)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of a temporal text and a
  * text.
- * @sqlop @p #<=
+ * @sql-cfn #Tle_temporal_base()
  */
 Temporal *
 tle_ttext_text(const Temporal *temp, const text *txt)
@@ -626,7 +464,7 @@ tle_ttext_text(const Temporal *temp, const text *txt)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of the temporal values.
- * @sqlop @p #<=
+ * @sql-cfn #Tle_temporal_temporal()
  */
 Temporal *
 tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -645,7 +483,7 @@ tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than of an integer and a temporal integer.
- * @sqlop @p #>
+ * @sql-cfn #Tgt_base_temporal()
  */
 Temporal *
 tgt_int_tint(int i, const Temporal *temp)
@@ -661,7 +499,7 @@ tgt_int_tint(int i, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than of a float and a temporal float.
- * @sqlop @p #>
+ * @sql-cfn #Tgt_base_temporal()
  */
 Temporal *
 tgt_float_tfloat(double d, const Temporal *temp)
@@ -677,7 +515,7 @@ tgt_float_tfloat(double d, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than of a text and a temporal text.
- * @sqlop @p #>
+ * @sql-cfn #Tgt_base_temporal()
  */
 Temporal *
 tgt_text_ttext(const text *txt, const Temporal *temp)
@@ -693,7 +531,7 @@ tgt_text_ttext(const text *txt, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than of a temporal integer and an integer.
- * @sqlop @p #>
+ * @sql-cfn #Tgt_temporal_base()
  */
 Temporal *
 tgt_tint_int(const Temporal *temp, int i)
@@ -709,7 +547,7 @@ tgt_tint_int(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than of a temporal float and a float.
- * @sqlop @p #>
+ * @sql-cfn #Tgt_temporal_base()
  */
 Temporal *
 tgt_tfloat_float(const Temporal *temp, double d)
@@ -725,7 +563,7 @@ tgt_tfloat_float(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than of a temporal text and a text.
- * @sqlop @p #>
+ * @sql-cfn #Tgt_temporal_base()
  */
 Temporal *
 tgt_ttext_text(const Temporal *temp, const text *txt)
@@ -741,7 +579,7 @@ tgt_ttext_text(const Temporal *temp, const text *txt)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than of the temporal values.
- * @sqlop @p #>
+ * @sql-cfn #Tgt_temporal_temporal()
  */
 Temporal *
 tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -761,7 +599,7 @@ tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of an integer and a
  * temporal integer.
- * @sqlop @p #>=
+ * @sql-cfn #Tge_base_temporal()
  */
 Temporal *
 tge_int_tint(int i, const Temporal *temp)
@@ -778,7 +616,7 @@ tge_int_tint(int i, const Temporal *temp)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a float and a
  * temporal float.
- * @sqlop @p #>=
+ * @sql-cfn #Tge_base_temporal()
  */
 Temporal *
 tge_float_tfloat(double d, const Temporal *temp)
@@ -795,7 +633,7 @@ tge_float_tfloat(double d, const Temporal *temp)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a text and a temporal
  * text.
- * @sqlop @p #>=
+ * @sql-cfn #Tge_base_temporal()
  */
 Temporal *
 tge_text_ttext(const text *txt, const Temporal *temp)
@@ -812,7 +650,7 @@ tge_text_ttext(const text *txt, const Temporal *temp)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a temporal integer
  * and an integer.
- * @sqlop @p #>=
+ * @sql-cfn #Tge_temporal_base()
  */
 Temporal *
 tge_tint_int(const Temporal *temp, int i)
@@ -829,7 +667,7 @@ tge_tint_int(const Temporal *temp, int i)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a temporal float and
  * a float.
- * @sqlop @p #>=
+ * @sql-cfn #Tge_temporal_base()
  */
 Temporal *
 tge_tfloat_float(const Temporal *temp, double d)
@@ -846,7 +684,7 @@ tge_tfloat_float(const Temporal *temp, double d)
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a temporal text and a
  * text.
- * @sqlop @p #>=
+ * @sql-cfn #Tge_temporal_base()
  */
 Temporal *
 tge_ttext_text(const Temporal *temp, const text *txt)
@@ -862,7 +700,7 @@ tge_ttext_text(const Temporal *temp, const text *txt)
 /**
  * @ingroup libmeos_temporal_comp_temp
  * @brief Return the temporal greater than or equal of the temporal values.
- * @sqlop @p #>=
+ * @sql-cfn #Tge_temporal_temporal()
  */
 Temporal *
 tge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)

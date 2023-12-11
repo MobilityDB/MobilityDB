@@ -174,7 +174,7 @@ CREATE FUNCTION set(geography[])
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Casting
+ * Conversion functions
  ******************************************************************************/
 
 CREATE FUNCTION set(geometry)
@@ -188,19 +188,6 @@ CREATE FUNCTION set(geography)
 
 CREATE CAST (geometry AS geomset) WITH FUNCTION set(geometry);
 CREATE CAST (geography AS geogset) WITH FUNCTION set(geography);
-
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-CREATE FUNCTION round(geomset, integer DEFAULT 0)
-  RETURNS geomset
-  AS 'MODULE_PATHNAME', 'Geoset_round'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION round(geogset, integer DEFAULT 0)
-  RETURNS geogset
-  AS 'MODULE_PATHNAME', 'Geoset_round'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Accessor functions
@@ -258,6 +245,40 @@ CREATE FUNCTION getValues(geomset)
 CREATE FUNCTION getValues(geogset)
   RETURNS geography[]
   AS 'MODULE_PATHNAME', 'Set_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * SRID functions
+ *****************************************************************************/
+
+CREATE FUNCTION SRID(geomset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Geoset_get_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION SRID(geogset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Geoset_get_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setSRID(geomset, integer)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Geoset_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setSRID(geogset, integer)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Geoset_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+CREATE FUNCTION round(geomset, integer DEFAULT 0)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Geoset_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION round(geogset, integer DEFAULT 0)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Geoset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

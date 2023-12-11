@@ -111,7 +111,7 @@ PG_FUNCTION_INFO_V1(Temporal_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Set the precision of a temporal value according to period buckets
- * @sqlfunc tprecision()
+ * @sqlfn tprecision()
  */
 Datum
 Temporal_tprecision(PG_FUNCTION_ARGS)
@@ -129,7 +129,7 @@ PG_FUNCTION_INFO_V1(Temporal_tsample);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Sample a temporal value according to period buckets
- * @sqlfunc tsample()
+ * @sqlfn tsample()
  */
 Datum
 Temporal_tsample(PG_FUNCTION_ARGS)
@@ -169,7 +169,7 @@ PG_FUNCTION_INFO_V1(Temporal_frechet_distance);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Return the discrete Frechet distance between two temporal values
- * @sqlfunc frechetDistance()
+ * @sqlfn frechetDistance()
  */
 Datum
 Temporal_frechet_distance(PG_FUNCTION_ARGS)
@@ -183,7 +183,7 @@ PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp);
  * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Return the Dynamic Time Warp (DTW) distance between two temporal
  * values
- * @sqlfunc dynamicTimeWarp()
+ * @sqlfn dynamicTimeWarp()
  */
 Datum
 Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
@@ -196,7 +196,7 @@ PG_FUNCTION_INFO_V1(Temporal_hausdorff_distance);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Return the Hausdorff distance between two temporal values
- * @sqlfunc hausdorffDistance()
+ * @sqlfn hausdorffDistance()
  */
 Datum
 Temporal_hausdorff_distance(PG_FUNCTION_ARGS)
@@ -322,7 +322,7 @@ PG_FUNCTION_INFO_V1(Temporal_frechet_path);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Return the Frechet path between two temporal values
- * @sqlfunc frechetDistancePath()
+ * @sqlfn frechetDistancePath()
  */
 Datum
 Temporal_frechet_path(PG_FUNCTION_ARGS)
@@ -335,7 +335,7 @@ PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp_path);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Return the Dynamic Time Warp (DTW) path between two temporal values
- * @sqlfunc dynamicTimeWarpPath()
+ * @sqlfn dynamicTimeWarpPath()
  */
 Datum
 Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)

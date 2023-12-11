@@ -68,7 +68,7 @@ PG_FUNCTION_INFO_V1(Tbox_in);
  * TBOX((, 2.0), (, 2.0))      -- Only T dimension
  * @endcode
  * where the commas are optional
- * @sqlfunc tbox_in()
+ * @sqlfn tbox_in()
  */
 Datum
 Tbox_in(PG_FUNCTION_ARGS)
@@ -82,7 +82,7 @@ PG_FUNCTION_INFO_V1(Tbox_out);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Output function for temporal boxes
- * @sqlfunc tbox_out()
+ * @sqlfn tbox_out()
  */
 Datum
 Tbox_out(PG_FUNCTION_ARGS)
@@ -96,7 +96,7 @@ PG_FUNCTION_INFO_V1(Tbox_recv);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Receive function for temporal boxes
- * @sqlfunc tbox_recv()
+ * @sqlfn tbox_recv()
  */
 Datum
 Tbox_recv(PG_FUNCTION_ARGS)
@@ -113,7 +113,7 @@ PG_FUNCTION_INFO_V1(Tbox_send);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Send function for temporal boxes
- * @sqlfunc tbox_send()
+ * @sqlfn tbox_send()
  */
 Datum
 Tbox_send(PG_FUNCTION_ARGS)
@@ -136,7 +136,7 @@ PG_FUNCTION_INFO_V1(Tbox_as_text);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Output function for temporal boxes
- * @sqlfunc asText()
+ * @sqlfn asText()
  */
 Datum
 Tbox_as_text(PG_FUNCTION_ARGS)
@@ -160,7 +160,7 @@ PG_FUNCTION_INFO_V1(Number_timestamptz_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a temporal box from a number and a timestamptz
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  */
 Datum
 Number_timestamptz_to_tbox(PG_FUNCTION_ARGS)
@@ -177,7 +177,7 @@ PG_FUNCTION_INFO_V1(Number_tstzspan_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a temporal box from a number and a timestamptz span
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  */
 Datum
 Number_tstzspan_to_tbox(PG_FUNCTION_ARGS)
@@ -189,15 +189,15 @@ Number_tstzspan_to_tbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Numnumspan_timestamptz_to_tbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Numnumspan_timestamptz_to_tbox);
+PGDLLEXPORT Datum Numspan_timestamptz_to_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_timestamptz_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a temporal box from a number span and a timestamptz
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  */
 Datum
-Numnumspan_timestamptz_to_tbox(PG_FUNCTION_ARGS)
+Numspan_timestamptz_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
@@ -210,7 +210,7 @@ PG_FUNCTION_INFO_V1(Numspan_tstzspan_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a temporal box from a number span and a timestamptz span
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  */
 Datum
 Numspan_tstzspan_to_tbox(PG_FUNCTION_ARGS)
@@ -230,7 +230,7 @@ PG_FUNCTION_INFO_V1(Number_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a number to a temporal box
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  */
 Datum
 Number_to_tbox(PG_FUNCTION_ARGS)
@@ -246,7 +246,7 @@ PG_FUNCTION_INFO_V1(Numeric_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a numeric to a temporal box
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  */
 Datum
 Numeric_to_tbox(PG_FUNCTION_ARGS)
@@ -262,7 +262,7 @@ PG_FUNCTION_INFO_V1(Timestamptz_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Conver a timestamp to a temporal box
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  */
 Datum
 Timestamptz_to_tbox(PG_FUNCTION_ARGS)
@@ -277,7 +277,7 @@ PG_FUNCTION_INFO_V1(Set_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a set to a temporal box
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  */
 Datum
 Set_to_tbox(PG_FUNCTION_ARGS)
@@ -297,7 +297,7 @@ PG_FUNCTION_INFO_V1(Span_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a span to a temporal box
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  */
 Datum
 Span_to_tbox(PG_FUNCTION_ARGS)
@@ -338,7 +338,7 @@ PG_FUNCTION_INFO_V1(Spanset_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a span set to a temporal box
- * @sqlfunc tbox()
+ * @sqlfn tbox()
  */
 Datum
 Spanset_to_tbox(PG_FUNCTION_ARGS)
@@ -356,7 +356,7 @@ PG_FUNCTION_INFO_V1(Tbox_to_intspan);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a temporal box as a float span
- * @sqlfunc floatspan()
+ * @sqlfn floatspan()
  */
 Datum
 Tbox_to_intspan(PG_FUNCTION_ARGS)
@@ -371,7 +371,7 @@ PG_FUNCTION_INFO_V1(Tbox_to_floatspan);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a temporal box as a float span
- * @sqlfunc floatspan()
+ * @sqlfn floatspan()
  */
 Datum
 Tbox_to_floatspan(PG_FUNCTION_ARGS)
@@ -386,7 +386,7 @@ PG_FUNCTION_INFO_V1(Tbox_to_tstzspan);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Convert a temporal box as a timestamptz span
- * @sqlfunc period()
+ * @sqlfn period()
  */
 Datum
 Tbox_to_tstzspan(PG_FUNCTION_ARGS)
@@ -407,7 +407,7 @@ PG_FUNCTION_INFO_V1(Tbox_hasx);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if a temporal box has value dimension
- * @sqlfunc hasX()
+ * @sqlfn hasX()
  */
 Datum
 Tbox_hasx(PG_FUNCTION_ARGS)
@@ -421,7 +421,7 @@ PG_FUNCTION_INFO_V1(Tbox_hast);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if a temporal box has time dimension
- * @sqlfunc hasT()
+ * @sqlfn hasT()
  */
 Datum
 Tbox_hast(PG_FUNCTION_ARGS)
@@ -435,7 +435,7 @@ PG_FUNCTION_INFO_V1(Tbox_xmin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum X value of a temporal box
- * @sqlfunc Xmin()
+ * @sqlfn Xmin()
  */
 Datum
 Tbox_xmin(PG_FUNCTION_ARGS)
@@ -452,7 +452,7 @@ PG_FUNCTION_INFO_V1(Tbox_xmin_inc);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the minimum X value of a temporal box is inclusive
- * @sqlfunc Xmin_inc()
+ * @sqlfn Xmin_inc()
  */
 Datum
 Tbox_xmin_inc(PG_FUNCTION_ARGS)
@@ -469,7 +469,7 @@ PG_FUNCTION_INFO_V1(Tbox_xmax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum X value of a temporal box
- * @sqlfunc Xmax()
+ * @sqlfn Xmax()
  */
 Datum
 Tbox_xmax(PG_FUNCTION_ARGS)
@@ -486,7 +486,7 @@ PG_FUNCTION_INFO_V1(Tbox_xmax_inc);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the maximum X value of a temporal box is inclusive
- * @sqlfunc Xmin_inc()
+ * @sqlfn Xmin_inc()
  */
 Datum
 Tbox_xmax_inc(PG_FUNCTION_ARGS)
@@ -503,7 +503,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum timestamp of a temporal box
- * @sqlfunc Tmin()
+ * @sqlfn Tmin()
  */
 Datum
 Tbox_tmin(PG_FUNCTION_ARGS)
@@ -521,7 +521,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmin_inc);
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the minimum timestamp value of a temporal box is
  * inclusive
- * @sqlfunc Tmin_inc()
+ * @sqlfn Tmin_inc()
  */
 Datum
 Tbox_tmin_inc(PG_FUNCTION_ARGS)
@@ -538,7 +538,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum timestamp of a temporal box
- * @sqlfunc Tmax()
+ * @sqlfn Tmax()
  */
 Datum
 Tbox_tmax(PG_FUNCTION_ARGS)
@@ -556,7 +556,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmax_inc);
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the maximum timestamp value of a temporal box is
  * inclusive
- * @sqlfunc Tmin_inc()
+ * @sqlfn Tmin_inc()
  */
 Datum
 Tbox_tmax_inc(PG_FUNCTION_ARGS)
@@ -577,7 +577,7 @@ PG_FUNCTION_INFO_V1(Tbox_shift_value);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box with the value span shifted by a value
- * @sqlfunc shiftValue()
+ * @sqlfn shiftValue()
  */
 Datum
 Tbox_shift_value(PG_FUNCTION_ARGS)
@@ -595,7 +595,7 @@ PG_FUNCTION_INFO_V1(Tbox_shift_time);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box with the time span shifted by a value
- * @sqlfunc shiftTime()
+ * @sqlfn shiftTime()
  */
 Datum
 Tbox_shift_time(PG_FUNCTION_ARGS)
@@ -611,7 +611,7 @@ PG_FUNCTION_INFO_V1(Tbox_scale_value);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box with the value span scaled by a value
- * @sqlfunc scaleValue()
+ * @sqlfn scaleValue()
  */
 Datum
 Tbox_scale_value(PG_FUNCTION_ARGS)
@@ -629,7 +629,7 @@ PG_FUNCTION_INFO_V1(Tbox_scale_time);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box with the time span scaled by an interval
- * @sqlfunc scaleTime()
+ * @sqlfn scaleTime()
  */
 Datum
 Tbox_scale_time(PG_FUNCTION_ARGS)
@@ -646,7 +646,7 @@ PG_FUNCTION_INFO_V1(Tbox_shift_scale_value);
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box with the value span shifted and scalee by the
  * values
- * @sqlfunc scaleValue()
+ * @sqlfn scaleValue()
  */
 Datum
 Tbox_shift_scale_value(PG_FUNCTION_ARGS)
@@ -668,7 +668,7 @@ PG_FUNCTION_INFO_V1(Tbox_shift_scale_time);
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box with the time span shifted and scaled by the
  * intervals
- * @sqlfunc shiftScaleTime()
+ * @sqlfn shiftScaleTime()
  */
 Datum
 Tbox_shift_scale_time(PG_FUNCTION_ARGS)
@@ -685,7 +685,7 @@ PG_FUNCTION_INFO_V1(Tbox_expand_int);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box with the value span expanded by an integer
- * @sqlfunc expandValue()
+ * @sqlfn expandValue()
  */
 Datum
 Tbox_expand_int(PG_FUNCTION_ARGS)
@@ -700,7 +700,7 @@ PG_FUNCTION_INFO_V1(Tbox_expand_float);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box with the value span expanded by a double
- * @sqlfunc expandValue()
+ * @sqlfn expandValue()
  */
 Datum
 Tbox_expand_float(PG_FUNCTION_ARGS)
@@ -715,7 +715,7 @@ PG_FUNCTION_INFO_V1(Tbox_expand_time);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a temporal box expanded in the time dimension by an interval
- * @sqlfunc expandTime()
+ * @sqlfn expandTime()
  */
 Datum
 Tbox_expand_time(PG_FUNCTION_ARGS)
@@ -731,7 +731,7 @@ PG_FUNCTION_INFO_V1(Tbox_round);
  * @ingroup mobilitydb_box_transf
  * @brief Set the precision of the value dimension of the temporal box to the
  * number of decimal places
- * @sqlfunc round()
+ * @sqlfn round()
  */
 Datum
 Tbox_round(PG_FUNCTION_ARGS)
@@ -750,7 +750,7 @@ PG_FUNCTION_INFO_V1(Contains_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_topo
  * @brief Return true if the first temporal box contains the second one
- * @sqlfunc tbox_contains()
+ * @sqlfn tbox_contains()
  */
 Datum
 Contains_tbox_tbox(PG_FUNCTION_ARGS)
@@ -765,7 +765,7 @@ PG_FUNCTION_INFO_V1(Contained_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_topo
  * @brief Return true if the first temporal box is contained in the second one
- * @sqlfunc tbox_contained()
+ * @sqlfn tbox_contained()
  */
 Datum
 Contained_tbox_tbox(PG_FUNCTION_ARGS)
@@ -780,7 +780,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_topo
  * @brief Return true if two temporal boxes overlap
- * @sqlfunc tbox_overlaps()
+ * @sqlfn tbox_overlaps()
  */
 Datum
 Overlaps_tbox_tbox(PG_FUNCTION_ARGS)
@@ -795,7 +795,7 @@ PG_FUNCTION_INFO_V1(Same_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_topo
  * @brief Return true if two temporal boxes are equal on the common dimensions
- * @sqlfunc tbox_same()
+ * @sqlfn tbox_same()
  */
 Datum
 Same_tbox_tbox(PG_FUNCTION_ARGS)
@@ -810,7 +810,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_topo
  * @brief Return true if two temporal boxes are adjacent
- * @sqlfunc tbox_adjacent()
+ * @sqlfn tbox_adjacent()
  */
 Datum
 Adjacent_tbox_tbox(PG_FUNCTION_ARGS)
@@ -830,7 +830,7 @@ PG_FUNCTION_INFO_V1(Left_tbox_tbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is to the left of the second
  * one
- * @sqlfunc tbox_left()
+ * @sqlfn tbox_left()
  */
 Datum
 Left_tbox_tbox(PG_FUNCTION_ARGS)
@@ -846,7 +846,7 @@ PG_FUNCTION_INFO_V1(Overleft_tbox_tbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box does not extend to the right of
  * the second one
- * @sqlfunc tbox_overleft()
+ * @sqlfn tbox_overleft()
  */
 Datum
 Overleft_tbox_tbox(PG_FUNCTION_ARGS)
@@ -862,7 +862,7 @@ PG_FUNCTION_INFO_V1(Right_tbox_tbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is to the right of the second
  * one
- * @sqlfunc tbox_right()
+ * @sqlfn tbox_right()
  */
 Datum
 Right_tbox_tbox(PG_FUNCTION_ARGS)
@@ -878,7 +878,7 @@ PG_FUNCTION_INFO_V1(Overright_tbox_tbox);
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box does not extend to the left of
  * the second one
- * @sqlfunc tbox_overright()
+ * @sqlfn tbox_overright()
  */
 Datum
 Overright_tbox_tbox(PG_FUNCTION_ARGS)
@@ -893,7 +893,7 @@ PG_FUNCTION_INFO_V1(Before_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is before the second one
- * @sqlfunc tbox_before()
+ * @sqlfn tbox_before()
  */
 Datum
 Before_tbox_tbox(PG_FUNCTION_ARGS)
@@ -908,7 +908,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is not after the second one
- * @sqlfunc tbox_overbefore()
+ * @sqlfn tbox_overbefore()
  */
 Datum
 Overbefore_tbox_tbox(PG_FUNCTION_ARGS)
@@ -923,7 +923,7 @@ PG_FUNCTION_INFO_V1(After_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is after the second one
- * @sqlfunc tbox_after()
+ * @sqlfn tbox_after()
  */
 Datum
 After_tbox_tbox(PG_FUNCTION_ARGS)
@@ -938,7 +938,7 @@ PG_FUNCTION_INFO_V1(Overafter_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_pos
  * @brief Return true if the first temporal box is not before the second one
- * @sqlfunc tbox_overafter()
+ * @sqlfn tbox_overafter()
  */
 Datum
 Overafter_tbox_tbox(PG_FUNCTION_ARGS)
@@ -957,7 +957,7 @@ PG_FUNCTION_INFO_V1(Union_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_set
  * @brief Return the union of two temporal boxes
- * @sqlfunc union()
+ * @sqlfn union()
  * @sqlop @p +
  */
 Datum
@@ -974,7 +974,7 @@ PG_FUNCTION_INFO_V1(Intersection_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_set
  * @brief Return the intersection of two temporal boxes
- * @sqlfunc intersection()
+ * @sqlfn intersection()
  * @sqlop @p *
  */
 Datum
@@ -1058,7 +1058,7 @@ PG_FUNCTION_INFO_V1(Tbox_cmp);
  * @ingroup mobilitydb_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal box
  * is less than, equal, or greater than the second one
- * @sqlfunc tbox_cmp()
+ * @sqlfn tbox_cmp()
  */
 Datum
 Tbox_cmp(PG_FUNCTION_ARGS)
@@ -1073,7 +1073,7 @@ PG_FUNCTION_INFO_V1(Tbox_lt);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first temporal box is less than the second one
- * @sqlfunc tbox_lt()
+ * @sqlfn tbox_lt()
  * @sqlop @p <
  */
 Datum
@@ -1090,7 +1090,7 @@ PG_FUNCTION_INFO_V1(Tbox_le);
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first temporal box is less than or equal to
  * the second one
- * @sqlfunc tbox_le()
+ * @sqlfn tbox_le()
  * @sqlop @p <=
  */
 Datum
@@ -1107,7 +1107,7 @@ PG_FUNCTION_INFO_V1(Tbox_ge);
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first temporal box is greater than or equal to
  * the second one
- * @sqlfunc tbox_ge()
+ * @sqlfn tbox_ge()
  * @sqlop @p >=
  */
 Datum
@@ -1123,7 +1123,7 @@ PG_FUNCTION_INFO_V1(Tbox_gt);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first temporal box is greater than the second one
- * @sqlfunc tbox_gt()
+ * @sqlfn tbox_gt()
  * @sqlop @p >
  */
 Datum
@@ -1139,7 +1139,7 @@ PG_FUNCTION_INFO_V1(Tbox_eq);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return true if two temporal boxes are equal
- * @sqlfunc tbox_eq()
+ * @sqlfn tbox_eq()
  * @sqlop @p =
  */
 Datum
@@ -1155,7 +1155,7 @@ PG_FUNCTION_INFO_V1(Tbox_ne);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return true if two temporal boxes are different
- * @sqlfunc tbox_ne()
+ * @sqlfn tbox_ne()
  * @sqlop @p <>
  */
 Datum

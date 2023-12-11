@@ -714,7 +714,7 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach instant between a temporal point and
  * a geometry.
- * @sqlfunc nearestApproachInstant()
+ * @sql-cfn #NAI_tpoint_geo()
  */
 TInstant *
 nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -744,7 +744,7 @@ nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach instant between the temporal points.
- * @sqlfunc nearestApproachInstant()
+ * @sql-cfn #NAI_tpoint_tpoint()
  */
 TInstant *
 nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -922,7 +922,7 @@ nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_dist
  * @brief Return the line connecting the nearest approach point between a
  * temporal point and a geometry.
- * @sqlfunc shortestLine()
+ * @sql-cfn #Shortestline_tpoint_geo()
  */
 bool
 shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
@@ -956,7 +956,7 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @ingroup libmeos_temporal_dist
  * @brief Return the line connecting the nearest approach point between the
  * temporal points
- * @sqlfunc shortestLine()
+ * @sql-cfn #Shortestline_tpoint_tpoint()
  */
 bool
 shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,

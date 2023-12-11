@@ -54,7 +54,7 @@ PG_FUNCTION_INFO_V1(Tpoint_from_ewkt);
  * representation
  * @note This just does the same thing as the _in function, except it has to handle
  * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
- * @sqlfunc tgeompointFromText(), tgeogpointFromText(), tgeompointFromEWKT(),
+ * @sqlfn tgeompointFromText(), tgeogpointFromText(), tgeompointFromEWKT(),
  * tgeogpointFromEWKT()
  */
 Datum

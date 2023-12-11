@@ -55,7 +55,7 @@ PG_FUNCTION_INFO_V1(Contains_span_value);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span contains a value
- * @sqlfunc span_contains()
+ * @sqlfn span_contains()
  * @sqlop @p \@>
  */
 Datum
@@ -72,7 +72,7 @@ PG_FUNCTION_INFO_V1(Contains_span_span);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first span contains the second one
- * @sqlfunc span_contains()
+ * @sqlfn span_contains()
  * @sqlop @p \@>
  */
 Datum
@@ -92,7 +92,7 @@ PG_FUNCTION_INFO_V1(Contained_value_span);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a value is contained in a span
- * @sqlfunc span_contained()
+ * @sqlfn span_contained()
  * @sqlop @p <@
  */
 Datum
@@ -109,7 +109,7 @@ PG_FUNCTION_INFO_V1(Contained_span_span);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first span is contained in the second one
- * @sqlfunc span_contained()
+ * @sqlfn span_contained()
  * @sqlop @p <@
  */
 Datum
@@ -129,7 +129,7 @@ PG_FUNCTION_INFO_V1(Overlaps_span_span);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if two spans overlap
- * @sqlfunc span_overlaps()
+ * @sqlfn span_overlaps()
  * @sqlop @p &&
  */
 Datum
@@ -149,7 +149,7 @@ PG_FUNCTION_INFO_V1(Adjacent_value_span);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a value and a span are adjacent
- * @sqlfunc span_adjacent()
+ * @sqlfn span_adjacent()
  * @sqlop @p -|-
  */
 Datum
@@ -166,7 +166,7 @@ PG_FUNCTION_INFO_V1(Adjacent_span_value);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span and a value are adjacent
- * @sqlfunc span_adjacent()
+ * @sqlfn span_adjacent()
  * @sqlop @p -|-
  */
 Datum
@@ -183,7 +183,7 @@ PG_FUNCTION_INFO_V1(Adjacent_span_span);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if two spans are adjacent
- * @sqlfunc span_adjacent()
+ * @sqlfn span_adjacent()
  * @sqlop @p -|-
  */
 Datum
@@ -203,7 +203,7 @@ PG_FUNCTION_INFO_V1(Left_value_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the left of a span
- * @sqlfunc span_left()
+ * @sqlfn span_left()
  * @sqlop @p <<
  */
 Datum
@@ -220,7 +220,7 @@ PG_FUNCTION_INFO_V1(Left_span_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span is to the left of a value
- * @sqlfunc span_left()
+ * @sqlfn span_left()
  * @sqlop @p <<
  */
 Datum
@@ -237,7 +237,7 @@ PG_FUNCTION_INFO_V1(Left_span_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span is to the left of the second one
- * @sqlfunc span_left()
+ * @sqlfn span_left()
  * @sqlop @p <<
  */
 Datum
@@ -257,7 +257,7 @@ PG_FUNCTION_INFO_V1(Right_value_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the right of a span
- * @sqlfunc span_right()
+ * @sqlfn span_right()
  * @sqlop @p >>
  */
 Datum
@@ -274,7 +274,7 @@ PG_FUNCTION_INFO_V1(Right_span_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span is to the right of a value
- * @sqlfunc span_right()
+ * @sqlfn span_right()
  * @sqlop @p >>
  */
 Datum
@@ -291,7 +291,7 @@ PG_FUNCTION_INFO_V1(Right_span_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span is to the right of the second one
- * @sqlfunc span_right()
+ * @sqlfn span_right()
  * @sqlop @p >>
  */
 Datum
@@ -311,7 +311,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the right of a span
- * @sqlfunc span_overleft()
+ * @sqlfn span_overleft()
  * @sqlop @p &<
  */
 Datum
@@ -328,7 +328,7 @@ PG_FUNCTION_INFO_V1(Overleft_span_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span does not extend to the right of a value
- * @sqlfunc span_overleft()
+ * @sqlfn span_overleft()
  * @sqlop @p &<
  */
 Datum
@@ -346,7 +346,7 @@ PG_FUNCTION_INFO_V1(Overleft_span_span);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span does not extend to the right of the
  * second one
- * @sqlfunc span_overleft()
+ * @sqlfn span_overleft()
  * @sqlop @p &<
  */
 Datum
@@ -366,7 +366,7 @@ PG_FUNCTION_INFO_V1(Overright_value_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the left of a span
- * @sqlfunc span_overright()
+ * @sqlfn span_overright()
  * @sqlop @p &>
  */
 Datum
@@ -383,7 +383,7 @@ PG_FUNCTION_INFO_V1(Overright_span_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span does not extend to the left of a value
- * @sqlfunc span_overright()
+ * @sqlfn span_overright()
  * @sqlop @p &>
  */
 Datum
@@ -401,7 +401,7 @@ PG_FUNCTION_INFO_V1(Overright_span_span);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span does not extend to the left of the
  * second one
- * @sqlfunc span_overright()
+ * @sqlfn span_overright()
  * @sqlop @p &>
  */
 Datum
@@ -421,7 +421,7 @@ PG_FUNCTION_INFO_V1(Union_value_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a value and a span
- * @sqlfunc time_union()
+ * @sqlfn time_union()
  * @sqlop @p +
  */
 Datum
@@ -439,7 +439,7 @@ PG_FUNCTION_INFO_V1(Union_span_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a value and a span
- * @sqlfunc time_union()
+ * @sqlfn time_union()
  * @sqlop @p +
  */
 Datum
@@ -457,7 +457,7 @@ PG_FUNCTION_INFO_V1(Union_span_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of two spans
- * @sqlfunc time_union()
+ * @sqlfn time_union()
  * @sqlop @p +
  */
 Datum
@@ -477,7 +477,7 @@ PG_FUNCTION_INFO_V1(Intersection_value_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a value and a span
- * @sqlfunc span_intersection()
+ * @sqlfn span_intersection()
  * @sqlop @p *
  */
 Datum
@@ -486,11 +486,10 @@ Intersection_value_span(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Datum result;
-  bool found = intersection_span_value(s, d, basetype, &result);
-  if (! found)
+  Span *result = intersection_span_value(s, d, basetype);
+  if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Intersection_span_value(PG_FUNCTION_ARGS);
@@ -498,7 +497,7 @@ PG_FUNCTION_INFO_V1(Intersection_span_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a value and a span
- * @sqlfunc span_intersection()
+ * @sqlfn span_intersection()
  * @sqlop @p *
  */
 Datum
@@ -507,11 +506,10 @@ Intersection_span_value(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Datum result;
-  bool found = intersection_span_value(s, d, basetype, &result);
-  if (! found)
+  Span *result = intersection_span_value(s, d, basetype);
+  if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Intersection_span_span(PG_FUNCTION_ARGS);
@@ -519,7 +517,7 @@ PG_FUNCTION_INFO_V1(Intersection_span_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of two spans
- * @sqlfunc span_intersection()
+ * @sqlfn span_intersection()
  * @sqlop @p *
  */
 Datum
@@ -542,7 +540,7 @@ PG_FUNCTION_INFO_V1(Minus_value_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a value and a span
- * @sqlfunc span_intersection()
+ * @sqlfn span_intersection()
  * @sqlop @p *
  */
 Datum
@@ -551,11 +549,10 @@ Minus_value_span(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Datum result;
-  bool found = minus_value_span(d, basetype, s, &result);
-  if (! found)
+  SpanSet *result = minus_value_span(d, basetype, s);
+  if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Minus_span_value(PG_FUNCTION_ARGS);
@@ -563,7 +560,7 @@ PG_FUNCTION_INFO_V1(Minus_span_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a span and a value
- * @sqlfunc span_intersection()
+ * @sqlfn span_intersection()
  * @sqlop @p *
  */
 Datum
@@ -583,7 +580,7 @@ PG_FUNCTION_INFO_V1(Minus_span_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of two spans
- * @sqlfunc time_minus()
+ * @sqlfn time_minus()
  * @sqlop @p -
  */
 Datum
@@ -607,7 +604,7 @@ PG_FUNCTION_INFO_V1(Distance_value_value);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between the values
- * @sqlfunc span_distance()
+ * @sqlfn span_distance()
  * @sqlop @p <->
  */
 Datum
@@ -625,7 +622,7 @@ PG_FUNCTION_INFO_V1(Distance_value_span);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between a value and a span
- * @sqlfunc span_distance()
+ * @sqlfn span_distance()
  * @sqlop @p <->
  */
 Datum
@@ -643,7 +640,7 @@ PG_FUNCTION_INFO_V1(Distance_span_value);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between a span and a value
- * @sqlfunc span_distance()
+ * @sqlfn span_distance()
  * @sqlop @p <->
  */
 Datum
@@ -661,7 +658,7 @@ PG_FUNCTION_INFO_V1(Distance_span_span);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between two spans
- * @sqlfunc span_distance()
+ * @sqlfn span_distance()
  * @sqlop @p <->
  */
 Datum
