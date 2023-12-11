@@ -50,7 +50,7 @@ PG_FUNCTION_INFO_V1(Textcat_text_ttext);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Return the concatenation of a text and a temporal text
- * @sqlfunc textcat()
+ * @sqlfn textcat()
  * @sqlop @p ||
  */
 Datum
@@ -68,7 +68,7 @@ PG_FUNCTION_INFO_V1(Textcat_ttext_text);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Return the concatenation of a temporal text and a text
- * @sqlfunc textcat()
+ * @sqlfn textcat()
  * @sqlop @p ||
  */
 Datum
@@ -86,7 +86,7 @@ PG_FUNCTION_INFO_V1(Textcat_ttext_ttext);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Return the concatenation of the two temporal texts
- * @sqlfunc textcat()
+ * @sqlfn textcat()
  * @sqlop @p ||
  */
 Datum
@@ -109,7 +109,7 @@ PG_FUNCTION_INFO_V1(Ttext_upper);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Transform a temporal text into uppercase
- * @sqlfunc upper()
+ * @sqlfn upper()
  */
 Datum
 Ttext_upper(PG_FUNCTION_ARGS)
@@ -125,7 +125,7 @@ PG_FUNCTION_INFO_V1(Ttext_lower);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Transform a temporal text into lowercase
- * @sqlfunc lower()
+ * @sqlfn lower()
  */
 Datum
 Ttext_lower(PG_FUNCTION_ARGS)

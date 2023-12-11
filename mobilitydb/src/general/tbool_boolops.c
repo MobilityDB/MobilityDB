@@ -50,7 +50,7 @@ PG_FUNCTION_INFO_V1(Tand_bool_tbool);
 /**
  * @ingroup mobilitydb_temporal_bool
  * @brief Return the boolean and of a boolean and a temporal boolean
- * @sqlfunc temporal_and()
+ * @sqlfn temporal_and()
  * @sqlop @p &
  */
 Datum
@@ -68,7 +68,7 @@ PG_FUNCTION_INFO_V1(Tand_tbool_bool);
 /**
  * @ingroup mobilitydb_temporal_bool
  * @brief Return the boolean and of a temporal boolean and a boolean
- * @sqlfunc temporal_and()
+ * @sqlfn temporal_and()
  * @sqlop @p &
  */
 Datum
@@ -86,7 +86,7 @@ PG_FUNCTION_INFO_V1(Tand_tbool_tbool);
 /**
  * @ingroup mobilitydb_temporal_bool
  * @brief Return the boolean and of two temporal booleans
- * @sqlfunc temporal_and()
+ * @sqlfn temporal_and()
  * @sqlop @p &
  */
 Datum
@@ -111,7 +111,7 @@ PG_FUNCTION_INFO_V1(Tor_bool_tbool);
 /**
  * @ingroup mobilitydb_temporal_bool
  * @brief Return the boolean or of a boolean and the temporal boolean
- * @sqlfunc temporal_or()
+ * @sqlfn temporal_or()
  * @sqlop @p |
  */
 Datum
@@ -129,7 +129,7 @@ PG_FUNCTION_INFO_V1(Tor_tbool_bool);
 /**
  * @ingroup mobilitydb_temporal_bool
  * @brief Return the boolean or of a temporal boolean and a boolean
- * @sqlfunc temporal_or()
+ * @sqlfn temporal_or()
  * @sqlop @p |
  */
 Datum
@@ -147,7 +147,7 @@ PG_FUNCTION_INFO_V1(Tor_tbool_tbool);
 /**
  * @ingroup mobilitydb_temporal_bool
  * @brief Return the boolean or of two temporal booleans
- * @sqlfunc temporal_or()
+ * @sqlfn temporal_or()
  * @sqlop @p |
  */
 Datum
@@ -172,7 +172,7 @@ PG_FUNCTION_INFO_V1(Tnot_tbool);
 /**
  * @ingroup mobilitydb_temporal_bool
  * @brief Return the boolean not of a temporal boolean
- * @sqlfunc temporal_not()
+ * @sqlfn temporal_not()
  * @sqlop @p ~
  */
 Datum
@@ -194,7 +194,7 @@ PG_FUNCTION_INFO_V1(Tbool_when_true);
  * @ingroup mobilitydb_temporal_bool
  * @brief Return the timestamptz span set in which a temporal boolean takes
  * value true
- * @sqlfunc when()
+ * @sqlfn when()
  */
 Datum
 Tbool_when_true(PG_FUNCTION_ARGS)

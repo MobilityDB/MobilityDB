@@ -52,7 +52,7 @@ PG_FUNCTION_INFO_V1(Distance_point_tnpoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between the geometry point and the
  * temporal network point
- * @sqlfunc temporal_distance()
+ * @sqlfn temporal_distance()
  * @sqlop @p <->
  */
 Datum
@@ -74,7 +74,7 @@ PG_FUNCTION_INFO_V1(Distance_tnpoint_point);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between the temporal network point and
  * the geometry point
- * @sqlfunc temporal_distance()
+ * @sqlfn temporal_distance()
  * @sqlop @p <->
  */
 Datum
@@ -96,7 +96,7 @@ PG_FUNCTION_INFO_V1(Distance_npoint_tnpoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between the network point and the
  * temporal network point
- * @sqlfunc temporal_distance()
+ * @sqlfn temporal_distance()
  * @sqlop @p <->
  */
 Datum
@@ -115,7 +115,7 @@ PG_FUNCTION_INFO_V1(Distance_tnpoint_npoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between the temporal network point and
  * the network point
- * @sqlfunc temporal_distance()
+ * @sqlfn temporal_distance()
  * @sqlop @p <->
  */
 Datum
@@ -134,7 +134,7 @@ PG_FUNCTION_INFO_V1(Distance_tnpoint_tnpoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between the temporal network point and
  * the network point
- * @sqlfunc temporal_distance()
+ * @sqlfn temporal_distance()
  * @sqlop @p <->
  */
 Datum
@@ -160,7 +160,7 @@ PG_FUNCTION_INFO_V1(NAI_geo_tnpoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach instant of the geometry and the temporal
  * network point
- * @sqlfunc nearestApproachInstant()
+ * @sqlfn nearestApproachInstant()
  */
 Datum
 NAI_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -183,7 +183,7 @@ PG_FUNCTION_INFO_V1(NAI_tnpoint_geo);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach instant of the temporal network point and the
  * geometry
- * @sqlfunc nearestApproachInstant()
+ * @sqlfn nearestApproachInstant()
  */
 Datum
 NAI_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -206,7 +206,7 @@ PG_FUNCTION_INFO_V1(NAI_npoint_tnpoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach instant of the network point and the temporal
  * network point
- * @sqlfunc nearestApproachInstant()
+ * @sqlfn nearestApproachInstant()
  */
 Datum
 NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -226,7 +226,7 @@ PG_FUNCTION_INFO_V1(NAI_tnpoint_npoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach instant of the temporal network point and the
  * network point
- * @sqlfunc nearestApproachInstant()
+ * @sqlfn nearestApproachInstant()
  */
 Datum
 NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -245,7 +245,7 @@ PG_FUNCTION_INFO_V1(NAI_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach instant of the two temporal network points
- * @sqlfunc nearestApproachInstant()
+ * @sqlfn nearestApproachInstant()
  */
 Datum
 NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -270,7 +270,7 @@ PG_FUNCTION_INFO_V1(NAD_geo_tnpoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach distance of the geometry and the temporal
  * network point
- * @sqlfunc nearestApproachDistance()
+ * @sqlfn nearestApproachDistance()
  */
 Datum
 NAD_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -291,7 +291,7 @@ PG_FUNCTION_INFO_V1(NAD_tnpoint_geo);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach distance of the temporal network point and the
  * geometry
- * @sqlfunc nearestApproachDistance()
+ * @sqlfn nearestApproachDistance()
  */
 Datum
 NAD_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -312,7 +312,7 @@ PG_FUNCTION_INFO_V1(NAD_npoint_tnpoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach distance of the network point and the temporal
  * network point
- * @sqlfunc nearestApproachDistance()
+ * @sqlfn nearestApproachDistance()
  */
 Datum
 NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -330,7 +330,7 @@ PG_FUNCTION_INFO_V1(NAD_tnpoint_npoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach distance of the temporal network point and the
  * network point
- * @sqlfunc nearestApproachDistance()
+ * @sqlfn nearestApproachDistance()
  */
 Datum
 NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -347,7 +347,7 @@ PG_FUNCTION_INFO_V1(NAD_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach distance of the two temporal network points
- * @sqlfunc nearestApproachDistance()
+ * @sqlfn nearestApproachDistance()
  */
 Datum
 NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -372,7 +372,7 @@ PG_FUNCTION_INFO_V1(Shortestline_geo_tnpoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the line connecting the nearest approach point between the geometry
  * and the temporal network point
- * @sqlfunc shortestLine()
+ * @sqlfn shortestLine()
  */
 Datum
 Shortestline_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -394,7 +394,7 @@ PG_FUNCTION_INFO_V1(Shortestline_tnpoint_geo);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the line connecting the nearest approach point between the temporal
  * network point and the geometry
- * @sqlfunc shortestLine()
+ * @sqlfn shortestLine()
  */
 Datum
 Shortestline_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -416,7 +416,7 @@ PG_FUNCTION_INFO_V1(Shortestline_npoint_tnpoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the line connecting the nearest approach point between the network
  * point and the temporal network point
- * @sqlfunc shortestLine()
+ * @sqlfn shortestLine()
  */
 Datum
 Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -434,7 +434,7 @@ PG_FUNCTION_INFO_V1(Shortestline_tnpoint_npoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the line connecting the nearest approach point between the temporal
  * network point and the network point
- * @sqlfunc shortestLine()
+ * @sqlfn shortestLine()
  */
 Datum
 Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -454,7 +454,7 @@ PG_FUNCTION_INFO_V1(Shortestline_tnpoint_tnpoint);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the line connecting the nearest approach point between the two
  * temporal networks
- * @sqlfunc shortestLine()
+ * @sqlfn shortestLine()
  */
 Datum
 Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)

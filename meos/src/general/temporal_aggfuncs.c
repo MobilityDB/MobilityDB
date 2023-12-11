@@ -640,7 +640,7 @@ temporal_tagg_finalfn(SkipList *state)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal and of temporal booleans.
- * @sqlfunc tand()
+ * @sql-cfn #Tbool_tand_transfn()
  */
 SkipList *
 tbool_tand_transfn(SkipList *state, const Temporal *temp)
@@ -657,7 +657,7 @@ tbool_tand_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal or of temporal booleans.
- * @sqlfunc tor()
+ * @sql-cfn #Tbool_tor_transfn()
  */
 SkipList *
 tbool_tor_transfn(SkipList *state, const Temporal *temp)
@@ -674,7 +674,7 @@ tbool_tor_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values.
- * @sqlfunc tmin()
+ * @sql-cfn #Tint_tmin_transfn()
  */
 SkipList *
 tint_tmin_transfn(SkipList *state, const Temporal *temp)
@@ -691,7 +691,7 @@ tint_tmin_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values.
- * @sqlfunc tmin()
+ * @sql-cfn #Tfloat_tmin_transfn()
  */
 SkipList *
 tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
@@ -708,7 +708,7 @@ tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values.
- * @sqlfunc tmax()
+ * @sql-cfn #Tint_tmax_transfn()
  */
 SkipList *
 tint_tmax_transfn(SkipList *state, const Temporal *temp)
@@ -725,7 +725,7 @@ tint_tmax_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values.
- * @sqlfunc tmax()
+ * @sql-cfn #Tfloat_tmax_transfn()
  */
 SkipList *
 tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
@@ -742,7 +742,7 @@ tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal sum of temporal values.
- * @sqlfunc tsum()
+ * @sql-cfn #Tint_tsum_transfn()
  */
 SkipList *
 tint_tsum_transfn(SkipList *state, const Temporal *temp)
@@ -759,7 +759,7 @@ tint_tsum_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal sum of temporal values.
- * @sqlfunc tsum()
+ * @sql-cfn #Tfloat_tsum_transfn()
  */
 SkipList *
 tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
@@ -776,7 +776,7 @@ tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal average of temporal numbers.
- * @sqlfunc tavg()
+ * @sql-cfn #Tnumber_tavg_transfn()
  */
 SkipList *
 tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
@@ -794,7 +794,7 @@ tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal minimum of temporal text values.
- * @sqlfunc tmin()
+ * @sql-cfn #Ttext_tmin_transfn()
  */
 SkipList *
 ttext_tmin_transfn(SkipList *state, const Temporal *temp)
@@ -811,7 +811,7 @@ ttext_tmin_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal maximum of temporal text values.
- * @sqlfunc tmax()
+ * @sql-cfn #Ttext_tmax_transfn()
  */
 SkipList *
 ttext_tmax_transfn(SkipList *state, const Temporal *temp)

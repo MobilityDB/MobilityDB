@@ -153,7 +153,7 @@ PG_FUNCTION_INFO_V1(Econtains_geo_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the geometry contains the trajectory of the temporal network
  * point
- * @sqlfunc econtains
+ * @sqlfn econtains
  */
 Datum
 Econtains_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -171,7 +171,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_geo_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the geometry and the trajectory of the temporal network
  * point are disjoint
- * @sqlfunc edisjoint
+ * @sqlfn edisjoint
  */
 Datum
 Edisjoint_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -185,7 +185,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_npoint_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the network point and the trajectory of the temporal
  * network point are disjoint
- * @sqlfunc edisjoint
+ * @sqlfn edisjoint
  */
 Datum
 Edisjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -199,7 +199,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_geo);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectory of the temporal network point and the
  * geometry are disjoint
- * @sqlfunc edisjoint
+ * @sqlfn edisjoint
  */
 Datum
 Edisjoint_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -213,7 +213,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_npoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectory of the temporal network point and the
  * network point are disjoint
- * @sqlfunc edisjoint
+ * @sqlfn edisjoint
  */
 Datum
 Edisjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -226,7 +226,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the temporal points are ever disjoint
- * @sqlfunc edisjoint
+ * @sqlfn edisjoint
  */
 Datum
 Edisjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -244,7 +244,7 @@ PG_FUNCTION_INFO_V1(Eintersects_geo_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the geometry and the trajectory of the temporal network
  * point intersect
- * @sqlfunc eintersects
+ * @sqlfn eintersects
  */
 Datum
 Eintersects_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -258,7 +258,7 @@ PG_FUNCTION_INFO_V1(Eintersects_npoint_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the network point and the trajectory of the temporal network
  * point intersect
- * @sqlfunc eintersects
+ * @sqlfn eintersects
  */
 Datum
 Eintersects_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -272,7 +272,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tnpoint_geo);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectory of the temporal network point and the
  * geometry intersect
- * @sqlfunc eintersects
+ * @sqlfn eintersects
  */
 Datum
 Eintersects_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -286,7 +286,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tnpoint_npoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectory of the temporal network point and the network
  * point intersect
- * @sqlfunc intersects()
+ * @sqlfn intersects()
  */
 Datum
 Eintersects_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -299,7 +299,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the temporal points are ever disjoint
- * @sqlfunc intersects()
+ * @sqlfn intersects()
  */
 Datum
 Eintersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -317,7 +317,7 @@ PG_FUNCTION_INFO_V1(Edwithin_geo_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the geometry and the trajectory of the temporal network
  * point are within the given distance
- * @sqlfunc edwithin
+ * @sqlfn edwithin
  */
 Datum
 Edwithin_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -339,7 +339,7 @@ PG_FUNCTION_INFO_V1(Edwithin_npoint_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the network point and the trajectory of the temporal network
  * point are within the given distance
- * @sqlfunc edwithin
+ * @sqlfn edwithin
  */
 Datum
 Edwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -358,7 +358,7 @@ PG_FUNCTION_INFO_V1(Edwithin_tnpoint_geo);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectory of the temporal network point and the
  * geometry are within the given distance
- * @sqlfunc edwithin
+ * @sqlfn edwithin
  */
 Datum
 Edwithin_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -380,7 +380,7 @@ PG_FUNCTION_INFO_V1(Edwithin_tnpoint_npoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectory of the temporal network point and the
  * network point are within the given distance
- * @sqlfunc edwithin
+ * @sqlfn edwithin
  */
 Datum
 Edwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -399,7 +399,7 @@ PG_FUNCTION_INFO_V1(Edwithin_tnpoint_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectories of the temporal network points are within
  * the given distance
- * @sqlfunc edwithin
+ * @sqlfn edwithin
  */
 Datum
 Edwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -425,7 +425,7 @@ PG_FUNCTION_INFO_V1(Etouches_geo_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the geometry and the trajectory of the temporal network
  * point touch
- * @sqlfunc etouches
+ * @sqlfn etouches
  */
 Datum
 Etouches_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -439,7 +439,7 @@ PG_FUNCTION_INFO_V1(Etouches_npoint_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the network point and the trajectory of the temporal
  * network point touch
- * @sqlfunc etouches
+ * @sqlfn etouches
  */
 Datum
 Etouches_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -453,7 +453,7 @@ PG_FUNCTION_INFO_V1(Etouches_tnpoint_geo);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectory of the temporal network point and the
  * geometry touch
- * @sqlfunc etouches
+ * @sqlfn etouches
  */
 Datum
 Etouches_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -467,7 +467,7 @@ PG_FUNCTION_INFO_V1(Etouches_tnpoint_npoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectory of the temporal network point and the
  * network point touch
- * @sqlfunc etouches
+ * @sqlfn etouches
  */
 Datum
 Etouches_tnpoint_npoint(PG_FUNCTION_ARGS)

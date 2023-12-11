@@ -157,7 +157,7 @@ PG_FUNCTION_INFO_V1(Teq_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a base value and a temporal value
- * @sqlfunc temporal_teq()
+ * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
 Datum
@@ -171,7 +171,7 @@ PG_FUNCTION_INFO_V1(Teq_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a temporal value and a base value
- * @sqlfunc temporal_teq()
+ * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
 Datum
@@ -185,7 +185,7 @@ PG_FUNCTION_INFO_V1(Teq_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of two temporal values
- * @sqlfunc temporal_teq()
+ * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
 Datum
@@ -203,7 +203,7 @@ PG_FUNCTION_INFO_V1(Tne_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a base value and a temporal value
- * @sqlfunc temporal_tne()
+ * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
 Datum
@@ -217,7 +217,7 @@ PG_FUNCTION_INFO_V1(Tne_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a temporal value and a base value
- * @sqlfunc temporal_tne()
+ * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
 Datum
@@ -231,7 +231,7 @@ PG_FUNCTION_INFO_V1(Tne_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of two temporal values
- * @sqlfunc temporal_tne()
+ * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
 Datum
@@ -249,7 +249,7 @@ PG_FUNCTION_INFO_V1(Tlt_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a base value and a temporal value
- * @sqlfunc temporal_tlt()
+ * @sqlfn temporal_tlt()
  * @sqlop @p #<
  */
 Datum
@@ -263,7 +263,7 @@ PG_FUNCTION_INFO_V1(Tlt_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a temporal value and a base value
- * @sqlfunc temporal_tlt()
+ * @sqlfn temporal_tlt()
  * @sqlop @p #<
  */
 Datum
@@ -277,7 +277,7 @@ PG_FUNCTION_INFO_V1(Tlt_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of two temporal values
- * @sqlfunc temporal_tlt()
+ * @sqlfn temporal_tlt()
  * @sqlop @p #<
  */
 Datum
@@ -295,7 +295,7 @@ PG_FUNCTION_INFO_V1(Tle_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a base value and a temporal value
- * @sqlfunc temporal_tle()
+ * @sqlfn temporal_tle()
  * @sqlop @p #<=
  */
 Datum
@@ -309,7 +309,7 @@ PG_FUNCTION_INFO_V1(Tle_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a temporal value and a base value
- * @sqlfunc temporal_tle()
+ * @sqlfn temporal_tle()
  * @sqlop @p #<=
  */
 Datum
@@ -323,7 +323,7 @@ PG_FUNCTION_INFO_V1(Tle_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of two temporal values
- * @sqlfunc temporal_tle()
+ * @sqlfn temporal_tle()
  * @sqlop @p #<=
  */
 Datum
@@ -341,7 +341,7 @@ PG_FUNCTION_INFO_V1(Tgt_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a base value and a temporal value
- * @sqlfunc temporal_tgt()
+ * @sqlfn temporal_tgt()
  * @sqlop @p #>
  */
 Datum
@@ -355,7 +355,7 @@ PG_FUNCTION_INFO_V1(Tgt_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a temporal value and a base value
- * @sqlfunc temporal_tgt()
+ * @sqlfn temporal_tgt()
  * @sqlop @p #>
  */
 Datum
@@ -369,7 +369,7 @@ PG_FUNCTION_INFO_V1(Tgt_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of two temporal values
- * @sqlfunc temporal_tgt()
+ * @sqlfn temporal_tgt()
  * @sqlop @p #>
  */
 Datum
@@ -387,7 +387,7 @@ PG_FUNCTION_INFO_V1(Tge_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a base value and a temporal value
- * @sqlfunc temporal_tge()
+ * @sqlfn temporal_tge()
  * @sqlop @p #>=
  */
 Datum
@@ -401,7 +401,7 @@ PG_FUNCTION_INFO_V1(Tge_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of a temporal value and a base value
- * @sqlfunc temporal_tge()
+ * @sqlfn temporal_tge()
  * @sqlop @p #>=
  */
 Datum
@@ -415,7 +415,7 @@ PG_FUNCTION_INFO_V1(Tge_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return the temporal comparison of two temporal values
- * @sqlfunc temporal_tge()
+ * @sqlfn temporal_tge()
  * @sqlop @p #>=
  */
 Datum

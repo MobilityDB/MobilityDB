@@ -50,7 +50,7 @@ PG_FUNCTION_INFO_V1(Contains_set_value);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a set contains a value
- * @sqlfunc set_contains()
+ * @sqlfn set_contains()
  * @sqlop @p \@>
  */
 Datum
@@ -69,7 +69,7 @@ PG_FUNCTION_INFO_V1(Contains_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first set contains the second one
- * @sqlfunc set_contains()
+ * @sqlfn set_contains()
  * @sqlop @p \@>
  */
 Datum
@@ -91,7 +91,7 @@ PG_FUNCTION_INFO_V1(Contained_value_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a value is contained in a set
- * @sqlfunc set_contained()
+ * @sqlfn set_contained()
  * @sqlop @p <@
  */
 Datum
@@ -110,7 +110,7 @@ PG_FUNCTION_INFO_V1(Contained_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first set is contained in the second one
- * @sqlfunc set_contained()
+ * @sqlfn set_contained()
  * @sqlop @p <@
  */
 Datum
@@ -132,7 +132,7 @@ PG_FUNCTION_INFO_V1(Overlaps_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if two sets overlap
- * @sqlfunc set_overlaps()
+ * @sqlfn set_overlaps()
  * @sqlop @p &&
  */
 Datum
@@ -149,12 +149,12 @@ Overlaps_set_set(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* strictly left of? */
 
-PGDLLEXPORT Datum Overlaps_set_set(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum Left_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the left of a set
- * @sqlfunc set_left()
+ * @sqlfn set_left()
  * @sqlop @p <<
  */
 Datum
@@ -173,7 +173,7 @@ PG_FUNCTION_INFO_V1(Left_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set is to the left of a value
- * @sqlfunc set_left()
+ * @sqlfn set_left()
  * @sqlop @p <<
  */
 Datum
@@ -192,7 +192,7 @@ PG_FUNCTION_INFO_V1(Left_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set is to the left of the second one
- * @sqlfunc set_left()
+ * @sqlfn set_left()
  * @sqlop @p <<
  */
 Datum
@@ -214,7 +214,7 @@ PG_FUNCTION_INFO_V1(Right_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the right of a set
- * @sqlfunc set_right()
+ * @sqlfn set_right()
  * @sqlop @p >>
  */
 Datum
@@ -233,7 +233,7 @@ PG_FUNCTION_INFO_V1(Right_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set is to the right of a value
- * @sqlfunc set_right()
+ * @sqlfn set_right()
  * @sqlop @p >>
  */
 Datum
@@ -252,7 +252,7 @@ PG_FUNCTION_INFO_V1(Right_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set is to the right of the second one
- * @sqlfunc set_right()
+ * @sqlfn set_right()
  * @sqlop @p >>
  */
 Datum
@@ -274,7 +274,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the right of a set
- * @sqlfunc set_overleft()
+ * @sqlfn set_overleft()
  * @sqlop @p &<
  */
 Datum
@@ -293,7 +293,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set does not extend to the right of a value
- * @sqlfunc set_overleft()
+ * @sqlfn set_overleft()
  * @sqlop @p &<
  */
 Datum
@@ -313,7 +313,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_set);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set does not extend to the right of the
  * second one
- * @sqlfunc set_overleft()
+ * @sqlfn set_overleft()
  * @sqlop @p &<
  */
 Datum
@@ -335,7 +335,7 @@ PG_FUNCTION_INFO_V1(Overright_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the left of a set
- * @sqlfunc set_overright()
+ * @sqlfn set_overright()
  * @sqlop @p
  */
 Datum
@@ -354,7 +354,7 @@ PG_FUNCTION_INFO_V1(Overright_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set does not extend to the left of a value
- * @sqlfunc set_overright()
+ * @sqlfn set_overright()
  * @sqlop @p &>
  */
 Datum
@@ -374,7 +374,7 @@ PG_FUNCTION_INFO_V1(Overright_set_set);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set does not extend to the left of the
  * second one
- * @sqlfunc set_overright()
+ * @sqlfn set_overright()
  * @sqlop @p &>
  */
 Datum
@@ -397,7 +397,7 @@ PG_FUNCTION_INFO_V1(Union_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a value and a set
- * @sqlfunc set_union()
+ * @sqlfn set_union()
  * @sqlop @p +
  */
 Datum
@@ -418,7 +418,7 @@ PG_FUNCTION_INFO_V1(Union_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a set and a value
- * @sqlfunc set_union()
+ * @sqlfn set_union()
  * @sqlop @p +
  */
 Datum
@@ -437,7 +437,7 @@ PG_FUNCTION_INFO_V1(Union_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of two sets
- * @sqlfunc set_union()
+ * @sqlfn set_union()
  * @sqlop @p +
  */
 Datum
@@ -460,7 +460,7 @@ PG_FUNCTION_INFO_V1(Intersection_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a value and a set
- * @sqlfunc set_intersection()
+ * @sqlfn set_intersection()
  * @sqlop @p *
  */
 Datum
@@ -468,13 +468,12 @@ Intersection_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Set *s = PG_GETARG_SET_P(1);
-  Datum result;
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool found = intersection_set_value(s, d, basetype, &result);
+  Set *result = intersection_set_value(s, d, basetype);
   PG_FREE_IF_COPY(s, 1);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Intersection_set_value(PG_FUNCTION_ARGS);
@@ -482,7 +481,7 @@ PG_FUNCTION_INFO_V1(Intersection_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a set and a value
- * @sqlfunc set_intersection()
+ * @sqlfn set_intersection()
  * @sqlop @p *
  */
 Datum
@@ -491,12 +490,11 @@ Intersection_set_value(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Datum result;
-  bool found = intersection_set_value(s, d, basetype, &result);
+  Set *result = intersection_set_value(s, d, basetype);
   PG_FREE_IF_COPY(s, 0);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Intersection_set_set(PG_FUNCTION_ARGS);
@@ -504,7 +502,7 @@ PG_FUNCTION_INFO_V1(Intersection_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of two sets
- * @sqlfunc set_intersection()
+ * @sqlfn set_intersection()
  * @sqlop @p *
  */
 Datum
@@ -530,7 +528,7 @@ PG_FUNCTION_INFO_V1(Minus_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a value and a set
- * @sqlfunc set_minus()
+ * @sqlfn set_minus()
  * @sqlop @p -
  */
 Datum
@@ -539,12 +537,11 @@ Minus_value_set(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   Set *s = PG_GETARG_SET_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Datum result;
-  bool found = minus_value_set(d, basetype, s, &result);
+  Set *result = minus_value_set(d, basetype, s);
   PG_FREE_IF_COPY(s, 1);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
@@ -554,7 +551,7 @@ PG_FUNCTION_INFO_V1(Minus_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a set and a value
- * @sqlfunc set_minus()
+ * @sqlfn set_minus()
  * @sqlop @p -
  */
 Datum
@@ -575,7 +572,7 @@ PG_FUNCTION_INFO_V1(Minus_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of two sets
- * @sqlfunc set_minus()
+ * @sqlfn set_minus()
  * @sqlop @p -
  */
 Datum
@@ -600,7 +597,7 @@ PG_FUNCTION_INFO_V1(Distance_value_set);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between a value and a set
- * @sqlfunc set_distance()
+ * @sqlfn set_distance()
  * @sqlop @p <->
  */
 Datum
@@ -621,7 +618,7 @@ PG_FUNCTION_INFO_V1(Distance_set_value);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between a set and a value
- * @sqlfunc set_distance()
+ * @sqlfn set_distance()
  * @sqlop @p <->
  */
 Datum
@@ -642,7 +639,7 @@ PG_FUNCTION_INFO_V1(Distance_set_set);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between two sets
- * @sqlfunc set_distance()
+ * @sqlfn set_distance()
  * @sqlop @p <->
  */
 Datum

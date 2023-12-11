@@ -72,7 +72,7 @@ contains_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set contains an integer
- * @sqlop @p \@>
+ * @sql-cfn #Contains_spanset_value()
  */
 bool
 contains_spanset_int(const SpanSet *ss, int i)
@@ -87,7 +87,7 @@ contains_spanset_int(const SpanSet *ss, int i)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set contains a big integer
- * @sqlop @p \@>
+ * @sql-cfn #Contains_spanset_value()
  */
 bool
 contains_spanset_bigint(const SpanSet *ss, int64 i)
@@ -102,7 +102,7 @@ contains_spanset_bigint(const SpanSet *ss, int64 i)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set contains a float
- * @sqlop @p \@>
+ * @sql-cfn #Contains_spanset_value()
  */
 bool
 contains_spanset_float(const SpanSet *ss, double d)
@@ -117,7 +117,7 @@ contains_spanset_float(const SpanSet *ss, double d)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set contains a date
- * @sqlop @p \@>
+ * @sql-cfn #Contains_spanset_value()
  */
 bool
 contains_spanset_date(const SpanSet *ss, DateADT d)
@@ -133,7 +133,7 @@ contains_spanset_date(const SpanSet *ss, DateADT d)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set contains a timestamptz
- * @sqlop @p \@>
+ * @sql-cfn #Contains_spanset_value()
  */
 bool
 contains_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -148,7 +148,7 @@ contains_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set contains a span
- * @sqlop @p \@>
+ * @sql-cfn #Contains_spanset_span()
  */
 bool
 contains_spanset_span(const SpanSet *ss, const Span *s)
@@ -175,7 +175,7 @@ contains_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span contains a span set
- * @sqlop @p \@>
+ * @sql-cfn #Contains_span_spanset()
  */
 bool
 contains_span_spanset(const Span *s, const SpanSet *ss)
@@ -186,7 +186,7 @@ contains_span_spanset(const Span *s, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if the first span set contains the second one
- * @sqlop @p \@>
+ * @sql-cfn #Contains_spanset_spanset()
  */
 bool
 contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -254,7 +254,7 @@ contained_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if an integer is contained in a span set
- * @sqlop @p \@>
+ * @sql-cfn #Contained_value_spanset()
  */
 bool
 contained_int_spanset(int i, const SpanSet *ss)
@@ -269,7 +269,7 @@ contained_int_spanset(int i, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a big integer is contained in a span set
- * @sqlop @p \@>
+ * @sql-cfn #Contained_value_spanset()
  */
 bool
 contained_bigint_spanset(int64 i, const SpanSet *ss)
@@ -284,7 +284,7 @@ contained_bigint_spanset(int64 i, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a float is contained in a span set
- * @sqlop @p \@>
+ * @sql-cfn #Contained_value_spanset()
  */
 bool
 contained_float_spanset(double d, const SpanSet *ss)
@@ -299,7 +299,7 @@ contained_float_spanset(double d, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a date is contained in a span set
- * @sqlop @p \@>
+ * @sql-cfn #Contained_value_spanset()
  */
 bool
 contained_date_spanset(DateADT d, const SpanSet *ss)
@@ -314,7 +314,7 @@ contained_date_spanset(DateADT d, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a timestamptz is contained in a span set
- * @sqlop @p \@>
+ * @sql-cfn #Contained_value_spanset()
  */
 bool
 contained_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
@@ -330,7 +330,7 @@ contained_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span is contained in a span set
- * @sqlop @p <@
+ * @sql-cfn #Contained_span_spanset()
  */
 bool
 contained_span_spanset(const Span *s, const SpanSet *ss)
@@ -341,7 +341,7 @@ contained_span_spanset(const Span *s, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set is contained in a span set
- * @sqlop @p <@
+ * @sql-cfn #Contained_spanset_span()
  */
 bool
 contained_spanset_span(const SpanSet *ss, const Span *s)
@@ -352,7 +352,7 @@ contained_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if the first span set is contained in the second one
- * @sqlop @p <@
+ * @sql-cfn #Contained_spanset_spanset()
  */
 bool
 contained_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -367,7 +367,7 @@ contained_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set and a span overlap
- * @sqlop @p &&
+ * @sql-cfn #Overlaps_spanset_span()
  */
 bool
 overlaps_spanset_span(const SpanSet *ss, const Span *s)
@@ -402,7 +402,7 @@ overlaps_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if two span sets overlap
- * @sqlop @p &&
+ * @sql-cfn #Overlaps_spanset_spanset()
  */
 bool
 overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -449,6 +449,7 @@ overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 /**
  * @ingroup libmeos_internal_setspan_topo
  * @brief Return true if a span set and a value are adjacent
+ * @sql-cfn #Adjacent_spanset_value()
  */
 bool
 adjacent_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
@@ -468,7 +469,7 @@ adjacent_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set and an integer are adjacent
- * @sqlop @p -|-
+ * @sql-cfn #Adjacent_spanset_value()
  */
 bool
 adjacent_spanset_int(const SpanSet *ss, int i)
@@ -483,7 +484,7 @@ adjacent_spanset_int(const SpanSet *ss, int i)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set and a big integer are adjacent
- * @sqlop @p -|-
+ * @sql-cfn #Adjacent_spanset_value()
  */
 bool
 adjacent_spanset_bigint(const SpanSet *ss, int64 i)
@@ -498,7 +499,7 @@ adjacent_spanset_bigint(const SpanSet *ss, int64 i)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set and a float are adjacent
- * @sqlop @p -|-
+ * @sql-cfn #Adjacent_spanset_value()
  */
 bool
 adjacent_spanset_float(const SpanSet *ss, double d)
@@ -513,7 +514,7 @@ adjacent_spanset_float(const SpanSet *ss, double d)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set and a date are adjacent
- * @sqlop @p -|-
+ * @sql-cfn #Adjacent_spanset_value()
  */
 bool
 adjacent_spanset_date(const SpanSet *ss, DateADT d)
@@ -528,7 +529,7 @@ adjacent_spanset_date(const SpanSet *ss, DateADT d)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set and a timestamptz are adjacent
- * @sqlop @p -|-
+ * @sql-cfn #Adjacent_spanset_value()
  */
 bool
 adjacent_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -544,7 +545,7 @@ adjacent_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span set and a span are adjacent
- * @sqlop @p -|-
+ * @sql-cfn #Adjacent_spanset_span()
  */
 bool
 adjacent_spanset_span(const SpanSet *ss, const Span *s)
@@ -571,7 +572,7 @@ adjacent_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if two span sets are adjacent
- * @sqlop @p -|-
+ * @sql-cfn #Adjacent_spanset_spanset()
  */
 bool
 adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -619,7 +620,7 @@ left_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer is to the left of a span set
- * @sqlop @p <<
+ * @sql-cfn #Left_value_spanset()
  */
 bool
 left_int_spanset(int i, const SpanSet *ss)
@@ -634,7 +635,7 @@ left_int_spanset(int i, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer is to the left of a span set
- * @sqlop @p <<
+ * @sql-cfn #Left_value_spanset()
  */
 bool
 left_bigint_spanset(int64 i, const SpanSet *ss)
@@ -649,7 +650,7 @@ left_bigint_spanset(int64 i, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float is to the left of a span set
- * @sqlop @p <<
+ * @sql-cfn #Left_value_spanset()
  */
 bool
 left_float_spanset(double d, const SpanSet *ss)
@@ -664,7 +665,7 @@ left_float_spanset(double d, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is before a span set
- * @sqlop @p <<#
+ * @sql-cfn #Left_value_spanset()
  */
 bool
 before_date_spanset(DateADT d, const SpanSet *ss)
@@ -679,7 +680,7 @@ before_date_spanset(DateADT d, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is before a span set
- * @sqlop @p <<#
+ * @sql-cfn #Left_value_spanset()
  */
 bool
 before_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
@@ -695,7 +696,7 @@ before_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is before a span set
- * @sqlop @p <<
+ * @sql-cfn #Left_span_spanset()
  */
 bool
 left_span_spanset(const Span *s, const SpanSet *ss)
@@ -724,7 +725,7 @@ left_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is to the left of an integer
- * @sqlop @p <<
+ * @sql-cfn #Left_spanset_value()
  */
 bool
 left_spanset_int(const SpanSet *ss, int i)
@@ -739,7 +740,7 @@ left_spanset_int(const SpanSet *ss, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is to the left of a big integer
- * @sqlop @p <<
+ * @sql-cfn #Left_spanset_value()
  */
 bool
 left_spanset_bigint(const SpanSet *ss, int64 i)
@@ -754,7 +755,7 @@ left_spanset_bigint(const SpanSet *ss, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is to the left of a float
- * @sqlop @p <<
+ * @sql-cfn #Left_spanset_value()
  */
 bool
 left_spanset_float(const SpanSet *ss, double d)
@@ -769,7 +770,7 @@ left_spanset_float(const SpanSet *ss, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is before a date
- * @sqlop @p <<#
+ * @sql-cfn #Left_spanset_value()
  */
 bool
 before_spanset_date(const SpanSet *ss, DateADT d)
@@ -784,7 +785,7 @@ before_spanset_date(const SpanSet *ss, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is before a timestamptz
- * @sqlop @p <<#
+ * @sql-cfn #Left_spanset_value()
  */
 bool
 before_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -800,7 +801,7 @@ before_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is to the left a span
- * @sqlop @p <<
+ * @sql-cfn #Left_spanset_span()
  */
 bool
 left_spanset_span(const SpanSet *ss, const Span *s)
@@ -816,7 +817,7 @@ left_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first span set is to the left of the second one
- * @sqlop @p <<
+ * @sql-cfn #Left_spanset_spanset()
  */
 bool
 left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -848,7 +849,7 @@ right_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer is to the right of a span set
- * @sqlop @p #&>
+ * @sql-cfn #Right_value_spanset()
  */
 bool
 right_int_spanset(int i, const SpanSet *ss)
@@ -859,7 +860,7 @@ right_int_spanset(int i, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer is to the right of a span set
- * @sqlop @p #&>
+ * @sql-cfn #Right_value_spanset()
  */
 bool
 right_bigint_spanset(int64 i, const SpanSet *ss)
@@ -870,7 +871,7 @@ right_bigint_spanset(int64 i, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float is to the right of a span set
- * @sqlop @p #&>
+ * @sql-cfn #Right_value_spanset()
  */
 bool
 right_float_spanset(double d, const SpanSet *ss)
@@ -881,7 +882,7 @@ right_float_spanset(double d, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is after a span set
- * @sqlop @p #&>
+ * @sql-cfn #Right_value_spanset()
  */
 bool
 after_date_spanset(DateADT d, const SpanSet *ss)
@@ -892,7 +893,7 @@ after_date_spanset(DateADT d, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is after a span set
- * @sqlop @p #&>
+ * @sql-cfn #Right_value_spanset()
  */
 bool
 after_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
@@ -904,7 +905,7 @@ after_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is to the right of a span set
- * @sqlop @p >>
+ * @sql-cfn #Right_span_spanset()
  */
 bool
 right_span_spanset(const Span *s, const SpanSet *ss)
@@ -927,7 +928,7 @@ right_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is to the right of an
  * integer.
- * @sqlop @p >>
+ * @sql-cfn #Right_spanset_value()
  */
 bool
 right_spanset_int(const SpanSet *ss, int i)
@@ -938,7 +939,7 @@ right_spanset_int(const SpanSet *ss, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is to the right of a big integer
- * @sqlop @p >>
+ * @sql-cfn #Right_spanset_value()
  */
 bool
 right_spanset_bigint(const SpanSet *ss, int64 i)
@@ -949,7 +950,7 @@ right_spanset_bigint(const SpanSet *ss, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is to the right of a float
- * @sqlop @p >>
+ * @sql-cfn #Right_spanset_value()
  */
 bool
 right_spanset_float(const SpanSet *ss, double d)
@@ -960,7 +961,7 @@ right_spanset_float(const SpanSet *ss, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is after a date
- * @sqlop @p >>
+ * @sql-cfn #Right_spanset_value()
  */
 bool
 after_spanset_date(const SpanSet *ss, DateADT d)
@@ -971,7 +972,7 @@ after_spanset_date(const SpanSet *ss, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is after a timestamptz
- * @sqlop @p >>
+ * @sql-cfn #Right_spanset_value()
  */
 bool
 after_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -983,7 +984,7 @@ after_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is to the right of a span
- * @sqlop @p >>
+ * @sql-cfn #Right_spanset_span()
  */
 bool
 right_spanset_span(const SpanSet *ss, const Span *s)
@@ -994,7 +995,7 @@ right_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first span set is to the right of the second one
- * @sqlop @p >>
+ * @sql-cfn #Right_spanset_spanset()
  */
 bool
 right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -1022,7 +1023,7 @@ overleft_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set does not extend to the right of an integer
- * @sqlop @p &<
+ * @sql-cfn #Overleft_spanset_value()
  */
 bool
 overleft_spanset_int(const SpanSet *ss, int i)
@@ -1038,7 +1039,7 @@ overleft_spanset_int(const SpanSet *ss, int i)
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set does not extend to the right of a big
  * integer
- * @sqlop @p &<
+ * @sql-cfn #Overleft_spanset_value()
  */
 bool
 overleft_spanset_bigint(const SpanSet *ss, int64 i)
@@ -1053,7 +1054,7 @@ overleft_spanset_bigint(const SpanSet *ss, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set does not extend to the right of a float
- * @sqlop @p &<
+ * @sql-cfn #Overleft_spanset_value()
  */
 bool
 overleft_spanset_float(const SpanSet *ss, double d)
@@ -1068,7 +1069,7 @@ overleft_spanset_float(const SpanSet *ss, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is not after a date
- * @sqlop @p &<#
+ * @sql-cfn #Overleft_spanset_value()
  */
 bool
 overbefore_spanset_date(const SpanSet *ss, DateADT d)
@@ -1083,7 +1084,7 @@ overbefore_spanset_date(const SpanSet *ss, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is not after a timestamptz
- * @sqlop @p &<#
+ * @sql-cfn #Overleft_spanset_value()
  */
 bool
 overbefore_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -1112,7 +1113,7 @@ overleft_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer does not extend to the right of a span set
- * @sqlop @p &<
+ * @sql-cfn #Overleft_value_spanset()
  */
 bool
 overleft_int_spanset(int i, const SpanSet *ss)
@@ -1128,7 +1129,7 @@ overleft_int_spanset(int i, const SpanSet *ss)
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer does not extend to the right of a span
  * set
- * @sqlop @p &<
+ * @sql-cfn #Overleft_value_spanset()
  */
 bool
 overleft_bigint_spanset(int64 i, const SpanSet *ss)
@@ -1143,7 +1144,7 @@ overleft_bigint_spanset(int64 i, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float does not extend to the right of a span set
- * @sqlop @p &<
+ * @sql-cfn #Overleft_value_spanset()
  */
 bool
 overleft_float_spanset(double d, const SpanSet *ss)
@@ -1158,7 +1159,7 @@ overleft_float_spanset(double d, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is not after a span set.
- * @sqlop @p &<#
+ * @sql-cfn #Overleft_value_spanset()
  */
 bool
 overbefore_date_spanset(DateADT d, const SpanSet *ss)
@@ -1173,7 +1174,7 @@ overbefore_date_spanset(DateADT d, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is not after a span set
- * @sqlop @p &<#
+ * @sql-cfn #Overleft_value_spanset()
  */
 bool
 overbefore_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
@@ -1189,7 +1190,7 @@ overbefore_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span does not extend to the right of a span set
- * @sqlop @p &<
+ * @sql-cfn #Overleft_span_spanset()
  */
 bool
 overleft_span_spanset(const Span *s, const SpanSet *ss)
@@ -1205,7 +1206,7 @@ overleft_span_spanset(const Span *s, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set does not extend to the right of a span
- * @sqlop @p &<
+ * @sql-cfn #Overleft_spanset_span()
  */
 bool
 overleft_spanset_span(const SpanSet *ss, const Span *s)
@@ -1222,7 +1223,7 @@ overleft_spanset_span(const SpanSet *ss, const Span *s)
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first span set does not extend to the right of the
  * second one
- * @sqlop @p &<
+ * @sql-cfn #Overleft_spanset_spanset()
  */
 bool
 overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -1256,7 +1257,7 @@ overright_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer does not extend to the left of a span set
- * @sqlop @p &>
+ * @sql-cfn #Overright_value_spanset()
  */
 bool
 overright_int_spanset(int i, const SpanSet *ss)
@@ -1271,7 +1272,7 @@ overright_int_spanset(int i, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer does not extend to the left of a span set
- * @sqlop @p &>
+ * @sql-cfn #Overright_value_spanset()
  */
 bool
 overright_bigint_spanset(int64 i, const SpanSet *ss)
@@ -1286,7 +1287,7 @@ overright_bigint_spanset(int64 i, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float does not extend to the left of a span set
- * @sqlop @p &>
+ * @sql-cfn #Overright_value_spanset()
  */
 bool
 overright_float_spanset(double d, const SpanSet *ss)
@@ -1301,7 +1302,7 @@ overright_float_spanset(double d, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is not before a span set
- * @sqlop @p #&>
+ * @sql-cfn #Overright_value_spanset()
  */
 bool
 overafter_date_spanset(DateADT d, const SpanSet *ss)
@@ -1316,7 +1317,7 @@ overafter_date_spanset(DateADT d, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is not before a span set
- * @sqlop @p #&>
+ * @sql-cfn #Overright_value_spanset()
  */
 bool
 overafter_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
@@ -1332,7 +1333,7 @@ overafter_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span does not extend to the left of a span set
- * @sqlop @p &>
+ * @sql-cfn #Overright_span_spanset()
  */
 bool
 overright_span_spanset(const Span *s, const SpanSet *ss)
@@ -1361,7 +1362,7 @@ overright_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set does not extend to the left of an integer
- * @sqlop @p &>
+ * @sql-cfn #Overright_spanset_value()
  */
 bool
 overright_spanset_int(const SpanSet *ss, int i)
@@ -1376,7 +1377,7 @@ overright_spanset_int(const SpanSet *ss, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set does not extend to the left of a big integer
- * @sqlop @p &>
+ * @sql-cfn #Overright_spanset_value()
  */
 bool
 overright_spanset_bigint(const SpanSet *ss, int64 i)
@@ -1391,7 +1392,7 @@ overright_spanset_bigint(const SpanSet *ss, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set does not extend to the left of a float
- * @sqlop @p &>
+ * @sql-cfn #Overright_spanset_value()
  */
 bool
 overright_spanset_float(const SpanSet *ss, double d)
@@ -1406,7 +1407,7 @@ overright_spanset_float(const SpanSet *ss, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is before a date
- * @sqlop @p &>
+ * @sql-cfn #Overright_spanset_value()
  */
 bool
 overafter_spanset_date(const SpanSet *ss, DateADT d)
@@ -1420,7 +1421,7 @@ overafter_spanset_date(const SpanSet *ss, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set is before a timestamptz
- * @sqlop @p &>
+ * @sql-cfn #Overright_spanset_value()
  */
 bool
 overafter_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -1436,7 +1437,7 @@ overafter_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span set does not extend to the left of a span
- * @sqlop @p &>
+ * @sql-cfn #Overright_spanset_span()
  */
 bool
 overright_spanset_span(const SpanSet *ss, const Span *s)
@@ -1454,7 +1455,7 @@ overright_spanset_span(const SpanSet *ss, const Span *s)
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first span set does not extend to the left of the
  * second one
- * @sqlop @p &>
+ * @sql-cfn #Overright_spanset_spanset()
  */
 bool
 overright_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -1491,7 +1492,7 @@ union_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span set and an integer
- * @sqlop @p +
+ * @sql-cfn #Union_spanset_value()
  */
 SpanSet *
 union_spanset_int(const SpanSet *ss, int i)
@@ -1506,7 +1507,7 @@ union_spanset_int(const SpanSet *ss, int i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span set and a big integer
- * @sqlop @p +
+ * @sql-cfn #Union_spanset_value()
  */
 SpanSet *
 union_spanset_bigint(const SpanSet *ss, int64 i)
@@ -1521,7 +1522,7 @@ union_spanset_bigint(const SpanSet *ss, int64 i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span set and a float
- * @sqlop @p +
+ * @sql-cfn #Union_spanset_value()
  */
 SpanSet *
 union_spanset_float(const SpanSet *ss, double d)
@@ -1536,7 +1537,7 @@ union_spanset_float(const SpanSet *ss, double d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span set and a date
- * @sqlop @p +
+ * @sql-cfn #Union_spanset_value()
  */
 SpanSet *
 union_spanset_date(const SpanSet *ss, DateADT d)
@@ -1551,7 +1552,7 @@ union_spanset_date(const SpanSet *ss, DateADT d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span set and a timestamptz
- * @sqlop @p +
+ * @sql-cfn #Union_spanset_value()
  */
 SpanSet *
 union_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -1567,7 +1568,7 @@ union_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span set and a span
- * @sqlop @p +
+ * @sql-cfn #Union_spanset_span()
  */
 SpanSet *
 union_spanset_span(const SpanSet *ss, const Span *s)
@@ -1643,7 +1644,7 @@ union_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of two span sets
- * @sqlop @p +
+ * @sql-cfn #Union_spanset_spanset()
  */
 SpanSet *
 union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -1734,15 +1735,13 @@ union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Compute the intersection of a span set and a value in the last
  * argument
  */
-bool
-intersection_spanset_value(const SpanSet *ss, Datum d, meosType basetype,
-  Datum *result)
+SpanSet *
+intersection_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 {
   assert(ss); assert(ss->basetype == basetype);
   if (! contains_spanset_value(ss, d, basetype))
-    return false;
-  *result = d;
-  return true;
+    return NULL;
+  return value_to_spanset(d, basetype);
 }
 
 #if MEOS
@@ -1750,108 +1749,87 @@ intersection_spanset_value(const SpanSet *ss, Datum d, meosType basetype,
  * @ingroup libmeos_setspan_set
  * @brief Compute the intersection of a span set and an integer in the last
  * argument
- * @sqlop @p *
+ * @sql-cfn #Intersection_spanset_value()
  */
-bool
-intersection_spanset_int(const SpanSet *ss, int i, int *result)
+SpanSet *
+intersection_spanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
       ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-
-  if (! contains_spanset_value(ss, Int32GetDatum(i), T_INT4))
-    return false;
-  *result = i;
-  return true;
+    return NULL;
+  return intersection_spanset_value(Int32GetDatum(i), T_INT4);
 }
 
 /**
  * @ingroup libmeos_setspan_set
  * @brief Compute the intersection of a span set and a big integer in the last
  * argument
- * @sqlop @p *
+ * @sql-cfn #Intersection_spanset_value()
  */
-bool
-intersection_spanset_bigint(const SpanSet *ss, int64 i, int64 *result)
+SpanSet *
+intersection_spanset_bigint(const SpanSet *ss, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
       ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-
-  if (! contains_spanset_value(ss, Int64GetDatum(i), T_INT8))
-    return false;
-  *result = i;
-  return true;
+    return NULL;
+  return intersection_spanset_value(Int64GetDatum(i), T_INT8);
 }
 
 /**
  * @ingroup libmeos_setspan_set
  * @brief Compute the intersection of a span set and a float in the last
  * argument
- * @sqlop @p *
+ * @sql-cfn #Intersection_spanset_value()
  */
-bool
-intersection_spanset_float(const SpanSet *ss, double d, double *result)
+SpanSet *
+intersection_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
       ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-
-  if (! contains_spanset_value(ss, Float8GetDatum(d), T_FLOAT8))
-    return false;
-  *result = d;
-  return true;
+    return NULL;
+  return intersection_spanset_value(Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
  * @ingroup libmeos_setspan_set
  * @brief Compute the intersection of a span set and a date in the last
  * argument
- * @sqlop @p *
+ * @sql-cfn #Intersection_spanset_value()
  */
-bool
-intersection_spanset_date(const SpanSet *ss, DateADT d, DateADT *result)
+SpanSet *
+intersection_spanset_date(const SpanSet *ss, DateADT d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
       ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-
-  if (! contains_spanset_value(ss, DateADTGetDatum(d), T_DATE))
-    return false;
-  *result = d;
-  return true;
+    return NULL;
+  return intersection_spanset_value(DateADTGetDatum(d), T_DATE);
 }
 
 /**
  * @ingroup libmeos_setspan_set
  * @brief Compute the intersection of a span set and a timestamptz in the last
  * argument
- * @sqlop @p *
+ * @sql-cfn #Intersection_spanset_value()
  */
-bool
-intersection_spanset_timestamptz(const SpanSet *ss, TimestampTz t,
-  TimestampTz *result)
+SpanSet *
+intersection_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
       ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-
-  if (! contains_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
-    return false;
-  *result = t;
-  return true;
+    return NULL;
+  return intersection_spanset_value(TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of a span set and a span
- * @sqlop @p *
+ * @sql-cfn #Intersection_spanset_span()
  */
 SpanSet *
 intersection_spanset_span(const SpanSet *ss, const Span *s)
@@ -1898,7 +1876,7 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of two span sets
- * @sqlop @p *
+ * @sql-cfn #Intersection_spanset_spanset()
  */
 SpanSet *
 intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -1951,124 +1929,98 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the difference of a value and a span set
+ * @brief Return the difference of a value and a span set
  */
-bool
-minus_value_spanset(Datum d, meosType basetype, const SpanSet *ss,
-  Datum *result)
+SpanSet *
+minus_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 {
   assert(ss); assert(ss->basetype == basetype);
   if (contains_spanset_value(ss, d, basetype))
-    return false;
-  *result = d;
-  return true;
+    return NULL;
+  return value_to_spanset(d, basetype);
 }
 
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of an integer and a span set in the last
+ * @brief Return the difference of an integer and a span set in the last
  * argument
- * @sqlop @p -
+ * @sql-cfn #Minus_value_spanset()
  */
-bool
-minus_int_spanset(int i, const SpanSet *ss, int *result)
+SpanSet *
+minus_int_spanset(int i, const SpanSet *sst)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-
-  Datum v;
-  bool found = minus_value_spanset(Int32GetDatum(i), T_INT4, ss, &v);
-  *result = DatumGetInt32(v);
-  return found;
+    return NULL;
+  return minus_value_spanset(Int32GetDatum(i), T_INT4, ss);
 }
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a big integer and a span set in the last
+ * @brief Return the difference of a big integer and a span set in the last
  * argument
- * @sqlop @p -
+ * @sql-cfn #Minus_value_spanset()
  */
-bool
-minus_bigint_spanset(int64 i, const SpanSet *ss, int64 *result)
+SpanSet *
+minus_bigint_spanset(int64 i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-
-  Datum v;
-  bool found = minus_value_spanset(Int64GetDatum(i), T_INT8, ss, &v);
-  *result = DatumGetInt64(v);
-  return found;
+    return NULL;
+  return minus_value_spanset(Int64GetDatum(i), T_INT8, ss);
 }
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a float and a span set in the last
- * argument
- * @sqlop @p -
+ * @brief Return the difference of a float and a span set
+ * @sql-cfn #Minus_value_spanset()
  */
-bool
-minus_float_spanset(double d, const SpanSet *ss, double *result)
+SpanSet *
+minus_float_spanset(double d, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-
-  Datum v;
-  bool found = minus_value_spanset(Float8GetDatum(d), T_FLOAT8, ss, &v);
-  *result = DatumGetFloat8(v);
-  return found;
+    return NULL;
+  return minus_value_spanset(Float8GetDatum(d), T_FLOAT8, ss);
 }
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a date and a span set in the last argument
- * @sqlop @p -
+ * @brief Return the difference of a date and a span set
+ * @sql-cfn #Minus_value_spanset()
  */
-bool
-minus_date_spanset(DateADT d, const SpanSet *ss, DateADT *result)
+SpanSet *
+minus_date_spanset(DateADT d, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-
-  Datum v;
-  bool found = minus_value_spanset(DateADTGetDatum(d), T_DATE, ss, &v);
-  *result = DatumGetDateADT(v);
-  return found;
+    return NULL;
+  return minus_value_spanset(DateADTGetDatum(d), T_DATE, ss);
 }
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a timestamptz and a span set in the last
- * argument
- * @sqlop @p -
+ * @brief Return the difference of a timestamptz and a span set
+ * @sql-cfn #Minus_value_spanset()
  */
-bool
-minus_timestamptz_spanset(TimestampTz t, const SpanSet *ss,
-  TimestampTz *result)
+SpanSet *
+minus_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-
-  Datum v;
-  bool found = minus_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ss,
-    &v);
-  *result = DatumGetTimestampTz(v);
-  return found;
+    return NULL;
+  return minus_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ss);
 }
 #endif /* MEOS */
 
 /**
- * @brief Compute the difference of a span and a span set
+ * @brief Compute the difference of a span and a span set in the last argument
  */
 static int
 mi_span_spanset(const Span *s, const SpanSet *ss, int from, int to,
@@ -2111,7 +2063,7 @@ mi_span_spanset(const Span *s, const SpanSet *ss, int from, int to,
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span and a span set
- * @sqlop @p -
+ * @sql-cfn #Minus_span_spanset()
  */
 SpanSet *
 minus_span_spanset(const Span *s, const SpanSet *ss)
@@ -2161,7 +2113,7 @@ minus_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span set and an integer
- * @sqlop @p -
+ * @sql-cfn #Minus_spanset_value()
  */
 SpanSet *
 minus_spanset_int(const SpanSet *ss, int i)
@@ -2176,7 +2128,7 @@ minus_spanset_int(const SpanSet *ss, int i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span set and a big integer
- * @sqlop @p -
+ * @sql-cfn #Minus_spanset_value()
  */
 SpanSet *
 minus_spanset_bigint(const SpanSet *ss, int64 i)
@@ -2191,7 +2143,7 @@ minus_spanset_bigint(const SpanSet *ss, int64 i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span set and a float
- * @sqlop @p -
+ * @sql-cfn #Minus_spanset_value()
  */
 SpanSet *
 minus_spanset_float(const SpanSet *ss, double d)
@@ -2206,7 +2158,7 @@ minus_spanset_float(const SpanSet *ss, double d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span set and a date
- * @sqlop @p -
+ * @sql-cfn #Minus_spanset_value()
  */
 SpanSet *
 minus_spanset_date(const SpanSet *ss, DateADT d)
@@ -2221,7 +2173,7 @@ minus_spanset_date(const SpanSet *ss, DateADT d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span set and a timestamptz
- * @sqlop @p -
+ * @sql-cfn #Minus_spanset_value()
  */
 SpanSet *
 minus_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -2237,7 +2189,7 @@ minus_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span set and a span
- * @sqlop @p -
+ * @sql-cfn #Minus_spanset_span()
  */
 SpanSet *
 minus_spanset_span(const SpanSet *ss, const Span *s)
@@ -2269,7 +2221,7 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of two span sets
- * @sqlop @p -
+ * @sql-cfn #Minus_spanset_spanset()
  */
 SpanSet *
 minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
@@ -2349,7 +2301,7 @@ distance_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a span set and an integer
  * as a double
- * @sqlop @p <->
+ * @sql-cfn #Distance_spanset_value()
  */
 double
 distance_spanset_int(const SpanSet *ss, int i)
@@ -2365,7 +2317,7 @@ distance_spanset_int(const SpanSet *ss, int i)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a span set and a big integer
  * as a double
- * @sqlop @p <->
+ * @sql-cfn #Distance_spanset_value()
  */
 double
 distance_spanset_bigint(const SpanSet *ss, int64 i)
@@ -2380,7 +2332,7 @@ distance_spanset_bigint(const SpanSet *ss, int64 i)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a span set and a float
- * @sqlop @p <->
+ * @sql-cfn #Distance_spanset_value()
  */
 double
 distance_spanset_float(const SpanSet *ss, double d)
@@ -2396,7 +2348,7 @@ distance_spanset_float(const SpanSet *ss, double d)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance in seconds between a span set and a date as a
  * double
- * @sqlop @p <->
+ * @sql-cfn #Distance_spanset_value()
  */
 double
 distance_spanset_date(const SpanSet *ss, DateADT d)
@@ -2412,7 +2364,7 @@ distance_spanset_date(const SpanSet *ss, DateADT d)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance in seconds between a span set and a timestamptz
  * as a double
- * @sqlop @p <->
+ * @sql-cfn #Distance_spanset_value()
  */
 double
 distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -2428,7 +2380,7 @@ distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a span set and a span as a double
- * @sqlop @p <->
+ * @sql-cfn #Distance_spanset_span()
  */
 double
 distance_spanset_span(const SpanSet *ss, const Span *s)
@@ -2443,7 +2395,7 @@ distance_spanset_span(const SpanSet *ss, const Span *s)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between two span sets as a double
- * @sqlop @p <->
+ * @sql-cfn #Distance_spanset_span()
  */
 double
 distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)

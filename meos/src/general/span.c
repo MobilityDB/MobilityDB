@@ -360,6 +360,7 @@ span_in(const char *str, meosType spantype)
  * @ingroup libmeos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
  * @return On error return NULL
+ * @sql-cfn #Span_in()
  */
 Span *
 intspan_in(const char *str)
@@ -374,6 +375,7 @@ intspan_in(const char *str)
  * @ingroup libmeos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
  * @return On error return NULL
+ * @sql-cfn #Span_in()
  */
 Span *
 bigintspan_in(const char *str)
@@ -388,6 +390,7 @@ bigintspan_in(const char *str)
  * @ingroup libmeos_setspan_inout
  * @brief Return a float span from its Well-Known Text (WKT) representation.
  * @return On error return NULL
+ * @sql-cfn #Span_in()
  */
 Span *
 floatspan_in(const char *str)
@@ -402,6 +405,7 @@ floatspan_in(const char *str)
  * @ingroup libmeos_setspan_inout
  * @brief Return a date span from its Well-Known Text (WKT) representation.
  * @return On error return NULL
+ * @sql-cfn #Span_in()
  */
 Span *
 datespan_in(const char *str)
@@ -417,6 +421,7 @@ datespan_in(const char *str)
  * @brief Return a timestamptz span from its Well-Known Text (WKT)
  * representation.
  * @return On error return NULL
+ * @sql-cfn #Span_in()
  */
 Span *
 tstzspan_in(const char *str)
@@ -474,6 +479,7 @@ span_out(const Span *s, int maxdd)
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  * @return On error return NULL
+ * @sql-cfn #Span_out()
  */
 char *
 intspan_out(const Span *s)
@@ -488,6 +494,7 @@ intspan_out(const Span *s)
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  * @return On error return NULL
+ * @sql-cfn #Span_out()
  */
 char *
 bigintspan_out(const Span *s)
@@ -502,7 +509,8 @@ bigintspan_out(const Span *s)
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  * @return On error return NULL
- */
+  * @sql-cfn #Span_out()
+*/
 char *
 floatspan_out(const Span *s, int maxdd)
 {
@@ -516,6 +524,7 @@ floatspan_out(const Span *s, int maxdd)
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  * @return On error return NULL
+ * @sql-cfn #Span_out()
  */
 char *
 datespan_out(const Span *s)
@@ -530,6 +539,7 @@ datespan_out(const Span *s)
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  * @return On error return NULL
+ * @sql-cfn #Span_out()
  */
 char *
 tstzspan_out(const Span *s)
@@ -563,7 +573,7 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct an integer span from the bounds.
- * @sqlfunc intspan()
+ * @sql-cfn #Span_constructor()
  */
 Span *
 intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
@@ -578,7 +588,7 @@ intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a big integer span from the bounds.
- * @sqlfunc bigintspan()
+ * @sql-cfn #Span_constructor()
  */
 Span *
 bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
@@ -593,7 +603,7 @@ bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a float span from the bounds.
- * @sqlfunc floatspan()
+ * @sql-cfn #Span_constructor()
  */
 Span *
 floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
@@ -608,7 +618,7 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a date span from the bounds.
- * @sqlfunc datespan()
+ * @sql-cfn #Span_constructor()
  */
 Span *
 datespan_make(DateADT lower, DateADT upper, bool lower_inc, bool upper_inc)
@@ -622,7 +632,7 @@ datespan_make(DateADT lower, DateADT upper, bool lower_inc, bool upper_inc)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a timestamptz span from the bounds.
- * @sqlfunc tstzspan()
+ * @sql-cfn #Span_constructor()
  */
 Span *
 tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
@@ -751,7 +761,7 @@ value_to_span(Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert an integer to a span
- * @sqlop @p ::
+ * @sql-cfn #Value_to_span()
  */
 Span *
 int_to_span(int i)
@@ -766,7 +776,7 @@ int_to_span(int i)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a big integer to a span
- * @sqlop @p ::
+ * @sql-cfn #Value_to_span()
  */
 Span *
 bigint_to_span(int i)
@@ -781,7 +791,7 @@ bigint_to_span(int i)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a float to a span
- * @sqlop @p ::
+ * @sql-cfn #Value_to_span()
  */
 Span *
 float_to_span(double d)
@@ -795,7 +805,7 @@ float_to_span(double d)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a date to a span
- * @sqlop @p ::
+ * @sql-cfn #Value_to_span()
  */
 Span *
 date_to_span(DateADT d)
@@ -810,7 +820,7 @@ date_to_span(DateADT d)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a timestamptz to a span
- * @sqlop @p ::
+ * @sql-cfn #Value_to_span()
  */
 Span *
 timestamptz_to_span(TimestampTz t)
@@ -831,7 +841,7 @@ timestamptz_to_span(TimestampTz t)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span
  * @return On error return INT_MAX
- * @sqlfunc lower()
+ * @sql-cfn #Span_lower()
  */
 int
 intspan_lower(const Span *s)
@@ -846,7 +856,7 @@ intspan_lower(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span
  * @return On error return LONG_MAX
- * @sqlfunc lower()
+ * @sql-cfn #Span_lower()
  */
 int64
 bigintspan_lower(const Span *s)
@@ -861,7 +871,7 @@ bigintspan_lower(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a float span
  * @return On error return DBL_MAX
- * @sqlfunc lower()
+ * @sql-cfn #Span_lower()
  */
 double
 floatspan_lower(const Span *s)
@@ -876,7 +886,7 @@ floatspan_lower(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a date span
  * @return On error return DATEVAL_NOEND
- * @sqlfunc lower()
+ * @sql-cfn #Span_lower()
  */
 DateADT
 datespan_lower(const Span *s)
@@ -891,7 +901,7 @@ datespan_lower(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a timestamptz span
  * @return On error return DT_NOEND
- * @sqlfunc lower()
+ * @sql-cfn #Span_lower()
  */
 TimestampTz
 tstzspan_lower(const Span *s)
@@ -906,7 +916,7 @@ tstzspan_lower(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span
  * @return On error return INT_MAX
- * @sqlfunc upper()
+ * @sql-cfn #Span_upper()
  */
 int
 intspan_upper(const Span *s)
@@ -921,7 +931,7 @@ intspan_upper(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span
  * @return On error return LONG_MAX
- * @sqlfunc upper()
+ * @sql-cfn #Span_upper()
  */
 int64
 bigintspan_upper(const Span *s)
@@ -936,7 +946,7 @@ bigintspan_upper(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a float span
  * @return On error return DBL_MAX
- * @sqlfunc upper()
+ * @sql-cfn #Span_upper()
  */
 double
 floatspan_upper(const Span *s)
@@ -951,7 +961,7 @@ floatspan_upper(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a date span
  * @return On error return DATEVAL_NOEND
- * @sqlfunc upper()
+ * @sql-cfn #Span_upper()
  */
 DateADT
 datespan_upper(const Span *s)
@@ -966,7 +976,7 @@ datespan_upper(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a timestamptz span
  * @return On error return DT_NOEND
- * @sqlfunc upper()
+ * @sql-cfn #Span_upper()
  */
 TimestampTz
 tstzspan_upper(const Span *s)
@@ -980,7 +990,7 @@ tstzspan_upper(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return true if the lower bound of a span is inclusive
- * @sqlfunc lower_inc()
+ * @sql-cfn #Span_lower_inc()
  */
 bool
 span_lower_inc(const Span *s)
@@ -994,7 +1004,7 @@ span_lower_inc(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return true if the upper bound of a span is inclusive
- * @sqlfunc upper_inc()
+ * @sql-cfn #Span_lower_inc()
  */
 bool
 span_upper_inc(const Span *s)
@@ -1010,7 +1020,7 @@ span_upper_inc(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the width of a span as a double.
  * @return On error return -1.0
- * @sqlfunc width()
+ * @sql-cfn #Span_width()
  */
 double
 span_width(const Span *s)
@@ -1024,7 +1034,7 @@ span_width(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the duration of a date span as an interval.
- * @sqlfunc duration()
+ * @sql-cfn #Datespan_duration()
  */
 Interval *
 datespan_duration(const Span *s)
@@ -1041,7 +1051,7 @@ datespan_duration(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the duration of a timestamptz span as an interval.
- * @sqlfunc duration()
+ * @sql-cfn #Tstzspan_duration()
  */
 Interval *
 tstzspan_duration(const Span *s)
@@ -1459,7 +1469,7 @@ tstzspan_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
 /**
  * @ingroup libmeos_internal_setspan_transf
  * @brief Shift and/or scale a number span by the values.
- * @sqlfunc shift(), scale(), shiftScale()
+ * @sql-cfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
  */
 Span *
 numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
@@ -1483,7 +1493,7 @@ numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Return an integer span shifted and/or scaled by the values
- * @sqlfunc shift(), scale(), shiftScale()
+ * @sql-cfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
  */
 Span *
 intspan_shift_scale(const Span *s, int shift, int width, bool hasshift,
@@ -1500,7 +1510,7 @@ intspan_shift_scale(const Span *s, int shift, int width, bool hasshift,
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Return a big integer span shifted and/or scaled by the values
- * @sqlfunc shift(), scale(), shiftScale()
+ * @sql-cfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
  */
 Span *
 bigintspan_shift_scale(const Span *s, int64 shift, int64 width, bool hasshift,
@@ -1517,7 +1527,7 @@ bigintspan_shift_scale(const Span *s, int64 shift, int64 width, bool hasshift,
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Return a float span shifted and/or scaled by the values
- * @sqlfunc shift(), scale(), shiftScale()
+ * @sql-cfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
  */
 Span *
 floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift,
@@ -1534,7 +1544,7 @@ floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift,
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Return a date span shifted and/or scaled by the values
- * @sqlfunc shift(), scale(), shiftScale()
+ * @sql-cfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
  */
 Span *
 datespan_shift_scale(const Span *s, int shift, int width, bool hasshift,
@@ -1552,7 +1562,7 @@ datespan_shift_scale(const Span *s, int shift, int width, bool hasshift,
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Shift and/or scale a timestamptz span by the intervals.
- * @sqlfunc shift(), scale(), shiftScale()
+ * @sql-cfn #Tstzspan_shift(), #Tstzspan_scale(), #Tstzspan_shift_scale()
  */
 Span *
 tstzspan_shift_scale(const Span *s, const Interval *shift,
@@ -1576,7 +1586,7 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
 }
 
 /*****************************************************************************
- * Btree support
+ * Comparison functions for defining B-tree indexes
  *****************************************************************************/
 
 /**
@@ -1597,7 +1607,7 @@ span_eq1(const Span *s1, const Span *s2)
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the two spans are equal.
  * @note The internal B-tree comparator is not used to increase efficiency
- * @sqlop @p =
+ * @sql-cfn #Span_eq()
  */
 bool
 span_eq(const Span *s1, const Span *s2)
@@ -1612,7 +1622,7 @@ span_eq(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is different from the second one.
- * @sqlop @p <>
+ * @sql-cfn #Span_ne()
  */
 bool
 span_ne(const Span *s1, const Span *s2)
@@ -1647,7 +1657,7 @@ span_cmp1(const Span *s1, const Span *s2)
  * @brief Return -1, 0, or 1 depending on whether the first span is less than,
  * equal, or greater than the second one.
  * @note Function used for B-tree comparison
- * @sqlfunc intspan_cmp(), bigintspan_cmp(), floatspan_cmp(), tstzspan_cmp()
+ * @sql-cfn #Span_cmp()
  */
 int
 span_cmp(const Span *s1, const Span *s2)
@@ -1664,7 +1674,7 @@ span_cmp(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is less than the second one.
- * @sqlop @p <
+ * @sql-cfn #Span_lt()
  */
 bool
 span_lt(const Span *s1, const Span *s2)
@@ -1676,7 +1686,7 @@ span_lt(const Span *s1, const Span *s2)
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is less than or equal to the
  * second one.
- * @sqlop @p <=
+ * @sql-cfn #Span_le()
  */
 bool
 span_le(const Span *s1, const Span *s2)
@@ -1688,7 +1698,7 @@ span_le(const Span *s1, const Span *s2)
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is greater than or equal to the
  * second one.
- * @sqlop @p >=
+ * @sql-cfn #Span_gt()
  */
 bool
 span_ge(const Span *s1, const Span *s2)
@@ -1699,7 +1709,7 @@ span_ge(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is greater than the second one.
- * @sqlop @p >
+ * @sql-cfn #Span_ge()
  */
 bool
 span_gt(const Span *s1, const Span *s2)
@@ -1708,14 +1718,14 @@ span_gt(const Span *s1, const Span *s2)
 }
 
 /*****************************************************************************
- * Hash support
+ * Functions for defining hash indexes
  *****************************************************************************/
 
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash of a span.
  * @return On error return INT_MAX
- * @sqlfunc intspan_hash(), bigintspan_hash(), floatspan_hash(), tstzspan_hash()
+ * @sql-cfn #Span_hash()
  */
 uint32
 span_hash(const Span *s)
@@ -1754,7 +1764,7 @@ span_hash(const Span *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash of a span using a seed
  * @return On error return INT_MAX
- * @sqlfunc hash_extended()
+ * @sql-cfn #Span_hash_extended()
  */
 uint64
 span_hash_extended(const Span *s, uint64 seed)

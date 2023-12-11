@@ -1037,7 +1037,6 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
  * @param[in] count Number of buckets
  * @param[out] buckets Start timestamp of the buckets containing a fragment
  * @param[out] newcount Number of values in the output array
- * @sqlfunc timeSplit()
  */
 static Temporal **
 temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
@@ -1073,7 +1072,7 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
  * @param[in] torigin Time origin of the buckets
  * @param[out] buckets Array of buckets
  * @param[out] count Number of values in the output array
- * @sqlfunc timeSplit()
+ * @sql-cfn #Temporal_time_split()
  */
 Temporal **
 temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
@@ -1697,7 +1696,7 @@ tnumber_value_time_split(Temporal *temp, Datum size, Interval *duration,
  * @param[in] origin Time origin of the buckets
  * @param[out] buckets Array of buckets
  * @param[out] count Number of values in the output array
- * @sqlfunc valueSplit()
+ * @sql-cfn #Tnumber_value_split()
  */
 Temporal **
 tint_value_split(Temporal *temp, int size, int origin, int **buckets,
@@ -1729,7 +1728,7 @@ tint_value_split(Temporal *temp, int size, int origin, int **buckets,
  * @param[in] origin Time origin of the buckets
  * @param[out] buckets Array of buckets
  * @param[out] count Number of values in the output array
- * @sqlfunc valueSplit()
+ * @sql-cfn #Tnumber_value_split()
  */
 Temporal **
 tfloat_value_split(Temporal *temp, double size, double origin,
@@ -1766,7 +1765,7 @@ tfloat_value_split(Temporal *temp, double size, double origin,
  * @param[out] value_buckets Array of value buckets
  * @param[out] time_buckets Array of time buckets
  * @param[out] count Number of values in the output array
- * @sqlfunc timeSplit()
+ * @sql-cfn #Temporal_time_split()
  */
 Temporal **
 tint_value_time_split(Temporal *temp, int size, Interval *duration,
@@ -1805,7 +1804,7 @@ tint_value_time_split(Temporal *temp, int size, Interval *duration,
  * @param[out] value_buckets Array of value buckets
  * @param[out] time_buckets Array of time buckets
  * @param[out] count Number of values in the output array
- * @sqlfunc timeSplit()
+ * @sql-cfn #Temporal_time_split()
  */
 Temporal **
 tfloat_value_time_split(Temporal *temp, double size, Interval *duration,

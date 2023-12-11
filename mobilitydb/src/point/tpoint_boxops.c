@@ -69,7 +69,7 @@ PG_FUNCTION_INFO_V1(Tpoint_stboxes);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return an array of spatiotemporal boxes from a temporal point
- * @sqlfunc stboxes()
+ * @sqlfn stboxes()
  */
 Datum
 Tpoint_stboxes(PG_FUNCTION_ARGS)
@@ -157,7 +157,7 @@ PG_FUNCTION_INFO_V1(Overlaps_stbox_tpoint);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * temporal point overlap
- * @sqlfunc overlaps_bbox()
+ * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
 Datum
@@ -172,7 +172,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tpoint_stbox);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the spatiotemporal box of a temporal point and a
  * spatiotemporal box overlap
- * @sqlfunc overlaps_bbox()
+ * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
 Datum
@@ -186,7 +186,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the spatiotemporal boxes of two temporal points overlap
- * @sqlfunc overlaps_bbox()
+ * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
 Datum
@@ -205,7 +205,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_tpoint);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if a spatiotemporal box contains the one of a temporal
  * point
- * @sqlfunc contains_bbox()
+ * @sqlfn contains_bbox()
  * @sqlop @p <@
  */
 Datum
@@ -220,7 +220,7 @@ PG_FUNCTION_INFO_V1(Contains_tpoint_stbox);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the spatiotemporal box of a temporal point contains a
  * spatiotemporal box
- * @sqlfunc contains_bbox()
+ * @sqlfn contains_bbox()
  * @sqlop @p <@
  */
 Datum
@@ -235,7 +235,7 @@ PG_FUNCTION_INFO_V1(Contains_tpoint_tpoint);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the spatiotemporal box of the first temporal point
  * contains the one of the second temporal point
- * @sqlfunc contains_bbox()
+ * @sqlfn contains_bbox()
  * @sqlop @p <@
  */
 Datum
@@ -254,7 +254,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_tpoint);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if a spatiotemporal box is contained in the
  * spatiotemporal box of a temporal point
- * @sqlfunc contained_bbox()
+ * @sqlfn contained_bbox()
  * @sqlop @p \@>
  */
 Datum
@@ -269,7 +269,7 @@ PG_FUNCTION_INFO_V1(Contained_tpoint_stbox);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the spatiotemporal box of a temporal point is
  * contained in the spatiotemporal box
- * @sqlfunc contained_bbox()
+ * @sqlfn contained_bbox()
  * @sqlop @p \@>
  */
 Datum
@@ -284,7 +284,7 @@ PG_FUNCTION_INFO_V1(Contained_tpoint_tpoint);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the spatiotemporal box of the first temporal point is
  * contained in the one of the second temporal point
- * @sqlfunc contained_bbox()
+ * @sqlfn contained_bbox()
  * @sqlop @p \@>
  */
 Datum
@@ -303,7 +303,7 @@ PG_FUNCTION_INFO_V1(Same_stbox_tpoint);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * temporal point are equal in the common dimensions
- * @sqlfunc same_bbox()
+ * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
 Datum
@@ -318,7 +318,7 @@ PG_FUNCTION_INFO_V1(Same_tpoint_stbox);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the spatiotemporal box of a temporal point and a
  * spatiotemporal box are equal in the common dimensions
- * @sqlfunc same_bbox()
+ * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
 Datum
@@ -333,7 +333,7 @@ PG_FUNCTION_INFO_V1(Same_tpoint_tpoint);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the spatiotemporal boxes of two temporal points are
  * equal in the common dimensions
- * @sqlfunc same_bbox()
+ * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
 Datum
@@ -352,7 +352,7 @@ PG_FUNCTION_INFO_V1(Adjacent_stbox_tpoint);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * temporal point are adjacent
- * @sqlfunc adjacent_bbox()
+ * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
 Datum
@@ -367,7 +367,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tpoint_stbox);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the spatiotemporal box of a temporal point and a
  * spatiotemporal box are adjacent
- * @sqlfunc adjacent_bbox()
+ * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
 Datum
@@ -382,7 +382,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tpoint_tpoint);
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the spatiotemporal boxes of two temporal points are
  * adjacent
- * @sqlfunc adjacent_bbox()
+ * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
 Datum

@@ -63,7 +63,7 @@ PG_FUNCTION_INFO_V1(Span_in);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Input function for span types
- * @sqlfunc span_in()
+ * @sqlfn span_in()
  */
 Datum
 Span_in(PG_FUNCTION_ARGS)
@@ -79,7 +79,7 @@ PG_FUNCTION_INFO_V1(Span_out);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Output function for span types
- * @sqlfunc span_out()
+ * @sqlfn span_out()
  */
 Datum
 Span_out(PG_FUNCTION_ARGS)
@@ -93,7 +93,7 @@ PG_FUNCTION_INFO_V1(Span_recv);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Receive function for span types
- * @sqlfunc span_recv()
+ * @sqlfn span_recv()
  */
 Datum
 Span_recv(PG_FUNCTION_ARGS)
@@ -110,7 +110,7 @@ PG_FUNCTION_INFO_V1(Span_send);
 /*
  * @ingroup mobilitydb_setspan_inout
  * @brief Send function for span types
- * @sqlfunc span_send()
+ * @sqlfn span_send()
  */
 Datum
 Span_send(PG_FUNCTION_ARGS)
@@ -134,7 +134,7 @@ PG_FUNCTION_INFO_V1(Span_constructor);
 /**
  * @ingroup mobilitydb_setspan_constructor
  * @brief Construct a span from the arguments
- * @sqlfunc intspan(), floatspan(), ...
+ * @sqlfn intspan(), floatspan(), ...
  */
 Datum
 Span_constructor(PG_FUNCTION_ARGS)
@@ -159,7 +159,7 @@ PG_FUNCTION_INFO_V1(Value_to_span);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a value to a span
- * @sqlfunc span()
+ * @sqlfn span()
  * @sqlop @p ::
  */
 Datum
@@ -176,7 +176,7 @@ PG_FUNCTION_INFO_V1(Intspan_to_floatspan);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert an integer span to a float span
- * @sqlfunc floatspan()
+ * @sqlfn floatspan()
  * @sqlop @p ::
  */
 Datum
@@ -192,7 +192,7 @@ PG_FUNCTION_INFO_V1(Floatspan_to_intspan);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a float span to a integer span
- * @sqlfunc intspan()
+ * @sqlfn intspan()
  * @sqlop @p ::
  */
 Datum
@@ -208,7 +208,7 @@ PG_FUNCTION_INFO_V1(Datespan_to_tstzspan);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a date span to a timestamptz span
- * @sqlfunc tstzspan()
+ * @sqlfn tstzspan()
  * @sqlop @p ::
  */
 Datum
@@ -224,7 +224,7 @@ PG_FUNCTION_INFO_V1(Tstzspan_to_datespan);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a timestamptz span to a date span
- * @sqlfunc datespan()
+ * @sqlfn datespan()
  * @sqlop @p ::
  */
 Datum
@@ -242,7 +242,7 @@ PG_FUNCTION_INFO_V1(Span_to_range);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a span to a range 
- * @sqlfunc int4range(), tstzrange()
+ * @sqlfn int4range(), tstzrange()
  * @sqlop @p ::
  */
 Datum
@@ -294,7 +294,7 @@ PG_FUNCTION_INFO_V1(Range_to_span);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a PostgreSQL range to a span
- * @sqlfunc intspan(), tstzspan()
+ * @sqlfn intspan(), tstzspan()
  * @sqlop @p ::
  */
 Datum
@@ -321,7 +321,7 @@ PG_FUNCTION_INFO_V1(Span_lower);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the lower bound of a span
- * @sqlfunc lower()
+ * @sqlfn lower()
  */
 Datum
 Span_lower(PG_FUNCTION_ARGS)
@@ -335,7 +335,7 @@ PG_FUNCTION_INFO_V1(Span_upper);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the upper bound of a span
- * @sqlfunc upper()
+ * @sqlfn upper()
  */
 Datum
 Span_upper(PG_FUNCTION_ARGS)
@@ -351,7 +351,7 @@ PG_FUNCTION_INFO_V1(Span_lower_inc);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the lower bound of a span is inclusive
- * @sqlfunc lower_inc()
+ * @sqlfn lower_inc()
  */
 Datum
 Span_lower_inc(PG_FUNCTION_ARGS)
@@ -365,7 +365,7 @@ PG_FUNCTION_INFO_V1(Span_upper_inc);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the upper bound of a span is inclusive
- * @sqlfunc lower_inc()
+ * @sqlfn lower_inc()
  */
 Datum
 Span_upper_inc(PG_FUNCTION_ARGS)
@@ -379,7 +379,7 @@ PG_FUNCTION_INFO_V1(Span_width);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the width of a number span
- * @sqlfunc width()
+ * @sqlfn width()
  */
 Datum
 Span_width(PG_FUNCTION_ARGS)
@@ -394,7 +394,7 @@ PG_FUNCTION_INFO_V1(Datespan_duration);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the duration of a date span
- * @sqlfunc duration()
+ * @sqlfn duration()
  */
 Datum
 Datespan_duration(PG_FUNCTION_ARGS)
@@ -409,7 +409,7 @@ PG_FUNCTION_INFO_V1(Tstzspan_duration);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the duration of a timestamptz span
- * @sqlfunc duration()
+ * @sqlfn duration()
  */
 Datum
 Tstzspan_duration(PG_FUNCTION_ARGS)
@@ -428,7 +428,7 @@ PG_FUNCTION_INFO_V1(Numspan_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span shifted by a value
- * @sqlfunc shift()
+ * @sqlfn shift()
  */
 Datum
 Numspan_shift(PG_FUNCTION_ARGS)
@@ -444,7 +444,7 @@ PG_FUNCTION_INFO_V1(Tstzspan_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a timestamptz span shifted by an interval
- * @sqlfunc shift()
+ * @sqlfn shift()
  */
 Datum
 Tstzspan_shift(PG_FUNCTION_ARGS)
@@ -460,7 +460,7 @@ PG_FUNCTION_INFO_V1(Numspan_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span scaled by a value
- * @sqlfunc scale()
+ * @sqlfn scale()
  */
 Datum
 Numspan_scale(PG_FUNCTION_ARGS)
@@ -476,7 +476,7 @@ PG_FUNCTION_INFO_V1(Tstzspan_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a timestamptz span scaled by an interval
- * @sqlfunc scale()
+ * @sqlfn scale()
  */
 Datum
 Tstzspan_scale(PG_FUNCTION_ARGS)
@@ -492,7 +492,7 @@ PG_FUNCTION_INFO_V1(Numspan_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span shifted and scaled by the values
- * @sqlfunc shiftScale()
+ * @sqlfn shiftScale()
  */
 Datum
 Numspan_shift_scale(PG_FUNCTION_ARGS)
@@ -509,7 +509,7 @@ PG_FUNCTION_INFO_V1(Tstzspan_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a timestamptz span shifted and scaled by the intervals
- * @sqlfunc shiftScale()
+ * @sqlfn shiftScale()
  */
 Datum
 Tstzspan_shift_scale(PG_FUNCTION_ARGS)
@@ -527,7 +527,7 @@ PG_FUNCTION_INFO_V1(Floatspan_round);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a float span where the precision of the values is set to
  * a number of decimal places
- * @sqlfunc round()
+ * @sqlfn round()
  */
 Datum
 Floatspan_round(PG_FUNCTION_ARGS)
@@ -547,7 +547,7 @@ PG_FUNCTION_INFO_V1(Span_eq);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is equal to the second one
- * @sqlfunc span_eq()
+ * @sqlfn span_eq()
  * @sqlop @p =
  */
 Datum
@@ -563,7 +563,7 @@ PG_FUNCTION_INFO_V1(Span_ne);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is different from the second one
- * @sqlfunc span_ne()
+ * @sqlfn span_ne()
  * @sqlop @p <>
  */
 Datum
@@ -580,7 +580,7 @@ PG_FUNCTION_INFO_V1(Span_cmp);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span
  * is less than, equal, or greater than the second one
- * @sqlfunc span_cmp()
+ * @sqlfn span_cmp()
  */
 Datum
 Span_cmp(PG_FUNCTION_ARGS)
@@ -595,7 +595,7 @@ PG_FUNCTION_INFO_V1(Span_lt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is less than the second one
- * @sqlfunc span_lt()
+ * @sqlfn span_lt()
  * @sqlop @p <
  */
 Datum
@@ -611,7 +611,7 @@ PG_FUNCTION_INFO_V1(Span_le);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is less than or equal to the second one
- * @sqlfunc span_le()
+ * @sqlfn span_le()
  * @sqlop @p <=
  */
 Datum
@@ -628,7 +628,7 @@ PG_FUNCTION_INFO_V1(Span_ge);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is greater than or equal to the second
  * one
- * @sqlfunc span_ge()
+ * @sqlfn span_ge()
  * @sqlop @p >=
  */
 Datum
@@ -644,7 +644,7 @@ PG_FUNCTION_INFO_V1(Span_gt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is greater than the second one
- * @sqlfunc span_gt()
+ * @sqlfn span_gt()
  * @sqlop @p >
  */
 Datum
@@ -664,7 +664,7 @@ PG_FUNCTION_INFO_V1(Span_hash);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 32-bit hash value of a span
- * @sqlfunc span_hash()
+ * @sqlfn span_hash()
  */
 Datum
 Span_hash(PG_FUNCTION_ARGS)
@@ -679,7 +679,7 @@ PG_FUNCTION_INFO_V1(Span_hash_extended);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 64-bit hash value of a span using a seed
- * @sqlfunc hash_extended()
+ * @sqlfn hash_extended()
  */
 Datum
 Span_hash_extended(PG_FUNCTION_ARGS)

@@ -558,8 +558,6 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs, int count,
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Compute the bounding box of a temporal sequence
- * @sqlfunc period(), tbox(), stbox()
- * @sqlop @p ::
  */
 void
 tsequence_set_bbox(const TSequence *seq, void *box)
@@ -1046,7 +1044,7 @@ tsequence_make_exp(const TInstant **instants, int count, int maxcount,
  * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
  * @param[in] normalize True if the resulting value should be normalized
- * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
+ * @sql-cfn #Tsequence_constructor()
  */
 TSequence *
 tsequence_make(const TInstant **instants, int count, bool lower_inc,
@@ -1161,7 +1159,7 @@ tsequence_copy(const TSequence *seq)
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal discrete sequence from a base value and a
  * timestamp set.
- * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
+ * @sql-cfn #Tsequence_from_base_tstzset()
  * etc.
  */
 TSequence *
@@ -1392,7 +1390,7 @@ datum_distance(Datum value1, Datum value2, meosType basetype, int16 flags)
  * @param[in] maxdist Maximum distance for defining a gap
  * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
- * @sqlfunc appendInstantGaps
+ * @sql-cfn #Temporal_append_tinstant()
  */
 Temporal *
 tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
@@ -1576,7 +1574,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
  * @param[in,out] seq1 Temporal sequence
  * @param[in] seq2 Temporal sequence to append
  * @param[in] expand True when reserving space for additional sequences
- * @sqlfunc appendSequence()
+ * @sql-cfn #Temporal_append_tsequence()
  */
 Temporal *
 tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
@@ -1647,7 +1645,7 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
 /**
  * @ingroup libmeos_internal_temporal_modif
  * @brief Merge two temporal sequences.
- * @sqlfunc merge()
+ * @sql-cfn #Temporal_merge()
  */
 Temporal *
 tsequence_merge(const TSequence *seq1, const TSequence *seq2)
@@ -1797,7 +1795,7 @@ tsequence_merge_array1(const TSequence **sequences, int count,
  * @param[in] sequences Array of values
  * @param[in] count Number of elements in the array
  * @note The values in the array may overlap on a single instant.
- * @sqlfunc merge()
+ * @sql-cfn #Temporal_merge_array()
  */
 Temporal *
 tsequence_merge_array(const TSequence **sequences, int count)
@@ -1926,7 +1924,7 @@ tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal instant transformed into a temporal sequence.
- * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
+ * @sql-cfn #Temporal_to_tsequence()
  */
 TSequence *
 tinstant_to_tsequence(const TInstant *inst, interpType interp)
@@ -2100,7 +2098,7 @@ tcontseq_to_linear(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal value transformed to the given interpolation.
- * @sqlfunc setInterp
+ * @sql-cfn #Temporal_set_interp
  */
 Temporal *
 tsequence_set_interp(const TSequence *seq, interpType interp)
@@ -2193,7 +2191,8 @@ tsequence_shift_scale_time_iter(TSequence *seq, TimestampTz delta,
  * @brief Return a temporal sequence whose value dimension is shifted and/or
  * scaled by the values.
  * @pre The width is greater than 0 if it is not NULL // TODO
- * @sqlfunc shiftValue(), scaleValue(), shiftScaleValue().
+ * @sql-cfn #Tnumber_shift_value(), #Tnumber_scale_value(),
+ *    #Tnumber_shift_scale_value()
  */
 TSequence *
 tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
@@ -2222,7 +2221,8 @@ tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence shifted and/or scaled by the intervals.
  * @pre The duration is greater than 0 if it is not NULL
- * @sqlfunc shiftTime(), scaleTime(), shiftScaleTime().
+ * @sql-cfn #Temporal_shift_time(), #Temporal_scale_time(),
+ *    #Temporal_shift_scale_time()
  */
 TSequence *
 tsequence_shift_scale_time(const TSequence *seq, const Interval *shift,
@@ -2254,7 +2254,7 @@ tsequence_shift_scale_time(const TSequence *seq, const Interval *shift,
  * @param[in] seq Temporal sequence
  * @param[out] count Number of values in the resulting array
  * @result Array of values
- * @sqlfunc getValues()
+ * @sql-cfn #Temporal_valueset()
  */
 Datum *
 tsequence_values(const TSequence *seq, int *count)
@@ -2281,7 +2281,7 @@ tsequence_values(const TSequence *seq, int *count)
  * For temporal floats with linear interpolation the result is a singleton.
  * Otherwise, the result is a span set composed of instantenous spans, one for
  * each distinct value.
- * @sqlfunc getValues()
+ * @sql-cfn #Tnumber_valuespans()
  */
 SpanSet *
 tnumberseq_valuespans(const TSequence *seq)
@@ -2311,7 +2311,7 @@ tnumberseq_valuespans(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the time frame of a temporal sequence as a span set.
- * @sqlfunc getTime()
+ * @sql-cfn #Temporal_time()
  */
 SpanSet *
 tsequence_time(const TSequence *seq)
@@ -2341,7 +2341,7 @@ tsequence_time(const TSequence *seq)
  * exclusive bound or not
  * @note Function used, e.g., for computing the shortest line between two
  * temporal points from their temporal distance
- * @sqlfunc minInstant()
+ * @sql-cfn #Temporal_min_instant()
  */
 const TInstant *
 tsequence_min_instant(const TSequence *seq)
@@ -2369,7 +2369,7 @@ tsequence_min_instant(const TSequence *seq)
  *
  * @note The function does not take into account whether the instant is at an
  * exclusive bound or not.
- * @sqlfunc maxInstant()
+ * @sql-cfn #Temporal_max_instant()
  */
 const TInstant *
 tsequence_max_instant(const TSequence *seq)
@@ -2393,7 +2393,7 @@ tsequence_max_instant(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the minimum base value of a temporal sequence.
- * @sqlfunc minValue()
+ * @sql-cfn #Temporal_min_value()
  */
 Datum
 tsequence_min_value(const TSequence *seq)
@@ -2419,7 +2419,7 @@ tsequence_min_value(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the maximum base value of a temporal sequence.
- * @sqlfunc maxValue()
+ * @sql-cfn #Temporal_max_value()
  */
 Datum
 tsequence_max_value(const TSequence *seq)
@@ -2450,7 +2450,7 @@ tsequence_max_value(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the duration of a temporal sequence.
- * @sqlfunc duration()
+ * @sql-cfn #Temporal_duration()
  */
 Interval *
 tsequence_duration(const TSequence *seq)
@@ -2462,8 +2462,6 @@ tsequence_duration(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Compute the bounding period of a temporal sequence
- * @sqlfunc period()
- * @sqlop @p ::
  */
 void
 tsequence_set_tstzspan(const TSequence *seq, Span *s)
@@ -2476,7 +2474,7 @@ tsequence_set_tstzspan(const TSequence *seq, Span *s)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the singleton array of sequences of a temporal sequence.
- * @sqlfunc sequences()
+ * @sql-cfn #Temporal_sequences()
  */
 TSequence **
 tsequence_sequences(const TSequence *seq, int *count)
@@ -2547,7 +2545,7 @@ tsequence_segments_iter(const TSequence *seq, TSequence **result)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of segments of a temporal sequence.
- * @sqlfunc segments()
+ * @sql-cfn #Temporal_segments()
  */
 TSequence **
 tsequence_segments(const TSequence *seq, int *count)
@@ -2578,7 +2576,7 @@ tsequence_segments(const TSequence *seq, int *count)
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of distinct instants of a temporal sequence.
  * @note By definition, all instants of a sequence are distinct
- * @sqlfunc instants()
+ * @sql-cfn #Temporal_instants()
  */
 const TInstant **
 tsequence_instants(const TSequence *seq)
@@ -2593,7 +2591,7 @@ tsequence_instants(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the start timestamp of a temporal sequence.
- * @sqlfunc startTimestamp()
+ * @sql-cfn #Temporal_start_timestamp()
  */
 TimestampTz
 tsequence_start_timestamp(const TSequence *seq)
@@ -2605,7 +2603,7 @@ tsequence_start_timestamp(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the end timestamp of a temporal sequence.
- * @sqlfunc endTimestamp()
+ * @sql-cfn #Temporal_end_timestamp()
  */
 TimestampTz
 tsequence_end_timestamp(const TSequence *seq)
@@ -2635,7 +2633,7 @@ tsequence_timestamps_iter(const TSequence *seq, TimestampTz *times)
  * @param[out] count Number of elements in the output array
  * @post The output parameter count is equal to the number of instants of the
  * input temporal sequence
- * @sqlfunc timestamps()
+ * @sql-cfn #Temporal_timestamps()
  */
 TimestampTz *
 tsequence_timestamps(const TSequence *seq, int *count)
@@ -2743,7 +2741,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
  * @param[in] strict True if inclusive/exclusive bounds are taken into account
  * @param[out] result Base value
  * @result Return true if the timestamp is contained in the temporal sequence
- * @sqlfunc valueAtTimestamp()
+ * @sql-cfn #Temporal_value_at_timestamptz()
  */
 bool
 tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
@@ -4508,7 +4506,8 @@ tdiscseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
  * @param[in] min True if restricted to the minumum value, false for the
  * maximum value
  * @param[in] atfunc True if the restriction is at, false for minus
- * @sqlfunc atMin(), atMax(), minusMin(), minusMax()
+ * @sql-cfn #Temporal_at_min(), #Temporal_at_max(), #Temporal_minus_min(),
+ *    #Temporal_minus_max()
  */
 TSequenceSet *
 tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
@@ -5194,7 +5193,7 @@ tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to a timestamptz span.
- * @sqlfunc atPeriod()
+ * @sql-cfn #Temporal_at_tstzspan()
  */
 TSequence *
 tsequence_at_tstzspan(const TSequence *seq, const Span *s)
@@ -5266,7 +5265,7 @@ tcontseq_minus_tstzspan(const TSequence *seq, const Span *s)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a timestamptz span.
- * @sqlfunc atTime, minusTime
+ * @sql-cfn #Temporal_at_tstzspan(), #Temporal_minus_tstzspan()
  */
 Temporal *
 tsequence_restrict_tstzspan(const TSequence *seq, const Span *s, bool atfunc)
@@ -5553,7 +5552,7 @@ tcontseq_delete_timestamptz(const TSequence *seq, TimestampTz t)
  * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a timestamp from a temporal value connecting the instants
  * before and after the given timestamp (if any).
- * @sqlfunc deleteTime
+ * @sql-cfn #Temporal_delete_timestamptz()
  */
 Temporal *
 tsequence_delete_timestamptz(const TSequence *seq, TimestampTz t, bool connect)
@@ -5662,7 +5661,7 @@ tcontseq_delete_tstzset(const TSequence *seq, const Set *s)
  * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a timestamp set from a temporal value connecting the instants
  * before and after the given timestamp set (if any).
- * @sqlfunc deleteTime
+ * @sql-cfn #Temporal_delete_tstzset()
  */
 Temporal *
 tsequence_delete_tstzset(const TSequence *seq, const Set *s, bool connect)
@@ -5729,7 +5728,7 @@ tcontseq_delete_tstzspan(const TSequence *seq, const Span *s)
  * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a timestamptz span from a temporal value connecting the instants
  * before and after the given period (if any).
- * @sqlfunc deleteTime
+ * @sql-cfn #Temporal_delete_tstzspan()
  */
 Temporal *
 tsequence_delete_tstzspan(const TSequence *seq, const Span *s, bool connect)
@@ -5805,7 +5804,7 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
  * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a span set from a temporal value connecting the instants
  * before and after the given span set (if any).
- * @sqlfunc deleteTime
+ * @sql-cfn #Temporal_delete_tstzspanset()
  */
 Temporal *
 tsequence_delete_tstzspanset(const TSequence *seq, const SpanSet *ss,
@@ -5921,7 +5920,7 @@ tnumbercontseq_twavg(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_agg
  * @brief Return the time-weighted average of a temporal sequence number
- * @sqlfunc twAvg()
+ * @sql-cfn #Tnumber_twavg()
  */
 double
 tnumberseq_twavg(const TSequence *seq)
@@ -5979,7 +5978,7 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
  * @pre The arguments are of the same base type
  * @note Period and bounding box comparison have been done by the calling
  * function temporal_cmp
- * @sqlfunc tbool_cmp(), tint_cmp(), tfloat_cmp(), ttext_cmp(), etc.
+ * @sql-cfn #Temporal_cmp()
  */
 int
 tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
@@ -6021,7 +6020,7 @@ tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal sequence.
- * @sqlfunc tbool_hash(), tint_hash(), tfloat_hash(), ttext_hash(), etc.
+ * @sql-cfn #Temporal_hash()
  */
 uint32
 tsequence_hash(const TSequence *seq)

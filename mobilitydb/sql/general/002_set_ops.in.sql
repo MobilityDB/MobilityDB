@@ -1194,7 +1194,7 @@ CREATE OPERATOR + (
 /*****************************************************************************/
 
 CREATE FUNCTION set_minus(integer, intset)
-  RETURNS integer
+  RETURNS intset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(intset, integer)
@@ -1207,7 +1207,7 @@ CREATE FUNCTION set_minus(intset, intset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_minus(bigint, bigintset)
-  RETURNS bigint
+  RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(bigintset, bigint)
@@ -1220,7 +1220,7 @@ CREATE FUNCTION set_minus(bigintset, bigintset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_minus(float, floatset)
-  RETURNS float
+  RETURNS floatset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(floatset, float)
@@ -1233,7 +1233,7 @@ CREATE FUNCTION set_minus(floatset, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_minus(text, textset)
-  RETURNS text
+  RETURNS textset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(textset, text)
@@ -1246,7 +1246,7 @@ CREATE FUNCTION set_minus(textset, textset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_minus(date, dateset)
-  RETURNS date
+  RETURNS dateset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(dateset, date)
@@ -1259,7 +1259,7 @@ CREATE FUNCTION set_minus(dateset, dateset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_minus(timestamptz, tstzset)
-  RETURNS timestamptz
+  RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(tstzset, timestamptz)
@@ -1352,11 +1352,11 @@ CREATE OPERATOR - (
 /*****************************************************************************/
 
 CREATE FUNCTION set_intersection(integer, intset)
-  RETURNS integer
+  RETURNS intset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(intset, integer)
-  RETURNS integer
+  RETURNS intset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(intset, intset)
@@ -1365,11 +1365,11 @@ CREATE FUNCTION set_intersection(intset, intset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_intersection(bigint, bigintset)
-  RETURNS bigint
+  RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(bigintset, bigint)
-  RETURNS bigint
+  RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(bigintset, bigintset)
@@ -1378,11 +1378,11 @@ CREATE FUNCTION set_intersection(bigintset, bigintset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_intersection(float, floatset)
-  RETURNS float
+  RETURNS floatset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(floatset, float)
-  RETURNS float
+  RETURNS floatset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(floatset, floatset)
@@ -1391,11 +1391,11 @@ CREATE FUNCTION set_intersection(floatset, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_intersection(text, textset)
-  RETURNS text
+  RETURNS textset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(textset, text)
-  RETURNS text
+  RETURNS textset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(textset, textset)
@@ -1404,11 +1404,11 @@ CREATE FUNCTION set_intersection(textset, textset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_intersection(date, dateset)
-  RETURNS date
+  RETURNS dateset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(dateset, date)
-  RETURNS date
+  RETURNS dateset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(dateset, dateset)
@@ -1417,11 +1417,11 @@ CREATE FUNCTION set_intersection(dateset, dateset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_intersection(timestamptz, tstzset)
-  RETURNS timestamptz
+  RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(tstzset, timestamptz)
-  RETURNS timestamptz
+  RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(tstzset, tstzset)

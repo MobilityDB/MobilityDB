@@ -64,7 +64,7 @@ PG_FUNCTION_INFO_V1(Npoint_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding box of the network point value
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  * @sqlop @p ::
  */
 Datum
@@ -80,7 +80,7 @@ PG_FUNCTION_INFO_V1(Nsegment_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return the bounding box of the network segment value
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  * @sqlop @p ::
  */
 Datum
@@ -98,7 +98,7 @@ PG_FUNCTION_INFO_V1(Npointset_to_stbox);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a network point set to a spatiotemporal box
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  * @sqlop @p ::
  */
 Datum
@@ -117,7 +117,7 @@ PG_FUNCTION_INFO_V1(Npoint_timestamptz_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Transform a network point and a timestamp to a spatiotemporal box
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  * @sqlop @p
  */
 Datum
@@ -135,7 +135,7 @@ PG_FUNCTION_INFO_V1(Npoint_tstzspan_to_stbox);
  * @ingroup mobilitydb_temporal_conversion
  * @brief Transform a network point and a timestamptz span to a spatiotemporal
  * box
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  * @sqlop @p
  */
 Datum
@@ -154,7 +154,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Transform a temporal network point to a spatiotemporal box
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  * @sqlop @p ::
  */
 Datum
@@ -236,7 +236,7 @@ PG_FUNCTION_INFO_V1(Overlaps_stbox_tnpoint);
  * @ingroup mobilitydb_temporal_bbox_topo_topo
  * @brief Return true if the spatiotemporal box and the spatiotemporal box of
  * the temporal network point overlap
- * @sqlfunc overlaps_bbox()
+ * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
 Datum
@@ -251,7 +251,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tnpoint_stbox);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of the temporal network point and
  * the spatiotemporal box overlap
- * @sqlfunc overlaps_bbox()
+ * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
 Datum
@@ -266,7 +266,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tnpoint_tnpoint);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network points
  * overlap
- * @sqlfunc overlaps_bbox()
+ * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
 Datum
@@ -285,7 +285,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_tnpoint);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box contains the one of the temporal
  * network point
- * @sqlfunc contains_bbox()
+ * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
 Datum
@@ -300,7 +300,7 @@ PG_FUNCTION_INFO_V1(Contains_tnpoint_stbox);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of the temporal network point
  * contain the spatiotemporal box
- * @sqlfunc contains_bbox()
+ * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
 Datum
@@ -315,7 +315,7 @@ PG_FUNCTION_INFO_V1(Contains_tnpoint_tnpoint);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of the first temporal network point
  * contain the one of the second temporal network point
- * @sqlfunc contains_bbox()
+ * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
 Datum
@@ -334,7 +334,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_tnpoint);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box is contained in the one of the
  * temporal network point
- * @sqlfunc contained_bbox()
+ * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
 Datum
@@ -349,7 +349,7 @@ PG_FUNCTION_INFO_V1(Contained_tnpoint_stbox);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of the temporal network point is
  * contained in the spatiotemporal box
- * @sqlfunc contained_bbox()
+ * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
 Datum
@@ -364,7 +364,7 @@ PG_FUNCTION_INFO_V1(Contained_tnpoint_tnpoint);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of the first temporal network point
  * is contained in the one of the second temporal network point
- * @sqlfunc contained_bbox()
+ * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
 Datum
@@ -383,7 +383,7 @@ PG_FUNCTION_INFO_V1(Same_stbox_tnpoint);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box and the spatiotemporal box of the
  * temporal network point are equal in the common dimensions
- * @sqlfunc same_bbox()
+ * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
 Datum
@@ -398,7 +398,7 @@ PG_FUNCTION_INFO_V1(Same_tnpoint_stbox);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of the temporal network point and
  * the spatiotemporal box are equal in the common dimensions
- * @sqlfunc same_bbox()
+ * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
 Datum
@@ -413,7 +413,7 @@ PG_FUNCTION_INFO_V1(Same_tnpoint_tnpoint);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network points
  * are equal in the common dimensions
- * @sqlfunc same_bbox()
+ * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
 Datum
@@ -432,7 +432,7 @@ PG_FUNCTION_INFO_V1(Adjacent_stbox_tnpoint);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box and the spatiotemporal box of the
  * temporal network point are adjacent
- * @sqlfunc adjacent_bbox()
+ * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
 Datum
@@ -447,7 +447,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tnpoint_stbox);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of the temporal network point
  * and the spatiotemporal box are adjacent
- * @sqlfunc adjacent_bbox()
+ * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
 Datum
@@ -462,7 +462,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tnpoint_tnpoint);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network points
  * are adjacent
- * @sqlfunc adjacent_bbox()
+ * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
 Datum

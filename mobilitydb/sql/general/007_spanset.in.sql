@@ -397,23 +397,23 @@ CREATE CAST (tstzspan AS tstzspanset) WITH FUNCTION spanset(tstzspan);
 
 CREATE FUNCTION span(intspanset)
   RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Spanset_span'
+  AS 'MODULE_PATHNAME', 'Spanset_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span(bigintspanset)
   RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Spanset_span'
+  AS 'MODULE_PATHNAME', 'Spanset_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span(floatspanset)
   RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Spanset_span'
+  AS 'MODULE_PATHNAME', 'Spanset_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span(datespanset)
   RETURNS datespan
-  AS 'MODULE_PATHNAME', 'Spanset_span'
+  AS 'MODULE_PATHNAME', 'Spanset_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span(tstzspanset)
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Spanset_span'
+  AS 'MODULE_PATHNAME', 'Spanset_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (intspanset AS intspan) WITH FUNCTION span(intspanset);

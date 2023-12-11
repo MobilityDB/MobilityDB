@@ -54,7 +54,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_get_srid);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the SRID of a temporal network point
- * @sqlfunc SRID()
+ * @sqlfn SRID()
  */
 Datum
 Tnpoint_get_srid(PG_FUNCTION_ARGS)
@@ -75,7 +75,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_trajectory);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the geometry covered by a temporal network point
- * @sqlfunc trajectory()
+ * @sqlfn trajectory()
  */
 Datum
 Tnpoint_trajectory(PG_FUNCTION_ARGS)
@@ -95,7 +95,7 @@ PG_FUNCTION_INFO_V1(Npoint_same);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Determines the spatial equality for network points
- * @sqlfunc equals()
+ * @sqlfn equals()
  */
 Datum
 Npoint_same(PG_FUNCTION_ARGS)
@@ -114,7 +114,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_length);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Length traversed by a temporal network point
- * @sqlfunc length()
+ * @sqlfn length()
  */
 Datum
 Tnpoint_length(PG_FUNCTION_ARGS)
@@ -130,7 +130,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_cumulative_length);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Cumulative length traversed by a temporal network point
- * @sqlfunc cumulativeLength()
+ * @sqlfn cumulativeLength()
  */
 Datum
 Tnpoint_cumulative_length(PG_FUNCTION_ARGS)
@@ -150,7 +150,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_speed);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Speed of a temporal network point
- * @sqlfunc speed()
+ * @sqlfn speed()
  */
 Datum
 Tnpoint_speed(PG_FUNCTION_ARGS)
@@ -172,7 +172,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_twcentroid);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Return the time-weighed centroid of a temporal network point
- * @sqlfunc twcentroid()
+ * @sqlfn twcentroid()
  */
 Datum
 Tnpoint_twcentroid(PG_FUNCTION_ARGS)
@@ -192,7 +192,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_azimuth);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Temporal azimuth of a temporal network point
- * @sqlfunc azimuth()
+ * @sqlfn azimuth()
  */
 Datum
 Tnpoint_azimuth(PG_FUNCTION_ARGS)
@@ -238,7 +238,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_at_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restricts a temporal point to a geometry
- * @sqlfunc atGeometry()
+ * @sqlfn atGeometry()
  */
 Datum
 Tnpoint_at_geom(PG_FUNCTION_ARGS)
@@ -251,7 +251,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_at_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restricts a temporal point to a geometry
- * @sqlfunc atGeometry()
+ * @sqlfn atGeometry()
  */
 Datum
 Tnpoint_at_geom_time(PG_FUNCTION_ARGS)
@@ -264,7 +264,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_minus_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal point to the complement of a geometry
- * @sqlfunc minusGeometry()
+ * @sqlfn minusGeometry()
  */
 Datum
 Tnpoint_minus_geom(PG_FUNCTION_ARGS)
@@ -277,7 +277,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_minus_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal point to the complement of a geometry
- * @sqlfunc minusGeometry()
+ * @sqlfn minusGeometry()
  */
 Datum
 Tnpoint_minus_geom_time(PG_FUNCTION_ARGS)
