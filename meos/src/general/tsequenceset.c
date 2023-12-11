@@ -665,7 +665,7 @@ ttextseqset_from_base_tstzspanset(const text *txt, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geometric point sequence set from a point and a
+ * @brief Construct a temporal geometry point sequence set from a point and a
  * span set.
  */
 TSequenceSet *
@@ -939,10 +939,7 @@ void
 tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *s)
 {
   assert(ss); assert(s);
-  const TSequence *start = TSEQUENCESET_SEQ_N(ss, 0);
-  const TSequence *end = TSEQUENCESET_SEQ_N(ss, ss->count - 1);
-  span_set(start->period.lower, end->period.upper, start->period.lower_inc,
-    end->period.upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, s);
+  memcpy(s, &ss->period, sizeof(Span));
   return;
 }
 
@@ -2863,7 +2860,7 @@ ttextseqset_in(const char *str)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence set geometric point from its Well-Known Text
+ * @brief Return a temporal sequence set geometry point from its Well-Known Text
  * (WKT) representation.
  */
 TSequenceSet *
@@ -2878,8 +2875,8 @@ tgeompointseqset_in(const char *str)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence set geographic point from its Well-Known Text
- * (WKT) representation.
+ * @brief Return a temporal sequence set geography point from its Well-Known Text
+ * (WKT) representation
  */
 TSequenceSet *
 tgeogpointseqset_in(const char *str)

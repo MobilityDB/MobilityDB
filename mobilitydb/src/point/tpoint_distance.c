@@ -143,8 +143,8 @@ PGDLLEXPORT Datum NAI_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
- * @brief Return the nearest approach instant between a geometry and
- * a temporal point
+ * @brief Return the nearest approach instant between a geometry and a temporal
+ * point
  * @sqlfn nearestApproachInstant()
  */
 Datum

@@ -327,8 +327,9 @@ datum_round_float(Datum value, Datum size)
 PGDLLEXPORT Datum Tfloat_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_round);
 /**
- * @ingroup mobilitydb_temporal_math
- * @brief Round a temporal number to a given number of decimal places
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a temporal float with the values set to a number of decimal
+ * places
  * @sqlfn round()
  */
 Datum
@@ -345,7 +346,8 @@ PGDLLEXPORT Datum Tfloatarr_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloatarr_round);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output a temporal point array in Well-Known Text (WKT) format
+ * @brief Output an array of temporal floats in the Well-Known Text (WKT)
+ * representation
  * @sqlfn asText()
  */
 Datum

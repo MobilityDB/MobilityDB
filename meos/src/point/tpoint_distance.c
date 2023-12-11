@@ -290,7 +290,7 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
 }
 
 /**
- * @brief Return the distance and timestamp at which two temporal geometric
+ * @brief Return the distance and timestamp at which two temporal geometry
  * point segments are at the minimum distance. These are the turning points
  * when computing the temporal distance.
  *
@@ -343,7 +343,7 @@ tgeompoint_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * @brief Return the single timestamp at which the two temporal geographic
+ * @brief Return the single timestamp at which the two temporal geography
  * point segments are at the minimum distance. These are the turning points
  * when computing the temporal distance.
  *

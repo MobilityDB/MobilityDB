@@ -86,27 +86,29 @@ SELECT t::stbox FROM test;
 DROP TABLE test;
 
 -------------------------------------------------------------------------------
+-- Accessor functions
+
+SELECT MAX(memSize(g)) FROM tbl_geomset;
+SELECT MIN(numValues(g)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(startValue(g))::numeric, 6)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(endValue(g))::numeric, 6)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(valueN(g, 1))::numeric, 6)) FROM tbl_geomset;
+SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geomset;
+
+SELECT MAX(memSize(g)) FROM tbl_geogset;
+SELECT MIN(numValues(g)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(startValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(endValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(valueN(g, 1)::geometry)::numeric, 6)) FROM tbl_geogset;
+SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
+
+-------------------------------------------------------------------------------
 -- Transformation functions
 
 SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
 SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
 
--------------------------------------------------------------------------------
--- Accessor functions
-
-SELECT MAX(memSize(g)) FROM tbl_geomset;
-SELECT MIN(numValues(g)) FROM tbl_geomset;
-SELECT MIN(ST_X(startValue(g))) FROM tbl_geomset;
-SELECT MIN(ST_X(endValue(g))) FROM tbl_geomset;
-SELECT MIN(ST_X(valueN(g, 1))) FROM tbl_geomset;
-SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geomset;
-
-SELECT MAX(memSize(g)) FROM tbl_geogset;
-SELECT MIN(numValues(g)) FROM tbl_geogset;
-SELECT MIN(ST_X(startValue(g)::geometry)) FROM tbl_geogset;
-SELECT MIN(ST_X(endValue(g)::geometry)) FROM tbl_geogset;
-SELECT MIN(ST_X(valueN(g, 1)::geometry)) FROM tbl_geogset;
-SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
+SELECT asEWKT(setSRID(geomset '{"Point(0 0)", "Point(1 1)"}', 5676));
 
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions

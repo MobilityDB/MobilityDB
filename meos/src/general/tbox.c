@@ -119,6 +119,7 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
  * @endcode
  * where the commas are optional.
  * @return On error return NULL
+ * @sql-cfn #Tbox_in()
  */
 TBox *
 tbox_in(const char *str)
@@ -133,6 +134,7 @@ tbox_in(const char *str)
  * @ingroup libmeos_box_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal box
  * @return On error return NULL
+ * @sql-cfn #Tbox_out(), #Tbox_as_text()
  */
 char *
 tbox_out(const TBox *box, int maxdd)

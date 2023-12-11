@@ -311,7 +311,7 @@ ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Return the value of a temporal geometric point at a timestamp
+ * @brief Return the value of a temporal geometry point at a timestamp
  * @sql-cfn #Temporal_value_at_timestamptz()
  */
 bool

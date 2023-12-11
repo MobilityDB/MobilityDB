@@ -462,19 +462,19 @@ CREATE FUNCTION memSize(ttext)
 -- values is a reserved word in SQL
 CREATE FUNCTION getValue(tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tinstant_get_value'
+  AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValue(tint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tinstant_get_value'
+  AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValue(tfloat)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Tinstant_get_value'
+  AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValue(ttext)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tinstant_get_value'
+  AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- values is a reserved word in SQL

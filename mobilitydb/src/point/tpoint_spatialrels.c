@@ -82,7 +82,7 @@ pgis_intersects2d(Datum geom1, Datum geom2)
  * @brief Return true if two temporal points ever satisfy the spatial
  * relationship
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func1, func2 Spatial relationship for geometric/geographic points
+ * @param[in] func1, func2 Spatial relationship for geometry/geography points
  */
 static Datum
 Espatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,

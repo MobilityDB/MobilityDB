@@ -153,7 +153,7 @@ Temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  /* Store fcinfo into a global variable for temporal geographic points */
+  /* Store fcinfo into a global variable for temporal geography points */
   if (temp1->temptype == T_TGEOGPOINT)
     store_fcinfo(fcinfo);
   double result = (simfunc == HAUSDORFF) ?
@@ -177,16 +177,16 @@ Temporal_frechet_distance(PG_FUNCTION_ARGS)
   return Temporal_similarity(fcinfo, FRECHET);
 }
 
-PGDLLEXPORT Datum Temporal_dynamic_time_warp(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp);
+PGDLLEXPORT Datum Temporal_dyntimewarp_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_dyntimewarp_distance);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Return the Dynamic Time Warp (DTW) distance between two temporal
  * values
- * @sqlfn dynamicTimeWarp()
+ * @sqlfn dynTimeWarpDistance()
  */
 Datum
-Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
+Temporal_dyntimewarp_distance(PG_FUNCTION_ARGS)
 {
   return Temporal_similarity(fcinfo, DYNTIMEWARP);
 }
@@ -274,7 +274,7 @@ Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
     /* Get input parameters */
     Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
     Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-    /* Store fcinfo into a global variable for temporal geographic points */
+    /* Store fcinfo into a global variable for temporal geography points */
     if (temp1->temptype == T_TGEOGPOINT)
       store_fcinfo(fcinfo);
     /* Compute the path */
@@ -330,15 +330,15 @@ Temporal_frechet_path(PG_FUNCTION_ARGS)
   return Temporal_similarity_path(fcinfo, FRECHET);
 }
 
-PGDLLEXPORT Datum Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp_path);
+PGDLLEXPORT Datum Temporal_dyntimewarp_path(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_dyntimewarp_path);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Return the Dynamic Time Warp (DTW) path between two temporal values
- * @sqlfn dynamicTimeWarpPath()
+ * @sqlfn dynTimeWarpPath()
  */
 Datum
-Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)
+Temporal_dyntimewarp_path(PG_FUNCTION_ARGS)
 {
   return Temporal_similarity_path(fcinfo, DYNTIMEWARP);
 }

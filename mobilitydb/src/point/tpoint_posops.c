@@ -205,7 +205,7 @@ PGDLLEXPORT Datum Back_stbox_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Back_stbox_tpoint);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a spatiotemporal box is back of a temporal point
+ * @brief Return true if a spatiotemporal box is at the back of a temporal point
  * @sqlfn temporal_back()
  * @sqlop @p />>
  */
@@ -440,7 +440,7 @@ PGDLLEXPORT Datum Back_tpoint_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Back_tpoint_stbox);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal point is back of a spatiotemporal box
+ * @brief Return true if a temporal point is at the back of a spatiotemporal box
  * @sqlfn temporal_back()
  * @sqlop @p />>
  */
@@ -675,7 +675,8 @@ PGDLLEXPORT Datum Back_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Back_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal point is back of the second one
+ * @brief Return true if the first temporal point is at the back of the second
+ * one
  * @sqlfn temporal_back()
  * @sqlop @p />>
  */
@@ -718,8 +719,7 @@ PGDLLEXPORT Datum Overbefore_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overbefore_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal point does not extend after the
- * second one
+ * @brief Return true if the first temporal point is not after the second one
  * @sqlfn temporal_overbefore()
  * @sqlop @p &<#
  */

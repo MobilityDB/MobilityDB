@@ -307,7 +307,7 @@ doublen_to_point(const TInstant *inst, int srid)
     double valuec = value4->c / value4->d;
     point = lwpoint_make3dz(srid, valuea, valueb, valuec);
   }
-  /* Notice that for the moment we do not aggregate temporal geographic points */
+  /* Notice that for the moment we do not aggregate temporal geography points */
   Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
   lwpoint_free(point);
   return result;

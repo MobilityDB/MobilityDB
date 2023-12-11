@@ -1556,8 +1556,7 @@ Set *
 intersection_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_set_isof_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
   return intersection_set_value(s, Int32GetDatum(i), T_INT4);
 }
@@ -1571,8 +1570,7 @@ Set *
 intersection_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_set_isof_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
   return intersection_set_value(s, Int64GetDatum(i), T_INT8);
 }
@@ -1586,8 +1584,7 @@ Set *
 intersection_set_float(const Set *s, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_set_isof_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
   return intersection_set_value(s, Float8GetDatum(d), T_FLOAT8);
 }
@@ -1602,7 +1599,6 @@ intersection_set_text(const Set *s, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-       ! ensure_not_null((void *) result) ||
        ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
   return intersection_set_value(s, PointerGetDatum(txt), T_TEXT);
@@ -1617,8 +1613,7 @@ Set *
 intersection_set_date(const Set *s, DateADT d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_set_isof_basetype(s, T_DATE))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
   return intersection_set_value(s, DateADTGetDatum(d), T_DATE);
 }
@@ -1631,7 +1626,7 @@ Set *
 intersection_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
   return intersection_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
@@ -1647,8 +1642,8 @@ intersection_set_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-       ! ensure_not_null((void *) result) || ! ensure_geoset_type(s->settype) ||
-       ! ensure_not_empty(gs) || ! ensure_point_type(gs))
+       ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) || 
+       ! ensure_point_type(gs))
     return false;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
   if (! ensure_set_isof_basetype(s, geotype))

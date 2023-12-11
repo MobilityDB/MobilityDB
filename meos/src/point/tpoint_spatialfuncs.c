@@ -292,7 +292,7 @@ geog_distance(Datum geog1, Datum geog2)
 }
 
 /**
- * @brief Return the 2D distance between the two geometric points
+ * @brief Return the 2D distance between the two geometry points
  */
 Datum
 pt_distance2d(Datum geom1, Datum geom2)
@@ -303,7 +303,7 @@ pt_distance2d(Datum geom1, Datum geom2)
 }
 
 /**
- * @brief Return the 3D distance between the two geometric points
+ * @brief Return the 3D distance between the two geometry points
  */
 Datum
 pt_distance3d(Datum geom1, Datum geom2)
@@ -1307,7 +1307,7 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
  * so that the len(p1,p) == len(p1,p2) * f
  * and p falls on p1,p2 segment
  *
- * @param[in] p1,p2 geographic points we are interpolating between
+ * @param[in] p1,p2 geography points we are interpolating between
  * @param[in] s Spheroid used for during the intepolation
  *              Can be NULL when using sphere interpolation
  * @param[in] f Fraction
@@ -1520,7 +1520,7 @@ tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * @brief Return true if two segments of a temporal geometric points intersect
+ * @brief Return true if two segments of a temporal geometry points intersect
  * at a timestamp
  * @param[in] start1,end1 Temporal instants defining the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
@@ -1649,7 +1649,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * @brief Return true if two segments of two temporal geographic points
+ * @brief Return true if two segments of two temporal geography points
  * intersect at a timestamp
  * @param[in] start1,end1 Temporal instants defining the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
@@ -1704,7 +1704,7 @@ geopoint_collinear(Datum value1, Datum value2, Datum value3,
 
 /**
  * @brief Return -1, 0, or 1 depending on whether the first LWPOINT
- * is less than, equal, or greater than the second one.
+ * is less than, equal to, or greater than the second one
  * @pre The points are not empty and are of the same dimensionality
  */
 static int
@@ -4929,7 +4929,7 @@ alpha(const POINT2D *p1, const POINT2D *p2)
 }
 
 /**
- * @brief Compute the bearing between two geometric points
+ * @brief Compute the bearing between two geometry points
  */
 static Datum
 geom_bearing(Datum point1, Datum point2)
@@ -4954,7 +4954,7 @@ geom_bearing(Datum point1, Datum point2)
 }
 
 /**
- * @brief Compute the bearing between two geographic points
+ * @brief Compute the bearing between two geography points
  * @note Derived from https://gist.github.com/jeromer/2005586
  *
  * N.B. In PostGIS, for geodetic coordinates, X is longitude and Y is latitude
@@ -5004,7 +5004,7 @@ get_bearing_fn(int16 flags)
  * @brief Return the value and timestamp at which the a temporal point segment
  * and a point are at the minimum bearing
  * @param[in] start,end Instants defining the segment
- * @param[in] point Geometric/geographic point
+ * @param[in] point Geometric/geography point
  * @param[in] basetypid Base type
  * @param[out] value Value
  * @param[out] t Timestamp
@@ -5227,8 +5227,8 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 #define PGIS_FP_TOLERANCE 1e-12
 
 /**
- * @brief Calculate the distance between two geographic points
- * given as GEOS geometries.
+ * @brief Calculate the distance between two geography points given as GEOS
+ * geometries.
  */
 static double
 geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)

@@ -656,7 +656,7 @@ PG_FUNCTION_INFO_V1(Set_cmp);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first set is less than,
- * equal, or greater than the second one
+ * equal to, or greater than the second one
  * @sqlfn set_cmp()
  */
 Datum

@@ -223,7 +223,8 @@ PGDLLEXPORT Datum Temporal_as_mfjson(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_as_mfjson);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output a temporal value in the MF-JSON representation
+ * @brief Output a temporal value in the Moving-Features JSON (MF-JSON)
+ * representation
  * @sqlfn asMFJSON()
  */
 Datum

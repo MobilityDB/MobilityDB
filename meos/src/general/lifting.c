@@ -1544,10 +1544,10 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo *lfinfo)
 {
   /* Bounding box test */
-  Span p1, p2;
-  temporal_set_tstzspan(temp1, &p1);
-  temporal_set_tstzspan(temp2, &p2);
-  if (! over_span_span(&p1, &p2))
+  Span s1, s2;
+  temporal_set_tstzspan(temp1, &s1);
+  temporal_set_tstzspan(temp2, &s2);
+  if (! over_span_span(&s1, &s2))
     return NULL;
 
   Temporal *result = NULL;
@@ -2118,10 +2118,10 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo *lfinfo)
 {
   /* Bounding box test */
-  Span p1, p2;
-  temporal_set_tstzspan(temp1, &p1);
-  temporal_set_tstzspan(temp2, &p2);
-  if (! over_span_span(&p1, &p2))
+  Span s1, s2;
+  temporal_set_tstzspan(temp1, &s1);
+  temporal_set_tstzspan(temp2, &s2);
+  if (! over_span_span(&s1, &s2))
     return -1;
 
   int result;

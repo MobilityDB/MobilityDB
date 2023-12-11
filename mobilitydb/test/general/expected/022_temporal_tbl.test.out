@@ -1712,6 +1712,8 @@ SELECT MAX(numInstants(stops(inst, 50.0))) FROM tbl_tfloat_inst;
 ERROR:  Input must be a temporal sequence (set) with linear interpolation
 SELECT MAX(numInstants(stops(seq, -50.0))) FROM tbl_tfloat_seq;
 ERROR:  The value cannot be negative: -50.000000
+SELECT MAX(numInstants(stops(seq, 50.0, '-10 minutes'))) FROM tbl_tfloat_seq;
+ERROR:  The duration must be positive
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
  count 
 -------

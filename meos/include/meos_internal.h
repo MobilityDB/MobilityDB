@@ -113,8 +113,8 @@
  *   - 11: LINEAR
  *   C: continuous base type / Ordered set
  *   B: base type passed by value
- * Notice that formally speaking the interpolation flags are only needed
- * for sequence and sequence set subtypes.
+ * Notice that the interpolation flags are only needed for sequence and
+ * sequence set subtypes.
  *****************************************************************************/
 
 /* The following flag is only used for Set and TInstant */

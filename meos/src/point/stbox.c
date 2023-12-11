@@ -2005,7 +2005,7 @@ stbox_ne(const STBox *box1, const STBox *box2)
 /**
  * @ingroup libmeos_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal
- * box is less than, equal, or greater than the second one
+ * box is less than, equal to, or greater than the second one
  * @sql-cfn #Stbox_cmp()
  */
 int

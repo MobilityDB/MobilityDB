@@ -59,7 +59,7 @@
  *****************************************************************************/
 
 /**
- * @brief Convert a temporal network point as a temporal geometric point.
+ * @brief Convert a temporal network point as a temporal geometry point.
  */
 TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
@@ -73,7 +73,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
 }
 
 /**
- * @brief Convert a temporal network point as a temporal geometric point.
+ * @brief Convert a temporal network point as a temporal geometry point.
  */
 TSequence *
 tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
@@ -89,7 +89,7 @@ tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
 }
 
 /**
- * @brief Convert a temporal network point as a temporal geometric point.
+ * @brief Convert a temporal network point as a temporal geometry point.
  */
 TSequence *
 tnpointcontseq_tgeompointcontseq(const TSequence *seq)
@@ -121,7 +121,7 @@ tnpointcontseq_tgeompointcontseq(const TSequence *seq)
 }
 
 /**
- * @brief Convert a temporal network point as a temporal geometric point.
+ * @brief Convert a temporal network point as a temporal geometry point.
  */
 TSequenceSet *
 tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
@@ -136,7 +136,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 }
 
 /**
- * @brief Convert a temporal network point as a temporal geometric point.
+ * @brief Convert a temporal network point as a temporal geometry point.
  */
 Temporal *
 tnpoint_tgeompoint(const Temporal *temp)
@@ -157,7 +157,7 @@ tnpoint_tgeompoint(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @brief Convert a temporal geometric point as a temporal network point.
+ * @brief Convert a temporal geometry point as a temporal network point.
  */
 TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
@@ -172,7 +172,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
 }
 
 /**
- * @brief Convert a temporal geometric point as a temporal network point.
+ * @brief Convert a temporal geometry point as a temporal network point.
  */
 TSequence *
 tgeompointseq_tnpointseq(const TSequence *seq)
@@ -196,7 +196,7 @@ tgeompointseq_tnpointseq(const TSequence *seq)
 }
 
 /**
- * @brief Convert a temporal geometric point as a temporal network point.
+ * @brief Convert a temporal geometry point as a temporal network point.
  */
 TSequenceSet *
 tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
@@ -217,7 +217,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
 }
 
 /**
- * @brief Convert a temporal geometric point as a temporal network point.
+ * @brief Convert a temporal geometry point as a temporal network point.
  */
 Temporal *
 tgeompoint_tnpoint(const Temporal *temp)

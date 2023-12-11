@@ -356,11 +356,11 @@ CREATE FUNCTION memSize(tgeogpoint)
 -- value is a reserved word in SQL
 CREATE FUNCTION getValue(tgeompoint)
   RETURNS geometry(Point)
-  AS 'MODULE_PATHNAME', 'Tinstant_get_value'
+  AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValue(tgeogpoint)
   RETURNS geography(Point)
-  AS 'MODULE_PATHNAME', 'Tinstant_get_value'
+  AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getTimestamp(tgeompoint)

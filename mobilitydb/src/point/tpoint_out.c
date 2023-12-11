@@ -93,7 +93,8 @@ PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point in the Extended Well-Known Text (EWKT)
- * representation, that is, in the WKT representation prefixed with the SRID
+ * representation
+ * @note It is the WKT representation prefixed with the SRID
  * @sqlfn asEWKT()
  */
 Datum
@@ -147,8 +148,8 @@ PGDLLEXPORT Datum Geoarr_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoarr_as_text);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output a geometry/geography array in the Well-Known Text (WKT)
- * representation
+ * @brief Output an array of geometries/geographies in the Well-Known Text
+ * (WKT) representation
  * @sqlfn asText()
  */
 Datum
@@ -161,8 +162,9 @@ PGDLLEXPORT Datum Geoarr_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output a geometry/geography array in the Extended Well-Known Text
- * (EWKT) representation, that is, in WKT representation prefixed with the SRID
+ * @brief Output an array of geometries/geographies in the Extended Well-Known
+ * Text (EWKT) representation
+ * @note It is the WKT representation prefixed with the SRID
  * @sqlfn asEWKT()
  */
 Datum
@@ -175,7 +177,7 @@ PGDLLEXPORT Datum Tpointarr_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointarr_as_text);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output a temporal point array in the Well-Known Text (WKT)
+ * @brief Output an array of temporal points in the Well-Known Text (WKT)
  * representation
  * @sqlfn asText()
  */
@@ -189,8 +191,9 @@ PGDLLEXPORT Datum Tpointarr_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output a temporal point array in the Extended Well-Known Text (EWKT)
- * representation, that is, in WKT representation prefixed with the SRID
+ * @brief Output an array of temporal points in the Extended Well-Known Text
+ * (EWKT) representation
+ * @note It is the WKT representation prefixed with the SRID
  * @sqlfn asEWKT()
  */
 Datum

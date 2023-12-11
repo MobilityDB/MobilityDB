@@ -501,8 +501,8 @@ ttextinst_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Input a temporal instant geometric point from its MF-JSON
- * representation.
+ * @brief Input a temporal instant geometry point from its MF-JSON
+ * representation
  * @sql-cfn #Temporal_from_mfjson()
  */
 TInstant *
@@ -514,8 +514,8 @@ tgeompointinst_from_mfjson(json_object *mfjson, int srid)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Input a temporal instant geographic point from its MF-JSON
- * representation.
+ * @brief Input a temporal instant geography point from its MF-JSON
+ * representation
  * @sql-cfn #Temporal_from_mfjson()
  */
 TInstant *
@@ -661,8 +661,8 @@ ttextseq_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Input a temporal sequence geometric point from its MF-JSON
- * representation.
+ * @brief Input a temporal sequence geometry point from its MF-JSON
+ * representation
  * @sql-cfn #Temporal_from_mfjson()
  */
 TSequence *
@@ -674,8 +674,8 @@ tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Input a temporal sequence geographic point from its MF-JSON
- * representation.
+ * @brief Input a temporal sequence geography point from its MF-JSON
+ * representation
  * @sql-cfn #Temporal_from_mfjson()
  */
 TSequence *
@@ -777,8 +777,8 @@ ttextseqset_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Input a temporal sequence set geometric point from its MF-JSON
- * representation.
+ * @brief Input a temporal sequence set geometry point from its MF-JSON
+ * representation
  * @sql-cfn #Temporal_from_mfjson()
  */
 TSequenceSet *
@@ -790,8 +790,8 @@ tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Input a temporal sequence set geographic point from its MF-JSON
- * representation.
+ * @brief Input a temporal sequence set geography point from its MF-JSON
+ * representation
  * @sql-cfn #Temporal_from_mfjson()
  */
 TSequenceSet *
@@ -1864,7 +1864,7 @@ spanset_from_hexwkb(const char *hexwkb)
 /**
  * @ingroup libmeos_box_inout
  * @brief Input a temporal box from its Well-Known Binary (WKB) representation
- * @sql-cfn #Tbox_from_wkb()
+ * @sql-cfn #Tbox_recv(), #Tbox_from_wkb()
  */
 TBox *
 tbox_from_wkb(const uint8_t *wkb, size_t size)
@@ -1929,7 +1929,7 @@ stbox_from_hexwkb(const char *hexwkb)
 /**
  * @ingroup libmeos_temporal_inout
  * @brief Input a temporal value from its Well-Known Binary (WKB)
- * representation.
+ * representation
  * @return On error return NULL
  * @sql-cfn #Temporal_from_wkb()
  */

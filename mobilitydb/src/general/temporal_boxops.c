@@ -67,9 +67,9 @@
 size_t
 temporal_max_header_size(void)
 {
-  size_t sz1 = Max(sizeof(TInstant), sizeof(TSequence));
-  size_t sz2 = Max(sizeof(TSequence), sizeof(TSequenceSet));
-  return DOUBLE_PAD(Max(sz1, sz2)) + DOUBLE_PAD(sizeof(bboxunion));
+  size_t sz = Max(Max(sizeof(TInstant), sizeof(TSequence)), 
+    sizeof(TSequenceSet));
+  return DOUBLE_PAD(sz) + DOUBLE_PAD(sizeof(bboxunion));
 }
 
 /*****************************************************************************
@@ -126,10 +126,10 @@ Boxop_temporal_temporal(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Span p1, p2;
-  temporal_set_tstzspan(temp1, &p1);
-  temporal_set_tstzspan(temp2, &p2);
-  bool result = func(&p1, &p2);
+  Span s1, s2;
+  temporal_set_tstzspan(temp1, &s1);
+  temporal_set_tstzspan(temp2, &s2);
+  bool result = func(&s1, &s2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_BOOL(result);
@@ -143,7 +143,7 @@ PGDLLEXPORT Datum Contains_tstzspan_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if a timestamptz span contains the bounding period of a
+ * @brief Return true if a timestamptz span contains the time span of a
  * temporal value
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
@@ -158,7 +158,7 @@ PGDLLEXPORT Datum Contains_temporal_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding period of a temporal value contains a
+ * @brief Return true if the time span of a temporal value contains a
  * timestamptz span
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
@@ -173,7 +173,7 @@ PGDLLEXPORT Datum Contains_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding period of the first temporal value
+ * @brief Return true if the time span of the first temporal value
  * contains the one of the second one
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
@@ -190,7 +190,7 @@ PGDLLEXPORT Datum Contained_tstzspan_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if a timestamptz span is contained the bounding period of
+ * @brief Return true if a timestamptz span is contained the time span of
  * a temporal value
  * @sqlfn contained_bbox()
  * @sqlop @p <@
@@ -205,7 +205,7 @@ PGDLLEXPORT Datum Contained_temporal_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding period of a temporal value is contained
+ * @brief Return true if the time span of a temporal value is contained
  * in a timestamptz span
  * @sqlfn contained_bbox()
  * @sqlop @p <@
@@ -220,7 +220,7 @@ PGDLLEXPORT Datum Contained_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding period of the first temporal value is
+ * @brief Return true if the time span of the first temporal value is
  * contained in the one of the second temporal value
  * @sqlfn contained_bbox()
  * @sqlop @p <@
@@ -237,7 +237,7 @@ PGDLLEXPORT Datum Overlaps_tstzspan_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if a timestamptz span and the bounding period of a
+ * @brief Return true if a timestamptz span and the time span of a
  * temporal value overlap
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
@@ -252,7 +252,7 @@ PGDLLEXPORT Datum Overlaps_temporal_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding period of a temporal value and a
+ * @brief Return true if the time span of a temporal value and a
  * timestamptz span overlap
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
@@ -267,7 +267,7 @@ PGDLLEXPORT Datum Overlaps_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding periods of the temporal values overlap
+ * @brief Return true if the time spans of two temporal values overlap
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
@@ -283,7 +283,7 @@ PGDLLEXPORT Datum Same_tstzspan_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if a timestamptz span and the bounding period of a
+ * @brief Return true if a timestamptz span and the time span of a
  * temporal value are equal
  * @sqlfn same_bbox()
  * @sqlop @p ~=
@@ -298,7 +298,7 @@ PGDLLEXPORT Datum Same_temporal_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding period of a temporal value and a
+ * @brief Return true if the time span of a temporal value and a
  * timestamptz span are equal
  * @sqlfn same_bbox()
  * @sqlop @p ~=
@@ -313,7 +313,7 @@ PGDLLEXPORT Datum Same_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding periods of the temporal values are equal
+ * @brief Return true if the time spans of two temporal values are equal
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
@@ -329,7 +329,7 @@ PGDLLEXPORT Datum Adjacent_tstzspan_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_tstzspan_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if a timestamptz span and the bounding period of a
+ * @brief Return true if a timestamptz span and the time span of a
  * temporal value are adjacent
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
@@ -344,7 +344,7 @@ PGDLLEXPORT Datum Adjacent_temporal_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_temporal_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding period of a temporal value and a
+ * @brief Return true if the time span of a temporal value and a
  * timestamptz span are adjacent
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
@@ -359,8 +359,7 @@ PGDLLEXPORT Datum Adjacent_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding periods of the temporal values are
- * adjacent
+ * @brief Return true if the time spans of two temporal values are adjacent
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
@@ -476,8 +475,8 @@ PGDLLEXPORT Datum Contains_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if a number span contains the bounding value span of a
- * temporal number
+ * @brief Return true if a number span contains the value span of a temporal
+ * number
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
@@ -491,7 +490,7 @@ PGDLLEXPORT Datum Contains_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding value span of a temporal number contains
+ * @brief Return true if the value span of a temporal number contains
  * a number span
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
@@ -553,7 +552,7 @@ PGDLLEXPORT Datum Contained_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if a number span is contained in the bounding value span
+ * @brief Return true if a number span is contained in the value span
  * of a temporal number
  * @sqlfn contained_bbox()
  * @sqlop @p <@
@@ -568,7 +567,7 @@ PGDLLEXPORT Datum Contained_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding value span of a temporal number is
+ * @brief Return true if the value span of a temporal number is
  * contained in a number span
  * @sqlfn contained_bbox()
  * @sqlop @p <@
@@ -630,7 +629,7 @@ PGDLLEXPORT Datum Overlaps_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if a number span and the bounding value span of a
+ * @brief Return true if a number span and the value span of a
  * temporal number overlap
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
@@ -645,7 +644,7 @@ PGDLLEXPORT Datum Overlaps_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding value span of a temporal number and the
+ * @brief Return true if the value span of a temporal number and the
  * number span overlap
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
@@ -706,7 +705,7 @@ PGDLLEXPORT Datum Same_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if a number span and the bounding value span of a
+ * @brief Return true if a number span and the value span of a
  * temporal number are equal
  * @sqlfn same_bbox()
  * @sqlop @p ~=
@@ -721,7 +720,7 @@ PGDLLEXPORT Datum Same_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding value span of a temporal number and a
+ * @brief Return true if the value span of a temporal number and a
  * number span are equal
  * @sqlfn same_bbox()
  * @sqlop @p ~=
@@ -782,7 +781,7 @@ PGDLLEXPORT Datum Adjacent_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if a number span and the bounding value span of a
+ * @brief Return true if a number span and the value span of a
  * temporal number are adjacent
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
@@ -797,7 +796,7 @@ PGDLLEXPORT Datum Adjacent_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return true if the bounding value span of a temporal number and a
+ * @brief Return true if the value span of a temporal number and a
  * number span are adjacent
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-

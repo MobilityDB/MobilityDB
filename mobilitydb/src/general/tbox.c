@@ -63,11 +63,12 @@ PG_FUNCTION_INFO_V1(Tbox_in);
  *
  * Examples of input:
  * @code
- * TBOX((1.0, 2.0), (1.0, 2.0))   -- Both X and T dimensions
- * TBOX((1.0, ), (1.0, ))      -- Only X dimension
- * TBOX((, 2.0), (, 2.0))      -- Only T dimension
+ * TBOX XT([1.0, 3.0), [2020-01-01, 2020-01-03])   -- Both X and T dimensions
+ * TBOXINT X([1, 3))     -- Only X dimension, integer span 
+ * TBOXFLOAT X([1, 3))   -- Only X dimension, float span 
+ * TBOX X([1.0, 3.0))    -- Only X dimension, float span is assumed
+ * TBOX T([2020-01-01, 2020-01-03])  -- Only T dimension
  * @endcode
- * where the commas are optional
  * @sqlfn tbox_in()
  */
 Datum
@@ -135,7 +136,7 @@ PGDLLEXPORT Datum Tbox_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_as_text);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Output function for temporal boxes
+ * @brief Return the Well-Known Text (WKT) representation of a temporal box
  * @sqlfn asText()
  */
 Datum
@@ -312,7 +313,7 @@ Span_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Peak into a span set datum to find the bounding box
+ * @brief Peek into a span set datum to find the bounding box
  * @note If the datum needs to be detoasted, extract only the header and not
  * the full object
  */
@@ -729,7 +730,7 @@ PGDLLEXPORT Datum Tbox_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_round);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Set the precision of the value dimension of the temporal box to the
+ * @brief Return a temporal box with the precision of the value span set to a
  * number of decimal places
  * @sqlfn round()
  */
@@ -1057,7 +1058,7 @@ PG_FUNCTION_INFO_V1(Tbox_cmp);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal box
- * is less than, equal, or greater than the second one
+ * is less than, equal to, or greater than the second one
  * @sqlfn tbox_cmp()
  */
 Datum

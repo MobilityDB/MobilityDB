@@ -107,7 +107,7 @@ Span_recv(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Span_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_send);
-/*
+/**
  * @ingroup mobilitydb_setspan_inout
  * @brief Send function for span types
  * @sqlfn span_send()
@@ -314,7 +314,7 @@ Range_to_span(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-/* span -> timestamptz functions */
+/* span -> base type functions */
 
 PGDLLEXPORT Datum Span_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_lower);
@@ -421,6 +421,11 @@ Tstzspan_duration(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Transformation functions
+ *
+ * Since in PostgreSQL the type date is defined as follows 
+ *   typedef int32 DateADT;
+ * the functions #Numspan_shift, #Numspan_scale, and #Numspan_shift_scale are
+ * also used for datespans and datespansets
  *****************************************************************************/
 
 PGDLLEXPORT Datum Numspan_shift(PG_FUNCTION_ARGS);
@@ -428,6 +433,7 @@ PG_FUNCTION_INFO_V1(Numspan_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span shifted by a value
+ * @note This function is also used for `datespan`
  * @sqlfn shift()
  */
 Datum
@@ -460,6 +466,7 @@ PG_FUNCTION_INFO_V1(Numspan_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span scaled by a value
+ * @note This function is also used for `datespan`
  * @sqlfn scale()
  */
 Datum
@@ -492,6 +499,7 @@ PG_FUNCTION_INFO_V1(Numspan_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span shifted and scaled by the values
+ * @note This function is also used for `datespan`
  * @sqlfn shiftScale()
  */
 Datum
@@ -579,7 +587,7 @@ PG_FUNCTION_INFO_V1(Span_cmp);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span
- * is less than, equal, or greater than the second one
+ * is less than, equal to, or greater than the second one
  * @sqlfn span_cmp()
  */
 Datum

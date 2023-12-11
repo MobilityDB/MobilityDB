@@ -639,8 +639,8 @@ ttextseq_in(const char *str, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence geometric point from its Well-Known Text
- * (WKT) representation.
+ * @brief Return a temporal sequence geometry point from its Well-Known Text
+ * (WKT) representation
  */
 TSequence *
 tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
@@ -656,8 +656,8 @@ tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence geographic point from its Well-Known Text
- * (WKT) representation.
+ * @brief Return a temporal sequence geography point from its Well-Known Text
+ * (WKT) representation
  */
 TSequence *
 tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
@@ -674,7 +674,7 @@ tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a temporal
- * sequence.
+ * sequence
  * @param[in] seq Temporal sequence
  * @param[in] maxdd Maximum number of decimal digits to output for floating point
  * values
@@ -1233,7 +1233,7 @@ ttextseq_from_base_tstzset(const text *txt, const Set *s)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geometric point discrete sequence from a point
+ * @brief Construct a temporal geometry point discrete sequence from a point
  * and a timestamp set.
  */
 TSequence *
@@ -1338,8 +1338,8 @@ ttextseq_from_base_tstzspan(const text *txt, const Span *s)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geometric point sequence from a point and a
- * period.
+ * @brief Construct a temporal geometry point sequence from a point and a
+ * timestamptz span.
  */
 TSequence *
 tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
@@ -1433,10 +1433,8 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
           t1);
         return NULL;
       }
-      /* Do not add the new instant if sequence is discrete and new instant is
-       * equal to be last one */
-      else if (interp == DISCRETE)
-        return (Temporal *) tsequence_copy(seq);
+      /* Do not add the new instant if new instant is equal to be last one */
+      return (Temporal *) tsequence_copy(seq);
     }
     /* Exclusive upper bound and different value => result is a sequence set */
     else if (interp == LINEAR && ! eqv1v)
@@ -2097,7 +2095,7 @@ tcontseq_to_linear(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal value transformed to the given interpolation.
+ * @brief Return a temporal value transformed to the given interpolation
  * @sql-cfn #Temporal_set_interp
  */
 Temporal *
