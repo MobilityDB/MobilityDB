@@ -63,7 +63,7 @@
  * @brief Generic spatial relationships for a temporal network point and a geometry
  */
 Datum
-espatialrel_geo_tnpoint_ext(FunctionCallInfo fcinfo,
+Espatialrel_geo_tnpoint(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum))
 {
   Datum geom = PG_GETARG_DATUM(0);
@@ -79,7 +79,7 @@ espatialrel_geo_tnpoint_ext(FunctionCallInfo fcinfo,
  * @brief Generic spatial relationships for a temporal network point and a geometry
  */
 static Datum
-espatialrel_tnpoint_geo_ext(FunctionCallInfo fcinfo,
+Espatialrel_tnpoint_geo(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -95,7 +95,7 @@ espatialrel_tnpoint_geo_ext(FunctionCallInfo fcinfo,
  * @brief Generic spatial relationships for a temporal network point and a network point
  */
 static Datum
-espatialrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
+Espatialrel_npoint_tnpoint(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum))
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
@@ -111,7 +111,7 @@ espatialrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
  * @brief Generic spatial relationships for a temporal network point and a network point
  */
 static Datum
-espatialrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
+Espatialrel_tnpoint_npoint(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -130,7 +130,7 @@ espatialrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Spatial relationship
  */
 static Datum
-espatialrel_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
+Espatialrel_tnpoint_tnpoint(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -158,7 +158,7 @@ PG_FUNCTION_INFO_V1(Econtains_geo_tnpoint);
 Datum
 Econtains_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_geo_tnpoint_ext(fcinfo, &geom_contains);
+  return Espatialrel_geo_tnpoint(fcinfo, &geom_contains);
 }
 
 /*****************************************************************************
@@ -176,7 +176,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_geo_tnpoint);
 Datum
 Edisjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_geo_tnpoint_ext(fcinfo, &geom_disjoint2d);
+  return Espatialrel_geo_tnpoint(fcinfo, &geom_disjoint2d);
 }
 
 PGDLLEXPORT Datum Edisjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -190,7 +190,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_npoint_tnpoint);
 Datum
 Edisjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_npoint_tnpoint_ext(fcinfo, &geom_disjoint2d);
+  return Espatialrel_npoint_tnpoint(fcinfo, &geom_disjoint2d);
 }
 
 PGDLLEXPORT Datum Edisjoint_tnpoint_geo(PG_FUNCTION_ARGS);
@@ -204,7 +204,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_geo);
 Datum
 Edisjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tnpoint_geo_ext(fcinfo, &geom_disjoint2d);
+  return Espatialrel_tnpoint_geo(fcinfo, &geom_disjoint2d);
 }
 
 PGDLLEXPORT Datum Edisjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -218,7 +218,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_npoint);
 Datum
 Edisjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tnpoint_npoint_ext(fcinfo, &geom_disjoint2d);
+  return Espatialrel_tnpoint_npoint(fcinfo, &geom_disjoint2d);
 }
 
 PGDLLEXPORT Datum Edisjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -231,7 +231,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_tnpoint);
 Datum
 Edisjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tnpoint_tnpoint_ext(fcinfo, &datum2_point_ne);
+  return Espatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_ne);
 }
 
 /*****************************************************************************
@@ -249,7 +249,7 @@ PG_FUNCTION_INFO_V1(Eintersects_geo_tnpoint);
 Datum
 Eintersects_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_geo_tnpoint_ext(fcinfo, &geom_intersects2d);
+  return Espatialrel_geo_tnpoint(fcinfo, &geom_intersects2d);
 }
 
 PGDLLEXPORT Datum Eintersects_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -263,7 +263,7 @@ PG_FUNCTION_INFO_V1(Eintersects_npoint_tnpoint);
 Datum
 Eintersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_npoint_tnpoint_ext(fcinfo, &geom_intersects2d);
+  return Espatialrel_npoint_tnpoint(fcinfo, &geom_intersects2d);
 }
 
 PGDLLEXPORT Datum Eintersects_tnpoint_geo(PG_FUNCTION_ARGS);
@@ -277,7 +277,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tnpoint_geo);
 Datum
 Eintersects_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tnpoint_geo_ext(fcinfo, &geom_intersects2d);
+  return Espatialrel_tnpoint_geo(fcinfo, &geom_intersects2d);
 }
 
 PGDLLEXPORT Datum Eintersects_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -291,7 +291,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tnpoint_npoint);
 Datum
 Eintersects_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tnpoint_npoint_ext(fcinfo, &geom_intersects2d);
+  return Espatialrel_tnpoint_npoint(fcinfo, &geom_intersects2d);
 }
 
 PGDLLEXPORT Datum Eintersects_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -304,7 +304,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tnpoint_tnpoint);
 Datum
 Eintersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tnpoint_tnpoint_ext(fcinfo, &datum2_point_eq);
+  return Espatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_eq);
 }
 
 /*****************************************************************************
@@ -430,7 +430,7 @@ PG_FUNCTION_INFO_V1(Etouches_geo_tnpoint);
 Datum
 Etouches_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_geo_tnpoint_ext(fcinfo, &geom_touches);
+  return Espatialrel_geo_tnpoint(fcinfo, &geom_touches);
 }
 
 PGDLLEXPORT Datum Etouches_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -444,7 +444,7 @@ PG_FUNCTION_INFO_V1(Etouches_npoint_tnpoint);
 Datum
 Etouches_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_npoint_tnpoint_ext(fcinfo, &geom_touches);
+  return Espatialrel_npoint_tnpoint(fcinfo, &geom_touches);
 }
 
 PGDLLEXPORT Datum Etouches_tnpoint_geo(PG_FUNCTION_ARGS);
@@ -458,7 +458,7 @@ PG_FUNCTION_INFO_V1(Etouches_tnpoint_geo);
 Datum
 Etouches_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tnpoint_geo_ext(fcinfo, &geom_touches);
+  return Espatialrel_tnpoint_geo(fcinfo, &geom_touches);
 }
 
 PGDLLEXPORT Datum Etouches_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -472,7 +472,7 @@ PG_FUNCTION_INFO_V1(Etouches_tnpoint_npoint);
 Datum
 Etouches_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tnpoint_npoint_ext(fcinfo, &geom_touches);
+  return Espatialrel_tnpoint_npoint(fcinfo, &geom_touches);
 }
 
 /*****************************************************************************/

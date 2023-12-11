@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Index support functions for temporal types.
+ * @brief Index support functions for temporal types
  */
 
 #include "pg_general/temporal_supportfn.h"
@@ -328,7 +328,7 @@ type_to_bbox(meosType type)
  * so that we know what index search strategy we want to apply.
  */
 Datum
-temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   Node *rawreq = (Node *) PG_GETARG_POINTER(0);
   Node *ret = NULL;
@@ -594,7 +594,7 @@ PG_FUNCTION_INFO_V1(Tnumber_supportfn);
 Datum
 Tnumber_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_ext(fcinfo, TNUMBERTYPE);
+  return Temporal_supportfn(fcinfo, TNUMBERTYPE);
 }
 
 PGDLLEXPORT Datum Tpoint_supportfn(PG_FUNCTION_ARGS);
@@ -605,7 +605,7 @@ PG_FUNCTION_INFO_V1(Tpoint_supportfn);
 Datum
 Tpoint_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_ext(fcinfo, TPOINTTYPE);
+  return Temporal_supportfn(fcinfo, TPOINTTYPE);
 }
 
 #if NPOINT
@@ -617,7 +617,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_supportfn);
 Datum
 Tnpoint_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_ext(fcinfo, TNPOINTTYPE);
+  return Temporal_supportfn(fcinfo, TNPOINTTYPE);
 }
 #endif /* NPOINT */
 

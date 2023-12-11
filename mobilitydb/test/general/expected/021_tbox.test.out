@@ -282,6 +282,35 @@ SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
 ERROR:  The box must have value dimension
 SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
 ERROR:  The box must have time dimension
+SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+ intspan 
+---------
+ [1, 2)
+(1 row)
+
+SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
+ floatspan 
+-----------
+ [1, 1]
+(1 row)
+
+SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+ intspan 
+---------
+ [1, 2)
+(1 row)
+
+SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
+ floatspan 
+-----------
+ [1, 2)
+(1 row)
+
+/* Errors */
+SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::intspan;
+ERROR:  The box must have value dimension
+SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::floatspan;
+ERROR:  The box must have value dimension
 SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan))::numeric, 6) FROM tbl_tboxfloat;
   round   
 ----------

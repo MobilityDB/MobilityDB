@@ -91,8 +91,7 @@ tpoint_force2d(const Temporal *temp)
   lfinfo.restype = T_TGEOMPOINT;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
+  return tfunc_temporal(temp, &lfinfo);
 }
 
 /*****************************************************************************
@@ -779,7 +778,7 @@ tpointinst_restrict_geom_time_iter(const TInstant *inst, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point instant to (the complement of) a geometry
- * and possibly a Z span and a period.
+ * and possibly a Z span and a timestamptz span.
  * @param[in] inst Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -800,7 +799,7 @@ tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
 
 /**
  * @brief Restrict a temporal point discrete sequence to (the complement of) a
- * geometry and possibly a Z span and a period.
+ * geometry and possibly a Z span and a timestamptz span.
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -835,7 +834,7 @@ tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
 
 /**
  * @brief Restrict a temporal sequence point with step interpolation to a
- * geometry and possibly a Z span and a period.
+ * geometry and possibly a Z span and a timestamptz span.
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -1295,7 +1294,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
 
 /**
  * @brief Restrict a temporal sequence point with linear interpolation to
- * (the complement of) a geometry and possibly a Z span and a period.
+ * (the complement of) a geometry and possibly a Z span and a timestamptz span.
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -1384,7 +1383,7 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence to (the complement of) a geometry
- * and possibly a Z span and a period.
+ * and possibly a Z span and a timestamptz span.
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -1425,7 +1424,7 @@ tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence set to (the complement of) a
- * geometry and possibly a Z span and a period.
+ * geometry and possibly a Z span and a timestamptz span.
  * @param[in] ss Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -1486,7 +1485,7 @@ tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry and
- * possibly a Z span and a period.
+ * possibly a Z span and a timestamptz span.
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -2147,7 +2146,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         {
           if (t1 != inst1->t)
           {
-            inter1 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t1);
+            inter1 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t1);
             instants[ninsts] = tinstant_make(inter1, inst1->temptype, t1);
             tofree[nfree++] = instants[ninsts++];
             free1 = true;
@@ -2159,7 +2158,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         {
           if (t2 != inst2->t)
           {
-            inter2 = tsegment_value_at_timestamp(inst1, inst2, LINEAR, t2);
+            inter2 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t2);
             if (! free1 || ! gspoint_eq(DatumGetGserializedP(inter1),
                   DatumGetGserializedP(inter2)))
             {

@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief General functions for set values composed of an ordered list of
- * distinct values.
+ * @brief General functions for set types composed of an ordered list of
+ * distinct values
  */
 
 #include "general/set.h"
@@ -64,7 +64,7 @@ PGDLLEXPORT Datum Set_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_in);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Input function for timestamp sets
+ * @brief Input function for set types
  * @sqlfunc intset_in(), bigintset_in(), floatset_in(), tstzset_in()
  */
 Datum
@@ -74,13 +74,13 @@ Set_in(PG_FUNCTION_ARGS)
   Oid ostypid = PG_GETARG_OID(1);
   Set *result = set_in(input, oid_type(ostypid));
   PG_RETURN_POINTER(result);
-}
+} 
 
 PGDLLEXPORT Datum Set_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_out);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output function for timestamp sets
+ * @brief Output function for set types
  * @sqlfunc intset_out(), bigintset_out(), floatset_out(), tstzset_out()
  */
 Datum
@@ -96,7 +96,7 @@ PGDLLEXPORT Datum Set_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_recv);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Receive function for timestamp set
+ * @brief Receive function for set types
  * @sqlfunc intset_recv(), bigintset_recv(), floatset_recv(), tstzset_recv()
  */
 Datum
@@ -113,7 +113,7 @@ PGDLLEXPORT Datum Set_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_send);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Send function for sets
+ * @brief Send function for set types
  * @sqlfunc intset_send(), bigintset_send(), floatset_send(), tstzset_send()
  */
 Datum
@@ -129,73 +129,6 @@ Set_send(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Output in WKT format
- *****************************************************************************/
-
-PGDLLEXPORT Datum Set_as_text(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Set_as_text);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation a set.
- * @sqlfunc asText()
- */
-Datum
-Set_as_text(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = set_out(s, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-PGDLLEXPORT Datum Geoset_as_text(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geoset_as_text);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation a geoset.
- * @sqlfunc asText()
- */
-Datum
-Geoset_as_text(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = geoset_as_text(s, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-PGDLLEXPORT Datum Geoset_as_ewkt(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geoset_as_ewkt);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Extended Well-Known Text (EWKT) representation a geoset.
- * @sqlfunc asEWKT()
- */
-Datum
-Geoset_as_ewkt(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = geoset_as_ewkt(s, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-/*****************************************************************************
  * Constructor function
  *****************************************************************************/
 
@@ -203,8 +136,8 @@ PGDLLEXPORT Datum Set_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_constructor);
 /**
  * @ingroup mobilitydb_setspan_constructor
- * @brief Construct a set from an array of values
- * @sqlfunc intset(), bigintset(), floatset(), tstzset()
+ * @brief Construct a set from an array of base values
+ * @sqlfunc set()
  */
 Datum
 Set_constructor(PG_FUNCTION_ARGS)
@@ -215,21 +148,21 @@ Set_constructor(PG_FUNCTION_ARGS)
   int count;
   Datum *values = datumarr_extract(array, &count);
   meosType basetype = settype_basetype(settype);
-  Set *result = set_make_free(values, count, basetype, ORDERED);
+  Set *result = set_make_free(values, count, basetype, ORDERED_NO);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
- * Conversion function
+ * Conversion functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Value_to_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_to_set);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a value as a set
- * @sqlfunc tstzset()
+ * @brief Convert a base value to a set
+ * @sqlfunc set()
  */
 Datum
 Value_to_set(PG_FUNCTION_ARGS)
@@ -246,16 +179,83 @@ Value_to_set(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Set_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_span);
 /**
- * @ingroup mobilitydb_setspan_accessor
- * @brief Return the bounding span of a set
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a set to a span
  * @sqlfunc span()
  */
 Datum
 Set_span(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Span *result = palloc(sizeof(Span));
-  set_set_span(s, result);
+  Span *result = set_to_span(s);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Intset_to_floatset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Intset_to_floatset);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert an integer set to a float set
+ * @sqlfunc floatset()
+ * @sqlop @p ::
+ */
+Datum
+Intset_to_floatset(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = intset_to_floatset(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Floatset_to_intset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatset_to_intset);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a float set to a integer set
+ * @sqlfunc intset()
+ * @sqlop @p ::
+ */
+Datum
+Floatset_to_intset(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = floatset_to_intset(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Dateset_to_tstzsset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Dateset_to_tstzset);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a date set to a timestamptz set
+ * @sqlfunc tstzset()
+ * @sqlop @p ::
+ */
+Datum
+Dateset_to_tstzset(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = dateset_to_tstzset(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tstzset_to_dateset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzset_to_dateset);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a timestamptz set to a date set
+ * @sqlfunc dateset()
+ * @sqlop @p ::
+ */
+Datum
+Tstzset_to_dateset(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = tstzset_to_dateset(s);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_POINTER(result);
 }
 
@@ -282,7 +282,7 @@ PG_FUNCTION_INFO_V1(Set_num_values);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the number of values of a set
- * @sqlfunc numTimestamp()
+ * @sqlfunc numValue()
  */
 Datum
 Set_num_values(PG_FUNCTION_ARGS)
@@ -298,7 +298,7 @@ PG_FUNCTION_INFO_V1(Set_start_value);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the start value of a set
- * @sqlfunc startTimestamp()
+ * @sqlfunc startValue()
  */
 Datum
 Set_start_value(PG_FUNCTION_ARGS)
@@ -314,7 +314,7 @@ PG_FUNCTION_INFO_V1(Set_end_value);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the end value of a set
- * @sqlfunc endTimestamp()
+ * @sqlfunc endValue()
  */
 Datum
 Set_end_value(PG_FUNCTION_ARGS)
@@ -330,7 +330,7 @@ PG_FUNCTION_INFO_V1(Set_value_n);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the n-th value of a set
- * @sqlfunc timestampN()
+ * @sqlfunc valueN()
  */
 Datum
 Set_value_n(PG_FUNCTION_ARGS)
@@ -349,8 +349,8 @@ PGDLLEXPORT Datum Set_values(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_values);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the values of a set
- * @sqlfunc timestamps()
+ * @brief Return the array of values of a set
+ * @sqlfunc getValues()
  */
 Datum
 Set_values(PG_FUNCTION_ARGS)
@@ -367,29 +367,11 @@ Set_values(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Floatset_round(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Floatset_round);
-/**
- * @ingroup mobilitydb_setspan_transf
- * @brief Set the precision of the float span to the number of decimal places
- * @sqlfunc round()
- */
-Datum
-Floatset_round(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int maxdd = PG_GETARG_INT32(1);
-  Set *result = floatset_round(s, maxdd);
-  PG_RETURN_POINTER(result);
-}
-
-/******************************************************************************/
-
 PGDLLEXPORT Datum Numset_shift(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift the number set by a value
+ * @brief Return a number set shifted by a value
  * @sqlfunc shift()
  */
 Datum
@@ -405,7 +387,7 @@ PGDLLEXPORT Datum Tstzset_shift(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift a timestamptz set by an interval
+ * @brief Return a timestamptz set shifted by an interval
  * @sqlfunc shift()
  */
 Datum
@@ -422,7 +404,7 @@ PGDLLEXPORT Datum Numset_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numset_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Scale a number set by a value
+ * @brief Return a number set scaled by a value
  * @sqlfunc scale()
  */
 Datum
@@ -439,7 +421,7 @@ PGDLLEXPORT Datum Tstzset_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Scale a timestamptz set by an interval
+ * @brief Return a timestamptz set scaled by an interval
  * @sqlfunc scale()
  */
 Datum
@@ -456,7 +438,7 @@ PGDLLEXPORT Datum Numset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift and scale a number set by the values
+ * @brief Return a number set shifted and scaled by the values
  * @sqlfunc shiftScale()
  */
 Datum
@@ -473,7 +455,7 @@ PGDLLEXPORT Datum Tstzset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Shift and scale a timestamptz set by the intervals
+ * @brief Return a timestamptz set shifted and scaled by the intervals
  * @sqlfunc shiftScale()
  */
 Datum
@@ -486,11 +468,28 @@ Tstzset_shift_scale(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Floatset_round(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatset_round);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float set where the precision of the values is set to a
+ * number of decimal places
+ * @sqlfunc round()
+ */
+Datum
+Floatset_round(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int maxdd = PG_GETARG_INT32(1);
+  Set *result = floatset_round(s, maxdd);
+  PG_RETURN_POINTER(result);
+}
+
 PGDLLEXPORT Datum Textset_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_lower);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Transform a text set in lowercase
+ * @brief Return a text set where the values are in lowercase
  * @sqlfunc lower()
  */
 Datum
@@ -506,7 +505,7 @@ PGDLLEXPORT Datum Textset_upper(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_upper);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Transform a text set in uppercase
+ * @brief Return a text set where the values are in uppercase
  * @sqlfunc upper()
  */
 Datum
@@ -538,13 +537,12 @@ set_unnest_state_make(const Set *set, Datum *values, int count)
   state->i = 0;
   state->count = count;
   state->values = values;
-  state->set = set_copy(set);
+  state->set = set_cp(set);
   return state;
 }
 
 /**
  * @brief Increment the current state to the next unnest value
- *
  * @param[in] state State to increment
  */
 void
@@ -562,7 +560,8 @@ set_unnest_state_next(SetUnnestState *state)
 PGDLLEXPORT Datum Set_unnest(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_unnest);
 /**
- * @brief Generate a list of values from a set.
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return the list of values of a set
  */
 Datum
 Set_unnest(PG_FUNCTION_ARGS)
@@ -612,15 +611,15 @@ Set_unnest(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions for defining B-tree index
+ * Comparison functions for defining B-tree indexes
  *****************************************************************************/
 
 PGDLLEXPORT Datum Set_cmp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_cmp);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return -1, 0, or 1 depending on whether the first set
- * is less than, equal, or greater than the second temporal value
+ * @brief Return -1, 0, or 1 depending on whether the first set is less than,
+ * equal, or greater than the second one
  * @sqlfunc set_cmp()
  */
 Datum
@@ -695,8 +694,7 @@ PGDLLEXPORT Datum Set_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_le);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first set is less than
- * or equal to the second one
+ * @brief Return true if the first set is less than or equal to the second one
  * @sqlfunc set_le()
  * @sqlop @p <=
  */
@@ -715,8 +713,8 @@ PGDLLEXPORT Datum Set_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_ge);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first set is greater than
- * or equal to the second one
+ * @brief Return true if the first set is greater than or equal to the second
+ * one
  * @sqlfunc set_ge()
  * @sqlop @p >=
  */
@@ -751,14 +749,14 @@ Set_gt(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Function for defining hash index
+ * Function for defining hash indexes
  *****************************************************************************/
 
 PGDLLEXPORT Datum Set_hash(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_hash);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the 32-bit hash of a set
+ * @brief Return the 32-bit hash value of a set
  * @sqlfunc hash()
  */
 Datum
@@ -773,7 +771,7 @@ PGDLLEXPORT Datum Set_hash_extended(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_hash_extended);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the 64-bit hash of a set using a seed
+ * @brief Return the 64-bit hash value of a set using a seed
  * @sqlfunc hash_extended()
  */
 Datum

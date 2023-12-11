@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Output of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB format.
+ * @brief Output of types in WKT, WKB, EWKB, HexWKB, and MF-JSON representation.
  */
 
 /* C */
@@ -68,11 +68,11 @@
 #define OUT_MAX_DIGS_DOUBLE (OUT_SHOW_DIGS_DOUBLE + 2) /* +2 mean add dot and sign */
 
 /*****************************************************************************
- * Output in MFJSON format
+ * Output in MF-JSON representation
  *****************************************************************************/
 
 /**
- * @brief Write into the buffer an integer represented in MF-JSON format
+ * @brief Write into the buffer an integer represented in MF-JSON representation
  */
 static size_t
 bool_mfjson_buf(char *output, bool b)
@@ -83,7 +83,7 @@ bool_mfjson_buf(char *output, bool b)
 }
 
 /**
- * @brief Write into the buffer an integer represented in MF-JSON format
+ * @brief Write into the buffer an integer represented in MF-JSON representation
  */
 static size_t
 int32_mfjson_buf(char *output, int i)
@@ -94,7 +94,7 @@ int32_mfjson_buf(char *output, int i)
 }
 
 /**
- * @brief Write into the buffer the double value represented in MF-JSON format
+ * @brief Write into the buffer the double value represented in MF-JSON representation
  */
 static size_t
 double_mfjson_buf(char *output, double d, int precision)
@@ -106,7 +106,7 @@ double_mfjson_buf(char *output, double d, int precision)
 }
 
 /**
- * @brief Write into the buffer a text value represented in MF-JSON format
+ * @brief Write into the buffer a text value represented in MF-JSON representation
  */
 static size_t
 text_mfjson_buf(char *output, text *txt)
@@ -119,7 +119,7 @@ text_mfjson_buf(char *output, text *txt)
 }
 
 /**
- * @brief Write into the buffer a base value represented in MF-JSON format.
+ * @brief Write into the buffer a base value represented in MF-JSON representation.
  */
 static size_t
 temporal_basevalue_mfjson_size(Datum value, meosType temptype, int precision)
@@ -139,7 +139,7 @@ temporal_basevalue_mfjson_size(Datum value, meosType temptype, int precision)
 }
 
 /**
- * @brief Write into the buffer a base value represented in MF-JSON format.
+ * @brief Write into the buffer a base value represented in MF-JSON representation.
  */
 static size_t
 temporal_basevalue_mfjson_buf(char *output, Datum value, meosType temptype,
@@ -160,7 +160,7 @@ temporal_basevalue_mfjson_buf(char *output, Datum value, meosType temptype,
 
 /**
  * @brief Return the maximum size in bytes of the coordinate array represented
- * in MF-JSON format
+ * in MF-JSON representation
  */
 static size_t
 coordinates_mfjson_size(int npoints, bool hasz, int precision)
@@ -176,7 +176,7 @@ coordinates_mfjson_size(int npoints, bool hasz, int precision)
 
 /**
  * @brief Write into the buffer the coordinate array represented in MF-JSON
- * format
+ * representation
  */
 static size_t
 coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
@@ -205,8 +205,8 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
 }
 
 /**
- * @brief Return the maximum size in bytes of the datetimes array represented
- * in MF-JSON format
+ * @brief Return the maximum size in bytes of the datetimes array in MF-JSON
+ * representation
  *
  * For example
  * `"datetimes":["2019-08-06T18:35:48.021455+02:30","2019-08-06T18:45:18.476983+02:30"]`
@@ -220,7 +220,7 @@ datetimes_mfjson_size(int count)
 }
 
 /**
- * @brief Write into the buffer the datetimes array represented in MF-JSON format
+ * @brief Write into the buffer the datetimes array represented in MF-JSON representation
  */
 static size_t
 datetimes_mfjson_buf(char *output, TimestampTz t)
@@ -235,7 +235,7 @@ datetimes_mfjson_buf(char *output, TimestampTz t)
 }
 
 /**
- * @brief Return the maximum size in bytes of the SRS represented in MF-JSON format
+ * @brief Return the maximum size in bytes of the SRS represented in MF-JSON representation
  */
 static size_t
 srs_mfjson_size(char *srs)
@@ -247,7 +247,7 @@ srs_mfjson_size(char *srs)
 }
 
 /**
- * @brief Write into the buffer the SRS represented in MF-JSON format
+ * @brief Write into the buffer the SRS represented in MF-JSON representation
  */
 static size_t
 srs_mfjson_buf(char *output, char *srs)
@@ -260,7 +260,7 @@ srs_mfjson_buf(char *output, char *srs)
 
 /**
  * @brief Return the maximum size in bytes of the period bounding box represented in
- * MF-JSON format
+ * MF-JSON representation
  */
 static size_t
 tstzspan_mfjson_size(void)
@@ -274,24 +274,24 @@ tstzspan_mfjson_size(void)
 }
 
 /**
- * @brief Write into the buffer the period bounding box represented in MF-JSON format
+ * @brief Write into the buffer the period bounding box represented in MF-JSON representation
  */
 static size_t
-tstzspan_mfjson_buf(char *output, const Span *p)
+tstzspan_mfjson_buf(char *output, const Span *s)
 {
   char *ptr = output;
   ptr += sprintf(ptr, "\"period\":{\"begin\":");
-  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(p->lower));
+  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(s->lower));
   ptr += sprintf(ptr, ",\"end\":");
-  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(p->upper));
+  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(s->upper));
   ptr += sprintf(ptr, ",\"lower_inc\":%s,\"upper_inc\":%s},",
-    p->lower_inc ? "true" : "false", p->upper_inc ? "true" : "false");
+    s->lower_inc ? "true" : "false", s->upper_inc ? "true" : "false");
   return (ptr - output);
 }
 
 /**
  * @brief Return the maximum size in bytes of the temporal bounding box represented in
- * MF-JSON format
+ * MF-JSON representation
  */
 static size_t
 tbox_mfjson_size(int precision)
@@ -306,7 +306,7 @@ tbox_mfjson_size(int precision)
 }
 
 /**
- * @brief Write into the buffer the temporal bounding box represented in MF-JSON format
+ * @brief Write into the buffer the temporal bounding box represented in MF-JSON representation
  */
 static size_t
 tbox_mfjson_buf(char *output, const TBox *bbox, int precision)
@@ -332,7 +332,7 @@ tbox_mfjson_buf(char *output, const TBox *bbox, int precision)
 
 /**
  * @brief Return the maximum size in bytes of the spatiotemporal bounding box
- * represented in MF-JSON format
+ * represented in MF-JSON representation
  */
 static size_t
 stbox_mfjson_size(bool hasz, int precision)
@@ -356,7 +356,7 @@ stbox_mfjson_size(bool hasz, int precision)
 
 /**
  * @brief Write into the buffer the spatiotemporal bounding box represented in
- * MF-JSON format
+ * MF-JSON representation
  */
 static size_t
 stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
@@ -393,7 +393,7 @@ stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
 
 /**
  * @brief Return the maximum size in bytes of the bounding box corresponding
- * to the temporal type represented in MF-JSON format
+ * to the temporal type represented in MF-JSON representation
  * @return On error return SIZE_MAX
  */
 static size_t
@@ -424,7 +424,7 @@ bbox_mfjson_size(meosType temptype, bool hasz, int precision)
 
 /**
  * @brief Write into the buffer the bounding box corresponding to the temporal type
- * represented in MF-JSON format
+ * represented in MF-JSON representation
  * @return On error return SIZE_MAX
  */
 static size_t
@@ -451,7 +451,7 @@ bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
 
 /**
  * @brief Return the maximum size in bytes of the temporal type represented in
- * MF-JSON format
+ * MF-JSON representation
  * @return On error return SIZE_MAX
  */
 static size_t
@@ -489,7 +489,7 @@ temptype_mfjson_size(meosType temptype)
 }
 
 /**
- * @brief Write into the buffer the temporal type represented in MF-JSON format
+ * @brief Write into the buffer the temporal type represented in MF-JSON representation
  * @return On error return SIZE_MAX
  */
 static size_t
@@ -530,7 +530,7 @@ temptype_mfjson_buf(char *output, meosType temptype)
 
 /**
  * @brief Return the maximum size in bytes of a temporal instant represented
- * in MF-JSON format
+ * in MF-JSON representation
  */
 static size_t
 tinstant_mfjson_size(const TInstant *inst, bool isgeo, bool hasz,
@@ -549,7 +549,7 @@ tinstant_mfjson_size(const TInstant *inst, bool isgeo, bool hasz,
 }
 
 /**
- * @brief Write into the buffer the temporal instant represented in MF-JSON format
+ * @brief Write into the buffer the temporal instant represented in MF-JSON representation
  */
 static size_t
 tinstant_mfjson_buf(const TInstant *inst, bool isgeo, bool hasz,
@@ -660,7 +660,7 @@ tpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
 
 /**
  * @brief Return the maximum size in bytes of a temporal sequence represented in
- * MF-JSON format
+ * MF-JSON representation
  */
 static size_t
 tsequence_mfjson_size(const TSequence *seq, bool isgeo, bool hasz,
@@ -689,7 +689,7 @@ tsequence_mfjson_size(const TSequence *seq, bool isgeo, bool hasz,
 }
 
 /**
- * @brief Write into the buffer the temporal sequence represented in MF-JSON format
+ * @brief Write into the buffer the temporal sequence represented in MF-JSON representation
  */
 static size_t
 tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
@@ -813,7 +813,7 @@ tpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
 
 /**
  * @brief Return the maximum size in bytes of a temporal sequence set represented
- * in MF-JSON format
+ * in MF-JSON representation
  */
 static size_t
 tsequenceset_mfjson_size(const TSequenceSet *ss, bool isgeo, bool hasz,
@@ -847,7 +847,7 @@ tsequenceset_mfjson_size(const TSequenceSet *ss, bool isgeo, bool hasz,
 }
 
 /**
- * @brief Write into the buffer the temporal sequence set represented in MF-JSON format
+ * @brief Write into the buffer the temporal sequence set represented in MF-JSON representation
  */
 static size_t
 tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
@@ -981,9 +981,10 @@ tpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
 /**
  * @ingroup libmeos_temporal_inout
  * @brief Return the MF-JSON representation of a temporal value.
- * @see tinstant_as_mfjson()
- * @see tsequence_as_mfjson()
- * @see tsequenceset_as_mfjson()
+ * @return On error return NULL
+ * @see #tinstant_as_mfjson()
+ * @see #tsequence_as_mfjson()
+ * @see #tsequenceset_as_mfjson()
  * @sqlfunc asMFJSON()
  */
 char *
@@ -1013,13 +1014,118 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
 }
 
 /*****************************************************************************
- * Output in WKT format
+ * Output in WKT and EWKT representation
  *****************************************************************************/
+
+PGDLLEXPORT Datum Set_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output a set in its Well-Known Text (WKT) representation
+ * @sqlfunc asText()
+ */
+Datum
+Set_as_text(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = set_out(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Geoset_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geoset_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output a geo set in its Well-Known Text (WKT) representation
+ * @sqlfunc asText()
+ */
+Datum
+Geoset_as_text(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = geoset_as_text(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Geoset_as_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geoset_as_ewkt);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output a geo set in its Extended Well-Known Text (EWKT) representation
+ * @sqlfunc asEWKT()
+ */
+Datum
+Geoset_as_ewkt(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = geoset_as_ewkt(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Span_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output a span in its Well-Known Text (WKT) representation
+ * @sqlfunc asText()
+ */
+Datum
+Span_as_text(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = span_out(s, Int32GetDatum(dbl_dig_for_wkt));
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Spanset_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Output a span set in its Well-Known Text (WKT) representation
+ * @sqlfunc asText()
+ */
+Datum
+Spanset_as_text(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = spanset_out(ss, Int32GetDatum(dbl_dig_for_wkt));
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************/
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of an array of
- * temporal values
+ * @brief Output an array of temporal values in its Well-Known Text (WKT)
+ * representation
  */
 char **
 temporalarr_out(const Temporal **temparr, int count, int maxdd)
@@ -1035,16 +1141,16 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
 }
 
 /*****************************************************************************
- * Output in WKB format
+ * Output in Well-Known Binary (WKB) representation
  *
- * The MobilityDB binary format builds upon the one of PostGIS. In particular,
+ * The MEOS binary representation builds upon the one of PostGIS. In particular,
  * it reuses many of the flags defined in liblwgeom.h such as WKB_NDR vs WKB_XDR
  * (for little- vs big-endian), WKB_EXTENDED (for the SRID), etc.
- * In addition, additional flags are needed such for interporation, etc.
+ * In addition, additional flags are needed for interpolation, etc.
  *
- * - For box types, the format depends on the existing dimensions (X, Z, T).
- * - For set and span types, the format depends on the base type (int4, float8, ...).
- * - For temporal types, the binary format depends on the subtype
+ * - For set and span types, the representation depends on the base type (int4, float8, ...).
+ * - For box types, the representation depends on the existing dimensions (X, Z, T).
+ * - For temporal types, the binary representation depends on the subtype
  *   (instant, sequence, ...) and the basetype (int4, float8, text, ...).
  *****************************************************************************/
 
@@ -1077,10 +1183,8 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
       return MEOS_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-    {
-      int dims = MEOS_FLAGS_GET_Z(flags) ? 3 : 2;
-      return MEOS_WKB_DOUBLE_SIZE * dims;
-    }
+      /* The size depends on the number of dimensions (either 2 or 3) */
+      return MEOS_WKB_DOUBLE_SIZE * ( MEOS_FLAGS_GET_Z(flags) ? 3 : 2 );
 #if NPOINT
     case T_NPOINT:
       return MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE;
@@ -1094,7 +1198,7 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 }
 
 /**
- * @brief Return the size of the WKB representation of the base value of an ordered
+ * @brief Return the size of the WKB representation of the base value of a
  * set type.
  */
 static size_t
@@ -1123,7 +1227,7 @@ geoset_wkb_needs_srid(const Set *set, uint8_t variant)
 
 /**
  * @brief Return the size in bytes of a set represented in Well-Known Binary
- * (WKB) format
+ * (WKB) representation
  */
 static size_t
 set_to_wkb_size(const Set *set, uint8_t variant)
@@ -1147,7 +1251,8 @@ set_to_wkb_size(const Set *set, uint8_t variant)
 /*****************************************************************************/
 
 /**
- * @brief Return the size of the WKB representation of the base value of a span type.
+ * @brief Return the size of the WKB representation of the base value of a span
+ * type.
  */
 static size_t
 span_basetype_to_wkb_size(const Span *s)
@@ -1158,8 +1263,8 @@ span_basetype_to_wkb_size(const Span *s)
 }
 
 /**
- * @brief Return the size in bytes of a component span represented in Well-Known
- * Binary (WKB) format
+ * @brief Return the size in bytes of a component span represented in
+ * Well-Known Binary (WKB) representation
  */
 size_t
 span_to_wkb_size_int(const Span *s)
@@ -1172,7 +1277,7 @@ span_to_wkb_size_int(const Span *s)
 
 /**
  * @brief Return the size in bytes of a span represented in Well-Known Binary
- * (WKB) format
+ * (WKB) representation
  */
 size_t
 span_to_wkb_size(const Span *s)
@@ -1186,7 +1291,7 @@ span_to_wkb_size(const Span *s)
 
 /**
  * @brief Return the size in bytes of a span set represented in Well-Known
- * Binary (WKB) format
+ * Binary (WKB) representation
  * @note The size of the elements is smaller than a full span since it does not
  * contain neither the endian flag nor the span type
  */
@@ -1204,7 +1309,7 @@ spanset_to_wkb_size(const SpanSet *ss)
 
 /**
  * @brief Return the size in bytes of a temporal box represented in Well-Known Binary
- * (WKB) format
+ * (WKB) representation
  */
 static size_t
 tbox_to_wkb_size(const TBox *box)
@@ -1237,8 +1342,8 @@ stbox_wkb_needs_srid(const STBox *box, uint8_t variant)
 }
 
 /**
- * @brief Return the size in bytes of a spatiotemporal box represented in Well-Known
- * Binary (WKB) format
+ * @brief Return the size in bytes of a spatiotemporal box represented in
+ * Well-Known Binary (WKB) representation
  */
 static size_t
 stbox_to_wkb_size(const STBox *box, uint8_t variant)
@@ -1263,7 +1368,8 @@ stbox_to_wkb_size(const STBox *box, uint8_t variant)
 /*****************************************************************************/
 
 /**
- * @brief Return the size of the WKB representation of a base value.
+ * @brief Return the size of the WKB representation of a base value of a 
+ * temporal type.
  */
 static size_t
 temporal_basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
@@ -1274,7 +1380,7 @@ temporal_basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 
 /**
  * @brief Return the maximum size in bytes of an array of temporal instants
- * represented in Well-Known Binary (WKB) format
+ * represented in Well-Known Binary (WKB) representation
  */
 static size_t
 tinstarr_to_wkb_size(const TInstant **instants, int count)
@@ -1308,7 +1414,7 @@ tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 
 /**
  * @brief Return the maximum size in bytes of the temporal instant represented
- * in Well-Known Binary (WKB) format
+ * in Well-Known Binary (WKB) representation
  */
 static size_t
 tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
@@ -1326,7 +1432,7 @@ tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
 
 /**
  * @brief Return the maximum size in bytes of the temporal sequence
- * represented in Well-Known Binary (WKB) format
+ * represented in Well-Known Binary (WKB) representation
  */
 static size_t
 tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
@@ -1348,7 +1454,7 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
 
 /**
  * @brief Return the maximum size in bytes of the temporal sequence set
- * represented in Well-Known Binary (WKB) format
+ * represented in Well-Known Binary (WKB) representation
  */
 static size_t
 tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
@@ -1372,7 +1478,7 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
 
 /**
  * @brief Return the maximum size in bytes of the temporal value
- * represented in Well-Known Binary (WKB) format
+ * represented in Well-Known Binary (WKB) representation
  */
 static size_t
 temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
@@ -1439,7 +1545,7 @@ wkb_swap_bytes(uint8_t variant)
 
 /**
  * @brief Write into the buffer the bytes of the value represented in Well-Known
- * Binary (WKB) format
+ * Binary (WKB) representation
  */
 uint8_t *
 bytes_to_wkb_buf(char *valptr, size_t size, uint8_t *buf, uint8_t variant)
@@ -1475,7 +1581,7 @@ bytes_to_wkb_buf(char *valptr, size_t size, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @brief Write into the buffer the Endian represented in Well-Known Binary (WKB) format
+ * @brief Write into the buffer the Endian represented in Well-Known Binary (WKB) representation
  */
 uint8_t *
 endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
@@ -1495,7 +1601,7 @@ endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer a boolean represented in Well-Known Binary (WKB)
- * format
+ * representation
  */
 static uint8_t *
 bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
@@ -1511,7 +1617,7 @@ bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @brief Write into the buffer the int4 represented in Well-Known Binary (WKB) format
+ * @brief Write into the buffer the int4 represented in Well-Known Binary (WKB) representation
  */
 static uint8_t *
 uint8_to_wkb_buf(const uint8_t i, uint8_t *buf, uint8_t variant)
@@ -1527,7 +1633,7 @@ uint8_to_wkb_buf(const uint8_t i, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @brief Write into the buffer the int2 represented in Well-Known Binary (WKB) format
+ * @brief Write into the buffer the int2 represented in Well-Known Binary (WKB) representation
  */
 static uint8_t *
 int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
@@ -1543,7 +1649,7 @@ int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @brief Write into the buffer the int4 represented in Well-Known Binary (WKB) format
+ * @brief Write into the buffer the int4 represented in Well-Known Binary (WKB) representation
  */
 uint8_t *
 int32_to_wkb_buf(const int i, uint8_t *buf, uint8_t variant)
@@ -1559,7 +1665,7 @@ int32_to_wkb_buf(const int i, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @brief Write into the buffer the int8 represented in Well-Known Binary (WKB) format
+ * @brief Write into the buffer the int8 represented in Well-Known Binary (WKB) representation
  */
 uint8_t *
 int64_to_wkb_buf(const int64 i, uint8_t *buf, uint8_t variant)
@@ -1575,7 +1681,7 @@ int64_to_wkb_buf(const int64 i, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @brief Write into the buffer the float64 represented in Well-Known Binary (WKB) format
+ * @brief Write into the buffer the float64 represented in Well-Known Binary (WKB) representation
  */
 uint8_t*
 double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
@@ -1592,7 +1698,7 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the TimestampTz (aka int64) represented in
- * Well-Known Binary (WKB) format
+ * Well-Known Binary (WKB) representation
  */
 uint8_t *
 date_to_wkb_buf(const DateADT d, uint8_t *buf, uint8_t variant)
@@ -1609,7 +1715,7 @@ date_to_wkb_buf(const DateADT d, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the TimestampTz (aka int64) represented in
- * Well-Known Binary (WKB) format
+ * Well-Known Binary (WKB) representation
  */
 uint8_t *
 timestamptz_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
@@ -1625,7 +1731,7 @@ timestamptz_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @brief Write into the buffer a text value represented in Well-Known Binary (WKB) format
+ * @brief Write into the buffer a text value represented in Well-Known Binary (WKB) representation
  */
 static uint8_t *
 text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
@@ -1640,7 +1746,7 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the coordinates of the temporal instant point
- * represented in Well-Known Binary (WKB) format as follows
+ * represented in Well-Known Binary (WKB) representation as follows
  * - 2 or 3 doubles for the coordinates depending on whether there is Z
  * - 1 timestamp
  */
@@ -1666,7 +1772,7 @@ coords_to_wkb_buf(Datum value, int16 flags, uint8_t *buf, uint8_t variant)
 #if NPOINT
 /**
  * @brief Write into the buffer a network point represented in
- * Well-Known Binary (WKB) format
+ * Well-Known Binary (WKB) representation
  */
 uint8_t *
 npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
@@ -1679,7 +1785,7 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer a temporal instant represented in Well-Known Binary
- * (WKB) format as follows
+ * (WKB) representation as follows
  * - base value
  * - timestamp
  */
@@ -1731,8 +1837,8 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
 
 /**
  * @brief Write into the buffer the flag containing the temporal type and
- * other characteristics represented in Well-Known Binary (WKB) format.
- * In binary format it is a byte as follows
+ * other characteristics represented in Well-Known Binary (WKB) representation.
+ * In binary representation it is a byte as follows
  * xSGZxxxO
  * S = SRID, G = Geodetic, Z = has Z, O = ordered set, x = unused bit
  */
@@ -1756,7 +1862,7 @@ set_flags_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer a set represented in Well-Known Binary (WKB)
- * format as follows
+ * representation as follows
  * - Endian byte
  * - Ordered set type: int16
  * - Number of values: int32
@@ -1787,7 +1893,7 @@ set_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the flag containing the bounds represented
- * in Well-Known Binary (WKB) format as follows
+ * in Well-Known Binary (WKB) representation as follows
  * xxxxxxUL
  * x = Unused bits, U = Upper inclusive, L = Lower inclusive
  */
@@ -1814,7 +1920,7 @@ bounds_to_wkb_buf(bool lower_inc, bool upper_inc, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the lower and upper bounds of a span represented in
- * Well-Known Binary (WKB) format
+ * Well-Known Binary (WKB) representation
  */
 static uint8_t *
 lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
@@ -1834,17 +1940,25 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
       buf = double_to_wkb_buf(DatumGetFloat8(s->lower), buf, variant);
       buf = double_to_wkb_buf(DatumGetFloat8(s->upper), buf, variant);
       break;
+    case T_DATE:
+      buf = date_to_wkb_buf(DatumGetDateADT(s->lower), buf, variant);
+      buf = date_to_wkb_buf(DatumGetDateADT(s->upper), buf, variant);
+      break;
     case T_TIMESTAMPTZ:
       buf = timestamptz_to_wkb_buf(DatumGetTimestampTz(s->lower), buf, variant);
       buf = timestamptz_to_wkb_buf(DatumGetTimestampTz(s->upper), buf, variant);
       break;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+        "Unknown span base type in WKB output: %d", s->basetype);
+      return NULL;
   }
   return buf;
 }
 
 /**
  * @brief Write into the buffer a span that is a component of a span set
- * represented in Well-Known Binary (WKB) format as follows
+ * represented in Well-Known Binary (WKB) representation as follows
  * - Basetype int16
  * - Bounds byte stating whether the bounds are inclusive
  * - Two base type values
@@ -1861,7 +1975,7 @@ span_to_wkb_buf_int_iter(const Span *s, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer a span that is a component of another type
- * represented in Well-Known Binary (WKB) format as follows
+ * represented in Well-Known Binary (WKB) representation as follows
  * - Span type
  * - Bounds byte stating whether the bounds are inclusive
  * - Two base type values
@@ -1877,7 +1991,7 @@ span_to_wkb_buf_int(const Span *s, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @brief Write into the buffer a span represented in Well-Known Binary (WKB) format
+ * @brief Write into the buffer a span represented in Well-Known Binary (WKB) representation
  * as follows
  * - Endian byte
  * - Basetype int16
@@ -1898,7 +2012,7 @@ span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer a span set represented in Well-Known Binary (WKB)
- * format as follows
+ * representation as follows
  * - Endian byte
  * - Basetype int16
  * - int32 stating the number of periods
@@ -1915,7 +2029,7 @@ spanset_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
   buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Write the periods */
   for (int i = 0; i < ss->count; i++)
-    buf = span_to_wkb_buf_int_iter(&ss->elems[i], buf, variant);
+    buf = span_to_wkb_buf_int_iter(SPANSET_SP_N(ss, i), buf, variant);
   /* Write the temporal dimension if any */
   return buf;
 }
@@ -1924,7 +2038,7 @@ spanset_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the flag of a temporal box represented in
- * Well-Known Binary (WKB) format. It is a byte as follows
+ * Well-Known Binary (WKB) representation. It is a byte as follows
  * xxxxxxTX
  * T = has T, X = has X, x = unused bit
  */
@@ -1951,7 +2065,7 @@ tbox_to_wkb_flags_buf(const TBox *box, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer a temporal box represented in Well-Known Binary (WKB)
- * format as follows
+ * representation as follows
  * - Endian byte
  * - Flag byte stating whether the are a value and/or a time dimensions
  * - Output the 2 doubles for the value dimension (if there is one) and the
@@ -1977,7 +2091,7 @@ tbox_to_wkb_buf(const TBox *box, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the flag of a spatiotemporal box represented in
- * Well-Known Binary (WKB) format. It is a byte as follows
+ * Well-Known Binary (WKB) representation. It is a byte as follows
  * xSGZxxTX
  * S = SID, G = Geodetic, Z = has Z, T = has T, X = has X, x = unused bit
  */
@@ -2001,7 +2115,7 @@ stbox_flags_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer a spatiotemporal box represented in Well-Known Binary
- * (WKB) format as follows
+ * (WKB) representation as follows
  * - Endian byte
  * - Flag byte stating whether the X, Z, and time dimensions are present,
  *   whether the box is geodetic and whether an SRID is needed
@@ -2044,8 +2158,8 @@ stbox_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the flag containing the temporal type and
- * other characteristics represented in Well-Known Binary (WKB) format.
- * In binary format it is a byte as follows
+ * other characteristics represented in Well-Known Binary (WKB) representation.
+ * In binary representation it is a byte as follows
  * xSGZIITT
  * S = SRID, G = Geodetic, Z = has Z, x = unused bit
  * II = Interpolation with values 0 to 2
@@ -2073,7 +2187,7 @@ temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer a temporal instant represented in Well-Known Binary
- * (WKB) format as follows
+ * (WKB) representation as follows
  * - base value
  * - timestamp
  */
@@ -2091,7 +2205,7 @@ tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
 
 /**
  * @brief Write into the buffer the temporal instant represented in
- * Well-Known Binary (WKB) format as follows
+ * Well-Known Binary (WKB) representation as follows
  * - Endian
  * - Temporal type
  * - Temporal flags: Linear, SRID, Geodetic, Z, Temporal subtype
@@ -2116,7 +2230,7 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the temporal sequence represented in
- * Well-Known Binary (WKB) format as follows
+ * Well-Known Binary (WKB) representation as follows
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
  * - SRID (if requested)
@@ -2154,7 +2268,7 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer a temporal sequence set represented in
- * Well-Known Binary (WKB) format as follows
+ * Well-Known Binary (WKB) representation as follows
  * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
  * - SRID (if requested)
@@ -2201,7 +2315,7 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
 
 /**
  * @brief Write into the buffer the temporal value represented in Well-Known Binary
- * (WKB) format depending on the subtype
+ * (WKB) representation depending on the subtype
  */
 static uint8_t *
 temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
@@ -2344,48 +2458,12 @@ datum_as_hexwkb(Datum value, meosType type, uint8_t variant, size_t *size)
 }
 
 /*****************************************************************************
- * WKB and HexWKB functions for the MEOS API
+ * WKB and HexWKB output functions for set, span, and span set types
  *****************************************************************************/
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a span.
- * @sqlfunc asBinary()
- */
-uint8_t *
-span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
-    return NULL;
-  uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->spantype, variant,
-    size_out);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a span in hex-encoded ASCII.
- * @sqlfunc asHexWKB()
- */
-char *
-span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
-    return NULL;
-  char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->spantype,
-    variant | (uint8_t) WKB_HEX, size_out);
-  return result;
-}
-#endif /* MEOS */
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a set.
+ * @brief Output a set in its Well-Known Binary (WKB) representation
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2402,7 +2480,8 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a set in hex-encoded ASCII.
+ * @brief Output a set in its hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation
  * @sqlfunc asHexWKB()
  */
 char *
@@ -2421,7 +2500,43 @@ set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a span set.
+ * @brief Output a span in its Well-Known Binary (WKB) representation
+ * @sqlfunc asBinary()
+ */
+uint8_t *
+span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
+    return NULL;
+  uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->spantype, variant,
+    size_out);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a span in its hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation
+ * @sqlfunc asHexWKB()
+ */
+char *
+span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
+    return NULL;
+  char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->spantype,
+    variant | (uint8_t) WKB_HEX, size_out);
+  return result;
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a span set in its Well-Known Binary (WKB) representation
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2438,7 +2553,8 @@ spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a span set in hex-encoded ASCII.
+ * @brief Output a span set in its hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation
  * @sqlfunc asHexWKB()
  */
 char *
@@ -2453,11 +2569,13 @@ spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 }
 #endif /* MEOS */
 
-/*****************************************************************************/
+/*****************************************************************************
+ * WKB and HexWKB output functions for bounding box types
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Return the WKB representation of a temporal box.
+ * @brief Output a temporal box in its Well-Known Binary (WKB) representation
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2474,7 +2592,8 @@ tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_box_inout
- * @brief Return the WKB representation of a temporal box in hex-encoded ASCII.
+ * @brief Output a temporal box in its hex-encoded ASCII Well-Known Binary
+ * (HexWKB) representation
  * @sqlfunc asHexWKB()
  */
 char *
@@ -2493,7 +2612,8 @@ tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Return the WKB representation of a spatiotemporal box.
+ * @brief Output a spatiotemporal box in its Well-Known Binary (WKB)
+ * representation
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2510,7 +2630,9 @@ stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_box_inout
- * @brief Return the WKB representation of a spatiotemporal box in hex-encoded ASCII.
+ * @brief Output a spatiotemporal box in its hex-encoded ASCII Well-Known
+ * Binary (HexWKB)
+ * representation
  * @sqlfunc asHexWKB()
  */
 char *
@@ -2525,11 +2647,13 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 }
 #endif /* MEOS */
 
-/*****************************************************************************/
+/*****************************************************************************
+ * WKB and HexWKB output functions for temporal types
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return the WKB representation of a temporal value.
+ * @brief Output a temporal value in its Well-Known Binary (WKB) representation
  * @sqlfunc asBinary()
  */
 uint8_t *
@@ -2546,7 +2670,8 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return the WKB representation of a temporal value in hex-encoded ASCII.
+ * @brief Output a temporal value in its hex-encoded ASCII Well-Known Binary
+ * (HexWKB) representation
  * @sqlfunc asHexWKB()
  */
 char *

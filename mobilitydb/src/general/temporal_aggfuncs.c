@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief General aggregate functions for temporal types.
+ * @brief Aggregate functions for temporal types
  */
 
 #include "general/temporal_aggfuncs.h"
@@ -97,6 +97,7 @@ Temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func,
 PGDLLEXPORT Datum Temporal_tagg_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tagg_finalfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Generic final function for temporal aggregation
  */
 Datum
@@ -142,7 +143,8 @@ Temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
 PGDLLEXPORT Datum Temporal_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tcount_transfn);
 /**
- * @brief Generic transition function for temporal aggregation
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal count aggregation
  */
 Datum
 Temporal_tcount_transfn(PG_FUNCTION_ARGS)
@@ -159,6 +161,7 @@ Temporal_tcount_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_tcount_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tcount_combinefn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for temporal count aggregation
  */
 Datum
@@ -174,15 +177,16 @@ Temporal_tcount_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_extent_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal extent aggregation of temporal
- * values with period bounding box
+ * booleans and temporal texts
  */
 Datum
 Temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
-  Span *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
-  Span *result = temporal_extent_transfn(p, temp);
+  Span *result = temporal_extent_transfn(s, temp);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -194,6 +198,7 @@ Temporal_extent_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_extent_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal extent aggregation for temporal
  * numbers
  */
@@ -216,7 +221,8 @@ Tnumber_extent_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbool_tand_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_tand_transfn);
 /**
- * @brief Transition function for temporal and aggregation of temporal boolean
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal and aggregation of temporal booleans
  * values
  */
 Datum
@@ -228,7 +234,8 @@ Tbool_tand_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbool_tand_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_tand_combinefn);
 /**
- * @brief Combine function for temporal and aggregation of temporal boolean
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal and aggregation of temporal booleans
  * values
  */
 Datum
@@ -240,7 +247,8 @@ Tbool_tand_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbool_tor_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_tor_transfn);
 /**
- * @brief Transition function for temporal or aggregation of temporal boolean
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal or aggregation of temporal booleans
  * values
  */
 Datum
@@ -252,7 +260,8 @@ Tbool_tor_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbool_tor_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_tor_combinefn);
 /**
- * @brief Combine function for temporal or aggregation of temporal boolean
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal or aggregation of temporal booleans
  * values
  */
 Datum
@@ -266,8 +275,9 @@ Tbool_tor_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tint_tmin_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tmin_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal minimum aggregation of temporal
- * integer values
+ * integers
  */
 Datum
 Tint_tmin_transfn(PG_FUNCTION_ARGS)
@@ -278,8 +288,9 @@ Tint_tmin_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tint_tmin_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tmin_combinefn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for temporal minimum aggregation of temporal
- * integer values
+ * integers
  */
 Datum
 Tint_tmin_combinefn(PG_FUNCTION_ARGS)
@@ -290,8 +301,9 @@ Tint_tmin_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tfloat_tmin_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tmin_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal minimum aggregation of temporal
- * float values
+ * floats
  */
 Datum
 Tfloat_tmin_transfn(PG_FUNCTION_ARGS)
@@ -302,8 +314,8 @@ Tfloat_tmin_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tfloat_tmin_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tmin_combinefn);
 /**
- * @brief Combine function for temporal minimum aggregation of temporal float
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal minimum aggregation of temporal floats
  */
 Datum
 Tfloat_tmin_combinefn(PG_FUNCTION_ARGS)
@@ -314,8 +326,9 @@ Tfloat_tmin_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tint_tmax_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tmax_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal maximum aggregation of temporal
- * integer values
+ * integers
  */
 Datum
 Tint_tmax_transfn(PG_FUNCTION_ARGS)
@@ -326,8 +339,9 @@ Tint_tmax_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tint_tmax_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tmax_combinefn);
 /**
- * @brief Combine function for temporal maximum aggregation of temporal integer
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal maximum aggregation of temporal
+ * integers
  */
 Datum
 Tint_tmax_combinefn(PG_FUNCTION_ARGS)
@@ -338,8 +352,9 @@ Tint_tmax_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tfloat_tmax_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tmax_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal maximum aggregation of temporal
- * float values
+ * floats
  */
 Datum
 Tfloat_tmax_transfn(PG_FUNCTION_ARGS)
@@ -350,7 +365,8 @@ Tfloat_tmax_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tfloat_tmax_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tmax_combinefn);
 /**
- * @brief Combine function for temporal maximum aggregation of temporal float
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal maximum aggregation of temporal floats
  * values
  */
 Datum
@@ -362,8 +378,8 @@ Tfloat_tmax_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tint_tsum_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tsum_transfn);
 /**
- * @brief Transition function for temporal sum aggregation of temporal integer
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal sum aggregation of temporal integers
  */
 Datum
 Tint_tsum_transfn(PG_FUNCTION_ARGS)
@@ -374,8 +390,8 @@ Tint_tsum_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tint_tsum_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tsum_combinefn);
 /**
- * @brief Combine function for temporal sum aggregation of temporal integer
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal sum aggregation of temporal integers
  */
 Datum
 Tint_tsum_combinefn(PG_FUNCTION_ARGS)
@@ -386,8 +402,8 @@ Tint_tsum_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tfloat_tsum_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tsum_transfn);
 /**
- * @brief Transition function for temporal sum aggregation of temporal float
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal sum aggregation of temporal floats
  */
 Datum
 Tfloat_tsum_transfn(PG_FUNCTION_ARGS)
@@ -398,7 +414,8 @@ Tfloat_tsum_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tfloat_tsum_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tsum_combinefn);
 /**
- * @brief Combine function for temporal sum aggregation of temporal float values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal sum aggregation of temporal floats
  */
 Datum
 Tfloat_tsum_combinefn(PG_FUNCTION_ARGS)
@@ -411,8 +428,8 @@ Tfloat_tsum_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Ttext_tmin_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_tmin_transfn);
 /**
- * @brief Transition function for temporal minimum aggregation of temporal text
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal minimum aggregation of temporal texts
  */
 Datum
 Ttext_tmin_transfn(PG_FUNCTION_ARGS)
@@ -423,8 +440,8 @@ Ttext_tmin_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Ttext_tmin_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_tmin_combinefn);
 /**
- * @brief Combine function for temporal minimum aggregation of temporal text
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal minimum aggregation of temporal texts
  */
 Datum
 Ttext_tmin_combinefn(PG_FUNCTION_ARGS)
@@ -435,8 +452,8 @@ Ttext_tmin_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Ttext_tmax_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_tmax_transfn);
 /**
- * @brief Transition function for temporal maximum aggregation of temporal text
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal maximum aggregation of temporal texts
  */
 Datum
 Ttext_tmax_transfn(PG_FUNCTION_ARGS)
@@ -447,8 +464,8 @@ Ttext_tmax_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Ttext_tmax_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_tmax_combinefn);
 /**
- * @brief Combine function for temporal maximum aggregation of temporal text
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal maximum aggregation of temporal texts
  */
 Datum
 Ttext_tmax_combinefn(PG_FUNCTION_ARGS)
@@ -463,7 +480,9 @@ Ttext_tmax_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_tavg_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_tavg_transfn);
 /**
- * @brief Transition function for temporal average aggregation
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal average aggregation of temporal
+ * numbers 
  */
 Datum
 Tnumber_tavg_transfn(PG_FUNCTION_ARGS)
@@ -475,7 +494,9 @@ Tnumber_tavg_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_tavg_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_tavg_combinefn);
 /**
- * @brief Combine function for temporal average aggregation
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal average aggregation of temporal
+ * numbers 
  */
 Datum
 Tnumber_tavg_combinefn(PG_FUNCTION_ARGS)
@@ -486,7 +507,9 @@ Tnumber_tavg_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_tavg_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_tavg_finalfn);
 /**
- * @brief Final function for temporal average aggregation
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Final function for temporal average aggregation of temporal
+ * numbers 
  */
 Datum
 Tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
@@ -503,7 +526,8 @@ Tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_merge_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_merge_transfn);
 /**
- * @brief Transition function for union aggregate of periods
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for merge aggregate of temporal values
  */
 Datum
 Temporal_merge_transfn(PG_FUNCTION_ARGS)
@@ -514,7 +538,8 @@ Temporal_merge_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_merge_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_merge_combinefn);
 /**
- * @brief Combine function for union aggregate of time types
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for merge aggregate of temporal values
  */
 Datum
 Temporal_merge_combinefn(PG_FUNCTION_ARGS)
@@ -590,6 +615,7 @@ temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
 PGDLLEXPORT Datum Temporal_app_tinst_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_app_tinst_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for append temporal instant aggregate
  */
 Datum
@@ -635,7 +661,8 @@ Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_append_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_append_finalfn);
 /**
- * @brief Combine function for append temporal instant/sequence aggregate
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Final function for append temporal instant/sequence aggregate
  */
 Datum
 Temporal_append_finalfn(PG_FUNCTION_ARGS)
@@ -654,6 +681,7 @@ Temporal_append_finalfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_app_tseq_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_app_tseq_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for append temporal sequence aggregate
  */
 Datum

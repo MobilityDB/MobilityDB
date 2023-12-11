@@ -87,7 +87,8 @@ extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
 extern int span_bound_qsort_cmp(const void *s1, const void *s2);
 extern int span_lower_cmp(const Span *s1, const Span *s2);
 extern int span_upper_cmp(const Span *s1, const Span *s2);
-extern Datum span_canon_upper(const Span *s);
+extern Datum span_decr_bound(Datum upper, meosType basetype);
+extern Datum span_incr_bound(Datum upper, meosType basetype);
 extern Span *spanarr_normalize(Span *spans, int count, bool sort,
   int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);

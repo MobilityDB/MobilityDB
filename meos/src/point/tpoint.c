@@ -80,7 +80,7 @@ STBox *
 tpoint_to_stbox(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || 
+  if (! ensure_not_null((void *) temp) ||
       ! ensure_tspatial_type(temp->temptype))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
@@ -107,8 +107,7 @@ geo_expand_space(const GSERIALIZED *gs, double d)
 
   STBox box;
   geo_set_stbox(gs, &box);
-  STBox *result = stbox_expand_space(&box, d);
-  return result;
+  return stbox_expand_space(&box, d);
 }
 
 /**
@@ -129,8 +128,7 @@ tpoint_expand_space(const Temporal *temp, double d)
 
   STBox box;
   temporal_set_bbox(temp, &box);
-  STBox *result = stbox_expand_space(&box, d);
-  return result;
+  return stbox_expand_space(&box, d);
 }
 
 /*****************************************************************************/

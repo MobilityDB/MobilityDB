@@ -484,7 +484,7 @@ floatspan_bucket_list(const Span *s, double size, double origin, int *count)
 
 /**
  * @ingroup libmeos_temporal_analytics_tile
- * @brief Return the bucket list from a period
+ * @brief Return the bucket list from a timestamptz span
  * @param[in] s Input span to split
  * @param[in] duration Interval defining the size of the buckets
  * @param[in] origin Origin of the buckets
@@ -859,7 +859,7 @@ tsequence_time_split_iter(const TSequence *seq, TimestampTz start,
       if (instants[ninsts - 1]->t < upper)
       {
         if (interp == LINEAR)
-          tofree[nfree] = tsegment_at_timestamp(instants[ninsts - 1], inst,
+          tofree[nfree] = tsegment_at_timestamptz(instants[ninsts - 1], inst,
             interp, upper);
         else
         {

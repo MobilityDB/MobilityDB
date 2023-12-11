@@ -474,6 +474,7 @@ ensure_positive(int i)
   return true;
 }
 
+#if 0 /* not used */
 /**
  * @brief Ensure that the first value is less or equal than the second one
  */
@@ -489,6 +490,7 @@ ensure_less_equal(int i, int j)
   }
   return true;
 }
+#endif /* not used */
 
 /**
  * @brief Return true if the number is not negative
@@ -538,12 +540,15 @@ bool
 positive_datum(Datum size, meosType basetype)
 {
   assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8 ||
-    basetype == T_TIMESTAMPTZ);
+    basetype == T_DATE || basetype == T_TIMESTAMPTZ);
   if (basetype == T_INT4 && DatumGetInt32(size) <= 0)
     return false;
   if (basetype == T_INT8 && DatumGetInt64(size) <= 0)
     return false;
   if (basetype == T_FLOAT8 && DatumGetFloat8(size) <= 0.0)
+    return false;
+  /* For dates the value expected are integers */
+  if (basetype == T_DATE && DatumGetInt32(size) <= 0.0)
     return false;
   /* basetype == T_TIMESTAMPTZ */
   if (DatumGetInt64(size) <= 0)
@@ -1507,7 +1512,6 @@ temporal_set_tstzspan(const Temporal *temp, Span *s)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_temporal_conversion
  * @brief Return the bounding period of a temporal value.
@@ -1520,12 +1524,10 @@ temporal_to_tstzspan(const Temporal *temp)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-
   Span *result = palloc(sizeof(Span));
   temporal_set_tstzspan(temp, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
@@ -3847,26 +3849,26 @@ temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
  * @sqlfunc atTime, minusTime
  */
 Temporal *
-temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
+temporal_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 {
   assert(temp);
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_restrict_timestamp((TInstant *) temp, t, atfunc);
+    result = (Temporal *) tinstant_restrict_timestamptz((TInstant *) temp, t, atfunc);
   else if (temp->subtype == TSEQUENCE)
   {
     if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
       result = atfunc ?
-        (Temporal *) tdiscseq_at_timestamp((TSequence *) temp, t) :
-        (Temporal *) tdiscseq_minus_timestamp((TSequence *) temp, t);
+        (Temporal *) tdiscseq_at_timestamptz((TSequence *) temp, t) :
+        (Temporal *) tdiscseq_minus_timestamptz((TSequence *) temp, t);
     else
       result = atfunc ?
-        (Temporal *) tcontseq_at_timestamp((TSequence *) temp, t) :
-        (Temporal *) tcontseq_minus_timestamp((TSequence *) temp, t);
+        (Temporal *) tcontseq_at_timestamptz((TSequence *) temp, t) :
+        (Temporal *) tcontseq_minus_timestamptz((TSequence *) temp, t);
   }
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_restrict_timestamp((TSequenceSet *) temp,
+    result = (Temporal *) tsequenceset_restrict_timestamptz((TSequenceSet *) temp,
       t, atfunc);
   return result;
 }
@@ -3879,20 +3881,20 @@ temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
  * @sqlfunc valueAtTimestamp
  */
 bool
-temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
+temporal_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   Datum *result)
 {
   assert(temp); assert(result);
   bool found = false;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    found = tinstant_value_at_timestamp((TInstant *) temp, t, result);
+    found = tinstant_value_at_timestamptz((TInstant *) temp, t, result);
   else if (temp->subtype == TSEQUENCE)
     found = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-      tdiscseq_value_at_timestamp((TSequence *) temp, t, result) :
-      tsequence_value_at_timestamp((TSequence *) temp, t, strict, result);
+      tdiscseq_value_at_timestamptz((TSequence *) temp, t, result) :
+      tsequence_value_at_timestamptz((TSequence *) temp, t, strict, result);
   else /* subtype == TSEQUENCESET */
-    found = tsequenceset_value_at_timestamp((TSequenceSet *) temp, t, strict,
+    found = tsequenceset_value_at_timestamptz((TSequenceSet *) temp, t, strict,
       result);
   return found;
 }
@@ -3933,7 +3935,7 @@ temporal_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal value to (the complement of) a period.
+ * @brief Restrict a temporal value to (the complement of) a timestamptz span.
  * @sqlfunc atTime, minusTime
  */
 Temporal *
@@ -4134,7 +4136,7 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
  * @sqlfunc deleteTime
  */
 Temporal *
-temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
+temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
@@ -4143,17 +4145,17 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_restrict_timestamp((TInstant *) temp, t,
+    result = (Temporal *) tinstant_restrict_timestamptz((TInstant *) temp, t,
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_delete_timestamp((TSequence *) temp, t,
+    result = (Temporal *) tsequence_delete_timestamptz((TSequence *) temp, t,
       connect);
   else /* temp->subtype == TSEQUENCESET */
   {
     result = connect ?
-      (Temporal *) tsequenceset_restrict_timestamp((TSequenceSet *) temp, t,
+      (Temporal *) tsequenceset_restrict_timestamptz((TSequenceSet *) temp, t,
         REST_MINUS) :
-      (Temporal *) tsequenceset_delete_timestamp((TSequenceSet *) temp, t);
+      (Temporal *) tsequenceset_delete_timestamptz((TSequenceSet *) temp, t);
   }
   return result;
 }
@@ -4191,8 +4193,8 @@ temporal_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 
 /**
  * @ingroup libmeos_temporal_modif
- * @brief Delete a period from a temporal value connecting the instants
- * before and after the given timestamp (if any).
+ * @brief Delete a timestamptz span from a temporal value connecting the
+ * instants before and after the given timestamptz (if any).
  * @sqlfunc deleteTime
  */
 Temporal *
@@ -4636,7 +4638,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
   Span p1, p2;
   temporal_set_tstzspan(temp1, &p1);
   temporal_set_tstzspan(temp2, &p2);
-  int result = span_cmp(&p1, &p2);
+  int result = span_cmp1(&p1, &p2);
   if (result)
     return result;
 

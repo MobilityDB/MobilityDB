@@ -211,15 +211,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numTimestamps"><varname>numValues</varname></link>: Obtener el número de valores</para>
+					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Obtener el número de fechas o marcas de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimo</para>
+					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener la fecha or marca de tiempo inicial, final o enésima</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestamps"><varname>values</varname></link>: Obtener los valores diferentes</para>
+					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Obtener los fechas o marcas de tiempo diferentes</para>
 				</listitem>
 
 				<listitem>
@@ -1591,7 +1591,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Obtener la posición inicial/final</para>
+						<para><link linkend="startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Obtener la posición inicial o final</para>
 					</listitem>
 
 					<listitem>

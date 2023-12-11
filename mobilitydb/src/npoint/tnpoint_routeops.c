@@ -235,7 +235,7 @@ same_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * @param[in] func Function
  */
 Datum
-routeop_bigint_tnpoint_ext(FunctionCallInfo fcinfo,
+Routeop_bigint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, int64, bool))
 {
   int64 rid = PG_GETARG_INT64(0);
@@ -252,7 +252,7 @@ routeop_bigint_tnpoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_tnpoint_bigint_ext(FunctionCallInfo fcinfo,
+Routeop_tnpoint_bigint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, int64, bool))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -269,7 +269,7 @@ routeop_tnpoint_bigint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_bigintset_tnpoint_ext(FunctionCallInfo fcinfo,
+Routeop_bigintset_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Set *, bool))
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -287,7 +287,7 @@ routeop_bigintset_tnpoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_tnpoint_bigintset_ext(FunctionCallInfo fcinfo,
+Routeop_tnpoint_bigintset(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Set *, bool))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -305,7 +305,7 @@ routeop_tnpoint_bigintset_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
+Routeop_npoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Npoint *, bool))
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
@@ -322,7 +322,7 @@ routeop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
+Routeop_tnpoint_npoint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Npoint *, bool))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -339,7 +339,7 @@ routeop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
+Routeop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Temporal *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -366,7 +366,7 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_bigintset_tnpoint);
 Datum
 Overlaps_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigintset_tnpoint_ext(fcinfo, &overlaps_rid_tnpoint_bigintset);
+  return Routeop_bigintset_tnpoint(fcinfo, &overlaps_rid_tnpoint_bigintset);
 }
 
 /*****************************************************************************/
@@ -383,7 +383,7 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_bigintset);
 Datum
 Overlaps_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigintset_ext(fcinfo, &overlaps_rid_tnpoint_bigintset);
+  return Routeop_tnpoint_bigintset(fcinfo, &overlaps_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Overlaps_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -398,7 +398,7 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_tnpoint);
 Datum
 Overlaps_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_tnpoint_ext(fcinfo, &overlaps_rid_tnpoint_tnpoint);
+  return Routeop_tnpoint_tnpoint(fcinfo, &overlaps_rid_tnpoint_tnpoint);
 }
 
 /*****************************************************************************
@@ -417,7 +417,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_bigintset_tnpoint);
 Datum
 Contains_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigintset_tnpoint_ext(fcinfo, &contains_rid_tnpoint_bigintset);
+  return Routeop_bigintset_tnpoint(fcinfo, &contains_rid_tnpoint_bigintset);
 }
 
 /*****************************************************************************/
@@ -434,7 +434,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigint);
 Datum
 Contains_rid_tnpoint_bigint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigint_ext(fcinfo, &contains_rid_tnpoint_bigint);
+  return Routeop_tnpoint_bigint(fcinfo, &contains_rid_tnpoint_bigint);
 }
 
 PGDLLEXPORT Datum Contains_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
@@ -449,7 +449,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigintset);
 Datum
 Contains_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigintset_ext(fcinfo, &contains_rid_tnpoint_bigintset);
+  return Routeop_tnpoint_bigintset(fcinfo, &contains_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Contains_rid_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -464,7 +464,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_npoint);
 Datum
 Contains_rid_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_npoint_ext(fcinfo, &contains_rid_tnpoint_npoint);
+  return Routeop_tnpoint_npoint(fcinfo, &contains_rid_tnpoint_npoint);
 }
 
 PGDLLEXPORT Datum Contains_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -479,7 +479,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_tnpoint);
 Datum
 Contains_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_tnpoint_ext(fcinfo, &contains_rid_tnpoint_tnpoint);
+  return Routeop_tnpoint_tnpoint(fcinfo, &contains_rid_tnpoint_tnpoint);
 }
 
 /*****************************************************************************
@@ -498,7 +498,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_bigint_tnpoint);
 Datum
 Contained_rid_bigint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigint_tnpoint_ext(fcinfo, &contained_rid_tnpoint_bigint);
+  return Routeop_bigint_tnpoint(fcinfo, &contained_rid_tnpoint_bigint);
 }
 
 PGDLLEXPORT Datum Contained_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
@@ -513,7 +513,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_bigintset_tnpoint);
 Datum
 Contained_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigintset_tnpoint_ext(fcinfo, &contained_rid_tnpoint_bigintset);
+  return Routeop_bigintset_tnpoint(fcinfo, &contained_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Contained_rid_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -528,7 +528,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_npoint_tnpoint);
 Datum
 Contained_rid_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_npoint_tnpoint_ext(fcinfo, &contained_rid_npoint_tnpoint);
+  return Routeop_npoint_tnpoint(fcinfo, &contained_rid_npoint_tnpoint);
 }
 
 /*****************************************************************************/
@@ -545,7 +545,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_bigintset);
 Datum
 Contained_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigintset_ext(fcinfo, &contained_rid_tnpoint_bigintset);
+  return Routeop_tnpoint_bigintset(fcinfo, &contained_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Contained_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -560,7 +560,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_tnpoint);
 Datum
 Contained_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_tnpoint_ext(fcinfo, &contained_rid_tnpoint_tnpoint);
+  return Routeop_tnpoint_tnpoint(fcinfo, &contained_rid_tnpoint_tnpoint);
 }
 
 /*****************************************************************************
@@ -579,7 +579,7 @@ PG_FUNCTION_INFO_V1(Same_rid_bigint_tnpoint);
 Datum
 Same_rid_bigint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigint_tnpoint_ext(fcinfo, &same_rid_tnpoint_bigint);
+  return Routeop_bigint_tnpoint(fcinfo, &same_rid_tnpoint_bigint);
 }
 
 PGDLLEXPORT Datum Same_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
@@ -594,7 +594,7 @@ PG_FUNCTION_INFO_V1(Same_rid_bigintset_tnpoint);
 Datum
 Same_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigintset_tnpoint_ext(fcinfo, &same_rid_tnpoint_bigintset);
+  return Routeop_bigintset_tnpoint(fcinfo, &same_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Same_rid_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -609,7 +609,7 @@ PG_FUNCTION_INFO_V1(Same_rid_npoint_tnpoint);
 Datum
 Same_rid_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_npoint_tnpoint_ext(fcinfo, &same_rid_tnpoint_npoint);
+  return Routeop_npoint_tnpoint(fcinfo, &same_rid_tnpoint_npoint);
 }
 
 /*****************************************************************************/
@@ -618,7 +618,7 @@ PGDLLEXPORT Datum Same_rid_tnpoint_bigint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the temporal network point and the route 
+ * @brief Return true if the routes of the temporal network point and the route
  * are equal
  * @sqlfunc same_rid()
  * @sqlop @p @=
@@ -626,7 +626,7 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigint);
 Datum
 Same_rid_tnpoint_bigint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigint_ext(fcinfo, &same_rid_tnpoint_bigint);
+  return Routeop_tnpoint_bigint(fcinfo, &same_rid_tnpoint_bigint);
 }
 
 PGDLLEXPORT Datum Same_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
@@ -641,7 +641,7 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigintset);
 Datum
 Same_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigintset_ext(fcinfo, &same_rid_tnpoint_bigintset);
+  return Routeop_tnpoint_bigintset(fcinfo, &same_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Same_rid_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -656,7 +656,7 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_npoint);
 Datum
 Same_rid_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_npoint_ext(fcinfo, &same_rid_tnpoint_npoint);
+  return Routeop_tnpoint_npoint(fcinfo, &same_rid_tnpoint_npoint);
 }
 
 PGDLLEXPORT Datum Same_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -670,7 +670,7 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_tnpoint);
 Datum
 Same_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_tnpoint_ext(fcinfo, &same_rid_tnpoint_tnpoint);
+  return Routeop_tnpoint_tnpoint(fcinfo, &same_rid_tnpoint_tnpoint);
 }
 
 /*****************************************************************************/

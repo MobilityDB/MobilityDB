@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate functions for set types.
+ * @brief Aggregate functions for set types
  */
 
 /* C */
@@ -58,8 +58,8 @@ PG_FUNCTION_INFO_V1(Value_union_transfn);
 /*
  * @brief Transition function for aggregating spans
  *
- * All we do here is gather the input spans into an array
- * so that the finalfn can sort and combine them.
+ * We simply gather the input spans into an array so that the final function
+ * can sort and combine them.
  */
 Datum
 Value_union_transfn(PG_FUNCTION_ARGS)
@@ -126,7 +126,7 @@ Set_union_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Set_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_union_finalfn);
 /*
- * @brief use our internal array to merge overlapping/touching spans.
+ * @brief Final function for aggregating spans
  * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
  */
 Datum
@@ -158,7 +158,7 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
     values[i] = typlen > 0 ? state->dvalues[i] :
       PointerGetDatum(PG_DETOAST_DATUM(state->dvalues[i]));
 
-  Set *result = set_make_exp(values, count, count, basetype, ORDERED);
+  Set *result = set_make_exp(values, count, count, basetype, ORDERED_NO);
 
   /* Free memory */
   if (typbyval)

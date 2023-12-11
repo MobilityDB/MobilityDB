@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief General utility functions for temporal types.
+ * @brief General utility functions for temporal types
  */
 
 #include "general/type_util.h"
@@ -258,6 +258,21 @@ int64arr_to_array(const int64 *longints, int count)
 }
 
 /**
+ * @brief Convert a C array of dates into a PostgreSQL array
+ */
+ArrayType *
+datearr_to_array(const DateADT *dates, int count)
+{
+  assert(count > 0);
+  Datum *values = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    values[i] = DateADTGetDatum(dates[i]);
+  ArrayType *result = construct_array(values, count, DATEOID, 4, true, 'i');
+  pfree(values);
+  return result;
+}
+
+/**
  * @brief Convert a C array of timestamps into a PostgreSQL array
  */
 ArrayType *
@@ -293,7 +308,7 @@ strarr_to_textarray(char **strarr, int count)
     textarr[i] = cstring_to_text(strarr[i]);
   ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
     false, 'i');
-  pfree_array((void **)textarr, count);
+  pfree_array((void **) textarr, count);
   return result;
 }
 

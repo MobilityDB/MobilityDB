@@ -198,27 +198,27 @@ typedef struct
 
 /* Type conversion functions */
 
-extern const char *meostype_name(meosType temptype);
-extern meosType temptype_basetype(meosType temptype);
-extern meosType settype_basetype(meosType settype);
-extern meosType spantype_basetype(meosType spantype);
-extern meosType spantype_spansettype(meosType spantype);
-extern meosType spansettype_spantype(meosType spansettype);
-extern meosType basetype_spantype(meosType basetype);
-extern meosType basetype_settype(meosType basetype);
+extern const char *meostype_name(meosType type);
+extern meosType temptype_basetype(meosType type);
+extern meosType settype_basetype(meosType type);
+extern meosType spantype_basetype(meosType type);
+extern meosType spantype_spansettype(meosType type);
+extern meosType spansettype_spantype(meosType type);
+extern meosType basetype_spantype(meosType type);
+extern meosType basetype_settype(meosType type);
 
 /* Catalog functions */
 
 extern bool meostype_internal(meosType type);
 extern bool meos_basetype(meosType type);
-extern bool alpha_basetype(meosType basetype);
-extern bool number_basetype(meosType basetype);
-extern bool alphanum_basetype(meosType basetype);
-extern bool geo_basetype(meosType basetype);
-extern bool spatial_basetype(meosType basetype);
+extern bool alpha_basetype(meosType type);
+extern bool tnumber_basetype(meosType type);
+extern bool alphanum_basetype(meosType type);
+extern bool geo_basetype(meosType type);
+extern bool spatial_basetype(meosType type);
 
-extern bool time_type(meosType timetype);
-extern bool set_basetype(meosType basetype);
+extern bool time_type(meosType type);
+extern bool set_basetype(meosType type);
 
 extern bool set_type(meosType type);
 extern bool numset_type(meosType type);
@@ -249,23 +249,24 @@ extern bool numspanset_type(meosType type);
 extern bool timespanset_type(meosType type);
 extern bool ensure_timespanset_type(meosType type);
 
-extern bool temporal_type(meosType temptype);
-extern bool temporal_basetype(meosType basetype);
-extern bool temptype_continuous(meosType temptype);
+extern bool temporal_type(meosType type);
+extern bool temporal_basetype(meosType type);
+extern bool temptype_continuous(meosType type);
 extern bool basetype_byvalue(meosType type);
 extern bool basetype_varlength(meosType type);
-extern int16 basetype_length(meosType basetype);
+extern int16 basetype_length(meosType type);
 extern bool talphanum_type(meosType type);
-extern bool talpha_type(meosType temptype);
-extern bool tnumber_type(meosType temptype);
-extern bool ensure_tnumber_type(meosType temptype);
-extern bool tnumber_basetype(meosType basetype);
-extern bool tnumber_settype(meosType settype);
-extern bool tnumber_spantype(meosType settype);
-extern bool tnumber_spansettype(meosType spansettype);
-extern bool tspatial_type(meosType temptype);
-extern bool ensure_tspatial_type(meosType temptype);
-extern bool tspatial_basetype(meosType basetype);
+extern bool talpha_type(meosType type);
+extern bool tnumber_type(meosType type);
+extern bool ensure_tnumber_type(meosType type);
+extern bool tnumber_basetype(meosType type);
+extern bool ensure_tnumber_basetype(meosType type);
+extern bool tnumber_settype(meosType type);
+extern bool tnumber_spantype(meosType type);
+extern bool tnumber_spansettype(meosType type);
+extern bool tspatial_type(meosType type);
+extern bool ensure_tspatial_type(meosType type);
+extern bool tspatial_basetype(meosType type);
 extern bool tgeo_type(meosType type);
 extern bool ensure_tgeo_type(meosType type);
 extern bool ensure_tnumber_tgeo_type(meosType type);

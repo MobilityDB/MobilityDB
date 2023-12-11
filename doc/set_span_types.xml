@@ -549,7 +549,7 @@ SELECT numValues(intset '{1,3,5,7}');
 				<indexterm><primary><varname>startValue</varname></primary></indexterm>
 				<indexterm><primary><varname>endValue</varname></primary></indexterm>
 				<indexterm><primary><varname>valueN</varname></primary></indexterm>
-				<para>Get the start/end/n-th value</para>
+				<para>Get the start, end, or n-th value</para>
 				<para><varname>startValue(set) → base</varname></para>
 				<para><varname>endValue(set) → base</varname></para>
 				<para><varname>valueN(set,integer) → base</varname></para>
@@ -589,7 +589,7 @@ SELECT numSpans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04]
 			<listitem id="startSpan">
 				<indexterm><primary><varname>startSpan</varname></primary></indexterm>
 				<indexterm><primary><varname>endSpan</varname></primary></indexterm>
-				<para>Get the start/end/n-th span</para>
+				<para>Get the start, end, or n-th span</para>
 				<para><varname>startSpan(spanset) → span</varname></para>
 				<para><varname>endSpan(spanset) → span</varname></para>
 				<para><varname>spanN(spanset,integer) → span</varname></para>
@@ -630,28 +630,36 @@ SELECT spans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 			</listitem>
 
 			<listitem id="setspan_numTimestamps">
+				<indexterm><primary><varname>numDates</varname></primary></indexterm>
 				<indexterm><primary><varname>numTimestamps</varname></primary></indexterm>
-				<para>Get the number of different timestamps</para>
+				<para>Get the number of different dates or timestamps</para>
+				<para><varname>numDates(datespanset) → integer</varname></para>
 				<para><varname>numTimestamps(tstzspanset) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT numTimestamps(tstzset '{2001-01-01, 2001-01-03, 2001-01-04}');
--- 3
+SELECT numDates(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
+-- 4
 SELECT numTimestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
 -- 3
 </programlisting>
 			</listitem>
 
 			<listitem id="setspan_startTimestamp">
+				<indexterm><primary><varname>startDate</varname></primary></indexterm>
+				<indexterm><primary><varname>endDate</varname></primary></indexterm>
+				<indexterm><primary><varname>dateN</varname></primary></indexterm>
 				<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
 				<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
 				<indexterm><primary><varname>timestampN</varname></primary></indexterm>
-				<para>Get the start/end/n-th timestamp</para>
+				<para>Get the start, end, or n-th date or timestamp</para>
+				<para><varname>startDate(datespanset) → date</varname></para>
+				<para><varname>endDate(datespanset) → date</varname></para>
+				<para><varname>dateN(datespanset,integer) → date</varname></para>
 				<para><varname>startTimestamp(tstzspanset) → timestamptz</varname></para>
 				<para><varname>endTimestamp(tstzspanset) → timestamptz</varname></para>
 				<para><varname>timestampN(tstzspanset,integer) → timestamptz</varname></para>
 				<para>The functions do not take into account whether the bounds are inclusive or not.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT startTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
+SELECT startDate(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 -- 2001-01-01
 SELECT endTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
 -- 2001-01-05
@@ -661,13 +669,17 @@ SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 			</listitem>
 
 			<listitem id="setspan_timestamps">
+				<indexterm><primary><varname>dates</varname></primary></indexterm>
 				<indexterm><primary><varname>timestamps</varname></primary></indexterm>
-				<para>Get the different timestamps</para>
-				<para><varname>timestamps(tstzspanset) → tstzset</varname></para>
+				<para>Get the different dates or timestamps</para>
+				<para><varname>dates(datespanset) → date[]</varname></para>
+				<para><varname>timestamps(tstzspanset) → timestamptz[]</varname></para>
 				<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				<programlisting language="sql" xml:space="preserve">
+SELECT dates(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
+-- {2001-01-01, 2001-01-02, 2001-01-03, 2001-01-04}
 SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
--- {"2001-01-01", "2001-01-03", "2001-01-05"}
+-- {"2001-01-01 00:00:00", "2001-01-03 00:00:00", "2001-01-05 00:00:00"}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -681,12 +693,15 @@ SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 				<indexterm><primary><varname>shift</varname></primary></indexterm>
 				<para>Shift the set or span by a value or interval</para>
 				<para><varname>shift({numset,numspans},base) → {numset,numspans}</varname></para>
+				<para><varname>shift({dateset,datespans},int) → {dateset,datespans}</varname></para>
 				<para><varname>shift({tstzset,tstzspans},interval) → {tstzset,tstzspans}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT shift(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', interval '1 day');
 -- {2001-01-02, 2001-01-04, 2001-01-06}
-SELECT shift(intspan '[1, 3]', -1);
+SELECT shift(intspan '[1, 4)', -1);
 -- [0, 3)
+SELECT shift(datespan '[2001-01-01, 2001-01-04)', -1);
+-- [2000-12-31, 2001-01-03)
 SELECT shift(tstzspan '[2001-01-01, 2001-01-03]', interval '1 day');
 -- [2001-01-02, 2001-01-04]
 SELECT shift(floatspanset '{[1, 2], [3, 4]}', -1);
@@ -701,6 +716,7 @@ SELECT shift(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 				<indexterm><primary><varname>scale</varname></primary></indexterm>
 				<para>Scale the set or span by a value or interval</para>
 				<para><varname>scale({numset,numspans},width) → {numset,numspans}</varname></para>
+				<para><varname>scale({dateset,datespans},int) → {dateset,datespans}</varname></para>
 				<para><varname>scale({tstzset,tstzspans},interval) → {tstzset,tstzspans}</varname></para>
 				<para>If the width or time span of the input value is zero (for example, for a singleton timestamp set), the result is the input value. The given value or interval must be strictly greater than zero.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -708,8 +724,10 @@ SELECT scale(tstzset '{2001-01-01}', '1 day');
 -- {2001-01-01}
 SELECT scale(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '2 days');
 -- {2001-01-01, 2001-01-02, 2001-01-03}
-SELECT scale(intspan '[1, 3]', 4);
--- [1, 5)
+SELECT scale(intspan '[1, 4)', 4);
+-- [1, 6)
+SELECT scale(datespan '[2001-01-01, 2001-01-04)', 4);
+-- [2001-01-01, 2001-01-06)
 SELECT scale(tstzspan '[2001-01-01, 2001-01-03]', '1 day');
 -- [2001-01-01, 2001-01-02]
 SELECT scale(floatspanset '{[1, 2], [3, 4]}', 6);
@@ -726,6 +744,7 @@ SELECT scale(tstzset '{2001-01-01}', '-1 day');
 				<indexterm><primary><varname>shiftScale</varname></primary></indexterm>
 				<para>Shift and scale the set or span by the values or intervals</para>
 				<para><varname>shiftScale({numset,numspans},base,base) → {numset,numspans}</varname></para>
+				<para><varname>shiftScale({dateset,datespans},int) → {dateset,datespans}</varname></para>
 				<para><varname>shiftScale({tstzset,tstzspans},interval,interval) →</varname></para>
 				<para><varname>  {tstzset,tstzspans}</varname></para>
 				<para>This function combines the functions <link linkend="setspan_shift"><varname>shift</varname></link> and <link linkend="setspan_scale"><varname>scale</varname></link>.</para>
@@ -734,8 +753,10 @@ SELECT shiftScale(tstzset '{2001-01-01}', '1 day', '1 day');
 -- {2001-01-02}
 SELECT shiftScale(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day','2 days');
 -- {2001-01-02, 2001-01-03, 2001-01-04}
-SELECT shiftScale(intspan '[1, 3]', -1, 4);
--- [0, 4)
+SELECT shiftScale(intspan '[1, 4)', -1, 4);
+-- [0, 5)
+SELECT shiftScale(datespan '[2001-01-01, 2001-01-04)', -1, 4);
+-- [2000-12-31, 2001-01-05)
 SELECT shiftScale(tstzspan '[2001-01-01, 2001-01-03]', '1 day', '1 day');
 -- [2001-01-02, 2001-01-03]
 SELECT shiftScale(floatspanset '{[1, 2], [3, 4]}', -1, 6);

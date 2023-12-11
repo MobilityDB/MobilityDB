@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief R-tree GiST index for span and span set types.
+ * @brief R-tree GiST index for span and span set types
  *
  * These functions are based on those in the file `rangetypes_gist.c`.
  */
@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * @brief Leaf-level consistency for span types.
+ * @brief Leaf-level consistency for span types
  *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
@@ -186,7 +186,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     Datum psdatum = PG_GETARG_DATUM(1);
     spanset_span_slice(psdatum, result);
   }
-  /* For temporal types whose bounding box is a period */
+  /* For temporal types whose bounding box is a timestamptz span */
   else if (talpha_type(type))
   {
     Datum tempdatum = PG_GETARG_DATUM(1);
@@ -245,7 +245,7 @@ Span_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
-  Span *result = span_copy(DatumGetSpanP(ent[0].key));
+  Span *result = span_cp(DatumGetSpanP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     span_expand(DatumGetSpanP(ent[i].key), result);
   PG_RETURN_SPAN_P(result);
@@ -267,8 +267,7 @@ Set_gist_compress(PG_FUNCTION_ARGS)
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Span *span = palloc(sizeof(Span));
-    set_set_span(DatumGetSetP(entry->key), span);
+    Span *span = set_span(DatumGetSetP(entry->key));
     gistentryinit(*retval, PointerGetDatum(span), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -304,7 +303,7 @@ Spanset_gist_compress(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_penalty);
 /**
- * @brief GiST page split penalty function for spans.
+ * @brief GiST page split penalty function for spans
  *
  * The penalty function has the following goals (in order from most to least
  * important):
@@ -339,22 +338,6 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
  * GiST picksplit method for span types
  *****************************************************************************/
 
-/**
- * @brief Return the bounding union of two spans.
- * @note The result of the function is always a span even if the spans do not
- * overlap
- * @note This function is similar to `bbox_union_span_span` **with** memory
- * allocation
- */
-static Span *
-super_union_span_span(const Span *s1, const Span *s2)
-{
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-  Span *result = span_cp(s1);
-  span_expand(s2, result);
-  return result;
-}
-
 /* Helper macros to place an entry in the left or right group during split */
 /* Note direct access to variables v, left_span, right_span */
 #define PLACE_LEFT(span, off)          \
@@ -377,7 +360,7 @@ super_union_span_span(const Span *s1, const Span *s2)
 
 /**
  * @brief Trivial split: half of entries will be placed on one page
- * and the other half on the other page.
+ * and the other half on the other page
  */
 static void
 span_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
@@ -424,7 +407,7 @@ typedef struct
 
 /**
  * @brief Consider replacement of currently selected split with a better one
- * during span_gist_double_sorting_split.
+ * during #span_gist_double_sorting_split
  */
 static void
 span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
@@ -497,7 +480,7 @@ span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
 
 /**
  * @brief Structure keeping the bounds extracted from a span, for use in the
- * function span_gist_double_sorting_split
+ * function #span_gist_double_sorting_split
  */
 typedef struct
 {
@@ -506,7 +489,7 @@ typedef struct
 } SpanBounds;
 
 /**
- * @brief Compare SpanBounds by lower bound.
+ * @brief Compare span bounds by lower bound
  */
 static int
 spanbounds_cmp_lower(const void *a, const void *b)
@@ -517,7 +500,7 @@ spanbounds_cmp_lower(const void *a, const void *b)
 }
 
 /**
- * @brief Compare SpanBounds by upper bound.
+ * @brief Compare span bounds by upper bound
  */
 static int
 spanbounds_cmp_upper(const void *a, const void *b)
@@ -528,8 +511,8 @@ spanbounds_cmp_upper(const void *a, const void *b)
 }
 
 /**
- * @brief Compare CommonEntrys by their deltas.
- * (We assume the deltas can't be NaN.)
+ * @brief Compare common entries by their deltas
+ * @note We assume the deltas can't be NaN
  */
 int
 common_entry_cmp(const void *i1, const void *i2)
@@ -545,7 +528,7 @@ common_entry_cmp(const void *i1, const void *i2)
 }
 
 /**
- * @brief Double sorting split algorithm.
+ * @brief Double sorting split algorithm
  *
  * The algorithm considers dividing spans into two groups. The first (left)
  * group contains general left bound. The second (right) group contains
@@ -887,8 +870,8 @@ Span_gist_same(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_distance);
 /**
- * @brief GiST support function. Take in a query and an entry and return the
- * "distance" between them.
+ * @brief GiST distance method for span types
+ * @note Take in a query and an entry and return the "distance" between them
 */
 Datum
 Span_gist_distance(PG_FUNCTION_ARGS)
@@ -923,7 +906,7 @@ Span_gist_distance(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_gist_fetch(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_fetch);
 /**
- * @brief GiST fetch method for span types (result in a span)
+ * @brief GiST fetch method for span types, which result in a span
  */
 Datum
 Span_gist_fetch(PG_FUNCTION_ARGS)

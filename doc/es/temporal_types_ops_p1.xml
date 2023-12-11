@@ -862,7 +862,7 @@ SELECT numInstants(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-
 				<indexterm><primary><varname>startInstant</varname></primary></indexterm>
 				<indexterm><primary><varname>endInstant</varname></primary></indexterm>
 				<indexterm><primary><varname>instantN</varname></primary></indexterm>
-				<para>Obtener el instante inicial</para>
+				<para>Obtener el instante inicial, final o enésimo</para>
 				<para><varname>startInstant(ttype) → ttype_inst</varname></para>
 				<para><varname>endInstant(ttype) → ttype_inst</varname></para>
 				<para><varname>instantN(ttype,integer) → ttype_inst</varname></para>
@@ -901,9 +901,9 @@ SELECT numTimestamps(tfloat '{[1@2001-01-01, 2@2001-01-03),
 
 			<listitem id="ttype_startTimestamp">
 				<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
-				<indexterm><primary><varname>timestampN</varname></primary></indexterm>
 				<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
-				<para>Obtener la marca de tiempo inicial</para>
+				<indexterm><primary><varname>timestampN</varname></primary></indexterm>
+				<para>Obtener la marca de tiempo inicial, final o enésima</para>
 				<para><varname>startTimestamp(ttype) → timestamptz</varname></para>
 				<para><varname>endTimestamp(ttype) → timestamptz</varname></para>
 				<para><varname>timestampN(ttype,integer) → timestamptz</varname></para>

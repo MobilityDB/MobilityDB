@@ -184,6 +184,42 @@ SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tstzset IS NOT NULL;
     99
 (1 row)
 
+SELECT MAX(startValue(i::floatset)) FROM tbl_intset ORDER BY 1;
+ max 
+-----
+ 950
+(1 row)
+
+SELECT MAX(startValue(f::intset)) FROM tbl_floatset ORDER BY 1;
+ max 
+-----
+  73
+(1 row)
+
+SELECT MAX(startValue(d::tstzset)) FROM tbl_dateset ORDER BY 1;
+             max              
+------------------------------
+ Mon Nov 05 00:00:00 2001 PST
+(1 row)
+
+SELECT MAX(startValue(t::dateset)) FROM tbl_tstzset ORDER BY 1;
+    max     
+------------
+ 12-26-2001
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intset WHERE (i::floatset)::intset <> i;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_dateset WHERE (d::tstzset)::dateset <> d;
+ count 
+-------
+     0
+(1 row)
+
 SELECT MIN(startValue(shift(i, 5))) FROM tbl_intset;
  min 
 -----

@@ -78,7 +78,7 @@ typedef struct
 } wkb_parse_state;
 
 /*****************************************************************************
- * Input in MFJSON format
+ * Input in MF-JSON representation
  *****************************************************************************/
 
 /**
@@ -254,8 +254,8 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
 
 /* TODO MAKE POSSIBLE TO CALL THIS FUNCTION */
 /**
- * @brief Return an array of points from its MF-JSON coordinates. In this case the
- * coordinate array is an array of arrays of cordinates such as
+ * @brief Return an array of points from its MF-JSON coordinates. In this case,
+ * the coordinate array is an array of arrays of cordinates such as
  * "coordinates":[[1,1],[2,2]]
  */
 static Datum *
@@ -349,7 +349,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant from its MF-JSON representation.
+ * @brief Input a temporal instant from its MF-JSON representation.
  */
 TInstant *
 tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
@@ -453,7 +453,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 #if MEOS
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant boolean from its MF-JSON representation.
+ * @brief Input a temporal instant boolean from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON()
  */
 TInstant *
@@ -465,7 +465,7 @@ tboolinst_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant integer from its MF-JSON representation.
+ * @brief Input a temporal instant integer from its MF-JSON representation.
  * @sqlfunc tintFromMFJSON()
  */
 TInstant *
@@ -477,7 +477,7 @@ tintinst_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant float from its MF-JSON representation.
+ * @brief Input a temporal instant float from its MF-JSON representation.
  * @sqlfunc tfloatFromMFJSON()
  */
 TInstant *
@@ -489,7 +489,7 @@ tfloatinst_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant text from its MF-JSON representation.
+ * @brief Input a temporal instant text from its MF-JSON representation.
  * @sqlfunc ttextFromMFJSON()
  */
 TInstant *
@@ -501,7 +501,7 @@ ttextinst_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant geometric point from its MF-JSON
+ * @brief Input a temporal instant geometric point from its MF-JSON
  * representation.
  * @sqlfunc tgeompointFromMFJSON()
  */
@@ -514,7 +514,7 @@ tgeompointinst_from_mfjson(json_object *mfjson, int srid)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant geographic point from its MF-JSON
+ * @brief Input a temporal instant geographic point from its MF-JSON
  * representation.
  * @sqlfunc tgeogpointFromMFJSON()
  */
@@ -527,7 +527,8 @@ tgeogpointinst_from_mfjson(json_object *mfjson, int srid)
 #endif /* MEOS */
 
 /**
- * @brief Return array of temporal instant points from its MF-JSON representation
+ * @brief Return an array of temporal instant points from its MF-JSON
+ * representation
  */
 static TInstant **
 tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
@@ -570,7 +571,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence point from its MF-JSON representation.
+ * @brief Input a temporal sequence point from its MF-JSON representation.
  */
 TSequence *
 tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
@@ -612,7 +613,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 #if MEOS
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence boolean from its MF-JSON representation.
+ * @brief Input a temporal sequence boolean from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON()
  */
 TSequence *
@@ -624,7 +625,7 @@ tboolseq_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence integer from its MF-JSON representation.
+ * @brief Input a temporal sequence integer from its MF-JSON representation.
  * @sqlfunc  tintFromMFJSON()
  */
 TSequence *
@@ -636,7 +637,7 @@ tintseq_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence float from its MF-JSON representation.
+ * @brief Input a temporal sequence float from its MF-JSON representation.
  * @sqlfunc tfloattFromMFJSON()
  */
 TSequence *
@@ -648,7 +649,7 @@ tfloatseq_from_mfjson(json_object *mfjson, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence text from its MF-JSON representation.
+ * @brief Input a temporal sequence text from its MF-JSON representation.
  * @sqlfunc ttextFromMFJSON()
  */
 TSequence *
@@ -660,7 +661,7 @@ ttextseq_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence geometric point from its MF-JSON
+ * @brief Input a temporal sequence geometric point from its MF-JSON
  * representation.
  * @sqlfunc tgeompointFromMFJSON()
  */
@@ -673,7 +674,7 @@ tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence geographic point from its MF-JSON
+ * @brief Input a temporal sequence geographic point from its MF-JSON
  * representation.
  * @sqlfunc tgeogpointFromMFJSON()
  */
@@ -687,7 +688,7 @@ tgeogpointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence set point from its MF-JSON representation.
+ * @brief Input a temporal sequence set point from its MF-JSON representation.
  */
 TSequenceSet *
 tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
@@ -727,7 +728,7 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 #if MEOS
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence set boolean from its MF-JSON
+ * @brief Input a temporal sequence set boolean from its MF-JSON
  * representation.
  * @sqlfunc tboolFromMFJSON()
  */
@@ -740,7 +741,7 @@ tboolseqset_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence set integer from its MF-JSON representation.
+ * @brief Input a temporal sequence set integer from its MF-JSON representation.
  * @sqlfunc tintFromMFJSON()
  */
 TSequenceSet *
@@ -752,7 +753,7 @@ tintseqset_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence set float from its MF-JSON representation.
+ * @brief Input a temporal sequence set float from its MF-JSON representation.
  * @sqlfunc tfloatFromMFJSON()
  */
 TSequenceSet *
@@ -764,7 +765,7 @@ tfloatseqset_from_mfjson(json_object *mfjson, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence set text from its MF-JSON representation.
+ * @brief Input a temporal sequence set text from its MF-JSON representation.
  * @sqlfunc ttextFromMFJSON()
  */
 TSequenceSet *
@@ -776,7 +777,7 @@ ttextseqset_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence set geometric point from its MF-JSON
+ * @brief Input a temporal sequence set geometric point from its MF-JSON
  * representation.
  * @sqlfunc tgeompointFromMFJSON()
  */
@@ -789,7 +790,7 @@ tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal sequence set geographic point from its MF-JSON
+ * @brief Input a temporal sequence set geographic point from its MF-JSON
  * representation.
  * @sqlfunc tgeogpointFromMFJSON()
  */
@@ -806,9 +807,12 @@ tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 static bool
 ensure_temptype_mfjson(const char *typestr)
 {
-  if (strcmp(typestr, "MovingBoolean") != 0 && strcmp(typestr, "MovingInteger") != 0 &&
-      strcmp(typestr, "MovingFloat") != 0 && strcmp(typestr, "MovingText") != 0 &&
-      strcmp(typestr, "MovingGeomPoint") != 0 && strcmp(typestr, "MovingGeogPoint") != 0 )
+  if (strcmp(typestr, "MovingBoolean") != 0 &&
+      strcmp(typestr, "MovingInteger") != 0 &&
+      strcmp(typestr, "MovingFloat") != 0 &&
+      strcmp(typestr, "MovingText") != 0 &&
+      strcmp(typestr, "MovingGeomPoint") != 0 &&
+      strcmp(typestr, "MovingGeogPoint") != 0 )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string");
@@ -819,8 +823,11 @@ ensure_temptype_mfjson(const char *typestr)
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return a temporal point from its MF-JSON representation
+ * @brief Input a temporal point from its MF-JSON representation
  * @return On error return NULL
+ * @see #tinstant_from_mfjson()
+ * @see #tsequence_from_mfjson()
+ * @see #tsequenceset_from_mfjson()
  */
 Temporal *
 temporal_from_mfjson(const char *mfjson)
@@ -964,9 +971,8 @@ temporal_from_mfjson(const char *mfjson)
 }
 
 /*****************************************************************************
- * Input in WKB format
- * Please refer to the file temporal_wkb_out.c where the binary format is
- * explained
+ * Input in Well-Known Binary (WKB) representation
+ * The file type_in.c explains the binary representation
  *****************************************************************************/
 
 /**
@@ -1515,8 +1521,8 @@ stbox_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * @brief Take in an unknown kind of WKB type number and ensure it comes out as an
- * extended WKB type number (with Z/GEODETIC/SRID/LINEAR_INTERP flags masked
+ * @brief Take in an unknown kind of WKB type number and ensure it comes out as
+ * an extended WKB type number (with Z/GEODETIC/SRID/LINEAR_INTERP flags masked
  * onto the high bits).
  */
 void
@@ -1561,7 +1567,7 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 }
 
 /**
- * @brief Return a temporal instant point from its WKB representation.
+ * @brief Return a temporal instant from its WKB representation.
  *
  * It reads the base type value and the timestamp and advances the parse state
  * forward appropriately.
@@ -1740,7 +1746,7 @@ datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
 }
 
 /**
- * @brief Return a temporal type from its HexEWKB representation
+ * @brief Return a value from its HexEWKB representation
  */
 Datum
 datum_from_hexwkb(const char *hexwkb, size_t size, meosType type)
@@ -1752,13 +1758,12 @@ datum_from_hexwkb(const char *hexwkb, size_t size, meosType type)
 }
 
 /*****************************************************************************
- * WKB and HexWKB functions for the MEOS API
+ * WKB and HexWKB input functions for set and span types
  *****************************************************************************/
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a set from its Well-Known Binary (WKB)
- * representation.
+ * @brief Input a set from its Well-Known Binary (WKB) representation.
  * @sqlfunc intsetFromBinary(), tstzsetFromBinary(), ...
  */
 Set *
@@ -1773,8 +1778,8 @@ set_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a set from its WKB representation in hex-encoded
- * ASCII.
+ * @brief Input a set from its Well-Known Binary (WKB) representation in
+ * hex-encoded ASCII.
  * @sqlfunc intsetFromHexWKB(), tstzsetFromHexWKB(), ...
  */
 Set *
@@ -1788,13 +1793,10 @@ set_from_hexwkb(const char *hexwkb)
   return DatumGetSetP(datum_from_hexwkb(hexwkb, size, T_INTSET));
 }
 
-/*****************************************************************************/
-
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a span from its Well-Known Binary (WKB)
- * representation.
- * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary(),
+ * @brief Input a span from its Well-Known Binary (WKB) representation.
+ * @sqlfunc intspanFromBinary(), floatspanFromBinary(), tstzspanFromBinary(),
  */
 Span *
 span_from_wkb(const uint8_t *wkb, size_t size)
@@ -1808,8 +1810,9 @@ span_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a span from its WKB representation in hex-encoded ASCII.
- * @sqlfunc intspanFromHexWKB(), floatspanFromHexWKB(), periodFromHexWKB(),
+ * @brief Input a span from its Well-Known Binary (WKB) representation in
+ * hex-encoded ASCII.
+ * @sqlfunc intspanFromHexWKB(), floatspanFromHexWKB(), tstzspanFromHexWKB(),
  */
 Span *
 span_from_hexwkb(const char *hexwkb)
@@ -1822,12 +1825,9 @@ span_from_hexwkb(const char *hexwkb)
   return DatumGetSpanP(datum_from_hexwkb(hexwkb, size, T_INTSPAN));
 }
 
-/*****************************************************************************/
-
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a span set from its Well-Known Binary (WKB)
- * representation.
+ * @brief Input a span set from its Well-Known Binary (WKB) representation.
  * @sqlfunc intspansetFromBinary(), tstzspansetFromBinary(), ...
  */
 SpanSet *
@@ -1842,7 +1842,8 @@ spanset_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return a span set from its WKB representation in hex-encoded ASCII
+ * @brief Input a span set from its Well-Known Binary (WKB) representation in
+ * hex-encoded ASCII
  * @sqlfunc intsetFromHexWKB(), tstzsetFromHexWKB(), ...
  */
 SpanSet *
@@ -1856,12 +1857,13 @@ spanset_from_hexwkb(const char *hexwkb)
   return DatumGetSpanSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * WKB and HexWKB input functions for bounding box types
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Return a temporal box from its Well-Known Binary (WKB)
- * representation.
+ * @brief Input a temporal box from its Well-Known Binary (WKB) representation
  * @sqlfunc tboxFromBinary()
  */
 TBox *
@@ -1875,7 +1877,8 @@ tbox_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Return a temporal box from its WKB representation in hex-encoded ASCII
+ * @brief Input a temporal box from its Well-Known Binary (WKB) representation
+ * in hex-encoded ASCII
  * @sqlfunc tboxFromHexWKB()
  */
 TBox *
@@ -1888,12 +1891,10 @@ tbox_from_hexwkb(const char *hexwkb)
   return DatumGetTboxP(datum_from_hexwkb(hexwkb, size, T_TBOX));
 }
 
-/*****************************************************************************/
-
 /**
  * @ingroup libmeos_box_inout
- * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
- * representation.
+ * @brief Input a spatiotemporal box from its Well-Known Binary (WKB)
+ * representation
  * @sqlfunc stboxFromBinary()
  */
 STBox *
@@ -1907,9 +1908,9 @@ stbox_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Return a spatiotemporal box from its WKB representation in
- * hex-encoded ASCII
- * @sqlfunc stboxFromWKB()
+ * @brief Input a spatiotemporal box from its Well-Known Binary (WKB)
+ * representation in hex-encoded ASCII
+ * @sqlfunc stboxFromHexWKB()
  */
 STBox *
 stbox_from_hexwkb(const char *hexwkb)
@@ -1921,11 +1922,13 @@ stbox_from_hexwkb(const char *hexwkb)
   return DatumGetSTboxP(datum_from_hexwkb(hexwkb, size, T_STBOX));
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * WKB and HexWKB input functions for temporal types
+ *****************************************************************************/
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return a temporal value from its Well-Known Binary (WKB)
+ * @brief Input a temporal value from its Well-Known Binary (WKB)
  * representation.
  * @return On error return NULL
  * @sqlfunc tboolFromBinary(), tintFromBinary(), tfloatFromBinary(),
@@ -1943,10 +1946,10 @@ temporal_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return a temporal value from its HexEWKB representation
+ * @brief Input a temporal value from its Extended Well-Known Binary (EWKB)
+ * representation in hex-encoded ASCII
  * @return On error return NULL
- * @sqlfunc tboolFromHexWKB(), tintFromHexWKB(), tfloatFromHexWKB(),
- * ttextFromHexWKB(), etc.
+ * @sqlfunc tboolFromHexWKB(), tintFromHexWKB(), tfloatFromHexWKB(), ...
  */
 Temporal *
 temporal_from_hexwkb(const char *hexwkb)

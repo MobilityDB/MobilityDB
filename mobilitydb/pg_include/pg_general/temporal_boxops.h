@@ -45,42 +45,42 @@
 
 /*****************************************************************************/
 
-extern Datum boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_timestamp_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_temporal_timestamp(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_tstzset_temporal_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tstzset_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_temporal_tstzset_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_temporal_tstzset(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_tstzspan_temporal_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tstzspan_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_temporal_tstzspan_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_temporal_tstzspan(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_tstzspanset_temporal_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tstzspanset_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_temporal_tstzspanset_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_temporal_tstzspanset(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_temporal_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
 
-extern Datum boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_number_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *));
-extern Datum boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tnumber_number(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *));
-extern Datum boxop_numspan_tnumber_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_numspan_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_tnumber_numspan_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tnumber_numspan(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_numspanset_tnumber_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_numspanset_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_tnumber_numspanset_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tnumber_numspanset(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *));
-extern Datum boxop_tbox_tnumber_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tbox_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *));
-extern Datum boxop_tnumber_tbox_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tnumber_tbox(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *));
-extern Datum boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tnumber_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *));
 
 /*****************************************************************************/

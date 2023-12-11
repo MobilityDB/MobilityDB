@@ -784,29 +784,29 @@ CREATE FUNCTION minusValues(tgeogpoint, geogset)
 
 CREATE FUNCTION atTime(tgeompoint, timestamptz)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION atTime(tgeogpoint, timestamptz)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusTime(tgeompoint, timestamptz)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minusTime(tgeogpoint, timestamptz)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueAtTimestamp(tgeompoint, timestamptz)
   RETURNS geometry(Point)
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueAtTimestamp(tgeogpoint, timestamptz)
   RETURNS geography(Point)
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tgeompoint, tstzset)
@@ -887,11 +887,11 @@ CREATE FUNCTION update(tgeogpoint, tgeogpoint, connect boolean DEFAULT TRUE)
 
 CREATE FUNCTION deleteTime(tgeompoint, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tgeogpoint, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION deleteTime(tgeompoint, tstzset, connect boolean DEFAULT TRUE)

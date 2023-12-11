@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief SP-GiST implementation of 4-dimensional quad-tree and kd-tree over
- * temporal integers and temporal floats.
+ * temporal integers and temporal floats
  *
  * These functions are based on those in the file ``geo_spgist.c`. from
  * PostgreSQL. This module provides SP-GiST implementation for temporal
@@ -164,18 +164,18 @@ tboxnode_init(TBox *centroid, TboxNode *nodebox)
   }
   nodebox->left.span.lower = nodebox->right.span.lower = neginf;
   nodebox->left.span.upper = nodebox->right.span.upper = posinf;
-  nodebox->left.span.spantype = nodebox->right.span.spantype = 
+  nodebox->left.span.spantype = nodebox->right.span.spantype =
     centroid->span.spantype;
-  nodebox->left.span.basetype = nodebox->right.span.basetype = 
+  nodebox->left.span.basetype = nodebox->right.span.basetype =
     centroid->span.basetype;
 
   nodebox->left.period.lower = nodebox->right.period.lower =
     TimestampTzGetDatum(DT_NOBEGIN);
   nodebox->left.period.upper = nodebox->right.period.upper =
     TimestampTzGetDatum(DT_NOEND);
-  nodebox->left.period.spantype = nodebox->right.period.spantype = 
+  nodebox->left.period.spantype = nodebox->right.period.spantype =
     centroid->period.spantype;
-  nodebox->left.period.basetype = nodebox->right.period.basetype = 
+  nodebox->left.period.basetype = nodebox->right.period.basetype =
     centroid->period.basetype;
   nodebox->left.flags = nodebox->right.flags = centroid->flags;
   return;
@@ -342,22 +342,24 @@ contain4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox be left of this argument?
+ * @brief Can any rectangle from nodebox be to the left of this argument?
  */
 static bool
 left4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_lt(nodebox->right.span.upper, query->span.lower, query->span.basetype);
+  return datum_lt(nodebox->right.span.upper, query->span.lower,
+    query->span.basetype);
 }
 
 /**
- * @brief Can any rectangle from nodebox does not extend the right of this
+ * @brief Can any rectangle from nodebox does not extend to the right of this
  * argument?
  */
 static bool
 overLeft4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_le(nodebox->right.span.upper, query->span.upper, query->span.basetype);
+  return datum_le(nodebox->right.span.upper, query->span.upper,
+    query->span.basetype);
 }
 
 /**
@@ -370,13 +372,14 @@ right4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox does not extend the left of this
+ * @brief Can any rectangle from nodebox does not extend to the left of this
  * argument?
  */
 static bool
 overRight4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_ge(nodebox->left.span.lower, query->span.lower, query->span.basetype);
+  return datum_ge(nodebox->left.span.lower, query->span.lower,
+    query->span.basetype);
 }
 
 /**
@@ -385,16 +388,18 @@ overRight4D(const TboxNode *nodebox, const TBox *query)
 static bool
 before4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_lt(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
+  return datum_lt(nodebox->right.period.upper, query->period.lower,
+    T_TIMESTAMPTZ);
 }
 
 /**
- * @brief Can any rectangle from nodebox does not extend after this argument?
+ * @brief Can any rectangle from nodebox be not after this argument?
  */
 static bool
 overBefore4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_le(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ);
+  return datum_le(nodebox->right.period.upper, query->period.upper,
+    T_TIMESTAMPTZ);
 }
 
 /**
@@ -403,20 +408,22 @@ overBefore4D(const TboxNode *nodebox, const TBox *query)
 static bool
 after4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ);
+  return datum_gt(nodebox->left.period.lower, query->period.upper,
+    T_TIMESTAMPTZ);
 }
 
 /**
- * @brief Can any rectangle from nodebox does not extend before this argument?
+ * @brief Can any rectangle from nodebox be not before this argument?
  */
 static bool
 overAfter4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_ge(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
+  return datum_ge(nodebox->left.period.lower, query->period.lower,
+    T_TIMESTAMPTZ);
 }
 
 /**
- * @brief Lower bound for the distance between query and nodebox.
+ * @brief Lower bound for the distance between query and nodebox
  * @note The temporal dimension is not taken into the account since it is not
  * possible to mix different units in the computation. As a consequence, the
  * filtering is not very restrictive.
@@ -446,7 +453,7 @@ distance_tbox_nodebox(const TBox *query, const TboxNode *nodebox)
 }
 
 /**
- * @brief Transform a query argument into a TBox.
+ * @brief Transform a query argument into a temporal box
  */
 static bool
 tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
@@ -459,8 +466,8 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
   }
   else if (type == T_TSTZSPAN)
   {
-    Span *p = DatumGetSpanP(scankey->sk_argument);
-    tstzspan_set_tbox(p, result);
+    Span *s = DatumGetSpanP(scankey->sk_argument);
+    tstzspan_set_tbox(s, result);
   }
   else if (type == T_TBOX)
   {
@@ -595,7 +602,7 @@ Tbox_quadtree_choose(PG_FUNCTION_ARGS)
 
 /**
  * @brief Determine which half a 4D-mapped temporal box falls into, relative to
- * the centroid and the level number.
+ * the centroid and the level number
  *
  * Halves are numbered 0 and 1, and depending on the value of level number
  * modulo 4 is even or odd, the halves will be as follows:
@@ -725,9 +732,9 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     highTs[i] = DatumGetTimestampTz(box->period.upper);
   }
 
-  qsort(lowXs, (size_t) in->nTuples, sizeof(Datum), 
+  qsort(lowXs, (size_t) in->nTuples, sizeof(Datum),
     (basetype == T_INT4) ? compareInt4 : compareFloat8);
-  qsort(highXs, (size_t) in->nTuples, sizeof(Datum), 
+  qsort(highXs, (size_t) in->nTuples, sizeof(Datum),
     (basetype == T_INT4) ? compareInt4 : compareFloat8);
   qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
   qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
@@ -773,7 +780,7 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_kdtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_kdtree_picksplit);
 /**
- * @brief K-d tree pick-split function for time types
+ * @brief K-d tree pick-split function for temporal number
  */
 Datum
 Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
@@ -801,7 +808,7 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     qsortfn = (qsort_comparator) &tbox_tmax_cmp;
   qsort(sorted, in->nTuples, sizeof(SortedTbox), qsortfn);
   int median = in->nTuples >> 1;
-  TBox *centroid = tbox_copy(&sorted[median].box);
+  TBox *centroid = tbox_cp(&sorted[median].box);
 
   /* Fill the output data structure */
   out->hasPrefix = true;
@@ -821,7 +828,7 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    TBox *box = tbox_copy(&sorted[i].box);
+    TBox *box = tbox_cp(&sorted[i].box);
     int n = sorted[i].i;
     out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
     out->leafTupleDatums[n] = TboxPGetDatum(box);

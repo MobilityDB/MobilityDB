@@ -55,10 +55,10 @@ typedef enum
 
 /*****************************************************************************/
 
-extern bool tnumber_mult_tp_at_timestamp(const TInstant *start1,
+extern bool tnumber_mult_tp_at_timestamptz(const TInstant *start1,
   const TInstant *end1, const TInstant *start2, const TInstant *end2,
   Datum *value, TimestampTz *t);
-extern bool tnumber_div_tp_at_timestamp(const TInstant *start1,
+extern bool tnumber_div_tp_at_timestamptz(const TInstant *start1,
   const TInstant *end1, const TInstant *start2, const TInstant *end2,
   Datum *value, TimestampTz *t);
 

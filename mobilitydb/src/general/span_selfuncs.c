@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for selectivity estimation of time types operators.
+ * @brief Functions for selectivity estimation of span types
  *
  * These functions are based on those of the file `rangetypes_selfuncs.c`.
  * Estimates are based on histograms of lower and upper bounds.
@@ -59,7 +59,7 @@
 
 /**
  * @brief Return a default selectivity estimate for given operator, when we
- * don't have statistics or cannot use them for some reason.
+ * don't have statistics or cannot use them for some reason
  */
 float8
 span_sel_default(meosOper oper __attribute__((unused)))
@@ -70,7 +70,7 @@ span_sel_default(meosOper oper __attribute__((unused)))
 
 /**
  * @brief Return a default join selectivity estimate for given operator, when we
- * don't have statistics or cannot use them for some reason.
+ * don't have statistics or cannot use them for some reason
  */
 float8
 span_joinsel_default(meosOper oper __attribute__((unused)))
@@ -112,7 +112,7 @@ time_oper_sel(meosOper oper __attribute__((unused)), meosType ltype,
 /*****************************************************************************/
 
 /**
- * @brief Binary search on an array of span bounds.
+ * @brief Binary search on an array of span bounds
  *
  * Return the greatest index of span bound in array which is less (less or
  * equal) than given span bound. If all span bounds in array are greater or
@@ -170,7 +170,7 @@ span_position(const SpanBound *value, const SpanBound *hist1,
 
 /*****************************************************************************/
 /**
- * @brief Binary search on length histogram.
+ * @brief Binary search on length histogram
  *
  * Return greatest index of period length in histogram which is less than (less
  * than or equal) the given length value. If all lengths in the histogram are
@@ -195,8 +195,9 @@ length_hist_bsearch(Datum *hist_length, int hist_length_nvalues,
 }
 
 /**
- * @brief Get relative position of value in a length histogram bin in [0,1] range.
- * @note Function derived from PostgreSQL file rangetypes_selfuncs.c.
+ * @brief Get relative position of a value in a length histogram bin in a [0,1]
+ * range
+ * @note Function derived from PostgreSQL file `rangetypes_selfuncs.c`
  */
 double
 get_len_position(double value, double hist1, double hist2)
@@ -208,7 +209,7 @@ get_len_position(double value, double hist1, double hist2)
 /**
  * @brief Calculate the average of function P(x), in the interval
  * [length1, length2], where P(x) is the fraction of tuples with length < x
- * (or length <= x if 'equal' is true).
+ * (or length <= x if 'equal' is true)
  * @note Function derived from PostgreSQL file rangetypes_selfuncs.c.
  */
 double
@@ -364,7 +365,7 @@ calc_length_hist_frac(Datum *hist_length, int hist_length_nvalues,
 
 /**
  * @brief Estimate the fraction of values less than (or equal to, if 'equal'
- * argument is true) a given const in a histogram of span bounds.
+ * argument is true) a given const in a histogram of span bounds
  */
 static double
 span_sel_scalar(const SpanBound *constbound, const SpanBound *hist,
@@ -387,9 +388,9 @@ span_sel_scalar(const SpanBound *constbound, const SpanBound *hist,
 }
 
 /**
- * @brief Calculate selectivity of "var && const" operator, i.e., estimate the
- * fraction of spans that overlap the constant lower and upper bounds. This
- * uses the histograms of span lower and upper bounds.
+ * @brief Calculate the selectivity of "var && const" operator, i.e., estimate
+ * the fraction of spans that overlap the constant lower and upper bounds
+ * using the histograms of span lower and upper bounds
  *
  * Note that A && B <=> NOT (A <<# B OR A #>> B).
  *
@@ -430,7 +431,7 @@ span_sel_overlaps(const SpanBound *const_lower, const SpanBound *const_upper,
 
 /**
  * @brief Calculate selectivity of "var <@ const" operator, i.e., estimate the
- * fraction of spans that fall within the constant lower and upper bounds.
+ * fraction of spans that fall within the constant lower and upper bounds
  *
  * This uses the histograms of span lower bounds and span lengths, on the
  * assumption that the span lengths are independent of the lower bounds.
@@ -531,7 +532,7 @@ span_sel_contained(SpanBound *const_lower, SpanBound *const_upper,
 
 /**
  * @brief Calculate selectivity of "var @> const" operator, i.e., estimate the
- * fraction of spans that contain the constant lower and upper bounds.
+ * fraction of spans that contain the constant lower and upper bounds
  *
  * This uses the histograms of span lower bounds and span lengths, on the
  * assumption that the span lengths are independent of the lower bounds.
@@ -605,8 +606,8 @@ span_sel_contains(SpanBound *const_lower, SpanBound *const_upper,
 /*****************************************************************************/
 
 /**
- * @brief Calculate span operator selectivity using histograms of span bounds.
- * @note Used by the selectivity functions and the debugging functions.
+ * @brief Calculate span operator selectivity using histograms of span bounds
+ * @note Used by the selectivity functions
  */
 static double
 span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
@@ -698,9 +699,8 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
 }
 
 /**
- * @brief Calculate span operator selectivity using histograms of span bounds.
- *
- * This estimate is for the portion of values that are not NULL.
+ * @brief Calculate span operator selectivity using histograms of span bounds
+ * @note This estimate is for the portion of values that are not NULL
  */
 double
 span_sel_hist(VariableStatData *vardata, const Span *constval, meosOper oper,
@@ -946,8 +946,8 @@ PGDLLEXPORT Datum _mobdb_span_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(_mobdb_span_sel);
 /**
  * @brief Utility function to read the calculated selectivity for a given
- * table/column, operator, and search span.
- * Used for debugging the selectivity code.
+ * table/column, operator, and search span
+ * @note Used for debugging the selectivity code
  */
 Datum
 _mobdb_span_sel(PG_FUNCTION_ARGS)
@@ -1051,9 +1051,10 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
 /*
  * @brief Given two histograms of span bounds, estimate the fraction of values
  * in the first histogram that are less than (or equal to, if `equal` argument
- * is true) a value in the second histogram. The join selectivity estimation
- * for all span operators is expressed using this function. This estimation
- * is described in the following paper:
+ * is true) a value in the second histogram
+ *
+ * This function is used for estimating the join selectivity for all span
+ * operators. This estimation is described in the following paper:
  *
  * Diogo Repas, Zhicheng Luo, Maxime Schoemans, and Mahmoud Sakr, 2022
  * Selectivity Estimation of Inequality Joins In Databases
@@ -1187,7 +1188,7 @@ span_joinsel_oper(SpanBound *lower1, SpanBound *upper1, int nhist1,
 }
 
 /**
- * @brief Calculate span operator selectivity using histograms of span bounds.
+ * @brief Calculate span operator selectivity using histograms of span bounds
  */
 static double
 span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
@@ -1285,9 +1286,8 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
 }
 
 /**
- * @brief Calculate span operator selectivity using histograms of span bounds.
- *
- * This estimate is for the portion of values that are not NULL.
+ * @brief Calculate span operator selectivity using histograms of span bounds
+ * @note This estimate is for the portion of values that are not NULL
  */
 static double
 span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
@@ -1298,11 +1298,11 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   Form_pg_statistic stats1 = NULL, stats2 = NULL;
   double selec;
   bool have_hist1 = false, have_hist2 = false;
-  int bounds_hist = value ? STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM : 
+  int bounds_hist = value ? STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM :
     STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
   int lengths_hist = value ? STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
     STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
-  
+
   memset(&hslot1, 0, sizeof(hslot1));
   memset(&hslot2, 0, sizeof(hslot2));
 
@@ -1434,7 +1434,7 @@ span_joinsel(PlannerInfo *root, bool value, meosOper oper, List *args,
 PGDLLEXPORT Datum Span_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_joinsel);
 /**
- * @brief Join selectivity for spans.
+ * @brief Join selectivity for spans
  *
  * The selectivity is the ratio of the number of rows we think will be returned
  * divided the maximum number of rows the join could possibly return (the full
@@ -1489,8 +1489,8 @@ PGDLLEXPORT Datum _mobdb_span_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(_mobdb_span_joinsel);
 /**
  * @brief Utility function to read the calculated selectivity for a given
- * couple of table/column, and operator.
- * @note Used for testing the selectivity code.
+ * couple of table/column, and operator
+ * @note Used for testing the selectivity code
  */
 Datum
 _mobdb_span_joinsel(PG_FUNCTION_ARGS)

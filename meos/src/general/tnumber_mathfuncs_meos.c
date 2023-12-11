@@ -293,7 +293,7 @@ mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
   return arithop_tnumber_tnumber(temp1, temp2, MULT, &datum_mult,
-    &tnumber_mult_tp_at_timestamp);
+    &tnumber_mult_tp_at_timestamptz);
 }
 
 /*****************************************************************************
@@ -378,7 +378,7 @@ div_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
   return arithop_tnumber_tnumber(temp1, temp2, DIV, &datum_div,
-    &tnumber_div_tp_at_timestamp);
+    &tnumber_div_tp_at_timestamptz);
 }
 
 /*****************************************************************************/

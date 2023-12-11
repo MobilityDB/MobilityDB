@@ -44,15 +44,15 @@
 
 /*****************************************************************************/
 
-extern Datum boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_geo_tpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tpoint_geo(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_stbox_tpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tpoint_stbox(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
 
 /*****************************************************************************/

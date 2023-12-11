@@ -492,7 +492,7 @@ containKD(const STboxNode *nodebox, const STBox *query, int level)
 }
 
 /**
- * @brief Can any box from nodebox be left of query?
+ * @brief Can any box from nodebox be to the left of the query?
  */
 static bool
 left8D(const STboxNode *nodebox, const STBox *query)
@@ -501,7 +501,7 @@ left8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from nodebox does not extend the right of query?
+ * @brief Can any box from nodebox does not extend to the right of query?
  */
 static bool
 overLeft8D(const STboxNode *nodebox, const STBox *query)
@@ -510,7 +510,7 @@ overLeft8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from nodebox be right of query?
+ * @brief Can any box from nodebox be to the right of the query?
  */
 static bool
 right8D(const STboxNode *nodebox, const STBox *query)
@@ -519,7 +519,7 @@ right8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from nodebox does not extend the left of query?
+ * @brief Can any box from nodebox does not extend to the left of the query?
  */
 static bool
 overRight8D(const STboxNode *nodebox, const STBox *query)
@@ -528,7 +528,7 @@ overRight8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from nodebox be below of query?
+ * @brief Can any box from nodebox be below of the query?
  */
 static bool
 below8D(const STboxNode *nodebox, const STBox *query)
@@ -537,7 +537,7 @@ below8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from nodebox does not extend above query?
+ * @brief Can any box from nodebox does not extend above the query?
  */
 static bool
 overBelow8D(const STboxNode *nodebox, const STBox *query)
@@ -555,7 +555,7 @@ above8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from nodebox does not extend below of query?
+ * @brief Can any box from nodebox does not extend below the query?
  */
 static bool
 overAbove8D(const STboxNode *nodebox, const STBox *query)
@@ -564,7 +564,7 @@ overAbove8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from nodebox be in front of query?
+ * @brief Can any box from nodebox be in front of the query?
  */
 static bool
 front8D(STboxNode *nodebox, STBox *query)
@@ -573,7 +573,7 @@ front8D(STboxNode *nodebox, STBox *query)
 }
 
 /**
- * @brief Can any box from nodebox does not extend the back of query?
+ * @brief Can any box from nodebox does not extend to the back of the query?
  */
 static bool
 overFront8D(const STboxNode *nodebox, const STBox *query)
@@ -591,7 +591,7 @@ back8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from nodebox does not extend the front of query?
+ * @brief Can any box from nodebox does not extend to the front of the query?
  */
 static bool
 overBack8D(const STboxNode *nodebox, const STBox *query)
@@ -600,43 +600,47 @@ overBack8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from nodebox be before of query?
+ * @brief Can any box from nodebox be before of the query?
  */
 static bool
 before8D(const STboxNode *nodebox, const STBox *query)
 {
-  return datum_lt(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
+  return datum_lt(nodebox->right.period.upper, query->period.lower,
+    T_TIMESTAMPTZ);
 }
 
 /**
- * @brief Can any box from nodebox does not extend the after of query?
+ * @brief Can any box from nodebox be after of the query?
  */
 static bool
 overBefore8D(const STboxNode *nodebox, const STBox *query)
 {
-  return datum_le(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ);
+  return datum_le(nodebox->right.period.upper, query->period.upper,
+    T_TIMESTAMPTZ);
 }
 
 /**
- * @brief Can any box from nodebox be after of query?
+ * @brief Can any box from nodebox be after the query?
  */
 static bool
 after8D(const STboxNode *nodebox, const STBox *query)
 {
-  return datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ);
+  return datum_gt(nodebox->left.period.lower, query->period.upper,
+    T_TIMESTAMPTZ);
 }
 
 /**
- * @brief Can any box from nodebox does not extend the before of query?
+ * @brief Can any box from nodebox be before the query?
  */
 static bool
 overAfter8D(const STboxNode *nodebox, const STBox *query)
 {
-  return datum_ge(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
+  return datum_ge(nodebox->left.period.lower, query->period.lower,
+    T_TIMESTAMPTZ);
 }
 
 /**
- * @brief Lower bound for the distance between query and nodebox.
+ * @brief Lower bound for the distance between query and nodebox
  * @note The temporal dimension is only taken into account for returning
  * +infinity (which will be translated into NULL) if the boxes do not
  * intersect in time. Besides that, it is not possible to mix different
@@ -687,7 +691,7 @@ distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
 }
 
 /**
- * @brief Transform a query argument into an STBox.
+ * @brief Transform a query argument into a spatiotemporal box
  */
 static bool
 tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
@@ -695,8 +699,8 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
   meosType type = oid_type(scankey->sk_subtype);
   if (type == T_TSTZSPAN)
   {
-    Span *p = DatumGetSpanP(scankey->sk_argument);
-    tstzspan_set_stbox(p, result);
+    Span *s = DatumGetSpanP(scankey->sk_argument);
+    tstzspan_set_stbox(s, result);
   }
   else if (type == T_STBOX)
   {
@@ -766,7 +770,7 @@ Stbox_quadtree_choose(PG_FUNCTION_ARGS)
 
 /**
  * @brief Determine which half a 4D-mapped temporal box falls into, relative to
- * the centroid and the level number.
+ * the centroid and the level number
  *
  * Halves are numbered 0 and 1, and depending on the value of level number
  * modulo 4 is even or odd, the halves will be as follows:
@@ -922,7 +926,7 @@ stbox_level_cmp(STBox *centroid, STBox *query, int level)
 PGDLLEXPORT Datum Stbox_kdtree_choose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_kdtree_choose);
 /**
- * @brief K-d tree choose function for time types
+ * @brief K-d tree choose function for temporal points
  */
 Datum
 Stbox_kdtree_choose(PG_FUNCTION_ARGS)
@@ -1093,7 +1097,7 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     qsortfn = (qsort_comparator) &stbox_tmax_cmp;
   qsort(sorted, in->nTuples, sizeof(SortedSTbox), qsortfn);
   int median = in->nTuples >> 1;
-  STBox *centroid = stbox_copy(&sorted[median].box);
+  STBox *centroid = stbox_cp(&sorted[median].box);
 
   /* Fill the output data structure */
   out->hasPrefix = true;
@@ -1113,7 +1117,7 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    STBox *box = stbox_copy(&sorted[i].box);
+    STBox *box = stbox_cp(&sorted[i].box);
     int n = sorted[i].i;
     out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
     out->leafTupleDatums[n] = STboxPGetDatum(box);
@@ -1346,7 +1350,7 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
 PGDLLEXPORT Datum Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quadtree_inner_consistent);
 /**
- * @brief Quad-tree inner consistent function for temporal numbers
+ * @brief Quad-tree inner consistent function for temporal points
  */
 Datum
 Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
@@ -1357,7 +1361,7 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_kdtree_inner_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_kdtree_inner_consistent);
 /**
- * @brief Kd-tree inner consistent function for temporal numbers
+ * @brief Kd-tree inner consistent function for temporal points
  */
 Datum
 Stbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)

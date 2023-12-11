@@ -73,6 +73,18 @@ npoint_set_stbox(const Npoint *np, STBox *box)
 }
 
 /**
+ * @brief Convert a network point to a spatiotemporal box.
+ */
+STBox *
+npoint_to_stbox(const Npoint *np)
+{
+  STBox box;
+  if (! npoint_set_stbox(np, &box))
+    return NULL;
+  return stbox_cp(&box);
+}
+
+/**
  * @brief Set the spatiotemporal box from an array of network point values
  * @param[in] values Temporal network point values
  * @param[in] count Number of elements in the array
@@ -231,7 +243,19 @@ nsegment_set_stbox(const Nsegment *ns, STBox *box)
 }
 
 /**
- * @brief Transform a network point and a timestamp to a spatiotemporal box
+ * @brief Convert a network segment into a spatiotemporal box
+ */
+STBox *
+nsegment_to_stbox(const Nsegment *ns)
+{
+  STBox box;
+  if (! nsegment_set_stbox(ns, &box))
+    return NULL;
+  return stbox_cp(&box);
+}
+
+/**
+ * @brief Convert a network point and a timestamptz to a spatiotemporal box
  */
 bool
 npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
@@ -244,15 +268,44 @@ npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
 }
 
 /**
- * @brief Transform a network point and a period to a spatiotemporal box
+ * @brief Convert a network point and a timestamptz to a spatiotemporal box
+ */
+STBox *
+npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t)
+{
+  if (! ensure_not_null((void *) np))
+    return NULL;
+  STBox box;
+  if (! npoint_timestamptz_set_stbox(np, t, &box))
+    return NULL;
+  return stbox_cp(&box);
+}
+
+/**
+ * @brief Convert a network point and a timestamptz span to a spatiotemporal
+ * box
  */
 bool
-npoint_tstzspan_set_stbox(const Npoint *np, const Span *p, STBox *box)
+npoint_tstzspan_set_stbox(const Npoint *np, const Span *s, STBox *box)
 {
   npoint_set_stbox(np, box);
-  memcpy(&box->period, p, sizeof(Span));
+  memcpy(&box->period, s, sizeof(Span));
   MEOS_FLAGS_SET_T(box->flags, true);
   return true;
+}
+
+/**
+ * @brief Convert a network point and a timestamptz to a spatiotemporal box
+ */
+STBox *
+npoint_tstzspan_to_stbox(const Npoint *np, const Span *s)
+{
+  if (! ensure_not_null((void *) np) || ! ensure_not_null((void *) s))
+    return NULL;
+  STBox box;
+  if (! npoint_tstzspan_set_stbox(np, s, &box))
+    return NULL;
+  return stbox_cp(&box);
 }
 
 /*****************************************************************************/

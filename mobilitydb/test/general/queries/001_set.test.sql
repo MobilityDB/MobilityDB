@@ -118,12 +118,18 @@ SELECT getValues(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
 SELECT getValues(tstzset '{2000-01-01}');
 SELECT getValues(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
+SELECT shift(intset '{1}', 4);
+SELECT shift(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
 SELECT shift(tstzset '{2000-01-01}', '5 min');
 SELECT shift(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
 
+SELECT scale(intset '{1}', 4);
+SELECT scale(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
 SELECT scale(tstzset '{2000-01-01}', '1 hour');
 SELECT scale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
 
+SELECT shiftScale(intset '{1}', 4, 4);
+SELECT shiftScale(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4, 4);
 SELECT shiftScale(tstzset '{2000-01-01}', '1 day', '1 hour');
 SELECT shiftScale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
 

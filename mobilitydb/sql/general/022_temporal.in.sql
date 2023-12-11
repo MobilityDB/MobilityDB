@@ -210,7 +210,7 @@ CREATE CAST (tfloat AS tfloat) WITH FUNCTION tfloat(tfloat, integer) AS IMPLICIT
 CREATE CAST (ttext AS ttext) WITH FUNCTION ttext(ttext, integer) AS IMPLICIT;
 
 /******************************************************************************
- * Constructors
+ * Constructor functions
  ******************************************************************************/
 
 CREATE FUNCTION tbool_inst(boolean, timestamptz)
@@ -342,7 +342,7 @@ CREATE FUNCTION ttext_seqset_gaps(ttext[], maxt interval DEFAULT NULL)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
- * Casting
+ * Conversion functions
  ******************************************************************************/
 
 CREATE FUNCTION timeSpan(tbool)
@@ -916,7 +916,7 @@ CREATE FUNCTION timestamps(ttext)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Unnest Function
+ * Transform a temporal value to a set of records
  *****************************************************************************/
 
 CREATE TYPE int_tstzspanset AS (
@@ -1817,53 +1817,53 @@ CREATE FUNCTION minusTbox(tfloat, tbox)
 
 CREATE FUNCTION atTime(tbool, timestamptz)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION atTime(tint, timestamptz)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION atTime(tfloat, timestamptz)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION atTime(ttext, timestamptz)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusTime(tbool, timestamptz)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minusTime(tint, timestamptz)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minusTime(tfloat, timestamptz)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minusTime(ttext, timestamptz)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueAtTimestamp(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueAtTimestamp(tint, timestamptz)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueAtTimestamp(tfloat, timestamptz)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueAtTimestamp(ttext, timestamptz)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tbool, tstzset)
@@ -2008,19 +2008,19 @@ CREATE FUNCTION update(ttext, ttext, connect boolean DEFAULT TRUE)
 
 CREATE FUNCTION deleteTime(tbool, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tint, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tfloat, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(ttext, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION deleteTime(tbool, tstzset, connect boolean DEFAULT TRUE)

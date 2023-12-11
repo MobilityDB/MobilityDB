@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Ever spatial relationships for temporal points.
+ * @brief Ever spatial relationships for temporal points
  *
  * These relationships compute the ever spatial relationship between the
  * arguments and return a Boolean. These functions may be used for filtering
@@ -79,13 +79,13 @@ pgis_intersects2d(Datum geom1, Datum geom2)
  *****************************************************************************/
 
 /**
- * @brief Return true if the temporal points ever satisfy the spatial
+ * @brief Return true if two temporal points ever satisfy the spatial
  * relationship
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func1, func2 Spatial relationship for geometric/geographic points
  */
 static Datum
-espatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
+Espatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
   Datum (*func1)(Datum, Datum), Datum (*func2)(Datum, Datum))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -138,7 +138,8 @@ PGDLLEXPORT Datum Edisjoint_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a geometry and a temporal point are ever disjoint
+ * @brief Return true if a geometry/geography and a temporal point are ever
+ * disjoint
  * @sqlfunc edisjoint
  */
 Datum
@@ -160,7 +161,8 @@ PGDLLEXPORT Datum Edisjoint_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a temporal point and a geometry are ever disjoint
+ * @brief Return true if a temporal point and a geometry/geography are ever
+ * disjoint
  * @sqlfunc edisjoint
  */
 Datum
@@ -182,13 +184,13 @@ PGDLLEXPORT Datum Edisjoint_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if the temporal points are ever disjoint
+ * @brief Return true if two temporal points are ever disjoint
  * @sqlfunc edisjoint
  */
 Datum
 Edisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_ne,
+  return Espatialrel_tpoint_tpoint(fcinfo, &datum2_point_ne,
     &datum2_point_nsame);
 }
 
@@ -200,7 +202,8 @@ PGDLLEXPORT Datum Eintersects_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a geometry and a temporal point ever intersect
+ * @brief Return true if a geometry/geography and a temporal point ever
+ * intersect
  * @sqlfunc eintersects
  */
 Datum
@@ -222,7 +225,8 @@ PGDLLEXPORT Datum Eintersects_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a temporal point and a geometry ever intersect
+ * @brief Return true if a temporal point and a geometry/geography ever
+ * intersect
  * @sqlfunc eintersects
  */
 Datum
@@ -244,13 +248,13 @@ PGDLLEXPORT Datum Eintersects_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if the temporal points ever intersect
+ * @brief Return true if two temporal points ever intersect
  * @sqlfunc eintersects
  */
 Datum
 Eintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_eq,
+  return Espatialrel_tpoint_tpoint(fcinfo, &datum2_point_eq,
     &datum2_point_same);
 }
 
@@ -313,8 +317,8 @@ PGDLLEXPORT Datum Edwithin_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a geometry and a temporal point are ever within the
- * given distance
+ * @brief Return true if a geometry/geography and a temporal point are ever
+ * within the given distance
  * @sqlfunc edwithin
  */
 Datum
@@ -337,8 +341,8 @@ PGDLLEXPORT Datum Edwithin_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a temporal point and a geometry are ever within the
- * given distance
+ * @brief Return true if a temporal point and a geometry/geography are ever
+ * within the given distance
  * @sqlfunc edwithin
  */
 Datum
@@ -361,7 +365,7 @@ PGDLLEXPORT Datum Edwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
- * @brief Return true if the temporal points are even within the given distance
+ * @brief Return true if two temporal points are even within the given distance
  * @sqlfunc edwithin
  */
 Datum

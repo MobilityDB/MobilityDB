@@ -273,10 +273,10 @@ skiplist_print(const SkipList *list)
       len += sprintf(buf+len, "<p0>\"];\n");
     else
     {
-      Span p;
-      temporal_set_tstzspan(e->value, &p);
+      Span s;
+      temporal_set_tstzspan(e->value, &s);
       /* The second argument of span_out is not used for spans */
-      char *val = span_out(&p, Int32GetDatum(0));
+      char *val = span_out(&s, Int32GetDatum(0));
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
       pfree(val);
     }
@@ -402,14 +402,14 @@ skiplist_make(void **values, int count)
 }
 
 /**
- * @brief Determine the relative position of a period and a timestamp
+ * @brief Determine the relative position of a span and a timestamptz
  */
 static RelativeTimePos
-pos_span_timestamptz(const Span *p, TimestampTz t)
+pos_span_timestamptz(const Span *s, TimestampTz t)
 {
-  if (left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
+  if (left_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
     return BEFORE;
-  if (right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
+  if (right_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
     return AFTER;
   return DURING;
 }
@@ -431,7 +431,7 @@ pos_span_span(const Span *s1, const Span *s2)
  * @brief Comparison function used for skiplists
  */
 static RelativeTimePos
-skiplist_elempos(const SkipList *list, Span *p, int cur)
+skiplist_elempos(const SkipList *list, Span *s, int cur)
 {
   if (cur == 0)
     return AFTER; /* Head is -inf */
@@ -440,9 +440,9 @@ skiplist_elempos(const SkipList *list, Span *p, int cur)
 
   Temporal *temp = (Temporal *) list->elems[cur].value;
   if (temp->subtype == TINSTANT)
-    return pos_span_timestamptz(p, ((TInstant *) temp)->t);
+    return pos_span_timestamptz(s, ((TInstant *) temp)->t);
   else /* temp->subtype == TSEQUENCE */
-    return pos_span_span(p, &((TSequence *) temp)->period);
+    return pos_span_span(s, &((TSequence *) temp)->period);
 }
 
 /**
@@ -488,7 +488,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   }
 
   /* Compute the span of the new values */
-  Span p;
+  Span s;
   uint8 subtype = 0;
   subtype = ((Temporal *) skiplist_headval(list))->subtype;
   if (subtype == TINSTANT)
@@ -496,14 +496,14 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     TInstant *first = (TInstant *) values[0];
     TInstant *last = (TInstant *) values[count - 1];
     span_set(TimestampTzGetDatum(first->t), TimestampTzGetDatum(last->t),
-      true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
+      true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
   }
   else /* subtype == TSEQUENCE */
   {
     TSequence *first = (TSequence *) values[0];
     TSequence *last = (TSequence *) values[count - 1];
     span_set(first->period.lower, last->period.upper, first->period.lower_inc,
-      last->period.upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
+      last->period.upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
   }
 
   /* Find the list values that are strictly before the span of new values */
@@ -515,7 +515,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   for (int level = height - 1; level >= 0; level--)
   {
     while (e->next[level] != -1 &&
-      skiplist_elempos(list, &p, e->next[level]) == AFTER)
+      skiplist_elempos(list, &s, e->next[level]) == AFTER)
     {
       cur = e->next[level];
       e = &list->elems[cur];
@@ -528,7 +528,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 
   /* Count the number of elements that will be merged with the new values */
   int spliced_count = 0;
-  while (skiplist_elempos(list, &p, cur) == DURING)
+  while (skiplist_elempos(list, &s, cur) == DURING)
   {
     cur = e->next[0];
     e = &list->elems[cur];

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for gathering statistics from temporal point columns.
+ * @brief Functions for gathering statistics from temporal point columns
  *
  * Various kind of statistics are collected for both the value and the time
  * dimensions of temporal types. The kind of statistics depends on the subtype
@@ -96,6 +96,7 @@
 /**
  * @brief The SD factor restricts the side of the statistics histogram
  * based on the standard deviation of the extent of the data.
+ * 
  * SDFACTOR is the number of standard deviations from the mean
  * the histogram will extend.
  */
@@ -111,7 +112,7 @@
 
 /**
  * @brief Maximum width of a dimension that we'll bother trying to
- * compute statistics on.
+ * compute statistics on
  */
 #define MAX_DIMENSION_WIDTH 1.0E+20
 
@@ -145,7 +146,7 @@ nd_box_init(ND_BOX *a)
 
 /**
  * @brief Prepare an ND_BOX for bounds calculation: set the maximum values to
- * the smallest thing possible and the mininum values to the largest.
+ * the smallest thing possible and the mininum values to the largest
  */
 static int
 nd_box_init_bounds(ND_BOX *a)
@@ -221,7 +222,7 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 }
 
 /**
- * @brief Return true if #ND_BOX a overlaps b, false otherwise.
+ * @brief Return true if #ND_BOX a overlaps b, false otherwise
  */
 int
 nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
@@ -325,7 +326,7 @@ range_quintile(int *vals, int nvals)
 /**
  * @brief Given an n-d index array (counter), and a domain to increment it
  * in (ibox) increment it by one, unless it's already at the max of
- * the domain, in which case return false.
+ * the domain, in which case return false
  */
 int
 nd_increment(ND_IBOX *ibox, int ndims, int *counter)

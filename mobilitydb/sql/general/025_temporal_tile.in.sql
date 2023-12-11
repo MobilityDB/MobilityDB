@@ -49,12 +49,12 @@ CREATE TYPE index_floatspan AS (
 CREATE FUNCTION bucketList(bounds intspan, size integer,
   origin integer DEFAULT 0)
   RETURNS SETOF index_intspan
-  AS 'MODULE_PATHNAME', 'Span_bucket_list'
+  AS 'MODULE_PATHNAME', 'Valuespan_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bucketList(bounds floatspan, size float,
   origin float DEFAULT 0.0)
   RETURNS SETOF index_floatspan
-  AS 'MODULE_PATHNAME', 'Span_bucket_list'
+  AS 'MODULE_PATHNAME', 'Valuespan_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueBucket("value" integer, size integer,
@@ -71,12 +71,12 @@ CREATE FUNCTION valueBucket("value" float, size float,
 CREATE FUNCTION spanBucket("value" integer, size integer,
   origin integer DEFAULT 0)
   RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Span_bucket'
+  AS 'MODULE_PATHNAME', 'Valuespan_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanBucket("value" float, size float,
   origin float DEFAULT 0.0)
   RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Span_bucket'
+  AS 'MODULE_PATHNAME', 'Valuespan_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

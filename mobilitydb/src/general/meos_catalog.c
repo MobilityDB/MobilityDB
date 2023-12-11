@@ -30,8 +30,9 @@
 /**
  * @file
  * @brief Create a cache of PostgreSQL type and operator Oids in global arrays
- * to avoid (slow) lookups. The arrays are initialized when the extension is
- * loaded.
+ * to avoid (slow) lookups
+ *
+ * The arrays are initialized when the extension is loaded.
  *
  * Estimating the selectivity of Boolean operators is essential for defining
  * efficient queries execution plans. The extension defines several classes
@@ -110,7 +111,7 @@ typedef struct
 
 /**
  * @brief Global array containing the operator names corresponding to the
- * enumeration meosOper defined in file meos_catalog.h.
+ * enumeration meosOper defined in file meos_catalog.h
  */
 const char *_meosOper_names[] =
 {
@@ -161,27 +162,28 @@ const char *_meosOper_names[] =
 
 /**
  * @brief Global variable that states whether the type and operator Oid caches
- * have been initialized.
+ * have been initialized
  */
 bool _oid_cache_ready = false;
 
 /**
- * @brief Global array that keeps the type Oids used in MobilityDB.
+ * @brief Global array that keeps the type Oids used in MobilityDB
  */
 Oid _type_oids[NO_MEOS_TYPES];
 
 /**
- * @brief Global hash table that keeps the operator Oids used in MobilityDB.
+ * @brief Global hash table that keeps the operator Oids used in MobilityDB
  */
 struct opertable_hash *_oid_oper = NULL;
 
 /**
  * @brief Global 3-dimensional array that keeps the operator Oids used in
- * MobilityDB. The first dimension corresponds to the operator class
- * (e.g., <=), the second and third dimensions correspond, respectively,
- * to the left and right arguments of the operator. A value 0 is stored in
- * the cell of the array if the operator class is not defined for the left and
- * right types.
+ * MobilityDB
+ * 
+ * The first dimension corresponds to the operator class (e.g., <=), the second
+ * and third dimensions correspond, respectively, to the left and right
+ * arguments of the operator. A value 0 is stored in the cell of the array if
+ * the operator class is not defined for the left and right types.
  */
 Oid _oper_oid[NO_MEOS_TYPES][NO_MEOS_TYPES][NO_MEOS_TYPES];
 
@@ -223,8 +225,9 @@ populate_typeoid_cache()
 
 /**
  * @brief Populate the operator Oid cache from the precomputed operator cache
- * stored in table `mobilitydb_opcache`. This table is filled by function
- * `fill_opcache` when the extension is created.
+ * stored in table `mobilitydb_opcache`
+ *
+ * This table is filled by function`fill_opcache` when the extension is created.
  * @note Due to some memory context issues, the _oper_oid array should be
  * filled again even if it is already filled during the extension creation.
  */

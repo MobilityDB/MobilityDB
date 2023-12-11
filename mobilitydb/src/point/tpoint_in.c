@@ -51,7 +51,7 @@ PG_FUNCTION_INFO_V1(Tpoint_from_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Input a temporal point from its Extended Well-Known Text (EWKT)
- * representation.
+ * representation
  * @note This just does the same thing as the _in function, except it has to handle
  * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
  * @sqlfunc tgeompointFromText(), tgeogpointFromText(), tgeompointFromEWKT(),

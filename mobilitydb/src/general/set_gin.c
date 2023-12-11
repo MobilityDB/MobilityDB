@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief GIN index functions for set types.
+ * @brief Functions for defining GIN indexes for set types
  */
 
 /* PostgreSQL */

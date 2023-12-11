@@ -504,17 +504,17 @@ CREATE FUNCTION minusValues(tnpoint, npointset)
 
 CREATE FUNCTION atTime(tnpoint, timestamptz)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusTime(tnpoint, timestamptz)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueAtTimestamp(tnpoint, timestamptz)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tnpoint, tstzset)
@@ -573,7 +573,7 @@ CREATE FUNCTION update(tnpoint, tnpoint, connect boolean DEFAULT TRUE)
 
 CREATE FUNCTION deleteTime(tnpoint, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tnpoint, tstzset, connect boolean DEFAULT TRUE)
   RETURNS tnpoint

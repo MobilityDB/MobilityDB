@@ -58,6 +58,7 @@ meos_errno(void)
   return _meos_errno;
 }
 
+#if MEOS
 /**
  * @brief Set an error number
  */
@@ -125,6 +126,7 @@ int meos_errno_reset(void)
   errno = 0;
   return last_errno;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 

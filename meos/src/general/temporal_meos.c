@@ -235,7 +235,7 @@ temporal_minus_values(const Temporal *temp, const Set *s)
  * @sqlfunc valueAtTimestamp()
  */
 bool
-tbool_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
+tbool_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   bool *value)
 {
   /* Ensure validity of the arguments */
@@ -244,7 +244,7 @@ tbool_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
     return false;
 
   Datum res;
-  bool result = temporal_value_at_timestamp(temp, t, strict, &res);
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetBool(res);
   return result;
 }
@@ -255,7 +255,7 @@ tbool_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
  * @sqlfunc valueAtTimestamp()
  */
 bool
-tint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
+tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   int *value)
 {
   /* Ensure validity of the arguments */
@@ -264,7 +264,7 @@ tint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
     return false;
 
   Datum res;
-  bool result = temporal_value_at_timestamp(temp, t, strict, &res);
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetInt32(res);
   return result;
 }
@@ -275,7 +275,7 @@ tint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
  * @sqlfunc valueAtTimestamp()
  */
 bool
-tfloat_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
+tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   double *value)
 {
   /* Ensure validity of the arguments */
@@ -284,7 +284,7 @@ tfloat_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
     return false;
 
   Datum res;
-  bool result = temporal_value_at_timestamp(temp, t, strict, &res);
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetFloat8(res);
   return result;
 }
@@ -295,7 +295,7 @@ tfloat_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
  * @sqlfunc valueAtTimestamp()
  */
 bool
-ttext_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
+ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   text **value)
 {
   /* Ensure validity of the arguments */
@@ -304,7 +304,7 @@ ttext_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
     return NULL;
 
   Datum res;
-  bool result = temporal_value_at_timestamp(temp, t, strict, &res);
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetTextP(res);
   return result;
 }
@@ -315,7 +315,7 @@ ttext_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
  * @sqlfunc valueAtTimestamp()
  */
 bool
-tpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
+tpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   GSERIALIZED **value)
 {
   /* Ensure validity of the arguments */
@@ -324,7 +324,7 @@ tpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
     return false;
 
   Datum res;
-  bool result = temporal_value_at_timestamp(temp, t, strict, &res);
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetGserializedP(res);
   return result;
 }
@@ -399,7 +399,7 @@ tnumber_at_span(const Temporal *temp, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_span(temp, s))
     return NULL;
   return tnumber_restrict_span(temp, s, REST_AT);
@@ -415,7 +415,7 @@ tnumber_minus_span(const Temporal *temp, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_span(temp, s))
     return NULL;
   return tnumber_restrict_span(temp, s, REST_MINUS);
@@ -431,7 +431,7 @@ tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_spanset(temp, ss))
     return NULL;
   return tnumber_restrict_spanset(temp, ss, REST_AT);
@@ -448,7 +448,7 @@ tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_tnumber_type(temp->temptype) || 
+      ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_spanset(temp, ss))
     return NULL;
   return tnumber_restrict_spanset(temp, ss, REST_MINUS);
@@ -462,12 +462,12 @@ tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
  * @sqlfunc atTime()
  */
 Temporal *
-temporal_at_timestamp(const Temporal *temp, TimestampTz t)
+temporal_at_timestamptz(const Temporal *temp, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-  return temporal_restrict_timestamp(temp, t, REST_AT);
+  return temporal_restrict_timestamptz(temp, t, REST_AT);
 }
 
 /**
@@ -476,12 +476,12 @@ temporal_at_timestamp(const Temporal *temp, TimestampTz t)
  * @sqlfunc minusTime()
  */
 Temporal *
-temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
+temporal_minus_timestamptz(const Temporal *temp, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-  return temporal_restrict_timestamp(temp, t, REST_MINUS);
+  return temporal_restrict_timestamptz(temp, t, REST_MINUS);
 }
 
 /**
@@ -516,7 +516,7 @@ temporal_minus_tstzset(const Temporal *temp, const Set *s)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to a period
+ * @brief Restrict a temporal value to a timestamptz span
  * @sqlfunc atTime()
  */
 Temporal *
@@ -531,7 +531,7 @@ temporal_at_tstzspan(const Temporal *temp, const Span *s)
 
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to the complement of a period
+ * @brief Restrict a temporal value to the complement of a timestamptz span
  * @sqlfunc minusTime()
  */
 Temporal *
@@ -553,7 +553,7 @@ Temporal *
 temporal_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) || 
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
   return temporal_restrict_tstzspanset(temp, ss, REST_AT);
@@ -568,7 +568,7 @@ Temporal *
 temporal_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) || 
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
   return temporal_restrict_tstzspanset(temp, ss, REST_MINUS);

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for gathering statistics from time type columns.
+ * @brief Functions for gathering statistics from span type columns
  *
  * These functions are based on those of the file rangetypes_typanalyze.c.
  * For a span type column, histograms of lower and upper bounds, and
@@ -80,8 +80,8 @@ float8_qsort_cmp(const void *a1, const void *a2)
 }
 
 /**
- * @brief Compute statistics for time type columns and for the time dimension of
- * all temporal types whose subtype is not instant
+ * @brief Compute statistics for span type columns and for the time dimension
+ * of temporal types whose subtype is not instant
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] non_null_cnt Number of rows that are not null

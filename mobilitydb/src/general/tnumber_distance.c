@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Distance functions for temporal numbers.
+ * @brief Distance functions for temporal numbers
  */
 
 #include "general/tnumber_distance.h"
@@ -124,7 +124,8 @@ PGDLLEXPORT Datum NAD_number_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_dist
- * @brief Return the temporal distance between a number and a temporal number
+ * @brief Return the nearest approach distance between a number and a temporal
+ * number
  * @sqlfunc nearestApproachDistance()
  */
 Datum
@@ -143,7 +144,8 @@ PGDLLEXPORT Datum NAD_tnumber_number(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_dist
- * @brief Return the temporal distance between a temporal number and a number
+ * @brief Return the nearest approach distance between a temporal number and a
+ * number
  * @sqlfunc nearestApproachDistance()
  */
 Datum
@@ -162,7 +164,7 @@ PGDLLEXPORT Datum NAD_tbox_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tbox_tbox);
 /**
  * @ingroup mobilitydb_temporal_dist
- * @brief Return the nearest approach distance between the temporal boxes
+ * @brief Return the nearest approach distance between two temporal boxes
  * @sqlfunc nearestApproachDistance()
  */
 Datum
@@ -220,7 +222,7 @@ PGDLLEXPORT Datum NAD_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_dist
- * @brief Return the nearest approach distance between the temporal numbers
+ * @brief Return the nearest approach distance between two temporal numbers
  * @sqlfunc nearestApproachDistance()
  */
 Datum
