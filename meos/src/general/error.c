@@ -93,7 +93,7 @@ meos_errno_restore(int err)
 }
 
 /**
- * @brief Clears errno.
+ * @brief Clear the error number
  * @return Returns the previous value of the errno, for convenient reset/restore
  * operations
  *
@@ -120,8 +120,8 @@ meos_errno_restore(int err)
  * }
  * @endcode
  */
-
-int meos_errno_reset(void)
+int
+meos_errno_reset(void)
 {
   int last_errno = meos_errno();
   meos_errno_set(0);
@@ -206,30 +206,5 @@ meos_error(int errlevel, int errcode, char *format, ...)
 #endif /* ! MEOS */
   return;
 }
-
-/*****************************************************************************/
-
-#if MEOS
-/*
- * Initialize MEOS library
- */
-void
-meos_initialize(const char *tz_str, error_handler_fn err_handler)
-{
-  meos_initialize_timezone(tz_str);
-  meos_initialize_error_handler(err_handler);
-  return;
-}
-
-/*
- * Free the timezone cache
- */
-void
-meos_finalize(void)
-{
-  meos_finalize_timezone();
-  return;
-}
-#endif /* MEOS */
 
 /*****************************************************************************/
