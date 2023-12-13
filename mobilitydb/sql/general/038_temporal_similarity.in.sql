@@ -42,13 +42,13 @@ CREATE FUNCTION frechetDistance(tfloat, tfloat)
   AS 'MODULE_PATHNAME', 'Temporal_frechet_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION dynamicTimeWarp(tint, tint)
+CREATE FUNCTION dynTimeWarpDistance(tint, tint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dynamicTimeWarp(tfloat, tfloat)
+CREATE FUNCTION dynTimeWarpDistance(tfloat, tfloat)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION hausdorffDistance(tint, tint)
@@ -76,13 +76,13 @@ CREATE FUNCTION frechetDistancePath(tfloat, tfloat)
   AS 'MODULE_PATHNAME', 'Temporal_frechet_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION dynamicTimeWarpPath(tint, tint)
+CREATE FUNCTION dynTimeWarpPath(tint, tint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp_path'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dynamicTimeWarpPath(tfloat, tfloat)
+CREATE FUNCTION dynTimeWarpPath(tfloat, tfloat)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp_path'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

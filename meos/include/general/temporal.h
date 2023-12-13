@@ -384,6 +384,7 @@ extern bool ensure_valid_duration(const Interval *duration);
 /* General functions */
 
 extern void *temporal_bbox_ptr(const Temporal *temp);
+extern void temporal_tstzspan_slice(Datum tempdatum, Span *box);
 extern void temporal_bbox_slice(Datum tempdatum, void *box);
 
 extern bool intersection_temporal_temporal(const Temporal *temp1,

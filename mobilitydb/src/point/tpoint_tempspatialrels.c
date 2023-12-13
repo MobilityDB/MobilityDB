@@ -135,7 +135,7 @@ PGDLLEXPORT Datum Tcontains_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcontains_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal contains relationship between a geometry and a
+ * @brief Return a temporal boolean that states whether a geometry contains a
  * temporal point
  * @sqlfn tcontains()
  */
@@ -171,8 +171,8 @@ PGDLLEXPORT Datum Tdisjoint_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal intersects relationship between a temporal point
- * and a geometry
+ * @brief Return a temporal boolean that states whether a temporal point
+ * is disjoint from a geometry
  * @sqlfn tdisjoint()
  */
 Datum
@@ -185,8 +185,8 @@ PGDLLEXPORT Datum Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal intersects relationship between a temporal point
- * and a geometry
+ * @brief Return a temporal boolean that states whether a temporal point
+ * is disjoint from a geometry
  * @sqlfn tdisjoint()
  */
 Datum
@@ -204,8 +204,8 @@ PGDLLEXPORT Datum Tintersects_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal intersects relationship between a temporal point
- * and a geometry
+ * @brief Return a temporal boolean that states whether a temporal point
+ * intersects a geometry
  * @sqlfn tintersects()
  */
 Datum
@@ -218,8 +218,8 @@ PGDLLEXPORT Datum Tintersects_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal intersects relationship between a temporal point
- * and a geometry
+ * @brief Return a temporal boolean that states whether a temporal point
+ * intersects a geometry
  * @sqlfn tintersects()
  */
 Datum
@@ -236,7 +236,7 @@ PGDLLEXPORT Datum Ttouches_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal touches relationship between a geometry and a
+ * @brief Return a temporal boolean that states whether a geometry touches a
  * temporal point
  * @sqlfn ttouches()
  */
@@ -268,8 +268,8 @@ PGDLLEXPORT Datum Ttouches_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal touches relationship between a temporal point
- * and a geometry
+ * @brief Return a temporal boolean that states whether a temporal point
+ * touches a geometry
  * @sqlfn ttouches()
  */
 Datum
@@ -305,8 +305,8 @@ PGDLLEXPORT Datum Tdwithin_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return a temporal Boolean that states whether a geometry and a
- * temporal point are within the given distance
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal point are within a given distance
  * @sqlfn tdwithin()
  */
 Datum
@@ -338,8 +338,8 @@ PGDLLEXPORT Datum Tdwithin_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return a temporal Boolean that states whether a temporal point and
- * a geometry are within the given distance
+ * @brief Return a temporal boolean that states whether a temporal point and
+ * a geometry are within a given distance
  * @sqlfn tdwithin()
  */
 Datum
@@ -373,8 +373,8 @@ PGDLLEXPORT Datum Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return a temporal Boolean that states whether the temporal points
- * are within the given distance
+ * @brief Return a temporal boolean that states whether two temporal points
+ * are within a given distance
  * @sqlfn tdwithin()
  */
 Datum

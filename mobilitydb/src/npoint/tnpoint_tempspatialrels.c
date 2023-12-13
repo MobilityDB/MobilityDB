@@ -51,7 +51,7 @@
  *****************************************************************************/
 
 /**
- * @brief Return the temporal disjoint/intersection relationship between the temporal
+ * @brief Return the temporal disjoint/intersection relationship between a temporal
  * network point and the network point
  */
 static Datum
@@ -78,7 +78,7 @@ Tinterrel_tnpoint_npoint(FunctionCallInfo fcinfo, bool tinter)
 }
 
 /**
- * @brief Return the temporal disjoint/intersection relationship between the network
+ * @brief Return the temporal disjoint/intersection relationship between a network
  * point and the temporal network point
  */
 static Datum
@@ -105,7 +105,7 @@ Tinterrel_npoint_tnpoint(FunctionCallInfo fcinfo, bool tinter)
 }
 
 /**
- * @brief Return the temporal disjoint/intersection relationship between the geometry
+ * @brief Return the temporal disjoint/intersection relationship between a geometry
  * and the temporal network point
  */
 static Datum
@@ -133,7 +133,7 @@ Tinterrel_geo_tnpoint(FunctionCallInfo fcinfo, bool tinter)
 }
 
 /**
- * @brief Return the temporal disjoint/intersection relationship between the temporal
+ * @brief Return the temporal disjoint/intersection relationship between a temporal
  * network point and the geometry
  */
 static Datum
@@ -168,7 +168,7 @@ PGDLLEXPORT Datum Tcontains_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcontains_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal contains relationship between the geometry and the
+ * @brief Return a temporal boolean that states whether a geometry contains a
  * temporal network point
  * @sqlfn tcontains()
  */
@@ -204,8 +204,8 @@ PGDLLEXPORT Datum Tdisjoint_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal disjoint relationship between the geometry and the
- * temporal network point
+ * @brief Return a temporal boolean that states whether a geometry is disjoint
+ * from a temporal network point
  * @sqlfn tdisjoint()
  */
 Datum
@@ -218,8 +218,8 @@ PGDLLEXPORT Datum Tdisjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal disjoint relationship between the network point and the
- * temporal network point
+ * @brief Return a temporal boolean that states whether a network point is
+ * disjoint from a temporal network point
  * @sqlfn tdisjoint()
  */
 Datum
@@ -232,8 +232,8 @@ PGDLLEXPORT Datum Tdisjoint_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal disjoint relationship between the temporal network point
- * and the geometry
+ * @brief Return a temporal boolean that states whether a temporal network
+ * point is disjoint from a geometry
  * @sqlfn tdisjoint()
  */
 Datum
@@ -246,8 +246,8 @@ PGDLLEXPORT Datum Tdisjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal disjoint relationship between the temporal network point
- * and the network point
+ * @brief Return a temporal boolean that states whether a temporal network
+ * point is disjoint from a network point
  * @sqlfn tdisjoint()
  */
 Datum
@@ -264,7 +264,7 @@ PGDLLEXPORT Datum Tintersects_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal intersects relationship between the geometry and the
+ * @brief Return a temporal boolean that states whether a geometry intersects a
  * temporal network point
  * @sqlfn tintersects()
  */
@@ -278,8 +278,8 @@ PGDLLEXPORT Datum Tintersects_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal intersects relationship between the network point and
- * the temporal network point
+ * @brief Return a temporal boolean that states whether a network point
+ * intersects a temporal network point
  * @sqlfn tintersects()
  */
 Datum
@@ -292,8 +292,8 @@ PGDLLEXPORT Datum Tintersects_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal intersects relationship between the temporal network
- * point and the geometry
+ * @brief Return a temporal boolean that states whether a temporal network
+ * point intersects a geometry
  * @sqlfn tintersects()
  */
 Datum
@@ -306,8 +306,8 @@ PGDLLEXPORT Datum Tintersects_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal intersects relationship between the temporal network
- * point and the network point
+ * @brief Return a temporal boolean that states whether a temporal network
+ * point intersects a network point
  * @sqlfn tintersects()
  */
 Datum
@@ -324,8 +324,8 @@ PGDLLEXPORT Datum Ttouches_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal touches relationship between the geometry and
- * the temporal network point
+ * @brief Return a temporal boolean that states whether a geometry touches a
+ * temporal network point
  * @sqlfn ttouches()
  */
 Datum
@@ -356,8 +356,8 @@ PGDLLEXPORT Datum Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal touches relationship between the network point and
- * the temporal network point
+ * @brief Return a temporal boolean that states whether a network point touches 
+ * a temporal network point
  * @sqlfn ttouches()
  */
 Datum
@@ -387,8 +387,8 @@ PGDLLEXPORT Datum Ttouches_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal touches relationship between the temporal network point
- * and the geometry
+ * @brief Return a temporal boolean that states whether a temporal network
+ * point touches a geometry
  * @sqlfn ttouches()
  */
 Datum
@@ -419,8 +419,8 @@ PGDLLEXPORT Datum Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return the temporal touches relationship between the temporal network point
- * and the network point
+ * @brief Return a temporal boolean that states whether a temporal network
+ * point touches a network point
  * @sqlfn ttouches()
  */
 Datum
@@ -454,8 +454,8 @@ PGDLLEXPORT Datum Tdwithin_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return a temporal Boolean that states whether the geometry and the
- * temporal network point are within the given distance
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal network point are within a given distance
  * @sqlfn tdwithin()
  */
 Datum
@@ -485,8 +485,8 @@ PGDLLEXPORT Datum Tdwithin_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return a temporal Boolean that states whether the temporal network point
- * and the geometry are within the given distance
+ * @brief Return a temporal boolean that states whether a temporal network
+ * point and a geometry are within a given distance
  * @sqlfn tdwithin()
  */
 Datum
@@ -516,8 +516,8 @@ PGDLLEXPORT Datum Tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return a temporal Boolean that states whether the network point and the
- * temporal network point are within the given distance
+ * @brief Return a temporal boolean that states whether a network point and a
+ * temporal network point are within a given distance
  * @sqlfn tdwithin()
  */
 Datum
@@ -546,8 +546,8 @@ PGDLLEXPORT Datum Tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return a temporal Boolean that states whether the temporal network point
- * and the network point are within the given distance
+ * @brief Return a temporal boolean that states whether a temporal network point
+ * and a network point are within a given distance
  * @sqlfn tdwithin()
  */
 Datum
@@ -576,8 +576,8 @@ PGDLLEXPORT Datum Tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_temp
- * @brief Return a temporal Boolean that states whether the temporal network points
- * are within the given distance
+ * @brief Return a temporal boolean that states whether two temporal network
+ * points are within a given distance
  * @sqlfn tdwithin()
  */
 Datum

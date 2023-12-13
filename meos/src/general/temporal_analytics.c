@@ -736,7 +736,7 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
  * @brief Compute the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @result On error return DBL_MAX
- * @sql-cfn #Temporal_dynamic_time_warp()
+ * @sql-cfn #Temporal_dyntimewarp_distance()
  */
 double
 temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
@@ -989,7 +989,7 @@ temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
  * @brief Compute the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array
- * @sql-cfn #Temporal_dynamic_time_warp_path()
+ * @sql-cfn #Temporal_dyntimewarp_path()
  */
 Match *
 temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,

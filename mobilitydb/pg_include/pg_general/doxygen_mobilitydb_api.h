@@ -239,9 +239,9 @@
  * @ingroup mobilitydb_temporal_spatial
  * @brief Route functions for temporal network point types.
  *
- * @defgroup mobilitydb_temporal_agg Local aggregate functions
+ * @defgroup mobilitydb_temporal_agg Aggregate functions
  * @ingroup mobilitydb_temporal
- * @brief Local aggregate functions for temporal types.
+ * @brief Aggregate functions for temporal types.
  *
  * @defgroup mobilitydb_temporal_analytics Analytics functions
  * @ingroup mobilitydb_temporal

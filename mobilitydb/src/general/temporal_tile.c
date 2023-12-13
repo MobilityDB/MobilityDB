@@ -523,7 +523,7 @@ PGDLLEXPORT Datum Tnumber_value_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief plit a temporal value into fragments with respect to value and time
+ * @brief Split a temporal value into fragments with respect to value and time
  * span tiles
  */
 Datum

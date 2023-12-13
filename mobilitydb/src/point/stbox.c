@@ -508,7 +508,7 @@ Tstzspan_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Peak into a span set datum to find the bounding box. If the datum
+ * @brief Peek into a span set datum to find the bounding box. If the datum
  * needs to be detoasted, extract only the header and not the full object.
  */
 void
@@ -1291,7 +1291,8 @@ PGDLLEXPORT Datum Back_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Back_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
- * @brief Return true if the first spatiotemporal box is back of the second one
+ * @brief Return true if the first spatiotemporal box is at back of the second
+ * one
  * @sqlfn temporal_below()
  * @sqlop @p />>
  */
@@ -1431,8 +1432,9 @@ Intersection_stbox_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_quad_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quad_split);
 /**
- * @ingroup mobilitydb_box_set
- * @brief Return the intersection of two spatiotemporal boxes
+ * @ingroup mobilitydb_box_transf
+ * @brief Split the spatiotemporal box with respect to its space dimension in
+ * four quadrants/octants
  * @sqlfn stbox_intersection()
  * @sqlop @p *
  */
@@ -1519,7 +1521,7 @@ PG_FUNCTION_INFO_V1(Stbox_cmp);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal box
- * is less than, equal, or greater than the second one
+ * is less than, equal to, or greater than the second one
  * @sqlfn stbox_cmp()
  */
 Datum

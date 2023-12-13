@@ -333,7 +333,8 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
  *****************************************************************************/
 
 /**
- * @brief Determines the spatial equality for network points.
+ * @brief Return true if two network points are spatially equal
+ * 
  * Two network points may be have different rid but represent the same
  * spatial point at the intersection of the two rids
  */

@@ -173,8 +173,8 @@ Tpoint_get_srid(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_set_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_set_srid);
 /**
- * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Set the SRID of a temporal point
+ * @ingroup mobilitydb_temporal_spatial_transf 
+ * @brief Return a temporal point with the SRID set to a value
  * @sqlfn setSRID()
  */
 Datum
@@ -345,7 +345,8 @@ PGDLLEXPORT Datum Tpoint_transform(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_transform);
 /**
  * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Transform a temporal point into another spatial reference system
+ * @brief Return a temporal point transformed to another spatial reference
+ * system
  * @sqlfn transform()
  */
 Datum
@@ -403,8 +404,9 @@ Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Geo_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_round);
 /**
- * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Sets the precision of the coordinates of a geometry
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a geometry/geography with the precision of the coordinates set
+ * to a number of decimals places
  * @sqlfn round()
  */
 Datum
@@ -420,8 +422,9 @@ Geo_round(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Geoset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_round);
 /**
- * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Sets the precision of the coordinates of a geometry set
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a geo set with the precision of the coordinates set to a
+ * number of decimals places
  * @sqlfn round()
  */
 Datum
@@ -437,9 +440,9 @@ Geoset_round(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_round);
 /**
- * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Set the precision of the coordinates of a temporal point to a number
- * of decimal places
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a temporal point with the precision of the coordinates set to 
+ * a number of decimal places
  * @sqlfn round()
  */
 Datum
@@ -456,8 +459,9 @@ PGDLLEXPORT Datum Tpointarr_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointarr_round);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output a temporal point array in Well-Known Text (WKT) format
- * @sqlfn asText()
+ * @brief Return an array of temporal points in the Well-Known Text (WKT)
+ * representation
+ * @sqlfn round()
  */
 Datum
 Tpointarr_round(PG_FUNCTION_ARGS)
@@ -488,10 +492,8 @@ Tpointarr_round(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_to_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_geo);
 /**
- * @ingroup mobilitydb_temporal_transf
- * @brief Convert the temporal point into a PostGIS trajectory geometry or
- * geography where the M coordinates encode the timestamps in number of seconds
- * since '1970-01-01'
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal point to a geometry/geography with M measure
  */
 Datum
 Tpoint_to_geo(PG_FUNCTION_ARGS)
@@ -508,8 +510,7 @@ PGDLLEXPORT Datum Geo_to_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_to_tpoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert the PostGIS trajectory geometry or geography where the M
- * coordinates encode the timestamps in Unix epoch into a temporal point
+ * @brief Convert a geometry/geography with M measure to a temporal point
  */
 Datum
 Geo_to_tpoint(PG_FUNCTION_ARGS)
@@ -524,8 +525,8 @@ PGDLLEXPORT Datum Tpoint_to_geo_meas(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_geo_meas);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Construct a geometry/geography with M measure from the temporal point
- * and the temporal float
+ * @brief Convert a temporal point and a temporal float to a geometry/geography
+ * with M measure 
  */
 Datum
 Tpoint_to_geo_meas(PG_FUNCTION_ARGS)
@@ -550,7 +551,8 @@ PGDLLEXPORT Datum Tpoint_AsMVTGeom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_AsMVTGeom);
 /**
  * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Transform the temporal point to Mapbox Vector Tile format
+ * @brief Return a temporal point transformed to the Mapbox Vector Tile
+ * representation
  */
 Datum
 Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
@@ -604,7 +606,7 @@ PGDLLEXPORT Datum Tpoint_get_x(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_get_x);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Get the X coordinates of a temporal point as a temporal float
+ * @brief Return the X coordinates of a temporal point as a temporal float
  * @sqlfn getX()
  */
 Datum
@@ -620,7 +622,7 @@ PGDLLEXPORT Datum Tpoint_get_y(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_get_y);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Get the Y coordinates of a temporal point as a temporal float
+ * @brief Return the Y coordinates of a temporal point as a temporal float
  * @sqlfn getY()
  */
 Datum
@@ -636,7 +638,7 @@ PGDLLEXPORT Datum Tpoint_get_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_get_z);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Get the Z coordinates of a temporal point as a temporal float
+ * @brief Return the Z coordinates of a temporal point as a temporal float
  * @sqlfn getZ()
  */
 Datum
@@ -737,8 +739,8 @@ PGDLLEXPORT Datum Tpoint_direction(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_direction);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Return the direction of a temporal point, that is, the azimuth
- * between the first and the last points
+ * @brief Return the azimuth between the first and the last points a temporal
+ * point
  * @sqlfn direction()
  */
 Datum
@@ -943,7 +945,7 @@ PGDLLEXPORT Datum Tpoint_make_simple(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_make_simple);
 /**
  * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Split a temporal point into an array of non self-intersecting pieces
+ * @brief Return the array of non self-intersecting fragments of a temporal point
  * @sqlfn makeSimple()
  */
 Datum
@@ -1009,8 +1011,8 @@ PGDLLEXPORT Datum Tpoint_at_geom_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_at_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal point to a geometry
- * @sqlfn atGeometry()
+ * @brief Restrict a temporal point to a geometry and a time value
+ * @sqlfn atGeometryTime()
  */
 Datum
 Tpoint_at_geom_time(PG_FUNCTION_ARGS)

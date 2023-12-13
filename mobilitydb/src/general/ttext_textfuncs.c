@@ -108,7 +108,7 @@ PGDLLEXPORT Datum Ttext_upper(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_upper);
 /**
  * @ingroup mobilitydb_temporal_text
- * @brief Transform a temporal text into uppercase
+ * @brief Return a temporal text transformed to uppercase
  * @sqlfn upper()
  */
 Datum
@@ -124,7 +124,7 @@ PGDLLEXPORT Datum Ttext_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_lower);
 /**
  * @ingroup mobilitydb_temporal_text
- * @brief Transform a temporal text into lowercase
+ * @brief Return a temporal text transformed to lowercase
  * @sqlfn lower()
  */
 Datum

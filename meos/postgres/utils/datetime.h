@@ -32,7 +32,7 @@ extern int IntervalStyle;
 #define DATEORDER_DMY      1
 #define DATEORDER_MDY      2
 
-/* Defitinitions taken from dt.h */
+/* Definitions taken from dt.h */
 
 #define MAXTZLEN			 10
 

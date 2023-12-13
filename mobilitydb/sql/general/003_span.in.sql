@@ -557,7 +557,7 @@ CREATE FUNCTION shift(floatspan, float)
   AS 'MODULE_PATHNAME', 'Numspan_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(datespan, int)
-  RETURNS tstzspan
+  RETURNS datespan
   AS 'MODULE_PATHNAME', 'Numspan_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(tstzspan, interval)

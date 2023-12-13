@@ -683,8 +683,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   /* error check: if bounds are equal, and not both inclusive, span is empty */
   if (cmp == 0 && ! (lower_inc && upper_inc))
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Span cannot be empty");
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Span cannot be empty");
     return;
   }
 
@@ -969,7 +968,7 @@ datespan_upper(const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
     return DATEVAL_NOEND;
-  return TimestampTzGetDatum(s->upper);
+  return DateADTGetDatum(s->upper);
 }
 
 /**

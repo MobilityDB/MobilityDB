@@ -127,18 +127,6 @@ SELECT t::stbox FROM test;
 
 DROP TABLE test;
 DROP TABLE
-SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
-    min     
-------------
- -96.535171
-(1 row)
-
-SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
-   min    
-----------
- 0.432515
-(1 row)
-
 SELECT MAX(memSize(g)) FROM tbl_geomset;
  max 
 -----
@@ -151,19 +139,19 @@ SELECT MIN(numValues(g)) FROM tbl_geomset;
    5
 (1 row)
 
-SELECT MIN(ST_X(startValue(g))) FROM tbl_geomset;
+SELECT MIN(round(ST_X(startValue(g))::numeric, 6)) FROM tbl_geomset;
     min     
 ------------
  -96.535171
 (1 row)
 
-SELECT MIN(ST_X(endValue(g))) FROM tbl_geomset;
+SELECT MIN(round(ST_X(endValue(g))::numeric, 6)) FROM tbl_geomset;
     min     
 ------------
  -94.408967
 (1 row)
 
-SELECT MIN(ST_X(valueN(g, 1))) FROM tbl_geomset;
+SELECT MIN(round(ST_X(valueN(g, 1))::numeric, 6)) FROM tbl_geomset;
     min     
 ------------
  -96.535171
@@ -187,19 +175,19 @@ SELECT MIN(numValues(g)) FROM tbl_geogset;
    5
 (1 row)
 
-SELECT MIN(ST_X(startValue(g)::geometry)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(startValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
    min    
 ----------
  0.432515
 (1 row)
 
-SELECT MIN(ST_X(endValue(g)::geometry)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(endValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
    min    
 ----------
  0.806752
 (1 row)
 
-SELECT MIN(ST_X(valueN(g, 1)::geometry)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(valueN(g, 1)::geometry)::numeric, 6)) FROM tbl_geogset;
    min    
 ----------
  0.432515
@@ -209,6 +197,24 @@ SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
  min 
 -----
    5
+(1 row)
+
+SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
+    min     
+------------
+ -96.535171
+(1 row)
+
+SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
+   min    
+----------
+ 0.432515
+(1 row)
+
+SELECT asEWKT(setSRID(geomset '{"Point(0 0)", "Point(1 1)"}', 5676));
+                      asewkt                      
+--------------------------------------------------
+ {"SRID=5676;POINT(0 0)", "SRID=5676;POINT(1 1)"}
 (1 row)
 
 SELECT numValues(set_union(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);

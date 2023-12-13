@@ -1505,7 +1505,7 @@ intersection_span_value(const Span *s, Datum d, meosType basetype)
  * @sql-cfn #Intersection_span_value()
  */
 Span *
-intersection_span_int(const Span *s, int i, int *result)
+intersection_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
@@ -1548,7 +1548,7 @@ intersection_span_float(const Span *s, double d)
  * @sql-cfn #Intersection_span_value()
  */
 Span *
-intersection_span_date(const Span *s, DateADT d, DateADT *result)
+intersection_span_date(const Span *s, DateADT d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
@@ -1667,7 +1667,7 @@ minus_bigint_span(int64 i, const Span *s)
  * @sql-cfn #Minus_value_span()
  */
 SpanSet *
-minus_float_span(double d, const Span *st)
+minus_float_span(double d, const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||

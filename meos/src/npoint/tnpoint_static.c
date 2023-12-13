@@ -745,7 +745,7 @@ nsegment_srid(const Nsegment *ns)
 }
 
 /*****************************************************************************
- * Comparison functions
+ * Comparison functions for defining B-tree indexes
  *****************************************************************************/
 
 /**
@@ -768,9 +768,7 @@ npoint_ne(const Npoint *np1, const Npoint *np2)
 
 /**
  * @brief Return -1, 0, or 1 depending on whether the first network point
- * is less than, equal, or greater than the second one
- *
- * @note Function used for B-tree comparison
+ * is less than, equal to, or greater than the second one
  */
 int
 npoint_cmp(const Npoint *np1, const Npoint *np2)
@@ -852,9 +850,7 @@ nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
 
 /**
  * @brief Return -1, 0, or 1 depending on whether the first network segment
- * is less than, equal, or greater than the second one
- *
- * @note Function used for B-tree comparison
+ * is less than, equal to, or greater than the second one
  */
 int
 nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)

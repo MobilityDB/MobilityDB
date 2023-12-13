@@ -69,7 +69,7 @@
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the base value of a temporal instant
- * @sql-cfn #Tinstant_get_value()
+ * @sql-cfn #Tinstant_value()
  */
 Datum
 tinstant_value(const TInstant *inst)
@@ -201,8 +201,8 @@ ttextinst_in(const char *str)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant geometric point from its Well-Known Text
- * (WKT) representation.
+ * @brief Return a temporal instant geometry point from its Well-Known Text
+ * (WKT) representation
  */
 TInstant *
 tgeompointinst_in(const char *str)
@@ -216,8 +216,8 @@ tgeompointinst_in(const char *str)
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal instant geographic point from its Well-Known Text
- * (WKT) representation.
+ * @brief Return a temporal instant geography point from its Well-Known Text
+ * (WKT) representation
  */
 TInstant *
 tgeogpointinst_in(const char *str)

@@ -1415,11 +1415,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dynamicTimeWarp"><varname>dynamicTimeWarp</varname></link>: Obtener la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
+					<para><link linkend="dynTimeWarpDistance"><varname>dynTimeWarpDistance</varname></link>: Obtener la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dynamicTimeWarpPath"><varname>dynamicTimeWarpPath</varname></link>: Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
+					<para><link linkend="dynTimeWarpPath"><varname>dynTimeWarpPath</varname></link>: Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

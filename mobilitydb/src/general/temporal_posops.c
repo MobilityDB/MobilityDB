@@ -245,7 +245,8 @@ PGDLLEXPORT Datum Overleft_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a number span is not to the right of a temporal number
+ * @brief Return true if a number span does not extend to the right of a
+ * temporal number
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
@@ -273,7 +274,7 @@ PGDLLEXPORT Datum Overright_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a number span is not to the left of a temporal number
+ * @brief Return true if a number span does not extend to the left of a temporal number
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
@@ -304,7 +305,7 @@ PGDLLEXPORT Datum Overleft_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal number is not to the right of a number span
+ * @brief Return true if a temporal number does not extend to the right of a number span
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
@@ -332,7 +333,8 @@ PGDLLEXPORT Datum Overright_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal number is not to the left of a number span
+ * @brief Return true if a temporal number does not extend to the left of a
+ * number span
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
@@ -363,7 +365,7 @@ PGDLLEXPORT Datum Overleft_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal box is not to the right of a temporal number
+ * @brief Return true if a temporal box does not extend to the right of a temporal number
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
@@ -391,7 +393,7 @@ PGDLLEXPORT Datum Overright_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal box is not to the left of a temporal number
+ * @brief Return true if a temporal box does not extend to the left of a temporal number
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
@@ -478,7 +480,7 @@ PGDLLEXPORT Datum Overleft_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal number is not to the right of a temporal box
+ * @brief Return true if a temporal number does not extend to the right of a temporal box
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
@@ -506,7 +508,7 @@ PGDLLEXPORT Datum Overright_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if a temporal number is not to the left of a temporal box
+ * @brief Return true if a temporal number does not extend to the left of a temporal box
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
@@ -594,7 +596,7 @@ PGDLLEXPORT Datum Overleft_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal number is not to the right of the
+ * @brief Return true if the first temporal number does not extend to the right of the
  * second one
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
@@ -624,7 +626,7 @@ PGDLLEXPORT Datum Overright_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_bbox_pos
- * @brief Return true if the first temporal number is not to the left of the
+ * @brief Return true if the first temporal number does not extend to the left of the
  * second one
  * @sqlfn temporal_overright()
  * @sqlop @p &>

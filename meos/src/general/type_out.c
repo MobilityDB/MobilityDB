@@ -2469,7 +2469,7 @@ spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 /**
  * @ingroup libmeos_box_inout
  * @brief Output a temporal box in its Well-Known Binary (WKB) representation
- * @sql-cfn #Tbox_as_wkb()
+ * @sql-cfn #Tbox_send(), #Tbox_as_wkb()
  */
 uint8_t *
 tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)

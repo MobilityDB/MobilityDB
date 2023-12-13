@@ -258,9 +258,9 @@ SELECT round(MAX(lower(shift(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, t
 (1 row)
 
 SELECT MAX(lower(shift(t1.d, t2.i))) FROM tbl_datespan t1, tbl_int t2;
-                 max                 
--------------------------------------
- Fri Dec 31 16:00:00.000815 1999 PST
+    max     
+------------
+ 03-26-2002
 (1 row)
 
 SELECT MAX(lower(shift(t, i))) FROM tbl_tstzspan, tbl_interval;

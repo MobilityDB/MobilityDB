@@ -54,22 +54,22 @@ CREATE FUNCTION frechetDistancePath(tgeogpoint, tgeogpoint)
 
 /*****************************************************************************/
 
-CREATE FUNCTION dynamicTimeWarp(tgeompoint, tgeompoint)
+CREATE FUNCTION dynTimeWarpDistance(tgeompoint, tgeompoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dynamicTimeWarp(tgeogpoint, tgeogpoint)
+CREATE FUNCTION dynTimeWarpDistance(tgeogpoint, tgeogpoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION dynamicTimeWarpPath(tgeompoint, tgeompoint)
+CREATE FUNCTION dynTimeWarpPath(tgeompoint, tgeompoint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp_path'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dynamicTimeWarpPath(tgeogpoint, tgeogpoint)
+CREATE FUNCTION dynTimeWarpPath(tgeogpoint, tgeogpoint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp_path'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

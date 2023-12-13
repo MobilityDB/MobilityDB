@@ -67,8 +67,8 @@
 #define MEOS_SUBTYPE_STR_MAXLEN 12
 
 /**
- * @brief Array storing the string representation of the concrete subtypes of
- * temporal types
+ * @brief Global array storing the string representation of the concrete
+ * subtypes of temporal types
  */
 static char *_tempsubtypeName[] =
 {
@@ -387,6 +387,7 @@ ensure_same_temporal_basetype(const Temporal *temp, meosType basetype)
   return true;
 }
 
+#if MEOS
 /**
  * @brief Ensure that a temporal number and a span have the same span type
  * @param[in] temp Temporal value
@@ -422,6 +423,7 @@ ensure_valid_tnumber_spanset(const Temporal *temp, const SpanSet *ss)
   }
   return true;
 }
+#endif /* MEOS */
 
 /**
  * @brief Ensure that a temporal number and a temporal box have the same span type
@@ -920,7 +922,7 @@ ttext_out(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return a temporal geometric/geographic point from its Well-Known Text
+ * @brief Return a temporal geometry/geography point from its Well-Known Text
  * (WKT) representation.
  */
 char *
@@ -1102,7 +1104,7 @@ ttext_from_base_temp(const text *txt, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal geometric point from a point and the time frame
+ * @brief Construct a temporal geometry point from a point and the time frame
  * of another temporal value.
  */
 Temporal *
@@ -1150,7 +1152,14 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_merge((const TInstant *) temp, inst);
+  {
+    /* Default interpolation depending on the base type */
+    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
+    TSequence *seq = tinstant_to_tsequence((const TInstant *) temp, interp);
+    result = (Temporal *) tsequence_append_tinstant(seq, inst, maxdist, maxt,
+      expand);
+    pfree(seq);
+  }
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_append_tinstant((TSequence *) temp,
       inst, maxdist, maxt, expand);
@@ -1512,6 +1521,7 @@ temporal_set_tstzspan(const Temporal *temp, Span *s)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_conversion
  * @brief Return the bounding period of a temporal value.
@@ -1528,10 +1538,11 @@ temporal_to_tstzspan(const Temporal *temp)
   temporal_set_tstzspan(temp, result);
   return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding value span of a temporal number.
+ * @brief Compute the value span of a temporal number in the last argument
  */
 void
 tnumber_set_span(const Temporal *temp, Span *s)
@@ -1713,8 +1724,8 @@ temporal_to_tsequenceset(const Temporal *temp, interpType interp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal value transformed to the given interpolation.
- * @sql-cfn #Temporal_set_interp
+ * @brief Return a temporal value transformed to a given interpolation
+ * @sql-cfn #Temporal_set_interp()
  */
 Temporal *
 temporal_set_interp(const Temporal *temp, interpType interp)
@@ -2128,7 +2139,7 @@ ttext_values(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the array of base values of a temporal geometric point
+ * @brief Return the array of base values of a temporal geometry point
  * @sql-cfn #Temporal_valueset()
  */
 GSERIALIZED **
@@ -2284,7 +2295,7 @@ ttext_start_value(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the start value of a temporal geometric point
+ * @brief Return the start value of a temporal geometry point
  * @return On error return NULL
  * @sql-cfn #Temporal_start_value()
  */
@@ -4647,21 +4658,11 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
       ! ensure_same_temporal_type(temp1, temp2))
     return INT_MAX;
 
-  /* Compare bounding period
-   * We need to compare periods AND bounding boxes since the bounding boxes
-   * do not distinguish between inclusive and exclusive bounds */
-  Span p1, p2;
-  temporal_set_tstzspan(temp1, &p1);
-  temporal_set_tstzspan(temp2, &p2);
-  int result = span_cmp1(&p1, &p2);
-  if (result)
-    return result;
-
   /* Compare bounding box */
   bboxunion box1, box2;
   temporal_set_bbox(temp1, &box1);
   temporal_set_bbox(temp2, &box2);
-  result = temporal_bbox_cmp(&box1, &box2, temp1->temptype);
+  int result = temporal_bbox_cmp(&box1, &box2, temp1->temptype);
   if (result)
     return result;
 

@@ -54,7 +54,7 @@
  *****************************************************************************/
 
 /**
- * @brief Return the distance between the two network points
+ * @brief Return the distance between two network points
  */
 Datum
 npoint_distance(Datum np1, Datum np2)
@@ -101,7 +101,7 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
- * @brief Return the temporal distance between the two temporal network points
+ * @brief Return the temporal distance between two temporal network points
  */
 Temporal *
 distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
@@ -165,7 +165,7 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
- * @brief Return the nearest approach instant of the two temporal network points
+ * @brief Return the nearest approach instant of two temporal network points
  */
 TInstant *
 nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
@@ -221,7 +221,7 @@ nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
- * @brief Return the nearest approach distance of the two temporal network
+ * @brief Return the nearest approach distance of two temporal network
  * points
  */
 double
@@ -270,7 +270,7 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
- * @brief Return the line connecting the nearest approach point between the two
+ * @brief Return the line connecting the nearest approach point between two
  * temporal networks
  */
 bool

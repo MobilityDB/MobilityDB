@@ -253,7 +253,7 @@ CREATE FUNCTION memSize(tnpoint)
 -- value is a reserved word in SQL
 CREATE FUNCTION getValue(tnpoint)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'Tinstant_get_value'
+  AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- values is a reserved word in SQL

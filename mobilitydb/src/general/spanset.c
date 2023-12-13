@@ -203,10 +203,9 @@ Span_to_spanset(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Peak into a span set datum to find the bounding box
- * 
- * If the datum needs to be detoasted, extract only the header and not the
- * full object.
+ * @brief Peek into a span set datum to find the bounding box
+ * @note If the datum needs to be detoasted, extract only the header and not
+ * the full object
  */
 void
 spanset_span_slice(Datum d, Span *s)
@@ -217,7 +216,7 @@ spanset_span_slice(Datum d, Span *s)
   else
     ss = (SpanSet *) d;
   memcpy(s, &ss->span, sizeof(Span));
-  PG_FREE_IF_COPY_P(ss, DatumGetPointer(d));
+  // PG_FREE_IF_COPY_P(ss, DatumGetPointer(d));
   return;
 }
 
@@ -739,6 +738,11 @@ Spanset_spans(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Transformation functions
+ *
+ * Since in PostgreSQL the type date is defined as follows 
+ *   typedef int32 DateADT;
+ * the functions #Numspan_shift, #Numspan_scale, and #Numspan_shift_scale are
+ * also used for datespans and datespansets
  *****************************************************************************/
 
 PGDLLEXPORT Datum Numspanset_shift(PG_FUNCTION_ARGS);
@@ -746,6 +750,7 @@ PG_FUNCTION_INFO_V1(Numspanset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span set shifted by a value
+ * @note This function is also used for `datespanset`
  * @sqlfn shift()
  */
 Datum
@@ -780,6 +785,7 @@ PG_FUNCTION_INFO_V1(Numspanset_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span set scaled by a value
+ * @note This function is also used for `datespanset`
  * @sqlfn scale()
  */
 Datum
@@ -814,6 +820,7 @@ PG_FUNCTION_INFO_V1(Numspanset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span set shifted and scaled by the values
+ * @note This function is also used for `datespanset`
  * @sqlfn shiftTscale()
  */
 Datum
@@ -871,7 +878,7 @@ PG_FUNCTION_INFO_V1(Spanset_cmp);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span set
- * is less than, equal, or greater than the second one
+ * is less than, equal to, or greater than the second one
  * @sqlfn spanset_cmp()
  */
 Datum

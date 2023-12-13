@@ -1385,11 +1385,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dynamicTimeWarp"><varname>dynamicTimeWarp</varname></link>: Get the Dynamic Time Warp distance between two temporal values</para>
+					<para><link linkend="dynTimeWarpDistance"><varname>dynTimeWarpDistance</varname></link>: Get the Dynamic Time Warp distance between two temporal values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dynamicTimeWarpPath"><varname>dynamicTimeWarpPath</varname></link>: Get the correspondence pairs between two temporal values with respect to the Dynamic Time Warp distance</para>
+					<para><link linkend="dynTimeWarpPath"><varname>dynTimeWarpPath</varname></link>: Get the correspondence pairs between two temporal values with respect to the Dynamic Time Warp distance</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -153,7 +153,7 @@ PGDLLEXPORT Datum Tpoint_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_in);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Generic input function for temporal points
+ * @brief Input function for temporal points
  *
  * Examples of input for the various temporal types:
  * @code
@@ -320,7 +320,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 PGDLLEXPORT Datum Tgeompoint_typmod_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_typmod_in);
 /**
- * @brief Input typmod information for temporal geometric points
+ * @brief Input typmod information for temporal geometry points
  */
 Datum
 Tgeompoint_typmod_in(PG_FUNCTION_ARGS)
@@ -333,7 +333,7 @@ Tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeogpoint_typmod_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeogpoint_typmod_in);
 /**
- * @brief Input typmod information for temporal geographic points
+ * @brief Input typmod information for temporal geography points
  */
 Datum
 Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
@@ -440,7 +440,7 @@ PGDLLEXPORT Datum Tpoint_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Return the bounding box of a temporal point
+ * @brief Convert a temporal point to a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p ::
  */
@@ -461,7 +461,7 @@ PGDLLEXPORT Datum Geo_expand_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_expand_space);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Return the bounding box of a geometry/geograph expanded on the
+ * @brief Return the bounding box of a geometry/geography expanded on the
  * spatial dimension by a value
  * @sqlfn expandSpace()
  */

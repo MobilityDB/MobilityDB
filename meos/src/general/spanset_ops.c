@@ -1755,10 +1755,10 @@ SpanSet *
 intersection_spanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_basetype(ss, T_INT4))
     return NULL;
-  return intersection_spanset_value(Int32GetDatum(i), T_INT4);
+  return intersection_spanset_value(ss, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -1771,10 +1771,10 @@ SpanSet *
 intersection_spanset_bigint(const SpanSet *ss, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_basetype(ss, T_INT8))
     return NULL;
-  return intersection_spanset_value(Int64GetDatum(i), T_INT8);
+  return intersection_spanset_value(ss, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -1787,10 +1787,10 @@ SpanSet *
 intersection_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
     return NULL;
-  return intersection_spanset_value(Float8GetDatum(d), T_FLOAT8);
+  return intersection_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
@@ -1803,10 +1803,10 @@ SpanSet *
 intersection_spanset_date(const SpanSet *ss, DateADT d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_basetype(ss, T_DATE))
     return NULL;
-  return intersection_spanset_value(DateADTGetDatum(d), T_DATE);
+  return intersection_spanset_value(ss, DateADTGetDatum(d), T_DATE);
 }
 
 /**
@@ -1819,10 +1819,10 @@ SpanSet *
 intersection_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
     return NULL;
-  return intersection_spanset_value(TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return intersection_spanset_value(ss, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -1948,7 +1948,7 @@ minus_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
  * @sql-cfn #Minus_value_spanset()
  */
 SpanSet *
-minus_int_spanset(int i, const SpanSet *sst)
+minus_int_spanset(int i, const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||

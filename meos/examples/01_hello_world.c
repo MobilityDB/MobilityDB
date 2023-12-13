@@ -29,7 +29,7 @@
 
 /**
  * @brief A simple program that uses the MEOS library for creating some
- * temporal geometric point values and output them in MF-JSON format.
+ * temporal geometry point values and output them in MF-JSON format.
  *
  * The program can be build as follows
  * @code
