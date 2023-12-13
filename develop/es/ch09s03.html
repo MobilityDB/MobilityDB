@@ -40,29 +40,29 @@ SELECT frechetDistancePath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-0
 -- (2,1)
 -- (3,1)
 -- (4,2)
-</pre></li><li class="listitem"><a name="dynamicTimeWarp"></a><a class="indexterm" name="idm5098"></a><p>Obtener la distancia de distorsión de tiempo dinámica (<a class="ulink" href="https://en.wikipedia.org/wiki/Dynamic_time_warping" target="_top">Dynamic Time Warp</a> o DTW) entre dos valores temporales <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="dynTimeWarpDistance"></a><a class="indexterm" name="idm5098"></a><p>Obtener la distancia de distorsión de tiempo dinámica (<a class="ulink" href="https://en.wikipedia.org/wiki/Dynamic_time_warping" target="_top">Dynamic Time Warp</a> o DTW) entre dos valores temporales <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
-</p><p><code class="varname">dynamicTimeWarp({tnumber, tgeo}, {tnumber, tgeo}) → float</code></p><p>Esta función tiene una complejidad de espacio lineal ya que solo dos filas de la matriz de distancia son asignadas en la memoria. Sin embargo, su complejidad de tiempo es cuadrática en el número de instantes de los valores temporales. Por lo tanto, la función requerirá un tiempo considerable para valores temporales con gran número de instantes.</p><pre class="programlisting">
-SELECT dynamicTimeWarp(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+</p><p><code class="varname">dynTimeWarpDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</code></p><p>Esta función tiene una complejidad de espacio lineal ya que solo dos filas de la matriz de distancia son asignadas en la memoria. Sin embargo, su complejidad de tiempo es cuadrática en el número de instantes de los valores temporales. Por lo tanto, la función requerirá un tiempo considerable para valores temporales con gran número de instantes.</p><pre class="programlisting">
+SELECT dynTimeWarpDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- 2
-SELECT round(dynamicTimeWarp(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
+SELECT round(dynTimeWarpDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
   Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
   Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
   Point(1.5 2)@2001-01-05]')::numeric, 6);
 -- 3.380776
-</pre></li><li class="listitem"><a name="dynamicTimeWarpPath"></a><a class="indexterm" name="idm5122"></a><p>Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp o DTW) <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="dynTimeWarpPath"></a><a class="indexterm" name="idm5122"></a><p>Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp o DTW) <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
-</p><p><code class="varname">dynamicTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}) → {(i,j)}</code></p><p>El resultado es un conjunto de pares <code class="varname">(i,j)</code>. Esta función requiere ubicar en memoria una matriz de distancias cuyo tamaño es cuadrático en el número de instantes de los valores temporales. Por tanto, la función fallará para valores temporales con gran número de instantes dependiendo de la memoria disponible.</p><pre class="programlisting">
-SELECT dynamicTimeWarpPath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+</p><p><code class="varname">dynTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}) → {(i,j)}</code></p><p>El resultado es un conjunto de pares <code class="varname">(i,j)</code>. Esta función requiere ubicar en memoria una matriz de distancias cuyo tamaño es cuadrático en el número de instantes de los valores temporales. Por tanto, la función fallará para valores temporales con gran número de instantes dependiendo de la memoria disponible.</p><pre class="programlisting">
+SELECT dynTimeWarpPath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- (0,0)
 -- (1,0)
 -- (2,1)
 -- (3,2)
 -- (4,2)
-SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
+SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
   Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
   Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
   Point(1.5 2)@2001-01-05]');
