@@ -1895,7 +1895,7 @@ tbox_from_hexwkb(const char *hexwkb)
  * @ingroup libmeos_box_inout
  * @brief Input a spatiotemporal box from its Well-Known Binary (WKB)
  * representation
- * @sql-cfn #Stbox_from_wkb()
+ * @sql-cfn #Stbox_recv(), #Stbox_from_wkb()
  */
 STBox *
 stbox_from_wkb(const uint8_t *wkb, size_t size)

@@ -199,6 +199,7 @@ typedef struct
 /* Type conversion functions */
 
 extern const char *meostype_name(meosType type);
+extern const char *meosoper_name(meosOper oper);
 extern meosType temptype_basetype(meosType type);
 extern meosType settype_basetype(meosType type);
 extern meosType spantype_basetype(meosType type);

@@ -110,57 +110,6 @@ typedef struct
  *****************************************************************************/
 
 /**
- * @brief Global array containing the operator names corresponding to the
- * enumeration meosOper defined in file meos_catalog.h
- */
-const char *_meosOper_names[] =
-{
-  [UNKNOWN_OP] = "",
-  [EQ_OP] = "=",
-  [NE_OP] = "<>",
-  [LT_OP] = "<",
-  [LE_OP] = "<=",
-  [GT_OP] = ">",
-  [GE_OP] = ">=",
-  [ADJACENT_OP] = "-|-",
-  [UNION_OP] = "+",
-  [MINUS_OP] = "-",
-  [INTERSECT_OP] = "*",
-  [OVERLAPS_OP] = "&&",
-  [CONTAINS_OP] = "@>",
-  [CONTAINED_OP] = "<@",
-  [SAME_OP] = "~=",
-  [LEFT_OP] = "<<",
-  [OVERLEFT_OP] = "&<",
-  [RIGHT_OP] = ">>",
-  [OVERRIGHT_OP] = "&>",
-  [BELOW_OP] = "<<|",
-  [OVERBELOW_OP] = "&<|",
-  [ABOVE_OP] = "|>>",
-  [OVERABOVE_OP] = "|&>",
-  [FRONT_OP] = "<</",
-  [OVERFRONT_OP] = "&</",
-  [BACK_OP] = "/>>",
-  [OVERBACK_OP] = "/&>",
-  [BEFORE_OP] = "<<#",
-  [OVERBEFORE_OP] = "&<#",
-  [AFTER_OP] = "#>>",
-  [OVERAFTER_OP] = "#&>",
-  [EVEREQ_OP] = "?=",
-  [EVERNE_OP] = "?<>",
-  [EVERLT_OP] = "?<",
-  [EVERLE_OP] = "?<=",
-  [EVERGT_OP] = "?>",
-  [EVERGE_OP] = "?>=",
-  [ALWAYSEQ_OP] = "%=",
-  [ALWAYSNE_OP] = "%<>",
-  [ALWAYSLT_OP] = "%<",
-  [ALWAYSLE_OP] = "%<=",
-  [ALWAYSGT_OP] = "%>",
-  [ALWAYSGE_OP] = "%>=",
-};
-
-/**
  * @brief Global variable that states whether the type and operator Oid caches
  * have been initialized
  */
@@ -337,31 +286,6 @@ oid_type(Oid typid)
 }
 
 /*****************************************************************************/
-
-/**
- * @brief Fetch the operator number from its name
- * @arg[in] name Name of the type
- */
-meosOper
-name_oper(const char *name)
-{
-  int n = sizeof(_meosOper_names) / sizeof(char *);
-  for (int i = 0; i < n; i++)
-  {
-    if (strcmp(_meosOper_names[i], name) == 0)
-      return i;
-  }
-  return UNKNOWN_OP;
-}
-
-/**
- * @brief Return the string name from an operator number
- */
-const char *
-meosoper_name(meosOper oper)
-{
-  return _meosOper_names[oper];
-}
 
 /**
  * @brief Fetch from the cache the Oid of an operator
