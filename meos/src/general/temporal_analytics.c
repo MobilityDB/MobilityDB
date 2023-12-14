@@ -370,7 +370,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
 /**
  * @ingroup libmeos_temporal_analytics_reduction
  * @brief Set the precision of a temporal value according to period buckets
- * @sql-cfn #Temporal_tprecision()
+ * @csqlfn #Temporal_tprecision()
  */
 Temporal *
 temporal_tprecision(const Temporal *temp, const Interval *duration,
@@ -568,7 +568,7 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
 /**
  * @ingroup libmeos_temporal_analytics_reduction
  * @brief Return a temporal value sampled according to period buckets
- * @sql-cfn #Temporal_tsample()
+ * @csqlfn #Temporal_tsample()
  */
 Temporal *
 temporal_tsample(const Temporal *temp, const Interval *duration,
@@ -719,7 +719,7 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
  * @brief Compute the Frechet distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @return On error return DBL_MAX
- * @sql-cfn #Temporal_frechet_distance()
+ * @csqlfn #Temporal_frechet_distance()
  */
 double
 temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
@@ -736,7 +736,7 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
  * @brief Compute the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @result On error return DBL_MAX
- * @sql-cfn #Temporal_dyntimewarp_distance()
+ * @csqlfn #Temporal_dyntimewarp_distance()
  */
 double
 temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
@@ -971,7 +971,7 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
  * @brief Compute the Frechet distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array
- * @sql-cfn #Temporal_frechet_path()
+ * @csqlfn #Temporal_frechet_path()
  */
 Match *
 temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
@@ -989,7 +989,7 @@ temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
  * @brief Compute the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array
- * @sql-cfn #Temporal_dyntimewarp_path()
+ * @csqlfn #Temporal_dyntimewarp_path()
  */
 Match *
 temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
@@ -1157,7 +1157,7 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
  * value.
- * @sql-cfn #Temporal_simplify_min_dist()
+ * @csqlfn #Temporal_simplify_min_dist()
  */
 Temporal *
 temporal_simplify_min_dist(const Temporal *temp, double dist)
@@ -1255,7 +1255,7 @@ tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
  * value.
- * @sql-cfn #Temporal_simplify_min_tdelta()
+ * @csqlfn #Temporal_simplify_min_tdelta()
  */
 Temporal *
 temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
@@ -1591,7 +1591,7 @@ tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
  * value.
- * @sql-cfn #Temporal_simplify_max_dist()
+ * @csqlfn #Temporal_simplify_max_dist()
  */
 Temporal *
 temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
@@ -1743,7 +1743,7 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
  * value.
- * @sql-cfn #Temporal_simplify_dp()
+ * @csqlfn #Temporal_simplify_dp()
  */
 Temporal *
 temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)

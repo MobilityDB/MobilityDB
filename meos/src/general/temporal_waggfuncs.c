@@ -190,7 +190,8 @@ tsequenceset_extend(const TSequenceSet *ss, const Interval *interval, bool min,
  * @param[out] count Number of elements in the output array
  */
 TSequence **
-temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
+temporal_extend(const Temporal *temp, const Interval *interval, bool min,
+  int *count)
 {
   TSequence **result;
   assert(temptype_subtype(temp->subtype));
@@ -538,7 +539,8 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
  * sequence (set) type
  */
 SkipList *
-temporal_wagg_transfn(SkipList *state, Temporal *temp, Interval *interval,
+temporal_wagg_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interval,
   datum_func2 func, bool min, bool crossings)
 {
   int count;
@@ -556,8 +558,8 @@ temporal_wagg_transfn(SkipList *state, Temporal *temp, Interval *interval,
  * for temporal values
  */
 SkipList *
-temporal_wagg_transform_transfn(SkipList *state, Temporal *temp,
-  Interval *interval, datum_func2 func,
+temporal_wagg_transform_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interval, datum_func2 func,
   TSequence ** (*transform)(const Temporal *, const Interval *, int *))
 {
   int count;
@@ -568,5 +570,145 @@ temporal_wagg_transform_transfn(SkipList *state, Temporal *temp,
   pfree_array((void **) sequences, count);
   return result;
 }
+
+/*****************************************************************************
+ * MEOS window aggregate transition functions
+ *****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal values.
+ * @csqlfn #Tint_wmin_transfn()
+ */
+SkipList *
+tint_wmin_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interval)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+  return temporal_wagg_transfn(state, temp, interval, &datum_min_int32,
+    GET_MIN, CROSSINGS);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal values.
+ * @csqlfn #Tfloat_wmin_transfn()
+ */
+SkipList *
+tfloat_wmin_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interval)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  return temporal_wagg_transfn(state, temp, interval, &datum_min_float8,
+    GET_MIN, CROSSINGS);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal values.
+ * @csqlfn #Tint_wmax_transfn()
+ */
+SkipList *
+tint_wmax_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interval)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+  return temporal_wagg_transfn(state, temp, interval, &datum_max_int32,
+    GET_MAX, CROSSINGS);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal values.
+ * @csqlfn #Tfloat_wmax_transfn()
+ */
+SkipList *
+tfloat_wmax_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interval)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  return temporal_wagg_transfn(state, temp, interval, &datum_max_float8,
+    GET_MAX, CROSSINGS);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal sum of temporal values.
+ * @csqlfn #Tint_wsum_transfn()
+ */
+SkipList *
+tint_wsum_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interval)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+  return temporal_wagg_transfn(state, temp, interval, &datum_sum_int32,
+    GET_MIN, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal sum of temporal values.
+ * @csqlfn #Tfloat_wsum_transfn()
+ */
+SkipList *
+tfloat_wsum_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interval)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  return temporal_wagg_transfn(state, temp, interval, &datum_sum_float8,
+    GET_MIN, CROSSINGS);
+}
+
+/**
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal average of temporal numbers.
+ * @csqlfn #Tnumber_wavg_transfn()
+ */
+SkipList *
+tnumber_wavg_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interval)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure validity of the arguments */
+  if (! ensure_tnumber_type(temp->temptype))
+    return NULL;
+  return
+  temporal_wagg_transform_transfn(state, temp, interval, &datum_sum_double2,
+    &tnumber_transform_wavg);
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

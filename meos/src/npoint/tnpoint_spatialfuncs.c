@@ -416,7 +416,7 @@ tnpoint_length(const Temporal *temp)
 /**
  * @brief Return the cumulative length traversed by a temporal point.
  * @pre The sequence has linear interpolation
- * @sql-cfn #Tnpoint_cumulative_length()
+ * @csqlfn #Tnpoint_cumulative_length()
  */
 static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
@@ -457,7 +457,7 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 
 /**
  * @brief Cumulative length traversed by a temporal network point
- * @sql-cfn #Tnpoint_cumulative_length()
+ * @csqlfn #Tnpoint_cumulative_length()
  */
 static TSequenceSet *
 tnpointseqset_cumulative_length(const TSequenceSet *ss)
@@ -476,7 +476,7 @@ tnpointseqset_cumulative_length(const TSequenceSet *ss)
 
 /**
  * @brief Cumulative length traversed by a temporal network point
- * @sql-cfn #Tnpoint_cumulative_length()
+ * @csqlfn #Tnpoint_cumulative_length()
  */
 Temporal *
 tnpoint_cumulative_length(const Temporal *temp)
@@ -498,7 +498,7 @@ tnpoint_cumulative_length(const Temporal *temp)
 
 /**
  * @brief Speed of a temporal network point
- * @sql-cfn #Tnpoint_speed()
+ * @csqlfn #Tnpoint_speed()
  */
 static TSequence *
 tnpointseq_speed(const TSequence *seq)

@@ -370,7 +370,8 @@ span_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   maxoff = (OffsetNumber) (entryvec->n - 1);
   /* Split entries before this to left page, after to right: */
-  split_idx = (OffsetNumber) ((maxoff - FirstOffsetNumber) / 2 + FirstOffsetNumber);
+  split_idx = (OffsetNumber) ((maxoff - FirstOffsetNumber) / 
+    2 + FirstOffsetNumber);
 
   v->spl_nleft = 0;
   v->spl_nright = 0;

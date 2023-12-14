@@ -349,27 +349,33 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 /* Parameter tests */
 
-extern bool temptype_subtype(int16 subtype);
-extern bool temptype_subtype_all(int16 subtype);
-extern const char *tempsubtype_name(int8 subtype);
-extern const char *interptype_name(int8 interpType);
+extern bool temptype_subtype(tempSubtype subtype);
+extern bool temptype_subtype_all(tempSubtype subtype);
+extern const char *tempsubtype_name(tempSubtype subtype);
+extern bool tempsubtype_from_string(const char *str, int16 *subtype);
+extern const char *meosoper_name(meosOper oper);
+extern meosOper meosoper_from_string(const char *name);
+extern const char *interptype_name(interpType interp);
 extern interpType interptype_from_string(const char *interp_str);
 extern bool ensure_not_null(void *ptr);
 extern bool ensure_one_not_null(void *ptr1, void *ptr2);
-extern bool ensure_one_shift_width(bool hasshift, bool haswidth);
-extern bool ensure_valid_interpolation(meosType temptype, interpType interp);
+extern bool ensure_one_true(bool hasshift, bool haswidth);
+extern bool ensure_valid_interp(meosType temptype, interpType interp);
 extern bool ensure_continuous(const Temporal *temp);
-extern bool ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2);
-extern bool ensure_same_continuous_interpolation(int16 flags1, int16 flags2);
-extern bool ensure_nonlinear_interpolation(int16 flags);
+extern bool ensure_same_interp(const Temporal *temp1, const Temporal *temp2);
+extern bool ensure_same_continuous_interp(int16 flags1, int16 flags2);
+extern bool ensure_nonlinear_interp(int16 flags);
 extern bool ensure_common_dimension(int16 flags1, int16 flags2);
-extern bool ensure_temporal_isof_type(const Temporal *temp, meosType temptype);
+extern bool ensure_temporal_isof_type(const Temporal *temp, meosType type);
+extern bool ensure_temporal_isof_subtype(const Temporal *temp,
+  tempSubtype type);
 extern bool ensure_same_temporal_type(const Temporal *temp1,
   const Temporal *temp2);
 extern bool ensure_same_temporal_basetype(const Temporal *temp,
   meosType basetype);
 extern bool ensure_valid_tnumber_span(const Temporal *temp, const Span *s);
-extern bool ensure_valid_tnumber_spanset(const Temporal *temp, const SpanSet *ss);
+extern bool ensure_valid_tnumber_spanset(const Temporal *temp,
+  const SpanSet *ss);
 extern bool ensure_valid_tnumber_tbox(const Temporal *temp, const TBox *box);
 extern bool ensure_not_negative(int i);
 extern bool ensure_positive(int i);

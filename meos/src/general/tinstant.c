@@ -69,7 +69,7 @@
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the base value of a temporal instant
- * @sql-cfn #Tinstant_value()
+ * @csqlfn #Tinstant_value()
  */
 Datum
 tinstant_value(const TInstant *inst)
@@ -339,7 +339,7 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal boolean instant from the arguments.
- * @sql-cfn #Tinstant_constructor()
+ * @csqlfn #Tinstant_constructor()
  */
 TInstant *
 tboolinst_make(bool b, TimestampTz t)
@@ -350,7 +350,7 @@ tboolinst_make(bool b, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal integer instant from the arguments.
- * @sql-cfn #Tinstant_constructor()
+ * @csqlfn #Tinstant_constructor()
  */
 TInstant *
 tintinst_make(int i, TimestampTz t)
@@ -361,7 +361,7 @@ tintinst_make(int i, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal float instant from the arguments.
- * @sql-cfn #Tinstant_constructor()
+ * @csqlfn #Tinstant_constructor()
  */
 TInstant *
 tfloatinst_make(double d, TimestampTz t)
@@ -372,7 +372,7 @@ tfloatinst_make(double d, TimestampTz t)
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal text instant from the arguments.
- * @sql-cfn #Tinstant_constructor()
+ * @csqlfn #Tinstant_constructor()
  */
 TInstant *
 ttextinst_make(const text *txt, TimestampTz t)
@@ -382,24 +382,24 @@ ttextinst_make(const text *txt, TimestampTz t)
     return NULL;
   return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal instant point from the arguments.
- * @sql-cfn #Tinstant_constructor()
+ * @csqlfn #Tinstant_constructor()
  */
 TInstant *
 tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
-      ! ensure_point_type(gs))
+      ! ensure_point_type(gs) || ! ensure_has_not_M_gs(gs))
     return NULL;
   meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
   return tinstant_make(PointerGetDatum(gs), temptype, t);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_temporal_constructor
@@ -422,7 +422,7 @@ tinstant_copy(const TInstant *inst)
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the singleton base value of a temporal instant.
  * @post The output parameter @p count is equal to 1
- * @sql-cfn #Temporal_valueset()
+ * @csqlfn #Temporal_valueset()
  */
 Datum *
 tinstant_values(const TInstant *inst, int *count)
@@ -437,7 +437,7 @@ tinstant_values(const TInstant *inst, int *count)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the base values of a temporal instant number as a span set.
- * @sql-cfn #Temporal_valueset()
+ * @csqlfn #Temporal_valueset()
  */
 SpanSet *
 tnumberinst_valuespans(const TInstant *inst)
@@ -454,7 +454,7 @@ tnumberinst_valuespans(const TInstant *inst)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the time frame of a temporal instant as a span set.
- * @sql-cfn #Temporal_time()
+ * @csqlfn #Temporal_time()
  */
 SpanSet *
 tinstant_time(const TInstant *inst)
@@ -481,7 +481,7 @@ tinstant_set_tstzspan(const TInstant *inst, Span *s)
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the singleton array of timestamps of a temporal instant.
  * @post The output parameter @p count is equal to 1
- * @sql-cfn #Temporal_timestamps()
+ * @csqlfn #Temporal_timestamps()
  */
 TimestampTz *
 tinstant_timestamps(const TInstant *inst, int *count)
@@ -497,7 +497,7 @@ tinstant_timestamps(const TInstant *inst, int *count)
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the singleton array of instants of a temporal instant.
  * @post The output parameter @p count is equal to 1
- * @sql-cfn #Temporal_instants()
+ * @csqlfn #Temporal_instants()
  */
 const TInstant **
 tinstant_instants(const TInstant *inst, int *count)
@@ -514,7 +514,7 @@ tinstant_instants(const TInstant *inst, int *count)
  * @brief Compute the base value of a temporal instant at a timestamp.
  * @note Since the corresponding function for temporal sequences need to
  * interpolate the value, it is necessary to return a copy of the value
- * @sql-cfn #Temporal_value_at_timestamptz()
+ * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tinstant_value_at_timestamptz(const TInstant *inst, TimestampTz t,
@@ -534,7 +534,7 @@ tinstant_value_at_timestamptz(const TInstant *inst, TimestampTz t,
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal instant.
- * @sql-cfn #Temporal_to_tinstant()
+ * @csqlfn #Temporal_to_tinstant()
  */
 TInstant *
 tsequence_to_tinstant(const TSequence *seq)
@@ -552,7 +552,7 @@ tsequence_to_tinstant(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence set transformed into a temporal instant.
- * @sql-cfn #Temporal_to_tinstant()
+ * @csqlfn #Temporal_to_tinstant()
  */
 TInstant *
 tsequenceset_to_tinstant(const TSequenceSet *ss)
@@ -570,7 +570,7 @@ tsequenceset_to_tinstant(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal instant whose value is shifted by a value.
- * @sql-cfn #Tnumber_shift_value()
+ * @csqlfn #Tnumber_shift_value()
  */
 TInstant *
 tnuminst_shift_value(const TInstant *inst, Datum shift)
@@ -587,7 +587,7 @@ tnuminst_shift_value(const TInstant *inst, Datum shift)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal instant shifted by an interval.
- * @sql-cfn #Temporal_shift_time()
+ * @csqlfn #Temporal_shift_time()
  */
 TInstant *
 tinstant_shift_time(const TInstant *inst, const Interval *interval)
@@ -689,7 +689,7 @@ tinstant_always_le(const TInstant *inst, Datum value)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a base value.
- * @sql-cfn #Temporal_at_value(), #Temporal_minus_value()
+ * @csqlfn #Temporal_at_value(), #Temporal_minus_value()
  */
 TInstant *
 tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
@@ -725,7 +725,7 @@ tinstant_restrict_values_test(const TInstant *inst, const Set *s, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to an array of base values.
- * @sql-cfn #Temporal_at_values(), #Temporal_minus_values()
+ * @csqlfn #Temporal_at_values(), #Temporal_minus_values()
  */
 TInstant *
 tinstant_restrict_values(const TInstant *inst, const Set *s, bool atfunc)
@@ -765,7 +765,7 @@ tnumberinst_restrict_span_test(const TInstant *inst, const Span *s,
  * @param[in] s Span of base values
  * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal number
- * @sql-cfn #Tnumber_at_span(), #Tnumber_minus_span()
+ * @csqlfn #Tnumber_at_span(), #Tnumber_minus_span()
  */
 TInstant *
 tnumberinst_restrict_span(const TInstant *inst, const Span *s, bool atfunc)
@@ -800,7 +800,7 @@ tnumberinst_restrict_spanset_test(const TInstant *inst, const SpanSet *ss,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal number instant to (the complement of) a span set.
- * @sql-cfn #Tnumber_at_spanset(), #Tnumber_minus_spanset()
+ * @csqlfn #Tnumber_at_spanset(), #Tnumber_minus_spanset()
  */
 TInstant *
 tnumberinst_restrict_spanset(const TInstant *inst, const SpanSet *ss,
@@ -818,7 +818,7 @@ tnumberinst_restrict_spanset(const TInstant *inst, const SpanSet *ss,
  *
  * @note Since the corresponding function for temporal sequences need to
  * interpolate the value, it is necessary to return a copy of the value
- * @sql-cfn #Temporal_at_timestamptz(), #Temporal_minus_timestamptz()
+ * @csqlfn #Temporal_at_timestamptz(), #Temporal_minus_timestamptz()
  */
 TInstant *
 tinstant_restrict_timestamptz(const TInstant *inst, TimestampTz t, bool atfunc)
@@ -849,7 +849,7 @@ tinstant_restrict_tstzset_test(const TInstant *inst, const Set *s,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a timestamp set.
- * @sql-cfn #Temporal_at_tstzset(), #Temporal_minus_tstzset()
+ * @csqlfn #Temporal_at_tstzset(), #Temporal_minus_tstzset()
  */
 TInstant *
 tinstant_restrict_tstzset(const TInstant *inst, const Set *s, bool atfunc)
@@ -863,7 +863,7 @@ tinstant_restrict_tstzset(const TInstant *inst, const Set *s, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a timestamptz span.
- * @sql-cfn #Temporal_at_tstzspan(), #Temporal_minus_tstzspan()
+ * @csqlfn #Temporal_at_tstzspan(), #Temporal_minus_tstzspan()
  */
 TInstant *
 tinstant_restrict_tstzspan(const TInstant *inst, const Span *s, bool atfunc)
@@ -894,7 +894,7 @@ tinstant_restrict_tstzspanset_test(const TInstant *inst, const SpanSet *ss,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a span set.
- * @sql-cfn #Temporal_at_tstzspanset(), #Temporal_minus_tstzspanset()
+ * @csqlfn #Temporal_at_tstzspanset(), #Temporal_minus_tstzspanset()
  */
 TInstant *
 tinstant_restrict_tstzspanset(const TInstant *inst,const  SpanSet *ss,
@@ -913,7 +913,7 @@ tinstant_restrict_tstzspanset(const TInstant *inst,const  SpanSet *ss,
 /**
  * @ingroup libmeos_internal_temporal_modif
  * @brief Merge two temporal instants.
- * @sql-cfn #Temporal_merge()
+ * @csqlfn #Temporal_merge()
  */
 Temporal *
 tinstant_merge(const TInstant *inst1, const TInstant *inst2)
@@ -930,7 +930,7 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
  * @pre The number of elements in the array is greater than 1
- * @sql-cfn #Temporal_merge_array()
+ * @csqlfn #Temporal_merge_array()
  */
 Temporal *
 tinstant_merge_array(const TInstant **instants, int count)
@@ -1016,7 +1016,7 @@ tinstant_eq(const TInstant *inst1, const TInstant *inst2)
  * two temporal instants of the same base type are equal.
  * This hypothesis may change in the future and the function must be
  * adapted accordingly.
- * @sql-cfn #Temporal_cmp()
+ * @csqlfn #Temporal_cmp()
  */
 int
 tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
@@ -1049,7 +1049,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal instant.
- * @sql-cfn #Temporal_hash()
+ * @csqlfn #Temporal_hash()
  */
 uint32
 tinstant_hash(const TInstant *inst)

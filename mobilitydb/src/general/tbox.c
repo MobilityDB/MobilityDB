@@ -585,8 +585,6 @@ Tbox_shift_value(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Datum shift = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  ensure_span_isof_basetype(&box->span, basetype);
   TBox *result = tbox_shift_scale_value(box, shift, 0, true, false);
   PG_RETURN_POINTER(result);
 }
@@ -619,8 +617,6 @@ Tbox_scale_value(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Datum width = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  ensure_span_isof_basetype(&box->span, basetype);
   TBox *result = tbox_shift_scale_value(box, 0, width, false, true);
   PG_RETURN_POINTER(result);
 }
@@ -655,10 +651,6 @@ Tbox_shift_scale_value(PG_FUNCTION_ARGS)
   TBox *box = PG_GETARG_TBOX_P(0);
   Datum shift = PG_GETARG_DATUM(1);
   Datum width = PG_GETARG_DATUM(2);
-  meosType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  meosType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 2));
-  ensure_span_isof_basetype(&box->span, basetype1);
-  ensure_span_isof_basetype(&box->span, basetype2);
   TBox *result = tbox_shift_scale_value(box, shift, width, true, true);
   PG_RETURN_POINTER(result);
 }

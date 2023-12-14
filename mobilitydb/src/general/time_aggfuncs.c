@@ -43,13 +43,15 @@
 #include "pg_general/skiplist.h"
 
 /*****************************************************************************
- * Aggregate transition functions for time types
+ * Temporal count
  *****************************************************************************/
 
 PGDLLEXPORT Datum Timestamptz_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamptz_tcount_transfn);
 /**
- * @brief Transition function for temporal count aggregate of timestamps
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal count aggregate of timestamptz values
+ * @sqlfn tcount()
  */
 Datum
 Timestamptz_tcount_transfn(PG_FUNCTION_ARGS)
@@ -65,7 +67,9 @@ Timestamptz_tcount_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tstzset_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_tcount_transfn);
 /**
- * @brief Transition function for temporal count aggregate of timestamp sets
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal count aggregate of timestamptz sets
+ * @sqlfn tcount()
  */
 Datum
 Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
@@ -82,7 +86,9 @@ Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tstzspan_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_tcount_transfn);
 /**
- * @brief Transition function for temporal count aggregate of periods
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal count aggregate of timestamptz spans
+ * @sqlfn tcount()
  */
 Datum
 Tstzspan_tcount_transfn(PG_FUNCTION_ARGS)
@@ -98,7 +104,10 @@ Tstzspan_tcount_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tstzspanset_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_tcount_transfn);
 /**
- * @brief Transition function for temporal count aggregate of span sets
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal count aggregate of timestamptz span
+ * sets
+ * @sqlfn tcount()
  */
 Datum
 Tstzspanset_tcount_transfn(PG_FUNCTION_ARGS)

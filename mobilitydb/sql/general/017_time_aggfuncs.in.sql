@@ -34,14 +34,14 @@
 
 /*****************************************************************************/
 
-CREATE FUNCTION tagg_serialize(internal)
+CREATE FUNCTION taggstate_serialize(internal)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Tagg_serialize'
+  AS 'MODULE_PATHNAME', 'Taggstate_serialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tagg_deserialize(bytea, internal)
+CREATE FUNCTION taggstate_deserialize(bytea, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tagg_deserialize'
+  AS 'MODULE_PATHNAME', 'Taggstate_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -81,8 +81,8 @@ CREATE AGGREGATE tcount(timestamptz) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -93,8 +93,8 @@ CREATE AGGREGATE tcount(tstzset) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -105,8 +105,8 @@ CREATE AGGREGATE tcount(tstzspan) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -117,8 +117,8 @@ CREATE AGGREGATE tcount(tstzspanset) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 

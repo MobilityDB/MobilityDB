@@ -118,7 +118,8 @@ call_function1(PGFunction func, Datum arg1)
   memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL, NULL);
+  InitFunctionCallInfoData(*fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL,
+    NULL);
   fcinfo->args[0].value = arg1;
   fcinfo->args[0].isnull = false;
   result = (*func) (fcinfo);
@@ -139,7 +140,8 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
   flinfo.fn_nargs = 2;
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL, NULL);
+  InitFunctionCallInfoData(*fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL,
+    NULL);
   fcinfo->args[0].value = arg1;
   fcinfo->args[0].isnull = false;
   fcinfo->args[1].value = arg2;
@@ -161,7 +163,8 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
   memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);
+  InitFunctionCallInfoData(*fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL,
+    NULL);
   fcinfo->args[0].value = arg1;
   fcinfo->args[0].isnull = false;
   fcinfo->args[1].value = arg2;
@@ -191,8 +194,8 @@ datumarr_extract(ArrayType *array, int *count)
   char align;
   get_typlenbyvalalign(array->elemtype, &typlen, &byval, &align);
   Datum *result;
-  deconstruct_array(array, array->elemtype, typlen, byval, align,
-    &result, NULL, count);
+  deconstruct_array(array, array->elemtype, typlen, byval, align, &result,
+    NULL, count);
   return result;
 }
 
@@ -217,8 +220,8 @@ Temporal **
 temporalarr_extract(ArrayType *array, int *count)
 {
   Temporal **result;
-  deconstruct_array(array, array->elemtype, -1, false, 'd',
-    (Datum **) &result, NULL, count);
+  deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result,
+    NULL, count);
   return result;
 }
 
@@ -308,7 +311,6 @@ strarr_to_textarray(char **strarr, int count)
     textarr[i] = cstring_to_text(strarr[i]);
   ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
     false, 'i');
-  pfree_array((void **) textarr, count);
   return result;
 }
 
@@ -362,7 +364,8 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   else /* basetype == T_TIMESTAMPTZ */
     rangetypid = type_oid(T_TSTZRANGE);
 
-  TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
+  TypeCacheEntry* typcache = lookup_type_cache(rangetypid,
+    TYPECACHE_RANGE_INFO);
   RangeBound lower;
   RangeBound upper;
   lower.val = from;
@@ -391,7 +394,8 @@ multirange_make(const SpanSet *ss)
   const Span *s = SPANSET_SP_N(ss, 0);
   Oid rangetypid = basetype_rangetype(ss->basetype);
   Oid mrangetypid = basetype_multirangetype(ss->basetype);;
-  TypeCacheEntry *typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
+  TypeCacheEntry *typcache = lookup_type_cache(rangetypid,
+    TYPECACHE_RANGE_INFO);
   for (int i = 0; i < ss->count; i++)
   {
     s = SPANSET_SP_N(ss, i);

@@ -49,7 +49,7 @@
 /**
  * @brief Global variable that keeps the last error number.
  */
-int _meos_errno = 0;
+int _MEOS_ERRNO = 0;
 
 /**
  * @brief Read an error number
@@ -57,7 +57,7 @@ int _meos_errno = 0;
 int
 meos_errno(void)
 {
-  return _meos_errno;
+  return _MEOS_ERRNO;
 }
 
 #if MEOS
@@ -71,7 +71,7 @@ meos_errno_set(int err)
   if (err == 0)
     return 0;
 
-  _meos_errno = err;
+  _MEOS_ERRNO = err;
   return err;
 }
 
@@ -93,7 +93,7 @@ meos_errno_restore(int err)
 }
 
 /**
- * @brief Clear the error number
+ * @brief Clears errno.
  * @return Returns the previous value of the errno, for convenient reset/restore
  * operations
  *
@@ -120,8 +120,8 @@ meos_errno_restore(int err)
  * }
  * @endcode
  */
-int
-meos_errno_reset(void)
+
+int meos_errno_reset(void)
 {
   int last_errno = meos_errno();
   meos_errno_set(0);
@@ -135,7 +135,7 @@ meos_errno_reset(void)
 /**
  * @brief Global variable that keeps the error handler function
  */
-void (*_error_handler)(int, int, char *) = NULL;
+void (*_ERROR_HANDLER)(int, int, char *) = NULL;
 
 #if MEOS
 /**
@@ -171,9 +171,9 @@ void
 meos_initialize_error_handler(error_handler_fn err_handler)
 {
   if (err_handler)
-    _error_handler = err_handler;
+    _ERROR_HANDLER = err_handler;
   else
-    _error_handler = &default_error_handler;
+    _ERROR_HANDLER = &default_error_handler;
   return;
 }
 #endif /* MEOS */
@@ -192,8 +192,8 @@ meos_error(int errlevel, int errcode, char *format, ...)
   vsprintf(buffer, format, args);
   va_end(args);
   /* Execute the error handler function */
-  if (_error_handler)
-    _error_handler(errlevel, errcode, buffer);
+  if (_ERROR_HANDLER)
+    _ERROR_HANDLER(errlevel, errcode, buffer);
   else
 #if ! MEOS
     elog(errlevel, "%s", buffer);
@@ -206,5 +206,30 @@ meos_error(int errlevel, int errcode, char *format, ...)
 #endif /* ! MEOS */
   return;
 }
+
+/*****************************************************************************/
+
+#if MEOS
+/*
+ * Initialize MEOS library
+ */
+void
+meos_initialize(const char *tz_str, error_handler_fn err_handler)
+{
+  meos_initialize_timezone(tz_str);
+  meos_initialize_error_handler(err_handler);
+  return;
+}
+
+/*
+ * Free the timezone cache
+ */
+void
+meos_finalize(void)
+{
+  meos_finalize_timezone();
+  return;
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

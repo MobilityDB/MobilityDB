@@ -201,6 +201,7 @@ span_bucket_state_next(SpanBucketState *state)
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
  * @return On error return INT_MAX
+ * @csqlfn #Number_bucket()
  */
 int
 int_bucket(int value, int size, int origin)
@@ -254,6 +255,7 @@ int_bucket(int value, int size, int origin)
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
  * @return On error return DBL_MAX
+ * @csqlfn #Number_bucket()
  */
 double
 float_bucket(double value, double size, double origin)
@@ -356,6 +358,7 @@ timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
  * @param[in] t Input timestamp
  * @param[in] duration Interval defining the size of the buckets
  * @param[in] origin Origin of the buckets
+ * @csqlfn #Timestamptz_bucket()
  */
 TimestampTz
 timestamptz_bucket(TimestampTz t, const Interval *duration, TimestampTz origin)
@@ -433,6 +436,7 @@ span_bucket_list(const Span *s, Datum size, Datum origin, int count)
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Numberspan_bucket_list()
  */
 Span *
 intspan_bucket_list(const Span *s, int size, int origin, int *count)
@@ -461,6 +465,7 @@ intspan_bucket_list(const Span *s, int size, int origin, int *count)
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Numberspan_bucket_list()
  */
 Span *
 floatspan_bucket_list(const Span *s, double size, double origin, int *count)
@@ -489,6 +494,7 @@ floatspan_bucket_list(const Span *s, double size, double origin, int *count)
  * @param[in] duration Interval defining the size of the buckets
  * @param[in] origin Origin of the buckets
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tstzspan_bucket_list()
  */
 Span *
 tstzspan_bucket_list(const Span *s, const Interval *duration, TimestampTz origin,
@@ -631,7 +637,7 @@ tbox_tile_state_next(TboxGridState *state)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_analytics_tile
+ * @ingroup libmeos_internal_temporal_analytics_tile
  * @brief Generate a multidimensional grid for temporal numbers.
  * @param[in] box Input box to split
  * @param[in] vsize Value size of the tiles
@@ -684,6 +690,7 @@ tbox_tile_list(const TBox *box, Datum vsize, const Interval *duration,
 }
 
 /**
+ * @ingroup libmeos_temporal_analytics_tile
  * @brief Return the tile list from a temporal integer box
  * @param[in] box Input box to split
  * @param[in] vsize Value size of the tiles
@@ -691,6 +698,7 @@ tbox_tile_list(const TBox *box, Datum vsize, const Interval *duration,
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tbox_tile_list()
  */
 TBox *
 tintbox_tile_list(const TBox *box, int vsize, const Interval *duration,
@@ -701,6 +709,7 @@ tintbox_tile_list(const TBox *box, int vsize, const Interval *duration,
 }
 
 /**
+ * @ingroup libmeos_temporal_analytics_tile
  * @brief Return the tile list from a temporal float box
  * @param[in] box Input box to split
  * @param[in] vsize Value size of the tiles
@@ -708,6 +717,7 @@ tintbox_tile_list(const TBox *box, int vsize, const Interval *duration,
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tbox_tile_list()
  */
 TBox *
 tfloatbox_tile_list(const TBox *box, double vsize, const Interval *duration,
@@ -1072,7 +1082,7 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
  * @param[in] torigin Time origin of the buckets
  * @param[out] buckets Array of buckets
  * @param[out] count Number of values in the output array
- * @sql-cfn #Temporal_time_split()
+ * @csqlfn #Temporal_time_split()
  */
 Temporal **
 temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
@@ -1696,7 +1706,7 @@ tnumber_value_time_split(Temporal *temp, Datum size, Interval *duration,
  * @param[in] origin Time origin of the buckets
  * @param[out] buckets Array of buckets
  * @param[out] count Number of values in the output array
- * @sql-cfn #Tnumber_value_split()
+ * @csqlfn #Tnumber_value_split()
  */
 Temporal **
 tint_value_split(Temporal *temp, int size, int origin, int **buckets,
@@ -1728,7 +1738,7 @@ tint_value_split(Temporal *temp, int size, int origin, int **buckets,
  * @param[in] origin Time origin of the buckets
  * @param[out] buckets Array of buckets
  * @param[out] count Number of values in the output array
- * @sql-cfn #Tnumber_value_split()
+ * @csqlfn #Tnumber_value_split()
  */
 Temporal **
 tfloat_value_split(Temporal *temp, double size, double origin,
@@ -1765,7 +1775,7 @@ tfloat_value_split(Temporal *temp, double size, double origin,
  * @param[out] value_buckets Array of value buckets
  * @param[out] time_buckets Array of time buckets
  * @param[out] count Number of values in the output array
- * @sql-cfn #Temporal_time_split()
+ * @csqlfn #Tnumber_value_time_split()
  */
 Temporal **
 tint_value_time_split(Temporal *temp, int size, Interval *duration,
@@ -1804,7 +1814,7 @@ tint_value_time_split(Temporal *temp, int size, Interval *duration,
  * @param[out] value_buckets Array of value buckets
  * @param[out] time_buckets Array of time buckets
  * @param[out] count Number of values in the output array
- * @sql-cfn #Temporal_time_split()
+ * @csqlfn #Tnumber_value_time_split()
  */
 Temporal **
 tfloat_value_time_split(Temporal *temp, double size, Interval *duration,

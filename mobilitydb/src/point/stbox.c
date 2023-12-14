@@ -386,7 +386,9 @@ Stbox_to_tstzspan(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Conversion functions
+ *****************************************************************************/
 
 PGDLLEXPORT Datum Box2d_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Box2d_to_stbox);

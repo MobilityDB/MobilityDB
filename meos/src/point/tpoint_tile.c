@@ -568,7 +568,7 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
 /**
  * @ingroup libmeos_temporal_tile
  * @brief Generate a multidimensional grid for temporal points.
- * @sql-cfn #Stbox_tile_list()
+ * @csqlfn #Stbox_tile_list()
  */
 STBox *
 stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,

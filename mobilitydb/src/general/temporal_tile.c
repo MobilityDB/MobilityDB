@@ -170,14 +170,14 @@ Span_bucket_list(FunctionCallInfo fcinfo, bool valuelist)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Valuespan_bucket_list(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Valuespan_bucket_list);
+PGDLLEXPORT Datum Numberspan_bucket_list(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numberspan_bucket_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate a value span bucket list
  */
 Datum
-Valuespan_bucket_list(PG_FUNCTION_ARGS)
+Numberspan_bucket_list(PG_FUNCTION_ARGS)
 {
   return Span_bucket_list(fcinfo, true);
 }

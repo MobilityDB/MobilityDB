@@ -53,7 +53,9 @@
 PGDLLEXPORT Datum Span_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_extent_transfn);
 /**
- * @brief Transition function for extent aggregation of span values
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for extent aggregation of spans
+ * @sqlfn extent()
  */
 Datum
 Span_extent_transfn(PG_FUNCTION_ARGS)
@@ -69,7 +71,9 @@ Span_extent_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_extent_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_extent_combinefn);
 /**
- * @brief Combine function for temporal extent aggregation
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Combine function for extent aggregation of spans
+ * @sqlfn extent()
  */
 Datum
 Span_extent_combinefn(PG_FUNCTION_ARGS)
@@ -92,8 +96,9 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Spanbase_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
 /**
- * @brief Transition function for extent aggregation of base values of span
- * types
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for extent aggregation of span base values
+ * @sqlfn extent()
  */
 Datum
 Spanbase_extent_transfn(PG_FUNCTION_ARGS)
@@ -112,7 +117,9 @@ Spanbase_extent_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Set_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_extent_transfn);
 /**
- * @brief Transition function for extent aggregation of set values
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for extent aggregation of sets
+ * @sqlfn extent()
  */
 Datum
 Set_extent_transfn(PG_FUNCTION_ARGS)
@@ -129,7 +136,9 @@ Set_extent_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Spanset_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_extent_transfn);
 /**
- * @brief Transition function for extent aggregation of span set values
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for extent aggregation of span sets
+ * @sqlfn extent()
  */
 Datum
 Spanset_extent_transfn(PG_FUNCTION_ARGS)
@@ -158,11 +167,12 @@ Spanset_extent_transfn(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Spanset_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_union_transfn);
-/*
- * @brief Transition function for aggregating span sets
- *
- * All we do here is gather the input span sets' spans into an array so
- * that the final function can sort and combine them.
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for union aggregation of span sets
+ * @note We simply gather the input values into an array so that the final
+ * function can sort and combine them
+ * @sqlfn union()
  */
 Datum
 Spanset_union_transfn(PG_FUNCTION_ARGS)
@@ -196,9 +206,11 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Span_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_union_finalfn);
-/*
+/**
+ * @ingroup mobilitydb_setspan_agg
  * @brief Final function for union aggregation of spans.
- * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
+ * @note Shared for both spans and span sets
+ * @sqlfn union()
  */
 Datum
 Span_union_finalfn(PG_FUNCTION_ARGS)

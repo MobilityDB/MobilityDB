@@ -200,16 +200,17 @@ static bool
 tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
 {
   meosType type = oid_type(typid);
+  Span *s;
   if (tnumber_spantype(type))
   {
-    Span *span = PG_GETARG_SPAN_P(1);
-    if (span == NULL)
+    s = PG_GETARG_SPAN_P(1);
+    if (s == NULL)
       return false;
-    numspan_set_tbox(span, result);
+    numspan_set_tbox(s, result);
   }
   else if (type == T_TSTZSPAN)
   {
-    Span *s = PG_GETARG_SPAN_P(1);
+    s = PG_GETARG_SPAN_P(1);
     tstzspan_set_tbox(s, result);
   }
   else if (type == T_TBOX)
@@ -384,7 +385,8 @@ tbox_size(const TBox *box)
    *
    * The less-than cases should not happen, but if they do, say "zero".
    */
-  if (FLOAT8_LE(DatumGetFloat8(box->span.upper), DatumGetFloat8(box->span.lower)) ||
+  if (FLOAT8_LE(DatumGetFloat8(box->span.upper),
+        DatumGetFloat8(box->span.lower)) ||
       datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ))
     return 0.0;
 
@@ -456,7 +458,7 @@ int
 interval_cmp_upper(const void *i1, const void *i2)
 {
   double upper1 = ((const SplitInterval *) i1)->upper,
-    upper2 = ((const SplitInterval *) i2)->upper;
+         upper2 = ((const SplitInterval *) i2)->upper;
 
   return float8_cmp_internal(upper1, upper2);
 }
@@ -726,7 +728,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   }
 
   /*
-   * Iterate over axes for optimal split searching.
+   * Iterate over axes for optimal split searching
    */
   context.first = true;    /* nothing selected yet */
   for (dim = 0; dim < maxdims; dim++)
@@ -738,7 +740,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
     if (dim == 2 && ! hasz)
       continue;
 
-    /* Project each entry as an interval on the selected axis. */
+    /* Project each entry as an interval on the selected axis */
     for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
     {
       box = DatumGetPointer(entryvec->vector[i].key);

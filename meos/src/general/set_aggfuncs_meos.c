@@ -298,7 +298,21 @@ set_union_finalfn(Set *state)
 {
   if (! state)
     return NULL;
-  return set_compact(state);
+
+  Datum *values = palloc0(sizeof(Datum) * state->count);
+  for (int i = 0; i < state->count; i++)
+    values[i] = SET_VAL_N(state, i);
+  meosType basetype = settype_basetype(state->settype);
+  Set *result = set_make_exp(values, state->count, state->count, basetype,
+    ORDERED_NO);
+
+  /* Free memory */
+  if (basetype_byvalue(basetype))
+    pfree(values);
+  else
+    pfree_array((void **) values, state->count);
+
+  return result;
 }
 
 /*****************************************************************************/

@@ -239,7 +239,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal point
  * @return On error return NULL
- * @sql-cfn #Tpoint_stboxes()
+ * @csqlfn #Tpoint_stboxes()
  */
 STBox *
 tpoint_stboxes(const Temporal *temp, int *count)

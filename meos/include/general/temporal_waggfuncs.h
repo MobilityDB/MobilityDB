@@ -41,8 +41,6 @@
 
 /*****************************************************************************/
 
-extern TSequence **temporal_extend(Temporal *temp, Interval *interval,
-  bool min, int *count);
 extern TSequence **temporal_transform_wcount(const Temporal *temp,
   const Interval *interval, int *count);
 extern TSequence **tnumber_transform_wavg(const Temporal *temp,

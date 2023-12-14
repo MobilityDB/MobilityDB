@@ -139,8 +139,19 @@ typedef struct
 } STBox;
 
 /**
- * @brief Enumeration that defines the interpolation types used in
- * MobilityDB.
+ * @brief Enumeration that defines the temporal subtypes used in MEOS
+ */
+typedef enum
+{
+  ANYTEMPSUBTYPE =   0,  /**< Any temporal subtype */
+  TINSTANT =         1,  /**< Temporal instant subtype */
+  TSEQUENCE =        2,  /**< Temporal sequence subtype */
+  TSEQUENCESET =     3,  /**< Temporal sequence set subtype */
+} tempSubtype;
+
+
+/**
+ * @brief Enumeration that defines the interpolation types used in MEOS
  */
 typedef enum
 {
@@ -329,11 +340,6 @@ typedef void (*error_handler_fn)(int, int, char *);
 extern void meos_initialize_timezone(const char *name);
 extern void meos_initialize_error_handler(error_handler_fn err_handler);
 extern void meos_finalize_timezone(void);
-
-extern bool meos_set_datestyle(char *newval, void *extra);
-extern bool meos_set_intervalstyle(char *newval, int extra);
-extern char *meos_get_datestyle(void);
-extern char *meos_get_intervalstyle(void);
 
 extern void meos_initialize(const char *tz_str, error_handler_fn err_handler);
 extern void meos_finalize(void);
