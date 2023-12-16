@@ -1349,7 +1349,7 @@ numspan_delta_scale_iter(Span *s, Datum origin, Datum delta, bool hasdelta,
     else
     {
       /* Integer spans have exclusive upper bound */
-      Datum upper1 = span_incr_bound(s->upper, s->basetype);
+      Datum upper1 = span_decr_bound(s->upper, s->basetype);
       s->upper = datum_add(origin,
         double_datum(
           datum_double(datum_sub(upper1, origin, type), type) * scale,

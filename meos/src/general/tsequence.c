@@ -2196,13 +2196,12 @@ TSequence *
 tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
   bool hasshift, bool haswidth)
 {
-  assert(seq);
-  assert(hasshift || haswidth);
+  assert(seq); assert(hasshift || haswidth);
 
   /* Copy the input sequence to the result */
   TSequence *result = tsequence_copy(seq);
 
-  /* Shift and/or scale the bounding period */
+  /* Shift and/or scale the bounding span */
   Datum delta;
   double scale;
   TBox *box = TSEQUENCE_BBOX_PTR(result);
@@ -2226,8 +2225,7 @@ TSequence *
 tsequence_shift_scale_time(const TSequence *seq, const Interval *shift,
   const Interval *duration)
 {
-  assert(seq);
-  assert(shift || duration);
+  assert(seq); assert(shift || duration);
 
   /* Copy the input sequence to the result */
   TSequence *result = tsequence_copy(seq);

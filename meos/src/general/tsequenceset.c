@@ -1577,18 +1577,16 @@ TSequenceSet *
 tnumberseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
   Datum width, bool hasshift, bool haswidth)
 {
-  assert(ss);
-  assert(hasshift || haswidth);
+  assert(ss); assert(hasshift || haswidth);
 
   /* Copy the input sequence set to the result */
   TSequenceSet *result = tsequenceset_copy(ss);
-
-  /* Shift and  /or scale the bounding span */
+  /* Shift and/or scale the bounding span */
   Datum delta;
   double scale;
   TBox *box = TSEQUENCESET_BBOX_PTR(result);
-  numspan_shift_scale1(&box->span, shift, width, hasshift, haswidth,
-    &delta, &scale);
+  numspan_shift_scale1(&box->span, shift, width, hasshift, haswidth, &delta,
+    &scale);
   Datum origin = box->span.lower;
 
   /* Shift and/or scale each composing sequence */

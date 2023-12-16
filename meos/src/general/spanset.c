@@ -697,7 +697,7 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
     &delta, &scale);
   Datum origin = result->span.lower;
 
-  /* Shift and/or scale the periodset */
+  /* Shift and/or scale the span set */
   for (int i = 0; i < ss->count; i++)
     numspan_delta_scale_iter(&result->elems[i], origin, delta, hasshift,
       scale);
@@ -798,7 +798,7 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
   double scale;
   tstzspan_shift_scale1(&result->span, shift, duration, &delta, &scale);
   TimestampTz origin = DatumGetTimestampTz(result->span.lower);
-  /* Shift and/or scale the periodset */
+  /* Shift and/or scale the span set */
   for (int i = 0; i < ss->count; i++)
     tstzspan_delta_scale_iter(&result->elems[i], origin, delta, scale);
   return result;
