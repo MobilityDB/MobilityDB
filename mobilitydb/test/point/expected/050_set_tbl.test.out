@@ -211,6 +211,12 @@ SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
  0.432515
 (1 row)
 
+SELECT SRID(geomset '{"SRID=5676;Point(1 1)", "SRID=5676;Point(2 2)"}');
+ srid 
+------
+ 5676
+(1 row)
+
 SELECT asEWKT(setSRID(geomset '{"Point(0 0)", "Point(1 1)"}', 5676));
                       asewkt                      
 --------------------------------------------------

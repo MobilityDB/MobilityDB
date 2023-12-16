@@ -588,11 +588,11 @@ tnpoint_speed(const Temporal *temp)
 /**
  * @brief Return the time-weighed centroid of a temporal network point
  */
-Datum
+GSERIALIZED *
 tnpoint_twcentroid(const Temporal *temp)
 {
   Temporal *tgeom = tnpoint_tgeompoint(temp);
-  Datum result = PointerGetDatum(tpoint_twcentroid(tgeom));
+  GSERIALIZED *result = tpoint_twcentroid(tgeom);
   pfree(tgeom);
   return result;
 }

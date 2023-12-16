@@ -354,11 +354,15 @@ Datum
 Tfloatarr_round(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_not_empty_array(array);
+  /* Return NULL on empty array */
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
   int maxdd = PG_GETARG_INT32(1);
 
-  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-  assert(count > 0);
   Temporal **temparr = temporalarr_extract(array, &count);
   Temporal **resarr = tfloatarr_round((const Temporal **) temparr, count,
     maxdd);

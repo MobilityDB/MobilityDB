@@ -148,6 +148,9 @@ Temporal_tsample(PG_FUNCTION_ARGS)
  * Linear space computation of the similarity distance
  *****************************************************************************/
 
+/**
+ * @brief Generic similarity function between two temporal values
+ */
 Datum
 Temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
@@ -250,7 +253,7 @@ similarity_path_state_next(SimilarityPathState *state)
  *****************************************************************************/
 
 /**
- * @brief Compute the Dynamic Time Warp (DTW) path between two temporal values
+ * @brief Compute the similarity path between two temporal values
  */
 Datum
 Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)

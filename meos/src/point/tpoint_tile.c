@@ -651,6 +651,69 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
 }
 #endif /* MEOS */
 
+/**
+ * @ingroup libmeos_temporal_tile
+ * @brief Generate a tile in a multidimensional grid for temporal points
+ * @csqlfn Stbox_tile()
+ */
+STBox *
+stbox_tile(GSERIALIZED *point, TimestampTz t, double xsize, double ysize,
+  double zsize, Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
+  bool hast)
+{
+  /* Ensure parameter validity */
+  if (! ensure_not_empty(point) || ! ensure_point_type(point) ||
+      ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
+      ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
+      ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8) ||
+      ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin) ||
+      (hast && ! ensure_valid_duration(duration)))
+    return NULL;
+
+  int64 tunits = 0; /* make compiler quiet */
+  if (hast)
+    tunits = interval_units(duration);
+  int32 srid = gserialized_get_srid(point);
+  int32 gs_srid = gserialized_get_srid(sorigin);
+  if (gs_srid != SRID_UNKNOWN)
+    ensure_same_srid(srid, gs_srid);
+  POINT3DZ pt, ptorig;
+  memset(&pt, 0, sizeof(POINT3DZ));
+  memset(&ptorig, 0, sizeof(POINT3DZ));
+  bool hasz = (bool) FLAGS_GET_Z(point->gflags);
+  if (hasz)
+  {
+    ensure_has_Z_gs(sorigin);
+    const POINT3DZ *p1 = GSERIALIZED_POINT3DZ_P(point);
+    pt.x = p1->x;
+    pt.y = p1->y;
+    pt.z = p1->z;
+    const POINT3DZ *p2 = GSERIALIZED_POINT3DZ_P(sorigin);
+    ptorig.x = p2->x;
+    ptorig.y = p2->y;
+    ptorig.z = p2->z;
+  }
+  else
+  {
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(point);
+    pt.x = p1->x;
+    pt.y = p1->y;
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(sorigin);
+    ptorig.x = p2->x;
+    ptorig.y = p2->y;
+  }
+  double xmin = float_bucket(pt.x, xsize, ptorig.x);
+  double ymin = float_bucket(pt.y, ysize, ptorig.y);
+  double zmin = float_bucket(pt.z, zsize, ptorig.z);
+  TimestampTz tmin = 0; /* make compiler quiet */
+  if (hast)
+    tmin = timestamptz_bucket1(t, tunits, torigin);
+  STBox *result = palloc0(sizeof(STBox));
+  stbox_tile_set(xmin, ymin, zmin, tmin, xsize, ysize, zsize, tunits, hasz,
+    hast, srid, result);
+  return result;
+}
+
 /*****************************************************************************
  * Split functions
  *****************************************************************************/

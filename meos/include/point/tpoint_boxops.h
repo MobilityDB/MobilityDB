@@ -62,13 +62,16 @@ extern STBox * tpoint_stboxes(const Temporal *temp, int *count);
 
 /* Generic box functions */
 
-extern int boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
-  bool (*func)(const STBox *, const STBox *), bool invert);
-extern Datum boxop_tpoint_stbox(const Temporal *temp, const STBox *box,
+extern bool boxop_tpoint_stbox(const Temporal *temp, const STBox *box,
   bool (*func)(const STBox *, const STBox *), bool invert);
 extern bool boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const STBox *, const STBox *));
 
+extern bool boxop_tpoint_stbox(const Temporal *temp, const STBox *box,
+  bool (*func)(const STBox *, const STBox *), bool invert);
+extern bool boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
+  bool (*func)(const STBox *, const STBox *));
+  
 /*****************************************************************************/
 
 #endif /* __TPOINT_BOXOPS_H__ */

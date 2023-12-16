@@ -58,8 +58,10 @@
 PGDLLEXPORT Datum Tpoint_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_extent_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal extent aggregation of temporal point
  * values
+ * @sqlfn extent()
  */
 Datum
 Tpoint_extent_transfn(PG_FUNCTION_ARGS)
@@ -79,8 +81,10 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal centroid aggregation of temporal
  * points
+ * @sqlfn tcentroid()
  */
 Datum
 Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
@@ -99,8 +103,10 @@ Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_combinefn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for temporal centroid aggregation of temporal points
  * values
+ * @sqlfn tcentroid()
  */
 Datum
 Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
@@ -131,7 +137,9 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_finalfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Final function for temporal centroid aggregation of temporal points
+ * @sqlfn tcentroid()
  */
 Datum
 Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)

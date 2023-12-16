@@ -873,8 +873,8 @@ Datum
 Tinstant_value(PG_FUNCTION_ARGS)
 {
   TInstant *inst = PG_GETARG_TINSTANT_P(0);
-  if (! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT))
-    PG_RETURN_NULL();
+  /* Ensure validity of arguments */
+  ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT);
 
   Datum result = tinstant_value_copy(inst);
   PG_FREE_IF_COPY(inst, 0);
@@ -1031,8 +1031,8 @@ Datum
 Tinstant_timestamp(PG_FUNCTION_ARGS)
 {
   TInstant *inst = PG_GETARG_TINSTANT_P(0);
-  if (! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT))
-    PG_RETURN_NULL();
+  /* Ensure validity of arguments */
+  ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT);
 
   TimestampTz result = inst->t;
   PG_FREE_IF_COPY(inst, 0);
@@ -2106,8 +2106,8 @@ Tnumber_minus_span(PG_FUNCTION_ARGS)
 static Datum
 Tnumber_restrict_spanset(FunctionCallInfo fcinfo, bool atfunc)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);  \
-  SpanSet *ss = PG_GETARG_SPANSET_P(1); \
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
   Temporal *result = tnumber_restrict_spanset(temp, ss, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ss, 1);

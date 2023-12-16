@@ -29,16 +29,16 @@
 
 /**
  * @file
- * @brief Bounding box operators for temporal types
+ * @brief Bounding box functions for temporal types
  *
  * The bounding box of temporal values are
  * - a `Span` for temporal Boolean and temporal text values
  * - a `TBox` for temporal integers and floats, where the *x* coordinate is for
  *   the value dimension and the *t* coordinate is for the time dimension.
- * The following operators are defined: `overlaps`, `contains`, `contained`,
+ * The following functions are defined: `overlaps`, `contains`, `contained`,
  * `same`, and `adjacent`.
  *
- * The operators consider as many dimensions as they are shared in both
+ * The functions consider as many dimensions as they are shared in both
  * arguments: only the value dimension, only the time dimension, or both
  * the value and the time dimensions.
  */
@@ -73,12 +73,12 @@ temporal_max_header_size(void)
 }
 
 /*****************************************************************************
- * Bounding box operators for temporal types: Generic functions
+ * Bounding box functions for temporal types: Generic functions
  * The inclusive/exclusive bounds are taken into account for the comparisons
  *****************************************************************************/
 
 /**
- * @brief Generic bounding box operator for a timestamptz span and a temporal
+ * @brief Generic bounding box function for a timestamptz span and a temporal
  * value
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
@@ -89,15 +89,13 @@ Boxop_tstzspan_temporal(FunctionCallInfo fcinfo,
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Span p1;
-  temporal_set_tstzspan(temp, &p1);
-  bool result = func(s, &p1);
+  bool result = boxop_temporal_tstzspan(temp, s, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
 
 /**
- * @brief Generic bounding box operator for a temporal value and a timestamptz
+ * @brief Generic bounding box function for a temporal value and a timestamptz
  * span
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
@@ -108,15 +106,13 @@ Boxop_temporal_tstzspan(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  Span p1;
-  temporal_set_tstzspan(temp, &p1);
-  bool result = func(&p1, s);
+  bool result = boxop_temporal_tstzspan(temp, s, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
 
 /**
- * @brief Generic bounding box operator for two temporal values
+ * @brief Generic bounding box function for two temporal values
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -126,17 +122,14 @@ Boxop_temporal_temporal(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Span s1, s2;
-  temporal_set_tstzspan(temp1, &s1);
-  temporal_set_tstzspan(temp2, &s2);
-  bool result = func(&s1, &s2);
+  bool result = boxop_temporal_temporal(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
- * Bounding box operators for temporal types
+ * Bounding box functions for temporal types
  *****************************************************************************/
 
 PGDLLEXPORT Datum Contains_tstzspan_temporal(PG_FUNCTION_ARGS);
@@ -370,11 +363,11 @@ Adjacent_temporal_temporal(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Bounding box operators for temporal number types: Generic functions
+ * Generic bounding box functions for temporal number types
  *****************************************************************************/
 
 /**
- * @brief Generic bounding box operator for a span and a temporal number
+ * @brief Generic bounding box function for a span and a temporal number
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -384,15 +377,13 @@ Boxop_numspan_tnumber(FunctionCallInfo fcinfo,
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Span s1;
-  tnumber_set_span(temp, &s1);
-  bool result = func(s, &s1);
+  bool result = boxop_tnumber_numspan(temp, s, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
 
 /**
- * @brief Generic bounding box operator for a temporal number and a span
+ * @brief Generic bounding box function for a temporal number and a span
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -402,15 +393,13 @@ Boxop_tnumber_numspan(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  Span s1;
-  tnumber_set_span(temp, &s1);
-  bool result = func(&s1, s);
+  bool result = boxop_tnumber_numspan(temp, s, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
 
 /**
- * @brief Generic bounding box operator for a temporal box and a temporal
+ * @brief Generic bounding box function for a temporal box and a temporal
  * number
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
@@ -423,13 +412,13 @@ Boxop_tbox_tnumber(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   TBox box1;
   temporal_set_bbox(temp, &box1);
-  bool result = func(box, &box1);
+  bool result = boxop_tnumber_tbox(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
 
 /**
- * @brief Generic bounding box operator for a temporal number and a temporal
+ * @brief Generic bounding box function for a temporal number and a temporal
  * box
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
@@ -440,15 +429,13 @@ Boxop_tnumber_tbox(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TBox *box = PG_GETARG_TBOX_P(1);
-  TBox box1;
-  temporal_set_bbox(temp, &box1);
-  bool result = func(&box1, box);
+  bool result = boxop_tnumber_tbox(temp, box, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
 
 /**
- * @brief Generic bounding box operator for two temporal numbers
+ * @brief Generic bounding box function for two temporal numbers
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -458,17 +445,14 @@ Boxop_tnumber_tnumber(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  TBox box1, box2;
-  temporal_set_bbox(temp1, &box1);
-  temporal_set_bbox(temp2, &box2);
-  bool result = func(&box1, &box2);
+  bool result = boxop_tnumber_tnumber(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
- * Bounding box operators for temporal numbers
+ * Bounding box functions for temporal numbers
  *****************************************************************************/
 
 PGDLLEXPORT Datum Contains_numspan_tnumber(PG_FUNCTION_ARGS);

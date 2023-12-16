@@ -44,10 +44,6 @@
 
 /*****************************************************************************/
 
-extern Datum Boxop_geo_tpoint(FunctionCallInfo fcinfo,
-  bool (*func)(const STBox *, const STBox *));
-extern Datum Boxop_tpoint_geo(FunctionCallInfo fcinfo,
-  bool (*func)(const STBox *, const STBox *));
 extern Datum Boxop_stbox_tpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
 extern Datum Boxop_tpoint_stbox(FunctionCallInfo fcinfo,

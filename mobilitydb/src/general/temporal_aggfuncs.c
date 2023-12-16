@@ -66,7 +66,8 @@
  * @param[in] crossings True if turning points are added in the segments
  */
 static Datum
-Temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
+Temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
+  bool crossings)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);

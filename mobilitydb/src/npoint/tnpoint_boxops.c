@@ -233,7 +233,7 @@ Boxop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
 PGDLLEXPORT Datum Overlaps_stbox_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_stbox_tnpoint);
 /**
- * @ingroup mobilitydb_temporal_bbox_topo_topo
+ * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of
  * a temporal network point overlap
  * @sqlfn overlaps_bbox()

@@ -1488,8 +1488,8 @@ tbox_eq(const TBox *box1, const TBox *box2)
   if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
     MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
       return false;
-  if (! span_eq(&box1->span, &box2->span) ||
-      ! span_eq(&box1->period, &box2->period))
+  if (! span_eq1(&box1->span, &box2->span) ||
+      ! span_eq1(&box1->period, &box2->period))
     return false;
   /* The two boxes are equal */
   return true;

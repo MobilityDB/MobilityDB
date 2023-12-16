@@ -945,7 +945,7 @@ point_on_segment(Datum start, Datum end, Datum point)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal instant point is ever equal to a point
- * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
+ * @pre The validity of the parameters is verified in function #tpoint_ever_eq
  * @csqlfn #Tpoint_ever_eq()
  */
 bool
@@ -960,7 +960,7 @@ tpointinst_ever_eq(const TInstant *inst, Datum value)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence point is ever equal to a point
- * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
+ * @pre The validity of the parameters is verified in function #tpoint_ever_eq
  * @csqlfn #Tpoint_ever_eq()
  */
 bool
@@ -1021,7 +1021,7 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence set point is ever equal to a point
- * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
+ * @pre The validity of the parameters is verified in function #tpoint_ever_eq
  * @csqlfn #Tpoint_ever_eq()
  */
 bool
@@ -1075,7 +1075,7 @@ tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal instant point is always equal to a point.
- * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
+ * @pre The validity of the parameters is verified in function #tpoint_always_eq
  * @csqlfn #Tpoint_always_eq()
  */
 bool
@@ -1089,7 +1089,7 @@ tpointinst_always_eq(const TInstant *inst, Datum value)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence point is always equal to a point.
- * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
+ * @pre The validity of the parameters is verified in function #tpoint_always_eq
  * @csqlfn #Tpoint_always_eq()
  */
 bool
@@ -1109,7 +1109,7 @@ tpointseq_always_eq(const TSequence *seq, Datum value)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence set point is always equal to a point.
- * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
+ * @pre The validity of the parameters is verified in function #tpoint_always_eq
  * @csqlfn #Tpoint_always_eq()
  */
 bool

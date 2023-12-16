@@ -394,8 +394,6 @@ Tbox_to_tstzspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Span *result = tbox_to_tstzspan(box);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

@@ -41,7 +41,6 @@
 #include "general/temporal.h"
 #include "general/span.h"
 #include "general/tbox.h"
-#include "point/stbox.h"
 
 /*****************************************************************************/
 
@@ -70,23 +69,13 @@ extern void tsequenceset_compute_bbox(TSequenceSet *ss);
 
 /* Bounding box operators for temporal types */
 
-extern Datum boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
-  bool (*func)(const Span *, const Span *), bool invert);
-extern Datum boxop_temporal_tstzset(const Temporal *temp, const Set *s,
-  bool (*func)(const Span *, const Span *), bool invert);
-extern Datum boxop_temporal_tstzspan(const Temporal *temp, const Span *s,
-  bool (*func)(const Span *, const Span *), bool invert);
-extern bool boxop_temporal_tstzspanset(const Temporal *temp, const SpanSet *ss,
+extern bool boxop_temporal_tstzspan(const Temporal *temp, const Span *s,
   bool (*func)(const Span *, const Span *), bool invert);
 extern bool boxop_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, bool (*func)(const Span *, const Span *));
 
-extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
-  meosType basetype, bool (*func)(const TBox *, const TBox *), bool invert);
 extern bool boxop_tnumber_numspan(const Temporal *temp, const Span *span,
-  bool (*func)(const TBox *, const TBox *), bool invert);
-extern bool boxop_tnumber_numspanset(const Temporal *temp, const SpanSet *ss,
-  bool (*func)(const TBox *, const TBox *), bool invert);
+  bool (*func)(const Span *, const Span *), bool invert);
 extern bool boxop_tnumber_tbox(const Temporal *temp, const TBox *box,
   bool (*func)(const TBox *, const TBox *), bool invert);
 extern bool boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,

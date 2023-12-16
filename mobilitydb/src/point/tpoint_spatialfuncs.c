@@ -477,12 +477,11 @@ Tpointarr_round(PG_FUNCTION_ARGS)
   int maxdd = PG_GETARG_INT32(1);
 
   Temporal **temparr = temporalarr_extract(array, &count);
-  Temporal **result_arr = tpointarr_round((const Temporal **) temparr, count,
+  Temporal **resarr = tpointarr_round((const Temporal **) temparr, count,
       maxdd);
+  ArrayType *result = temporalarr_to_array((const Temporal **) resarr, count);
 
-  ArrayType *result = temporalarr_to_array((const Temporal **) result_arr,
-    count);
-  pfree(temparr);
+  pfree(temparr); pfree_array((void **) resarr, count);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -772,9 +771,9 @@ Datum
 Tpoint_twcentroid(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = PointerGetDatum(tpoint_twcentroid(temp));
+  GSERIALIZED *result = tpoint_twcentroid(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -853,8 +852,8 @@ Bearing_point_point(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum Bearing_geo_tpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Bearing_geo_tpoint);
+PGDLLEXPORT Datum Bearing_point_tpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Bearing_point_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the temporal bearing between a geometry/geography point
@@ -862,7 +861,7 @@ PG_FUNCTION_INFO_V1(Bearing_geo_tpoint);
  * @sqlfn bearing()
  */
 Datum
-Bearing_geo_tpoint(PG_FUNCTION_ARGS)
+Bearing_point_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -953,9 +952,10 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  Temporal **pieces = tpoint_make_simple(temp, &count);
-  ArrayType *result = temporalarr_to_array((const Temporal **) pieces, count);
-  pfree_array((void **) pieces, count);
+  Temporal **fragments = tpoint_make_simple(temp, &count);
+  ArrayType *result = temporalarr_to_array((const Temporal **) fragments,
+    count);
+  pfree_array((void **) fragments, count);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

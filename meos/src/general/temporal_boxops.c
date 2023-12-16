@@ -114,7 +114,7 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
 {
   assert(temporal_type(temptype));
   if (talpha_type(temptype))
-    return span_eq((Span *) box1, (Span *) box2);
+    return span_eq1((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
     return tbox_eq((TBox *) box1, (TBox *) box2);
   if (tspatial_type(temptype))
@@ -474,5 +474,84 @@ tsequenceset_compute_bbox(TSequenceSet *ss)
   return;
 }
 #endif /* MEOS */
+
+/*****************************************************************************
+ * Generic bounding box functions for temporal types
+ * The inclusive/exclusive bounds are taken into account for the comparisons
+ *****************************************************************************/
+
+/**
+ * @brief Generic bounding box function for a temporal value and a timestamptz
+ * span
+ */
+bool
+boxop_temporal_tstzspan(const Temporal *temp, const Span *s,
+  bool (*func)(const Span *, const Span *), bool invert)
+{
+  Span s1;
+  temporal_set_tstzspan(temp, &s1);
+  bool result = invert ? func(s, &s1) : func(&s1, s);
+  return result;
+
+}
+
+/**
+ * @brief Generic bounding box function for two temporal values
+ */
+bool
+boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
+  bool (*func)(const Span *, const Span *))
+{
+  Span s1, s2;
+  temporal_set_tstzspan(temp1, &s1);
+  temporal_set_tstzspan(temp2, &s2);
+  bool result = func(&s1, &s2);
+  return result;
+}
+
+/*****************************************************************************
+ * Generic bounding box functions for temporal number types
+ *****************************************************************************/
+
+/**
+ * @brief Generic bounding box function for a temporal number and a span
+ */
+bool
+boxop_tnumber_numspan(const Temporal *temp, const Span *s,
+  bool (*func)(const Span *, const Span *), bool invert)
+{
+  Span s1;
+  tnumber_set_span(temp, &s1);
+  bool result = invert ? func(s, &s1) : func(&s1, s);
+  return result;
+}
+
+/**
+ * @brief Generic bounding box function for a temporal number and a temporal
+ * box
+ */
+bool
+boxop_tnumber_tbox(const Temporal *temp, const TBox *box,
+  bool (*func)(const TBox *, const TBox *), bool invert)
+{
+  TBox box1;
+  temporal_set_bbox(temp, &box1);
+  bool result = invert ? func(box, &box1) : func(&box1, box);
+  return result;
+}
+
+/**
+ * @brief Generic bounding box function for two temporal numbers
+ */
+bool
+boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
+  bool (*func)(const TBox *, const TBox *))
+{
+  TBox box1, box2;
+  temporal_set_bbox(temp1, &box1);
+  temporal_set_bbox(temp2, &box2);
+  bool result = func(&box1, &box2);
+  return result;
+}
 
 /*****************************************************************************/
