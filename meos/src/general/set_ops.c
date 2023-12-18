@@ -177,6 +177,9 @@ setop_set_set(const Set *s1, const Set *s2, SetOper op)
 /**
  * @ingroup libmeos_internal_setspan_topo
  * @brief Return true if a set contains a value
+ * @param[in] s Set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 bool
 contains_set_value(const Set *s, Datum d, meosType basetype)
@@ -193,6 +196,8 @@ contains_set_value(const Set *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a set contains an integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Contains_set_value()
  */
 bool
@@ -207,6 +212,8 @@ contains_set_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a set contains a big integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Contains_set_value()
  */
 bool
@@ -221,6 +228,8 @@ contains_set_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a set contains a float
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Contains_set_value()
  */
 bool
@@ -235,6 +244,8 @@ contains_set_float(const Set *s, double d)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a set contains a text
+ * @param[in] s Set
+ * @param[in] txt Value
  * @csqlfn #Contains_set_value()
  */
 bool
@@ -250,6 +261,8 @@ contains_set_text(const Set *s, text *txt)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a set contains a date
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Contains_set_value()
  */
 bool
@@ -264,6 +277,8 @@ contains_set_date(const Set *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a set contains a timestamptz
+ * @param[in] s Set
+ * @param[in] t Value
  * @csqlfn #Contains_set_value()
  */
 bool
@@ -279,6 +294,8 @@ contains_set_timestamptz(const Set *s, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a set contains a geometry/geography
+ * @param[in] s Set
+ * @param[in] gs Value
  * @csqlfn #Contains_set_value()
  */
 bool
@@ -299,6 +316,7 @@ contains_set_geo(const Set *s, GSERIALIZED *gs)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if the first set contains the second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Contains_set_set()
  */
 bool
@@ -338,6 +356,9 @@ contains_set_set(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_internal_setspan_topo
  * @brief Return true if a value is contained in a set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Set
  */
 bool
 contained_value_set(Datum d, meosType basetype, const Set *s)
@@ -349,6 +370,8 @@ contained_value_set(Datum d, meosType basetype, const Set *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if an integer is contained in a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Contained_value_set()
  */
 bool
@@ -363,6 +386,8 @@ contained_int_set(int i, const Set *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a big integer is contained in a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Contained_value_set()
  */
 bool
@@ -377,6 +402,8 @@ contained_bigint_set(int64 i, const Set *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a float is contained in a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Contained_value_set()
  */
 bool
@@ -391,6 +418,8 @@ contained_float_set(double d, const Set *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a text is contained in a set
+ * @param[in] txt Value
+ * @param[in] s Set
  * @csqlfn #Contained_value_set()
  */
 bool
@@ -406,6 +435,8 @@ contained_text_set(text *txt, const Set *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a date is contained in a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Contained_value_set()
  */
 bool
@@ -420,6 +451,8 @@ contained_date_set(DateADT d, const Set *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a timestamptz is contained in a set
+ * @param[in] t Value
+ * @param[in] s Set
  * @csqlfn #Contained_value_set()
  */
 bool
@@ -435,6 +468,8 @@ contained_timestamptz_set(TimestampTz t, const Set *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a geometry/geography is contained in a set
+ * @param[in] gs Value
+ * @param[in] s Set
  * @csqlfn #Contained_value_set()
  */
 bool
@@ -455,6 +490,7 @@ contained_geo_set(GSERIALIZED *gs, const Set *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if the first set is contained in the second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Contained_set_set()
  */
 bool
@@ -470,6 +506,7 @@ contained_set_set(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if two sets overlap
+ * @param[in] s1,s2 Sets
  * @csqlfn #Overlaps_set_set()
  */
 bool
@@ -507,6 +544,9 @@ overlaps_set_set(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value is to the left of a set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Set
  */
 bool
 left_value_set(Datum d, meosType basetype, const Set *s)
@@ -520,6 +560,8 @@ left_value_set(Datum d, meosType basetype, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer is to the left of a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Left_value_set()
  */
 bool
@@ -534,6 +576,8 @@ left_int_set(int i, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer is to the left of a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Left_value_set()
  */
 bool
@@ -548,6 +592,8 @@ left_bigint_set(int64 i, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float is to the left of a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Left_value_set()
  */
 bool
@@ -562,6 +608,8 @@ left_float_set(double d, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a text is to the left of a set
+ * @param[in] txt Value
+ * @param[in] s Set
  * @csqlfn #Left_value_set()
  */
 bool
@@ -577,6 +625,8 @@ left_text_set(text *txt, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is before a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Left_value_set()
  */
 bool
@@ -591,6 +641,8 @@ before_date_set(DateADT d, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is before a set
+ * @param[in] t Value
+ * @param[in] s Set
  * @csqlfn #Left_value_set()
  */
 bool
@@ -607,6 +659,9 @@ before_timestamptz_set(TimestampTz t, const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a set is to the left of a value
+ * @param[in] s Set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 bool
 left_set_value(const Set *s, Datum d, meosType basetype)
@@ -620,6 +675,8 @@ left_set_value(const Set *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is to the left of an integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Left_set_value()
  */
 bool
@@ -634,6 +691,8 @@ left_set_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is to the left of a big integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Left_set_value()
  */
 bool
@@ -648,6 +707,8 @@ left_set_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is to the left of a float
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Left_set_value()
  */
 bool
@@ -662,6 +723,8 @@ left_set_float(const Set *s, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is to the left of a text
+ * @param[in] s Set
+ * @param[in] txt Value
  * @csqlfn #Left_set_value()
  */
 bool
@@ -677,6 +740,8 @@ left_set_text(const Set *s, text *txt)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is before a date
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Left_set_value()
  */
 bool
@@ -691,6 +756,8 @@ before_set_date(const Set *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is before a timestamptz
+ * @param[in] s Set
+ * @param[in] t Value
  * @csqlfn #Left_set_value()
  */
 bool
@@ -707,6 +774,7 @@ before_set_timestamptz(const Set *s, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first set is to the left of the second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Left_set_set()
  */
 bool
@@ -728,6 +796,9 @@ left_set_set(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value is to the right of a set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Set
  */
 bool
 right_value_set(Datum d, meosType basetype, const Set *s)
@@ -739,6 +810,8 @@ right_value_set(Datum d, meosType basetype, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer is to the right of a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Right_value_set()
  */
 bool
@@ -753,6 +826,8 @@ right_int_set(int i, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer is to the right of a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Right_value_set()
  */
 bool
@@ -767,6 +842,8 @@ right_bigint_set(int64 i, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float is to the right of a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Right_value_set()
  */
 bool
@@ -781,6 +858,8 @@ right_float_set(double d, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a text is to the right of a set
+ * @param[in] txt Value
+ * @param[in] s Set
  * @csqlfn #Right_value_set()
  */
 bool
@@ -796,6 +875,8 @@ right_text_set(text *txt, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is after a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Right_value_set()
  */
 bool
@@ -809,6 +890,8 @@ after_date_set(DateADT d, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is after a set
+ * @param[in] t Value
+ * @param[in] s Set
  * @csqlfn #Right_value_set()
  */
 bool
@@ -825,6 +908,9 @@ after_timestamptz_set(TimestampTz t, const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a set is to the right of a value
+ * @param[in] s Set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 bool
 right_set_value(const Set *s, Datum d, meosType basetype)
@@ -836,6 +922,8 @@ right_set_value(const Set *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is to the right of an integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Right_set_value()
  */
 bool
@@ -850,6 +938,8 @@ right_set_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is to the right of a big integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Right_set_value()
  */
 bool
@@ -864,6 +954,8 @@ right_set_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is to the right of a float
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Right_set_value()
  */
 bool
@@ -878,6 +970,8 @@ right_set_float(const Set *s, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is to the right of a text
+ * @param[in] s Set
+ * @param[in] txt Value
  * @csqlfn #Right_set_value()
  */
 bool
@@ -893,6 +987,8 @@ right_set_text(const Set *s, text *txt)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is after a date
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Right_set_value()
  */
 bool
@@ -907,6 +1003,8 @@ after_set_date(const Set *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is after a timestamptz
+ * @param[in] s Set
+ * @param[in] t Value
  * @csqlfn #Right_set_value()
  */
 bool
@@ -923,6 +1021,7 @@ after_set_timestamptz(const Set *s, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first set is to the right of the second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Right_set_set()
  */
 bool
@@ -938,6 +1037,9 @@ right_set_set(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value does not extend to the right of a set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Set
  */
 bool
 overleft_value_set(Datum d, meosType basetype, const Set *s)
@@ -951,6 +1053,8 @@ overleft_value_set(Datum d, meosType basetype, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer does not extend to the right of a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Overleft_value_set()
  */
 bool
@@ -965,6 +1069,8 @@ overleft_int_set(int i, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer does not extend to the right of a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Overleft_value_set()
  */
 bool
@@ -979,6 +1085,8 @@ overleft_bigint_set(int64 i, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float does not extend to the right of a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Overleft_value_set()
  */
 bool
@@ -993,6 +1101,8 @@ overleft_float_set(double d, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a text does not extend to the right of a set
+ * @param[in] txt Value
+ * @param[in] s Set
  * @csqlfn #Overleft_value_set()
  */
 bool
@@ -1008,6 +1118,8 @@ overleft_text_set(text *txt, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is not after a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Overleft_value_set()
  */
 bool
@@ -1023,6 +1135,8 @@ overbefore_date_set(DateADT d, const Set *s)
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is not after a set
  * @csqlfn #Overleft_value_set()
+ * @param[in] t Value
+ * @param[in] s Set
  */
 bool
 overbefore_timestamptz_set(TimestampTz t, const Set *s)
@@ -1038,6 +1152,9 @@ overbefore_timestamptz_set(TimestampTz t, const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a set does not extend to the right of a value
+ * @param[in] s Set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 bool
 overleft_set_value(const Set *s, Datum d, meosType basetype)
@@ -1051,6 +1168,8 @@ overleft_set_value(const Set *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the right of an integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Overleft_set_value()
  */
 bool
@@ -1065,6 +1184,8 @@ overleft_set_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the right of a big integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Overleft_set_value()
  */
 bool
@@ -1079,6 +1200,8 @@ overleft_set_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the right of a float
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Overleft_set_value()
  */
 bool
@@ -1093,6 +1216,8 @@ overleft_set_float(const Set *s, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the right of a text
+ * @param[in] s Set
+ * @param[in] txt Value
  * @csqlfn #Overleft_set_value()
  */
 bool
@@ -1108,6 +1233,8 @@ overleft_set_text(const Set *s, text *txt)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is not after a date
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Overleft_set_value()
  */
 bool
@@ -1122,6 +1249,8 @@ overbefore_set_date(const Set *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is not after a timestamptz
+ * @param[in] s Set
+ * @param[in] t Value
  * @csqlfn #Overleft_set_value()
  */
 bool
@@ -1139,6 +1268,7 @@ overbefore_set_timestamptz(const Set *s, TimestampTz t)
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first set does not extend to the right of
  * the second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Overleft_set_set()
  */
 bool
@@ -1159,6 +1289,9 @@ overleft_set_set(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value does not extend to the the left of a set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Set
  */
 bool
 overright_value_set(Datum d, meosType basetype, const Set *s)
@@ -1172,6 +1305,8 @@ overright_value_set(Datum d, meosType basetype, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer does not extend to the the left of a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Overright_value_set()
  */
 bool
@@ -1186,6 +1321,8 @@ overright_int_set(int i, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer does not extend to the the left of a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Overright_value_set()
  */
 bool
@@ -1200,6 +1337,8 @@ overright_bigint_set(int64 i, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float does not extend to the left of a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Overright_value_set()
  */
 bool
@@ -1214,6 +1353,8 @@ overright_float_set(double d, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a text does not extend to the left of a set
+ * @param[in] txt Value
+ * @param[in] s Set
  * @csqlfn #Overright_value_set()
  */
 bool
@@ -1229,6 +1370,8 @@ overright_text_set(text *txt, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is not before a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Overright_value_set()
  */
 bool
@@ -1243,6 +1386,8 @@ overafter_date_set(DateADT d, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is not before a set
+ * @param[in] t Value
+ * @param[in] s Set
  * @csqlfn #Overright_value_set()
  */
 bool
@@ -1259,6 +1404,9 @@ overafter_timestamptz_set(TimestampTz t, const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a set does not extend to the left of a value
+ * @param[in] s Set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 bool
 overright_set_value(const Set *s, Datum d, meosType basetype)
@@ -1272,6 +1420,8 @@ overright_set_value(const Set *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the left of an integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Overright_set_value()
  */
 bool
@@ -1286,6 +1436,8 @@ overright_set_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the left of a big integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Overright_set_value()
  */
 bool
@@ -1300,6 +1452,8 @@ overright_set_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the left of a float
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Overright_set_value()
  */
 bool
@@ -1314,6 +1468,8 @@ overright_set_float(const Set *s, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the left of a text
+ * @param[in] s Set
+ * @param[in] txt Value
  * @csqlfn #Overright_set_value()
  */
 bool
@@ -1329,6 +1485,8 @@ overright_set_text(const Set *s, text *txt)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is not before a date
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Overright_set_value()
  */
 bool
@@ -1343,6 +1501,8 @@ overafter_set_date(const Set *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set is not before a timestamptz
+ * @param[in] s Set
+ * @param[in] t Value
  * @csqlfn #Overright_set_value()
  */
 bool
@@ -1360,6 +1520,7 @@ overafter_set_timestamptz(const Set *s, TimestampTz t)
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first set does not extend to the left of the
  * second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Overright_set_set()
  */
 bool
@@ -1379,6 +1540,9 @@ overright_set_set(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the union of a set and a value
+ * @param[in] s Set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 Set *
 union_set_value(const Set *s, Datum d, meosType basetype)
@@ -1412,6 +1576,8 @@ union_set_value(const Set *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a set and an integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Union_set_value()
  */
 Set *
@@ -1426,6 +1592,8 @@ union_set_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a set and a big integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Union_set_value()
  */
 Set *
@@ -1440,6 +1608,8 @@ union_set_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a set and a float
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Union_set_value()
  */
 Set *
@@ -1454,6 +1624,8 @@ union_set_float(const Set *s, double d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a set and a text
+ * @param[in] s Set
+ * @param[in] txt Value
  * @csqlfn #Union_set_value()
  */
 Set *
@@ -1469,6 +1641,8 @@ union_set_text(const Set *s, const text *txt)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a set and a date
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Union_set_value()
  */
 Set *
@@ -1483,6 +1657,8 @@ union_set_date(const Set *s, const DateADT d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a set and a timestamptz
+ * @param[in] s Set
+ * @param[in] t Value
  * @csqlfn #Union_set_value()
  */
 Set *
@@ -1498,6 +1674,8 @@ union_set_timestamptz(const Set *s, const TimestampTz t)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a set and a geometry/geography
+ * @param[in] s Set
+ * @param[in] gs Value
  * @csqlfn #Union_set_value()
  */
 Set *
@@ -1518,6 +1696,7 @@ union_set_geo(const Set *s, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of two sets
+ * @param[in] s1,s2 Set
  * @csqlfn #Union_set_set()
  */
 Set *
@@ -1537,6 +1716,9 @@ union_set_set(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the intersection of a set and a value
+ * @param[in] s Set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 Set *
 intersection_set_value(const Set *s, Datum d, meosType basetype)
@@ -1551,6 +1733,8 @@ intersection_set_value(const Set *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of a set and an integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Intersection_set_value()
  */
 Set *
@@ -1565,6 +1749,8 @@ intersection_set_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of a set and a big integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Intersection_set_value()
  */
 Set *
@@ -1579,6 +1765,8 @@ intersection_set_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of a set and a float
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Intersection_set_value()
  */
 Set *
@@ -1593,6 +1781,8 @@ intersection_set_float(const Set *s, double d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of a set and a text
+ * @param[in] s Set
+ * @param[in] txt Value
  * @csqlfn #Intersection_set_value()
  */
 Set *
@@ -1608,6 +1798,8 @@ intersection_set_text(const Set *s, const text *txt)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of a set and a date
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Intersection_set_value()
  */
 Set *
@@ -1621,6 +1813,8 @@ intersection_set_date(const Set *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of a set and a timestamptz
+ * @param[in] s Set
+ * @param[in] t Value
  * @csqlfn #Intersection_set_value()
  */
 Set *
@@ -1636,6 +1830,8 @@ intersection_set_timestamptz(const Set *s, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of a set and a geometry/geography
+ * @param[in] s Set
+ * @param[in] gs Value
  * @csqlfn #Intersection_set_value()
  */
 Set *
@@ -1656,6 +1852,7 @@ intersection_set_geo(const Set *s, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of two sets
+ * @param[in] s1,s2 Sets
  * @csqlfn #Intersection_set_set()
  */
 Set *
@@ -1675,7 +1872,10 @@ intersection_set_set(const Set *s1, const Set *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the difference of a value and a set in the last argument
+ * @brief Return the difference of a value and a set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Set
  */
 Set *
 minus_value_set(Datum d, meosType basetype, const Set *s)
@@ -1689,7 +1889,9 @@ minus_value_set(Datum d, meosType basetype, const Set *s)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of an integer and a set in the last argument
+ * @brief Return the difference of an integer and a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Minus_value_set()
  */
 Set *
@@ -1703,8 +1905,9 @@ minus_int_set(int i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a big integer and a set in the last
- * argument
+ * @brief Return the difference of a big integer and a set
+ * @param[in] i Value
+ * @param[in] s Set
  * @csqlfn #Minus_value_set()
  */
 Set *
@@ -1718,7 +1921,9 @@ minus_bigint_set(int64 i, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a float and a set in the last argument
+ * @brief Return the difference of a float and a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Minus_value_set()
  */
 Set *
@@ -1732,7 +1937,9 @@ minus_float_set(double d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a text and a set in the last argument
+ * @brief Return the difference of a text and a set
+ * @param[in] txt Value
+ * @param[in] s Set
  * @csqlfn #Minus_value_set()
  */
 Set *
@@ -1747,7 +1954,9 @@ minus_text_set(const text *txt, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a date and a set in the last argument
+ * @brief Return the difference of a date and a set
+ * @param[in] d Value
+ * @param[in] s Set
  * @csqlfn #Minus_value_set()
  */
 Set *
@@ -1761,8 +1970,9 @@ minus_date_set(DateADT d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a timestamptz and a set in the last
- * argument
+ * @brief Return the difference of a timestamptz and a set 
+ * @param[in] t Value
+ * @param[in] s Set
  * @csqlfn #Minus_value_set()
  */
 Set *
@@ -1777,7 +1987,9 @@ minus_timestamptz_set(TimestampTz t, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a geo and a set in the last argument
+ * @brief Return the difference of a geo and a set 
+ * @param[in] gs Value
+ * @param[in] s Set
  * @csqlfn #Minus_value_set()
  */
 Set *
@@ -1798,6 +2010,9 @@ minus_geo_set(const GSERIALIZED *gs, const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the difference of a set and a value
+ * @param[in] s Set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 Set *
 minus_set_value(const Set *s, Datum d, meosType basetype)
@@ -1822,6 +2037,8 @@ minus_set_value(const Set *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a set and an integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Minus_set_value()
  */
 Set *
@@ -1836,6 +2053,8 @@ minus_set_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a set and a big integer
+ * @param[in] s Set
+ * @param[in] i Value
  * @csqlfn #Minus_set_value()
  */
 Set *
@@ -1850,6 +2069,8 @@ minus_set_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a set and a float
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Minus_set_value()
  */
 Set *
@@ -1864,6 +2085,8 @@ minus_set_float(const Set *s, double d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a set and a text
+ * @param[in] s Set
+ * @param[in] txt Value
  * @csqlfn #Minus_set_value()
  */
 Set *
@@ -1879,6 +2102,8 @@ minus_set_text(const Set *s, const text *txt)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a set and a date
+ * @param[in] s Set
+ * @param[in] d Value
  * @csqlfn #Minus_set_value()
  */
 Set *
@@ -1893,6 +2118,8 @@ minus_set_date(const Set *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a set and a timestamptz
+ * @param[in] s Set
+ * @param[in] t Value
  * @csqlfn #Minus_set_value()
  */
 Set *
@@ -1908,6 +2135,8 @@ minus_set_timestamptz(const Set *s, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a set and a geometry/geography
+ * @param[in] s Set
+ * @param[in] gs Value
  * @csqlfn #Minus_set_value()
  */
 Set *
@@ -1928,6 +2157,7 @@ minus_set_geo(const Set *s, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of two sets
+ * @param[in] s1,s2 Sets
  * @csqlfn #Minus_set_set()
  */
 Set *
@@ -1947,6 +2177,9 @@ minus_set_set(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between a set and a value as a double
+ * @param[in] s Set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 double
 distance_set_value(const Set *s, Datum d, meosType basetype)
@@ -1961,6 +2194,8 @@ distance_set_value(const Set *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a set and an integer as a double
+ * @param[in] s Set
+ * @param[in] i Value
  * @result On error return -1.0
  * @csqlfn #Distance_set_value()
  */
@@ -1976,6 +2211,8 @@ distance_set_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a set and a big integer as a double
+ * @param[in] s Set
+ * @param[in] i Value
  * @result On error return -1.0
  * @csqlfn #Distance_set_value()
  */
@@ -1991,6 +2228,8 @@ distance_set_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a set and a float
+ * @param[in] s Set
+ * @param[in] d Value
  * @result On error return -1.0
  * @csqlfn #Distance_set_value()
  */
@@ -2006,6 +2245,8 @@ distance_set_float(const Set *s, double d)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance in seconds between a set and a date as a double
+ * @param[in] s Set
+ * @param[in] d Value
  * @result On error return -1.0
  * @csqlfn #Distance_set_value()
  */
@@ -2022,6 +2263,8 @@ distance_set_date(const Set *s, DateADT d)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance in seconds between a set and a timestamptz as a
  * double
+ * @param[in] s Set
+ * @param[in] t Value
  * @result On error return -1.0
  * @csqlfn #Distance_set_value()
  */
@@ -2039,6 +2282,7 @@ distance_set_timestamptz(const Set *s, TimestampTz t)
 /**
  * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between two sets as a double
+ * @param[in] s1,s2 Sets
  */
 double
 dist_set_set(const Set *s1, const Set *s2)
@@ -2053,6 +2297,7 @@ dist_set_set(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between two sets as a double
+ * @param[in] s1,s2 Sets
  * @result On error return -1.0
  * @csqlfn #Distance_set_set()
  */

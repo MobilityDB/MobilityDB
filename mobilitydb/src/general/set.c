@@ -66,6 +66,8 @@ PG_FUNCTION_INFO_V1(Set_in);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Input function for set types
+ * param[in] input String
+ * param[in] typid Type identifier
  * @sqlfn intset_in(), floatset_in(), ...
  */
 Datum

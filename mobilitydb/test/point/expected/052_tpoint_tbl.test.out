@@ -1364,13 +1364,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp ?= startValue(temp);
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= startValue(temp);
  count 
 -------
-    31
+    32
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= startValue(temp);
  count 
 -------
-    31
+    33
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp %= startValue(temp);
@@ -1382,7 +1382,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp %= startValue(temp);
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp %= startValue(temp);
  count 
 -------
-    39
+    41
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE temp != merge(atValues(temp, g), minusValues(temp, g));

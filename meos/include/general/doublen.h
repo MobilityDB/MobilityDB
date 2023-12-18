@@ -52,7 +52,7 @@ typedef struct
 
 /**
  * Structure to represent values of the internal type for computing aggregates
- * for 2D temporal point types
+ * for 2D temporal points
  */
 typedef struct
 {
@@ -63,7 +63,7 @@ typedef struct
 
 /**
  * Structure to represent values of the internal type for computing aggregates
- * for 3D temporal point types
+ * for 3D temporal points
  */
 typedef struct
 {

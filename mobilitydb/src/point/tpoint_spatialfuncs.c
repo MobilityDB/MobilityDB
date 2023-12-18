@@ -219,8 +219,7 @@ tpointseq_transform(const TSequence *seq, int srid)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tpointinst_transform(TSEQUENCE_INST_N(seq, 0),
-      Int32GetDatum(srid));
+    TInstant *inst = tpointinst_transform(TSEQUENCE_INST_N(seq, 0), srid);
     TSequence *result = tinstant_to_tsequence(inst, interp);
     pfree(inst);
     return result;
@@ -229,7 +228,7 @@ tpointseq_transform(const TSequence *seq, int srid)
   /* General case */
   /* Call the discrete sequence function even for continuous sequences
    * to obtain a Multipoint that is sent to PostGIS for transformion */
-  Datum multipoint = PointerGetDatum(tpointseq_disc_trajectory(seq));
+  Datum multipoint = PointerGetDatum(tpointdiscseq_trajectory(seq));
   Datum transf = datum_transform(multipoint, srid);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
@@ -260,8 +259,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    TSequence *seq1 = tpointseq_transform(TSEQUENCESET_SEQ_N(ss, 0),
-      Int32GetDatum(srid));
+    TSequence *seq1 = tpointseq_transform(TSEQUENCESET_SEQ_N(ss, 0), srid);
     TSequenceSet *result = tsequence_to_tsequenceset(seq1);
     pfree(seq1);
     return result;
@@ -454,9 +452,9 @@ Tpoint_round(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpointarr_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointarr_round);
 /**
- * @ingroup mobilitydb_temporal_inout
- * @brief Return an array of temporal points in the Well-Known Text (WKT)
- * representation
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return an array of temporal points with the precision of the
+ * coordinates set to a number of decimal places
  * @sqlfn round()
  */
 Datum
@@ -484,53 +482,53 @@ Tpointarr_round(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tpoint_to_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_to_geo);
+PGDLLEXPORT Datum Tpoint_to_geomeas(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_to_geomeas);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal point to a geometry/geography with M measure
  */
 Datum
-Tpoint_to_geo(PG_FUNCTION_ARGS)
+Tpoint_to_geomeas(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
   GSERIALIZED *result;
-  tpoint_to_geo_meas(tpoint, NULL, segmentize, &result);
+  tpoint_tfloat_to_geomeas(tpoint, NULL, segmentize, &result);
   PG_FREE_IF_COPY(tpoint, 0);
   PG_RETURN_GSERIALIZED_P(result);
 }
 
-PGDLLEXPORT Datum Geo_to_tpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_to_tpoint);
+PGDLLEXPORT Datum Geomeas_to_tpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geomeas_to_tpoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a geometry/geography with M measure to a temporal point
  */
 Datum
-Geo_to_tpoint(PG_FUNCTION_ARGS)
+Geomeas_to_tpoint(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *result = geo_to_tpoint(geo);
-  PG_FREE_IF_COPY(geo, 0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *result = geomeas_to_tpoint(gs);
+  PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tpoint_to_geo_meas(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_to_geo_meas);
+PGDLLEXPORT Datum Tpoint_tfloat_to_geomeas(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_tfloat_to_geomeas);
 /**
  * @ingroup mobilitydb_temporal_conversion
  * @brief Convert a temporal point and a temporal float to a geometry/geography
  * with M measure 
  */
 Datum
-Tpoint_to_geo_meas(PG_FUNCTION_ARGS)
+Tpoint_tfloat_to_geomeas(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   Temporal *measure = PG_GETARG_TEMPORAL_P(1);
   bool segmentize = (PG_NARGS() == 3) ? PG_GETARG_BOOL(2) : false;
   GSERIALIZED *result;
-  bool found = tpoint_to_geo_meas(tpoint, measure, segmentize, &result);
+  bool found = tpoint_tfloat_to_geomeas(tpoint, measure, segmentize, &result);
   PG_FREE_IF_COPY(tpoint, 0);
   PG_FREE_IF_COPY(measure, 1);
   if (! found)

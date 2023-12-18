@@ -87,6 +87,8 @@ ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 /**
  * @ingroup libmeos_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal point.
+ * @param[in] temp Temporal point
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Tpoint_as_text()
  */
 char *
@@ -112,6 +114,8 @@ tpoint_as_text(const Temporal *temp, int maxdd)
  * @ingroup libmeos_temporal_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
  * point.
+ * @param[in] temp Temporal point
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Tpoint_as_ewkt()
  */
 char *
@@ -143,7 +147,6 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
  * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a geometry/geography array.
- *
  * @param[in] geoarr Array of geometries/geographies
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
@@ -170,6 +173,10 @@ geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
  * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a temporal point array
+ * @param[in] temparr Array of temporal points
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits to output
+ * @param[in] extended True if the output is in EWKT
  * @csqlfn #Tpointarr_as_text(), #Tpointarr_as_ewkt()
  */
 char **

@@ -575,7 +575,9 @@ Tbox_shift_value(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Datum shift = PG_GETARG_DATUM(1);
-  PG_RETURN_TBOX_P(tbox_shift_scale_value(box, shift, 0, true, false));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  PG_RETURN_TBOX_P(tbox_shift_scale_value(box, shift, 0, basetype, true,
+    false));
 }
 
 PGDLLEXPORT Datum Tbox_shift_time(PG_FUNCTION_ARGS);
@@ -605,7 +607,9 @@ Tbox_scale_value(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Datum width = PG_GETARG_DATUM(1);
-  PG_RETURN_TBOX_P(tbox_shift_scale_value(box, 0, width, false, true));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  PG_RETURN_TBOX_P(tbox_shift_scale_value(box, 0, width, basetype, false,
+    true));
 }
 
 PGDLLEXPORT Datum Tbox_scale_time(PG_FUNCTION_ARGS);
@@ -637,7 +641,9 @@ Tbox_shift_scale_value(PG_FUNCTION_ARGS)
   TBox *box = PG_GETARG_TBOX_P(0);
   Datum shift = PG_GETARG_DATUM(1);
   Datum width = PG_GETARG_DATUM(2);
-  PG_RETURN_TBOX_P(tbox_shift_scale_value(box, shift, width, true, true));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  PG_RETURN_TBOX_P(tbox_shift_scale_value(box, shift, width, basetype, true,
+    true));
 }
 
 PGDLLEXPORT Datum Tbox_shift_scale_time(PG_FUNCTION_ARGS);

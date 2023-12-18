@@ -211,7 +211,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     return result;
   }
 
-  Datum traj = PointerGetDatum(tpointseq_cont_trajectory(seq));
+  Datum traj = PointerGetDatum(tpointcontseq_trajectory(seq));
   Datum inter = geom_intersection2d(traj, geom);
   GSERIALIZED *gsinter = DatumGetGserializedP(inter);
   if (gserialized_is_empty(gsinter))
@@ -300,7 +300,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
  * @param[out] count Number of elements in the output array
  */
 static TSequence **
-tinterrel_tpointseq_cont_geom_iter(const TSequence *seq, Datum geom,
+tinterrel_tpointcontseq_geom_iter(const TSequence *seq, Datum geom,
   const STBox *box, bool tinter, Datum (*func)(Datum, Datum), int *count)
 {
   /* Instantaneous sequence */
@@ -346,13 +346,13 @@ tinterrel_tpointseq_cont_geom_iter(const TSequence *seq, Datum geom,
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  */
 TSequenceSet *
-tinterrel_tpointseq_cont_geom(const TSequence *seq, Datum geom,
+tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom,
   const STBox *box, bool tinter, Datum (*func)(Datum, Datum))
 {
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
   int count;
-  TSequence **sequences = tinterrel_tpointseq_cont_geom_iter(seq, geom, box,
+  TSequence **sequences = tinterrel_tpointcontseq_geom_iter(seq, geom, box,
     tinter, func, &count);
   /* We are sure that count > 0 since the geometry is not empty */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
@@ -372,7 +372,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tinterrel_tpointseq_cont_geom(TSEQUENCESET_SEQ_N(ss, 0), geom, box,
+    return tinterrel_tpointcontseq_geom(TSEQUENCESET_SEQ_N(ss, 0), geom, box,
       tinter, func);
 
   int totalcount;
@@ -398,7 +398,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
     for (int i = 0; i < ss->count; i++)
     {
       const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-      sequences[i] = tinterrel_tpointseq_cont_geom_iter(seq, geom, box, tinter,
+      sequences[i] = tinterrel_tpointcontseq_geom_iter(seq, geom, box, tinter,
         func, &countseqs[i]);
       totalcount += countseqs[i];
     }
@@ -456,7 +456,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
     result = ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
       (Temporal *) tinterrel_tpointseq_discstep_geom((TSequence *) temp,
         PointerGetDatum(gs), tinter, func) :
-      (Temporal *) tinterrel_tpointseq_cont_geom((TSequence *) temp,
+      (Temporal *) tinterrel_tpointcontseq_geom((TSequence *) temp,
         PointerGetDatum(gs), &box2, tinter, func);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tinterrel_tpointseqset_geom((TSequenceSet *) temp,
@@ -476,6 +476,10 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
  * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return the temporal disjoint relationship between a temporal point
  * and a geometry
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
  * @csqlfn #Tdisjoint_tpoint_geo()
  */
 Temporal *
@@ -489,6 +493,10 @@ tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return the temporal intersects relationship between a temporal point
  * and a geometry
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
  * @csqlfn #Tintersects_tpoint_geo()
  */
 Temporal *
@@ -1078,6 +1086,10 @@ tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
  * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return the temporal contains relationship between a geometry and
  * a temporal point
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal point
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
  * @csqlfn #Tcontains_geo_tpoint()
  */
 Temporal *
@@ -1124,6 +1136,10 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return the temporal touches relationship between a geometry and a
  * temporal point
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
  * @csqlfn #Ttouches_tpoint_geo()
  */
 Temporal *
@@ -1163,6 +1179,11 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
  * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal point and
  * a geometry are within the given distance.
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
  * @csqlfn #Tdwithin_tpoint_geo()
  */
 Temporal *
@@ -1299,6 +1320,10 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
  * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return a temporal Boolean that states whether the temporal points
  * are within the given distance.
+ * @param[in] temp1,temp2 Temporal points
+ * @param[in] dist Distance
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
  * @csqlfn #Tdwithin_tpoint_tpoint()
  */
 Temporal *

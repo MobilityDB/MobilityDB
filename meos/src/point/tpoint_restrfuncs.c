@@ -487,7 +487,7 @@ tpointseq_is_simple(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
- * @param[in] ss Temporal point
+ * @param[in] ss Temporal sequence set
  * @csqlfn #Tpoint_is_simple()
  */
 bool
@@ -509,6 +509,7 @@ tpointseqset_is_simple(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
+ * @param[in] temp Temporal point
  * @csqlfn #Tpoint_is_simple()
  */
 bool
@@ -540,7 +541,7 @@ tpoint_is_simple(const Temporal *temp)
  * @pre The discrete sequence has at least two instants
  */
 static TSequence **
-tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
+tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 1);
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -573,7 +574,7 @@ tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
  * @note This function is called for each sequence of a sequence set
  */
 static TSequence **
-tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
+tpointcontseq_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 2);
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
@@ -665,8 +666,8 @@ tpointseq_make_simple(const TSequence *seq, int *count)
   }
 
   result = (interp == DISCRETE) ?
-    tpointseq_disc_split(seq, splits, numsplits + 1) :
-    tpointseq_cont_split(seq, splits, numsplits + 1);
+    tpointdiscseq_split(seq, splits, numsplits + 1) :
+    tpointcontseq_split(seq, splits, numsplits + 1);
   pfree(splits);
   *count = numsplits + 1;
   return result;
@@ -710,8 +711,8 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
  * fragments.
  * @param[in] temp Temporal point
  * @param[out] count Number of elements in the output array
- * @see tpointseq_make_simple
- * @see tpointseqset_make_simple
+ * @see #tpointseq_make_simple
+ * @see #tpointseqset_make_simple
  * @csqlfn #Tpoint_make_simple()
  */
 Temporal **
@@ -807,7 +808,7 @@ tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
  * @pre Instantaneous sequences have been managed in the calling function
  */
 TSequence *
-tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
+tpointdiscseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
   assert(seq); ensure_not_null((void *) gs);
@@ -1225,7 +1226,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   {
     /* Particular case when the input sequence is simple */
     pfree_array((void **) simpleseqs, nsimple);
-    traj = tpointseq_cont_trajectory(seq2d);
+    traj = tpointcontseq_trajectory(seq2d);
     inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
     gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
@@ -1249,7 +1250,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     /* Loop for every simple fragment of the sequence */
     for (int i = 0; i < nsimple; i++)
     {
-      traj = tpointseq_cont_trajectory(simpleseqs[i]);
+      traj = tpointcontseq_trajectory(simpleseqs[i]);
       inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
       gsinter = DatumGetGserializedP(inter);
       if (! gserialized_is_empty(gsinter))
@@ -1409,7 +1410,7 @@ tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
 
   /* General case */
   if (interp == DISCRETE)
-    return (Temporal *) tpointseq_disc_restrict_geom_time((TSequence *) seq,
+    return (Temporal *) tpointdiscseq_restrict_geom_time((TSequence *) seq,
       gs, zspan, period, atfunc);
   else if (interp == STEP)
     return (Temporal *) tpointseq_step_restrict_geom_time((TSequence *) seq,
@@ -1541,6 +1542,10 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to a geometry.
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] zspan Span of values to restrict the Z dimension
+ * @param[in] period Period to restrict the T dimension
  * @csqlfn #Tpoint_at_geom_time()
  */
 Temporal *
@@ -1556,6 +1561,10 @@ tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] zspan Span of values to restrict the Z dimension
+ * @param[in] period Period to restrict the T dimension
  * @csqlfn #Tpoint_minus_geom_time()
  */
 Temporal *
@@ -1880,7 +1889,7 @@ tpointinst_restrict_stbox(const TInstant *inst, const STBox *box,
  * @pre Instantaneous sequences have been managed in the calling function
  */
 TSequence *
-tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
+tpointdiscseq_restrict_stbox(const TSequence *seq, const STBox *box,
   bool border_inc, bool atfunc)
 {
   assert(seq); assert(box);
@@ -2292,7 +2301,7 @@ tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border_inc
 
   /* General case */
   if (interp == DISCRETE)
-    return (Temporal *) tpointseq_disc_restrict_stbox((TSequence *) seq, box,
+    return (Temporal *) tpointdiscseq_restrict_stbox((TSequence *) seq, box,
       border_inc, atfunc);
   else if (interp == STEP)
     return (Temporal *) tpointseq_step_restrict_stbox((TSequence *) seq, box,
@@ -2421,6 +2430,9 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to a spatiotemporal box.
+ * @param[in] temp Temporal point
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
  * @csqlfn #Tpoint_at_stbox()
  */
 Temporal *
@@ -2436,6 +2448,9 @@ tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to the complement of a spatiotemporal box.
+ * @param[in] temp Temporal point
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
  * @csqlfn #Tpoint_minus_stbox()
  */
 Temporal *

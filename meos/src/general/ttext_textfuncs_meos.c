@@ -44,6 +44,8 @@
 /**
  * @ingroup libmeos_temporal_text
  * @brief Return the concatenation of a text and a temporal text
+ * @param[in] txt Value
+ * @param[in] temp Temporal value
  * @csqlfn #Textcat_text_ttext()
  */
 Temporal *
@@ -62,6 +64,8 @@ textcat_text_ttext(const text *txt, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_text
  * @brief Return the concatenation of a temporal text and a text
+ * @param[in] temp Temporal value
+ * @param[in] txt Value
  * @csqlfn #Textcat_ttext_text()
  */
 Temporal *
@@ -80,6 +84,7 @@ textcat_ttext_text(const Temporal *temp, const text *txt)
 /**
  * @ingroup libmeos_temporal_text
  * @brief Return the concatenation of two temporal text values
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Textcat_ttext_ttext()
  */
 Temporal *
@@ -100,6 +105,7 @@ textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_text
  * @brief Return a temporal text transformed to uppercase
+ * @param[in] temp Temporal value
  * @csqlfn #Ttext_upper()
  */
 Temporal *
@@ -117,6 +123,7 @@ ttext_upper(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_text
  * @brief Return a temporal text transformed to lowercase
+ * @param[in] temp Temporal value
  * @csqlfn #Ttext_lower()
  */
 Temporal *

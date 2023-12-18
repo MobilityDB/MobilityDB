@@ -160,7 +160,7 @@ ensure_continuous(const Temporal *temp)
 
 /**
  * @brief Ensure that two temporal values have the same interpolation
- * @param[in] temp1,temp2 Input values
+ * @param[in] temp1,temp2 Temporal values
  */
 bool
 ensure_same_interp(const Temporal *temp1, const Temporal *temp2)
@@ -242,7 +242,7 @@ ensure_temporal_isof_type(const Temporal *temp, meosType temptype)
 
 /**
  * @brief Ensure that two temporal values have the same temporal type
- * @param[in] temp1,temp2 Input values
+ * @param[in] temp1,temp2 Temporal values
  */
 bool
 ensure_same_temporal_type(const Temporal *temp1, const Temporal *temp2)
@@ -541,7 +541,7 @@ temporal_bbox_ptr(const Temporal *temp)
 
 /**
  * @brief Temporally intersect the two temporal values
- * @param[in] temp1,temp2 Input values
+ * @param[in] temp1,temp2 Temporal values
  * @param[in] mode Either intersection or synchronization
  * @param[out] inter1,inter2 Output values
  * @result Return false if the values do not overlap on time
@@ -635,7 +635,8 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 
 #define MOBDB_VERSION_STR_MAX_LEN 256
 /**
- * @brief Version of the MobilityDB extension
+ * @ingroup libmeos_misc
+ * @brief Return the version of the MobilityDB extension
  */
 char *
 mobilitydb_version(void)
@@ -645,7 +646,8 @@ mobilitydb_version(void)
 }
 
 /**
- * @brief Versions of the MobilityDB extension and its dependencies
+ * @ingroup libmeos_misc
+ * @brief Return the versions of the MobilityDB extension and its dependencies
  */
 char *
 mobilitydb_full_version(void)
@@ -671,11 +673,10 @@ mobilitydb_full_version(void)
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
-
+  
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Return a temporal value from its Well-Known Text (WKT) representation.
- *
+ * @brief Return a temporal value from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @param[in] temptype Temporal type
  */
@@ -690,7 +691,8 @@ temporal_in(const char *str, meosType temptype)
 /**
  * @ingroup libmeos_temporal_inout
  * @brief Return a temporal boolean from its Well-Known Text (WKT)
- * representation.
+ * representation
+ * @param[in] str String
  */
 Temporal *
 tbool_in(const char *str)
@@ -704,7 +706,8 @@ tbool_in(const char *str)
 /**
  * @ingroup libmeos_temporal_inout
  * @brief Return a temporal integer from its Well-Known Text (WKT)
- * representation.
+ * representation
+ * @param[in] str String
  */
 Temporal *
 tint_in(const char *str)
@@ -717,7 +720,8 @@ tint_in(const char *str)
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return a temporal float from its Well-Known Text (WKT) representation.
+ * @brief Return a temporal float from its Well-Known Text (WKT) representation
+ * @param[in] str String
  */
 Temporal *
 tfloat_in(const char *str)
@@ -730,7 +734,8 @@ tfloat_in(const char *str)
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return a temporal text from its Well-Known Text (WKT) representation.
+ * @brief Return a temporal text from its Well-Known Text (WKT) representation
+ * @param[in] str String
  */
 Temporal *
 ttext_in(const char *str)
@@ -745,6 +750,8 @@ ttext_in(const char *str)
 /**
  * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
+ * @param[in] temp Temporal value
+ * @param[in] maxdd Maximum number of decimal digits
  */
 char *
 temporal_out(const Temporal *temp, int maxdd)
@@ -768,7 +775,8 @@ temporal_out(const Temporal *temp, int maxdd)
 /**
  * @ingroup libmeos_temporal_inout
  * @brief Return a temporal boolean from its Well-Known Text (WKT)
- * representation.
+ * representation
+ * @param[in] temp Temporal value
  */
 char *
 tbool_out(const Temporal *temp)
@@ -783,7 +791,8 @@ tbool_out(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_inout
  * @brief Return a temporal integer from its Well-Known Text (WKT)
- * representation.
+ * representation
+ * @param[in] temp Temporal value
  */
 char *
 tint_out(const Temporal *temp)
@@ -797,7 +806,9 @@ tint_out(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return a temporal float from its Well-Known Text (WKT) representation.
+ * @brief Return a temporal float from its Well-Known Text (WKT) representation
+ * @param[in] temp Temporal value
+ * @param[in] maxdd Maximum number of decimal digits
  */
 char *
 tfloat_out(const Temporal *temp, int maxdd)
@@ -811,7 +822,8 @@ tfloat_out(const Temporal *temp, int maxdd)
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Return a temporal text from its Well-Known Text (WKT) representation.
+ * @brief Return a temporal text from its Well-Known Text (WKT) representation
+ * @param[in] temp Temporal value
  */
 char *
 ttext_out(const Temporal *temp)
@@ -826,7 +838,9 @@ ttext_out(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_inout
  * @brief Return a temporal geometry/geography point from its Well-Known Text
- * (WKT) representation.
+ * (WKT) representation
+ * @param[in] temp Temporal value
+ * @param[in] maxdd Maximum number of decimal digits
  */
 char *
 tpoint_out(const Temporal *temp, int maxdd)
@@ -846,6 +860,7 @@ tpoint_out(const Temporal *temp, int maxdd)
 /**
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Return a copy of a temporal value
+ * @param[in] temp Temporal value
  */
 Temporal *
 temporal_cp(const Temporal *temp)
@@ -859,6 +874,7 @@ temporal_cp(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Return a copy of a temporal value
+ * @param[in] temp Temporal value
  */
 Temporal *
 temporal_copy(const Temporal *temp)
@@ -929,6 +945,9 @@ tsequenceset_from_base_temp(Datum value, meosType temptype,
  * another temporal value. For continuous sequence (sets), the resulting
  * interpolation will be linear or step depending on whether the temporal type
  * is, respectively, continuous or not.
+ * @param[in] value Value
+ * @param[in] temptype Type of the resulting temporal value
+ * @param[in] temp Temporal value
  */
 Temporal *
 temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp)
@@ -953,6 +972,8 @@ temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp)
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal boolean from a boolean and the time frame of
  * another temporal value.
+ * @param[in] b Value
+ * @param[in] temp Temporal value
  */
 Temporal *
 tbool_from_base_temp(bool b, const Temporal *temp)
@@ -967,6 +988,8 @@ tbool_from_base_temp(bool b, const Temporal *temp)
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal integer from an integer and the time frame of
  * another temporal value.
+ * @param[in] i Value
+ * @param[in] temp Temporal value
  */
 Temporal *
 tint_from_base_temp(int i, const Temporal *temp)
@@ -981,6 +1004,8 @@ tint_from_base_temp(int i, const Temporal *temp)
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal float from a float and the time frame of
  * another temporal value.
+ * @param[in] d Value
+ * @param[in] temp Temporal value
  */
 Temporal *
 tfloat_from_base_temp(double d, const Temporal *temp)
@@ -995,6 +1020,8 @@ tfloat_from_base_temp(double d, const Temporal *temp)
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal text from a text and the time frame of
  * another temporal value.
+ * @param[in] txt Value
+ * @param[in] temp Temporal value
  */
 Temporal *
 ttext_from_base_temp(const text *txt, const Temporal *temp)
@@ -1009,6 +1036,8 @@ ttext_from_base_temp(const text *txt, const Temporal *temp)
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal geometry point from a point and the time frame
  * of another temporal value.
+ * @param[in] gs Value
+ * @param[in] temp Temporal value
  */
 Temporal *
 tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
@@ -1189,7 +1218,8 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup libmeos_temporal_modif
  * @brief Merge two temporal values.
- * @result Merged value. Return NULL if both arguments are NULL.
+ * @param[in] temp1,temp2 Temporal values
+ * @result Return NULL if both arguments are NULL
  * If one argument is null the other argument is output.
  * @csqlfn #Temporal_merge()
  */
@@ -1235,7 +1265,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
 /**
  * @brief Convert the array of temporal values into a common subtype
  * @param[in] temparr Array of values
- * @param[in] count Number of values
+ * @param[in] count Number of values in the array
  * @param[in] subtype common subtype
  * @param[in] interp Interpolation
  * @result  Array of output values
@@ -1271,6 +1301,8 @@ temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
 /**
  * @ingroup libmeos_temporal_modif
  * @brief Merge an array of temporal values.
+ * @param[in] temparr Array of values
+ * @param[in] count Number of values in the array
  * @csqlfn #Temporal_merge_array()
  */
 Temporal *
@@ -1338,6 +1370,8 @@ temporal_merge_array(Temporal **temparr, int count)
 
 /**
  * @brief Convert an integer to a float
+ * @param[in] d Value
+ * @note Function used for lifting
  */
 static Datum
 datum_int_to_float(Datum d)
@@ -1347,6 +1381,8 @@ datum_int_to_float(Datum d)
 
 /**
  * @brief Convert a float to an integer
+ * @param[in] d Value
+ * @note Function used for lifting
  */
 static Datum
 datum_float_to_int(Datum d)
@@ -1357,7 +1393,8 @@ datum_float_to_int(Datum d)
 /**
  * @ingroup libmeos_temporal_conversion
  * @brief Convert a temporal integer to a temporal float.
- * @sqlop @p ::
+ * @param[in] temp Temporal value
+ * @csqlfn #Tint_to_tfloat()
  */
 Temporal *
 tint_to_tfloat(const Temporal *temp)
@@ -1380,7 +1417,8 @@ tint_to_tfloat(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_conversion
  * @brief Convert a temporal float to a temporal integer.
- * @sqlop @p ::
+ * @param[in] temp Temporal value
+ * @csqlfn #Tfloat_to_tint()
  */
 Temporal *
 tfloat_to_tint(const Temporal *temp)
@@ -1409,6 +1447,8 @@ tfloat_to_tint(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Compute the bounding period of a temporal value.
+ * @param[in] temp Temporal value
+ * @param[out] s Span
  */
 void
 temporal_set_tstzspan(const Temporal *temp, Span *s)
@@ -1428,8 +1468,8 @@ temporal_set_tstzspan(const Temporal *temp, Span *s)
 /**
  * @ingroup libmeos_temporal_conversion
  * @brief Return the bounding period of a temporal value.
+ * @param[in] temp Temporal value
  * @csqlfn #Temporal_to_tstzspan()
- * @sqlop @p ::
  */
 Span *
 temporal_to_tstzspan(const Temporal *temp)
@@ -1446,6 +1486,8 @@ temporal_to_tstzspan(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Compute the value span of a temporal number in the last argument
+ * @param[in] temp Temporal value
+ * @param[out] s Span
  */
 void
 tnumber_set_span(const Temporal *temp, Span *s)
@@ -1471,6 +1513,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
 /**
  * @ingroup libmeos_internal_temporal_conversion
  * @brief Return the value span of a temporal number.
+ * @param[in] temp Temporal value
  */
 Span *
 tnumber_span(const Temporal *temp)
@@ -1484,6 +1527,7 @@ tnumber_span(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_conversion
  * @brief Return the value span of a temporal number.
+ * @param[in] temp Temporal value
  * @csqlfn #Tnumber_to_span()
  */
 Span *
@@ -1500,7 +1544,8 @@ tnumber_to_span(const Temporal *temp)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Return the bounding box of a temporal number.
- * @sqlop @p ::
+ * @param[in] temp Temporal value
+ * @csqlfn #Tnumber_to_tbox()
  */
 TBox *
 tnumber_to_tbox(const Temporal *temp)
@@ -1522,9 +1567,97 @@ tnumber_to_tbox(const Temporal *temp)
 
 #if MEOS
 /**
+ * @brief Round a float number to a given number of decimal places
+ */
+Datum
+datum_round_float(Datum value, Datum size)
+{
+  Datum result = value;
+  double d = DatumGetFloat8(value);
+  int s = DatumGetInt32(size);
+  double inf = get_float8_infinity();
+  if (d != -1 * inf && d != inf)
+  {
+    if (s == 0)
+      result = Float8GetDatum(rint(d));
+    else
+    {
+      double power10 = pow(10.0, s);
+      double res = round(d * power10) / power10;
+      result = Float8GetDatum(res);
+    }
+  }
+  return result;
+}
+#else /* ! MEOS */
+extern Datum datum_round_float(Datum value, Datum size);
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Round a temporal number to a given number of decimal places
+ * @param[in] temp Temporal value
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Tfloat_round()
+ */
+Temporal *
+tfloat_round(const Temporal *temp, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT) ||
+      ! ensure_not_negative(maxdd))
+    return NULL;
+
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_round_float;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(maxdd);
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.argtype[1] = T_INT4;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Set the precision of the coordinates of an array of temporal floats
+ * to a number of decimal places.
+ * @param[in] temparr Array of temporal values
+ * @param[in] count Number of values in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Tfloatarr_round()
+ */
+Temporal **
+tfloatarr_round(const Temporal **temparr, int count, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temparr) ||
+      /* Ensure that the FIRST element is a temporal float */
+      ! ensure_temporal_isof_type(temparr[0], T_TFLOAT) ||
+      ! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  Temporal **result = palloc(sizeof(Temporal *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = tfloat_round(temparr[i], maxdd);
+  return result;
+}
+
+/*****************************************************************************/
+
+#if MEOS
+/**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Restart a temporal sequence (set) by keeping only the last n instants
  * or sequences.
+ * @param[in] temp Temporal value
+ * @param[out] count Number of instants or sequences kept
  */
 void
 temporal_restart(Temporal *temp, int count)
@@ -1544,6 +1677,7 @@ temporal_restart(Temporal *temp, int count)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal instant.
+ * @param[in] temp Temporal value
  * @csqlfn #Temporal_to_tinstant()
  */
 TInstant *
@@ -1567,6 +1701,8 @@ temporal_to_tinstant(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal sequence
+ * @param[in] temp Temporal value
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_to_tsequence()
  */
 TSequence *
@@ -1606,6 +1742,8 @@ temporal_to_tsequence(const Temporal *temp, interpType interp)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal sequence set.
+ * @param[in] temp Temporal value
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_to_tsequenceset()
  */
 TSequenceSet *
@@ -1639,6 +1777,8 @@ temporal_to_tsequenceset(const Temporal *temp, interpType interp)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed to a given interpolation
+ * @param[in] temp Temporal value
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_set_interp()
  */
 Temporal *
@@ -1667,9 +1807,10 @@ temporal_set_interp(const Temporal *temp, interpType interp)
  * @brief Return a temporal number with the value dimension shifted and/or
  * scaled by two values
  * @param[in] temp Temporal value
- * @param[in] shift Value for shift
- * @param[in] width Value for scale
- * @param[in] hasshift, haswidth True when the corresponding argument was given
+ * @param[in] shift Value for shifting the temporal value
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
  * @csqlfn #Tnumber_shift_value(), #Tnumber_scale_value(),
  *   #Tnumber_shift_scale_value()
  */
@@ -1704,6 +1845,8 @@ tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width,
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal integer whose value dimension is shifted by a value.
  * @csqlfn #Tnumber_shift_value()
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
  */
 Temporal *
 tint_shift_value(const Temporal *temp, int shift)
@@ -1712,7 +1855,6 @@ tint_shift_value(const Temporal *temp, int shift)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-
   return tnumber_shift_scale_value(temp, Int32GetDatum(shift), 0, true, false);
 }
 
@@ -1720,6 +1862,8 @@ tint_shift_value(const Temporal *temp, int shift)
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal integer whose value dimension is shifted by a value.
  * @csqlfn #Tnumber_shift_value()
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
  */
 Temporal *
 tfloat_shift_value(const Temporal *temp, double shift)
@@ -1728,13 +1872,14 @@ tfloat_shift_value(const Temporal *temp, double shift)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-
   return tnumber_shift_scale_value(temp, Float8GetDatum(shift), 0, true, false);
 }
 
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal number whose value dimension is scaled by a value.
+ * @param[in] temp Temporal value
+ * @param[in] width Width of the result
  * @csqlfn #Tnumber_scale_value()
  */
 Temporal *
@@ -1744,13 +1889,14 @@ tint_scale_value(const Temporal *temp, int width)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-
   return tnumber_shift_scale_value(temp, 0, Int32GetDatum(width), false, true);
 }
 
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal number whose value dimension is scaled by a value.
+ * @param[in] temp Temporal value
+ * @param[in] width Width of the result
  * @csqlfn #Tnumber_scale_value()
  */
 Temporal *
@@ -1760,13 +1906,15 @@ tfloat_scale_value(const Temporal *temp, double width)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-
   return tnumber_shift_scale_value(temp, 0, Float8GetDatum(width), false, true);
 }
 
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal number whose value dimension is scaled by a value.
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ * @param[in] width Width of the result
  * @csqlfn #Tnumber_shift_scale_value()
  */
 Temporal *
@@ -1776,7 +1924,6 @@ tint_shift_scale_value(const Temporal *temp, int shift, int width)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-
   return tnumber_shift_scale_value(temp, Int32GetDatum(shift),
     Int32GetDatum(width), true, true);
 }
@@ -1784,6 +1931,9 @@ tint_shift_scale_value(const Temporal *temp, int shift, int width)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal number whose value dimension is scaled by a value.
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ * @param[in] width Width of the result
  * @csqlfn #Tnumber_shift_scale_value()
  */
 Temporal *
@@ -1793,7 +1943,6 @@ tfloat_shift_scale_value(const Temporal *temp, double shift, double width)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-
   return tnumber_shift_scale_value(temp, Float8GetDatum(shift),
     Float8GetDatum(width), true, true);
 }
@@ -1840,6 +1989,8 @@ temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value shifted by the interval.
+ * @param[in] temp Temporal value
+ * @param[in] shift Interval for shifting the temporal value
  * @csqlfn #Temporal_shift_time()
  */
 Temporal *
@@ -1851,6 +2002,8 @@ temporal_shift_time(const Temporal *temp, const Interval *shift)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value scaled by the interval.
+ * @param[in] temp Temporal value
+ * @param[in] duration Duration of the result
  * @csqlfn #Temporal_scale_time()
  */
 Temporal *
@@ -1868,6 +2021,7 @@ temporal_scale_time(const Temporal *temp, const Interval *duration)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the size in bytes of a temporal value
+ * @param[in] temp Temporal value
  * @csqlfn #Temporal_mem_size()
  */
 size_t
@@ -1881,6 +2035,7 @@ temporal_mem_size(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the string representation of the subtype of a temporal value.
+ * @param[in] temp Temporal value
  * @csqlfn #Temporal_subtype()
  */
 char *
@@ -1899,6 +2054,7 @@ temporal_subtype(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the string representation of the interpolation of a temporal
  * value.
+ * @param[in] temp Temporal value
  * @csqlfn #Temporal_interp()
  */
 char *
@@ -1917,6 +2073,8 @@ temporal_interp(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Compute the bounding box of a temporal value
+ * @param[in] temp Temporal value
+ * @param[out] box Boundind box
  * @note For temporal instants the bounding box must be computed. For the
  * other subtypes, a copy of the precomputed bounding box is made.
  */
@@ -1937,6 +2095,8 @@ temporal_set_bbox(const Temporal *temp, void *box)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of distinct base values of a temporal value.
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_valueset()
  */
 Datum *
@@ -1959,6 +2119,8 @@ temporal_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of a temporal boolean
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_valueset()
  */
 bool *
@@ -1980,6 +2142,8 @@ tbool_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of a temporal integer
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_valueset()
  */
 int *
@@ -2001,6 +2165,8 @@ tint_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of a temporal float
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_valueset()
  */
 double *
@@ -2022,6 +2188,8 @@ tfloat_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of a temporal text
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_valueset()
  */
 text **
@@ -2043,6 +2211,8 @@ ttext_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of a temporal geometry point
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_valueset()
  */
 GSERIALIZED **
@@ -2065,6 +2235,7 @@ tpoint_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the base values of a temporal number as a span set.
+ * @param[in] temp Temporal value
  * @csqlfn #Tnumber_valuespans()
  */
 SpanSet *
@@ -2089,7 +2260,8 @@ tnumber_valuespans(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the time frame of a temporal value as a span set.
- * @csqlfn #Temporal_time
+ * @param[in] temp Temporal value
+ * @csqlfn #Temporal_time()
  */
 SpanSet *
 temporal_time(const Temporal *temp)
@@ -2112,6 +2284,7 @@ temporal_time(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the start base value of a temporal value
+ * @param[in] temp Temporal value
  * @csqlfn #Temporal_start_value()
  */
 Datum
@@ -2136,6 +2309,7 @@ temporal_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal boolean
+ * @param[in] temp Temporal value
  * @csqlfn #Temporal_start_value()
  */
 bool
@@ -2151,6 +2325,7 @@ tbool_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal integer
+ * @param[in] temp Temporal value
  * @return On error return INT_MAX
  * @csqlfn #Temporal_start_value()
  */
@@ -2167,6 +2342,7 @@ tint_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal float
+ * @param[in] temp Temporal value
  * @return On error return DBL_MAX
  * @csqlfn #Temporal_start_value()
  */
@@ -2183,6 +2359,7 @@ tfloat_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal text
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @csqlfn #Temporal_start_value()
  */
@@ -2199,6 +2376,7 @@ ttext_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal geometry point
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @csqlfn #Temporal_start_value()
  */
@@ -2216,6 +2394,7 @@ tpoint_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the end base value of a temporal value
+ * @param[in] temp Temporal value
  */
 Datum
 temporal_end_value(const Temporal *temp)
@@ -2241,6 +2420,7 @@ temporal_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal boolean
+ * @param[in] temp Temporal value
  * @csqlfn #Temporal_end_value()
  */
 bool
@@ -2256,6 +2436,7 @@ tbool_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal integer
+ * @param[in] temp Temporal value
  * @return On error return INT_MAX
  * @csqlfn #Temporal_end_value()
  */
@@ -2272,6 +2453,7 @@ tint_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal float
+ * @param[in] temp Temporal value
  * @return On error return DBL_MAX
  * @csqlfn #Temporal_end_value()
  */
@@ -2288,6 +2470,7 @@ tfloat_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal text
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @csqlfn #Temporal_end_value()
  */
@@ -2304,6 +2487,7 @@ ttext_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal point
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @csqlfn #Temporal_end_value()
  */
@@ -2321,6 +2505,7 @@ tpoint_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return a copy of the minimum base value of a temporal value
+ * @param[in] temp Temporal value
  */
 Datum
 temporal_min_value(const Temporal *temp)
@@ -2343,6 +2528,7 @@ temporal_min_value(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the minimum value of a temporal integer
  * @return On error return INT_MAX
+ * @param[in] temp Temporal value
  * @csqlfn #Temporal_min_value()
  */
 int
@@ -2358,6 +2544,7 @@ tint_min_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the minimum value of a temporal float
+ * @param[in] temp Temporal value
  * @return On error return DBL_MAX
  * @csqlfn #Temporal_min_value()
  */
@@ -2374,6 +2561,7 @@ tfloat_min_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the minimum value of a temporal text
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @csqlfn #Temporal_min_value()
  */
@@ -2391,6 +2579,7 @@ ttext_min_value(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return a copy of the maximum base value of a temporal value.
+ * @param[in] temp Temporal value
  * @csqlfn #Temporal_max_value()
  */
 Datum
@@ -2413,6 +2602,7 @@ temporal_max_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the maximum value of a temporal integer
+ * @param[in] temp Temporal value
  * @return On error return INT_MAX
  * @csqlfn #Temporal_max_value()
  */
@@ -2429,6 +2619,7 @@ tint_max_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the maximum value of a temporal float
+ * @param[in] temp Temporal value
  * @return On error return DBL_MAX
  * @csqlfn #Temporal_max_value()
  */
@@ -2445,6 +2636,7 @@ tfloat_max_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the maximum value of a temporal text
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @csqlfn #Temporal_max_value()
  */
@@ -2463,6 +2655,7 @@ ttext_max_value(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return a pointer to the instant with minimum base value of a
  * temporal value.
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @note The function does not take into account whether the instant is at
  * an exclusive bound or not.
@@ -2492,6 +2685,7 @@ temporal_min_instant(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return a pointer to the instant with maximum base value of a
  * temporal value.
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @csqlfn #Temporal_max_instant()
  */
@@ -2516,6 +2710,8 @@ temporal_max_instant(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of a temporal value.
+ * @param[in] temp Temporal value
+ * @param[in] boundspan True when the potential time gaps are ignored
  * @return On error return NULL
  * @csqlfn #Temporal_duration()
  */
@@ -2541,6 +2737,7 @@ temporal_duration(const Temporal *temp, bool boundspan)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the number of sequences of a temporal sequence (set).
+ * @param[in] temp Temporal value
  * @return On error return -1
  * @csqlfn #Temporal_num_sequences()
  */
@@ -2560,6 +2757,7 @@ temporal_num_sequences(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start sequence of a temporal sequence (set).
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @csqlfn #Temporal_start_sequence()
  */
@@ -2584,6 +2782,7 @@ temporal_start_sequence(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end sequence of a temporal sequence (set).
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @csqlfn #Temporal_end_sequence()
  */
@@ -2608,12 +2807,14 @@ temporal_end_sequence(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence (set).
+ * @param[in] temp Temporal value
+ * @param[in] n Number
  * @return On error return NULL
  * @note n is assumed to be 1-based.
  * @csqlfn #Temporal_sequence_n()
  */
 TSequence *
-temporal_sequence_n(const Temporal *temp, int i)
+temporal_sequence_n(const Temporal *temp, int n)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_continuous(temp))
@@ -2622,14 +2823,14 @@ temporal_sequence_n(const Temporal *temp, int i)
   TSequence *result = NULL;
   if (temp->subtype == TSEQUENCE)
   {
-    if (i == 1)
+    if (n == 1)
       result = tsequence_copy((TSequence *) temp);
   }
   else /* temp->subtype == TSEQUENCESET */
   {
     const TSequenceSet *ss = (const TSequenceSet *) temp;
-    if (i >= 1 && i <= ss->count)
-      result = tsequence_copy(TSEQUENCESET_SEQ_N(ss, i - 1));
+    if (n >= 1 && n <= ss->count)
+      result = tsequence_copy(TSEQUENCESET_SEQ_N(ss, n - 1));
   }
   return result;
 }
@@ -2637,6 +2838,8 @@ temporal_sequence_n(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of sequences of a temporal sequence (set).
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
  * @return On error return NULL
  * @csqlfn #Temporal_sequences()
  */
@@ -2665,6 +2868,8 @@ temporal_sequences(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of segments of a temporal value.
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
  * @return On error return NULL
  * @csqlfn #Temporal_segments()
  */
@@ -2692,6 +2897,7 @@ temporal_segments(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the number of distinct instants of a temporal value.
+ * @param[in] temp Temporal value
  * @return On error return -1
  * @csqlfn #Temporal_num_instants()
  */
@@ -2716,6 +2922,7 @@ temporal_num_instants(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start instant of a temporal value.
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @csqlfn #Temporal_start_instant()
  */
@@ -2743,6 +2950,7 @@ temporal_start_instant(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end instant of a temporal value.
+ * @param[in] temp Temporal value
  * @return On error return NULL
  * @note This function is used for validity testing.
  * @csqlfn #Temporal_end_instant()
@@ -2773,6 +2981,8 @@ temporal_end_instant(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th instant of a temporal value.
+ * @param[in] temp Temporal value
+ * @param[in] n Number
  * @return On error return NULL
  * @note n is assumed 1-based
  * @csqlfn #Temporal_instant_n()
@@ -2808,6 +3018,8 @@ temporal_instant_n(const Temporal *temp, int n)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of instants of a temporal value.
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
  * @return On error return NULL
  * @csqlfn #Temporal_instants()
  */
@@ -2838,6 +3050,7 @@ temporal_instants(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the number of distinct timestamps of a temporal value.
+ * @param[in] temp Temporal value
  * @return On error return -1
  * @csqlfn #Temporal_num_timestamps()
  */
@@ -2862,11 +3075,12 @@ temporal_num_timestamps(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start timestamp of a temporal value.
+ * @param[in] temp Temporal value
  * @return On error return DT_NOEND
- * @csqlfn #Temporal_start_timestamp()
+ * @csqlfn #Temporal_start_timestamptz()
  */
 TimestampTz
-temporal_start_timestamp(const Temporal *temp)
+temporal_start_timestamptz(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
@@ -2877,20 +3091,21 @@ temporal_start_timestamp(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = ((TInstant *) temp)->t;
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_start_timestamp((TSequence *) temp);
+    result = tsequence_start_timestamptz((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_start_timestamp((TSequenceSet *) temp);
+    result = tsequenceset_start_timestamptz((TSequenceSet *) temp);
   return result;
 }
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the end timestamp of a temporal value.
+ * @brief Return the end timestamptz of a temporal value.
+ * @param[in] temp Temporal value
  * @return On error return DT_NOEND
- * @csqlfn #Temporal_end_timestamp()
+ * @csqlfn #Temporal_end_timestamptz()
  */
 TimestampTz
-temporal_end_timestamp(const Temporal *temp)
+temporal_end_timestamptz(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
@@ -2901,9 +3116,9 @@ temporal_end_timestamp(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = ((TInstant *) temp)->t;
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_end_timestamp((TSequence *) temp);
+    result = tsequence_end_timestamptz((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_end_timestamp((TSequenceSet *) temp);
+    result = tsequenceset_end_timestamptz((TSequenceSet *) temp);
   return result;
 }
 
@@ -2911,12 +3126,15 @@ temporal_end_timestamp(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th distinct timestamp of a temporal value in the last
  * argument
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Resulting timestamp
  * @return On error return false
  * @note n is assumed 1-based
- * @csqlfn #Temporal_timestamp_n()
+ * @csqlfn #Temporal_timestamptz_n()
  */
 bool
-temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result)
+temporal_timestamptz_n(const Temporal *temp, int n, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result))
@@ -2940,13 +3158,15 @@ temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result)
     }
   }
   else /* temp->subtype == TSEQUENCESET */
-    return tsequenceset_timestamp_n((TSequenceSet *) temp, n, result);
+    return tsequenceset_timestamptz_n((TSequenceSet *) temp, n, result);
   return false;
 }
 
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of distinct timestamps of a temporal value.
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
  * @return On error return NULL
  * @csqlfn #Temporal_timestamps()
  */
@@ -3022,10 +3242,6 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
 /**
  * @brief Return true if the bounding box of a temporal value is ever/always
  * less than or equal to the base value.
- *
- * The same test is used for both since the bounding box does not
- * distinguish between inclusive/exclusive bounds.
- *
  * @param[in] temp Temporal value
  * @param[in] value Base value
  * @param[in] ever True when testing ever, false when testing always
@@ -3052,6 +3268,8 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever equal to a base value.
  * @csqlfn #Temporal_ever_eq()
+ * @param[in] temp Temporal value
+ * @param[in] value Value
  */
 bool
 temporal_ever_eq(const Temporal *temp, Datum value)
@@ -3072,6 +3290,8 @@ temporal_ever_eq(const Temporal *temp, Datum value)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal boolean is ever equal to a boolean.
+ * @param[in] temp Temporal value
+ * @param[in] b Value
  * @csqlfn #Temporal_ever_eq()
  */
 bool
@@ -3087,6 +3307,8 @@ tbool_ever_eq(const Temporal *temp, bool b)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever equal to an integer.
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @csqlfn #Temporal_ever_eq()
  */
 bool
@@ -3102,6 +3324,8 @@ tint_ever_eq(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is ever equal to a float.
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @csqlfn #Temporal_ever_eq()
  */
 bool
@@ -3117,6 +3341,8 @@ tfloat_ever_eq(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is ever equal to a text.
+ * @param[in] temp Temporal value
+ * @param[in] txt Value
  * @csqlfn #Temporal_ever_eq()
  */
 bool
@@ -3133,6 +3359,8 @@ ttext_ever_eq(const Temporal *temp, text *txt)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always equal to a base value.
+ * @param[in] temp Temporal value
+ * @param[in] value Value
  * @csqlfn #Temporal_always_eq()
  */
 bool
@@ -3154,6 +3382,8 @@ temporal_always_eq(const Temporal *temp, Datum value)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal boolean is always equal to a boolean.
+ * @param[in] temp Temporal value
+ * @param[in] b Value
  * @csqlfn #Temporal_always_eq()
  */
 bool tbool_always_eq(const Temporal *temp, bool b)
@@ -3168,6 +3398,8 @@ bool tbool_always_eq(const Temporal *temp, bool b)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is always equal to an integer.
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @csqlfn #Temporal_always_eq()
  */
 bool tint_always_eq(const Temporal *temp, int i)
@@ -3182,6 +3414,8 @@ bool tint_always_eq(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is always equal to a float.
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @csqlfn #Temporal_always_eq()
  */
 bool tfloat_always_eq(const Temporal *temp, double d)
@@ -3196,6 +3430,8 @@ bool tfloat_always_eq(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is always equal to a text.
+ * @param[in] temp Temporal value
+ * @param[in] txt Value
  * @csqlfn #Temporal_always_eq()
  */
 bool ttext_always_eq(const Temporal *temp, text *txt)
@@ -3211,6 +3447,8 @@ bool ttext_always_eq(const Temporal *temp, text *txt)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than a base value.
+ * @param[in] temp Temporal value
+ * @param[in] value Value
  * @csqlfn #Temporal_ever_lt()
  */
 bool
@@ -3232,6 +3470,8 @@ temporal_ever_lt(const Temporal *temp, Datum value)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than an integer.
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @csqlfn #Temporal_ever_lt()
  */
 bool tint_ever_lt(const Temporal *temp, int i)
@@ -3246,6 +3486,8 @@ bool tint_ever_lt(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is ever less than a float.
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @csqlfn #Temporal_ever_lt()
  */
 bool tfloat_ever_lt(const Temporal *temp, double d)
@@ -3260,6 +3502,8 @@ bool tfloat_ever_lt(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is ever less than a text.
+ * @param[in] temp Temporal value
+ * @param[in] txt Value
  * @csqlfn #Temporal_ever_lt()
  */
 bool ttext_ever_lt(const Temporal *temp, text *txt)
@@ -3275,6 +3519,8 @@ bool ttext_ever_lt(const Temporal *temp, text *txt)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always less than a base value.
+ * @param[in] temp Temporal value
+ * @param[in] value Value
  * @csqlfn #Temporal_always_lt()
  */
 bool
@@ -3296,6 +3542,8 @@ temporal_always_lt(const Temporal *temp, Datum value)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is always less than an integer.
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @csqlfn #Temporal_always_lt()
  */
 bool
@@ -3311,6 +3559,8 @@ tint_always_lt(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is always less than  a float.
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @csqlfn #Temporal_always_lt()
  */
 bool
@@ -3326,6 +3576,8 @@ tfloat_always_lt(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is always less than  a text.
+ * @param[in] temp Temporal value
+ * @param[in] txt Value
  * @csqlfn #Temporal_always_lt()
  */
 bool
@@ -3342,7 +3594,9 @@ ttext_always_lt(const Temporal *temp, text *txt)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than or equal to a
- * base value.
+ * base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
  * @csqlfn #Temporal_ever_le()
  */
 bool
@@ -3364,6 +3618,8 @@ temporal_ever_le(const Temporal *temp, Datum value)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than or equal to an integer.
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @csqlfn #Temporal_ever_le()
  */
 bool
@@ -3379,6 +3635,8 @@ tint_ever_le(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is ever less than or equal to a float.
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @csqlfn #Temporal_ever_le()
  */
 bool
@@ -3394,6 +3652,8 @@ tfloat_ever_le(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is ever less than or equal to a text.
+ * @param[in] temp Temporal value
+ * @param[in] txt Value
  * @csqlfn #Temporal_ever_le()
  */
 bool
@@ -3411,6 +3671,8 @@ ttext_ever_le(const Temporal *temp, text *txt)
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always less than or equal to a
  * base value.
+ * @param[in] temp Temporal value
+ * @param[in] value Value
  * @csqlfn #Temporal_always_le()
  */
 bool
@@ -3432,6 +3694,8 @@ temporal_always_le(const Temporal *temp, Datum value)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal integer is always less than or equal to an integer.
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @csqlfn #Temporal_always_le()
  */
 bool
@@ -3447,6 +3711,8 @@ tint_always_le(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal float is always less than or equal to a float.
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @csqlfn #Temporal_always_le()
  */
 bool
@@ -3462,6 +3728,8 @@ tfloat_always_le(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_comp_ever
  * @brief Return true if a temporal text is always less than or equal to a text.
+ * @param[in] temp Temporal value
+ * @param[in] txt Value
  * @csqlfn #Temporal_always_le()
  */
 bool
@@ -3539,6 +3807,9 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *s)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a base value.
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
@@ -3592,6 +3863,8 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Return true if the bounding box of the temporal and the set overlap
  * values.
+ * @param[in] temp Temporal value
+ * @param[in] s Set
  */
 bool
 temporal_bbox_restrict_set(const Temporal *temp, const Set *s)
@@ -3618,6 +3891,9 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *s)
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) an array of base
  * values.
+ * @param[in] temp Temporal value
+ * @param[in] s Set
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @csqlfn #Temporal_at_values(), #Temporal_minus_values()
  */
 Temporal *
@@ -3662,6 +3938,9 @@ temporal_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span of base values.
+ * @param[in] temp Temporal value
+ * @param[in] s Span
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @csqlfn #Tnumber_at_span(), #Tnumber_minus_span()
  */
 Temporal *
@@ -3703,6 +3982,9 @@ tnumber_restrict_span(const Temporal *temp, const Span *s, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span set.
+ * @param[in] temp Temporal value
+ * @param[in] ss Span set
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @csqlfn #Tnumber_at_spanset(), #Tnumber_minus_spanset()
  */
 Temporal *
@@ -3749,6 +4031,9 @@ tnumber_restrict_spanset(const Temporal *temp, const SpanSet *ss, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a minimum base value
+ * @param[in] temp Temporal value
+ * @param[in] min True if the restriction is wrt min, false for max
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @csqlfn #Temporal_at_min(), #Temporal_at_max(), #Temporal_minus_min(),
  *   #Temporal_minus_max()
  */
@@ -3775,6 +4060,9 @@ temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to a timestamp.
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @csqlfn #Temporal_at_timestamptz(), Temporal_minus_timestamptz()
  */
 Temporal *
@@ -3807,6 +4095,11 @@ temporal_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Return the base value of a temporal value at the timestamp
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] strict True if the timestamp must belong to the temporal value,
+ * false when it may be at an exclusive bound
+ * @param[out] result Resulting value
  * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
@@ -3833,6 +4126,9 @@ temporal_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a timestamp set
+ * @param[in] temp Temporal value
+ * @param[in] s Set
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @csqlfn #Temporal_at_tstzset(), #Temporal_minus_tstzset()
  */
 Temporal *
@@ -3865,6 +4161,9 @@ temporal_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a timestamptz span.
+ * @param[in] temp Temporal value
+ * @param[in] s Span
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @csqlfn #Temporal_at_tstzspan(), #Temporal_minus_tstzspan()
  */
 Temporal *
@@ -3889,6 +4188,9 @@ temporal_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span set.
+ * @param[in] temp Temporal value
+ * @param[in] ss Span set
+ * @param[in] atfunc True if the restriction is at, false for minus
  */
 Temporal *
 temporal_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
@@ -3913,6 +4215,8 @@ temporal_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal number to a temporal box.
+ * @param[in] temp Temporal value
+ * @param[in] box Temporal box
  * @csqlfn #Tnumber_at_tbox()
  */
 Temporal *
@@ -3957,10 +4261,12 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal number to the complement of a temporal box.
- *
- * It is not possible to make the difference from each dimension separately,
- * i.e., restrict at the period and then restrict to the span. Therefore, we
- * compute the `atTbox` and then compute the complement of the value obtained.
+ * @param[in] temp Temporal value
+ * @param[in] box Temporal box
+ * @note It is not possible to make the difference from each dimension 
+ * separately, i.e., restrict at the period and then restrict to the span.
+ * Therefore, we compute `atTbox` and then compute the complement of the
+ * value obtained.
  * @csqlfn #Tnumber_minus_tbox()
  */
 Temporal *
@@ -3995,7 +4301,10 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 
 /**
  * @ingroup libmeos_temporal_modif
- * @brief Insert the second temporal value into the first one.
+ * @brief Insert the second temporal value into the first one
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] connect True when the second temporal value is connected in the
+ * result to the instants before and after, if any
  * @csqlfn #Temporal_insert()
  */
 Temporal *
@@ -4036,7 +4345,10 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 
 /**
  * @ingroup libmeos_temporal_modif
- * @brief Update the first temporal value with the second one.
+ * @brief Update the first temporal value with the second one
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] connect True when the second temporal value is connected in the
+ * result to the instants before and after, if any
  * @csqlfn #Temporal_update()
  */
 Temporal *
@@ -4060,8 +4372,11 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 
 /**
  * @ingroup libmeos_temporal_modif
- * @brief Delete a timestamp from a temporal value connecting the instants
- * before and after the given timestamp (if any).
+ * @brief Delete a timestamp from a temporal value
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] connect True when the instants before and after the timestamp,
+ * if any, are connected in the result
  * @csqlfn #Temporal_delete_timestamptz()
  */
 Temporal *
@@ -4093,6 +4408,10 @@ temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
  * @ingroup libmeos_temporal_modif
  * @brief Delete a timestamp set from a temporal value connecting the instants
  * before and after the given timestamp (if any).
+ * @param[in] temp Temporal value
+ * @param[in] s Timestamp set
+ * @param[in] connect True when the instants before and after the timestamp
+ * set are connected in the result
  * @csqlfn #Temporal_delete_tstzset()
  */
 Temporal *
@@ -4122,8 +4441,11 @@ temporal_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 
 /**
  * @ingroup libmeos_temporal_modif
- * @brief Delete a timestamptz span from a temporal value connecting the
- * instants before and after the given timestamptz (if any).
+ * @brief Delete a timestamptz span from a temporal value
+ * @param[in] temp Temporal value
+ * @param[in] s Span
+ * @param[in] connect True when the instants before and after the span, if any,
+ * are connected in the result
  * @csqlfn #Temporal_delete_tstzspan()
  */
 Temporal *
@@ -4153,8 +4475,11 @@ temporal_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
 
 /**
  * @ingroup libmeos_temporal_modif
- * @brief Delete a span set from a temporal value connecting the instants
- * before and after the given timestamp (if any).
+ * @brief Delete a timestamptz span set from a temporal value
+ * @param[in] temp Temporal value
+ * @param[in] ss Span set
+ * @param[in] connect True when the instants before and after the span set, if
+ * any, are connected in the result
  * @csqlfn #Temporal_delete_tstzspanset()
  */
 Temporal *
@@ -4374,6 +4699,7 @@ temporal_stops(const Temporal *temp, double maxdist,
 
 /**
  * @ingroup libmeos_temporal_agg
+ * @param[in] temp Temporal value
  * @brief Return the integral (area under the curve) of a temporal number
  * @return On error return -1.0
  */
@@ -4398,6 +4724,7 @@ tnumber_integral(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighted average of a temporal number
+ * @param[in] temp Temporal value
  * @return On error return DBL_MAX
  * @csqlfn #Tnumber_twavg()
  */
@@ -4426,6 +4753,7 @@ tnumber_twavg(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_agg
  * @brief Compact the temporal value by removing extra storage space
+ * @param[in] temp Temporal value
  */
 Temporal *
 temporal_compact(const Temporal *temp)
@@ -4449,7 +4777,8 @@ temporal_compact(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the temporal values are equal.
- * @note The internal B-tree comparator is not used to increase efficiency
+ * @param[in] temp1,temp2 Temporal values
+ * @note The function #temporal_cmp is not used to increase efficiency
  * @csqlfn #Temporal_eq()
  */
 bool
@@ -4535,6 +4864,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the temporal values are different
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Temporal_ne()
  */
 bool
@@ -4550,6 +4880,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
+ * @param[in] temp1,temp2 Temporal values
  * @note Function used for B-tree comparison
  * @csqlfn #Temporal_cmp()
  */
@@ -4615,6 +4946,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is less than the second one
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Temporal_lt()
  */
 bool
@@ -4628,6 +4960,7 @@ temporal_lt(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Temporal_le()
  */
 bool
@@ -4641,6 +4974,7 @@ temporal_le(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Temporal_gt()
  */
 bool
@@ -4653,6 +4987,7 @@ temporal_ge(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than the second one
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Temporal_ge()
  */
 bool
@@ -4669,6 +5004,7 @@ temporal_gt(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal value.
+ * @param[in] temp Temporal value
  * @result On error return INT_MAX
  * @csqlfn #Temporal_hash()
  */

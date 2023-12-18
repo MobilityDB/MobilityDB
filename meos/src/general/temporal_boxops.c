@@ -177,8 +177,8 @@ temporal_bbox_size(meosType temptype)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Compute the bounding box of a temporal instant
- * @param[in] box Bounding box
  * @param[in] inst Temporal value
+ * @param[in] box Bounding box
  */
 void
 tinstant_set_bbox(const TInstant *inst, void *box)

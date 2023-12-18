@@ -40,6 +40,7 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include "utils/timestamp.h"
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
@@ -171,7 +172,7 @@ spanset_find_value(const SpanSet *ss, Datum v, int *loc)
 
 #if MEOS
 bool
-tstzspanset_find_timestamp(const SpanSet *ss, TimestampTz t, int *loc)
+tstzspanset_find_timestamptz(const SpanSet *ss, TimestampTz t, int *loc)
 {
   return spanset_find_value(ss, TimestampTzGetDatum(t), loc);
 }
@@ -199,6 +200,8 @@ SPANSET_SP_N(const SpanSet *ss, int index)
 /**
  * @ingroup libmeos_internal_setspan_inout
  * @brief Return a span set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
+ * @param[in] spansettype Span set type
  */
 SpanSet *
 spanset_in(const char *str, meosType spansettype)
@@ -211,6 +214,7 @@ spanset_in(const char *str, meosType spansettype)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Spanset_in()
  */
 SpanSet *
@@ -225,6 +229,7 @@ intspanset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a big integer span from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Spanset_in()
  */
 SpanSet *
@@ -239,6 +244,7 @@ bigintspanset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a float span from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Spanset_in()
  */
 SpanSet *
@@ -253,6 +259,7 @@ floatspanset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a date set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Spanset_in()
  */
 SpanSet *
@@ -267,6 +274,7 @@ datespanset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a timestamptz set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Spanset_in()
  */
 SpanSet *
@@ -282,6 +290,8 @@ tstzspanset_in(const char *str)
 /**
  * @ingroup libmeos_internal_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set
+ * @param[in] ss Span set
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Spanset_out()
  */
 char *
@@ -308,6 +318,7 @@ spanset_out(const SpanSet *ss, int maxdd)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set
+ * @param[in] ss Span set
  * @csqlfn #Spanset_out()
  */
 char *
@@ -323,6 +334,7 @@ intspanset_out(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set
+ * @param[in] ss Span set
  * @csqlfn #Spanset_out()
  */
 char *
@@ -338,6 +350,8 @@ bigintspanset_out(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set
+ * @param[in] ss Span set
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Spanset_out()
  */
 char *
@@ -353,6 +367,7 @@ floatspanset_out(const SpanSet *ss, int maxdd)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set
+ * @param[in] ss Span set
  * @csqlfn #Spanset_out()
  */
 char *
@@ -368,6 +383,7 @@ datespanset_out(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set
+ * @param[in] ss Span set
  * @csqlfn #Spanset_out()
  */
 char *
@@ -390,8 +406,7 @@ tstzspanset_out(const SpanSet *ss)
  * @brief Construct a span set from an array of disjoint spans enabling the
  * data structure to expand.
  *
- * For example, the memory structure of a SpanSet with 3 span is as
- * follows
+ * For example, the memory structure of a SpanSet with 3 span is as follows
  * @code
  * ---------------------------------------------------------------------------------
  * ( SpanSet )_X | ( bbox )_X | ( Span_0 )_X | ( Span_1 )_X | ( Span_2 )_X |
@@ -399,7 +414,6 @@ tstzspanset_out(const SpanSet *ss)
  * @endcode
  * where the `X` are unused bytes added for double padding, and `bbox` is the
  * bounding box which is also a span.
- *
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
  * @param[in] maxcount Maximum number of elements in the array
@@ -483,12 +497,11 @@ spanset_make(Span *spans, int count, bool normalize)
 /**
  * @ingroup libmeos_internal_setspan_constructor
  * @brief Construct a span set from an array of spans and free the input array
- * of spans after the creation.
- *
+ * of spans after the creation
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized.
- * @see spanset_make
+ * @see #spanset_make
  */
 SpanSet *
 spanset_make_free(Span *spans, int count, bool normalize)
@@ -504,6 +517,7 @@ spanset_make_free(Span *spans, int count, bool normalize)
 /**
  * @ingroup libmeos_internal_setspan_constructor
  * @brief Return a copy of a span set
+ * @param[in] ss Span set
  */
 SpanSet *
 spanset_cp(const SpanSet *ss)
@@ -518,6 +532,7 @@ spanset_cp(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Return a copy of a span set
+ * @param[in] ss Span set
  */
 SpanSet *
 spanset_copy(const SpanSet *ss)
@@ -536,6 +551,8 @@ spanset_copy(const SpanSet *ss)
 /**
  * @ingroup libmeos_internal_setspan_conversion
  * @brief Convert a value to a span set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 SpanSet *
 value_to_spanset(Datum d, meosType basetype)
@@ -551,6 +568,7 @@ value_to_spanset(Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert an integer to a span set
+ * @param[in] i Value
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
@@ -562,6 +580,7 @@ int_to_spanset(int i)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a big integer to a span set
+ * @param[in] i Value
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
@@ -573,6 +592,7 @@ bigint_to_spanset(int i)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a float to a span set
+ * @param[in] d Value
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
@@ -584,6 +604,7 @@ float_to_spanset(double d)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a date to a span set
+ * @param[in] d Value
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
@@ -596,6 +617,7 @@ date_to_spanset(DateADT d)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a timestamptz to a span set
+ * @param[in] t Value
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
@@ -607,6 +629,7 @@ timestamptz_to_spanset(TimestampTz t)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a set to a span set.
+ * @param[in] s Set
  * @csqlfn #Set_to_spanset()
  */
 SpanSet *
@@ -629,6 +652,7 @@ set_to_spanset(const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_conversion
  * @brief Convert a span as a span set.
+ * @param[in] s Span
  * @csqlfn #Span_to_spanset()
  */
 SpanSet *
@@ -641,6 +665,7 @@ span_spanset(const Span *s)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a span to a span set.
+ * @param[in] s Span
  * @csqlfn #Spanset_to_span()
  */
 SpanSet *
@@ -653,254 +678,6 @@ span_to_spanset(const Span *s)
 }
 
 /*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-#if MEOS
-/**
- * @ingroup libmeos_internal_setspan_transf
- * @brief Transition function for set aggregate of values
- */
-SpanSet *
-spanset_compact(SpanSet *ss)
-{
-  assert(ss);
-  /* Create the final value reusing the array of spans in the span set */
-  return spanset_make_exp((Span *) &ss->elems, ss->count,
-    ss->count, NORMALIZE, ORDERED);
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_internal_setspan_transf
- * @brief Return a number set shifted and/or scaled by two intervals
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
- */
-SpanSet *
-numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
-  bool hasshift, bool haswidth)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_numspan_type(ss->spantype) ||
-      ! ensure_one_true(hasshift, haswidth) ||
-      (haswidth && ! ensure_positive_datum(haswidth, ss->basetype)))
-    return NULL;
-
-  /* Copy the input span set to the output span set */
-  SpanSet *result = spanset_cp(ss);
-
-  /* Shift and/or scale the bounding span */
-  Datum delta;
-  double scale;
-  numspan_shift_scale1(&result->span, shift, width, hasshift, haswidth,
-    &delta, &scale);
-  Datum origin = result->span.lower;
-
-  /* Shift and/or scale the span set */
-  for (int i = 0; i < ss->count; i++)
-    numspan_delta_scale_iter(&result->elems[i], origin, delta, hasshift,
-      scale);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Return an integer span shifted and/or scaled by two values
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
- */
-SpanSet *
-intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
-  bool haswidth)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
-    return NULL;
-  return numspanset_shift_scale(ss, Int32GetDatum(shift), Int32GetDatum(width),
-    hasshift, haswidth);
-}
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Return a big integer span shifted and/or scaled by two values
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
- */
-SpanSet *
-bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width,
-  bool hasshift, bool haswidth)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
-    return NULL;
-  return numspanset_shift_scale(ss, Int64GetDatum(shift), Int64GetDatum(width),
-    hasshift, haswidth);
-}
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Return a float span shifted and/or scaled by two values
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
- */
-SpanSet *
-floatspanset_shift_scale(const SpanSet *ss, double shift, double width,
-  bool hasshift, bool haswidth)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
-    return NULL;
-  return numspanset_shift_scale(ss, Float8GetDatum(shift),
-    Float8GetDatum(width), hasshift, haswidth);
-}
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Return a date span shifted and/or scaled by two values
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
- */
-SpanSet *
-datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
-  bool haswidth)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
-    return NULL;
-  return numspanset_shift_scale(ss, Int32GetDatum(shift), Int32GetDatum(width),
-    hasshift, haswidth);
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Return a timestamptz span set shifted and/or scaled by two intervals
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
- */
-SpanSet *
-tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
-  const Interval *duration)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET) ||
-      ! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_valid_duration(duration)))
-    return NULL;
-
-  /* Copy the input span set to the output span set */
-  SpanSet *result = spanset_cp(ss);
-
-  /* Shift and/or scale the bounding period */
-  TimestampTz delta;
-  double scale;
-  tstzspan_shift_scale1(&result->span, shift, duration, &delta, &scale);
-  TimestampTz origin = DatumGetTimestampTz(result->span.lower);
-  /* Shift and/or scale the span set */
-  for (int i = 0; i < ss->count; i++)
-    tstzspan_delta_scale_iter(&result->elems[i], origin, delta, scale);
-  return result;
-}
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Set the precision of the float span set to the number of decimal places.
- * @csqlfn #Floatspanset_round()
- */
-SpanSet *
-floatspanset_round(const SpanSet *ss, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
-      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
-    return NULL;
-
-  Span *spans = palloc(sizeof(Span) * ss->count);
-  Datum size = Int32GetDatum(maxdd);
-  for (int i = 0; i < ss->count; i++)
-  {
-    const Span *span = SPANSET_SP_N(ss, i);
-    floatspan_rnd(span, size, &spans[i]);
-  }
-  return spanset_make_free(spans, ss->count, NORMALIZE);
-}
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Transform an integer span set to a float span set
- * @csqlfn #Intspanset_to_floatspanset()
- */
-SpanSet *
-intspanset_to_floatspanset(const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
-    return NULL;
-  Span *spans = palloc(sizeof(Span) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-    intspan_set_floatspan(SPANSET_SP_N(ss, i), &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE);
-}
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Transform a float span set to an integer span set
- * @csqlfn #Floatspanset_to_intspanset()
- */
-SpanSet *
-floatspanset_to_intspanset(const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
-    return NULL;
-  Span *spans = palloc(sizeof(Span) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-    floatspan_set_intspan(SPANSET_SP_N(ss, i), &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE);
-}
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Transform a date span set to a timestamptz span set
- * @csqlfn #Datespanset_to_tstzspanset()
- */
-SpanSet *
-datespanset_to_tstzspanset(const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
-    return NULL;
-  Span *spans = palloc(sizeof(Span) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-    datespan_set_tstzspan(SPANSET_SP_N(ss, i), &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE);
-}
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Transform a timestamptz span set to a date span set
- * @csqlfn #Tstzspanset_to_datespanset()
- */
-SpanSet *
-tstzspanset_to_datespanset(const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
-  Span *spans = palloc(sizeof(Span) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-    tstzspan_set_datespan(SPANSET_SP_N(ss, i), &spans[i]);
-  int newcount;
-  Span *normspans = spanarr_normalize(spans, ss->count, ORDERED, &newcount);
-  return spanset_make_free(normspans, newcount, NORMALIZE);
-}
-
-/*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 
@@ -908,6 +685,7 @@ tstzspanset_to_datespanset(const SpanSet *ss)
 /**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the size in bytes of a span set
+ * @param[in] ss Span set
  * @csqlfn #Spanset_mem_size()
  */
 int
@@ -920,6 +698,7 @@ spanset_mem_size(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the bounding span of a span set
+ * @param[in] ss Span set
  * @csqlfn #Spanset_to_span()
  */
 Span *
@@ -935,6 +714,7 @@ spanset_span(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound a span set
+ * @param[in] ss Span set
  * @csqlfn #Spanset_lower()
  */
 Datum
@@ -950,6 +730,7 @@ spanset_lower(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span set
+ * @param[in] ss Span set
  * @return On error return INT_MAX
  * @csqlfn #Spanset_lower()
  */
@@ -966,7 +747,8 @@ intspanset_lower(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span set
- * @return On error return INT_MAX
+ * @param[in] ss Span set
+ * @return On error return LONG_MAX
  * @csqlfn #Spanset_lower()
  */
 int64
@@ -975,13 +757,14 @@ bigintspanset_lower(const SpanSet *ss)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
-    return INT_MAX;
+    return LONG_MAX;
   return DatumGetInt64(ss->elems[0].lower);
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a float span set
+ * @param[in] ss Span set
  * @return On error return DBL_MAX
  * @csqlfn #Spanset_lower()
  */
@@ -998,6 +781,7 @@ floatspanset_lower(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a timestamptz span set
+ * @param[in] ss Span set
  * @return On error return DT_NOEND
  * @csqlfn #Spanset_lower()
  */
@@ -1015,6 +799,7 @@ tstzspanset_lower(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound a span set
+ * @param[in] ss Span set
  * @csqlfn #Spanset_upper()
  */
 Datum
@@ -1030,6 +815,7 @@ spanset_upper(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span set
+ * @param[in] ss Span set
  * @return On error return INT_MAX
  * @csqlfn #Spanset_upper()
  */
@@ -1046,7 +832,8 @@ intspanset_upper(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span set
- * @return On error return INT_MAX
+ * @param[in] ss Span set
+ * @return On error return LONG_MAX
  * @csqlfn #Spanset_upper()
  */
 int64
@@ -1055,13 +842,14 @@ bigintspanset_upper(const SpanSet *ss)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
-    return INT_MAX;
+    return LONG_MAX;
   return Int64GetDatum(ss->elems[ss->count - 1].upper);
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a float span set
+ * @param[in] ss Span set
  * @return On error return DBL_MAX
  * @csqlfn #Spanset_upper()
  */
@@ -1078,6 +866,7 @@ floatspanset_upper(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a timestamptz span set
+ * @param[in] ss Span set
  * @return On error return DT_NOEND
  * @csqlfn #Spanset_upper()
  */
@@ -1095,6 +884,7 @@ tstzspanset_upper(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return true if the lower bound of a span set is inclusive
+ * @param[in] ss Span set
  * @csqlfn #Spanset_lower_inc()
  */
 bool
@@ -1109,6 +899,7 @@ spanset_lower_inc(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return true if the upper bound of a span set is inclusive
+ * @param[in] ss Span set
  * @csqlfn #Spanset_upper_inc()
  */
 bool
@@ -1123,6 +914,8 @@ spanset_upper_inc(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the width of a span set as a double.
+ * @param[in] ss Span set
+ * @param[in] boundspan True when the potential time gaps are ignored
  * @return On error return -1.0
  * @csqlfn #Spanset_width()
  */
@@ -1152,6 +945,8 @@ spanset_width(const SpanSet *ss, bool boundspan)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the duration of a date span set
+ * @param[in] ss Span set
+ * @param[in] boundspan True when the potential time gaps are ignored
  * @csqlfn #Datespanset_duration()
  */
 Interval *
@@ -1179,6 +974,8 @@ datespanset_duration(const SpanSet *ss, bool boundspan)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the duration of a timestamptz span set
+ * @param[in] ss Span set
+ * @param[in] boundspan True when the potential time gaps are ignored
  * @csqlfn #Tstzspanset_duration()
  */
 Interval *
@@ -1208,6 +1005,7 @@ tstzspanset_duration(const SpanSet *ss, bool boundspan)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of dates of a span set
+ * @param[in] ss Span set
  * @return On error return -1
  * @csqlfn #Datespanset_num_dates()
  */
@@ -1225,6 +1023,7 @@ datespanset_num_dates(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start date of a span set
+ * @param[in] ss Span set
  * @return On error return DATEVAL_NOEND
  * @csqlfn #Datespanset_start_date()
  */
@@ -1242,6 +1041,7 @@ datespanset_start_date(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end date of a span set
+ * @param[in] ss Span set
  * @return On error return DATEVAL_NOEND
  * @csqlfn #Datespanset_end_date()
  */
@@ -1287,6 +1087,8 @@ datespanset_date_n(const SpanSet *ss, int n, DateADT *result)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of dates of a span set
+ * @param[in] ss Span set
+ * @param[out] count Number of values of the resulting array
  * @return On error return NULL
  * @csqlfn #Datespanset_dates()
  */
@@ -1313,6 +1115,7 @@ datespanset_dates(const SpanSet *ss, int *count)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of timestamps of a span set
+ * @param[in] ss Span set
  * @return On error return -1
  * @csqlfn #Tstzspanset_num_timestamps()
  */
@@ -1355,11 +1158,12 @@ tstzspanset_num_timestamps(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start timestamptz of a span set
+ * @param[in] ss Span set
  * @return On error return DT_NOEND
- * @csqlfn #Tstzspanset_start_timestamp()
+ * @csqlfn #Tstzspanset_start_timestamptz()
  */
 TimestampTz
-tstzspanset_start_timestamp(const SpanSet *ss)
+tstzspanset_start_timestamptz(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
@@ -1373,11 +1177,12 @@ tstzspanset_start_timestamp(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end timestamptz of a span set
+ * @param[in] ss Span set
  * @return On error return DT_NOEND
- * @csqlfn #Tstzspanset_end_timestamp()
+ * @csqlfn #Tstzspanset_end_timestamptz()
  */
 TimestampTz
-tstzspanset_end_timestamp(const SpanSet *ss)
+tstzspanset_end_timestamptz(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
@@ -1396,10 +1201,10 @@ tstzspanset_end_timestamp(const SpanSet *ss)
  * @param[out] result Timestamptz
  * @result Return true if the timestamptz is found
  * @note It is assumed that n is 1-based
- * @csqlfn #Tstzspanset_timestamp_n()
+ * @csqlfn #Tstzspanset_timestamptz_n()
  */
 bool
-tstzspanset_timestamp_n(const SpanSet *ss, int n, TimestampTz *result)
+tstzspanset_timestamptz_n(const SpanSet *ss, int n, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
@@ -1450,6 +1255,8 @@ tstzspanset_timestamp_n(const SpanSet *ss, int n, TimestampTz *result)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of timestamps of a span set
+ * @param[in] ss Span set
+ * @param[out] count Number of values of the resulting array
  * @return On error return NULL
  * @csqlfn #Tstzspanset_timestamps()
  */
@@ -1482,6 +1289,7 @@ tstzspanset_timestamps(const SpanSet *ss, int *count)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of spans of a span set
+ * @param[in] ss Span set
  * @return On error return -1
  * @csqlfn #Spanset_num_spans()
  */
@@ -1497,6 +1305,7 @@ spanset_num_spans(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return a pointer to the the start span of a span set
+ * @param[in] ss Span set
  * @return On error return NULL
  * @csqlfn #Spanset_start_span()
  */
@@ -1512,6 +1321,7 @@ spanset_start_span(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return a pointer to the end span of a span set
+ * @param[in] ss Span set
  * @return On error return NULL
  * @csqlfn #Spanset_end_span()
  */
@@ -1527,6 +1337,8 @@ spanset_end_span(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return a pointer to the n-th span of a span set
+ * @param[in] ss Span set
+ * @param[in] i Index
  * @csqlfn #Spanset_span_n()
  */
 const Span *
@@ -1545,6 +1357,7 @@ spanset_span_n(const SpanSet *ss, int i)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of spans of a span set
+ * @param[in] ss Span set
  * @return On error return NULL
  * @csqlfn #Spanset_spans()
  */
@@ -1562,12 +1375,300 @@ spanset_spans(const SpanSet *ss)
 }
 
 /*****************************************************************************
- * B-tree support
+ * Transformation functions
+ *****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Transition function for set aggregate of values
+ * @param[in] ss Span set
+ */
+SpanSet *
+spanset_compact(SpanSet *ss)
+{
+  assert(ss);
+  /* Create the final value reusing the array of spans in the span set */
+  return spanset_make_exp((Span *) &ss->elems, ss->count,
+    ss->count, NORMALIZE, ORDERED);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Set the precision of the float span set to the number of decimal places.
+ * @param[in] ss Span set
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Floatspanset_round()
+ */
+SpanSet *
+floatspanset_round(const SpanSet *ss, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
+      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
+    return NULL;
+
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  Datum size = Int32GetDatum(maxdd);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const Span *span = SPANSET_SP_N(ss, i);
+    floatspan_rnd(span, size, &spans[i]);
+  }
+  return spanset_make_free(spans, ss->count, NORMALIZE);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform an integer span set to a float span set
+ * @param[in] ss Span set
+ * @csqlfn #Intspanset_to_floatspanset()
+ */
+SpanSet *
+intspanset_to_floatspanset(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
+    return NULL;
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    intspan_set_floatspan(SPANSET_SP_N(ss, i), &spans[i]);
+  return spanset_make_free(spans, ss->count, NORMALIZE);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a float span set to an integer span set
+ * @param[in] ss Span set
+ * @csqlfn #Floatspanset_to_intspanset()
+ */
+SpanSet *
+floatspanset_to_intspanset(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
+    return NULL;
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    floatspan_set_intspan(SPANSET_SP_N(ss, i), &spans[i]);
+  return spanset_make_free(spans, ss->count, NORMALIZE);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a date span set to a timestamptz span set
+ * @param[in] ss Span set
+ * @csqlfn #Datespanset_to_tstzspanset()
+ */
+SpanSet *
+datespanset_to_tstzspanset(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
+    return NULL;
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    datespan_set_tstzspan(SPANSET_SP_N(ss, i), &spans[i]);
+  return spanset_make_free(spans, ss->count, NORMALIZE);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a timestamptz span set to a date span set
+ * @param[in] ss Span set
+ * @csqlfn #Tstzspanset_to_datespanset()
+ */
+SpanSet *
+tstzspanset_to_datespanset(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
+    return NULL;
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    tstzspan_set_datespan(SPANSET_SP_N(ss, i), &spans[i]);
+  int newcount;
+  Span *normspans = spanarr_normalize(spans, ss->count, ORDERED, &newcount);
+  return spanset_make_free(normspans, newcount, NORMALIZE);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Return a number set shifted and/or scaled by two intervals
+ * @param[in] ss Span set
+ * @param[in] shift Value for shifting the span set
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
+ * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ */
+SpanSet *
+numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
+  bool hasshift, bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_numspan_type(ss->spantype) ||
+      ! ensure_one_true(hasshift, haswidth) ||
+      (haswidth && ! ensure_positive_datum(haswidth, ss->basetype)))
+    return NULL;
+
+  /* Copy the input span set to the output span set */
+  SpanSet *result = spanset_cp(ss);
+
+  /* Shift and/or scale the bounding span */
+  Datum delta;
+  double scale;
+  numspan_shift_scale1(&result->span, shift, width, hasshift, haswidth,
+    &delta, &scale);
+  Datum origin = result->span.lower;
+
+  /* Shift and/or scale the span set */
+  for (int i = 0; i < ss->count; i++)
+    numspan_delta_scale_iter(&result->elems[i], origin, delta, hasshift,
+      scale);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return an integer span shifted and/or scaled by two values
+ * @param[in] ss Span set
+ * @param[in] shift Value for shifting the span set
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
+ * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ */
+SpanSet *
+intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
+    return NULL;
+  return numspanset_shift_scale(ss, Int32GetDatum(shift), Int32GetDatum(width),
+    hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a big integer span shifted and/or scaled by two values
+ * @param[in] ss Span set
+ * @param[in] shift Value for shifting the span set
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
+ * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ */
+SpanSet *
+bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width,
+  bool hasshift, bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
+    return NULL;
+  return numspanset_shift_scale(ss, Int64GetDatum(shift), Int64GetDatum(width),
+    hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a float span shifted and/or scaled by two values
+ * @param[in] ss Span set
+ * @param[in] shift Value for shifting the span set
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
+ * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ */
+SpanSet *
+floatspanset_shift_scale(const SpanSet *ss, double shift, double width,
+  bool hasshift, bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
+    return NULL;
+  return numspanset_shift_scale(ss, Float8GetDatum(shift),
+    Float8GetDatum(width), hasshift, haswidth);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a date span shifted and/or scaled by two values
+ * @param[in] ss Span set
+ * @param[in] shift Value for shifting the span set
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
+ * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ */
+SpanSet *
+datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
+  bool haswidth)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
+    return NULL;
+  return numspanset_shift_scale(ss, Int32GetDatum(shift), Int32GetDatum(width),
+    hasshift, haswidth);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a timestamptz span set shifted and/or scaled by two intervals
+ * @param[in] ss Span set
+ * @param[in] shift Interval to shift the span set, may be NULL
+ * @param[in] duration Interval for the duration of the result, may be NULL
+ * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ */
+SpanSet *
+tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET) ||
+      ! ensure_one_not_null((void *) shift, (void *) duration) ||
+      (duration && ! ensure_valid_duration(duration)))
+    return NULL;
+
+  /* Copy the input span set to the output span set */
+  SpanSet *result = spanset_cp(ss);
+
+  /* Shift and/or scale the bounding period */
+  TimestampTz delta;
+  double scale;
+  tstzspan_shift_scale1(&result->span, shift, duration, &delta, &scale);
+  TimestampTz origin = DatumGetTimestampTz(result->span.lower);
+  /* Shift and/or scale the span set */
+  for (int i = 0; i < ss->count; i++)
+    tstzspan_delta_scale_iter(&result->elems[i], origin, delta, scale);
+  return result;
+}
+
+/*****************************************************************************
+ * Comparison functions for defining B-tree indexes
  *****************************************************************************/
 
 /**
  * @ingroup libmeos_internal_setspan_comp
  * @brief Return true if the two span sets are equal.
+ * @param[in] ss1,ss2 Span sets
  */
 bool
 spanset_eq1(const SpanSet *ss1, const SpanSet *ss2)
@@ -1590,7 +1691,8 @@ spanset_eq1(const SpanSet *ss1, const SpanSet *ss2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the two span sets are equal.
- * @note The internal B-tree comparator is not used to increase efficiency
+ * @param[in] ss1,ss2 Span sets
+ * @note The function #spanset_cmp() is not used to increase efficiency
  * @csqlfn #Spanset_eq()
  */
 bool
@@ -1605,8 +1707,8 @@ spanset_eq(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_setspan_comp
- * @brief Return true if the first span set is different from the
- * second one.
+ * @brief Return true if the first span set is different from the second one.
+ * @param[in] ss1,ss2 Span sets
  * @csqlfn #Spanset_ne()
  */
 bool
@@ -1619,6 +1721,7 @@ spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup libmeos_internal_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span set
  * is less than, equal, or greater than the second one.
+ * @param[in] ss1,ss2 Span sets
  */
 int
 spanset_cmp1(const SpanSet *ss1, const SpanSet *ss2)
@@ -1654,6 +1757,7 @@ spanset_cmp1(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span set
  * is less than, equal, or greater than the second one.
+ * @param[in] ss1,ss2 Span sets
  * @return On error return INT_MAX
  * @note Function used for B-tree comparison
  * @csqlfn #Spanset_cmp()
@@ -1671,6 +1775,7 @@ spanset_cmp(const SpanSet *ss1, const SpanSet *ss2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span set is less than the second one
+ * @param[in] ss1,ss2 Span sets
  * @csqlfn #Spanset_lt()
  */
 bool
@@ -1683,7 +1788,8 @@ spanset_lt(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span set is less than or equal to
  * the second one
- * @sqlop @p <=
+ * @param[in] ss1,ss2 Span sets
+ * @csqlfn #Spanset_le()
  */
 bool
 spanset_le(const SpanSet *ss1, const SpanSet *ss2)
@@ -1695,6 +1801,7 @@ spanset_le(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span set is greater than or equal to
  * the second one
+ * @param[in] ss1,ss2 Span sets
  * @csqlfn #Spanset_ge()
  */
 bool
@@ -1706,6 +1813,7 @@ spanset_ge(const SpanSet *ss1, const SpanSet *ss2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span set is greater than the second one
+ * @param[in] ss1,ss2 Span sets
  * @csqlfn #Spanset_gt()
  */
 bool
@@ -1723,6 +1831,7 @@ spanset_gt(const SpanSet *ss1, const SpanSet *ss2)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash value of a span set
+ * @param[in] ss Span set
  * @return On error return INT_MAX
  * @csqlfn #Spanset_hash()
  */
@@ -1746,6 +1855,8 @@ spanset_hash(const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash value of a span set using a seed
+ * @param[in] ss Span set
+ * @param[in] seed Seed
  * @return On error return INT_MAX
  * @csqlfn #Spanset_hash_extended()
  */

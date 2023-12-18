@@ -47,6 +47,20 @@
  * @ingroup mobilitydb_api
  * @brief Functions for set and span types.
  *
+ * @defgroup mobilitydb_box Functions for box types
+ * @ingroup mobilitydb_api
+ * @brief Functions for box types.
+ *
+ * @defgroup mobilitydb_temporal Functions for temporal types
+ * @ingroup mobilitydb_api
+ * @brief Functions for temporal types.
+ *
+ * @defgroup mobilitydb_misc Miscellaneous functions
+ * @ingroup mobilitydb_api
+ * @brief Miscellaneous functions.
+ */
+
+/**
  * @defgroup mobilitydb_setspan_inout Input/output functions
  * @ingroup mobilitydb_setspan
  * @brief Input/output functions for set and span types.
@@ -97,10 +111,6 @@
  */
 
 /**
- * @defgroup mobilitydb_box Functions for box types
- * @ingroup mobilitydb_api
- * @brief Functions for box types.
- *
  * @defgroup mobilitydb_box_inout Input/output functions
  * @ingroup mobilitydb_box
  * @brief Input/output functions for box types.
@@ -143,10 +153,6 @@
  */
 
 /**
- * @defgroup mobilitydb_temporal Functions for temporal types
- * @ingroup mobilitydb_api
- * @brief Functions for temporal types.
- *
  * @defgroup mobilitydb_temporal_inout Input/output functions
  * @ingroup mobilitydb_temporal
  * @brief Input/output functions for temporal types.
@@ -221,27 +227,27 @@
  *
  * @defgroup mobilitydb_temporal_spatial Spatial functions
  * @ingroup mobilitydb_temporal
- * @brief Spatial functions for temporal point types.
+ * @brief Spatial functions for temporal points.
  *
  * @defgroup mobilitydb_temporal_spatial_accessor Spatial accessor functions
  * @ingroup mobilitydb_temporal_spatial
- * @brief Spatial accessor functions for temporal point types.
+ * @brief Spatial accessor functions for temporal points.
  *
  * @defgroup mobilitydb_temporal_spatial_transf Spatial transformation functions
  * @ingroup mobilitydb_temporal_spatial
- * @brief Spatial transformation functions for temporal point types.
+ * @brief Spatial transformation functions for temporal points.
  *
  * @defgroup mobilitydb_temporal_spatial_rel Spatial relationship functions
  * @ingroup mobilitydb_temporal_spatial
- * @brief Spatial relationship functions for temporal point types.
+ * @brief Spatial relationship functions for temporal points.
  *
  * @defgroup mobilitydb_temporal_spatial_rel_ever Ever spatial relationship functions
  * @ingroup mobilitydb_temporal_spatial_rel
- * @brief Ever spatial relationship functions for temporal point types.
+ * @brief Ever spatial relationship functions for temporal points.
  *
  * @defgroup mobilitydb_temporal_spatial_rel_temp Temporal spatial relationship functions
  * @ingroup mobilitydb_temporal_spatial_rel
- * @brief Temporal spatial relationship functions for temporal point types.
+ * @brief Temporal spatial relationship functions for temporal points.
  *
  * @defgroup mobilitydb_temporal_spatial_route Route functions
  * @ingroup mobilitydb_temporal_spatial

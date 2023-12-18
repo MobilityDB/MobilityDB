@@ -38,6 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include "general/doublen.h"
 #include "general/meos_catalog.h"
 
 /* To avoid including pg_collation_d */
@@ -351,6 +352,8 @@ extern bool ensure_valid_duration(const Interval *duration);
 /* General functions */
 
 extern void *temporal_bbox_ptr(const Temporal *temp);
+
+extern Datum datum_round_float(Datum value, Datum size);
 
 extern bool intersection_temporal_temporal(const Temporal *temp1,
 const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);

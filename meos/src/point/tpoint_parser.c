@@ -305,7 +305,7 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
  * @param[in,out] tpoint_srid SRID of the temporal point
  */
 TSequence *
-tpointseq_disc_parse(const char **str, meosType temptype, int *tpoint_srid)
+tpointdiscseq_parse(const char **str, meosType temptype, int *tpoint_srid)
 {
   const char *type_str = "temporal point";
   p_whitespace(str);
@@ -351,7 +351,7 @@ tpointseq_disc_parse(const char **str, meosType temptype, int *tpoint_srid)
  * @param[out] result New sequence, may be NULL
  */
 bool
-tpointseq_cont_parse(const char **str, meosType temptype, interpType interp,
+tpointcontseq_parse(const char **str, meosType temptype, interpType interp,
   bool end, int *tpoint_srid, TSequence **result)
 {
   p_whitespace(str);
@@ -423,13 +423,13 @@ tpointseqset_parse(const char **str, meosType temptype, interpType interp,
 
   /* First parsing */
   const char *bak = *str;
-  if (! tpointseq_cont_parse(str, temptype, interp, false, tpoint_srid, NULL))
+  if (! tpointcontseq_parse(str, temptype, interp, false, tpoint_srid, NULL))
     return NULL;
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    if (! tpointseq_cont_parse(str, temptype, interp, false, tpoint_srid, NULL))
+    if (! tpointcontseq_parse(str, temptype, interp, false, tpoint_srid, NULL))
       return NULL;
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
@@ -441,7 +441,7 @@ tpointseqset_parse(const char **str, meosType temptype, interpType interp,
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    tpointseq_cont_parse(str, temptype, interp, false, tpoint_srid,
+    tpointcontseq_parse(str, temptype, interp, false, tpoint_srid,
       &sequences[i]);
   }
   p_cbrace(str);
@@ -513,7 +513,7 @@ tpoint_parse(const char **str, meosType temptype)
   else if (**str == '[' || **str == '(')
   {
     TSequence *seq;
-    if (! tpointseq_cont_parse(str, temptype, interp, true, &tpoint_srid, &seq))
+    if (! tpointcontseq_parse(str, temptype, interp, true, &tpoint_srid, &seq))
       return NULL;
     result = (Temporal *) seq;
   }
@@ -531,7 +531,7 @@ tpoint_parse(const char **str, meosType temptype)
     else
     {
       *str = bak;
-      result = (Temporal *) tpointseq_disc_parse(str, temptype, &tpoint_srid);
+      result = (Temporal *) tpointdiscseq_parse(str, temptype, &tpoint_srid);
     }
   }
   return result;
@@ -542,6 +542,7 @@ tpoint_parse(const char **str, meosType temptype)
  * @ingroup libmeos_temporal_inout
  * @brief Return a temporal geometry point from its Well-Known Text (WKT)
  * representation
+ * @param[in] str String
  */
 Temporal *
 tgeompoint_in(const char *str)
@@ -555,6 +556,7 @@ tgeompoint_in(const char *str)
  * @ingroup libmeos_temporal_inout
  * @brief Return a temporal geography point from its Well-Known Text (WKT)
  * representation
+ * @param[in] str String
  */
 Temporal *
 tgeogpoint_in(const char *str)

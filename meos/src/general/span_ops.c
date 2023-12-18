@@ -113,6 +113,9 @@ span_max_value(Datum l, Datum r, meosType type)
 /**
  * @ingroup libmeos_internal_setspan_topo
  * @brief Return true if a span contains a value
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 bool
 contains_span_value(const Span *s, Datum d, meosType basetype)
@@ -133,6 +136,8 @@ contains_span_value(const Span *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span contains an integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Contains_span_value()
  */
 bool
@@ -147,6 +152,8 @@ contains_span_int(const Span *s, int i)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span contains a big integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Contains_span_value()
  */
 bool
@@ -161,6 +168,8 @@ contains_span_bigint(const Span *s, int64 i)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span contains a float
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Contains_span_value()
  */
 bool
@@ -175,6 +184,8 @@ contains_span_float(const Span *s, double d)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span contains a date
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Contains_span_value()
  */
 bool
@@ -190,6 +201,8 @@ contains_span_date(const Span *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span contains a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
  * @csqlfn #Contains_span_value()
  */
 bool
@@ -204,6 +217,7 @@ contains_span_timestamptz(const Span *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_internal_setspan_topo
+ * @param[in] s1,s2 Spans
  * @brief Return true if the first span contains the second one
  */
 bool
@@ -222,6 +236,7 @@ cont_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if the first span contains the second one
+ * @param[in] s1,s2 Spans
  * @csqlfn #Contains_span_span()
  */
 bool
@@ -241,6 +256,9 @@ contains_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_topo
  * @brief Return true if a value is contained in a span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Span
  */
 bool
 contained_value_span(Datum d, meosType basetype, const Span *s)
@@ -252,6 +270,8 @@ contained_value_span(Datum d, meosType basetype, const Span *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if an integer is contained in a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Contained_value_span()
  */
 bool
@@ -266,6 +286,8 @@ contained_int_span(int i, const Span *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a big integer is contained in a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Contained_value_span()
  */
 bool
@@ -280,6 +302,8 @@ contained_bigint_span(int64 i, const Span *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a float is contained in a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Contained_value_span()
  */
 bool
@@ -294,6 +318,8 @@ contained_float_span(double d, const Span *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a date is contained in a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Contained_value_span()
  */
 bool
@@ -308,6 +334,8 @@ contained_date_span(DateADT d, const Span *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a timestamp is contained in a span
+ * @param[in] t Value
+ * @param[in] s Span
  * @csqlfn #Contained_value_span()
  */
 bool
@@ -324,6 +352,7 @@ contained_timestamptz_span(TimestampTz t, const Span *s)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if the first span is contained in the second one
+ * @param[in] s1,s2 Spans
  * @csqlfn #Contained_value_span()
  */
 bool
@@ -339,6 +368,7 @@ contained_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_topo
  * @brief Return true if two spans overlap
+ * @param[in] s1,s2 Spans
  */
 bool
 over_span_span(const Span *s1, const Span *s2)
@@ -356,6 +386,7 @@ over_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if two spans overlap
+ * @param[in] s1,s2 Spans
  * @csqlfn #Overlaps_span_span()
  */
 bool
@@ -371,6 +402,7 @@ overlaps_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_topo
  * @brief Return true if two spans overlap or are adjacent
+ * @param[in] s1,s2 Spans
  * @note This function is used for avoiding normalization in span operations
  */
 bool
@@ -393,6 +425,9 @@ over_adj_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_topo
  * @brief Return true if a span and a value are adjacent
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  * @csqlfn #Adjacent_span_value()
  */
 bool
@@ -408,6 +443,8 @@ adjacent_span_value(const Span *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span and an integer are adjacent
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Adjacent_span_value()
  */
 bool
@@ -422,6 +459,8 @@ adjacent_span_int(const Span *s, int i)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span and a big integer are adjacent
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Adjacent_span_value()
  */
 bool
@@ -436,6 +475,8 @@ adjacent_span_bigint(const Span *s, int64 i)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span and a float are adjacent
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Adjacent_span_value()
  */
 bool
@@ -450,6 +491,8 @@ adjacent_span_float(const Span *s, double d)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span and a date are adjacent
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Adjacent_span_value()
  */
 bool
@@ -464,6 +507,8 @@ adjacent_span_date(const Span *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if a span and a timestamptz are adjacent
+ * @param[in] s Span
+ * @param[in] t Value
  * @csqlfn #Adjacent_span_value()
  */
 bool
@@ -479,6 +524,7 @@ adjacent_span_timestamptz(const Span *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_internal_setspan_topo
+ * @param[in] s1,s2 Spans
  * @brief Return true if two spans are adjacent
  */
 bool
@@ -499,6 +545,7 @@ adj_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_topo
  * @brief Return true if two spans are adjacent
+ * @param[in] s1,s2 Spans
  * @csqlfn #Adjacent_span_span()
  */
 bool
@@ -518,6 +565,9 @@ adjacent_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value is to the left of a span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Span
  */
 bool
 left_value_span(Datum d, meosType basetype, const Span *s)
@@ -531,6 +581,8 @@ left_value_span(Datum d, meosType basetype, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer is to the left of a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Left_value_span()
  */
 bool
@@ -545,6 +597,8 @@ left_int_span(int i, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer is to the left of a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Left_value_span()
  */
 bool
@@ -559,6 +613,8 @@ left_bigint_span(int64 i, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float is to the left of a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Left_value_span()
  */
 bool
@@ -573,6 +629,8 @@ left_float_span(double d, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is before a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Left_value_span()
  */
 bool
@@ -587,6 +645,8 @@ before_date_span(DateADT d, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is before a span
+ * @param[in] t Value
+ * @param[in] s Span
  * @csqlfn #Left_value_span()
  */
 bool
@@ -603,6 +663,9 @@ before_timestamptz_span(TimestampTz t, const Span *s)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a span is to the left of a value
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 bool
 left_span_value(const Span *s, Datum d, meosType basetype)
@@ -616,6 +679,8 @@ left_span_value(const Span *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is to the left of an integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Left_span_value()
  */
 bool
@@ -630,6 +695,8 @@ left_span_int(const Span *s, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is to the left of a big integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Left_span_value()
  */
 bool
@@ -644,6 +711,8 @@ left_span_bigint(const Span *s, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is to the left of a float
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Left_span_value()
  */
 bool
@@ -658,6 +727,8 @@ left_span_float(const Span *s, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is before a date
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Left_span_value()
  */
 bool
@@ -671,6 +742,8 @@ before_span_date(const Span *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is before a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
  * @csqlfn #Left_span_value()
  */
 bool
@@ -687,6 +760,7 @@ before_span_timestamptz(const Span *s, TimestampTz t)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if the first span is to the left of the second one
+ * @param[in] s1,s2 Spans
  */
 bool
 lf_span_span(const Span *s1, const Span *s2)
@@ -699,6 +773,7 @@ lf_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first span is to the left of the second one
+ * @param[in] s1,s2 Spans
  * @csqlfn #Left_span_span()
  */
 bool
@@ -715,6 +790,7 @@ left_span_span(const Span *s1, const Span *s2)
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if the first span is to the left and not adjacent to the
  * second one
+ * @param[in] s1,s2 Spans
  * @note This function is used for avoiding normalization in span operations
  */
 bool
@@ -732,6 +808,9 @@ left_notadj_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value is to the right of a span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Span
  */
 bool
 right_value_span(Datum d, meosType basetype, const Span *s)
@@ -743,6 +822,8 @@ right_value_span(Datum d, meosType basetype, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer is to the right of a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Right_value_span()
  */
 bool
@@ -757,6 +838,8 @@ right_int_span(int i, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer is to the right of a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Right_value_span()
  */
 bool
@@ -771,6 +854,8 @@ right_bigint_span(int64 i, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float is to the right of a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Right_value_span()
  */
 bool
@@ -785,6 +870,8 @@ right_float_span(double d, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is after a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Right_value_span()
  */
 bool
@@ -799,6 +886,8 @@ after_date_span(DateADT d, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is after a span
+ * @param[in] t Value
+ * @param[in] s Span
  * @csqlfn #Right_value_span()
  */
 bool
@@ -815,6 +904,9 @@ after_timestamptz_span(TimestampTz t, const Span *s)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a span is to the right of a value
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 bool
 right_span_value(const Span *s, Datum d, meosType basetype)
@@ -826,6 +918,8 @@ right_span_value(const Span *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is to the right of an integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Right_span_value()
  */
 bool
@@ -840,6 +934,8 @@ right_span_int(const Span *s, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is to the right of a big integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Right_span_value()
  */
 bool
@@ -854,6 +950,8 @@ right_span_bigint(const Span *s, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is to the right of a float
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Right_span_value()
  */
 bool
@@ -868,6 +966,8 @@ right_span_float(const Span *s, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is after a date
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Right_span_value()
  */
 bool
@@ -882,6 +982,8 @@ after_span_date(const Span *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is after a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
  * @csqlfn #Right_span_value()
  */
 bool
@@ -898,6 +1000,7 @@ after_span_timestamptz(const Span *s, TimestampTz t)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if the first span is to right the of the second one
+ * @param[in] s1,s2 Spans
  */
 bool
 ri_span_span(const Span *s1, const Span *s2)
@@ -908,6 +1011,7 @@ ri_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first span is to right the of the second one
+ * @param[in] s1,s2 Spans
  * @csqlfn #Right_span_span()
  */
 bool
@@ -923,6 +1027,9 @@ right_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value does not extend to the right of a span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Span
  */
 bool
 overleft_value_span(Datum d, meosType basetype, const Span *s)
@@ -936,6 +1043,8 @@ overleft_value_span(Datum d, meosType basetype, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer does not extend to the right of a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Overleft_value_span()
  */
 bool
@@ -950,6 +1059,8 @@ overleft_int_span(int i, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer does not extend to the right of a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Overleft_value_span()
  */
 bool
@@ -964,6 +1075,8 @@ overleft_bigint_span(int64 i, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float does not extend to the right of a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Overleft_value_span()
  */
 bool
@@ -978,6 +1091,8 @@ overleft_float_span(double d, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is not after a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Overleft_value_span()
  */
 bool
@@ -992,6 +1107,8 @@ overbefore_date_span(DateADT d, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is not after a span
+ * @param[in] t Value
+ * @param[in] s Span
  * @csqlfn #Overleft_value_span()
  */
 bool
@@ -1008,6 +1125,9 @@ overbefore_timestamptz_span(TimestampTz t, const Span *s)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a span does not extend to the right of a value
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 bool
 overleft_span_value(const Span *s, Datum d, meosType basetype)
@@ -1024,6 +1144,8 @@ overleft_span_value(const Span *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span does not extend to the right of an integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Overleft_span_value()
  */
 bool
@@ -1038,6 +1160,8 @@ overleft_span_int(const Span *s, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span does not extend to the right of a big integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Overleft_span_value()
  */
 bool
@@ -1052,6 +1176,8 @@ overleft_span_bigint(const Span *s, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span does not extend to the right of a float
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Overleft_span_value()
  */
 bool
@@ -1066,6 +1192,8 @@ overleft_span_float(const Span *s, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is not after a date
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Overleft_span_value()
  */
 bool
@@ -1080,6 +1208,8 @@ overbefore_span_date(const Span *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is not after a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
  * @csqlfn #Overleft_span_value()
  */
 bool
@@ -1097,6 +1227,7 @@ overbefore_span_timestamptz(const Span *s, TimestampTz t)
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if the first span does not extend to the right of the
  * second one
+ * @param[in] s1,s2 Spans
  */
 bool
 ovlf_span_span(const Span *s1, const Span *s2)
@@ -1110,6 +1241,7 @@ ovlf_span_span(const Span *s1, const Span *s2)
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first span does not extend to the right of the
  * second one
+ * @param[in] s1,s2 Spans
  * @csqlfn #Overleft_span_span()
  */
 bool
@@ -1129,6 +1261,9 @@ overleft_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value does not extend to the left of a span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Span
  */
 bool
 overright_value_span(Datum d, meosType basetype, const Span *s)
@@ -1142,6 +1277,8 @@ overright_value_span(Datum d, meosType basetype, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if an integer does not extend to the left of a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Overright_value_span()
  */
 bool
@@ -1156,6 +1293,8 @@ overright_int_span(int i, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a big integer does not extend to the left of a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Overright_value_span()
  */
 bool
@@ -1170,6 +1309,8 @@ overright_bigint_span(int64 i, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float does not extend to the left of a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Overright_value_span()
  */
 bool
@@ -1184,6 +1325,8 @@ overright_float_span(double d, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a date is not before a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Overright_value_span()
  */
 bool
@@ -1198,6 +1341,8 @@ overafter_date_span(DateADT d, const Span *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamptz is not before a span
+ * @param[in] t Value
+ * @param[in] s Span
  * @csqlfn #Overright_value_span()
  */
 bool
@@ -1214,6 +1359,9 @@ overafter_timestamptz_span(TimestampTz t, const Span *s)
 /**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a span does not extend to the left of a value
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 bool
 overright_span_value(const Span *s, Datum d, meosType basetype)
@@ -1226,6 +1374,8 @@ overright_span_value(const Span *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span does not extend to the left of an integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Overright_span_value()
  */
 bool
@@ -1240,6 +1390,8 @@ overright_span_int(const Span *s, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span does not extend to the left of a big integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Overright_span_value()
  */
 bool
@@ -1254,6 +1406,8 @@ overright_span_bigint(const Span *s, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span does not extend to the left of a float
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Overright_span_value()
  */
 bool
@@ -1268,6 +1422,8 @@ overright_span_float(const Span *s, double d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is not before a date
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Overright_span_value()
  */
 bool
@@ -1282,6 +1438,8 @@ overafter_span_date(const Span *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is not before a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
  * @csqlfn #Overright_span_value()
  */
 bool
@@ -1299,6 +1457,7 @@ overafter_span_timestamptz(const Span *s, TimestampTz t)
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if the first span does not extend to the left of the
  * second one
+ * @param[in] s1,s2 Spans
  */
 bool
 ovri_span_span(const Span *s1, const Span *s2)
@@ -1312,6 +1471,7 @@ ovri_span_span(const Span *s1, const Span *s2)
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first span does not extend to the left of the
  * second one
+ * @param[in] s1,s2 Spans
  * @csqlfn #Overright_span_span()
  */
 bool
@@ -1330,7 +1490,9 @@ overright_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the bouding box union of two spans
+ * @brief Compute the bouding box union of two spans in the last argument
+ * @param[in] s1,s2 Spans
+ * @param[out] result Resulting span
  * @note The result of the function is always a span even if the spans do not
  * overlap
  */
@@ -1346,6 +1508,7 @@ bbox_union_span_span(const Span *s1, const Span *s2, Span *result)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the bounding union of two spans
+ * @param[in] s1,s2 Spans
  * @note The result of the function is always a span even if the spans do not
  * overlap
  * @note This function is similar to #bbox_union_span_span **with** memory
@@ -1363,6 +1526,9 @@ super_union_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the union of a span and a value
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  * @csqlfn #Union_span_value()
  */
 SpanSet *
@@ -1378,6 +1544,8 @@ union_span_value(const Span *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span and an integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Union_span_value()
  */
 SpanSet *
@@ -1392,6 +1560,8 @@ union_span_int(const Span *s, int i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span and a big integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Union_span_value()
  */
 SpanSet *
@@ -1406,6 +1576,8 @@ union_span_bigint(const Span *s, int64 i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span and a float
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Union_span_value()
  */
 SpanSet *
@@ -1420,6 +1592,8 @@ union_span_float(const Span *s, double d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span and a date
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Union_span_value()
  */
 SpanSet *
@@ -1433,6 +1607,8 @@ union_span_date(const Span *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of a span and a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
  * @csqlfn #Union_span_value()
  */
 SpanSet *
@@ -1449,6 +1625,7 @@ union_span_timestamptz(const Span *s, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of two spans
+ * @param[in] s1,s2 Spans
  * @csqlfn #Union_span_span()
  */
 SpanSet *
@@ -1489,7 +1666,10 @@ union_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the intersection of a span and a value
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @brief Return the intersection of a span and a value
  */
 Span *
 intersection_span_value(const Span *s, Datum d, meosType basetype)
@@ -1503,7 +1683,9 @@ intersection_span_value(const Span *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a span and an integer in the last argument
+ * @brief Return the intersection of a span and an integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Intersection_span_value()
  */
 Span *
@@ -1517,8 +1699,9 @@ intersection_span_int(const Span *s, int i)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a span and a big integer in the last
- * argument
+ * @brief Return the intersection of a span and a big integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Intersection_span_value()
  */
 Span *
@@ -1532,7 +1715,9 @@ intersection_span_bigint(const Span *s, int64 i)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a span and a float in the last argument
+ * @brief Return the intersection of a span and a float
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Intersection_span_value()
  */
 Span *
@@ -1546,7 +1731,9 @@ intersection_span_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a span and a date in the last argument
+ * @brief Return the intersection of a span and a date
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Intersection_span_value()
  */
 Span *
@@ -1559,8 +1746,9 @@ intersection_span_date(const Span *s, DateADT d)
 }
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a span and a timestamptz in the last
- * argument
+ * @brief Return the intersection of a span and a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
  * @csqlfn #Intersection_span_value()
  */
 Span *
@@ -1576,8 +1764,10 @@ intersection_span_timestamptz(const Span *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the intersection of two spans
- * @note This function is equivalent to @ref intersection_span_span without
+ * @brief Compute the intersection of two spans in the last argument
+ * @param[in] s1,s2 Spans
+ * @param[out] result Resulting span
+ * @note This function is equivalent to #intersection_span_span without
  * memory allocation
  */
 bool
@@ -1602,6 +1792,7 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of two spans
+ * @param[in] s1,s2 Spans
  * @csqlfn #Intersection_span_span()
  */
 Span *
@@ -1624,6 +1815,9 @@ intersection_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the difference of a value and a span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Span
  */
 SpanSet *
 minus_value_span(Datum d, meosType basetype, const Span *s)
@@ -1638,6 +1832,8 @@ minus_value_span(Datum d, meosType basetype, const Span *s)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of an integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Minus_value_span()
  */
 SpanSet *
@@ -1652,6 +1848,8 @@ minus_int_span(int i, const Span *s)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a big integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
  * @csqlfn #Minus_value_span()
  */
 SpanSet *
@@ -1666,6 +1864,8 @@ minus_bigint_span(int64 i, const Span *s)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a float and a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Minus_value_span()
  */
 SpanSet *
@@ -1681,6 +1881,8 @@ minus_float_span(double d, const Span *s)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a date and a span
+ * @param[in] d Value
+ * @param[in] s Span
  * @csqlfn #Minus_value_span()
  */
 SpanSet *
@@ -1696,6 +1898,8 @@ minus_date_span(DateADT d, const Span *s)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a timestamptz and a span
+ * @param[in] t Value
+ * @param[in] s Span
  * @csqlfn #Minus_value_span()
  */
 SpanSet *
@@ -1711,6 +1915,10 @@ minus_timestamptz_span(TimestampTz t, const Span *s)
 
 /**
  * @brief Compute the difference of a span and a value in the last argument
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[out] result Resulting span
  */
 int
 mi_span_value(const Span *s, Datum d, meosType basetype, Span *result)
@@ -1752,6 +1960,9 @@ mi_span_value(const Span *s, Datum d, meosType basetype, Span *result)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the difference of a span and a value
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 SpanSet *
 minus_span_value(const Span *s, Datum d, meosType basetype)
@@ -1768,6 +1979,8 @@ minus_span_value(const Span *s, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span and an integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Minus_span_value()
  */
 SpanSet *
@@ -1782,6 +1995,8 @@ minus_span_int(const Span *s, int i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span and a big integer
+ * @param[in] s Span
+ * @param[in] i Value
  * @csqlfn #Minus_span_value()
  */
 SpanSet *
@@ -1796,6 +2011,8 @@ minus_span_bigint(const Span *s, int64 i)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span and a float
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Minus_span_value()
  */
 SpanSet *
@@ -1810,6 +2027,8 @@ minus_span_float(const Span *s, double d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span and a date
+ * @param[in] s Span
+ * @param[in] d Value
  * @csqlfn #Minus_span_value()
  */
 SpanSet *
@@ -1823,6 +2042,8 @@ minus_span_date(const Span *s, DateADT d)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span and a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
  * @csqlfn #Minus_span_value()
  */
 SpanSet *
@@ -1909,6 +2130,7 @@ mi_span_span(const Span *s1, const Span *s2, Span *result)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of two spans
+ * @param[in] s1,s2 Spans
  * @csqlfn #Minus_span_span()
  */
 SpanSet *
@@ -1933,6 +2155,8 @@ minus_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between two values as a double
+ * @param[in] l,r Values
+ * @param[in] type Type of the values
  * @return On error return DBL_MAX
  */
 double
@@ -1964,6 +2188,9 @@ distance_value_value(Datum l, Datum r, meosType type)
 /**
  * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between a span and a value as a double
+ * @param[in] s Span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 double
 distance_span_value(const Span *s, Datum d, meosType basetype)
@@ -1991,8 +2218,9 @@ distance_span_value(const Span *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a span and an integer
- * as a double
+ * @brief Return the distance between a span and an integer as a double
+ * @param[in] s Span
+ * @param[in] i Value
  * @return On error return -1.0
  * @csqlfn #Distance_span_value()
  */
@@ -2008,6 +2236,8 @@ distance_span_int(const Span *s, int i)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a span and a big integer as a double
+ * @param[in] s Span
+ * @param[in] i Value
  * @return On error return -1.0
  * @csqlfn #Distance_span_value()
  */
@@ -2023,6 +2253,8 @@ distance_span_bigint(const Span *s, int64 i)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a span and a float
+ * @param[in] s Span
+ * @param[in] d Value
  * @return On error return -1.0
  * @csqlfn #Distance_span_value()
  */
@@ -2038,6 +2270,8 @@ distance_span_float(const Span *s, double d)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance in days between a span and a date as a double
+ * @param[in] s Span
+ * @param[in] d Value
  * @return On error return -1.0
  * @csqlfn #Distance_span_value()
  */
@@ -2054,6 +2288,8 @@ distance_span_date(const Span *s, DateADT d)
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance in seconds between a span and a timestamptz as a
  * double
+ * @param[in] s Span
+ * @param[in] t Value
  * @return On error return -1.0
  * @csqlfn #Distance_span_value()
  */
@@ -2070,6 +2306,7 @@ distance_span_timestamptz(const Span *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_internal_setspan_dist
+ * @param[in] s1,s2 Spans
  * @brief Return the distance between two spans as a double
  */
 double
@@ -2100,6 +2337,7 @@ dist_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between two spans as a double
+ * @param[in] s1,s2 Spans
  * @return On error return -1.0
  * @csqlfn #Distance_span_span()
  */

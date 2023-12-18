@@ -157,7 +157,10 @@ nsegment_round(const Nsegment *ns, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places.
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a network point set with the precision of the positions set
+ * to the number of decimal places
+ * @csqlfn #Npointset_round()
  */
 Set *
 npointset_round(const Set *s, Datum prec)
@@ -469,7 +472,7 @@ PGDLLEXPORT Datum Npoint_to_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_to_geom);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a network point into a geometry
+ * @brief Convert a network point to a geometry
  * @sqlfn geometry()
  */
 Datum
@@ -483,7 +486,7 @@ PGDLLEXPORT Datum Geom_to_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geom_to_npoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a geometry into a network point
+ * @brief Convert a geometry to a network point
  * @sqlfn npoint()
  */
 Datum

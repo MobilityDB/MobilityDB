@@ -104,8 +104,10 @@ distance_tnumber_number(const Temporal *temp, Datum value, meosType valuetype,
  * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between a temporal integer and an
  * integer.
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @return On error return NULL
- * @sqlop @p <->
+ * @csqlfn #Distance_tnumber_number()
  */
 Temporal *
 distance_tint_int(const Temporal *temp, int i)
@@ -120,8 +122,10 @@ distance_tint_int(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between a temporal float and a float.
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @return On error return NULL
- * @sqlop @p <->
+ * @csqlfn #Distance_tnumber_number()
  */
 Temporal *
 distance_tfloat_float(const Temporal *temp, double d)
@@ -159,7 +163,8 @@ tnumber_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between two temporal numbers
- * @sqlop @p <->
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Distance_tnumber_tnumber()
  */
 Temporal *
 distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
@@ -195,6 +200,9 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_internal_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @param[in] basetype Type of the value
  */
 double
 nad_tnumber_number(const Temporal *temp, Datum value, meosType basetype)
@@ -213,8 +221,10 @@ nad_tnumber_number(const Temporal *temp, Datum value, meosType basetype)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @return On error return -1
- * @sqlop @p |=|
+ * @csqlfn #NAD_tnumber_number()
  */
 int
 nad_tint_int(const Temporal *temp, int i)
@@ -231,8 +241,10 @@ nad_tint_int(const Temporal *temp, int i)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @return On error return -1
- * @sqlop @p |=|
+ * @csqlfn #NAD_tnumber_number()
  */
 double
 nad_tfloat_float(const Temporal *temp, double d)
@@ -248,8 +260,9 @@ nad_tfloat_float(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between the temporal boxes.
+ * @param[in] box1,box2 Temporal boxes
  * @return On error return -1
- * @sqlop @p |=|
+ * @csqlfn #NAD_tbox_tbox()
  */
 double
 nad_tbox_tbox(const TBox *box1, const TBox *box2)
@@ -272,8 +285,10 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a temporal box.
+ * @param[in] temp Temporal value
+ * @param[in] box Temporal box
  * @return On error return -1
- * @sqlop @p |=|
+ * @csqlfn #NAD_tnumber_tbox()
  */
 double
 nad_tnumber_tbox(const Temporal *temp, const TBox *box)
@@ -336,8 +351,9 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between two temporal integers.
+ * @param[in] temp1,temp2 Temporal values
  * @return On error return -1
- * @sqlop @p |=|
+ * @csqlfn #NAD_tnumber_tnumber()
  */
 int
 nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
@@ -354,8 +370,9 @@ nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between two temporal floats.
+ * @param[in] temp1,temp2 Temporal values
  * @return On error return -1
- * @sqlop @p |=|
+ * @csqlfn #NAD_tnumber_tnumber()
  */
 double
 nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)

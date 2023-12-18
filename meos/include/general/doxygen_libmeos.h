@@ -63,6 +63,20 @@
  * @ingroup libmeos_api
  * @brief Functions for set and span types.
  *
+ * @defgroup libmeos_box Functions for box types
+ * @ingroup libmeos_api
+ * @brief Functions for box types.
+ *
+ * @defgroup libmeos_temporal Functions for temporal types
+ * @ingroup libmeos_api
+ * @brief Functions for temporal types.
+ *
+ * @defgroup libmeos_misc Miscellaneous functions
+ * @ingroup libmeos_api
+ * @brief Miscellaneous functions.
+ */
+
+/**
  * @defgroup libmeos_setspan_inout Input/output functions
  * @ingroup libmeos_setspan
  * @brief Input/output functions for set and span types.
@@ -113,10 +127,6 @@
  */
 
 /**
- * @defgroup libmeos_box Functions for box types
- * @ingroup libmeos_api
- * @brief Functions for box types.
- *
  * @defgroup libmeos_box_inout Input/output functions
  * @ingroup libmeos_box
  * @brief Input/output functions for box types.
@@ -159,10 +169,6 @@
  */
 
 /**
- * @defgroup libmeos_temporal Functions for temporal types
- * @ingroup libmeos_api
- * @brief Functions for temporal types.
- *
  * @defgroup libmeos_temporal_inout Input/output functions
  * @ingroup libmeos_temporal
  * @brief Input/output functions for temporal types.
@@ -225,27 +231,27 @@
  *
  * @defgroup libmeos_temporal_spatial Spatial functions
  * @ingroup libmeos_temporal
- * @brief Spatial functions for temporal point types.
+ * @brief Spatial functions for temporal points.
  *
  * @defgroup libmeos_temporal_spatial_accessor Spatial accessor functions
  * @ingroup libmeos_temporal_spatial
- * @brief Spatial accessor functions for temporal point types.
+ * @brief Spatial accessor functions for temporal points.
  *
  * @defgroup libmeos_temporal_spatial_transf Spatial transformation functions
  * @ingroup libmeos_temporal_spatial
- * @brief Spatial transformation functions for temporal point types.
+ * @brief Spatial transformation functions for temporal points.
  *
  * @defgroup libmeos_temporal_spatial_rel Spatial relationship functions
  * @ingroup libmeos_temporal_spatial
- * @brief Spatial relationship functions for temporal point types.
+ * @brief Spatial relationship functions for temporal points.
  *
  * @defgroup libmeos_temporal_spatial_rel_ever Ever spatial relationship functions
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Ever spatial relationship functions for temporal point types.
+ * @brief Ever spatial relationship functions for temporal points.
  *
  * @defgroup libmeos_temporal_spatial_rel_temp Temporal spatial relationship functions
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Temporal spatial relationship functions for temporal point types.
+ * @brief Temporal spatial relationship functions for temporal points.
  *
  * @defgroup libmeos_temporal_agg Aggregate functions
  * @ingroup libmeos_temporal
@@ -403,15 +409,15 @@
  *
  * @defgroup libmeos_internal_temporal_spatial Spatial functions
  * @ingroup libmeos_internal_temporal
- * @brief Spatial functions for temporal point types.
+ * @brief Spatial functions for temporal points.
  *
  * @defgroup libmeos_internal_temporal_spatial_accessor Spatial accessor functions
  * @ingroup libmeos_internal_temporal_spatial
- * @brief Spatial accessor functions for temporal point types.
+ * @brief Spatial accessor functions for temporal points.
  *
  * @defgroup libmeos_internal_temporal_spatial_transf Spatial transformation functions
  * @ingroup libmeos_internal_temporal_spatial
- * @brief Spatial transformation functions for temporal point types.
+ * @brief Spatial transformation functions for temporal points.
  *
  * @defgroup libmeos_internal_temporal_agg Aggregate functions
  * @ingroup libmeos_internal_temporal

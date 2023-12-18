@@ -47,6 +47,11 @@
 /**
  * @ingroup libmeos_internal_temporal_comp_temp
  * @brief Return the temporal comparison of a temporal value and a base value.
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @param[in] basetype Type of the value
+ * @param[in] func Function used for the comparison
+ * @param[in] invert True if the arguments of the function should be inverted
  */
 Temporal *
 tcomp_temporal_base(const Temporal *temp, Datum value, meosType basetype,
@@ -81,6 +86,8 @@ tcomp_temporal_base(const Temporal *temp, Datum value, meosType basetype,
 /**
  * @ingroup libmeos_internal_temporal_comp_temp
  * @brief Return the temporal comparison of the temporal values.
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] func Function used for the comparison
  */
 Temporal *
 tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,

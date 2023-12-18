@@ -111,8 +111,8 @@ Npointset_to_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Npoint_timestamptz_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_timestamptz_to_stbox);
 /**
- * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a network point and a timestamp to a spatiotemporal box
+ * @ingroup mobilitydb_temporal_constructor
+ * @brief Construct a network point and a timestamptz to a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p
  */
@@ -128,8 +128,8 @@ Npoint_timestamptz_to_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_tstzspan_to_stbox);
 /**
- * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a network point and a timestamptz span to a spatiotemporal
+ * @ingroup mobilitydb_temporal_constructor
+ * @brief Construct a network point and a timestamptz span to a spatiotemporal
  * box
  * @sqlfn stbox()
  * @sqlop @p

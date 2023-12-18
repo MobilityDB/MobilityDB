@@ -50,165 +50,184 @@
 /**
  * @ingroup libmeos_internal_setspan_agg
  * @brief Transition function for span extent aggregate of values
+ * @param[in,out] state Current aggregate state
+ * @param[in] d Value to aggregate
+ * @param[in] basetype Type of the value
  */
 Span *
-spanbase_extent_transfn(Span *s, Datum d, meosType basetype)
+spanbase_extent_transfn(Span *state, Datum d, meosType basetype)
 {
   assert(span_basetype(basetype));
 
   /* Null span: return the span of the base value */
-  if (! s)
+  if (! state)
     return span_make(d, d, true, true, basetype);
 
   Span s1;
-  span_set(d, d, true, true, basetype, s->spantype, &s1);
-  span_expand(&s1, s);
-  return s;
+  span_set(d, d, true, true, basetype, state->spantype, &s1);
+  span_expand(&s1, state);
+  return state;
 }
 
 #if MEOS
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for span extent aggregate of integers
+ * @param[in,out] state Current aggregate state
+ * @param[in] i Value to aggregate
  */
 Span *
-int_extent_transfn(Span *s, int i)
+int_extent_transfn(Span *state, int i)
 {
   /* Ensure validity of the arguments */
-  if (s && ! ensure_span_isof_type(s, T_INTSPAN))
+  if (state && ! ensure_span_isof_type(state, T_INTSPAN))
     return NULL;
-  return spanbase_extent_transfn(s, Int32GetDatum(i), T_INT4);
+  return spanbase_extent_transfn(state, Int32GetDatum(i), T_INT4);
 }
 
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for span extent aggregate of big integers
+ * @param[in,out] state Current aggregate state
+ * @param[in] i Value to aggregate
  */
 Span *
-bigint_extent_transfn(Span *s, int64 i)
+bigint_extent_transfn(Span *state, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (s && ! ensure_span_isof_type(s, T_BIGINTSPAN))
+  if (state && ! ensure_span_isof_type(state, T_BIGINTSPAN))
     return NULL;
-  return spanbase_extent_transfn(s, Int64GetDatum(i), T_INT8);
+  return spanbase_extent_transfn(state, Int64GetDatum(i), T_INT8);
 }
 
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for span extent aggregate of floats
+ * @param[in,out] state Current aggregate state
+ * @param[in] d Value to aggregate
  */
 Span *
-float_extent_transfn(Span *s, double d)
+float_extent_transfn(Span *state, double d)
 {
   /* Ensure validity of the arguments */
-  if (s && ! ensure_span_isof_type(s, T_FLOATSPAN))
+  if (state && ! ensure_span_isof_type(state, T_FLOATSPAN))
     return NULL;
-  return spanbase_extent_transfn(s, Float8GetDatum(d), T_FLOAT8);
+  return spanbase_extent_transfn(state, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for span extent aggregate of dates
+ * @param[in,out] state Current aggregate state
+ * @param[in] d Value to aggregate
  */
 Span *
-date_extent_transfn(Span *s, DateADT d)
+date_extent_transfn(Span *state, DateADT d)
 {
   /* Ensure validity of the arguments */
-  if (s && ! ensure_span_isof_type(s, T_DATESPAN))
+  if (state && ! ensure_span_isof_type(state, T_DATESPAN))
     return NULL;
-  return spanbase_extent_transfn(s, DateADTGetDatum(d), T_DATE);
+  return spanbase_extent_transfn(state, DateADTGetDatum(d), T_DATE);
 }
 
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for span extent aggregate of timestamptz
+ * @param[in,out] state Current aggregate state
+ * @param[in] t Value to aggregate
  */
 Span *
-timestamptz_extent_transfn(Span *s, TimestampTz t)
+timestamptz_extent_transfn(Span *state, TimestampTz t)
 {
   /* Ensure validity of the arguments */
-  if (s && ! ensure_span_isof_type(s, T_TSTZSPAN))
+  if (state && ! ensure_span_isof_type(state, T_TSTZSPAN))
     return NULL;
-  return spanbase_extent_transfn(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return spanbase_extent_transfn(state, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for span extent aggregate of sets
+ * @param[in,out] state Current aggregate state
+ * @param[in] s Set to aggregate
  */
 Span *
-set_extent_transfn(Span *span, const Set *set)
+set_extent_transfn(Span *state, const Set *s)
 {
   /* Can't do anything with null inputs */
-  if (! span && ! set)
+  if (! state && ! s)
     return NULL;
   /* Null period and non-null set: return the bbox of the timestamp set */
-  if (! span)
-    return set_to_span(set);
+  if (! state)
+    return set_to_span(s);
   /* Non-null period and null set: return the period */
-  if (! set)
-    return span;
+  if (! s)
+    return state;
 
   /* Ensure validity of the arguments */
-  if (! ensure_set_spantype(set->settype) ||
-      ! ensure_span_isof_basetype(span, set->basetype))
+  if (! ensure_set_spantype(s->settype) ||
+      ! ensure_span_isof_basetype(state, s->basetype))
     return NULL;
 
-  Span s;
-  set_set_span(set, &s);
-  span_expand(&s, span);
-  return span;
+  Span s1;
+  set_set_span(s, &s1);
+  span_expand(&s1, state);
+  return state;
 }
 
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for span extent aggregate of spans
+ * @param[in,out] state Current aggregate state
+ * @param[in] s Span to aggregate
  */
 Span *
-span_extent_transfn(Span *s1, const Span *s2)
+span_extent_transfn(Span *state, const Span *s)
 {
   /* Can't do anything with null inputs */
-  if (! s1 && ! s2)
+  if (! state && ! s)
     return NULL;
   /* Null span and non-null span, return the span */
-  if (! s1)
-    return span_cp(s2);
+  if (! state)
+    return span_cp(s);
   /* Non-null span and null span, return the span */
-  if (! s2)
-    return s1;
+  if (! s)
+    return state;
 
   /* Ensure validity of the arguments */
-  if (! ensure_same_span_type(s1, s2))
+  if (! ensure_same_span_type(state, s))
     return NULL;
 
-  span_expand(s2, s1);
-  return s1;
+  span_expand(s, state);
+  return state;
 }
 
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for span extent aggregate of span sets
+ * @param[in,out] state Current aggregate state
+ * @param[in] ss Span set to aggregate
  */
 Span *
-spanset_extent_transfn(Span *s, const SpanSet *ss)
+spanset_extent_transfn(Span *state, const SpanSet *ss)
 {
   /* Can't do anything with null inputs */
-  if (! s && ! ss)
+  if (! state && ! ss)
     return NULL;
   /* Null  and non-null span set, return the bbox of the span set */
-  if (! s)
+  if (! state)
     return span_cp(&ss->span);
   /* Non-null span and null temporal, return the span */
   if (! ss)
-    return s;
+    return state;
 
   /* Ensure validity of the arguments */
-  if (! ensure_same_spanset_span_type(ss, s))
+  if (! ensure_same_spanset_span_type(ss, state))
     return NULL;
 
-  span_expand(&ss->span, s);
-  return s;
+  span_expand(&ss->span, state);
+  return state;
 }
 
 /*****************************************************************************/

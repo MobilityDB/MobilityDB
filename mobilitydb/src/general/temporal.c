@@ -294,7 +294,7 @@ temporal_bbox_slice(Datum tempdatum, void *box)
 PGDLLEXPORT Datum Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)));
 PG_FUNCTION_INFO_V1(Mobilitydb_version);
 /**
- * @ingroup mobilitydb_temporal_accessor
+ * @ingroup mobilitydb_misc
  * @brief Return the version of the MobilityDB extension
  * @sqlfn mobilitydb_version()
  */
@@ -309,7 +309,7 @@ Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)))
 PGDLLEXPORT Datum Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)));
 PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
 /**
- * @ingroup mobilitydb_temporal_accessor
+ * @ingroup mobilitydb_misc
  * @brief Return the versions of the MobilityDB extension and its dependencies
  * @sqlfn mobilitydb_full_version()
  */
@@ -585,7 +585,7 @@ PGDLLEXPORT Datum Tsequenceset_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequenceset_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set from the array of temporal sequences
+ * @brief Construct a temporal sequence set from an array of temporal sequences
  * @sqlfn tint_seqset(), tfloat_seqset(), ...
  */
 Datum
@@ -697,7 +697,7 @@ PGDLLEXPORT Datum Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequenceset_from_base_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set from from a base value and a
+ * @brief Construct a temporal sequence set from a base value and a
  * timestamptz set
  * @sqlfn tint_seqset(), tfloat_seqset(), ...
  */
@@ -914,7 +914,7 @@ PGDLLEXPORT Datum Tnumber_valuespans(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_valuespans);
 /**
  * @ingroup mobilitydb_temporal_accessor
- * @brief Return the value spanset of a temporal number
+ * @brief Return the value span set of a temporal number
  * @sqlfn getValues()
  */
 Datum
@@ -1022,15 +1022,15 @@ Temporal_max_instant(PG_FUNCTION_ARGS)
   PG_RETURN_TINSTANT_P(result);
 }
 
-PGDLLEXPORT Datum Tinstant_timestamp(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tinstant_timestamp);
+PGDLLEXPORT Datum Tinstant_timestamptz(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tinstant_timestamptz);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the timestamptz of a temporal instant
  * @sqlfn getTimestamp()
  */
 Datum
-Tinstant_timestamp(PG_FUNCTION_ARGS)
+Tinstant_timestamptz(PG_FUNCTION_ARGS)
 {
   TInstant *inst = PG_GETARG_TINSTANT_P(0);
   /* Ensure validity of arguments */
@@ -1285,52 +1285,52 @@ Temporal_num_timestamps(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(result);
 }
 
-PGDLLEXPORT Datum Temporal_start_timestamp(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_start_timestamp);
+PGDLLEXPORT Datum Temporal_start_timestamptz(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_start_timestamptz);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the start timestamptz of a temporal value
  * @sqlfn startTimestamp()
  */
 Datum
-Temporal_start_timestamp(PG_FUNCTION_ARGS)
+Temporal_start_timestamptz(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampTz result = temporal_start_timestamp(temp);
+  TimestampTz result = temporal_start_timestamptz(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PGDLLEXPORT Datum Temporal_end_timestamp(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_end_timestamp);
+PGDLLEXPORT Datum Temporal_end_timestamptz(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_end_timestamptz);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the end timestamptz of a temporal value
  * @sqlfn endTimestamp()
  */
 Datum
-Temporal_end_timestamp(PG_FUNCTION_ARGS)
+Temporal_end_timestamptz(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampTz result = temporal_end_timestamp(temp);
+  TimestampTz result = temporal_end_timestamptz(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PGDLLEXPORT Datum Temporal_timestamp_n(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_timestamp_n);
+PGDLLEXPORT Datum Temporal_timestamptz_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_timestamptz_n);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the n-th distinct timestamptz of a temporal value
  * @sqlfn timestampN()
  */
 Datum
-Temporal_timestamp_n(PG_FUNCTION_ARGS)
+Temporal_timestamptz_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TimestampTz result;
-  bool found = temporal_timestamp_n(temp, n, &result);
+  bool found = temporal_timestamptz_n(temp, n, &result);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);

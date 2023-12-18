@@ -568,6 +568,12 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
 /**
  * @ingroup libmeos_temporal_tile
  * @brief Generate a multidimensional grid for temporal points.
+ * @param[in] bounds Bounds
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] duration Duration
+ * @param[in] sorigin Origin for the space dimension
+ * @param[in] torigin Origin for the time dimension
+ * @param[out] count Number of values in the output array
  * @csqlfn #Stbox_tile_list()
  */
 STBox *
@@ -654,6 +660,13 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
 /**
  * @ingroup libmeos_temporal_tile
  * @brief Generate a tile in a multidimensional grid for temporal points
+ * @param[in] point Point
+ * @param[in] t Timestamp
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] duration Duration
+ * @param[in] sorigin Origin for the space dimension
+ * @param[in] torigin Origin for the time dimension
+ * @param[out] hast True when spliting by time
  * @csqlfn Stbox_tile()
  */
 STBox *

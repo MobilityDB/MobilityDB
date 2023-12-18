@@ -68,6 +68,7 @@ gserialized_copy(const GSERIALIZED *g)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Return the bounding box of a temporal point
+ * @param[in] temp Temporal point
  * @csqlfn #Tpoint_to_stbox()
  */
 STBox *
@@ -88,8 +89,10 @@ tpoint_to_stbox(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_spatial_transf
- * @brief Return the bounding box of a temporal point expanded on the
+ * @brief Return the bounding box of a geometry expanded on the
  * spatial dimension
+ * @param[in] gs Geometry
+ * @param[in] d Value
  * @csqlfn #Geo_expand_space()
  */
 STBox *
@@ -108,6 +111,8 @@ geo_expand_space(const GSERIALIZED *gs, double d)
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension
+ * @param[in] temp Temporal point
+ * @param[in] d Value
  * @return On error return NULL
  * @csqlfn #Tpoint_expand_space()
  */

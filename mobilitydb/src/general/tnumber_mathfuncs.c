@@ -341,9 +341,9 @@ Tfloat_round(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tfloatarr_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloatarr_round);
 /**
- * @ingroup mobilitydb_temporal_inout
- * @brief Output an array of temporal floats in the Well-Known Text (WKT)
- * representation
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return an array of temporal floats with the precision of the values
+ * set to a number of decimal places
  * @sqlfn asText()
  */
 Datum

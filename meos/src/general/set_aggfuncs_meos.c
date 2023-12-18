@@ -93,7 +93,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
  * @brief Append a value to a set
  * @param[in,out] set Set
  * @param[in] d Value
- * @param[in] basetype Base type
+ * @param[in] basetype Type of the value
  */
 Set *
 set_append_value(Set *set, Datum d, meosType basetype)
@@ -164,6 +164,9 @@ set_append_value(Set *set, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_internal_setspan_agg
  * @brief Transition function for set union aggregate of values
+ * @param[in,out] state Current aggregate state
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  */
 Set *
 value_union_transfn(Set *state, Datum d, meosType basetype)
@@ -182,6 +185,8 @@ value_union_transfn(Set *state, Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for set union aggregate of integers
+ * @param[in,out] state Current aggregate state
+ * @param[in] i Value
  */
 Set *
 int_union_transfn(Set *state, int32 i)
@@ -195,6 +200,8 @@ int_union_transfn(Set *state, int32 i)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for set union aggregate of big integers
+ * @param[in,out] state Current aggregate state
+ * @param[in] i Value
  */
 Set *
 bigint_union_transfn(Set *state, int64 i)
@@ -208,6 +215,8 @@ bigint_union_transfn(Set *state, int64 i)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for set union aggregate of floats
+ * @param[in,out] state Current aggregate state
+ * @param[in] d Value
  */
 Set *
 float_union_transfn(Set *state, double d)
@@ -221,6 +230,8 @@ float_union_transfn(Set *state, double d)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for set union aggregate of dates
+ * @param[in,out] state Current aggregate state
+ * @param[in] d Value
  */
 Set *
 date_union_transfn(Set *state, DateADT d)
@@ -234,6 +245,8 @@ date_union_transfn(Set *state, DateADT d)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for set union aggregate of timestamptz
+ * @param[in,out] state Current aggregate state
+ * @param[in] t Value
  */
 Set *
 timestamptz_union_transfn(Set *state, TimestampTz t)
@@ -247,6 +260,8 @@ timestamptz_union_transfn(Set *state, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for set union aggregate of texts
+ * @param[in,out] state Current aggregate state
+ * @param[in] txt Value
  */
 Set *
 text_union_transfn(Set *state, const text *txt)
@@ -261,12 +276,14 @@ text_union_transfn(Set *state, const text *txt)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for set union aggregate of sets
+ * @param[in,out] state Current aggregate state
+ * @param[in] s Set to aggregate
  */
 Set *
-set_union_transfn(Set *state, Set *set)
+set_union_transfn(Set *state, Set *s)
 {
   /* Null set: return state */
-  if (! set)
+  if (! s)
     return state;
   int start = 0;
   Datum d;
@@ -274,19 +291,19 @@ set_union_transfn(Set *state, Set *set)
   if (! state)
   {
     start = 1;
-    d = SET_VAL_N(set, 0);
+    d = SET_VAL_N(s, 0);
     /* Arbitrary initialization to 64 elements */
-    state = set_make_exp(&d, 1, 64, set->basetype, ORDERED_NO);
+    state = set_make_exp(&d, 1, 64, s->basetype, ORDERED_NO);
   }
 
   /* Ensure validity of the arguments */
-  if (! ensure_same_set_type(state, set))
+  if (! ensure_same_set_type(state, s))
     return NULL;
 
-  for (int i = start; i < set->count; i++)
+  for (int i = start; i < s->count; i++)
   {
-    d = SET_VAL_N(set, i);
-    state = set_append_value(state, d, set->basetype);
+    d = SET_VAL_N(s, i);
+    state = set_append_value(state, d, s->basetype);
   }
   return state;
 }
@@ -294,8 +311,8 @@ set_union_transfn(Set *state, Set *set)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Final function for set union aggregate
- * @note The input state is NOT freed, this should be done by the calling
- * function
+ * @param[in,out] state Current aggregate state
+ * @note The input state must be free by the calling function
  */
 Set *
 set_union_finalfn(Set *state)

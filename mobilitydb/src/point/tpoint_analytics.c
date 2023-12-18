@@ -44,8 +44,8 @@ PGDLLEXPORT Datum Temporal_simplify_min_dist(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_simplify_min_dist);
 /**
  * @ingroup mobilitydb_temporal_analytics_simplify
- * @brief Simplify the temporal sequence (set) float or point ensuring that
- * consecutive values are at least a certain distance apart
+ * @brief Return a temporal sequence (set) float or point simplified ensuring
+ * that consecutive values are at least a given distance apart
  */
 Datum
 Temporal_simplify_min_dist(PG_FUNCTION_ARGS)
@@ -63,8 +63,8 @@ PGDLLEXPORT Datum Temporal_simplify_min_tdelta(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_simplify_min_tdelta);
 /**
  * @ingroup mobilitydb_temporal_analytics_simplify
- * @brief Simplify the temporal sequence (set) float or point ensuring that
- * consecutive values are at least a certain distance apart
+ * @brief Return a temporal sequence (set) float or point simplified ensuring
+ * that consecutive values are at least a given distance apart
  */
 Datum
 Temporal_simplify_min_tdelta(PG_FUNCTION_ARGS)
@@ -80,7 +80,7 @@ PGDLLEXPORT Datum Temporal_simplify_max_dist(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_simplify_max_dist);
 /**
  * @ingroup mobilitydb_temporal_analytics_simplify
- * @brief Simplify the temporal sequence (set) float or point using a
+ * @brief Return a temporal sequence (set) float or point simplified using a
  * single-pass Douglas-Peucker line simplification algorithm
  */
 Datum
@@ -100,7 +100,7 @@ PGDLLEXPORT Datum Temporal_simplify_dp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_simplify_dp);
 /**
  * @ingroup mobilitydb_temporal_analytics_simplify
- * @brief Simplify the temporal sequence (set) float or point using a
+ * @brief Return a temporal sequence (set) float or point simplified using a
  * Douglas-Peucker line simplification algorithm
  */
 Datum

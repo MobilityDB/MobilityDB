@@ -37,6 +37,8 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+/* PostgreSQL */
+#include "utils/timestamp.h"
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -120,6 +122,7 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
  * @endcode
  * where the commas are optional.
  * @return On error return NULL
+ * @param[in] str String
  * @csqlfn #Tbox_in()
  */
 TBox *
@@ -134,6 +137,8 @@ tbox_in(const char *str)
 /**
  * @ingroup libmeos_box_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal box
+ * @param[in] box Temporal box
+ * @param[in] maxdd Maximum number of decimal digits
  * @return On error return NULL
  * @csqlfn #Tbox_out(), #Tbox_as_text()
  */
@@ -183,6 +188,8 @@ tbox_out(const TBox *box, int maxdd)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from a number span and a timestamptz span
+ * @param[in] s Value span
+ * @param[in] p Time span
  * @return On error return NULL
  */
 TBox *
@@ -199,6 +206,9 @@ tbox_make(const Span *s, const Span *p)
 /**
  * @ingroup libmeos_internal_box_constructor
  * @brief Set a temporal box from a number span and a timestamptz span
+ * @param[in] s Value span
+ * @param[in] p Time span
+ * @param[out] box Result
  * @note This function is equivalent to #tbox_make without memory allocation
  */
 void
@@ -225,6 +235,7 @@ tbox_set(const Span *s, const Span *p, TBox *box)
 /**
  * @ingroup libmeos_internal_box_constructor
  * @brief Return a copy of a temporal box
+ * @param[in] box Temporal box
  */
 TBox *
 tbox_cp(const TBox *box)
@@ -239,6 +250,7 @@ tbox_cp(const TBox *box)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Return a copy of a temporal box
+ * @param[in] box Temporal box
  */
 TBox *
 tbox_copy(const TBox *box)
@@ -255,6 +267,9 @@ tbox_copy(const TBox *box)
 /**
  * @ingroup libmeos_internal_box_constructor
  * @brief Construct a temporal box from an integer and a timestamptz
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] t Timestamp
  * @csqlfn #Number_timestamptz_to_tbox()
  */
 TBox *
@@ -272,6 +287,8 @@ number_timestamptz_to_tbox(Datum d, meosType basetype, TimestampTz t)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from an integer and a timestamptz
+ * @param[in] i Value
+ * @param[in] t Timestamp
  * @csqlfn #Number_timestamptz_to_tbox()
  */
 TBox *
@@ -283,6 +300,8 @@ int_timestamptz_to_tbox(int i, TimestampTz t)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from a float and a timestamptz
+ * @param[in] d Value
+ * @param[in] t Timestamp
  * @csqlfn #Number_timestamptz_to_tbox()
  */
 TBox *
@@ -295,6 +314,9 @@ float_timestamptz_to_tbox(double d, TimestampTz t)
 /**
  * @ingroup libmeos_internal_box_constructor
  * @brief Construct a temporal box from an integer and a timestamptz span
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[in] s Time span
  * @csqlfn #Number_tstzspan_to_tbox()
  */
 TBox *
@@ -311,6 +333,8 @@ number_tstzspan_to_tbox(Datum d, meosType basetype, const Span *s)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from an integer and a timestamptz span
+ * @param[in] i Value
+ * @param[in] s Time span
  * @csqlfn #Number_tstzspan_to_tbox()
  */
 TBox *
@@ -325,6 +349,8 @@ int_tstzspan_to_tbox(int i, const Span *s)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from a float and a timestamptz span
+ * @param[in] d Value
+ * @param[in] s Time span
  * @csqlfn #Number_tstzspan_to_tbox()
  */
 TBox *
@@ -340,6 +366,8 @@ float_tstzspan_to_tbox(double d, const Span *s)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from a number span and a timestamptz
+ * @param[in] s Value span
+ * @param[in] t Timestamp
  * @csqlfn #Numspan_timestamptz_to_tbox()
  */
 TBox *
@@ -358,6 +386,8 @@ numspan_timestamptz_to_tbox(const Span *s, TimestampTz t)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a temporal box from a number span and a timestamptz span
+ * @param[in] s Value span
+ * @param[in] p Time span
  * @csqlfn #Numspan_timestamptz_to_tbox()
  */
 TBox *
@@ -378,15 +408,18 @@ numspan_tstzspan_to_tbox(const Span *s, const Span *p)
 
 /**
  * @ingroup libmeos_internal_box_conversion
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
+ * @param[out] box Result
  * @brief Set a temporal box from a number
  */
 void
-number_set_tbox(Datum value, meosType basetype, TBox *box)
+number_set_tbox(Datum d, meosType basetype, TBox *box)
 {
   assert(box); assert(tnumber_basetype(basetype));
   Span s;
   meosType spantype = basetype_spantype(basetype);
-  span_set(value, value, true, true, basetype, spantype, &s);
+  span_set(d, d, true, true, basetype, spantype, &s);
   tbox_set(&s, NULL, box);
   return;
 }
@@ -394,15 +427,17 @@ number_set_tbox(Datum value, meosType basetype, TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a number to a temporal box
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  * @csqlfn #Number_to_tbox()
  */
 TBox *
-number_to_tbox(Datum value, meosType basetype)
+number_to_tbox(Datum d, meosType basetype)
 {
   if (! ensure_tnumber_basetype(basetype))
     return NULL;
   TBox *result = palloc(sizeof(TBox));
-  number_set_tbox(value, basetype, result);
+  number_set_tbox(d, basetype, result);
   return result;
 }
 
@@ -410,6 +445,8 @@ number_to_tbox(Datum value, meosType basetype)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from an integer
+ * @param[in] i Value
+ * @param[out] box Result
  */
 void
 int_set_tbox(int i, TBox *box)
@@ -421,6 +458,7 @@ int_set_tbox(int i, TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert an integer to a temporal box
+ * @param[in] i Value
  * @csqlfn #Number_to_tbox()
  */
 TBox *
@@ -433,6 +471,8 @@ int_to_tbox(int i)
 
 /**
  * @ingroup libmeos_internal_box_conversion
+ * @param[in] d Value
+ * @param[out] box Result
  * @brief Set a temporal box from a float
  */
 void
@@ -445,6 +485,7 @@ float_set_tbox(double d, TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a float to a temporal box
+ * @param[in] d Value
  * @csqlfn #Number_to_tbox()
  */
 TBox *
@@ -459,6 +500,8 @@ float_to_tbox(double d)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a timestamptz
+ * @param[in] t Timestamp
+ * @param[out] box Result
  */
 void
 timestamptz_set_tbox(TimestampTz t, TBox *box)
@@ -474,6 +517,7 @@ timestamptz_set_tbox(TimestampTz t, TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a timestamptz to a temporal box
+ * @param[in] t Timestamp
  * @csqlfn #Timestamptz_to_tbox()
  */
 TBox *
@@ -487,6 +531,8 @@ timestamptz_to_tbox(TimestampTz t)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a number set
+ * @param[in] s Set
+ * @param[out] box Result
  */
 void
 numset_set_tbox(const Set *s, TBox *box)
@@ -501,6 +547,7 @@ numset_set_tbox(const Set *s, TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a number set to a temporal box
+ * @param[in] s Set
  * @csqlfn #Set_to_tbox()
  */
 TBox *
@@ -517,6 +564,8 @@ numset_to_tbox(const Set *s)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a timestamptz set
+ * @param[in] s Set
+ * @param[out] box Result
  */
 void
 tstzset_set_tbox(const Set *s, TBox *box)
@@ -531,6 +580,7 @@ tstzset_set_tbox(const Set *s, TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a timestamptz set to a temporal box
+ * @param[in] s Set
  * @csqlfn #Set_to_tbox()
  */
 TBox *
@@ -547,6 +597,8 @@ tstzset_to_tbox(const Set *s)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a number span
+ * @param[in] s Span
+ * @param[out] box Result
  */
 void
 numspan_set_tbox(const Span *s, TBox *box)
@@ -559,6 +611,7 @@ numspan_set_tbox(const Span *s, TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a number span to a temporal box
+ * @param[in] s Span
  * @csqlfn #Span_to_tbox()
  */
 TBox *
@@ -576,6 +629,8 @@ numspan_to_tbox(const Span *s)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a timestamptz span
+ * @param[in] s Span
+ * @param[out] box Result
  */
 void
 tstzspan_set_tbox(const Span *s, TBox *box)
@@ -588,6 +643,7 @@ tstzspan_set_tbox(const Span *s, TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a timestamptz span to a temporal box
+ * @param[in] s Span
  * @csqlfn #Span_to_tbox()
  */
 TBox *
@@ -607,6 +663,8 @@ tstzspan_to_tbox(const Span *s)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a span set
+ * @param[in] ss Span set
+ * @param[out] box Result
  */
 void
 numspanset_set_tbox(const SpanSet *ss, TBox *box)
@@ -620,6 +678,7 @@ numspanset_set_tbox(const SpanSet *ss, TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a number span set to a temporal box
+ * @param[in] ss Span set
  * @csqlfn #Spanset_to_tbox()
  */
 TBox *
@@ -638,6 +697,8 @@ numspanset_to_tbox(const SpanSet *ss)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a temporal box from a timestamptz span set
+ * @param[in] ss Span set
+ * @param[out] box Result
  */
 void
 tstzspanset_set_tbox(const SpanSet *ss, TBox *box)
@@ -650,6 +711,7 @@ tstzspanset_set_tbox(const SpanSet *ss, TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a timestamptz span set to a temporal box
+ * @param[in] ss Span set
  * @csqlfn #Spanset_to_tbox()
  */
 TBox *
@@ -671,6 +733,7 @@ tstzspanset_to_tbox(const SpanSet *ss)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a temporal box as an integer span
+ * @param[in] box Temporal box
  * @csqlfn #Tbox_to_intspan()
  */
 Span *
@@ -691,6 +754,7 @@ tbox_to_intspan(const TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a temporal box as a float span
+ * @param[in] box Temporal box
  * @csqlfn #Tbox_to_floatspan()
  */
 Span *
@@ -711,6 +775,7 @@ tbox_to_floatspan(const TBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a temporal box as a timestamptz span
+ * @param[in] box Temporal box
  * @csqlfn #Tbox_to_tstzspan()
  */
 Span *
@@ -729,6 +794,7 @@ tbox_to_tstzspan(const TBox *box)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if a temporal box has value dimension
+ * @param[in] box Temporal box
  * @csqlfn #Tbox_hasx()
  */
 bool
@@ -743,6 +809,7 @@ tbox_hasx(const TBox *box)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if a temporal box has time dimension
+ * @param[in] box Temporal box
  * @csqlfn #Tbox_hast()
  */
 bool
@@ -976,14 +1043,21 @@ tbox_tmax_inc(const TBox *box, bool *result)
  * @ingroup libmeos_internal_box_transf
  * @brief Return a temporal box with the value span shifted and/or scaled by
  * the values
+ * @param[in] box Temporal box
+ * @param[in] shift Value to shift the value span
+ * @param[in] width Width of the result
+ * @param[in] basetype Type of the values
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
  */
 TBox *
 tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
-  bool hasshift, bool haswidth)
+  meosType basetype, bool hasshift, bool haswidth)
 {
   assert(box);
   /* Ensure validity of the arguments */
   if (! ensure_has_X_tbox(box) || ! ensure_one_true(hasshift, haswidth) ||
+      ! ensure_span_isof_basetype(&box->span, basetype) ||
       (haswidth && ! ensure_positive_datum(width, box->span.basetype)))
     return NULL;
 
@@ -1004,28 +1078,38 @@ tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box with the value span shifted and/or scaled by
  * the values
+ * @param[in] box Temporal box
+ * @param[in] shift Value to shift the value span
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
  * @csqlfn #Tbox_shift_value(), #Tbox_scale_value(), #Tbox_shift_scale_value()
  */
 TBox *
-tbox_shift_scale_int(const TBox *box, int shift, int width,
-  bool hasshift, bool haswidth)
+tbox_shift_scale_int(const TBox *box, int shift, int width, bool hasshift,
+  bool haswidth)
 {
   if (! ensure_not_null((void *) box) ||
       ! ensure_span_isof_basetype(&box->span, T_INT4))
     return NULL;
 
   return tbox_shift_scale_value(box, Int32GetDatum(shift),
-    Int32GetDatum(width), hasshift, haswidth);
+    Int32GetDatum(width), T_INT4, hasshift, haswidth);
 }
 
 /**
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box with the value span shifted and/or scaled by
  * the values
+ * @param[in] box Temporal box
+ * @param[in] shift Value to shift the value span
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
  * @csqlfn #Tbox_shift_value(), #Tbox_scale_value(), #Tbox_shift_scale_value()
  */
 TBox *
-tbox_shift_scale_float(const TBox *box, double shift, double width,
+tbox_shift_scale_float(const TBox *box, double shift, double width, 
   bool hasshift, bool haswidth)
 {
   if (! ensure_not_null((void *) box) ||
@@ -1033,7 +1117,7 @@ tbox_shift_scale_float(const TBox *box, double shift, double width,
     return NULL;
 
   return tbox_shift_scale_value(box, Float8GetDatum(shift),
-    Float8GetDatum(width), hasshift, haswidth);
+    Float8GetDatum(width), T_FLOAT8, hasshift, haswidth);
 }
 
 #endif /* MEOS */
@@ -1042,6 +1126,9 @@ tbox_shift_scale_float(const TBox *box, double shift, double width,
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box with the value span shifted and/or scaled by
  * the values
+ * @param[in] box Temporal box
+ * @param[in] shift Interval to shift the value span, may be NULL
+ * @param[in] duration Duration of the result, may be NULL
  * @csqlfn #Tbox_shift_time(), #Tbox_scale_time(), #Tbox_shift_scale_time()
  */
 TBox *
@@ -1068,6 +1155,8 @@ tbox_shift_scale_time(const TBox *box, const Interval *shift,
 /**
  * @ingroup libmeos_internal_box_transf
  * @brief Expand the second temporal box with the first one
+ * @param[in] box1 Temporal box
+ * @param[in,out] box2 Temporal box
  */
 void
 tbox_expand(const TBox *box1, TBox *box2)
@@ -1083,6 +1172,8 @@ tbox_expand(const TBox *box1, TBox *box2)
 /**
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box with the value span expanded by an integer
+ * @param[in] box Temporal box
+ * @param[in] i Value
  * @csqlfn #Tbox_expand_int()
  */
 TBox *
@@ -1102,6 +1193,8 @@ tbox_expand_int(const TBox *box, const int i)
 /**
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box with the value span expanded by a double
+ * @param[in] box Temporal box
+ * @param[in] d Value
  * @csqlfn #Tbox_expand_float()
  */
 TBox *
@@ -1121,21 +1214,23 @@ tbox_expand_float(const TBox *box, const double d)
 /**
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box with the time span expanded by an interval
+ * @param[in] box Temporal box
+ * @param[in] interv Interval
  * @csqlfn #Tbox_expand_time()
  */
 TBox *
-tbox_expand_time(const TBox *box, const Interval *interval)
+tbox_expand_time(const TBox *box, const Interval *interv)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) interval) ||
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) interv) ||
       ! ensure_has_T_tbox(box))
     return NULL;
 
   TBox *result = tbox_cp(box);
   TimestampTz tmin = pg_timestamp_mi_interval(DatumGetTimestampTz(
-    box->period.lower), interval);
+    box->period.lower), interv);
   TimestampTz tmax = pg_timestamp_pl_interval(DatumGetTimestampTz(
-    box->period.upper), interval);
+    box->period.upper), interv);
   result->period.lower = TimestampTzGetDatum(tmin);
   result->period.upper = TimestampTzGetDatum(tmax);
   return result;
@@ -1145,6 +1240,8 @@ tbox_expand_time(const TBox *box, const Interval *interval)
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box with the precision of the value span set to a
  * number of decimal places
+ * @param[in] box Temporal box
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Tbox_round()
  */
 TBox *
@@ -1152,6 +1249,7 @@ tbox_round(const TBox *box, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box) ||
+      ! ensure_span_isof_basetype(&box->span, T_FLOAT8) ||
       ! ensure_not_negative(maxdd))
     return NULL;
 
@@ -1202,6 +1300,7 @@ topo_tbox_tbox_init(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 /**
  * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the first temporal box contains the second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Contains_tbox_tbox()
  */
 bool
@@ -1223,6 +1322,7 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the first temporal box is contained in the second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Contained_tbox_tbox()
  */
 bool
@@ -1234,6 +1334,7 @@ contained_tbox_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_bbox_topo
  * @brief Return true if two temporal boxes overlap
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Overlaps_tbox_tbox()
  */
 bool
@@ -1255,6 +1356,7 @@ overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_bbox_topo
  * @brief Return true if two temporal boxes are equal in the common dimensions
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Same_tbox_tbox()
  */
 bool
@@ -1276,6 +1378,7 @@ same_tbox_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_bbox_topo
  * @brief Return true if two temporal boxes are adjacent
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Adjacent_tbox_tbox()
  */
 bool
@@ -1304,6 +1407,7 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is to the left of the second
  * one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Left_tbox_tbox()
  */
 bool
@@ -1321,6 +1425,7 @@ left_tbox_tbox(const TBox *box1, const TBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend to the right
  * of the second one.
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Overleft_tbox_tbox()
  */
 bool
@@ -1338,6 +1443,7 @@ overleft_tbox_tbox(const TBox *box1, const TBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is to the right of the second
  * one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Right_tbox_tbox()
  */
 bool
@@ -1355,6 +1461,7 @@ right_tbox_tbox(const TBox *box1, const TBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box does not extend to the left of
  * the second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Overright_tbox_tbox()
  */
 bool
@@ -1372,6 +1479,7 @@ overright_tbox_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is before the second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Before_tbox_tbox()
  */
 bool
@@ -1387,6 +1495,7 @@ before_tbox_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is not after the second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Overbefore_tbox_tbox()
  */
 bool
@@ -1402,6 +1511,7 @@ overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is after the second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #After_tbox_tbox()
  */
 bool
@@ -1417,6 +1527,7 @@ after_tbox_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first temporal box is not before the second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Overafter_tbox_tbox()
  */
 bool
@@ -1436,6 +1547,8 @@ overafter_tbox_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_set
  * @brief Return the union of two temporal boxes
+ * @param[in] box1,box2 Temporal boxes
+ * @param[in] strict True when the boxes must overlap
  * @csqlfn #Union_tbox_tbox()
  */
 TBox *
@@ -1471,6 +1584,8 @@ union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
  * @ingroup libmeos_internal_box_set
  * @brief Set a temporal box with the result of the intersection of the first
  * two temporal boxes
+ * @param[in] box1,box2 Temporal boxes
+ * @param[out] result Resulting box
  * @note This function is equivalent to @ref intersection_tbox_tbox without
  * memory allocation
  */
@@ -1499,6 +1614,7 @@ inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)
 /**
  * @ingroup libmeos_box_set
  * @brief Return the intersection of two temporal boxes
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Intersection_tbox_tbox()
  */
 TBox *
@@ -1527,6 +1643,7 @@ intersection_tbox_tbox(const TBox *box1, const TBox *box2)
  * @ingroup libmeos_box_comp
  * @brief Return true if two temporal boxes are equal
  * @note The function #tbox_cmp is not used to increase efficiency
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_eq()
  */
 bool
@@ -1549,6 +1666,7 @@ tbox_eq(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_comp
  * @brief Return true if two temporal boxes are different
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_ne()
  */
 bool
@@ -1561,6 +1679,7 @@ tbox_ne(const TBox *box1, const TBox *box2)
  * @ingroup libmeos_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal box
  * is less than, equal to, or greater than the second one
+ * @param[in] box1,box2 Temporal boxes
  * @note The time dimension is compared first and then the value dimension
  * @csqlfn #Tbox_cmp()
  */
@@ -1600,6 +1719,7 @@ tbox_cmp(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box is less than the second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_lt()
  */
 bool
@@ -1613,6 +1733,7 @@ tbox_lt(const TBox *box1, const TBox *box2)
  * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box is less than or equal to the
  * second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_le()
  */
 bool
@@ -1626,6 +1747,7 @@ tbox_le(const TBox *box1, const TBox *box2)
  * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box is greater than or equal
  * to the second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_ge()
  */
 bool
@@ -1638,6 +1760,7 @@ tbox_ge(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box is greater than the second one
+ * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_gt()
  */
 bool

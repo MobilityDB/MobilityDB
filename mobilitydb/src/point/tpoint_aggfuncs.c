@@ -54,8 +54,7 @@ PGDLLEXPORT Datum Tpoint_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_extent_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
- * @brief Transition function for temporal extent aggregation of temporal point
- * values
+ * @brief Transition function for temporal extent aggregation of temporal points
  * @sqlfn extent()
  */
 Datum
@@ -100,7 +99,6 @@ PG_FUNCTION_INFO_V1(Tpoint_tcentroid_combinefn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for temporal centroid aggregation of temporal points
- * values
  * @sqlfn tcentroid()
  */
 Datum

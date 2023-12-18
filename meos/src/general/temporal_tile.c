@@ -769,7 +769,7 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
  * @param[out] newcount Number of values in the output array
  */
 static TSequence **
-tnumberseq_disc_time_split(const TSequence *seq, TimestampTz start,
+tnumberdiscseq_time_split(const TSequence *seq, TimestampTz start,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   assert(seq);
@@ -1065,7 +1065,7 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
       tunits, torigin, buckets, newcount);
   else if (temp->subtype == TSEQUENCE)
     fragments = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-      (Temporal **) tnumberseq_disc_time_split((const TSequence *) temp,
+      (Temporal **) tnumberdiscseq_time_split((const TSequence *) temp,
         start, tunits, count, buckets, newcount) :
       (Temporal **) tsequence_time_split((const TSequence *) temp,
         start, end, tunits, count, buckets, newcount);
@@ -1168,7 +1168,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
  * @param[out] newcount Number of values in the output arrays
  */
 static TSequence **
-tnumberseq_disc_value_split(const TSequence *seq, Datum start_bucket,
+tnumberdiscseq_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, Datum **buckets, int *newcount)
 {
   assert(seq); assert(buckets); assert(newcount);
@@ -1476,7 +1476,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
  * @param[out] newcount Number of elements in output arrays
  */
 static TSequenceSet **
-tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
+tnumbercontseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
   assert(seq); assert(buckets); assert(newcount);
@@ -1535,7 +1535,8 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
  * @param[in] start_bucket Start value of the first bucket
  * @param[in] size Size of the value buckets
  * @param[in] count Number of buckets
- * @param[out] buckets Start value of the buckets containing the fragments
+ * @param[out] buckets Array of start values of the buckets containing the
+ * fragments
  * @param[out] newcount Number of values in the output arrays
  */
 static TSequenceSet **
@@ -1545,7 +1546,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
   assert(ss); assert(buckets); assert(newcount);
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tnumberseq_value_split(TSEQUENCESET_SEQ_N(ss, 0), start_bucket,
+    return tnumbercontseq_value_split(TSEQUENCESET_SEQ_N(ss, 0), start_bucket,
       size, count, buckets, newcount);
 
   /* General case */
@@ -1591,6 +1592,12 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
  * @ingroup libmeos_internal_temporal_tile
  * @brief Split a temporal number into an array of fragments according to value
  * buckets
+ * @param[in] temp Temporal value
+ * @param[in] size Size of the value buckets
+ * @param[in] vorigin Origin of the value buckets
+ * @param[out] buckets Array of start values of the buckets containing the
+ * fragments
+ * @param[out] count Number of values in the output arrays
  */
 Temporal **
 tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
@@ -1613,9 +1620,9 @@ tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
       start_bucket, size, buckets, count);
   else if (temp->subtype == TSEQUENCE)
     fragments = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-      (Temporal **) tnumberseq_disc_value_split((const TSequence *) temp,
+      (Temporal **) tnumberdiscseq_value_split((const TSequence *) temp,
         start_bucket, size, nbuckets, buckets, count) :
-      (Temporal **) tnumberseq_value_split((const TSequence *) temp,
+      (Temporal **) tnumbercontseq_value_split((const TSequence *) temp,
         start_bucket, size, nbuckets, buckets, count);
   else /* temp->subtype == TSEQUENCESET */
     fragments = (Temporal **) tnumberseqset_value_split((const TSequenceSet *) temp,

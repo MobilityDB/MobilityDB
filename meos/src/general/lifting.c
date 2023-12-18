@@ -964,12 +964,12 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
   int i = 0, j = 0, ninsts = 0, nfree = 0;
   if (inst1->t < lower)
   {
-    i = tcontseq_find_timestamp(seq1, inter->lower) + 1;
+    i = tcontseq_find_timestamptz(seq1, inter->lower) + 1;
     inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
   }
   else if (inst2->t < lower)
   {
-    j = tcontseq_find_timestamp(seq2, inter->lower) + 1;
+    j = tcontseq_find_timestamptz(seq2, inter->lower) + 1;
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
   }
   int count = (seq1->count - i + seq2->count - j) * 2;
@@ -1081,13 +1081,13 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
   {
     start1 = tsequence_at_timestamptz(seq1, inter->lower);
     tofree[nfree++] = start1;
-    i = tcontseq_find_timestamp(seq1, inter->lower) + 1;
+    i = tcontseq_find_timestamptz(seq1, inter->lower) + 1;
   }
   else if (start2->t < DatumGetTimestampTz(inter->lower))
   {
     start2 = tsequence_at_timestamptz(seq2, inter->lower);
     tofree[nfree++] = start2;
-    j = tcontseq_find_timestamp(seq2, inter->lower) + 1;
+    j = tcontseq_find_timestamptz(seq2, inter->lower) + 1;
   }
   Datum startvalue1, startvalue2, startresult;
   bool lower_inc = inter->lower_inc;
@@ -1266,13 +1266,13 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   {
     start1 = tsequence_at_timestamptz(seq1, inter->lower);
     tofree[nfree++] = start1;
-    i = tcontseq_find_timestamp(seq1, inter->lower) + 1;
+    i = tcontseq_find_timestamptz(seq1, inter->lower) + 1;
   }
   else if (start2->t < DatumGetTimestampTz(inter->lower))
   {
     start2 = tsequence_at_timestamptz(seq2, inter->lower);
     tofree[nfree++] = start2;
-    j = tcontseq_find_timestamp(seq2, inter->lower) + 1;
+    j = tcontseq_find_timestamptz(seq2, inter->lower) + 1;
   }
   bool lower_inc = inter->lower_inc;
   meosType restype = lfinfo->restype;
@@ -1441,7 +1441,7 @@ tfunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
   LiftedFunctionInfo *lfinfo)
 {
   int loc;
-  tsequenceset_find_timestamp(ss, seq->period.lower, &loc);
+  tsequenceset_find_timestamptz(ss, seq->period.lower, &loc);
   /* We are sure that loc < ss->count due to the bounding period test made
    * in the dispatch function */
   int count;
@@ -1897,13 +1897,13 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   {
     start1 = tsequence_at_timestamptz(seq1, inter->lower);
     tofree[nfree++] = start1;
-    i = tcontseq_find_timestamp(seq1, inter->lower) + 1;
+    i = tcontseq_find_timestamptz(seq1, inter->lower) + 1;
   }
   else if (start2->t < DatumGetTimestampTz(inter->lower))
   {
     start2 = tsequence_at_timestamptz(seq2, inter->lower);
     tofree[nfree++] = start2;
-    j = tcontseq_find_timestamp(seq2, inter->lower) + 1;
+    j = tcontseq_find_timestamptz(seq2, inter->lower) + 1;
   }
   bool lower_inc = inter->lower_inc;
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
@@ -2040,7 +2040,7 @@ efunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
 {
   TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
   int loc;
-  tsequenceset_find_timestamp(ss, seq->period.lower, &loc);
+  tsequenceset_find_timestamptz(ss, seq->period.lower, &loc);
   /* We are sure that loc < ss->count due to the bounding period test made
    * in the dispatch function */
   for (int i = loc; i < ss->count; i++)

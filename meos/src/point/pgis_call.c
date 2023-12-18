@@ -1404,6 +1404,8 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
  *  LWGEOM_in( '0101000000000000000000F03F000000000000004')
  *  LWGEOM_in( '{"type":"Point","coordinates":[1,1]}')
  *  returns a GSERIALIZED object
+ * @param[in] input String
+ * @param[in] geom_typmod Typmod
  * @note PostGIS function: LWGEOM_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
@@ -1512,6 +1514,7 @@ pgis_geometry_in(char *input, int32 geom_typmod)
  * ie. 'SRID=-99;0101000000000000000000F03F0000000000000040'
  * WKB is machine endian
  * if SRID=-1, the 'SRID=-1;' will probably not be present.
+ * @param[in] gs Geometry/geography
  * @note PostGIS function: LWGEOM_out(PG_FUNCTION_ARGS)
  */
 char *
@@ -1531,6 +1534,9 @@ gserialized_out(const GSERIALIZED *gs)
 /**
  * @brief Return a geometry/geography from its WKT representation (and
  * optionally a SRID)
+ * @param[in] wkt WKT string
+ * @param[in] srid SRID
+ * @param[in] geography True if it is a geometry
  */
 static GSERIALIZED *
 gserialized_from_text(char *wkt, int srid, bool geography)
@@ -1572,6 +1578,8 @@ gserialized_from_text(char *wkt, int srid, bool geography)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return a geometry from its WKT representation (and optionally a SRID)
+ * @param[in] wkt WKT string
+ * @param[in] srid SRID
  * @note This is a a stricter version of #pgis_geometry_in, where we refuse to
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: LWGEOM_from_text(PG_FUNCTION_ARGS)
@@ -1587,6 +1595,8 @@ geometry_from_text(char *wkt, int srid)
  * @brief Return a geometry from its WKT representation (and optionally a SRID)
  * @note This is a a stricter version of #pgis_geography_in, where we refuse to
  * accept (HEX)WKB or EWKT.
+ * @param[in] wkt WKT string
+ * @param[in] srid SRID
  * @note PostGIS function: geography_from_text(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
@@ -1598,6 +1608,8 @@ geography_from_text(char *wkt, int srid)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return the WKT representation (and optionally a SRID) of a geometry
+ * @param[in] gs Geometry/geography
+ * @param[in] precision Maximum number of decimal digits
  * @note This is a a stricter version of #pgis_geometry_in, where we refuse to
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: LWGEOM_asText(PG_FUNCTION_ARGS)
@@ -1616,6 +1628,8 @@ gserialized_as_text(const GSERIALIZED *gs, int precision)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return the EWKT representation (and optionally a SRID) of a geometry
+ * @param[in] gs Geometry/geography
+ * @param[in] precision Maximum number of decimal digits
  * @note This is a a stricter version of #pgis_geometry_in, where we refuse to
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: LWGEOM_asEWKT(PG_FUNCTION_ARGS)
@@ -1634,6 +1648,7 @@ gserialized_as_ewkt(const GSERIALIZED *gs, int precision)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return a geometry from its WKT representation
+ * @param[in] wkt WKT string
  * @note This is a a stricter version of #pgis_geometry_in, where we refuse to
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: LWGEOM_from_text(PG_FUNCTION_ARGS)
@@ -1647,6 +1662,7 @@ geometry_from_hexewkb(const char *wkt)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return a geography from its WKT representation
+ * @param[in] wkt WKT string
  * @note This is a a stricter version of #pgis_geography_in, where we refuse to
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: LWGEOM_from_text(PG_FUNCTION_ARGS)
@@ -1660,6 +1676,8 @@ geography_from_hexewkb(const char *wkt)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return the WKB representation of a geometry in hex-encoded ASCII.
+ * @param[in] gs Geometry/geography
+ * @param[in] type Endianness
  * @note PostGIS function: AsHEXEWKB(gs, string)
  */
 char *
@@ -1689,6 +1707,8 @@ gserialized_as_hexewkb(const GSERIALIZED *gs, const char *type)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return a geometry from its EWKB representation
+ * @param[in] bytea_wkb WKB string
+ * @param[in] srid SRID
  * @note PostGIS function: LWGEOMFromEWKB(wkb, [SRID])
  * @note wkb is in *binary* not hex form
  * @note This function parses EWKB (extended form) which also contains SRID info.
@@ -1723,6 +1743,8 @@ gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return the EWKB representation of a geometry
+ * @param[in] gs Geometry/geography
+ * @param[in] type Endianness
  * @note PostGIS function: WKBFromLWGEOM(lwgeom) --> wkb
  */
 bytea *
@@ -1755,6 +1777,7 @@ gserialized_as_ewkb(const GSERIALIZED *gs, char *type)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Input a geometry from GeoJSON format
+ * @param[in] geojson GeoJSON string
  * @note PostGIS function: geom_from_geojson(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
@@ -1792,6 +1815,10 @@ gserialized_from_geojson(const char *geojson)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Output a geometry in GeoJSON format
+ * @param[in] gs Geometry/geography
+ * @param[in] option Option
+ * @param[in] precision Maximum number of decimal digits
+ * @param[in] srs Spatial reference system
  * @note PostGIS function: LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
  */
 char *
@@ -1850,6 +1877,7 @@ gserialized_as_geojson(const GSERIALIZED *gs, int option, int precision,
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return true if the geometries are the same
+ * @param[in] gs1,gs2 Geometries/geographies
  * @note The `pgis_` prefix is needed since there is a PostGIS function
  * `gserialized_same` in file `gserialized_gist_nd.c`
  */
@@ -1928,6 +1956,8 @@ gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
 /**
  * @ingroup libmeos_pgis_types
  * @brief Get a geography from in string
+ * @param[in] str String
+ * @param[in] geog_typmod Typmod
  * @note PostGIS function: geography_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
