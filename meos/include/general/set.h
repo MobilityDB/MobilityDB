@@ -75,7 +75,6 @@ typedef struct
   Datum *values;   /* Values obtained by getValues(temp) */
 } SetUnnestState;
 
-
 /*****************************************************************************/
 
 /* General functions */
@@ -84,6 +83,9 @@ extern bool ensure_set_isof_type(const Set *s, meosType settype);
 extern bool ensure_set_isof_basetype(const Set *s, meosType basetype);
 extern bool ensure_same_set_type(const Set *s1, const Set *s2);
 extern bool set_find_value(const Set *s, Datum, int *loc);
+
+extern SetUnnestState *set_unnest_state_make(const Set *set);
+extern void set_unnest_state_next(SetUnnestState *state);
 
 /*****************************************************************************/
 

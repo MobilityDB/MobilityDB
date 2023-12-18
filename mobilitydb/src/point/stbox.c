@@ -329,8 +329,6 @@ Stbox_to_box2d(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   GBOX *result = stbox_to_gbox(box);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -347,8 +345,6 @@ Stbox_to_box3d(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   BOX3D *result = stbox_to_box3d(box);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -381,12 +377,12 @@ Stbox_to_tstzspan(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Span *result = stbox_to_tstzspan(box);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Conversion functions
+ *****************************************************************************/
 
 PGDLLEXPORT Datum Box2d_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Box2d_to_stbox);
@@ -821,7 +817,7 @@ Stbox_tmax_inc(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_get_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_get_srid);
 /**
- * @ingroup mobilitydb_box_spatial
+ * @ingroup mobilitydb_box_accessor
  * @brief Return the SRID of a spatiotemporal box
  * @sqlfn SRID()
  */
@@ -835,7 +831,7 @@ Stbox_get_srid(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_set_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_set_srid);
 /**
- * @ingroup mobilitydb_box_spatial
+ * @ingroup mobilitydb_box_transf
  * @brief Sets the SRID of a spatiotemporal box
  * @sqlfn setSRID()
  */
@@ -855,8 +851,7 @@ static STBox *
 stbox_transform(const STBox *box, int32 srid)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
-    return NULL;
+  ensure_not_null((void *) box); ensure_has_X_stbox(box);
 
   STBox *result = stbox_cp(box);
   result->srid = DatumGetInt32(srid);
@@ -896,7 +891,7 @@ stbox_transform(const STBox *box, int32 srid)
 PGDLLEXPORT Datum Stbox_transform(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_transform);
 /**
- * @ingroup mobilitydb_box_spatial
+ * @ingroup mobilitydb_box_transf
  * @brief Transform a spatiotemporal box into another spatial reference system
  * @sqlfn transform()
  */

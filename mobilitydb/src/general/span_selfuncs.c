@@ -69,8 +69,8 @@ span_sel_default(meosOper oper __attribute__((unused)))
 }
 
 /**
- * @brief Return a default join selectivity estimate for given operator, when we
- * don't have statistics or cannot use them for some reason
+ * @brief Return a default join selectivity estimate for given operator, when
+ * we don't have statistics or cannot use them for some reason
  */
 float8
 span_joinsel_default(meosOper oper __attribute__((unused)))

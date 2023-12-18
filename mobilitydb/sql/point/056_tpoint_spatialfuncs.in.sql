@@ -241,7 +241,7 @@ CREATE FUNCTION bearing(geography, geography)
 
 CREATE FUNCTION bearing(geometry, tgeompoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Bearing_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Bearing_point_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bearing(tgeompoint, geometry)
   RETURNS tfloat
@@ -254,7 +254,7 @@ CREATE FUNCTION bearing(tgeompoint, tgeompoint)
 
 CREATE FUNCTION bearing(geography, tgeogpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Bearing_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Bearing_point_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bearing(tgeogpoint, geography)
   RETURNS tfloat

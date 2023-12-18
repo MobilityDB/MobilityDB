@@ -458,15 +458,16 @@ distance_tbox_nodebox(const TBox *query, const TboxNode *nodebox)
 static bool
 tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
 {
+  Span *s;
   meosType type = oid_type(scankey->sk_subtype);
   if (tnumber_spantype(type))
   {
-    Span *span = DatumGetSpanP(scankey->sk_argument);
-    numspan_set_tbox(span, result);
+    s = DatumGetSpanP(scankey->sk_argument);
+    numspan_set_tbox(s, result);
   }
   else if (type == T_TSTZSPAN)
   {
-    Span *s = DatumGetSpanP(scankey->sk_argument);
+    s = DatumGetSpanP(scankey->sk_argument);
     tstzspan_set_tbox(s, result);
   }
   else if (type == T_TBOX)
@@ -562,7 +563,7 @@ Tbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_TBOX);  /* A type represented by its bounding box */
-  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->labelType = VOIDOID;  /* We don't need node labels */
   cfg->leafType = type_oid(T_TBOX);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
@@ -753,7 +754,7 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   out->hasPrefix = true;
   out->prefixDatum = PointerGetDatum(centroid);
   out->nNodes = 16;
-  out->nodeLabels = NULL;    /* We don't need node labels. */
+  out->nodeLabels = NULL;    /* We don't need node labels */
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
 

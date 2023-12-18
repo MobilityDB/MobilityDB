@@ -816,7 +816,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Get one of the X coordinates of a temporal point as a temporal float.
  * @param[in] temp Temporal point
- * @sql-cfn #Tpoint_get_x()
+ * @csqlfn #Tpoint_get_x()
  */
 Temporal *
 tpoint_get_x(const Temporal *temp)
@@ -828,7 +828,7 @@ tpoint_get_x(const Temporal *temp)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Get one of the X coordinates of a temporal point as a temporal float.
  * @param[in] temp Temporal point
- * @sql-cfn #Tpoint_get_y()
+ * @csqlfn #Tpoint_get_y()
  */
 Temporal *
 tpoint_get_y(const Temporal *temp)
@@ -840,7 +840,7 @@ tpoint_get_y(const Temporal *temp)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Get one of the X coordinates of a temporal point as a temporal float.
  * @param[in] temp Temporal point
- * @sql-cfn #Tpoint_get_z()
+ * @csqlfn #Tpoint_get_z()
  */
 Temporal *
 tpoint_get_z(const Temporal *temp)
@@ -945,8 +945,8 @@ point_on_segment(Datum start, Datum end, Datum point)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal instant point is ever equal to a point
- * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
- * @sql-cfn #Tpoint_ever_eq()
+ * @pre The validity of the parameters is verified in function #tpoint_ever_eq
+ * @csqlfn #Tpoint_ever_eq()
  */
 bool
 tpointinst_ever_eq(const TInstant *inst, Datum value)
@@ -960,8 +960,8 @@ tpointinst_ever_eq(const TInstant *inst, Datum value)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence point is ever equal to a point
- * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
- * @sql-cfn #Tpoint_ever_eq()
+ * @pre The validity of the parameters is verified in function #tpoint_ever_eq
+ * @csqlfn #Tpoint_ever_eq()
  */
 bool
 tpointseq_ever_eq(const TSequence *seq, Datum value)
@@ -1021,8 +1021,8 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence set point is ever equal to a point
- * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
- * @sql-cfn #Tpoint_ever_eq()
+ * @pre The validity of the parameters is verified in function #tpoint_ever_eq
+ * @csqlfn #Tpoint_ever_eq()
  */
 bool
 tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
@@ -1075,8 +1075,8 @@ tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal instant point is always equal to a point.
- * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
- * @sql-cfn #Tpoint_always_eq()
+ * @pre The validity of the parameters is verified in function #tpoint_always_eq
+ * @csqlfn #Tpoint_always_eq()
  */
 bool
 tpointinst_always_eq(const TInstant *inst, Datum value)
@@ -1089,8 +1089,8 @@ tpointinst_always_eq(const TInstant *inst, Datum value)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence point is always equal to a point.
- * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
- * @sql-cfn #Tpoint_always_eq()
+ * @pre The validity of the parameters is verified in function #tpoint_always_eq
+ * @csqlfn #Tpoint_always_eq()
  */
 bool
 tpointseq_always_eq(const TSequence *seq, Datum value)
@@ -1109,8 +1109,8 @@ tpointseq_always_eq(const TSequence *seq, Datum value)
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal sequence set point is always equal to a point.
- * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
- * @sql-cfn #Tpoint_always_eq()
+ * @pre The validity of the parameters is verified in function #tpoint_always_eq
+ * @csqlfn #Tpoint_always_eq()
  */
 bool
 tpointseqset_always_eq(const TSequenceSet *ss, Datum value)
@@ -1132,7 +1132,7 @@ tpointseqset_always_eq(const TSequenceSet *ss, Datum value)
  * @see tpointinst_always_eq
  * @see tpointseq_always_eq
  * @see tpointseqset_always_eq
- * @sql-cfn #Tpoint_always_eq()
+ * @csqlfn #Tpoint_always_eq()
  */
 bool
 tpoint_always_eq(const Temporal *temp, const GSERIALIZED *gs)
@@ -1895,7 +1895,7 @@ tpointseq_cont_trajectory(const TSequence *seq)
  * @note Since the sequence has been already validated there is no verification
  * of the input in this function, in particular for geographies it is supposed
  * that the composing points are geodetic
- * @sql-cfn #Tpoint_trajectory()
+ * @csqlfn #Tpoint_trajectory()
  */
 GSERIALIZED *
 tpointseq_trajectory(const TSequence *seq)
@@ -1977,7 +1977,7 @@ lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines, int npoints,
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point with sequence set type
- * @sql-cfn #Tpoint_trajectory()
+ * @csqlfn #Tpoint_trajectory()
  */
 GSERIALIZED *
 tpointseqset_trajectory(const TSequenceSet *ss)
@@ -2045,7 +2045,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point.
- * @sql-cfn #Tpoint_trajectory()
+ * @csqlfn #Tpoint_trajectory()
  */
 GSERIALIZED *
 tpoint_trajectory(const Temporal *temp)
@@ -2072,7 +2072,7 @@ tpoint_trajectory(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal instant point.
- * @sql-cfn #Tpoint_get_srid()
+ * @csqlfn #Tpoint_get_srid()
  */
 int
 tpointinst_srid(const TInstant *inst)
@@ -2086,7 +2086,7 @@ tpointinst_srid(const TInstant *inst)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal sequence point.
- * @sql-cfn #Tpoint_get_srid()
+ * @csqlfn #Tpoint_get_srid()
  */
 int
 tpointseq_srid(const TSequence *seq)
@@ -2101,7 +2101,7 @@ tpointseq_srid(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal sequence set point.
- * @sql-cfn #Tpoint_get_srid()
+ * @csqlfn #Tpoint_get_srid()
  */
 int
 tpointseqset_srid(const TSequenceSet *ss)
@@ -2117,7 +2117,7 @@ tpointseqset_srid(const TSequenceSet *ss)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the SRID of a temporal point.
  * @return On error return SRID_INVALID
- * @sql-cfn #Tpoint_get_srid()
+ * @csqlfn #Tpoint_get_srid()
  */
 int
 tpoint_srid(const Temporal *temp)
@@ -2142,7 +2142,7 @@ tpoint_srid(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal instant point
- * @sql-cfn #Tpoint_set_srid()
+ * @csqlfn #Tpoint_set_srid()
  */
 TInstant *
 tpointinst_set_srid(const TInstant *inst, int32 srid)
@@ -2158,7 +2158,7 @@ tpointinst_set_srid(const TInstant *inst, int32 srid)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence point
- * @sql-cfn #Tpoint_set_srid()
+ * @csqlfn #Tpoint_set_srid()
  */
 TSequence *
 tpointseq_set_srid(const TSequence *seq, int32 srid)
@@ -2182,7 +2182,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence set point
- * @sql-cfn #Tpoint_set_srid()
+ * @csqlfn #Tpoint_set_srid()
  */
 TSequenceSet *
 tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
@@ -2219,7 +2219,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
  * @see tpointinst_set_srid()
  * @see tpointseq_set_srid()
  * @see tpointseqset_set_srid()
- * @sql-cfn #Tpoint_set_srid()
+ * @csqlfn #Tpoint_set_srid()
  */
 Temporal *
 tpoint_set_srid(const Temporal *temp, int32 srid)
@@ -2839,7 +2839,7 @@ tpointseqset_to_geo_meas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
  * will be a MultiLineString composed one Linestring per segment of the
  * temporal sequence (set)
  * @param[out] result Resulting geometry array
- * @sql-cfn #Tpoint_to_geo_meas() when the second argument is not NULL
+ * @csqlfn #Tpoint_to_geo_meas() when the second argument is not NULL
  */
 bool
 tpoint_to_geo_meas(const Temporal *tpoint, const Temporal *meas,
@@ -3124,7 +3124,7 @@ geo_to_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Converts the PostGIS trajectory geometry/geography where the M
  * coordinates encode the timestamps in Unix epoch into a temporal point.
- * @sql-cfn #Geo_to_tpoint()
+ * @csqlfn #Geo_to_tpoint()
  */
 Temporal *
 geo_to_tpoint(const GSERIALIZED *gs)
@@ -3728,7 +3728,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
 /**
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Transform the temporal point to Mapbox Vector Tile format
- * @sql-cfn #Tpoint_AsMVTGeom()
+ * @csqlfn #Tpoint_AsMVTGeom()
  */
 bool
 tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
@@ -4124,7 +4124,7 @@ datum_round_geo(Datum value, Datum size)
  * @ingroup meos_temporal_spatial_transf
  * @brief Set the precision of the coordinates of a temporal point to a
  * number of decimal places.
- * @sql-cfn #Tpoint_round()
+ * @csqlfn #Tpoint_round()
  */
 Temporal *
 tpoint_round(const Temporal *temp, int maxdd)
@@ -4151,7 +4151,7 @@ tpoint_round(const Temporal *temp, int maxdd)
  * @ingroup meos_temporal_spatial_transf
  * @brief Set the precision of the coordinates of an array of temporal point to
  * a number of decimal places.
- * @sql-cfn #Tpoint_round()
+ * @csqlfn #Tpoint_round()
  */
 Temporal **
 tpointarr_round(const Temporal **temparr, int count, int maxdd)
@@ -4221,7 +4221,7 @@ tpointseq_length_3d(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence point.
- * @sql-cfn #Tpoint_length()
+ * @csqlfn #Tpoint_length()
  */
 double
 tpointseq_length(const TSequence *seq)
@@ -4250,7 +4250,7 @@ tpointseq_length(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence set point.
- * @sql-cfn #Tpoint_length()
+ * @csqlfn #Tpoint_length()
  */
 double
 tpointseqset_length(const TSequenceSet *ss)
@@ -4268,7 +4268,7 @@ tpointseqset_length(const TSequenceSet *ss)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence (set) point
  * @return On error return -1.0
- * @sql-cfn #Tpoint_length()
+ * @csqlfn #Tpoint_length()
  */
 double
 tpoint_length(const Temporal *temp)
@@ -4294,7 +4294,7 @@ tpoint_length(const Temporal *temp)
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @pre The sequence has linear interpolation
- * @sql-cfn #Tpoint_cumulative_length()
+ * @csqlfn #Tpoint_cumulative_length()
  */
 TSequence *
 tpointseq_cumulative_length(const TSequence *seq, double prevlength)
@@ -4338,7 +4338,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
- * @sql-cfn #Tpoint_cumulative_length()
+ * @csqlfn #Tpoint_cumulative_length()
  */
 TSequenceSet *
 tpointseqset_cumulative_length(const TSequenceSet *ss)
@@ -4363,7 +4363,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @return On error return NULL
- * @sql-cfn #Tpoint_cumulative_length()
+ * @csqlfn #Tpoint_cumulative_length()
  */
 Temporal *
 tpoint_cumulative_length(const Temporal *temp)
@@ -4389,7 +4389,7 @@ tpoint_cumulative_length(const Temporal *temp)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the convex hull of a temporal point.
  * @return On error return NULL
- * @sql-cfn #Tpoint_convex_hull()
+ * @csqlfn #Tpoint_convex_hull()
  */
 GSERIALIZED *
 tpoint_convex_hull(const Temporal *temp)
@@ -4412,7 +4412,7 @@ tpoint_convex_hull(const Temporal *temp)
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the speed of a temporal point.
  * @pre The temporal point has linear interpolation
- * @sql-cfn #Tpoint_speed()
+ * @csqlfn #Tpoint_speed()
  */
 TSequence *
 tpointseq_speed(const TSequence *seq)
@@ -4454,7 +4454,7 @@ tpointseq_speed(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the speed of a temporal point
- * @sql-cfn #Tpoint_speed()
+ * @csqlfn #Tpoint_speed()
  */
 TSequenceSet *
 tpointseqset_speed(const TSequenceSet *ss)
@@ -4478,7 +4478,7 @@ tpointseqset_speed(const TSequenceSet *ss)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the speed of a temporal point
  * @return On error return NULL
- * @sql-cfn #Tpoint_speed()
+ * @csqlfn #Tpoint_speed()
  */
 Temporal *
 tpoint_speed(const Temporal *temp)
@@ -4538,7 +4538,7 @@ tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
 /**
  * @ingroup libmeos_internal_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
- * @sql-cfn #Tpoint_twcentroid()
+ * @csqlfn #Tpoint_twcentroid()
  */
 GSERIALIZED *
 tpointseq_twcentroid(const TSequence *seq)
@@ -4563,7 +4563,7 @@ tpointseq_twcentroid(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
- * @sql-cfn #Tpoint_twcentroid()
+ * @csqlfn #Tpoint_twcentroid()
  */
 GSERIALIZED *
 tpointseqset_twcentroid(const TSequenceSet *ss)
@@ -4602,7 +4602,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
  * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
  * @return On error return NULL
- * @sql-cfn #Tpoint_twcentroid()
+ * @csqlfn #Tpoint_twcentroid()
  */
 GSERIALIZED *
 tpoint_twcentroid(const Temporal *temp)
@@ -4664,7 +4664,7 @@ geog_azimuth(Datum geog1, Datum geog2)
  * @param[out] result Azimuth between the first and last point
  * @result True when it is possible to determine the azimuth, i.e., when there
  * are at least two points that are not equal; false, otherwise.
- * @sql-cfn #Tpoint_direction()
+ * @csqlfn #Tpoint_direction()
  */
 bool
 tpointseq_direction(const TSequence *seq, double *result)
@@ -4698,7 +4698,7 @@ tpointseq_direction(const TSequence *seq, double *result)
  * @param[out] result Azimuth between the first and last point
  * @result True when it is possible to determine the azimuth, i.e., when there
  * are at least two points that are not equal; false, otherwise.
- * @sql-cfn #Tpoint_direction()
+ * @csqlfn #Tpoint_direction()
  */
 bool
 tpointseqset_direction(const TSequenceSet *ss, double *result)
@@ -4730,7 +4730,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the direction of a temporal point.
- * @sql-cfn #Tpoint_direction()
+ * @csqlfn #Tpoint_direction()
  */
 bool
 tpoint_direction(const Temporal *temp, double *result)
@@ -4824,7 +4824,7 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
- * @sql-cfn #Tpoint_azimuth()
+ * @csqlfn #Tpoint_azimuth()
  */
 TSequenceSet *
 tpointseq_azimuth(const TSequence *seq)
@@ -4840,7 +4840,7 @@ tpointseq_azimuth(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
- * @sql-cfn #Tpoint_azimuth()
+ * @csqlfn #Tpoint_azimuth()
  */
 TSequenceSet *
 tpointseqset_azimuth(const TSequenceSet *ss)
@@ -4865,7 +4865,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
  * @return On error return NULL
- * @sql-cfn #Tpoint_azimuth()
+ * @csqlfn #Tpoint_azimuth()
  */
 Temporal *
 tpoint_azimuth(const Temporal *temp)
@@ -4888,7 +4888,7 @@ tpoint_azimuth(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal angular difference of a temporal geometry point.
- * @sql-cfn #Tpoint_angular_difference()
+ * @csqlfn #Tpoint_angular_difference()
  */
 Temporal *
 tpoint_angular_difference(const Temporal *temp)
@@ -5137,7 +5137,7 @@ tpointsegm_min_bearing_at_timestamptz(const TInstant *start1,
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal bearing between two geometry/geography points
  * @note The following function could be included in PostGIS one day
- * @sql-cfn #Bearing_point_point()
+ * @csqlfn #Bearing_point_point()
  */
 bool
 bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
@@ -5162,7 +5162,7 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal bearing between a temporal point and a point.
  * @return On empty geometry or on error return NULL
- * @sql-cfn #Bearing_tpoint_point()
+ * @csqlfn #Bearing_tpoint_point()
  */
 Temporal *
 bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
@@ -5192,7 +5192,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal bearing between two temporal points
  * @return On error return NULL
- * @sql-cfn #Bearing_tpoint_tpoint()
+ * @csqlfn #Bearing_tpoint_tpoint()
  */
 Temporal *
 bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)

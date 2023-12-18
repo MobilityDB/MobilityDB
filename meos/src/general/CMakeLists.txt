@@ -2,7 +2,6 @@ add_library(general OBJECT
   doublen.c
   error.c
   lifting.c
-  meos.c
   meos_catalog.c
   pg_types.c
   skiplist.c
@@ -19,6 +18,8 @@ add_library(general OBJECT
   temporal_aggfuncs.c
   temporal_analytics.c
   temporal_boxops.c
+  temporal_boxops_meos.c
+  temporal_posops_meos.c
   temporal_compops.c
   temporal_tile.c
   temporal_waggfuncs.c

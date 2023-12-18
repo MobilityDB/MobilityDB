@@ -210,6 +210,7 @@ Temporalarr_as_text(PG_FUNCTION_ARGS)
     Int32GetDatum(dbl_dig_for_wkt));
   ArrayType *result = strarr_to_textarray(strarr, count);
   pfree_array((void **) strarr, count);
+  /* We cannot use pfree_array */
   pfree(temparr);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -323,7 +324,7 @@ get_endian_variant(const text *txt)
 }
 
 /**
- * @brief Output a value in the Well-Known Binary (WKB) or Extended Well-Known 
+ * @brief Output a value in the Well-Known Binary (WKB) or Extended Well-Known
  * Binary (EWKB) representation
  */
 static bytea *
@@ -344,14 +345,12 @@ Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, meosType type,
   size_t wkb_size;
   uint8_t *wkb = datum_as_wkb(value, type, variant, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
-
-  /* Clean up and return */
   pfree(wkb);
   return result;
 }
 
 /**
- * @brief Output a value in the Well-Known Binary (WKB) or Extended Well-Known 
+ * @brief Output a value in the Well-Known Binary (WKB) or Extended Well-Known
  * Binary (EWKB) representation in hex-encoded ASCII
  */
 static text *
@@ -388,8 +387,7 @@ Set_as_wkb(PG_FUNCTION_ARGS)
   /* Ensure that the value is detoasted if necessary */
   Set *s = PG_GETARG_SET_P(0);
   meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), settype,
-    true);
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), settype, true);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BYTEA_P(result);
 }
@@ -399,7 +397,7 @@ PG_FUNCTION_INFO_V1(Set_as_hexwkb);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Output a set in the hex-encoded ASCII Well-Known Binary (HexWKB)
- * representation 
+ * representation
  * @sqlfn asHexWKB()
  */
 Datum
@@ -426,8 +424,7 @@ Datum
 Span_as_wkb(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), s->spantype,
-    false);
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), s->spantype, false);
   PG_RETURN_BYTEA_P(result);
 }
 
@@ -461,8 +458,8 @@ Spanset_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(ss),
-    ss->spansettype, false);
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(ss), ss->spansettype,
+    false);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BYTEA_P(result);
 }
@@ -480,8 +477,7 @@ Spanset_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(ss),
-    ss->spansettype);
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(ss), ss->spansettype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -569,8 +565,8 @@ Temporal_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(temp),
-    temp->temptype, false);
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(temp), temp->temptype,
+    false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BYTEA_P(result);
 }

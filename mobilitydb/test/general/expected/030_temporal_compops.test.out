@@ -1,12 +1,24 @@
-SELECT NULL #= tbool 't@2000-01-01';
- ?column? 
-----------
+SELECT temporal_teq(1, NULL::tint, TRUE);
+ temporal_teq 
+--------------
  
 (1 row)
 
-SELECT TRUE #= NULL::tbool;
- ?column? 
-----------
+SELECT temporal_teq(NULL::tint, 1, TRUE);
+ temporal_teq 
+--------------
+ 
+(1 row)
+
+SELECT temporal_teq(NULL::tint, tint '1@2000-01-01', TRUE);
+ temporal_teq 
+--------------
+ 
+(1 row)
+
+SELECT temporal_teq(tint '1@2000-01-01', NULL::tint, TRUE);
+ temporal_teq 
+--------------
  
 (1 row)
 
@@ -58,18 +70,6 @@ SELECT FALSE #= tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04
  {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT NULL::tbool #= TRUE;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tbool 't@2000-01-01' #= NULL;
- ?column? 
-----------
- 
-(1 row)
-
 SELECT tbool 't@2000-01-01' #= TRUE;
             ?column?            
 --------------------------------
@@ -92,18 +92,6 @@ SELECT tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-
                                                                                ?column?                                                                               
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
-(1 row)
-
-SELECT NULL::tbool #= tbool 't@2000-01-01';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tbool 't@2000-01-01' #= NULL::tbool;
- ?column? 
-----------
- 
 (1 row)
 
 SELECT tbool 't@2000-01-01' #= tbool 't@2000-01-01';

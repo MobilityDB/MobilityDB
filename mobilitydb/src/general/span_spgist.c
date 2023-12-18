@@ -434,7 +434,7 @@ Intspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_INTSPAN);  /* A type represented by its bounding box */
-  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->labelType = VOIDOID;  /* We don't need node labels */
   cfg->leafType = type_oid(T_INTSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
@@ -451,7 +451,7 @@ Bigintspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_BIGINTSPAN);  /* A type represented by its bounding box */
-  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->labelType = VOIDOID;  /* We don't need node labels */
   cfg->leafType = type_oid(T_BIGINTSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
@@ -468,7 +468,7 @@ Floatspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_FLOATSPAN);  /* A type represented by its bounding box */
-  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->labelType = VOIDOID;  /* We don't need node labels */
   cfg->leafType = type_oid(T_FLOATSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
@@ -485,7 +485,7 @@ Datespan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_DATESPAN);  /* A type represented by its bounding box */
-  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->labelType = VOIDOID;  /* We don't need node labels */
   cfg->leafType = type_oid(T_DATESPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
@@ -502,7 +502,7 @@ Tstzspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_TSTZSPAN);  /* A type represented by its bounding box */
-  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->labelType = VOIDOID;  /* We don't need node labels */
   cfg->leafType = type_oid(T_TSTZSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;

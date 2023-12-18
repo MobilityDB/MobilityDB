@@ -88,18 +88,6 @@
 #define GSERIALIZED_POINT3DZ_P(gs) ( (POINT3DZ *) GS_POINT_PTR((gs)) )
 
 /*****************************************************************************
- * Concrete subtype of temporal types
- *****************************************************************************/
-
-/**
- * Enumeration for the concrete subtype of temporal types
- */
-#define ANYTEMPSUBTYPE  0
-#define TINSTANT        1
-#define TSEQUENCE       2
-#define TSEQUENCESET    3
-
-/*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
  * bits are GTZXIICB, where
  *   G: coordinates are geodetic
@@ -269,7 +257,9 @@ extern Span *set_span(const Set *s);
 extern Datum set_start_value(const Set *s);
 extern bool set_value_n(const Set *s, int n, Datum *result);
 extern Datum *set_values(const Set *s);
+extern Datum spanset_lower(const SpanSet *ss);
 extern int spanset_mem_size(const SpanSet *ss);
+extern Datum spanset_upper(const SpanSet *ss);
 extern void spatialset_set_stbox(const Set *set, STBox *box);
 extern void value_set_span(Datum d, meosType basetype, Span *s);
 
@@ -918,6 +908,32 @@ extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
 extern Temporal *temporal_compact(const Temporal *temp);
 extern TSequence *tsequence_compact(const TSequence *seq);
 extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
+
+/*****************************************************************************/
+
+/* Aggregate functions for temporal types */
+
+extern SkipList *tbool_tand_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tbool_tor_transfn(SkipList *state, const Temporal *temp);
+extern Temporal *temporal_tagg_finalfn(SkipList *state);
+extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tfloat_tmin_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tfloat_tsum_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tfloat_wmax_transfn(SkipList *state, const Temporal *temp, const Interval *interval);
+extern SkipList *tfloat_wmin_transfn(SkipList *state, const Temporal *temp, const Interval *interval);
+extern SkipList *tfloat_wsum_transfn(SkipList *state, const Temporal *temp, const Interval *interval);
+extern SkipList *tint_tmin_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tint_tmax_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tint_tsum_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tint_wmax_transfn(SkipList *state, const Temporal *temp, const Interval *interval);
+extern SkipList *tint_wmin_transfn(SkipList *state, const Temporal *temp, const Interval *interval);
+extern SkipList *tint_wsum_transfn(SkipList *state, const Temporal *temp, const Interval *interval);
+extern Temporal *tnumber_tavg_finalfn(SkipList *state);
+extern SkipList *tnumber_tavg_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tnumber_wavg_transfn(SkipList *state, const Temporal *temp, const Interval *interval);
+extern SkipList *ttext_tmin_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *ttext_tmax_transfn(SkipList *state, const Temporal *temp);
 
 /*****************************************************************************/
 

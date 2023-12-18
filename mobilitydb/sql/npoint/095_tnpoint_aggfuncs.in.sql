@@ -44,8 +44,8 @@ CREATE AGGREGATE tcount(tnpoint) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -61,8 +61,8 @@ CREATE AGGREGATE wcount(tnpoint, interval) (
   COMBINEFUNC = tint_tsum_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -78,8 +78,8 @@ CREATE AGGREGATE tcentroid(tnpoint) (
   COMBINEFUNC = tcentroid_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tcentroid_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -101,8 +101,8 @@ CREATE AGGREGATE merge(tnpoint) (
   COMBINEFUNC = temporal_merge_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tnpoint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
 

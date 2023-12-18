@@ -105,7 +105,7 @@ time_max_header_size(void)
 
 /**
  * @brief Global variable that saves the PostgreSQL fcinfo
- * 
+ *
  * This is needed when we need to change the PostgreSQL context, for example,
  * in PostGIS functions such as #transform, #geography_distance, or
  * #geography_azimuth that need to access the proj cache
@@ -155,73 +155,6 @@ ensure_not_empty_array(ArrayType *array)
 /*****************************************************************************
  * Typmod functions
  *****************************************************************************/
-
-/**
- * @brief Array storing the mapping between the string representation of the
- * subtypes of temporal types and the corresponding enum value
- */
-struct tempsubtype_struct tempsubtype_struct_array[] =
-{
-  {"ANYTEMPSUBTYPE", ANYTEMPSUBTYPE},
-  {"INSTANT", TINSTANT},
-  {"SEQUENCE", TSEQUENCE},
-  {"SEQUENCESET", TSEQUENCESET},
-};
-
-/**
- * @brief Return the enum value corresponding to the string representation
- * of the concrete subtype of a temporal type
- */
-bool
-tempsubtype_from_string(const char *str, int16 *subtype)
-{
-  char *tmpstr;
-  size_t tmpstartpos, tmpendpos;
-  size_t i;
-
-  /* Initialize */
-  *subtype = 0;
-  /* Locate any leading/trailing spaces */
-  tmpstartpos = 0;
-  for (i = 0; i < strlen(str); i++)
-  {
-    if (str[i] != ' ')
-    {
-      tmpstartpos = i;
-      break;
-    }
-  }
-  tmpendpos = strlen(str) - 1;
-  for (i = strlen(str) - 1; i != 0; i--)
-  {
-    if (str[i] != ' ')
-    {
-      tmpendpos = i;
-      break;
-    }
-  }
-  tmpstr = palloc(tmpendpos - tmpstartpos + 2);
-  for (i = tmpstartpos; i <= tmpendpos; i++)
-    tmpstr[i - tmpstartpos] = str[i];
-  /* Add NULL to terminate */
-  tmpstr[i - tmpstartpos] = '\0';
-  size_t len = strlen(tmpstr);
-  /* Now check for the type */
-  for (i = 0; i < TEMPSUBTYPE_STRUCT_ARRAY_LEN; i++)
-  {
-    if (len == strnlen(tempsubtype_struct_array[i].subtypeName,
-        TEMPSUBTYPE_MAX_LEN) &&
-      ! pg_strncasecmp(tmpstr, tempsubtype_struct_array[i].subtypeName,
-        TEMPSUBTYPE_MAX_LEN))
-    {
-      *subtype = tempsubtype_struct_array[i].subtype;
-      pfree(tmpstr);
-      return true;
-    }
-  }
-  pfree(tmpstr);
-  return false;
-}
 
 /**
  * @brief Ensure that the temporal type of a temporal value corresponds to the
@@ -327,25 +260,6 @@ Temporal_enforce_typmod(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Peek into a temporal datum to find the bounding period
- * @note If the datum needs to be detoasted, extract only the header and not
- * the full object
- */
-void
-temporal_tstzspan_slice(Datum tempdatum, Span *s)
-{
-  Temporal *temp = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tempdatum))
-    temp = (Temporal *) PG_DETOAST_DATUM_SLICE(tempdatum, 0,
-      temporal_max_header_size());
-  else
-    temp = (Temporal *) tempdatum;
-  temporal_set_tstzspan(temp, s);
-  PG_FREE_IF_COPY_P(temp, DatumGetPointer(tempdatum));
-  return;
-}
-
-/**
  * @brief Peek into a temporal datum to find the bounding box
  * @note If the datum needs to be detoasted, extract only the header and not
  * the full object
@@ -353,14 +267,20 @@ temporal_tstzspan_slice(Datum tempdatum, Span *s)
 void
 temporal_bbox_slice(Datum tempdatum, void *box)
 {
-  Temporal *temp = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tempdatum))
-    temp = (Temporal *) PG_DETOAST_DATUM_SLICE(tempdatum, 0,
+  Temporal *tempslice = NULL;
+  int need_detoast = PG_DATUM_NEEDS_DETOAST((struct varlena *) tempdatum);
+  if (need_detoast)
+    tempslice = (Temporal *) PG_DETOAST_DATUM_SLICE(tempdatum, 0,
       temporal_max_header_size());
   else
-    temp = (Temporal *) tempdatum;
-  temporal_set_bbox(temp, box);
-  // PG_FREE_IF_COPY_P(temp, DatumGetPointer(tempdatum));
+    tempslice = (Temporal *) tempdatum;
+  if (need_detoast && tempslice->subtype == TINSTANT)
+  {
+    /* TInstant subtype of Temporal DOES NOT keep the bounding box, so
+     * we now detoast it completely */
+    tempslice = (Temporal *) PG_DETOAST_DATUM(tempdatum);
+  }
+  temporal_set_bbox(tempslice, box);
   return;
 }
 
@@ -783,7 +703,7 @@ Datum
 Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  SpanSet *ps = PG_GETARG_SPANSET_P(1);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
@@ -793,9 +713,9 @@ Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
     interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
-  TSequenceSet *result = tsequenceset_from_base_tstzspanset(value, temptype, ps,
-    interp);
-  PG_FREE_IF_COPY(ps, 1);
+  TSequenceSet *result = tsequenceset_from_base_tstzspanset(value, temptype,
+    ss, interp);
+  PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_POINTER(result);
 }
 
@@ -850,7 +770,7 @@ Temporal_to_tstzspan(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
   Span *result = palloc(sizeof(Span));
-  temporal_tstzspan_slice(tempdatum, result);
+  temporal_bbox_slice(tempdatum, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -953,9 +873,8 @@ Datum
 Tinstant_value(PG_FUNCTION_ARGS)
 {
   TInstant *inst = PG_GETARG_TINSTANT_P(0);
-  if (inst->subtype != TINSTANT)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value must be of subtype instant")));
+  /* Ensure validity of arguments */
+  ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT);
 
   Datum result = tinstant_value_copy(inst);
   PG_FREE_IF_COPY(inst, 0);
@@ -1112,9 +1031,8 @@ Datum
 Tinstant_timestamp(PG_FUNCTION_ARGS)
 {
   TInstant *inst = PG_GETARG_TINSTANT_P(0);
-  if (inst->subtype != TINSTANT)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value must be of subtype instant")));
+  /* Ensure validity of arguments */
+  ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT);
 
   TimestampTz result = inst->t;
   PG_FREE_IF_COPY(inst, 0);
@@ -1256,6 +1174,7 @@ Temporal_segments(PG_FUNCTION_ARGS)
   TSequence **segments = temporal_segments(temp, &count);
   ArrayType *result = temporalarr_to_array((const Temporal **) segments,
     count);
+  pfree_array((void **) segments, count);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -1442,13 +1361,13 @@ Temporal_timestamps(PG_FUNCTION_ARGS)
  * @brief Create the initial state that persists across multiple calls of the
  * function
  * @param[in] temp Temporal value
- * @param[in] values Array of values appearing in the temporal value
- * @param[in] count Number of elements in the input array
  */
 TempUnnestState *
-temporal_unnest_state_make(const Temporal *temp, Datum *values, int count)
+temporal_unnest_state_make(const Temporal *temp)
 {
   TempUnnestState *state = palloc0(sizeof(TempUnnestState));
+  int count;
+  Datum *values = temporal_values(temp, &count);
   /* Fill in state */
   state->done = false;
   state->i = 0;
@@ -1500,11 +1419,9 @@ Temporal_unnest(PG_FUNCTION_ARGS)
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-    ensure_nonlinear_interpolation(temp->flags);
+    ensure_nonlinear_interp(temp->flags);
     /* Create function state */
-    int count;
-    Datum *values = temporal_values(temp, &count);
-    funcctx->user_fctx = temporal_unnest_state_make(temp, values, count);
+    funcctx->user_fctx = temporal_unnest_state_make(temp);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -1716,7 +1633,7 @@ PGDLLEXPORT Datum Temporal_ever_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ever_ge);
 /**
  * @ingroup mobilitydb_temporal_comp_ever
- * @brief Return true if a temporal value is ever greater than or equal to a 
+ * @brief Return true if a temporal value is ever greater than or equal to a
  * base value
  * @sqlfn ever_ge()
  * @sqlop @p ?>=
@@ -1865,8 +1782,6 @@ Tnumber_shift_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum shift = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  ensure_same_temporal_basetype(temp, basetype);
   Temporal *result = tnumber_shift_scale_value(temp, shift, 0, true, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1884,8 +1799,6 @@ Tnumber_scale_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum duration = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  ensure_same_temporal_basetype(temp, basetype);
   Temporal *result = tnumber_shift_scale_value(temp, 0, duration, false, true);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1904,10 +1817,6 @@ Tnumber_shift_scale_value(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum shift = PG_GETARG_DATUM(1);
   Datum duration = PG_GETARG_DATUM(2);
-  meosType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  ensure_same_temporal_basetype(temp, basetype1);
-  meosType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 2));
-  ensure_same_temporal_basetype(temp, basetype2);
   Temporal *result = tnumber_shift_scale_value(temp, shift, duration, true, true);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2197,8 +2106,8 @@ Tnumber_minus_span(PG_FUNCTION_ARGS)
 static Datum
 Tnumber_restrict_spanset(FunctionCallInfo fcinfo, bool atfunc)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);  \
-  SpanSet *ss = PG_GETARG_SPANSET_P(1); \
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
   Temporal *result = tnumber_restrict_spanset(temp, ss, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ss, 1);
@@ -2513,10 +2422,10 @@ Datum
 Temporal_at_tstzspanset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  SpanSet *ps = PG_GETARG_SPANSET_P(1);
-  Temporal *result = temporal_restrict_tstzspanset(temp, ps, REST_AT);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(ps, 1);
+  PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -2533,10 +2442,10 @@ Datum
 Temporal_minus_tstzspanset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  SpanSet *ps = PG_GETARG_SPANSET_P(1);
-  Temporal *result = temporal_restrict_tstzspanset(temp, ps, REST_MINUS);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(ps, 1);
+  PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -2656,11 +2565,11 @@ Datum
 Temporal_delete_tstzspanset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  SpanSet *ps = PG_GETARG_SPANSET_P(1);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
   bool connect = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_delete_tstzspanset(temp, ps, connect);
+  Temporal *result = temporal_delete_tstzspanset(temp, ss, connect);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(ps, 1);
+  PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

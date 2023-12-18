@@ -327,7 +327,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Get the absolute value of a temporal number
- * @sql-cfn #Tnumber_abs()
+ * @csqlfn #Tnumber_abs()
  */
 TInstant *
 tnumberinst_abs(const TInstant *inst)
@@ -420,7 +420,7 @@ tnumberseq_linear_abs(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Get the absolute value of a temporal number
- * @sql-cfn #Tnumber_abs()
+ * @csqlfn #Tnumber_abs()
  */
 TSequence *
 tnumberseq_abs(const TSequence *seq)
@@ -434,7 +434,7 @@ tnumberseq_abs(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Get the absolute value of a temporal number
- * @sql-cfn #Tnumber_abs()
+ * @csqlfn #Tnumber_abs()
  */
 TSequenceSet *
 tnumberseqset_abs(const TSequenceSet *ss)
@@ -454,7 +454,7 @@ tnumberseqset_abs(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Get the absolute value of a temporal number
- * @sql-cfn #Tnumber_abs()
+ * @csqlfn #Tnumber_abs()
  */
 Temporal *
 tnumber_abs(const Temporal *temp)
@@ -565,7 +565,7 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the delta value of a temporal number.
- * @sql-cfn #Tnumber_delta_value()
+ * @csqlfn #Tnumber_delta_value()
  */
 Temporal *
 tnumber_delta_value(const Temporal *temp)
@@ -681,7 +681,7 @@ tnumberseqset_angular_difference(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the angular difference of a temporal number.
- * @sql-cfn #Tpoint_angular_difference()
+ * @csqlfn #Tpoint_angular_difference()
  */
 Temporal *
 tnumber_angular_difference(const Temporal *temp)
@@ -709,7 +709,7 @@ tnumber_angular_difference(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Round a temporal number to a given number of decimal places
- * @sql-cfn #Tfloat_round()
+ * @csqlfn #Tfloat_round()
  */
 Temporal *
 tfloat_round(const Temporal *temp, int maxdd)
@@ -739,7 +739,7 @@ tfloat_round(const Temporal *temp, int maxdd)
  * @ingroup meos_temporal_math
  * @brief Set the precision of the coordinates of an array of temporal floats
  * to a number of decimal places.
- * @sql-cfn #Tfloatarr_round()
+ * @csqlfn #Tfloatarr_round()
  */
 Temporal **
 tfloatarr_round(const Temporal **temparr, int count, int maxdd)
@@ -760,7 +760,7 @@ tfloatarr_round(const Temporal **temparr, int count, int maxdd)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Convert a temporal number from radians to degrees
- * @sql-cfn #Tfloat_degrees()
+ * @csqlfn #Tfloat_degrees()
  */
 Temporal *
 tfloat_degrees(const Temporal *temp, bool normalize)
@@ -788,7 +788,7 @@ tfloat_degrees(const Temporal *temp, bool normalize)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Convert a temporal number from degrees to radians
- * @sql-cfn #Tfloat_radians()
+ * @csqlfn #Tfloat_radians()
  */
 Temporal *
 tfloat_radians(const Temporal *temp)
@@ -818,7 +818,7 @@ tfloat_radians(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence number.
- * @sql-cfn #Tfloat_derivative()
+ * @csqlfn #Tfloat_derivative()
  */
 TSequence *
 tfloatseq_derivative(const TSequence *seq)
@@ -862,7 +862,7 @@ tfloatseq_derivative(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence set number
- * @sql-cfn #Tfloat_derivative()
+ * @csqlfn #Tfloat_derivative()
  */
 TSequenceSet *
 tfloatseqset_derivative(const TSequenceSet *ss)
@@ -886,7 +886,7 @@ tfloatseqset_derivative(const TSequenceSet *ss)
  * @brief Return the derivative of a temporal number
  * @see tfloatseq_derivative
  * @see tfloatseqset_derivative
- * @sql-cfn #Tfloat_derivative()
+ * @csqlfn #Tfloat_derivative()
  */
 Temporal *
 tfloat_derivative(const Temporal *temp)

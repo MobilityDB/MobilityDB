@@ -88,6 +88,40 @@ extern int32 pg_strtoint32(const char *s);
   extern int pg_ulltoa_n(uint64 l, char *a);
 #endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
+/*****************************************************************************/
+
+/* Definitions taken from miscadmin.h */
+
+/* valid DateStyle values */
+#define USE_POSTGRES_DATES 0
+#define USE_ISO_DATES      1
+#define USE_SQL_DATES      2
+#define USE_GERMAN_DATES   3
+#define USE_XSD_DATES      4
+
+/* valid DateOrder values taken */
+#define DATEORDER_YMD      0
+#define DATEORDER_DMY      1
+#define DATEORDER_MDY      2
+
+/*
+ * IntervalStyles
+ *   INTSTYLE_POSTGRES         Like Postgres < 8.4 when DateStyle = 'iso'
+ *   INTSTYLE_POSTGRES_VERBOSE     Like Postgres < 8.4 when DateStyle != 'iso'
+ *   INTSTYLE_SQL_STANDARD       SQL standard interval literals
+ *   INTSTYLE_ISO_8601         ISO-8601-basic formatted intervals
+ */
+#define INTSTYLE_POSTGRES      0
+#define INTSTYLE_POSTGRES_VERBOSE  1
+#define INTSTYLE_SQL_STANDARD    2
+#define INTSTYLE_ISO_8601      3
+
+/* Definitions from globals.c */
+
+int DateStyle = USE_ISO_DATES;
+int DateOrder = DATEORDER_MDY;
+int IntervalStyle = INTSTYLE_POSTGRES;
+
 /*****************************************************************************
  * Functions adapted from bool.c
  *****************************************************************************/

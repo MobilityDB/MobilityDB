@@ -74,7 +74,7 @@ Set_in(PG_FUNCTION_ARGS)
   Oid ostypid = PG_GETARG_OID(1);
   Set *result = set_in(input, oid_type(ostypid));
   PG_RETURN_POINTER(result);
-} 
+}
 
 PGDLLEXPORT Datum Set_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_out);
@@ -558,42 +558,6 @@ Textset_upper(PG_FUNCTION_ARGS)
  * Unnest function
  *****************************************************************************/
 
-/**
- * @brief Create the initial state that persists across multiple calls of the
- * function
- * @param[in] set Set value
- * @param[in] values Array of values appearing in the temporal value
- * @param[in] count Number of elements in the input array
- */
-SetUnnestState *
-set_unnest_state_make(const Set *set, Datum *values, int count)
-{
-  SetUnnestState *state = palloc0(sizeof(SetUnnestState));
-  /* Fill in state */
-  state->done = false;
-  state->i = 0;
-  state->count = count;
-  state->values = values;
-  state->set = set_cp(set);
-  return state;
-}
-
-/**
- * @brief Increment the current state to the next unnest value
- * @param[in] state State to increment
- */
-void
-set_unnest_state_next(SetUnnestState *state)
-{
-  if (!state || state->done)
-    return;
-  /* Move to the next bucket */
-  state->i++;
-  if (state->i == state->count)
-    state->done = true;
-  return;
-}
-
 PGDLLEXPORT Datum Set_unnest(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_unnest);
 /**
@@ -617,8 +581,7 @@ Set_unnest(PG_FUNCTION_ARGS)
     /* Get input parameters */
     Set *set = PG_GETARG_SET_P(0);
     /* Create function state */
-    Datum *values = set_values(set);
-    funcctx->user_fctx = set_unnest_state_make(set, values, set->count);
+    funcctx->user_fctx = set_unnest_state_make(set);
     MemoryContextSwitchTo(oldcontext);
   }
 

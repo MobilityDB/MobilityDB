@@ -196,3 +196,5 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
 
   PG_RETURN_GIN_TERNARY_VALUE(res);
 }
+
+/*****************************************************************************/

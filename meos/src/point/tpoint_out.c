@@ -92,7 +92,7 @@ ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 /**
  * @ingroup libmeos_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal point.
- * @sql-cfn #Tpoint_as_text()
+ * @csqlfn #Tpoint_as_text()
  */
 char *
 tpoint_as_text(const Temporal *temp, int maxdd)
@@ -117,7 +117,7 @@ tpoint_as_text(const Temporal *temp, int maxdd)
  * @ingroup libmeos_temporal_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
  * point.
- * @sql-cfn #Tpoint_as_ewkt()
+ * @csqlfn #Tpoint_as_ewkt()
  */
 char *
 tpoint_as_ewkt(const Temporal *temp, int maxdd)
@@ -153,7 +153,7 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
  * @param[in] extended True if the output is in EWKT
- * @sql-cfn #Geoarr_as_text(), #Geoarr_as_ewkt()
+ * @csqlfn #Geoarr_as_text(), #Geoarr_as_ewkt()
  */
 char **
 geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
@@ -175,7 +175,7 @@ geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
  * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a temporal point array
- * @sql-cfn #Tpointarr_as_text(), #Tpointarr_as_ewkt()
+ * @csqlfn #Tpointarr_as_text(), #Tpointarr_as_ewkt()
  */
 char **
 tpointarr_as_text(const Temporal **temparr, int count, int maxdd,

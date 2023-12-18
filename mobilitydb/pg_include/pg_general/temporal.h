@@ -167,20 +167,8 @@ typedef enum
  * Typmod definitions
  *****************************************************************************/
 
-#define TYPMOD_GET_SUBTYPE(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
-
-/**
- * Structure to represent the temporal subtype array
- */
-struct tempsubtype_struct
-{
-  char *subtypeName;   /**< string representing the temporal type */
-  int16 subtype;       /**< subtype */
-};
-
-#define TEMPSUBTYPE_STRUCT_ARRAY_LEN \
-  (sizeof tempsubtype_struct_array/sizeof(struct tempsubtype_struct))
-#define TEMPSUBTYPE_MAX_LEN   13
+#define TYPMOD_GET_SUBTYPE(typmod) \
+  ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
 /* Initialization function */
 
@@ -194,10 +182,6 @@ extern uint32_t time_max_header_size(void);
 
 extern FunctionCallInfo fetch_fcinfo(void);
 extern void store_fcinfo(FunctionCallInfo fcinfo);
-
-/* Typmod functions */
-
-extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 
 /* Send/receive functions */
 

@@ -62,7 +62,7 @@
  * General functions
  *****************************************************************************/
 
-#define PGC_ERRMSG_MAXLEN 2048
+#define PGC_ERRMSG_MAX_LEN 2048
 
 /**
  * @brief Output an error message
@@ -70,9 +70,9 @@
 static void
 pg_error(const char *fmt, va_list ap)
 {
-  char errmsg[PGC_ERRMSG_MAXLEN + 1];
-  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
-  errmsg[PGC_ERRMSG_MAXLEN]='\0';
+  char errmsg[PGC_ERRMSG_MAX_LEN + 1];
+  vsnprintf (errmsg, PGC_ERRMSG_MAX_LEN, fmt, ap);
+  errmsg[PGC_ERRMSG_MAX_LEN]='\0';
   ereport(ERROR, (errmsg_internal("%s", errmsg)));
   return;
 }
@@ -83,9 +83,9 @@ pg_error(const char *fmt, va_list ap)
 static void
 pg_notice(const char *fmt, va_list ap)
 {
-  char errmsg[PGC_ERRMSG_MAXLEN + 1];
-  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
-  errmsg[PGC_ERRMSG_MAXLEN]='\0';
+  char errmsg[PGC_ERRMSG_MAX_LEN + 1];
+  vsnprintf (errmsg, PGC_ERRMSG_MAX_LEN, fmt, ap);
+  errmsg[PGC_ERRMSG_MAX_LEN]='\0';
   ereport(NOTICE, (errmsg_internal("%s", errmsg)));
   return;
 }
@@ -201,9 +201,9 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   /*
    * There are several ways to define a column wrt type modifiers:
    *   column_type(TempSubType, Geometry, SRID) => All modifiers are determined.
-   *    column_type(TempSubType, Geometry) => The SRID is generic.
-   *    column_type(Geometry, SRID) => The temporal type is generic.
-   *    column_type(Geometry) => The temporal type and SRID are generic.
+   *   column_type(TempSubType, Geometry) => The SRID is generic.
+   *   column_type(Geometry, SRID) => The temporal type is generic.
+   *   column_type(Geometry) => The temporal type and SRID are generic.
    *   column_type(TempSubType) => The geometry type and SRID are generic.
    *   column_type => The temporal type, geometry type, and SRID are generic.
    *
@@ -421,13 +421,8 @@ Datum
 Tpointinst_constructor(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  ensure_point_type(gs);
-  ensure_not_empty(gs);
-  ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), temptype,
-    t);
+  Temporal *result = (Temporal *) tpointinst_make(gs, t);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }

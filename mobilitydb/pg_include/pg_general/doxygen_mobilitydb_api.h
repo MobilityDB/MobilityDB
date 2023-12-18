@@ -60,7 +60,7 @@
  * @brief Conversion functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_accessor Accessor functions
- * @ingroup mobilitydb_setspan
+ * @ingroup   
  * @brief Accessor functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_transf Transformation functions
@@ -90,6 +90,10 @@
  * @defgroup mobilitydb_setspan_comp Comparison functions
  * @ingroup mobilitydb_setspan
  * @brief Comparison functions for set and span types.
+ *
+ * @defgroup mobilitydb_setspan_agg Aggregate functions
+ * @ingroup libmeos_setspan
+ * @brief Aggregate functions for set and span types.
  */
 
 /**

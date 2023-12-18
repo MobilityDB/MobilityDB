@@ -2872,29 +2872,29 @@ SELECT getValue(ttext 'AAA@2000-01-01');
 
 /* Errors */
 SELECT getValue(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getValues(tbool 't@2000-01-01');
  getvalues 
 -----------
@@ -3647,29 +3647,29 @@ SELECT getTimestamp(ttext 'AAA@2000-01-01');
 
 /* Errors */
 SELECT getTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
-ERROR:  The temporal value must be of subtype instant
+ERROR:  The temporal value must be of subtype Instant
 SELECT getTime(tbool 't@2000-01-01');
                             gettime                             
 ----------------------------------------------------------------

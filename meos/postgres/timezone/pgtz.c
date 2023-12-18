@@ -24,10 +24,6 @@
 
 #include "../../include/meos.h"
 
-/*****************************************************************************
- * Global variables
- *****************************************************************************/
-
 /**
  * Structure to represent the timezone cache hash table, which extends
  * the `ENTRY` structure used by hsearch
@@ -60,10 +56,7 @@ static uint32 hash_string_pointer(const char *s);
 /* Function in findtimezone.c */
 extern const char *select_default_timezone(const char *share_path);
 
-/**
- * @brief Global variable that saves the current session timezone 
- * (controlled by TimeZone GUC)
- */
+/* Current session timezone (controlled by TimeZone GUC) */
 pg_tz *session_timezone = NULL;
 
 /* Current log timezone (controlled by log_timezone GUC) */
@@ -266,11 +259,9 @@ scan_directory_ci(const char *dirname, const char *fname, int fnamelen,
   return found;
 }
 
-/**
- * @brief Global variable that keeps the loaded timezones in a hashtable so we 
- * don't have to load and parse the TZ definition file every time one is 
- * selected
- * 
+/*
+ * We keep loaded timezones in a hashtable so we don't have to
+ * load and parse the TZ definition file every time one is selected.
  * Because we want timezone names to be found case-insensitively,
  * the hash key is the uppercased name of the zone.
  * MEOS: We use a fixed size hash table instead of a dynamic hash table

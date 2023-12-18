@@ -382,7 +382,7 @@ Datum
 Spanset_lower(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  PG_RETURN_DATUM(ss->elems[0].lower);
+  PG_RETURN_DATUM(spanset_lower(ss));
 }
 
 PGDLLEXPORT Datum Spanset_upper(PG_FUNCTION_ARGS);
@@ -396,7 +396,7 @@ Datum
 Spanset_upper(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  PG_RETURN_DATUM(ss->elems[ss->count - 1].upper);
+  PG_RETURN_DATUM(spanset_upper(ss));
 }
 
 /* span -> bool functions */

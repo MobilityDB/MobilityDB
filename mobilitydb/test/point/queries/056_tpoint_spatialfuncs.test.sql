@@ -195,6 +195,9 @@ SELECT asText(round(tgeogpoint '{Point(1.12345 1.12345 1.12345)@2000-01-01, Poin
 SELECT asText(round(tgeogpoint '[Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03]', 2));
 SELECT asText(round(tgeogpoint '{[Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2));
 
+SELECT asText(round(ARRAY[tgeompoint '[Point(1.55 1.55)@2000-01-01, Point(2.55 2.55)@2000-01-02, Point(1.55 1.55)@2000-01-03]', '[Point(3.55 3.55)@2000-01-04, Point(3.55 3.55)@2000-01-05]'],1));
+SELECT round(ARRAY[]::tgeompoint[]);
+
 --------------------------------------------------------
 
 SELECT asEWKT(tgeompoint 'Point(1 1)@2000-01-01'::tgeogpoint);

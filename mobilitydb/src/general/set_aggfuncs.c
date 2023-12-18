@@ -55,11 +55,12 @@
 
 PGDLLEXPORT Datum Value_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_union_transfn);
-/*
- * @brief Transition function for aggregating spans
- *
- * We simply gather the input spans into an array so that the final function
- * can sort and combine them.
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for union aggregation of sets
+ * @note We simply gather the input values into an array so that the final
+ * function can sort and combine them
+ * @sqlfn union()
  */
 Datum
 Value_union_transfn(PG_FUNCTION_ARGS)
@@ -86,11 +87,12 @@ Value_union_transfn(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Set_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_union_transfn);
-/*
- * @brief Transition function for aggregating spans
- *
- * All we do here is gather the input span sets' spans into an array so
- * that the finalfn can sort and combine them.
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for union aggregation of sets
+ * @note We simply gather the input values into an array so that the final
+ * function can sort and combine them
+ * @sqlfn union()
  */
 Datum
 Set_union_transfn(PG_FUNCTION_ARGS)
@@ -125,9 +127,10 @@ Set_union_transfn(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Set_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_union_finalfn);
-/*
- * @brief Final function for aggregating spans
- * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Final function for union aggregation of sets
+ * @sqlfn union()
  */
 Datum
 Set_union_finalfn(PG_FUNCTION_ARGS)

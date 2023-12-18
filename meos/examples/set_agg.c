@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that uses the MEOS library for creating some
- * temporal values and output them in MF-JSON format.
+ * @brief A simple program that uses the MEOS library for uses the set_union
+ * aggregate function
  *
  * The program can be build as follows
  * @code
@@ -47,10 +47,7 @@ int main()
   /* Initialize MEOS */
   meos_initialize(NULL, NULL);
 
-  // Set *agg = floatset_in("{1,2,3}");
-  // char *agg_out = intset_out(agg);
-  // printf("Initial value of the set: %s\n", agg_out);
-
+  /* Add some value to aggregate */
   Set *agg = NULL;
   for (int i = 10; i >= 0; i--)
   {

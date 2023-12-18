@@ -130,6 +130,7 @@ geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
     Temporal **temparr = temporalarr_extract(array, &count);
     strarr = tpointarr_as_text((const Temporal **) temparr, count,
       dbl_dig_for_wkt, extended);
+    /* We cannot use pfree_array */
     pfree(temparr);
   }
   else

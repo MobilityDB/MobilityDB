@@ -55,7 +55,7 @@
 PGDLLEXPORT Datum Stbox_tile_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tile_list);
 /**
- * @brief @ingroup mobilitydb_temporal_tile
+ * @brief @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate a multidimensional grid for temporal points
  * @sqlfn multidimGrid()
  */
@@ -174,7 +174,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tile);
 /**
- * @ingroup mobilitydb_temporal_tile
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Generate a tile in a multidimensional grid for temporal points
  * @sqlfn multidimTile()
  */
@@ -182,13 +182,11 @@ Datum
 Stbox_tile(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
-  ensure_not_empty(point);
-  ensure_point_type(point);
-  TimestampTz t = 0; /* make compiler quiet */
   double xsize, ysize, zsize;
-  int64 tunits = 0; /* make compiler quiet */
   GSERIALIZED *sorigin;
+  TimestampTz t = 0; /* make compiler quiet */
   TimestampTz torigin = 0; /* make compiler quiet */
+  Interval *duration = NULL; /* make compiler quiet */
   bool hast = false;
   assert(PG_NARGS() == 5 || PG_NARGS() == 8);
   if (PG_NARGS() == 5)
@@ -205,57 +203,14 @@ Stbox_tile(PG_FUNCTION_ARGS)
     xsize = PG_GETARG_FLOAT8(2);
     ysize = PG_GETARG_FLOAT8(3);
     zsize = PG_GETARG_FLOAT8(4);
-    Interval *duration = PG_GETARG_INTERVAL_P(5);
-    ensure_valid_duration(duration);
-    tunits = interval_units(duration);
+    duration = PG_GETARG_INTERVAL_P(5);
     sorigin = PG_GETARG_GSERIALIZED_P(6);
     torigin = PG_GETARG_TIMESTAMPTZ(7);
     hast = true;
   }
-  /* Ensure parameter validity */
-  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
-  ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
-  ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
-  ensure_not_empty(sorigin);
-  ensure_point_type(sorigin);
-  int32 srid = gserialized_get_srid(point);
-  int32 gs_srid = gserialized_get_srid(sorigin);
-  if (gs_srid != SRID_UNKNOWN)
-    ensure_same_srid(srid, gs_srid);
-  POINT3DZ pt, ptorig;
-  memset(&pt, 0, sizeof(POINT3DZ));
-  memset(&ptorig, 0, sizeof(POINT3DZ));
-  bool hasz = (bool) FLAGS_GET_Z(point->gflags);
-  if (hasz)
-  {
-    ensure_has_Z_gs(sorigin);
-    const POINT3DZ *p1 = GSERIALIZED_POINT3DZ_P(point);
-    pt.x = p1->x;
-    pt.y = p1->y;
-    pt.z = p1->z;
-    const POINT3DZ *p2 = GSERIALIZED_POINT3DZ_P(sorigin);
-    ptorig.x = p2->x;
-    ptorig.y = p2->y;
-    ptorig.z = p2->z;
-  }
-  else
-  {
-    const POINT2D *p1 = GSERIALIZED_POINT2D_P(point);
-    pt.x = p1->x;
-    pt.y = p1->y;
-    const POINT2D *p2 = GSERIALIZED_POINT2D_P(sorigin);
-    ptorig.x = p2->x;
-    ptorig.y = p2->y;
-  }
-  double xmin = float_bucket(pt.x, xsize, ptorig.x);
-  double ymin = float_bucket(pt.y, ysize, ptorig.y);
-  double zmin = float_bucket(pt.z, zsize, ptorig.z);
-  TimestampTz tmin = 0; /* make compiler quiet */
-  if (hast)
-    tmin = timestamptz_bucket1(t, tunits, torigin);
-  STBox *result = palloc0(sizeof(STBox));
-  stbox_tile_set(xmin, ymin, zmin, tmin, xsize, ysize, zsize, tunits, hasz,
-    hast, srid, result);
+
+  STBox *result = stbox_tile(point, t, xsize, ysize, zsize, duration, 
+    sorigin, torigin, hast);
   PG_RETURN_POINTER(result);
 }
 
@@ -306,8 +261,6 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
     bool bitmatrix = PG_GETARG_BOOL(i++);
-
-    /* ---> */
 
     /* Set bounding box */
     STBox bounds;
@@ -435,7 +388,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 PGDLLEXPORT Datum Tpoint_space_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_space_split);
 /**
- * @ingroup mobilitydb_temporal_tile
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Split a temporal point with respect to a spatial grid
  * @sqlfn spaceSplit()
  */
@@ -448,7 +401,7 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_space_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_space_time_split);
 /**
- * @ingroup mobilitydb_temporal_tile
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Split a temporal point with respect to a spatiotemporal grid
  * @sqlfn spaceTimeSplit()
  */

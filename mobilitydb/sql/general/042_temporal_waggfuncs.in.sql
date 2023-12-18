@@ -60,8 +60,8 @@ CREATE AGGREGATE wmin(tint, interval) (
   COMBINEFUNC = tint_tmin_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wmax(tint, interval) (
@@ -71,8 +71,8 @@ CREATE AGGREGATE wmax(tint, interval) (
   COMBINEFUNC = tint_tmax_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wsum(tint, interval) (
@@ -82,8 +82,8 @@ CREATE AGGREGATE wsum(tint, interval) (
   COMBINEFUNC = tint_tsum_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wcount(tint, interval) (
@@ -93,8 +93,8 @@ CREATE AGGREGATE wcount(tint, interval) (
   COMBINEFUNC = tint_tsum_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wavg(tint, interval) (
@@ -104,8 +104,8 @@ CREATE AGGREGATE wavg(tint, interval) (
   COMBINEFUNC = tavg_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tavg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -139,8 +139,8 @@ CREATE AGGREGATE wmin(tfloat, interval) (
   COMBINEFUNC = tfloat_tmin_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tfloat_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wmax(tfloat, interval) (
@@ -150,8 +150,8 @@ CREATE AGGREGATE wmax(tfloat, interval) (
   COMBINEFUNC = tfloat_tmax_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tfloat_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wsum(tfloat, interval) (
@@ -161,8 +161,8 @@ CREATE AGGREGATE wsum(tfloat, interval) (
   COMBINEFUNC = tfloat_tsum_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tfloat_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wcount(tfloat, interval) (
@@ -172,8 +172,8 @@ CREATE AGGREGATE wcount(tfloat, interval) (
   COMBINEFUNC = tint_tsum_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wavg(tfloat, interval) (
@@ -183,8 +183,8 @@ CREATE AGGREGATE wavg(tfloat, interval) (
   COMBINEFUNC = tavg_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tavg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 

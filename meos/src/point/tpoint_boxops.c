@@ -239,7 +239,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal point
  * @return On error return NULL
- * @sql-cfn #Tpoint_stboxes()
+ * @csqlfn #Tpoint_stboxes()
  */
 STBox *
 tpoint_stboxes(const Temporal *temp, int *count)
@@ -259,5 +259,38 @@ tpoint_stboxes(const Temporal *temp, int *count)
     result = tpointseqset_stboxes((TSequenceSet *)temp, count);
   return result;
 }
+
+/*****************************************************************************
+ * Generic box functions
+ *****************************************************************************/
+
+/**
+ * @brief Generic bounding box function for a temporal point and a
+ * spatiotemporal box
+ */
+bool
+boxop_tpoint_stbox(const Temporal *temp, const STBox *box,
+  bool (*func)(const STBox *, const STBox *), bool inverted)
+{
+  STBox box1;
+  temporal_set_bbox(temp, &box1);
+  bool result = inverted ? func(box, &box1) : func(&box1, box);
+  return result;
+}
+
+/**
+ * @brief Generic topological function for two temporal points
+ */
+bool
+boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
+  bool (*func)(const STBox *, const STBox *))
+{
+  STBox box1, box2;
+  temporal_set_bbox(temp1, &box1);
+  temporal_set_bbox(temp2, &box2);
+  bool result = func(&box1, &box2);
+  return result;
+}
+
 
 /*****************************************************************************/
