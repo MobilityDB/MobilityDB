@@ -40,7 +40,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */
@@ -424,8 +423,8 @@ Datum
 Span_as_wkb(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), s->spantype, false);
-  PG_RETURN_BYTEA_P(result);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(s), s->spantype,
+    false));
 }
 
 PGDLLEXPORT Datum Span_as_hexwkb(PG_FUNCTION_ARGS);
@@ -440,8 +439,7 @@ Datum
 Span_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(s), s->spantype);
-  PG_RETURN_TEXT_P(result);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(s), s->spantype));
 }
 
 /*****************************************************************************/
@@ -495,8 +493,7 @@ Datum
 Tbox_as_wkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  bytea *result = Datum_as_wkb(fcinfo, box, T_TBOX, false);
-  PG_RETURN_BYTEA_P(result);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_TBOX, false));
 }
 
 PGDLLEXPORT Datum Tbox_as_hexwkb(PG_FUNCTION_ARGS);
@@ -511,8 +508,7 @@ Datum
 Tbox_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  text *result = Datum_as_hexwkb(fcinfo, box, T_TBOX);
-  PG_RETURN_TEXT_P(result);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_TBOX));
 }
 
 /*****************************************************************************/
@@ -530,8 +526,7 @@ Stbox_as_wkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
   /* A spatiotemporal box always outputs the SRID */
-  bytea *result = Datum_as_wkb(fcinfo, box, T_STBOX, true);
-  PG_RETURN_BYTEA_P(result);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_STBOX, true));
 }
 
 PGDLLEXPORT Datum Stbox_as_hexwkb(PG_FUNCTION_ARGS);
@@ -546,8 +541,7 @@ Datum
 Stbox_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  text *result = Datum_as_hexwkb(fcinfo, box, T_STBOX);
-  PG_RETURN_TEXT_P(result);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_STBOX));
 }
 
 /*****************************************************************************/

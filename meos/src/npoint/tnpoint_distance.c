@@ -34,20 +34,12 @@
 
 #include "npoint/tnpoint_distance.h"
 
-/* C */
-#include <assert.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "point/tpoint_distance.h"
-#include "npoint/tnpoint.h"
-#include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_spatialfuncs.h"
-#include "npoint/tnpoint_tempspatialrels.h"
 
 /*****************************************************************************
  * Distance function

@@ -39,20 +39,15 @@
 
 /* C */
 #include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <access/htup_details.h>
 #include "utils/syscache.h"
 #include <utils/lsyscache.h>
 #include <catalog/pg_statistic.h>
-#include <utils/timestamp.h>
-#include <math.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
 /* MobilityDB */
-#include "pg_general/meos_catalog.h"
 #include "pg_general/span_analyze.h"
 
 /*****************************************************************************/
@@ -101,9 +96,9 @@ bool
 time_oper_sel(meosOper oper __attribute__((unused)), meosType ltype,
   meosType rtype)
 {
-  if ((timespan_basetype(ltype) || timeset_type(ltype) || timespan_type(ltype) ||
+  if ((timeset_type(ltype) || timespan_basetype(ltype) || timespan_type(ltype) ||
         timespanset_type(ltype)) &&
-      (timespan_basetype(rtype) || timeset_type(rtype) || timespan_type(rtype) ||
+      (timeset_type(rtype) || timespan_basetype(rtype) || timespan_type(rtype) ||
         timespanset_type(rtype)))
     return true;
   return false;
@@ -963,7 +958,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   if (table_name == NULL)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
       errmsg("Oid %u does not refer to a table", table_oid)));
-  const char *att_name = text_to_cstring(att_text);
+  const char *att_name = text2cstring(att_text);
   AttrNumber att_num;
   /* We know the name? Look up the num */
   if (att_text)
@@ -1507,7 +1502,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (table1_name == NULL)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
       errmsg("Oid %u does not refer to a table", table1_oid)));
-  const char *att1_name = text_to_cstring(att1_text);
+  const char *att1_name = text2cstring(att1_text);
   AttrNumber att1_num;
   /* Get the attribute number */
   att1_num = get_attnum(table1_oid, att1_name);
@@ -1520,7 +1515,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (table2_name == NULL)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
       errmsg("Oid %u does not refer to a table", table2_oid)));
-  const char *att2_name = text_to_cstring(att2_text);
+  const char *att2_name = text2cstring(att2_text);
   AttrNumber att2_num;
   /* Get the attribute number */
   att2_num = get_attnum(table2_oid, att2_name);

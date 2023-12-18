@@ -590,7 +590,7 @@ create_trip(PG_FUNCTION_ARGS)
     (uint32_t) count, t, disturbData, msg);
 
   PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TSEQUENCE_P(result);
 }
 
 /*****************************************************************************/

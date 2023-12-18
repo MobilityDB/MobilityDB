@@ -38,8 +38,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/spanset.h"
-#include "general/temporal.h"
-#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Restriction Functions

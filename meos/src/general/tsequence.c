@@ -53,17 +53,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/doublen.h"
-#include "general/pg_types.h"
-#include "general/set.h"
 #include "general/spanset.h"
-#include "general/temporaltypes.h"
+#include "general/tinstant.h"
 #include "general/temporal_boxops.h"
 #include "general/tnumber_distance.h"
-#include "general/type_parser.h"
 #include "point/tpoint_boxops.h"
-#include "point/tpoint_distance.h"
-#include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"

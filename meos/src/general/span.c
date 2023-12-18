@@ -40,6 +40,7 @@
 #include <float.h>
 #include <limits.h>
 /* PostgreSQL */
+#include <utils/timestamp.h>
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
 #else
@@ -48,7 +49,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/meos_catalog.h"
 #include "general/pg_types.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_parser.h"

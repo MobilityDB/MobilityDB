@@ -37,9 +37,7 @@
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
 #include "general/ttext_textfuncs.h"
-#include "general/type_util.h"
 
 /*****************************************************************************
  * Text concatenation
@@ -60,7 +58,7 @@ Textcat_text_ttext(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Textcat_ttext_text(PG_FUNCTION_ARGS);
@@ -78,7 +76,7 @@ Textcat_ttext_text(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(1);
   Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Textcat_ttext_ttext(PG_FUNCTION_ARGS);
@@ -99,7 +97,7 @@ Textcat_ttext_ttext(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -117,7 +115,7 @@ Ttext_upper(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = textfunc_ttext(temp, &datum_upper);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Ttext_lower(PG_FUNCTION_ARGS);
@@ -133,7 +131,7 @@ Ttext_lower(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = textfunc_ttext(temp, &datum_lower);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

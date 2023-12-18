@@ -45,12 +45,8 @@
 
 /* C */
 #include <assert.h>
-#include <float.h>
-/* PostgreSQL */
-#include <utils/float.h>
 /* MEOS */
 #include "general/pg_types.h"
-#include "general/type_util.h"
 
 /*****************************************************************************
  * Double2

@@ -35,15 +35,14 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <float.h>
 #include <postgres.h>
+#include <float.h>
 #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
 #include "general/temporal_tile.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tile.h"

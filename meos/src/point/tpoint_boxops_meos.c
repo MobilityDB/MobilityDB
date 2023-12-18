@@ -44,16 +44,8 @@
 
 #include "point/tpoint_boxops.h"
 
-/* C */
-#include <assert.h>
-/* PostgreSQL */
-#include <utils/timestamp.h>
-/* PostGIS */
-#include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
-#include "point/tpoint_boxops.h"
 
 /*****************************************************************************
  * overlaps

@@ -40,15 +40,13 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/timestamp.h>
+#include "utils/timestamp.h"
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/span.h"
 #include "general/type_parser.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
@@ -1497,49 +1495,49 @@ spanset_num_spans(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the start span of a span set
+ * @brief Return a pointer to the the start span of a span set
  * @return On error return NULL
  * @csqlfn #Spanset_start_span()
  */
-Span *
+const Span *
 spanset_start_span(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
-  return span_cp(SPANSET_SP_N(ss, 0));
+  return SPANSET_SP_N(ss, 0);
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the end span of a span set
+ * @brief Return a pointer to the end span of a span set
  * @return On error return NULL
  * @csqlfn #Spanset_end_span()
  */
-Span *
+const Span *
 spanset_end_span(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
-  return span_cp(SPANSET_SP_N(ss, ss->count - 1));
+  return SPANSET_SP_N(ss, ss->count - 1);
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th span of a span set
+ * @brief Return a pointer to the n-th span of a span set
  * @csqlfn #Spanset_span_n()
  */
-Span *
+const Span *
 spanset_span_n(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
 
-  Span *result = NULL;
+  const Span *result = NULL;
   if (i >= 1 && i <= ss->count)
-    result = span_cp(SPANSET_SP_N(ss, i - 1));
+    result = SPANSET_SP_N(ss, i - 1);
   return result;
 }
 

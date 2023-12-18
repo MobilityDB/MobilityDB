@@ -35,17 +35,14 @@
 #include "general/tnumber_distance.h"
 
 /* C */
-#include <float.h>
-#include <math.h>
 #include <assert.h>
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
-#include "general/lifting.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
@@ -71,7 +68,7 @@ Distance_number_tnumber(PG_FUNCTION_ARGS)
   Temporal *result = distance_tnumber_number(temp, value, oid_type(valuetypid),
     oid_type(restypid));
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Distance_tnumber_number(PG_FUNCTION_ARGS);
@@ -92,7 +89,7 @@ Distance_tnumber_number(PG_FUNCTION_ARGS)
   Temporal *result = distance_tnumber_number(temp, value, oid_type(valuetypid),
     oid_type(restypid));
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Distance_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -113,7 +110,7 @@ Distance_tnumber_tnumber(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************

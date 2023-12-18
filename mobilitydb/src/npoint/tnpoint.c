@@ -99,7 +99,7 @@ Tnpoint_in(PG_FUNCTION_ARGS)
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
   Temporal *result = temporal_parse(&input, oid_type(temptypid));
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -119,7 +119,7 @@ Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnpoint_tgeompoint(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS);
@@ -137,7 +137,7 @@ Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -179,7 +179,7 @@ Tnpoint_round(PG_FUNCTION_ARGS)
   Datum size = PG_GETARG_DATUM(1);
   Temporal *result = tnpoint_round(temp, size);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Npointset_round(PG_FUNCTION_ARGS);
@@ -195,7 +195,7 @@ Npointset_round(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(npointset_round(s, size));
+  PG_RETURN_SET_P(npointset_round(s, size));
 }
 
 /*****************************************************************************
@@ -218,7 +218,7 @@ Tnpoint_positions(PG_FUNCTION_ARGS)
   ArrayType *result = nsegmentarr_array(segments, count);
   pfree_array((void **) segments, count);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_ARRAYTYPE_P(result);
 }
 
 PGDLLEXPORT Datum Tnpoint_route(PG_FUNCTION_ARGS);
@@ -250,7 +250,7 @@ Tnpoint_routes(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *result = tnpoint_routes(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************/

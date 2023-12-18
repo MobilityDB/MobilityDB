@@ -39,7 +39,6 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/lsyscache.h>
-#include <catalog/pg_collation_d.h>
 #include <catalog/pg_type_d.h>
 #include <utils/array.h>
 #if POSTGRESQL_VERSION_NUMBER >= 140000
@@ -50,7 +49,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/spanset.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/doublen.h"
@@ -308,7 +306,7 @@ strarr_to_textarray(char **strarr, int count)
   assert(count > 0);
   text **textarr = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
-    textarr[i] = cstring_to_text(strarr[i]);
+    textarr[i] = cstring2text(strarr[i]);
   ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
     false, 'i');
   return result;

@@ -49,7 +49,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
-#include "general/temporaltypes.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/geography_funcs.h"
@@ -84,7 +83,7 @@ Distance_point_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Distance_tpoint_point(PG_FUNCTION_ARGS);
@@ -108,7 +107,7 @@ Distance_tpoint_point(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Distance_tpoint_tpoint(PG_FUNCTION_ARGS);
@@ -131,7 +130,7 @@ Distance_tpoint_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -159,7 +158,7 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum NAI_tpoint_geo(PG_FUNCTION_ARGS);
@@ -182,7 +181,7 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
@@ -204,7 +203,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 /*****************************************************************************
@@ -420,7 +419,7 @@ Shortestline_geo_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Shortestline_tpoint_geo(PG_FUNCTION_ARGS);
@@ -442,7 +441,7 @@ Shortestline_tpoint_geo(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Shortestline_tpoint_tpoint(PG_FUNCTION_ARGS);
@@ -466,7 +465,7 @@ Shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************/

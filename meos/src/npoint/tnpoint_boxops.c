@@ -46,12 +46,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/type_util.h"
 #include "point/pgis_call.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint.h"
-#include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************

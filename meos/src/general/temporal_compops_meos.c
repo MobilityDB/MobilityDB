@@ -37,7 +37,7 @@
 /* C */
 #include <assert.h>
 /* MEOS */
-#include "general/temporaltypes.h"
+#include <meos.h>
 #include "general/type_util.h"
 
 /*****************************************************************************

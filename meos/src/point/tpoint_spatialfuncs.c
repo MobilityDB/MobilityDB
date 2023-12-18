@@ -34,8 +34,6 @@
 
 #include "point/tpoint_spatialfuncs.h"
 
-/* C */
-#include <assert.h>
 /* PostgreSQL */
 #include <utils/float.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -51,9 +49,8 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/lifting.h"
-#include "general/meos_catalog.h"
-#include "general/temporaltypes.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/tsequence.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_distance.h"

@@ -44,11 +44,8 @@
  * `STBox`.
  */
 
-/* PostgreSQL */
-#include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
 #include "point/tpoint_boxops.h"
 
 /*****************************************************************************/

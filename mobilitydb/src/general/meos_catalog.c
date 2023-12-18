@@ -66,11 +66,6 @@
 #include <utils/rel.h>
 /* MEOS */
 #include <meos.h>
-#include "general/pg_types.h"
-#include "general/temporaltypes.h"
-#if NPOINT
-  #include "npoint/tnpoint_static.h"
-#endif
 #include "general/meos_catalog.h"
 
 /* To avoid include builtins.h */
@@ -164,7 +159,7 @@ populate_typeoid_cache()
   for (int i = 0; i < NO_MEOS_TYPES; i++)
   {
     /* Depending on the PG version some types may not exist (e.g.,
-     * multirangetype) and in this case _meosType_names[i] will be equal to 0 */
+     * multirangetype) and in this case _MEOSTYPE_NAMES[i] will be equal to 0 */
     const char *name = meostype_name(i);
     if (name && ! internal_type(name))
       _TYPE_OIDS[i] = TypenameGetTypid(name);
@@ -176,7 +171,7 @@ populate_typeoid_cache()
  * @brief Populate the operator Oid cache from the precomputed operator cache
  * stored in table `mobilitydb_opcache`
  *
- * This table is filled by function `fill_opcache` when the extension is created.
+ * This table is filled by function #fill_oid_cache when the extension is created.
  * @note Due to some memory context issues, the _OPER_OID array should be
  * filled again even if it is already filled during the extension creation.
  */
@@ -494,7 +489,7 @@ basetype_rangetype(meosType type)
   {
     /* We only arrive here on error */
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "type %s is not a base type of a range type", meostype_name(type));
+      "Type %s is not a base type of a range type", meostype_name(type));
     return T_UNKNOWN;
   }
 }

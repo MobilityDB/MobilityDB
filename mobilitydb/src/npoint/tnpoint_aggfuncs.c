@@ -66,7 +66,7 @@ Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   state = tnpoint_tcentroid_transfn(state, temp);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(state);
+  PG_RETURN_SKIPLIST_P(state);
 }
 
 

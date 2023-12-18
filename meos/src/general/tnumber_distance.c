@@ -42,7 +42,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
-#include "general/temporaltypes.h"
+#include "general/tsequence.h"
 #include "general/type_util.h"
 
 /*****************************************************************************

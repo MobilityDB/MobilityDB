@@ -47,11 +47,11 @@
 #include <meos_internal.h>
 #include "general/doxygen_libmeos.h"
 #include "general/lifting.h"
-#include "general/pg_types.h"
-#include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
-#include "general/tnumber_distance.h"
 #include "general/temporal_tile.h"
+#include "general/tinstant.h"
+#include "general/tsequence.h"
+#include "general/tsequenceset.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
@@ -108,33 +108,6 @@ ensure_one_true(bool hasshift, bool haswidth)
   }
   return true;
 }
-
-#if DEBUG_BUILD
-/**
- * @brief Ensure that the subtype of a temporal value is valid
- * @note Used for the dispatch functions
- */
-bool
-temptype_subtype(tempSubtype subtype)
-{
-  if (subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET)
-    return true;
-  return false;
-}
-
-/**
- * @brief Ensure that the subtype of a temporal value is valid
- * @note Used for the the analyze and selectivity functions
- */
-bool
-temptype_subtype_all(tempSubtype subtype)
-{
-  if (subtype == ANYTEMPSUBTYPE ||
-    subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET)
-    return true;
-  return false;
-}
-#endif /* DEBUG_BUILD */
 
 #if 0 /* not used */
 /**
@@ -1573,21 +1546,21 @@ temporal_restart(Temporal *temp, int count)
  * @brief Return a temporal value transformed into a temporal instant.
  * @csqlfn #Temporal_to_tinstant()
  */
-Temporal *
+TInstant *
 temporal_to_tinstant(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
 
-  Temporal *result;
+  TInstant *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_copy((TInstant *) temp);
+    result = tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_to_tinstant((TSequence *) temp);
+    result = tsequence_to_tinstant((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_to_tinstant((TSequenceSet *) temp);
+    result = tsequenceset_to_tinstant((TSequenceSet *) temp);
   return result;
 }
 
@@ -4001,9 +3974,9 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
   Temporal *temp1 = tnumber_at_tbox(temp, box);
   if (temp1 != NULL)
   {
-    SpanSet *ps = temporal_time(temp1);
-    result = temporal_restrict_tstzspanset(temp, ps, REST_MINUS);
-    pfree(temp1); pfree(ps);
+    SpanSet *ss = temporal_time(temp1);
+    result = temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
+    pfree(temp1); pfree(ss);
   }
   return result;
 }
@@ -4068,12 +4041,12 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
       ! ensure_spatial_validity(temp1, temp2))
     return NULL;
 
-  SpanSet *ps = temporal_time(temp2);
-  Temporal *rest = temporal_restrict_tstzspanset(temp1, ps, REST_MINUS);
+  SpanSet *ss = temporal_time(temp2);
+  Temporal *rest = temporal_restrict_tstzspanset(temp1, ss, REST_MINUS);
   if (! rest)
     return temporal_cp((Temporal *) temp2);
   Temporal *result = temporal_insert(rest, temp2, connect);
-  pfree(rest); pfree(ps);
+  pfree(rest); pfree(ss);
   return (Temporal *) result;
 }
 

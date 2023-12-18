@@ -112,7 +112,7 @@ double4_recv(StringInfo buf)
 }
 
 /**
- * @brief Send function for double3 values
+ * @brief Send function for double4 values
  */
 bytea *
 double4_send(double4 *d)

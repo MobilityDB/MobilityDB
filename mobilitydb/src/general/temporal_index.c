@@ -1,4 +1,4 @@
-/*****************************************************************************
+  /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
  * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
@@ -29,23 +29,43 @@
 
 /**
  * @file
- * @brief Quad-tree SP-GiST index for temporal boolean and temporal text types
- *
- * These functions are based on those in the file `rangetypes_spgist.c`.
+ * @brief R-tree GiST index and Quad-tree SP-GiST index for temporal types
+ * where only the time dimension is taken into account for indexing, currently,
+ * `tbool` and `ttext`
  */
 
-/* C */
-#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <access/spgist.h>
+#include <access/gist.h>
 /* MEOS */
 #include <meos.h>
-#include "general/meos_catalog.h"
-#include "general/span.h"
-#include "general/temporal.h"
 /* MobilityDB */
-#include "pg_general/time_gist.h"
+#include "pg_general/temporal.h" /* For temporal_bbox_slice */
+
+/*****************************************************************************
+ * GiST compress method for temporal values
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Temporal_gist_compress(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_gist_compress);
+/**
+ * @brief GiST compress method for temporal values
+ */
+Datum
+Temporal_gist_compress(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  if (entry->leafkey)
+  {
+    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+    Span *s = palloc(sizeof(Span));
+    temporal_bbox_slice(entry->key, s);
+    gistentryinit(*retval, PointerGetDatum(s), entry->rel, entry->page,
+      entry->offset, false);
+    PG_RETURN_POINTER(retval);
+  }
+  PG_RETURN_POINTER(entry);
+}
 
 /*****************************************************************************
  * SP-GiST compress functions

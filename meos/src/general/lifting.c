@@ -148,7 +148,7 @@
  *   lfinfo->tpfunc = NULL;
  *   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
  *   PG_FREE_IF_COPY(temp, 0);
- *   PG_RETURN_POINTER(result);
+ *   PG_RETURN_TEMPORAL_P(result);
  * }
  * @endcode
  */
@@ -163,7 +163,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
+#include "general/tsequence.h"
+#include "general/tsequenceset.h"
 #include "general/type_util.h"
 
 /*****************************************************************************

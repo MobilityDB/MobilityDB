@@ -34,12 +34,10 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/timestamp.h>
+#include <fmgr.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
-#include "general/spanset.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
@@ -767,7 +765,7 @@ Union_value_spanset(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   SpanSet *result = union_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Union_span_spanset(PG_FUNCTION_ARGS);
@@ -785,7 +783,7 @@ Union_span_spanset(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
   SpanSet *result = union_spanset_span(ss, s);
   PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Union_spanset_value(PG_FUNCTION_ARGS);
@@ -804,7 +802,7 @@ Union_spanset_value(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   SpanSet *result = union_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Union_spanset_span(PG_FUNCTION_ARGS);
@@ -822,7 +820,7 @@ Union_spanset_span(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(1);
   SpanSet *result = union_spanset_span(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Union_spanset_spanset(PG_FUNCTION_ARGS);
@@ -841,7 +839,7 @@ Union_spanset_spanset(PG_FUNCTION_ARGS)
   SpanSet *result = union_spanset_spanset(ss1, ss2);
   PG_FREE_IF_COPY(ss1, 0);
   PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 /*****************************************************************************
@@ -866,7 +864,7 @@ Intersection_value_spanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Intersection_span_spanset(PG_FUNCTION_ARGS);
@@ -886,7 +884,7 @@ Intersection_span_spanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Intersection_spanset_value(PG_FUNCTION_ARGS);
@@ -907,7 +905,7 @@ Intersection_spanset_value(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Intersection_spanset_span(PG_FUNCTION_ARGS);
@@ -927,7 +925,7 @@ Intersection_spanset_span(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Intersection_spanset_spanset(PG_FUNCTION_ARGS);
@@ -948,7 +946,7 @@ Intersection_spanset_spanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 /*****************************************************************************
@@ -974,7 +972,7 @@ Minus_value_spanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Minus_span_spanset(PG_FUNCTION_ARGS);
@@ -994,7 +992,7 @@ Minus_span_spanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Minus_spanset_value(PG_FUNCTION_ARGS);
@@ -1015,7 +1013,7 @@ Minus_spanset_value(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Minus_spanset_span(PG_FUNCTION_ARGS);
@@ -1035,7 +1033,7 @@ Minus_spanset_span(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Minus_spanset_spanset(PG_FUNCTION_ARGS);
@@ -1056,7 +1054,7 @@ Minus_spanset_spanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 /******************************************************************************

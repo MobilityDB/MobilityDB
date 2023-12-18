@@ -36,8 +36,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/palloc.h>
-#include <fmgr.h>
 #include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
@@ -45,7 +43,6 @@
   #include <utils/multirangetypes.h>
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 /* MEOS */
-#include "general/span.h"
 #include "general/temporal.h"
 
 /*****************************************************************************/

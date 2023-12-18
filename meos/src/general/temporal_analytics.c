@@ -47,12 +47,11 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/spanset.h"
-#include "general/temporaltypes.h"
 #include "general/temporal_tile.h"
+#include "general/tsequence.h"
 #include "general/type_util.h"
 #include "point/tpoint_distance.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Time precision functions for time values

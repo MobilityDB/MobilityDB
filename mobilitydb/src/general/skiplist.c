@@ -34,26 +34,15 @@
 
 #include "general/skiplist.h"
 
-/* C */
-#include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <executor/spi.h>
 #include <libpq/pqformat.h>
-#include <utils/memutils.h>
-#include <utils/timestamp.h>
-/* GSL */
-#include <gsl/gsl_rng.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/span.h"
-#include "general/temporal_aggfuncs.h"
+#include "general/type_util.h"
 /* MobilityDB */
-#include "pg_general/span.h"
 #include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
 
 /*****************************************************************************
  * Functions manipulating skip lists
@@ -165,7 +154,7 @@ Taggstate_deserialize(PG_FUNCTION_ARGS)
     .maxlen = VARSIZE(data)
   };
   SkipList *result = aggstate_read(&buf);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SKIPLIST_P(result);
 }
 
 /*****************************************************************************/

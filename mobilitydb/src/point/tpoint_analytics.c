@@ -75,7 +75,7 @@ Temporal_simplify_min_dist(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   Temporal *result = temporal_simplify_min_dist(temp, dist);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_simplify_min_tdelta(PG_FUNCTION_ARGS);
@@ -92,7 +92,7 @@ Temporal_simplify_min_tdelta(PG_FUNCTION_ARGS)
   Interval *mint = PG_GETARG_INTERVAL_P(1);
   Temporal *result = temporal_simplify_min_tdelta(temp, mint);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_simplify_max_dist(PG_FUNCTION_ARGS);
@@ -112,7 +112,7 @@ Temporal_simplify_max_dist(PG_FUNCTION_ARGS)
     syncdist = PG_GETARG_BOOL(2);
   Temporal *result = temporal_simplify_max_dist(temp, dist, syncdist);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_simplify_dp(PG_FUNCTION_ARGS);
@@ -132,7 +132,7 @@ Temporal_simplify_dp(PG_FUNCTION_ARGS)
     syncdist = PG_GETARG_BOOL(2);
   Temporal *result = temporal_simplify_dp(temp, dist, syncdist);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

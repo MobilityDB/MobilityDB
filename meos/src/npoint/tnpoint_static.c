@@ -39,7 +39,6 @@
 
 /* C */
 #include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <executor/spi.h>
@@ -48,13 +47,11 @@
 /* MEOS */
 #include <meos.h>
 #include "general/pg_types.h"
-#include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint.h"
 #include "npoint/tnpoint_parser.h"
 
 /** Buffer size for input and output of npoint and nsegment values */

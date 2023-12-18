@@ -40,6 +40,41 @@
 
 /*****************************************************************************/
 
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for temporal number types
+ */
+typedef struct
+{
+  double a;
+  double b;
+} double2;
+
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for 2D temporal point types
+ */
+typedef struct
+{
+  double a;
+  double b;
+  double c;
+} double3;
+
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for 3D temporal point types
+ */
+typedef struct
+{
+  double a;
+  double b;
+  double c;
+  double d;
+} double4;
+
+/*****************************************************************************/
+
 extern char *double2_out(const double2 *d, int maxdd);
 extern void double2_set(double a, double b, double2 *result);
 extern double2 *double2_add(const double2 *d1, const double2 *d2);

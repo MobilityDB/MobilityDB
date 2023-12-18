@@ -41,11 +41,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
-#include "general/doublen.h"
-#include "general/skiplist.h"
 #include "general/temporal_aggfuncs.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************

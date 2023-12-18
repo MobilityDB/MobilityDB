@@ -39,7 +39,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
 #include "general/lifting.h"
 
 /*****************************************************************************

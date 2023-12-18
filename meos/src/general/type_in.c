@@ -37,15 +37,10 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include "utils/timestamp.h"
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/set.h"
-#include "general/tbox.h"
-#include "general/type_parser.h"
-#include "general/type_util.h"
-#include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_static.h"

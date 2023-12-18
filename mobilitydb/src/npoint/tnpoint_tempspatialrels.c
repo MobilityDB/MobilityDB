@@ -74,7 +74,7 @@ Tinterrel_tnpoint_npoint(FunctionCallInfo fcinfo, bool tinter)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -101,7 +101,7 @@ Tinterrel_npoint_tnpoint(FunctionCallInfo fcinfo, bool tinter)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -129,7 +129,7 @@ Tinterrel_geo_tnpoint(FunctionCallInfo fcinfo, bool tinter)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -157,7 +157,7 @@ Tinterrel_tnpoint_geo(FunctionCallInfo fcinfo, bool tinter)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -193,7 +193,7 @@ Tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -349,7 +349,7 @@ Ttouches_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
    if (! result)
     PG_RETURN_NULL();
- PG_RETURN_POINTER(result);
+ PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -380,7 +380,7 @@ Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Ttouches_tnpoint_geo(PG_FUNCTION_ARGS);
@@ -412,7 +412,7 @@ Ttouches_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(geo, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -443,7 +443,7 @@ Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -478,7 +478,7 @@ Tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tdwithin_tnpoint_geo(PG_FUNCTION_ARGS);
@@ -509,7 +509,7 @@ Tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(geo, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -539,7 +539,7 @@ Tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -569,7 +569,7 @@ Tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -601,7 +601,7 @@ Tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

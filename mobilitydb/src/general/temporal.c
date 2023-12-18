@@ -37,6 +37,8 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
+#include <postgres.h>
+#include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <access/heaptoast.h>
   #include <access/detoast.h>
@@ -44,20 +46,16 @@
   #include <access/tuptoaster.h>
 #endif
 #include <libpq/pqformat.h>
-#include <funcapi.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/doxygen_mobilitydb_api.h"
 #include "pg_general/meos_catalog.h"
-#include "pg_general/tinstant.h"
-#include "pg_general/tsequence.h"
 #include "pg_general/type_util.h"
 #include "pg_point/tpoint_spatialfuncs.h"
 
@@ -252,7 +250,7 @@ Temporal_enforce_typmod(PG_FUNCTION_ARGS)
   int32 typmod = PG_GETARG_INT32(1);
   /* Check if temporal typmod is consistent with the supplied one */
   temp = temporal_valid_typmod(temp, typmod);
-  PG_RETURN_POINTER(temp);
+  PG_RETURN_TEMPORAL_P(temp);
 }
 
 /*****************************************************************************
@@ -299,7 +297,7 @@ Datum
 Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   char *version = mobilitydb_version();
-  text *result = cstring_to_text(version);
+  text *result = cstring2text(version);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -314,7 +312,7 @@ Datum
 Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   char *version = mobilitydb_full_version();
-  text *result = cstring_to_text(version);
+  text *result = cstring2text(version);
   pfree(version);
   PG_RETURN_TEXT_P(result);
 }
@@ -428,7 +426,7 @@ Temporal_in(PG_FUNCTION_ARGS)
     temp_typmod = PG_GETARG_INT32(2);
   if (temp_typmod >= 0)
     result = temporal_valid_typmod(result, temp_typmod);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_out(PG_FUNCTION_ARGS);
@@ -499,7 +497,7 @@ Temporal_recv(PG_FUNCTION_ARGS)
   Temporal *result = temporal_from_wkb((uint8_t *) buf->data, buf->len);
   /* Set cursor to the end of buffer (so the backend is happy) */
   buf->cursor = buf->len;
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_send(PG_FUNCTION_ARGS);
@@ -540,8 +538,7 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  Temporal *result = (Temporal *) tinstant_make(value, temptype, t);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(tinstant_make(value, temptype, t));
 }
 
 PGDLLEXPORT Datum Tsequence_constructor(PG_FUNCTION_ARGS);
@@ -555,6 +552,7 @@ Datum
 Tsequence_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  ensure_not_empty_array(array);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && !PG_ARGISNULL(1))
@@ -569,14 +567,13 @@ Tsequence_constructor(PG_FUNCTION_ARGS)
     lower_inc = PG_GETARG_BOOL(2);
   if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
     upper_inc = PG_GETARG_BOOL(3);
-  ensure_not_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
-  Temporal *result = (Temporal *) tsequence_make((const TInstant **) instants,
-    count, lower_inc, upper_inc, interp, NORMALIZE);
+  TSequence *result = tsequence_make((const TInstant **) instants, count,
+    lower_inc, upper_inc, interp, NORMALIZE);
   pfree(instants);
   PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TSEQUENCE_P(result);
 }
 
 PGDLLEXPORT Datum Tsequenceset_constructor(PG_FUNCTION_ARGS);
@@ -593,11 +590,11 @@ Tsequenceset_constructor(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   int count;
   TSequence **sequences = (TSequence **) temporalarr_extract(array, &count);
-  Temporal *result = (Temporal *) tsequenceset_make(
-    (const TSequence **) sequences, count, NORMALIZE);
+  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
+    count, NORMALIZE);
   pfree(sequences);
   PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TSEQUENCESET_P(result);
 }
 
 PGDLLEXPORT Datum Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS);
@@ -607,7 +604,7 @@ PG_FUNCTION_INFO_V1(Tsequenceset_constructor_gaps);
  * @brief Construct a temporal sequence set from an array of temporal instants
  * accounting for potential gaps
  * @note The SQL function is not strict
- * @sqlfn tint_seqset_gaps(), tfloat_seqset_gaps(), tgeompoint_seqset_gaps()
+ * @sqlfn tint_seqset_gaps(), tfloat_seqset_gaps(), ...
  */
 Datum
 Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
@@ -642,7 +639,7 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
     count, interp, maxt, maxdist);
   pfree(instants);
   PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TSEQUENCESET_P(result);
 }
 
 /*****************************************************************************/
@@ -659,11 +656,11 @@ Datum
 Tsequence_from_base_tstzset(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  Set *ts = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TSequence *result = tsequence_from_base_tstzset(value, temptype, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
+  TSequence *result = tsequence_from_base_tstzset(value, temptype, s);
+  PG_FREE_IF_COPY(s, 1);
+  PG_RETURN_TSEQUENCE_P(result);
 }
 
 PGDLLEXPORT Datum Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS);
@@ -687,8 +684,8 @@ Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS)
     interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
-  TSequence *result = tsequence_from_base_tstzspan(value, temptype, s, interp);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TSEQUENCE_P(tsequence_from_base_tstzspan(value, temptype, s, 
+    interp));
 }
 
 PGDLLEXPORT Datum Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS);
@@ -716,7 +713,7 @@ Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
   TSequenceSet *result = tsequenceset_from_base_tstzspanset(value, temptype,
     ss, interp);
   PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TSEQUENCESET_P(result);
 }
 
 /*****************************************************************************
@@ -737,7 +734,7 @@ Tint_to_tfloat(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tint_to_tfloat(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tfloat_to_tint(PG_FUNCTION_ARGS);
@@ -754,7 +751,7 @@ Tfloat_to_tint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tfloat_to_tint(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_to_tstzspan(PG_FUNCTION_ARGS);
@@ -771,7 +768,7 @@ Temporal_to_tstzspan(PG_FUNCTION_ARGS)
   Datum tempdatum = PG_GETARG_DATUM(0);
   Span *result = palloc(sizeof(Span));
   temporal_bbox_slice(tempdatum, result);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_to_span(PG_FUNCTION_ARGS);
@@ -805,7 +802,7 @@ Tnumber_to_tbox(PG_FUNCTION_ARGS)
   Datum tempdatum = PG_GETARG_DATUM(0);
   TBox *result = palloc(sizeof(TBox));
   temporal_bbox_slice(tempdatum, result);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TBOX_P(result);
 }
 
 /*****************************************************************************
@@ -824,7 +821,7 @@ Temporal_subtype(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   char *str = temporal_subtype(temp);
-  text *result = cstring_to_text(str);
+  text *result = cstring2text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
@@ -842,7 +839,7 @@ Temporal_interp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   char *str = temporal_interp(temp);
-  text *result = cstring_to_text(str);
+  text *result = cstring2text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
@@ -901,11 +898,11 @@ Temporal_valueset(PG_FUNCTION_ARGS)
     ArrayType *result = datumarr_to_array(values, count, basetype);
     pfree(values);
     PG_FREE_IF_COPY(temp, 0);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_ARRAYTYPE_P(result);
   }
   Set *result = set_make_free(values, count, basetype, ORDERED);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_valuespans(PG_FUNCTION_ARGS);
@@ -921,7 +918,7 @@ Tnumber_valuespans(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   SpanSet *result = tnumber_valuespans(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_start_value(PG_FUNCTION_ARGS);
@@ -1001,7 +998,7 @@ Temporal_min_instant(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TInstant *result = tinstant_copy(temporal_min_instant(temp));
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_max_instant(PG_FUNCTION_ARGS);
@@ -1017,7 +1014,7 @@ Temporal_max_instant(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TInstant *result = tinstant_copy(temporal_max_instant(temp));
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum Tinstant_timestamp(PG_FUNCTION_ARGS);
@@ -1052,7 +1049,7 @@ Temporal_time(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   SpanSet *result = temporal_time(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_duration(PG_FUNCTION_ARGS);
@@ -1069,7 +1066,7 @@ Temporal_duration(PG_FUNCTION_ARGS)
   bool boundspan = PG_GETARG_BOOL(1);
   Interval *result = temporal_duration(temp, boundspan);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_INTERVAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_num_sequences(PG_FUNCTION_ARGS);
@@ -1101,7 +1098,7 @@ Temporal_start_sequence(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TSequence *result = temporal_start_sequence(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TSEQUENCE_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_end_sequence(PG_FUNCTION_ARGS);
@@ -1117,7 +1114,7 @@ Temporal_end_sequence(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TSequence *result = temporal_end_sequence(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TSEQUENCE_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_sequence_n(PG_FUNCTION_ARGS);
@@ -1136,7 +1133,7 @@ Temporal_sequence_n(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TSEQUENCE_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_sequences(PG_FUNCTION_ARGS);
@@ -1208,7 +1205,7 @@ Temporal_start_instant(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TInstant *result = tinstant_copy(temporal_start_instant(temp));
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_end_instant(PG_FUNCTION_ARGS);
@@ -1224,7 +1221,7 @@ Temporal_end_instant(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TInstant *result = tinstant_copy(temporal_end_instant(temp));
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_instant_n(PG_FUNCTION_ARGS);
@@ -1244,7 +1241,7 @@ Temporal_instant_n(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_instants(PG_FUNCTION_ARGS);
@@ -1674,9 +1671,9 @@ Datum
 Temporal_to_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_to_tinstant(temp);
+  TInstant *result = temporal_to_tinstant(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_to_tsequence(PG_FUNCTION_ARGS);
@@ -1711,7 +1708,7 @@ Temporal_to_tsequence(PG_FUNCTION_ARGS)
   }
   Temporal *result = temporal_to_tsequence(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_to_tsequenceset(PG_FUNCTION_ARGS);
@@ -1745,7 +1742,7 @@ Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
   }
   Temporal *result = temporal_to_tsequenceset(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_set_interp(PG_FUNCTION_ARGS);
@@ -1765,7 +1762,7 @@ Temporal_set_interp(PG_FUNCTION_ARGS)
   pfree(interp_str);
   Temporal *result = temporal_set_interp(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -1784,7 +1781,7 @@ Tnumber_shift_value(PG_FUNCTION_ARGS)
   Datum shift = PG_GETARG_DATUM(1);
   Temporal *result = tnumber_shift_scale_value(temp, shift, 0, true, false);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_scale_value(PG_FUNCTION_ARGS);
@@ -1801,7 +1798,7 @@ Tnumber_scale_value(PG_FUNCTION_ARGS)
   Datum duration = PG_GETARG_DATUM(1);
   Temporal *result = tnumber_shift_scale_value(temp, 0, duration, false, true);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_shift_scale_value(PG_FUNCTION_ARGS);
@@ -1819,7 +1816,7 @@ Tnumber_shift_scale_value(PG_FUNCTION_ARGS)
   Datum duration = PG_GETARG_DATUM(2);
   Temporal *result = tnumber_shift_scale_value(temp, shift, duration, true, true);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -1838,7 +1835,7 @@ Temporal_shift_time(PG_FUNCTION_ARGS)
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Temporal *result = temporal_shift_scale_time(temp, shift, NULL);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_scale_time(PG_FUNCTION_ARGS);
@@ -1855,7 +1852,7 @@ Temporal_scale_time(PG_FUNCTION_ARGS)
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   Temporal *result = temporal_shift_scale_time(temp, NULL, duration);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_shift_scale_time(PG_FUNCTION_ARGS);
@@ -1873,7 +1870,7 @@ Temporal_shift_scale_time(PG_FUNCTION_ARGS)
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   Temporal *result = temporal_shift_scale_time(temp, shift, duration);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -1895,7 +1892,7 @@ Temporal_append_tinstant(PG_FUNCTION_ARGS)
   Temporal *result = temporal_append_tinstant(temp, inst, 0.0, NULL, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(inst, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_append_tsequence(PG_FUNCTION_ARGS);
@@ -1913,7 +1910,7 @@ Temporal_append_tsequence(PG_FUNCTION_ARGS)
   Temporal *result = temporal_append_tsequence(temp, seq, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(seq, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_merge(PG_FUNCTION_ARGS);
@@ -1935,7 +1932,7 @@ Temporal_merge(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_merge_array(PG_FUNCTION_ARGS);
@@ -1955,7 +1952,7 @@ Temporal_merge_array(PG_FUNCTION_ARGS)
   Temporal *result = temporal_merge_array(temparr, count);
   pfree(temparr);
   PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -1977,7 +1974,7 @@ Temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
   DATUM_FREE_IF_COPY(value, basetype, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_at_value(PG_FUNCTION_ARGS);
@@ -2027,7 +2024,7 @@ Temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
   PG_FREE_IF_COPY(set, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_at_values(PG_FUNCTION_ARGS);
@@ -2068,7 +2065,7 @@ Tnumber_restrict_span(FunctionCallInfo fcinfo, bool atfunc)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_at_span(PG_FUNCTION_ARGS);
@@ -2113,7 +2110,7 @@ Tnumber_restrict_spanset(FunctionCallInfo fcinfo, bool atfunc)
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_at_spanset(PG_FUNCTION_ARGS);
@@ -2160,7 +2157,7 @@ Temporal_at_min(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_minus_min(PG_FUNCTION_ARGS);
@@ -2178,7 +2175,7 @@ Temporal_minus_min(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_at_max(PG_FUNCTION_ARGS);
@@ -2195,7 +2192,7 @@ Temporal_at_max(PG_FUNCTION_ARGS)
   Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_AT);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_minus_max(PG_FUNCTION_ARGS);
@@ -2212,7 +2209,7 @@ Temporal_minus_max(PG_FUNCTION_ARGS)
   Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -2230,7 +2227,7 @@ Tnumber_restrict_tbox(FunctionCallInfo fcinfo, bool atfunc)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_at_tbox(PG_FUNCTION_ARGS);
@@ -2273,7 +2270,7 @@ Temporal_restrict_timestamptz(FunctionCallInfo fcinfo, bool atfunc)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_at_timestamptz(PG_FUNCTION_ARGS);
@@ -2337,13 +2334,13 @@ Datum
 Temporal_at_tstzset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Set *ts = PG_GETARG_SET_P(1);
-  Temporal *result = temporal_restrict_tstzset(temp, ts, REST_AT);
+  Set *s = PG_GETARG_SET_P(1);
+  Temporal *result = temporal_restrict_tstzset(temp, s, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(ts, 1);
+  PG_FREE_IF_COPY(s, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_minus_tstzset(PG_FUNCTION_ARGS);
@@ -2357,13 +2354,13 @@ Datum
 Temporal_minus_tstzset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Set *ts = PG_GETARG_SET_P(1);
-  Temporal *result = temporal_restrict_tstzset(temp, ts, REST_MINUS);
+  Set *s = PG_GETARG_SET_P(1);
+  Temporal *result = temporal_restrict_tstzset(temp, s, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(ts, 1);
+  PG_FREE_IF_COPY(s, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -2380,7 +2377,7 @@ Temporal_restrict_tstzspan(FunctionCallInfo fcinfo, bool atfunc)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_at_tstzspan(PG_FUNCTION_ARGS);
@@ -2428,7 +2425,7 @@ Temporal_at_tstzspanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_minus_tstzspanset(PG_FUNCTION_ARGS);
@@ -2448,7 +2445,7 @@ Temporal_minus_tstzspanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -2471,7 +2468,7 @@ Temporal_insert(PG_FUNCTION_ARGS)
   Temporal *result = temporal_insert(temp1, temp2, connect);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_update(PG_FUNCTION_ARGS);
@@ -2490,7 +2487,7 @@ Temporal_update(PG_FUNCTION_ARGS)
   Temporal *result = temporal_update(temp1, temp2, connect);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_delete_timestamptz(PG_FUNCTION_ARGS);
@@ -2510,7 +2507,7 @@ Temporal_delete_timestamptz(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_delete_tstzset(PG_FUNCTION_ARGS);
@@ -2524,14 +2521,14 @@ Datum
 Temporal_delete_tstzset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Set *ts = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   bool connect = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_delete_tstzset(temp, ts, connect);
+  Temporal *result = temporal_delete_tstzset(temp, s, connect);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(ts, 1);
+  PG_FREE_IF_COPY(s, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_delete_tstzspan(PG_FUNCTION_ARGS);
@@ -2551,7 +2548,7 @@ Temporal_delete_tstzspan(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_delete_tstzspanset(PG_FUNCTION_ARGS);
@@ -2572,7 +2569,7 @@ Temporal_delete_tstzspanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -2597,7 +2594,7 @@ Temporal_stops(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TSEQUENCESET_P(result);
 }
 
 /*****************************************************************************

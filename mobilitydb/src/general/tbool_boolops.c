@@ -35,11 +35,10 @@
 #include "general/tbool_boolops.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include "general/temporaltypes.h"
 
 /*****************************************************************************
  * Temporal and
@@ -60,7 +59,7 @@ Tand_bool_tbool(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_and, INVERT);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tand_tbool_bool(PG_FUNCTION_ARGS);
@@ -78,7 +77,7 @@ Tand_tbool_bool(PG_FUNCTION_ARGS)
   Datum b = PG_GETARG_DATUM(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_and, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tand_tbool_tbool(PG_FUNCTION_ARGS);
@@ -99,7 +98,7 @@ Tand_tbool_tbool(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -121,7 +120,7 @@ Tor_bool_tbool(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_or, INVERT);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tor_tbool_bool(PG_FUNCTION_ARGS);
@@ -139,7 +138,7 @@ Tor_tbool_bool(PG_FUNCTION_ARGS)
   Datum b = PG_GETARG_DATUM(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_or, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tor_tbool_tbool(PG_FUNCTION_ARGS);
@@ -160,7 +159,7 @@ Tor_tbool_tbool(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -181,7 +180,7 @@ Tnot_tbool(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnot_tbool(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -204,7 +203,7 @@ Tbool_when_true(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 /*****************************************************************************/

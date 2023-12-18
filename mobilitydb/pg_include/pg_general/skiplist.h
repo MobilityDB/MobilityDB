@@ -37,11 +37,9 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-#include <utils/palloc.h>
 /* MEOS */
-#include "general/temporal.h"
-/* MobilityDB */
-#include "pg_general/temporal.h"
+#include <meos.h>
+
 
 /*****************************************************************************/
 

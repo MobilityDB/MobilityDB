@@ -24,14 +24,12 @@ add_library(pg_general OBJECT
   temporal_analyze.c
   temporal_boxops.c
   temporal_compops.c
-  temporal_gist.c
+  temporal_index.c
   temporal_posops.c
   temporal_selfuncs.c
-  temporal_spgist.c
   temporal_supportfn.c
   temporal_tile.c
   temporal_waggfuncs.c
-  time_aggfuncs.c
   tnumber_distance.c
   tnumber_gist.c
   tnumber_mathfuncs.c

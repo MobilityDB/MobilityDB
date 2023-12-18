@@ -38,6 +38,7 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include "utils/timestamp.h"
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
@@ -46,12 +47,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/tinstant.h"
-#include "general/tsequence.h"
-#include "general/tsequenceset.h"
-#include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "general/temporal.h"
 #if NPOINT
   #include "npoint/tnpoint_static.h"
 #endif /* NPOINT */

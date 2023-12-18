@@ -47,8 +47,7 @@
 #endif
 /* MEOS */
 #include <meos.h>
-#include "general/pg_types.h"
-#include "general/temporaltypes.h"
+#include "general/doublen.h"
 #if NPOINT
   #include "npoint/tnpoint_static.h"
 #endif
@@ -338,6 +337,35 @@ tempsubtype_from_string(const char *str, int16 *subtype)
   return false;
 }
 
+#if DEBUG_BUILD
+/**
+ * @brief Ensure that the subtype of a temporal value is valid
+ * @note Used for the dispatch functions
+ */
+bool
+temptype_subtype(tempSubtype subtype)
+{
+  if (subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Ensure that the subtype of a temporal value is valid
+ * @note Used for the the analyze and selectivity functions
+ */
+bool
+temptype_subtype_all(tempSubtype subtype)
+{
+  if (subtype == ANYTEMPSUBTYPE ||
+    subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET)
+    return true;
+  return false;
+}
+#endif /* DEBUG_BUILD */
+
+
+
 /*****************************************************************************/
 
 /**
@@ -532,7 +560,6 @@ spantype_spansettype(meosType type)
 
 /*****************************************************************************/
 
-#ifdef DEBUG_BUILD
 /**
  * @brief Determine whether the type is an internal MobilityDB type
  */
@@ -545,6 +572,7 @@ meostype_internal(meosType type)
   return false;
 }
 
+#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a base type of one of the template types,
  * that is, Set, Span, SpanSet, and Temporal

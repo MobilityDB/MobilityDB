@@ -40,19 +40,10 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/set.h"
-#include "general/tsequence.h"
-#include "general/type_parser.h"
+#include "general/temporal.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_static.h"
-#include "npoint/tnpoint_parser.h"
-
-/*****************************************************************************
- * Input/output functions
- *****************************************************************************/
-
 
 /*****************************************************************************
  * Conversion functions

@@ -38,6 +38,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <utils/float.h>
+#include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
@@ -45,10 +46,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
 #include "general/lifting.h"
-#include "general/temporaltypes.h"
-#include "general/tnumber_mathfuncs.h"
+#include "general/tsequence.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialrels.h"
 
@@ -942,9 +941,9 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
     return result_at;
 
   /* If "minus" restriction, compute the complement wrt time */
-  SpanSet *ps = tsequenceset_time(result_at);
-  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ps, atfunc);
-  pfree(ps);
+  SpanSet *ss = tsequenceset_time(result_at);
+  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, atfunc);
+  pfree(ss);
   pfree(result_at);
   return result;
 }
@@ -1284,10 +1283,10 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   }
   /* Compute the periodset */
   assert(totalpers > 0);
-  SpanSet *ps = spanset_make_free(allperiods, totalpers, NORMALIZE);
+  SpanSet *ss = spanset_make_free(allperiods, totalpers, NORMALIZE);
   /* Recover the Z values from the original sequence */
-  result = tcontseq_restrict_tstzspanset(seq, ps, REST_AT);
-  pfree(ps);
+  result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
+  pfree(ss);
   return result;
 }
 
@@ -1372,9 +1371,9 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
   if (! result_at)
     return tsequence_to_tsequenceset(seq);
 
-  SpanSet *ps = tsequenceset_time(result_at);
-  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ps, atfunc);
-  pfree(ps);
+  SpanSet *ss = tsequenceset_time(result_at);
+  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, atfunc);
+  pfree(ss);
   pfree(result_at);
   return result;
 }
@@ -2015,9 +2014,9 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
     return result_at;
 
   /* If "minus" restriction, compute the complement wrt time */
-  SpanSet *ps = tsequenceset_time(result_at);
-  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ps, atfunc);
-  pfree(ps);
+  SpanSet *ss = tsequenceset_time(result_at);
+  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, atfunc);
+  pfree(ss);
   pfree(result_at);
   return result;
 }
@@ -2253,9 +2252,9 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
   if (! result_at)
     return tsequence_to_tsequenceset(seq);
 
-  SpanSet *ps = tsequenceset_time(result_at);
-  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ps, atfunc);
-  pfree(ps);
+  SpanSet *ss = tsequenceset_time(result_at);
+  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, atfunc);
+  pfree(ss);
   pfree(result_at);
   return result;
 }

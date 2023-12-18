@@ -147,7 +147,7 @@ Tpoint_trajectory(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *result = tpoint_trajectory(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -184,7 +184,7 @@ Tpoint_set_srid(PG_FUNCTION_ARGS)
   int32 srid = PG_GETARG_INT32(1);
   Temporal *result = tpoint_set_srid(temp, srid);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -358,7 +358,7 @@ Tpoint_transform(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   Temporal *result = tpoint_transform(temp, srid);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -378,7 +378,7 @@ Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tgeompoint_tgeogpoint(temp, GEOM_TO_GEOG);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
@@ -394,7 +394,7 @@ Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tgeompoint_tgeogpoint(temp, GEOG_TO_GEOM);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -434,7 +434,7 @@ Geoset_round(PG_FUNCTION_ARGS)
   int maxdd = PG_GETARG_INT32(1);
   Set *result = geoset_round(s, maxdd);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Tpoint_round(PG_FUNCTION_ARGS);
@@ -452,7 +452,7 @@ Tpoint_round(PG_FUNCTION_ARGS)
   Datum size = PG_GETARG_DATUM(1);
   Temporal *result = tpoint_round(temp, size);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tpointarr_round(PG_FUNCTION_ARGS);
@@ -502,7 +502,7 @@ Tpoint_to_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *result;
   tpoint_to_geo_meas(tpoint, NULL, segmentize, &result);
   PG_FREE_IF_COPY(tpoint, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Geo_to_tpoint(PG_FUNCTION_ARGS);
@@ -517,7 +517,7 @@ Geo_to_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *result = geo_to_tpoint(geo);
   PG_FREE_IF_COPY(geo, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tpoint_to_geo_meas(PG_FUNCTION_ARGS);
@@ -539,7 +539,7 @@ Tpoint_to_geo_meas(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(measure, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************
@@ -614,7 +614,7 @@ Tpoint_get_x(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tpoint_get_coord(temp, 0);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tpoint_get_y(PG_FUNCTION_ARGS);
@@ -630,7 +630,7 @@ Tpoint_get_y(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tpoint_get_coord(temp, 1);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tpoint_get_z(PG_FUNCTION_ARGS);
@@ -646,7 +646,7 @@ Tpoint_get_z(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tpoint_get_coord(temp, 2);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -685,7 +685,7 @@ Tpoint_cumulative_length(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   Temporal *result = tpoint_cumulative_length(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tpoint_convex_hull(PG_FUNCTION_ARGS);
@@ -703,7 +703,7 @@ Tpoint_convex_hull(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   GSERIALIZED *result = tpoint_convex_hull(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************
@@ -727,7 +727,7 @@ Tpoint_speed(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -773,7 +773,7 @@ Tpoint_twcentroid(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *result = tpoint_twcentroid(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************
@@ -797,7 +797,7 @@ Tpoint_azimuth(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -821,7 +821,7 @@ Tpoint_angular_difference(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -872,7 +872,7 @@ Bearing_point_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Bearing_tpoint_point(PG_FUNCTION_ARGS);
@@ -895,7 +895,7 @@ Bearing_tpoint_point(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Bearing_tpoint_tpoint(PG_FUNCTION_ARGS);
@@ -917,7 +917,7 @@ Bearing_tpoint_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -957,7 +957,7 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
     count);
   pfree_array((void **) fragments, count);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_ARRAYTYPE_P(result);
 }
 
 /*****************************************************************************
@@ -991,7 +991,7 @@ Tpoint_restrict_geom_time(FunctionCallInfo fcinfo, bool atfunc, bool resttime)
   PG_FREE_IF_COPY(geo, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tpoint_at_geom(PG_FUNCTION_ARGS);
@@ -1065,7 +1065,7 @@ Tpoint_at_stbox(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tpoint_minus_stbox(PG_FUNCTION_ARGS);
@@ -1084,7 +1084,7 @@ Tpoint_minus_stbox(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

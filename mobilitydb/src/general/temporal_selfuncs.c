@@ -46,31 +46,12 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <access/amapi.h>
-#include <access/heapam.h>
-#include <access/htup_details.h>
-#include <access/itup.h>
-#include <access/relscan.h>
-#include <access/visibilitymap.h>
-#include <access/skey.h>
-#include <catalog/pg_collation_d.h>
 #include <parser/parsetree.h>
-#include <executor/tuptable.h>
-#include <optimizer/paths.h>
-#include <storage/bufmgr.h>
-#include <utils/date.h>
-#include <utils/datum.h>
-#include <utils/memutils.h>
-#include <utils/rel.h>
-#include <utils/syscache.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/spanset.h"
 /* MobilityDB */
-#include "pg_general/meos_catalog.h"
 #include "pg_general/span_selfuncs.h"
-#include "pg_general/temporal_analyze.h"
 #include "pg_general/temporal_selfuncs.h"
 #include "pg_point/tpoint_selfuncs.h"
 

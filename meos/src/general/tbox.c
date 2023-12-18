@@ -37,13 +37,12 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+/* PostgreSQL */
+#include "utils/timestamp.h"
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/meos_catalog.h"
-#include "general/pg_types.h"
-#include "general/set.h"
-#include "general/spanset.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
@@ -755,7 +754,7 @@ tbox_hast(const TBox *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum X value of a temporal box
+ * @brief Return the minimum X value of a temporal box as a double
  * @param[in] box Box
  * @param[out] result Result
  * @csqlfn #Tbox_xmin()
@@ -764,14 +763,38 @@ bool
 tbox_xmin(const TBox *box, double *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = datum_double(box->span.lower, box->span.basetype);
   return true;
 }
+
+#if MEOS
+bool
+tboxint_xmin(const TBox *box, int *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! ensure_span_isof_basetype(&box->span, T_INT4) ||
+      ! MEOS_FLAGS_GET_X(box->flags))
+    return false;
+  *result = DatumGetInt32(box->span.lower);
+  return true;
+}
+
+bool
+tboxfloat_xmin(const TBox *box, double *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! ensure_span_isof_basetype(&box->span, T_FLOAT8) ||
+      ! MEOS_FLAGS_GET_X(box->flags))
+    return false;
+  *result = DatumGetFloat8(box->span.lower);
+  return true;
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_box_accessor
@@ -784,12 +807,52 @@ bool
 tbox_xmin_inc(const TBox *box, bool *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetBool(box->span.lower_inc);
+  return true;
+}
+
+/**
+ * @ingroup libmeos_box_accessor
+ * @brief Return the maximum X value of a temporal box as a double
+ * @param[in] box Box
+ * @param[out] result Result
+ * @csqlfn #Tbox_xmax()
+ */
+bool
+tbox_xmax(const TBox *box, double *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! MEOS_FLAGS_GET_X(box->flags))
+    return false;
+  if (box->span.basetype == T_INT4)
+    /* Integer spans are canonicalized, i.e., the upper bound is exclusive */
+    *result = (double) (DatumGetInt32(box->span.upper) - 1);
+  else
+    *result = DatumGetFloat8(box->span.upper);
+  return true;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_box_accessor
+ * @brief Return the maximum X value of a temporal box
+ * @param[in] box Box
+ * @param[out] result Result
+ * @csqlfn #Tbox_xmax()
+ */
+bool
+tboxint_xmax(const TBox *box, int *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! ensure_span_isof_basetype(&box->span, T_INT4) ||
+      ! MEOS_FLAGS_GET_X(box->flags))
+    return false;
+  *result = DatumGetInt32(box->span.upper) - 1;
   return true;
 }
 
@@ -801,21 +864,17 @@ tbox_xmin_inc(const TBox *box, bool *result)
  * @csqlfn #Tbox_xmax()
  */
 bool
-tbox_xmax(const TBox *box, double *result)
+tboxfloat_xmax(const TBox *box, double *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! ensure_span_isof_basetype(&box->span, T_FLOAT8) ||
+      ! MEOS_FLAGS_GET_X(box->flags))
     return false;
-
-  if (! MEOS_FLAGS_GET_X(box->flags))
-    return false;
-  if (box->span.basetype == T_INT4)
-    /* Integer spans are canonicalized, i.e., the upper bound is exclusive */
-    *result = (double) (DatumGetInt32(box->span.upper) - 1);
-  else
-    *result = DatumGetFloat8(box->span.upper);
+  *result = DatumGetFloat8(box->span.upper);
   return true;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_box_accessor
@@ -828,10 +887,8 @@ bool
 tbox_xmax_inc(const TBox *box, bool *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetBool(box->span.upper_inc);
   return true;
@@ -848,10 +905,8 @@ bool
 tbox_tmin(const TBox *box, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.lower);
   return true;
@@ -868,10 +923,8 @@ bool
 tbox_tmin_inc(const TBox *box, bool *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetBool(box->period.lower_inc);
   return true;
@@ -888,10 +941,8 @@ bool
 tbox_tmax(const TBox *box, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.upper);
   return true;
@@ -908,10 +959,8 @@ bool
 tbox_tmax_inc(const TBox *box, bool *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
+      ! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetBool(box->period.upper_inc);
   return true;

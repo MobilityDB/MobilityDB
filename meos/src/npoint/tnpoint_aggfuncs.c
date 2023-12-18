@@ -42,10 +42,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_aggfuncs.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_aggfuncs.h"
-#include "npoint/tnpoint.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************/

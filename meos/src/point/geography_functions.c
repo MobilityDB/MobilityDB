@@ -50,7 +50,6 @@
 #include <lwgeodetic_tree.h>
 /* MEOS */
 #include <meos.h>
-#include "point/tpoint_spatialfuncs.h"
 
 /**
  * @brief Compute the shortest line between two geographies

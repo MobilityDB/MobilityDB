@@ -42,7 +42,7 @@
 
 /*****************************************************************************/
 
-extern int span_common_entry_cmp(const void *i1, const void *i2);
+extern int common_entry_cmp(const void *i1, const void *i2);
 
 extern bool span_index_consistent_leaf(const Span *key, const Span *query,
   StrategyNumber strategy);

@@ -41,15 +41,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
-#include "general/doublen.h"
-#include "general/skiplist.h"
 #include "general/temporal_aggfuncs.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h"
-#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * Extent
@@ -71,7 +65,7 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
   STBox *result = tpoint_extent_transfn(box, temp);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************
@@ -95,7 +89,7 @@ Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   state = tpoint_tcentroid_transfn(state, temp);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(state);
+  PG_RETURN_TEMPORAL_P(state);
 }
 
 /*****************************************************************************/
@@ -127,9 +121,7 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
     extra = state2->extra;
   assert(extra != NULL);
   datum_func2 func = extra->hasz ? &datum_sum_double4 : &datum_sum_double3;
-  SkipList *result = temporal_tagg_combinefn(state1, state2, func, false);
-
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SKIPLIST_P(temporal_tagg_combinefn(state1, state2, func, false));
 }
 
 /*****************************************************************************/
@@ -148,7 +140,7 @@ Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
   Temporal *result = tpoint_tcentroid_finalfn(state);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

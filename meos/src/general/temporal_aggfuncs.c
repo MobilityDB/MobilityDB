@@ -44,12 +44,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/skiplist.h"
 #include "general/spanset.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_tile.h"
-#include "general/tbool_boolops.h"
-#include "general/doublen.h"
+#include "general/tinstant.h"
+#include "general/tsequence.h"
 
 #if ! MEOS
   extern FunctionCallInfo fetch_fcinfo();

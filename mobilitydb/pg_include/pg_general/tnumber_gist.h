@@ -40,6 +40,7 @@
 #include <access/gist.h>
 #include <access/stratnum.h>
 /* MEOS */
+#include <meos.h>
 #include "general/temporal.h"
 
 /*****************************************************************************/

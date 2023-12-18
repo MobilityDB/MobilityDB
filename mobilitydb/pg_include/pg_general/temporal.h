@@ -36,23 +36,18 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */
 #include <lib/stringinfo.h>
+#include <utils/array.h>
+#include <utils/lsyscache.h>
 /* MEOS */
-#include "general/meos_catalog.h"
-#include "general/span.h"
-#include "general/set.h"
-#include "general/tbox.h"
-#include "point/stbox.h"
+#include <meos.h>
+/* MobilityDB */
+#include "pg_point/postgis.h"
+
 
 /*****************************************************************************/
 
-#include <c.h>
-#include <utils/palloc.h>
-#include <utils/elog.h>
-#include <utils/array.h>
-#include <utils/lsyscache.h>
-#include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */
-#include "pg_point/postgis.h"
 
 // #if POSTGRESQL_VERSION_NUMBER < 130000
 // #if USE_FLOAT4_BYVAL
@@ -191,6 +186,10 @@ extern void temporal_write(const Temporal *temp, StringInfo buf);
 /* Parameter tests */
 
 extern bool ensure_not_empty_array(ArrayType *array);
+
+/* Indexing functions */
+
+extern void temporal_bbox_slice(Datum tempdatum, void *box);
 
 /*****************************************************************************/
 

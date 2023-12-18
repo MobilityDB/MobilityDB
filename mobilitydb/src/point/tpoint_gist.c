@@ -50,7 +50,7 @@
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
-#include "pg_general/time_gist.h"
+#include "pg_general/span_gist.h"
 #include "pg_general/tnumber_gist.h"
 
 /*****************************************************************************
@@ -396,7 +396,7 @@ Tpoint_gist_compress(PG_FUNCTION_ARGS)
     temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
-    PG_RETURN_POINTER(retval);
+    PG_RETURN_STBOX_P(retval);
   }
   PG_RETURN_POINTER(entry);
 }

@@ -56,15 +56,15 @@ extern char *tinstant_to_string(const TInstant *inst, int maxdd,
 /* Restriction Functions */
 
 extern bool tinstant_restrict_values_test(const TInstant *inst,
-  const Set *set, bool atfunc);
+  const Set *s, bool atfunc);
 extern bool tnumberinst_restrict_span_test(const TInstant *inst,
-  const Span *span, bool atfunc);
+  const Span *s, bool atfunc);
 extern bool tnumberinst_restrict_spanset_test(const TInstant *inst,
   const SpanSet *ss, bool atfunc);
 extern bool tinstant_restrict_tstzset_test(const TInstant *inst,
-  const Set *ts, bool atfunc);
+  const Set *s, bool atfunc);
 extern bool tinstant_restrict_tstzspanset_test(const TInstant *inst,
-  const SpanSet *ps, bool atfunc);
+  const SpanSet *ss, bool atfunc);
 
 /* Intersection function */
 

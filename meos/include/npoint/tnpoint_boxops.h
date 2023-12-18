@@ -36,7 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* PostgreSQL */
+/* MEOS */
 #include "general/temporal.h"
 #include "npoint/tnpoint.h"
 

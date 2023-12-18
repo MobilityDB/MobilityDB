@@ -34,14 +34,15 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/datetime.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
+#include "general/skiplist.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/temporal_waggfuncs.h"
 /* MobilityDB */
-#include "pg_general/skiplist.h"
+#include "pg_general/skiplist.h" 
 
 /*****************************************************************************
  * Generic functions
@@ -53,12 +54,11 @@
 #define INPUT_AGG_TRANS_STATE_ARG(fcinfo, state)  \
   do {  \
     MemoryContext ctx = set_aggregation_context(fcinfo); \
-    state = PG_ARGISNULL(0) ?  \
-      NULL : (SkipList *) PG_GETARG_POINTER(0);  \
+    state = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_SKIPLIST_P(0);  \
     if (PG_ARGISNULL(1) || PG_ARGISNULL(2))  \
     {  \
       if (state)  \
-        PG_RETURN_POINTER(state);  \
+        PG_RETURN_SKIPLIST_P(state);  \
       else  \
         PG_RETURN_NULL();  \
     }  \
@@ -89,7 +89,7 @@ Temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool min,
   SkipList *result = temporal_wagg_transfn(state, temp, interval, func, min,
     crossings);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SKIPLIST_P(result);
 }
 
 /**
@@ -109,7 +109,7 @@ Temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
     func, transform);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(interval, 2);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SKIPLIST_P(result);
 }
 
 /*****************************************************************************/

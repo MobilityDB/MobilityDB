@@ -53,7 +53,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
 #include "point/tpoint_boxops.h"
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"

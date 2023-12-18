@@ -53,9 +53,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
 
 extern void ll2cart(const POINT2D *g, POINT3D *p);
 extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox);

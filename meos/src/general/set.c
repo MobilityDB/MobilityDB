@@ -48,10 +48,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/ttext_textfuncs.h"
-#include "general/type_out.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
 #include "point/tpoint_out.h"

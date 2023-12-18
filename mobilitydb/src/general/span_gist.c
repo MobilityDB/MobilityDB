@@ -40,14 +40,12 @@
 #include <assert.h>
 #include <float.h>
 /* PostgreSQL */
+#include <postgres.h>
+#include <fmgr.h>
 #include <access/gist.h>
-#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
-#include "general/spanset.h"
-#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/spanset.h"
