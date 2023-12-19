@@ -43,6 +43,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/meos_catalog.h"
+#include "general/spanset.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"

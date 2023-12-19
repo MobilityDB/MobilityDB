@@ -1706,9 +1706,9 @@ Temporal_to_tsequence(PG_FUNCTION_ARGS)
     else
       interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
   }
-  Temporal *result = temporal_to_tsequence(temp, interp);
+  TSequence *result = temporal_to_tsequence(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEMPORAL_P(result);
+  PG_RETURN_TSEQUENCE_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_to_tsequenceset(PG_FUNCTION_ARGS);
@@ -1740,9 +1740,9 @@ Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
     if (interp == INTERP_NONE || interp == DISCRETE)
       interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
   }
-  Temporal *result = temporal_to_tsequenceset(temp, interp);
+  TSequenceSet *result = temporal_to_tsequenceset(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEMPORAL_P(result);
+  PG_RETURN_TSEQUENCESET_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_set_interp(PG_FUNCTION_ARGS);

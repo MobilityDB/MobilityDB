@@ -57,7 +57,9 @@
 #include "general/tinstant.h"
 #include "general/temporal_boxops.h"
 #include "general/tnumber_distance.h"
+#include "general/type_parser.h"
 #include "point/tpoint_boxops.h"
+#include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"

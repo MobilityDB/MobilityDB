@@ -1141,8 +1141,8 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
     else
     {
       interpType interp = Max(interp1, interp2);
-      *out1 = temporal_to_tsequenceset(temp1, interp);
-      *out2 = temporal_to_tsequenceset(temp2, interp);
+      *out1 = (Temporal *) temporal_to_tsequenceset(temp1, interp);
+      *out2 = (Temporal *) temporal_to_tsequenceset(temp2, interp);
     }
     return;
   }
@@ -1569,7 +1569,7 @@ temporal_to_tinstant(const Temporal *temp)
  * @brief Return a temporal value transformed into a temporal sequence
  * @csqlfn #Temporal_to_tsequence()
  */
-Temporal *
+TSequence *
 temporal_to_tsequence(const Temporal *temp, interpType interp)
 {
   /* Ensure validity of the arguments */
@@ -1577,10 +1577,10 @@ temporal_to_tsequence(const Temporal *temp, interpType interp)
       ! ensure_valid_interp(temp->temptype, interp))
     return NULL;
 
-  Temporal *result;
+  TSequence *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, interp);
+    result = tinstant_to_tsequence((TInstant *) temp, interp);
   else if (temp->subtype == TSEQUENCE)
   {
     interpType interp1 = MEOS_FLAGS_GET_INTERP(temp->flags);
@@ -1595,10 +1595,11 @@ temporal_to_tsequence(const Temporal *temp, interpType interp)
         str);
       return NULL;
     }
-    result = (Temporal *) tsequence_set_interp((TSequence *) temp, interp);
+    /* Given the above test, the result subtype is TSequence */
+    result = (TSequence *) tsequence_set_interp((TSequence *) temp, interp);
   }
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_to_tsequence((TSequenceSet *) temp);
+    result = tsequenceset_to_tsequence((TSequenceSet *) temp);
   return result;
 }
 
@@ -1607,23 +1608,30 @@ temporal_to_tsequence(const Temporal *temp, interpType interp)
  * @brief Return a temporal value transformed into a temporal sequence set.
  * @csqlfn #Temporal_to_tsequenceset()
  */
-Temporal *
+TSequenceSet *
 temporal_to_tsequenceset(const Temporal *temp, interpType interp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_valid_interp(temp->temptype, interp))
     return NULL;
-
-  Temporal *result;
+  /* Discrete interpolation is only valid for TSequence */
+  if (interp == DISCRETE)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal sequence set cannot have discrete interpolation");
+    return false;
+  }
+  TSequenceSet *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_to_tsequenceset((TInstant *) temp, interp);
+    result = tinstant_to_tsequenceset((TInstant *) temp, interp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_to_tsequenceset_interp((TSequence *) temp,
+    result = tsequence_to_tsequenceset_interp((TSequence *) temp,
       interp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_set_interp((TSequenceSet *) temp,
+    /* Since interp != DISCRETE the result subtype is TSequenceSet */
+    result = (TSequenceSet *) tsequenceset_set_interp((TSequenceSet *) temp,
       interp);
   return result;
 }

@@ -48,7 +48,9 @@
 #include "general/spanset.h"
 #include "general/tsequence.h"
 #include "general/temporal_boxops.h"
+#include "general/type_parser.h"
 #include "general/type_util.h"
+#include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 

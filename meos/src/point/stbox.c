@@ -45,6 +45,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/spanset.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
