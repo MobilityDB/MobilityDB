@@ -480,7 +480,7 @@ PGDLLEXPORT Datum Numspan_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numspan_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a number span shifted and scaled by the values
+ * @brief Return a number span shifted and scaled by two values
  * @note This function is also used for `datespan`
  * @sqlfn shiftScale()
  */
@@ -497,7 +497,7 @@ PGDLLEXPORT Datum Tstzspan_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a timestamptz span shifted and scaled by the intervals
+ * @brief Return a timestamptz span shifted and scaled by two intervals
  * @sqlfn shiftScale()
  */
 Datum
@@ -513,8 +513,8 @@ PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspan_round);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a float span where the precision of the values is set to
- * a number of decimal places
+ * @brief Return a float span with the precision of the values set to a number
+ * of decimal places
  * @sqlfn round()
  */
 Datum

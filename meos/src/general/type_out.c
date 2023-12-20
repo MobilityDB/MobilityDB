@@ -1013,7 +1013,7 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
 
 /**
  * @ingroup libmeos_internal_temporal_inout
- * @brief Output an array of temporal values in its Well-Known Text (WKT)
+ * @brief Output an array of temporal values in the Well-Known Text (WKT)
  * representation
  */
 char **
@@ -2352,7 +2352,7 @@ datum_as_hexwkb(Datum value, meosType type, uint8_t variant, size_t *size)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Output a set in its Well-Known Binary (WKB) representation
+ * @brief Output a set in the Well-Known Binary (WKB) representation
  * @csqlfn #Set_as_wkb()
  */
 uint8_t *
@@ -2389,7 +2389,7 @@ set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Output a span in its Well-Known Binary (WKB) representation
+ * @brief Output a span in the Well-Known Binary (WKB) representation
  * @csqlfn #Span_as_wkb()
  */
 uint8_t *
@@ -2425,7 +2425,7 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 /*****************************************************************************/
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Output a span set in its Well-Known Binary (WKB) representation
+ * @brief Output a span set in the Well-Known Binary (WKB) representation
  * @csqlfn #Spanset_as_wkb()
  */
 uint8_t *
@@ -2464,7 +2464,7 @@ spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Output a temporal box in its Well-Known Binary (WKB) representation
+ * @brief Output a temporal box in the Well-Known Binary (WKB) representation
  * @csqlfn #Tbox_send(), #Tbox_as_wkb()
  */
 uint8_t *
@@ -2501,7 +2501,7 @@ tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_box_inout
- * @brief Output a spatiotemporal box in its Well-Known Binary (WKB)
+ * @brief Output a spatiotemporal box in the Well-Known Binary (WKB)
  * representation
  * @csqlfn #Stbox_as_wkb()
  */
@@ -2542,7 +2542,7 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_temporal_inout
- * @brief Output a temporal value in its Well-Known Binary (WKB) representation
+ * @brief Output a temporal value in the Well-Known Binary (WKB) representation
  * @csqlfn #Temporal_as_wkb()
  */
 uint8_t *

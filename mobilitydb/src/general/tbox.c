@@ -135,7 +135,7 @@ PGDLLEXPORT Datum Tbox_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_as_text);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal box
+ * @brief Output a temporal box in the Well-Known Text (WKT) representation
  * @sqlfn asText()
  */
 Datum
@@ -255,7 +255,7 @@ PGDLLEXPORT Datum Timestamptz_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamptz_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Conver a timestamp to a temporal box
+ * @brief Conver a timestamptz to a temporal box
  * @sqlfn tbox()
  */
 Datum
@@ -348,7 +348,7 @@ PGDLLEXPORT Datum Tbox_to_intspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_intspan);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a temporal box as a float span
+ * @brief Convert a temporal box to an integer span
  * @sqlfn floatspan()
  */
 Datum
@@ -362,7 +362,7 @@ PGDLLEXPORT Datum Tbox_to_floatspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_floatspan);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a temporal box as a float span
+ * @brief Convert a temporal box to a float span
  * @sqlfn floatspan()
  */
 Datum
@@ -376,7 +376,7 @@ PGDLLEXPORT Datum Tbox_to_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_tstzspan);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a temporal box as a timestamptz span
+ * @brief Convert a temporal box to a timestamptz span
  * @sqlfn period()
  */
 Datum
@@ -422,7 +422,7 @@ PGDLLEXPORT Datum Tbox_xmin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_xmin);
 /**
  * @ingroup mobilitydb_box_accessor
- * @brief Return the minimum X value of a temporal box
+ * @brief Return the minimum X value of a temporal box, if any
  * @sqlfn Xmin()
  */
 Datum
@@ -439,7 +439,8 @@ PGDLLEXPORT Datum Tbox_xmin_inc(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_xmin_inc);
 /**
  * @ingroup mobilitydb_box_accessor
- * @brief Return true if the minimum X value of a temporal box is inclusive
+ * @brief Return true if the minimum X value of a temporal box is inclusive,
+ * if any
  * @sqlfn Xmin_inc()
  */
 Datum
@@ -456,7 +457,7 @@ PGDLLEXPORT Datum Tbox_xmax(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_xmax);
 /**
  * @ingroup mobilitydb_box_accessor
- * @brief Return the maximum X value of a temporal box as a double
+ * @brief Return the maximum X value of a temporal box as a double, if any
  * @sqlfn Xmax()
  */
 Datum
@@ -473,7 +474,8 @@ PGDLLEXPORT Datum Tbox_xmax_inc(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_xmax_inc);
 /**
  * @ingroup mobilitydb_box_accessor
- * @brief Return true if the maximum X value of a temporal box is inclusive
+ * @brief Return true if the maximum X value of a temporal box is inclusive,
+ * if any
  * @sqlfn Xmin_inc()
  */
 Datum
@@ -490,7 +492,7 @@ PGDLLEXPORT Datum Tbox_tmin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_tmin);
 /**
  * @ingroup mobilitydb_box_accessor
- * @brief Return the minimum timestamp of a temporal box
+ * @brief Return the minimum timestamp of a temporal box, if any
  * @sqlfn Tmin()
  */
 Datum
@@ -508,7 +510,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmin_inc);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the minimum timestamp value of a temporal box is
- * inclusive
+ * inclusive, if any
  * @sqlfn Tmin_inc()
  */
 Datum
@@ -525,7 +527,7 @@ PGDLLEXPORT Datum Tbox_tmax(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_tmax);
 /**
  * @ingroup mobilitydb_box_accessor
- * @brief Return the maximum timestamp of a temporal box
+ * @brief Return the maximum timestamp of a temporal box, if any
  * @sqlfn Tmax()
  */
 Datum
@@ -543,7 +545,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmax_inc);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the maximum timestamp value of a temporal box is
- * inclusive
+ * inclusive, if any
  * @sqlfn Tmin_inc()
  */
 Datum
@@ -624,7 +626,7 @@ PGDLLEXPORT Datum Tbox_shift_scale_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_shift_scale_value);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Return a temporal box with the value span shifted and scalee by the
+ * @brief Return a temporal box with the value span shifted and scaled by two
  * values
  * @sqlfn scaleValue()
  */
@@ -641,7 +643,7 @@ PGDLLEXPORT Datum Tbox_shift_scale_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_shift_scale_time);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Return a temporal box with the time span shifted and scaled by the
+ * @brief Return a temporal box with the time span shifted and scaled by two
  * intervals
  * @sqlfn shiftScaleTime()
  */
@@ -688,7 +690,7 @@ PGDLLEXPORT Datum Tbox_expand_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_expand_time);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Return a temporal box expanded in the time dimension by an interval
+ * @brief Return a temporal box with the the time span expanded by an interval
  * @sqlfn expandTime()
  */
 Datum

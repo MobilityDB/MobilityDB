@@ -254,7 +254,7 @@ PGDLLEXPORT Datum Floatspanset_to_intspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspanset_to_intspanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a float span set as an integer spanset
+ * @brief Convert a float span set to an integer spanset
  * @sqlfn intspanset()
  * @sqlop @p ::
  */
@@ -826,7 +826,7 @@ PGDLLEXPORT Datum Numspanset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numspanset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a number span set shifted and scaled by the values
+ * @brief Return a number span set shifted and scaled by two values
  * @note This function is also used for `datespanset`
  * @sqlfn shiftTscale()
  */
@@ -845,7 +845,7 @@ PGDLLEXPORT Datum Tstzspanset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a timestamptz span set shifted and scaled by the intervals
+ * @brief Return a timestamptz span set shifted and scaled by two intervals
  * @sqlfn shiftTscale()
  */
 Datum
@@ -863,8 +863,8 @@ PGDLLEXPORT Datum Floatspanset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspanset_round);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a float span set where the precision of the values is set to
- * a number of decimal places
+ * @brief Return a float span set with the precision of the values set to a
+ * number of decimal places
  * @sqlfn round()
  */
 Datum

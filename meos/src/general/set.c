@@ -1815,7 +1815,7 @@ geoset_srid(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the SRID of a geo set
+ * @brief Return a geo set with the coordinates set to an SRID
  * @return On error return NULL
  * @csqlfn #Geoset_set_srid()
  */
@@ -1950,7 +1950,7 @@ textset_upper(const Set *s)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Return a number set shifted and/or scaled by the values
+ * @brief Return a number set shifted and/or scaled by two values
  */
 Set *
 numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
@@ -2001,7 +2001,7 @@ numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
 #if MEOS
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return an integer set shifted and/or scaled by the values
+ * @brief Return an integer set shifted and/or scaled by two values
  * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
  */
 Set *
@@ -2018,7 +2018,7 @@ intset_shift_scale(const Set *s, int shift, int width, bool hasshift,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a big integer set shifted and/or scaled by the values
+ * @brief Return a big integer set shifted and/or scaled by two values
  * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
  */
 Set *
@@ -2035,7 +2035,7 @@ bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a float set shifted and/or scaled by the values
+ * @brief Return a float set shifted and/or scaled by two values
  * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
  */
 Set *
@@ -2051,7 +2051,7 @@ floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
 }
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a date set shifted and/or scaled by the values
+ * @brief Return a date set shifted and/or scaled by two values
  * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
  */
 Set *
@@ -2069,7 +2069,7 @@ dateset_shift_scale(const Set *s, int shift, int width, bool hasshift,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a timestamptz set shifted and/or scaled by the intervals
+ * @brief Return a timestamptz set shifted and/or scaled by two intervals
  * @csqlfn #Tstzset_shift(), #Tstzset_scale(), #Tstzset_shift_scale()
  */
 Set *

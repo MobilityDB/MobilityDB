@@ -406,7 +406,7 @@ PG_FUNCTION_INFO_V1(Geo_round);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a geometry/geography with the precision of the coordinates set
- * to a number of decimals places
+ * to a number of decimal places
  * @sqlfn round()
  */
 Datum
@@ -422,7 +422,7 @@ Geo_round(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Geoset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_round);
 /**
- * @ingroup mobilitydb_temporal_transf
+ * @ingroup mobilitydb_setspan_transf
  * @brief Return a geo set with the precision of the coordinates set to a
  * number of decimals places
  * @sqlfn round()

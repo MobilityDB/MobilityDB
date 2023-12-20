@@ -385,7 +385,7 @@ PGDLLEXPORT Datum Geoset_set_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_set_srid);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Set the SRID of a geo set
+ * @brief Return a geo set with the coordinates set to an SRID
  * @sqlfn setSRID()
  */
 Datum
@@ -474,7 +474,7 @@ PGDLLEXPORT Datum Numset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a number set shifted and scaled by the values
+ * @brief Return a number set shifted and scaled by two values
  * @sqlfn shiftScale()
  */
 Datum
@@ -492,7 +492,7 @@ PGDLLEXPORT Datum Tstzset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a timestamptz set shifted and scaled by the intervals
+ * @brief Return a timestamptz set shifted and scaled by two intervals
  * @sqlfn shiftScale()
  */
 Datum
@@ -510,8 +510,8 @@ PGDLLEXPORT Datum Floatset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatset_round);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a float set where the precision of the values is set to a
- * number of decimal places
+ * @brief Return a float set with the precision of the values set to a number
+ * of decimal places
  * @sqlfn round()
  */
 Datum
@@ -528,7 +528,7 @@ PGDLLEXPORT Datum Textset_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_lower);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set where the values are in lowercase
+ * @brief Return a text set with the values in lowercase
  * @sqlfn lower()
  */
 Datum
@@ -544,7 +544,7 @@ PGDLLEXPORT Datum Textset_upper(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_upper);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set where the values are in uppercase
+ * @brief Return a text set with the values in uppercase
  * @sqlfn upper()
  */
 Datum

@@ -363,7 +363,7 @@ PGDLLEXPORT Datum Left_value_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a value is to the left of a span
+ * @brief Return true if a value is to the left of a span set
  * @sqlfn span_left()
  * @sqlop @p <<
  */
@@ -400,7 +400,7 @@ PGDLLEXPORT Datum Left_spanset_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a value is to the left of a span
+ * @brief Return true if a span set is to the left of a value
  * @sqlfn span_left()
  * @sqlop @p <<
  */
@@ -460,7 +460,7 @@ PGDLLEXPORT Datum Right_value_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a value is to the right of a span
+ * @brief Return true if a value is to the right of a span set
  * @sqlfn span_right()
  * @sqlop @p >>
  */
@@ -497,7 +497,7 @@ PGDLLEXPORT Datum Right_spanset_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a value is to the right of a span
+ * @brief Return true if a span set is to the right of a value
  * @sqlfn span_right()
  * @sqlop @p >>
  */
@@ -557,7 +557,7 @@ PGDLLEXPORT Datum Overleft_value_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a value does not extend to the right of a span
+ * @brief Return true if a value does not extend to the right of a span set
  * @sqlfn span_overleft()
  * @sqlop @p &<
  */
@@ -576,7 +576,7 @@ PGDLLEXPORT Datum Overleft_spanset_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a value does not extend to the right of a span
+ * @brief Return true if a span set does not extend to the right of a value
  * @sqlfn span_overleft()
  * @sqlop @p &<
  */
@@ -613,7 +613,7 @@ PGDLLEXPORT Datum Overleft_spanset_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a span set does not extend to the right of a span set
+ * @brief Return true if a span set does not extend to the right of a span
  * @sqlfn span_overleft()
  * @sqlop @p &<
  */
@@ -655,7 +655,7 @@ PGDLLEXPORT Datum Overright_value_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a value does not extend to the left of a span
+ * @brief Return true if a value does not extend to the left of a span set
  * @sqlfn span_overright()
  * @sqlop @p &>
  */
@@ -674,7 +674,7 @@ PGDLLEXPORT Datum Overright_spanset_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a value does not extend to the left of a span
+ * @brief Return true if a span set does not extend to the left of a value
  * @sqlfn span_overright()
  * @sqlop @p &>
  */

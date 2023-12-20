@@ -1620,7 +1620,7 @@ temporal_to_tsequenceset(const Temporal *temp, interpType interp)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal sequence set cannot have discrete interpolation");
-    return false;
+    return NULL;
   }
   TSequenceSet *result;
   assert(temptype_subtype(temp->subtype));
@@ -1665,7 +1665,7 @@ temporal_set_interp(const Temporal *temp, interpType interp)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal number with the value dimension shifted and/or
- * scaled by the values.
+ * scaled by two values
  * @param[in] temp Temporal value
  * @param[in] shift Value for shift
  * @param[in] width Value for scale
@@ -1803,7 +1803,7 @@ tfloat_shift_scale_value(const Temporal *temp, double shift, double width)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal value shifted and/or scaled by the intervals.
+ * @brief Return a temporal value shifted and/or scaled by two intervals
  * @param[in] temp Temporal value
  * @param[in] shift Interval for shift
  * @param[in] duration Interval for scale

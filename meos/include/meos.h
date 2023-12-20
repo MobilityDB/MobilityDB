@@ -38,7 +38,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 /* PostgreSQL */
+#if MEOS
 #include "postgres_int_defs.h"
+#else
+#include <postgres.h>
+#include <utils/date.h>
+#include <utils/timestamp.h>
+#endif
 /* PostGIS */
 #include <liblwgeom.h>
 

@@ -208,28 +208,3 @@ meos_error(int errlevel, int errcode, char *format, ...)
 }
 
 /*****************************************************************************/
-
-#if MEOS
-/*
- * Initialize MEOS library
- */
-void
-meos_initialize(const char *tz_str, error_handler_fn err_handler)
-{
-  meos_initialize_timezone(tz_str);
-  meos_initialize_error_handler(err_handler);
-  return;
-}
-
-/*
- * Free the timezone cache
- */
-void
-meos_finalize(void)
-{
-  meos_finalize_timezone();
-  return;
-}
-#endif /* MEOS */
-
-/*****************************************************************************/

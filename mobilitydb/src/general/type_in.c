@@ -198,7 +198,8 @@ PGDLLEXPORT Datum Stbox_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_from_wkb);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Input a temporal box from its Well-Known Binary (WKB) representation
+ * @brief Input a spatiotemporal box from its Well-Known Binary (WKB)
+ * representation
  * @sqlfn stboxFromBinary()
  */
 Datum

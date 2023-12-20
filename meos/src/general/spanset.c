@@ -672,7 +672,7 @@ spanset_compact(SpanSet *ss)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Return a number set shifted and/or scaled by the intervals.
+ * @brief Return a number set shifted and/or scaled by two intervals
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -705,7 +705,7 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
 #if MEOS
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return an integer span shifted and/or scaled by the values
+ * @brief Return an integer span shifted and/or scaled by two values
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -722,7 +722,7 @@ intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a big integer span shifted and/or scaled by the values
+ * @brief Return a big integer span shifted and/or scaled by two values
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -739,7 +739,7 @@ bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a float span shifted and/or scaled by the values
+ * @brief Return a float span shifted and/or scaled by two values
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -756,7 +756,7 @@ floatspanset_shift_scale(const SpanSet *ss, double shift, double width,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a date span shifted and/or scaled by the values
+ * @brief Return a date span shifted and/or scaled by two values
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -774,7 +774,7 @@ datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a timestamptz span set shifted and/or scaled by the intervals.
+ * @brief Return a timestamptz span set shifted and/or scaled by two intervals
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *

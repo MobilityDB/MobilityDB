@@ -1565,7 +1565,7 @@ tsequenceset_set_interp(const TSequenceSet *ss, interpType interp)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence set where the value dimension is shifted
- * and/or scaled by the values.
+ * and/or scaled by two values
  * @pre The duration is greater than 0 if it is not NULL
  * @csqlfn #Tnumber_shift_value(), #Tnumber_scale_value(),
  *    #Tnumber_shift_scale_value()
@@ -1601,7 +1601,7 @@ tnumberseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal sequence set shifted and/or scaled by the intervals.
+ * @brief Return a temporal sequence set shifted and/or scaled by two intervals
  * @pre The duration is greater than 0 if it is not NULL
  * @csqlfn #Temporal_shift_time(), #Temporal_scale_time(),
  *    #Temporal_shift_scale_time()

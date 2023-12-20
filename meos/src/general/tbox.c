@@ -253,7 +253,7 @@ tbox_copy(const TBox *box)
 
 /**
  * @ingroup libmeos_internal_box_constructor
- * @brief Return a temporal box from an integer and a timestamptz
+ * @brief Construct a temporal box from an integer and a timestamptz
  * @csqlfn #Number_timestamptz_to_tbox()
  */
 TBox *
@@ -270,7 +270,7 @@ number_timestamptz_to_tbox(Datum d, meosType basetype, TimestampTz t)
 #if MEOS
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a temporal box from an integer and a timestamptz
+ * @brief Construct a temporal box from an integer and a timestamptz
  * @csqlfn #Number_timestamptz_to_tbox()
  */
 TBox *
@@ -281,7 +281,7 @@ int_timestamptz_to_tbox(int i, TimestampTz t)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a temporal box from a float and a timestamptz
+ * @brief Construct a temporal box from a float and a timestamptz
  * @csqlfn #Number_timestamptz_to_tbox()
  */
 TBox *
@@ -293,7 +293,7 @@ float_timestamptz_to_tbox(double d, TimestampTz t)
 
 /**
  * @ingroup libmeos_internal_box_constructor
- * @brief Return a temporal box from an integer and a timestamptz span
+ * @brief Construct a temporal box from an integer and a timestamptz span
  * @csqlfn #Number_tstzspan_to_tbox()
  */
 TBox *
@@ -309,7 +309,7 @@ number_tstzspan_to_tbox(Datum d, meosType basetype, const Span *s)
 #if MEOS
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a temporal box from an integer and a timestamptz span
+ * @brief Construct a temporal box from an integer and a timestamptz span
  * @csqlfn #Number_tstzspan_to_tbox()
  */
 TBox *
@@ -323,7 +323,7 @@ int_tstzspan_to_tbox(int i, const Span *s)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a temporal box from a float and a timestamptz span
+ * @brief Construct a temporal box from a float and a timestamptz span
  * @csqlfn #Number_tstzspan_to_tbox()
  */
 TBox *
@@ -338,7 +338,7 @@ float_tstzspan_to_tbox(double d, const Span *s)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a temporal box from a number span and a timestamptz
+ * @brief Construct a temporal box from a number span and a timestamptz
  * @csqlfn #Numspan_timestamptz_to_tbox()
  */
 TBox *
@@ -356,7 +356,7 @@ numspan_timestamptz_to_tbox(const Span *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a temporal box from a number span and a timestamptz span
+ * @brief Construct a temporal box from a number span and a timestamptz span
  * @csqlfn #Numspan_timestamptz_to_tbox()
  */
 TBox *
@@ -777,8 +777,8 @@ tboxint_xmin(const TBox *box, int *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! ensure_span_isof_basetype(&box->span, T_INT4) ||
-      ! MEOS_FLAGS_GET_X(box->flags))
+      ! MEOS_FLAGS_GET_X(box->flags) ||
+      ! ensure_span_isof_basetype(&box->span, T_INT4))
     return false;
   *result = DatumGetInt32(box->span.lower);
   return true;
@@ -788,9 +788,9 @@ bool
 tboxfloat_xmin(const TBox *box, double *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! ensure_span_isof_basetype(&box->span, T_FLOAT8) ||
-      ! MEOS_FLAGS_GET_X(box->flags))
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result)||
+      ! MEOS_FLAGS_GET_X(box->flags) ||
+      ! ensure_span_isof_basetype(&box->span, T_FLOAT8) )
     return false;
   *result = DatumGetFloat8(box->span.lower);
   return true;
@@ -850,8 +850,8 @@ tboxint_xmax(const TBox *box, int *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! ensure_span_isof_basetype(&box->span, T_INT4) ||
-      ! MEOS_FLAGS_GET_X(box->flags))
+      ! MEOS_FLAGS_GET_X(box->flags) ||
+      ! ensure_span_isof_basetype(&box->span, T_INT4))
     return false;
   *result = DatumGetInt32(box->span.upper) - 1;
   return true;
@@ -869,8 +869,8 @@ tboxfloat_xmax(const TBox *box, double *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! ensure_span_isof_basetype(&box->span, T_FLOAT8) ||
-      ! MEOS_FLAGS_GET_X(box->flags))
+      ! MEOS_FLAGS_GET_X(box->flags) ||
+      ! ensure_span_isof_basetype(&box->span, T_FLOAT8))
     return false;
   *result = DatumGetFloat8(box->span.upper);
   return true;

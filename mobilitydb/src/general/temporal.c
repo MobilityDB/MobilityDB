@@ -1805,7 +1805,7 @@ PGDLLEXPORT Datum Tnumber_shift_scale_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_shift_scale_value);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Return a temporal value shifted and scaled by the intervals
+ * @brief Return a temporal value shifted and scaled by two intervals
  * @sqlfn shiftScaleValue()
  */
 Datum
@@ -1859,7 +1859,7 @@ PGDLLEXPORT Datum Temporal_shift_scale_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_shift_scale_time);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Return a temporal value shifted and scaled by the intervals
+ * @brief Return a temporal value shifted and scaled by two intervals
  * @sqlfn shiftScaleTime()
  */
 Datum

@@ -2138,7 +2138,7 @@ tpoint_srid(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Set the SRID of a temporal instant point
+ * @brief Return a temporal instant point with the coordinates set to an SRID
  * @csqlfn #Tpoint_set_srid()
  */
 TInstant *
@@ -2154,7 +2154,7 @@ tpointinst_set_srid(const TInstant *inst, int32 srid)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Set the SRID of a temporal sequence point
+ * @brief Return a temporal sequence point with the coordinates set to an SRID
  * @csqlfn #Tpoint_set_srid()
  */
 TSequence *
@@ -2178,7 +2178,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Set the SRID of a temporal sequence set point
+ * @brief Return a temporal sequence set point with the coordinates set to an SRID
  * @csqlfn #Tpoint_set_srid()
  */
 TSequenceSet *
@@ -2211,7 +2211,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
 
 /**
  * @ingroup libmeos_temporal_spatial_transf
- * @brief Set the SRID of a temporal point.
+ * @brief Return a temporal point with the coordinates set to an SRID
  * @return On error return NULL
  * @see tpointinst_set_srid()
  * @see tpointseq_set_srid()

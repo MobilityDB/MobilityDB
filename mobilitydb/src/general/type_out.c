@@ -55,7 +55,7 @@ PGDLLEXPORT Datum Set_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output a set in its Well-Known Text (WKT) representation
+ * @brief Output a set in the Well-Known Text (WKT) representation
  * @sqlfn asText()
  */
 Datum
@@ -76,7 +76,7 @@ PGDLLEXPORT Datum Geoset_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output a geo set in its Well-Known Text (WKT) representation
+ * @brief Output a geo set in the Well-Known Text (WKT) representation
  * @sqlfn asText()
  */
 Datum
@@ -97,7 +97,7 @@ PGDLLEXPORT Datum Geoset_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_as_ewkt);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output a geo set in its Extended Well-Known Text (EWKT) representation
+ * @brief Output a geo set in the Extended Well-Known Text (EWKT) representation
  * @sqlfn asEWKT()
  */
 Datum
@@ -118,7 +118,7 @@ PGDLLEXPORT Datum Span_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output a span in its Well-Known Text (WKT) representation
+ * @brief Output a span in the Well-Known Text (WKT) representation
  * @sqlfn asText()
  */
 Datum
@@ -138,7 +138,7 @@ PGDLLEXPORT Datum Spanset_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output a span set in its Well-Known Text (WKT) representation
+ * @brief Output a span set in the Well-Known Text (WKT) representation
  * @sqlfn asText()
  */
 Datum

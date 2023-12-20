@@ -60,7 +60,7 @@
  * @brief Conversion functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_accessor Accessor functions
- * @ingroup   
+ * @ingroup mobilitydb_setspan
  * @brief Accessor functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_transf Transformation functions
@@ -121,12 +121,16 @@
  * @ingroup mobilitydb_box
  * @brief Transformation functions for box types.
  *
- * @defgroup mobilitydb_box_topo Topological functions
+ * @defgroup mobilitydb_box_bbox Bounding box functions
  * @ingroup mobilitydb_box
+ * @brief Bounding box functions for box types.
+ *
+ * @defgroup mobilitydb_box_topo Topological functions
+ * @ingroup mobilitydb_box_bbox
  * @brief Topological functions for box types.
  *
  * @defgroup mobilitydb_box_pos Position functions
- * @ingroup mobilitydb_box
+ * @ingroup mobilitydb_box_bbox
  * @brief Position functions for box types.
  *
  * @defgroup mobilitydb_box_set Set functions

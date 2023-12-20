@@ -2212,7 +2212,7 @@ tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal sequence shifted and/or scaled by the intervals.
+ * @brief Return a temporal sequence shifted and/or scaled by two intervals
  * @pre The duration is greater than 0 if it is not NULL
  * @csqlfn #Temporal_shift_time(), #Temporal_scale_time(),
  *    #Temporal_shift_scale_time()

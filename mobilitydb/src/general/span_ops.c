@@ -436,7 +436,7 @@ PGDLLEXPORT Datum Union_span_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_span_value);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the union of a value and a span
+ * @brief Return the union of a span and a value
  * @sqlfn time_union()
  * @sqlop @p +
  */
@@ -493,7 +493,7 @@ PGDLLEXPORT Datum Intersection_span_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intersection_span_value);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the intersection of a value and a span
+ * @brief Return the intersection of a span and a value
  * @sqlfn span_intersection()
  * @sqlop @p *
  */
@@ -600,7 +600,7 @@ PGDLLEXPORT Datum Distance_value_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_value_value);
 /**
  * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance between the values
+ * @brief Return the distance between two values
  * @sqlfn span_distance()
  * @sqlop @p <->
  */
