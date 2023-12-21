@@ -39,18 +39,17 @@
 
 /* PostgreSQL */
 #include <libpq/pqformat.h>
-#include <executor/spi.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
-#include "general/type_util.h"
 /* MobilityDB */
-#include "pg_general/temporal.h"
 #include "pg_npoint/tnpoint_static.h"
+#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Send/receive functions

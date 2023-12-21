@@ -39,6 +39,7 @@
 #include <access/gist.h>
 /* MEOS */
 #include <meos.h>
+#include "general/span.h"
 /* MobilityDB */
 #include "pg_general/temporal.h" /* For temporal_bbox_slice */
 

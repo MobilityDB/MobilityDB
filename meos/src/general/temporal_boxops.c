@@ -53,6 +53,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/type_util.h"
 #include "point/tpoint_boxops.h"
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"

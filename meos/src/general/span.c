@@ -50,6 +50,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/temporal.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"

@@ -36,7 +36,6 @@
 
 /* C */
 #include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
@@ -44,6 +43,8 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
+#include "general/span.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h" /* For store_fcinfo */
 

@@ -32,16 +32,13 @@
  * @brief Operators for span types
  */
 
-/* C */
-#include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/type_util.h"
+#include "general/span.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 

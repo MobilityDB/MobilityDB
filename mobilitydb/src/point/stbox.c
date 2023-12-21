@@ -41,9 +41,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
 #include "general/set.h"
-#include "general/tnumber_mathfuncs.h"
+#include "general/span.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -52,7 +51,6 @@
 #include "pg_general/temporal.h"
 #include "pg_general/type_util.h"
 #include "pg_point/postgis.h"
-#include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Input/Ouput functions

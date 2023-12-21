@@ -36,7 +36,8 @@
 #define __LIFTING_H__
 
 /* MEOS */
-#include "general/temporal.h"
+#include <meos.h>
+#include "general/meos_catalog.h"
 
 /**
  * Structure to represent the information about lifted functions

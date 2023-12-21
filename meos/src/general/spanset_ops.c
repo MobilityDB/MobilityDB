@@ -40,7 +40,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/span.h"
 #include "general/spanset.h"
+#include "general/temporal.h"
 #include "general/type_util.h"
 
 /*****************************************************************************

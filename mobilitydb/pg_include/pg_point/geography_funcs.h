@@ -36,6 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeodetic_tree.h>

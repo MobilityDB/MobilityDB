@@ -57,6 +57,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_aggfuncs.h"
+#include "general/type_util.h"
 
 #if ! MEOS
   extern FunctionCallInfo fetch_fcinfo();

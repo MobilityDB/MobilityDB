@@ -48,8 +48,8 @@
 #include <meos.h>
 #include "general/temporal_boxops.h"
 /* MobilityDB */
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
-#include "pg_point/tpoint_selfuncs.h"
 
 /*****************************************************************************/
 

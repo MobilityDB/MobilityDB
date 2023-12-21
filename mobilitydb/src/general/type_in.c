@@ -40,7 +40,11 @@
 #endif
 /* MEOS */
 #include <meos.h>
-#include "general/type_util.h"
+#include "general/set.h"
+#include "general/span.h"
+#include "general/tbox.h"
+#include "general/temporal.h"
+#include "point/stbox.h"
 
 /*****************************************************************************
  * Input in WKB and HexWKB representation for sets, spans, and span sets types

@@ -47,6 +47,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/span.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
 

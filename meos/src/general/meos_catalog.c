@@ -49,7 +49,7 @@
 #include <meos.h>
 #include "general/doublen.h"
 #if NPOINT
-  #include "npoint/tnpoint_static.h"
+  #include "npoint/tnpoint.h"
 #endif
 
 /*****************************************************************************

@@ -42,8 +42,6 @@
 #include <utils/lsyscache.h>
 /* MEOS */
 #include <meos.h>
-/* MobilityDB */
-#include "pg_point/postgis.h"
 
 
 /*****************************************************************************/

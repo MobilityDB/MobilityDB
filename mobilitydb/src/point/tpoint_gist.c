@@ -35,7 +35,6 @@
 #include "pg_point/tpoint_gist.h"
 
 /* C */
-#include <assert.h>
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -45,12 +44,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
+#include "general/span.h"
 #include "general/type_util.h"
+#include "point/stbox.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
-#include "pg_general/span_gist.h"
 #include "pg_general/tnumber_gist.h"
 
 /*****************************************************************************

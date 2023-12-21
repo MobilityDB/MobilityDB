@@ -43,7 +43,8 @@
   #include <utils/multirangetypes.h>
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 /* MEOS */
-#include "general/temporal.h"
+#include <meos.h>
+#include "general/meos_catalog.h"
 
 /*****************************************************************************/
 

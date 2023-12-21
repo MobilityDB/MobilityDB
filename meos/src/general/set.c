@@ -48,13 +48,16 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/span.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/ttext_textfuncs.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_boxops.h"
+#if NPOINT
+  #include "npoint/tnpoint_boxops.h"
+#endif
 
 /*****************************************************************************
  * Parameter tests

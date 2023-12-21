@@ -33,21 +33,15 @@
  * @note The only function currently provided is temporal centroid.
  */
 
-/* C */
-#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal_aggfuncs.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "point/tpoint_aggfuncs.h"
-#include "npoint/tnpoint.h"
+#include "general/temporal.h"
+#include "general/skiplist.h"
 #include "npoint/tnpoint_aggfuncs.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h"
-#include "pg_general/temporal.h"
 
 /*****************************************************************************/
 

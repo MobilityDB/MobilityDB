@@ -45,7 +45,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/meos_catalog.h"
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */

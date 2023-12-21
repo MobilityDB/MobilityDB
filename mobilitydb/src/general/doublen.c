@@ -34,14 +34,12 @@
  */
 #include "general/doublen.h"
 
-/* C */
-#include <float.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <libpq/pqformat.h>
 #include <utils/float.h>
 /* MEOS */
 #include <meos.h>
-#include "general/type_util.h"
 
 /*****************************************************************************
  * Send/receive functions

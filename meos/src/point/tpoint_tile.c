@@ -44,6 +44,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_tile.h"
+#include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tile.h"
 

@@ -34,16 +34,14 @@
 
 #include "point/tpoint.h"
 
-/* C */
-#include <limits.h>
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
+#include "point/stbox.h"
 #include "point/tpoint_parser.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"

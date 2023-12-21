@@ -32,19 +32,18 @@
  * @brief Spatial functions for temporal network points.
  */
 
-/* C */
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/tpoint_spatialfuncs.h"
+#include "general/span.h"
+#include "point/stbox.h"
 #include "point/tpoint_restrfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
+#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Functions for spatial reference systems

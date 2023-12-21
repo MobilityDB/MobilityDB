@@ -39,6 +39,7 @@
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
+#include "general/span.h"
 
 /*****************************************************************************
  * Temporal and

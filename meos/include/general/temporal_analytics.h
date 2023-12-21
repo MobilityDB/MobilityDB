@@ -31,7 +31,7 @@
 #define __TEMPORAL_ANALYTICS_H__
 
 /* MEOS */
-#include "temporal.h"
+#include <meos.h>
 
 /*****************************************************************************/
 

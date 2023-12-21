@@ -31,7 +31,8 @@
 #define __TEMPORAL_TILE_H__
 
 /* MEOS */
-#include "temporal.h"
+#include <meos.h>
+#include "general/meos_catalog.h"
 
 #define MAXDIMS 4
 

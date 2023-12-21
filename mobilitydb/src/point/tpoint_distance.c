@@ -32,28 +32,15 @@
  * @brief Distance functions for temporal points
  */
 
-#include "point/tpoint_distance.h"
 
 /* C */
-#include <assert.h>
 #include <float.h>
-#include <math.h>
 /* PostgreSQL */
-#include <utils/timestamp.h>
-#include <utils/float.h>
-/* PostGIS */
-#include <lwgeodetic_tree.h>
-#include <measures.h>
-#include <measures3d.h>
+#include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/type_util.h"
-#include "point/pgis_call.h"
-#include "point/geography_funcs.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "general/temporal.h"
+#include "point/stbox.h"
 /* MobilityDB */
 #include "pg_point/postgis.h"
 #include "pg_point/tpoint_spatialfuncs.h"

@@ -46,7 +46,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
-#include "general/pg_types.h"
 #include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"

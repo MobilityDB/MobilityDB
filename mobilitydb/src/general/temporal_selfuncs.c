@@ -50,7 +50,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/span.h"
+#include "general/tbox.h"
+#include "point/stbox.h"
 /* MobilityDB */
+#include "pg_general/meos_catalog.h"
 #include "pg_general/span_selfuncs.h"
 #include "pg_general/temporal_selfuncs.h"
 #include "pg_point/tpoint_selfuncs.h"

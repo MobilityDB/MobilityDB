@@ -100,13 +100,15 @@
 #include <float.h>
 #include <limits.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <access/spgist.h>
-#include <access/spgist_private.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/span.h"
+#include "general/tbox.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"

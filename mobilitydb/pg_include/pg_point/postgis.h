@@ -41,8 +41,6 @@
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeodetic_tree.h>
-/* MEOS */
-#include "general/temporal.h"
 
 /*****************************************************************************
  * fmgr macros

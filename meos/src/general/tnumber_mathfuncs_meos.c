@@ -35,12 +35,9 @@
 
 #include "general/tnumber_mathfuncs.h"
 
-/* C */
-#include <assert.h>
-#include <math.h>
 /* MEOS */
 #include <meos.h>
-#include "general/tnumber_mathfuncs.h"
+#include "general/temporal.h"
 #include "general/type_util.h"
 
 /*****************************************************************************

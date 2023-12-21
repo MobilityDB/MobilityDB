@@ -35,8 +35,8 @@
 #ifndef __DOUBLEN_H__
 #define __DOUBLEN_H__
 
-/* MEOS */
-#include "general/temporal.h"
+/* C */
+#include <stdbool.h>
 
 /*****************************************************************************/
 

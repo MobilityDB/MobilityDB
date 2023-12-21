@@ -46,6 +46,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/span.h"
+#include "general/tbox.h"
 #include "general/temporal_boxops.h"
 #include "general/type_util.h"
 /* MobilityDB */

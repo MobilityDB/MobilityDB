@@ -60,7 +60,7 @@
 
 /* MEOS */
 #include <meos.h>
-#include "general/type_util.h"
+#include "general/temporal.h"
 
 #if ! MEOS
   extern Datum call_function1(PGFunction func, Datum arg1);

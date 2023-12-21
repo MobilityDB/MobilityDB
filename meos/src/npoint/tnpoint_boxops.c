@@ -41,13 +41,11 @@
 
 #include "npoint/tnpoint_boxops.h"
 
-/* PostgreSQL */
-#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "point/pgis_call.h"
-#include "npoint/tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint_static.h"
 
 /*****************************************************************************
  * Transform a temporal Npoint to a STBox

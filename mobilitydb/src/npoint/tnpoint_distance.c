@@ -34,13 +34,11 @@
 
 #include "npoint/tnpoint_distance.h"
 
-/* C */
-#include <assert.h>
 /* MEOS */
 #include <meos.h>
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_point/tpoint_spatialfuncs.h"
+#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Temporal distance

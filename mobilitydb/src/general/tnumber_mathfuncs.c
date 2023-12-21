@@ -34,14 +34,12 @@
  * ...) for temporal numbers
  */
 
-/* C */
-#include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/float.h>
 /* MEOS */
 #include <meos.h>
+#include "general/temporal.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_util.h"
 /* MobilityDB */

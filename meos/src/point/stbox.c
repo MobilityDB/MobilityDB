@@ -37,14 +37,14 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
-/* PostgreSQL */
-#include "utils/timestamp.h"
 /* PostGIS */
 #include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/set.h"
+#include "general/span.h"
 #include "general/spanset.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_util.h"

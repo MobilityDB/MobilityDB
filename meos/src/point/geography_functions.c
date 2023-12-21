@@ -39,8 +39,8 @@
 #include "point/geography_funcs.h"
 
 /* C */
+#include <assert.h>
 #include <float.h>
-/* PostgreSQL */
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>

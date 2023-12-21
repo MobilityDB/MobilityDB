@@ -34,10 +34,10 @@
 #ifndef __TBOX_H__
 #define __TBOX_H__
 
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
-#include "general/meos_catalog.h"
-#include "general/span.h"
-#include "general/set.h"
+#include <meos.h>
 
 /*****************************************************************************/
 

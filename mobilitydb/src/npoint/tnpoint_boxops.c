@@ -46,14 +46,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
+#include "general/span.h"
+#include "point/stbox.h"
 #include "npoint/tnpoint.h"
-#include "npoint/tnpoint_static.h"
-#include "npoint/tnpoint_spatialfuncs.h"
 /* MobilityDB */
-#include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
 #include "pg_point/tpoint_boxops.h"
-#include "pg_npoint/tnpoint.h"
 
 /*****************************************************************************
  * Conversion functions

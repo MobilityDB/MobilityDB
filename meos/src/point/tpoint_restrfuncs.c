@@ -47,6 +47,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
+#include "general/span.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialrels.h"

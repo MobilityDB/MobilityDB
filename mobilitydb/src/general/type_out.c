@@ -40,6 +40,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
+#include "general/span.h"
+#include "general/temporal.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */

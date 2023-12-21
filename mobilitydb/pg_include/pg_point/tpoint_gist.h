@@ -38,7 +38,7 @@
 #include <postgres.h>
 #include <access/stratnum.h>
 /* MEOS */
-#include "general/temporal.h"
+#include <meos.h>
 
 /*****************************************************************************/
 

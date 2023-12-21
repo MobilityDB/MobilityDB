@@ -42,10 +42,12 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
-#include <utils/datetime.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/span.h"
+#include "general/tbox.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 

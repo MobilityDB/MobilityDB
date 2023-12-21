@@ -34,10 +34,9 @@
 
 #include "general/temporal_compops.h"
 
-/* C */
-#include <assert.h>
 /* MEOS */
 #include <meos.h>
+#include "general/temporal.h"
 #include "general/type_util.h"
 
 /*****************************************************************************

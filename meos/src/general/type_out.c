@@ -34,8 +34,6 @@
 
 /* C */
 #include <assert.h>
-#include <float.h>
-#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include "utils/timestamp.h"
@@ -49,7 +47,7 @@
 #include <meos_internal.h>
 #include "general/temporal.h"
 #if NPOINT
-  #include "npoint/tnpoint_static.h"
+  #include "npoint/tnpoint.h"
 #endif /* NPOINT */
 
 #define MEOS_WKT_BOOL_SIZE sizeof("false")

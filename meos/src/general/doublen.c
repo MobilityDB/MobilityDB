@@ -45,7 +45,10 @@
 
 /* C */
 #include <assert.h>
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
+#include <meos.h>
 #include "general/pg_types.h"
 
 /*****************************************************************************

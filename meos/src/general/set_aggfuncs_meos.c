@@ -43,8 +43,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
+#include "general/temporal.h"
 #include "general/type_util.h"
-#include "npoint/tnpoint_boxops.h"
+#if NPOINT
+  #include "npoint/tnpoint_boxops.h"
+#endif
 
 /*****************************************************************************
  * Aggregate functions for set types

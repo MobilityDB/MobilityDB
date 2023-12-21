@@ -37,6 +37,7 @@
 /* C */
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 /* PostgreSQL */
 #if MEOS
 #include "postgres_int_defs.h"

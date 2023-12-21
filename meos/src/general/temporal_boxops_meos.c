@@ -50,6 +50,7 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
+#include "general/temporal.h"
 
 /*****************************************************************************
  * Bounding box functions for temporal types

@@ -36,9 +36,10 @@
 #define __PG_DOUBLEN_H__
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <lib/stringinfo.h>
 /* MEOS */
-#include "general/temporal.h"
+#include "general/doublen.h"
 
 /*****************************************************************************/
 

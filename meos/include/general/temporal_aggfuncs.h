@@ -37,9 +37,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include "general/skiplist.h"
+#include <meos.h>
 #include "general/temporal.h"
-#include "general/type_util.h"
 
 /*****************************************************************************/
 

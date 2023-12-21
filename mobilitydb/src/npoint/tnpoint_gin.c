@@ -42,8 +42,6 @@
 #include "general/set.h"
 #include "general/temporal.h"
 #include "npoint/tnpoint.h"
-/* MobilityDB */
-#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * Operator strategy numbers used in the GIN set and tnpoint opclasses

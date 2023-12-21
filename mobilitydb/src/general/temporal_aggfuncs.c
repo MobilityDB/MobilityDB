@@ -42,7 +42,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
+#include "general/skiplist.h"
+#include "general/span.h"
 #include "general/tbool_boolops.h"
+#include "general/tbox.h"
   /* MobilityDB */
 #include "pg_general/skiplist.h"
 

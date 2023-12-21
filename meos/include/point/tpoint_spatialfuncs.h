@@ -40,8 +40,8 @@
 #include <liblwgeom.h>
 #include <lwgeodetic.h>
 /* MEOS */
+#include <meos.h>
 #include "general/temporal.h"
-#include "point/tpoint.h"
 
 /** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
 #define GEOM_TO_GEOG        true

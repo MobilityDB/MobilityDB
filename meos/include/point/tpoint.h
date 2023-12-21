@@ -39,8 +39,8 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
-#include "general/temporal.h"
-#include "point/stbox.h"
+#include <meos.h>
+#include "general/meos_catalog.h"
 
 /*****************************************************************************
  * Macros for manipulating the 'typmod' int. An int32_t used as follows:

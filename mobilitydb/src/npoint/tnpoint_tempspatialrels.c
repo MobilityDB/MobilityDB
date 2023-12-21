@@ -43,8 +43,7 @@
 #include "point/tpoint_tempspatialrels.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_npoint/tnpoint.h"
-#include "pg_point/tpoint_spatialfuncs.h"
+#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Generic functions

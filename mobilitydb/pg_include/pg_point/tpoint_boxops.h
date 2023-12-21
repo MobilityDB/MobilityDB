@@ -41,6 +41,8 @@
 #include <catalog/pg_type.h>
 /* PostGIS */
 #include <liblwgeom.h>
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************/
 

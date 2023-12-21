@@ -44,19 +44,10 @@
 
 #include "point/tpoint_tempspatialrels.h"
 
-/* C */
-#include <assert.h>
-#include <math.h>
-/* PostgreSQL */
-#include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include "general/lifting.h"
-#include "general/type_util.h"
-#include "point/pgis_call.h"
-#include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_point/postgis.h"
 #include "pg_point/tpoint_spatialfuncs.h"

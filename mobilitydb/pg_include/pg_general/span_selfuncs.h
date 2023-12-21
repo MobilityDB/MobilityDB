@@ -36,10 +36,10 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/selfuncs.h>
 /* MEOS */
-#include "general/set.h"
-/* MobilityDB */
-#include "pg_general/temporal_selfuncs.h"
+#include <meos.h>
+#include "general/meos_catalog.h"
 
 /*****************************************************************************/
 

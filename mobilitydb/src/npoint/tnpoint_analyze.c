@@ -38,8 +38,6 @@
 /* MobilityDB */
 #include "pg_general/temporal_analyze.h"
 #include "pg_point/tpoint_analyze.h"
-/* MEOS */
-#include <meos.h>
 
 /*****************************************************************************/
 

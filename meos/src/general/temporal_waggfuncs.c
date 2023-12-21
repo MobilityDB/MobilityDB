@@ -39,6 +39,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/doublen.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Generic functions

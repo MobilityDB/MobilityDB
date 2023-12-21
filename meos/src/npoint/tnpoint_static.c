@@ -50,6 +50,7 @@
 #include "general/type_out.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
+#include "point/tpoint.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_parser.h"

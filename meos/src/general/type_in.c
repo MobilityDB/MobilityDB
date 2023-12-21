@@ -34,13 +34,15 @@
 
 /* C */
 #include <assert.h>
-#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include "utils/timestamp.h"
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
+#include "general/span.h"
+#include "general/tbox.h"
+#include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_static.h"
@@ -1691,7 +1693,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
 /**
  * @brief Return a value from its Well-Known Binary (WKB) representation.
  */
-Datum
+static Datum
 datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
 {
   /* Initialize the state appropriately */

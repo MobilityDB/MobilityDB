@@ -40,8 +40,7 @@
 #include <liblwgeom.h>
 #include <lwgeom_geos.h>
 /* MEOS */
-#include "general/temporal.h"
-#include "point/tpoint.h"
+#include <meos.h>
 
 /** Symbolic constants for distinguishing between atGeometry and atGeometryTime */
 #define REST_TIME           true

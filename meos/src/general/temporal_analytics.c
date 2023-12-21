@@ -46,6 +46,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/span.h"
 #include "general/spanset.h"
 #include "general/temporal_tile.h"
 #include "general/tsequence.h"

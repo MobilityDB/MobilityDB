@@ -37,6 +37,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <geos_c.h>
 #include <limits.h>
 /* POSTGRESQL */
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -54,10 +55,9 @@
 #include "general/tsequenceset.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
-  #include "npoint/tnpoint_spatialfuncs.h"
+  #include "npoint/tnpoint_static.h"
 #endif
 
 /*****************************************************************************

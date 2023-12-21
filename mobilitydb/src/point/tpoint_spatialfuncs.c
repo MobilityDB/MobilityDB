@@ -37,20 +37,16 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
-#include <utils/float.h>
 /* PostGIS */
 #include <liblwgeom.h>
-#include <liblwgeom_internal.h>
-#include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
 #include "general/set.h"
-#include "general/tsequence.h"
-#include "general/tnumber_mathfuncs.h"
+#include "general/span.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
+#include "point/stbox.h"
 #include "point/tpoint_restrfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"

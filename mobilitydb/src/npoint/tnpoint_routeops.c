@@ -38,18 +38,12 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/temporal.h"
 #include "npoint/tnpoint.h"
-#include "npoint/tnpoint_static.h"
-#include "npoint/tnpoint_spatialfuncs.h"
-/* MobilityDB */
-#include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
-#include "pg_npoint/tnpoint.h"
 
 /*****************************************************************************
  * Generic route functions

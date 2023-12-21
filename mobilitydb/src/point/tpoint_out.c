@@ -32,22 +32,14 @@
  * @brief Output of temporal points in WKT, EWKT, and MF-JSON representation
  */
 
-/* C */
-#include <assert.h>
-#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
-/* PostGIS */
-#include <liblwgeom_internal.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/tinstant.h"
-#include "general/tsequence.h"
-#include "general/tsequenceset.h"
+#include "general/temporal.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/type_util.h"
 

@@ -45,6 +45,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/span.h"
 #include "general/spanset.h"
 #include "general/tsequence.h"
 #include "general/temporal_boxops.h"
@@ -52,7 +53,9 @@
 #include "general/type_util.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_spatialfuncs.h"
+#if NPOINT
+  #include "npoint/tnpoint_spatialfuncs.h"
+#endif
 
 /*****************************************************************************
  * General functions

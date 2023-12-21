@@ -53,6 +53,8 @@
 #include "general/tsequence.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
+#include "point/stbox.h"
+#include "point/tpoint.h"
 #include "point/tpoint_distance.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"

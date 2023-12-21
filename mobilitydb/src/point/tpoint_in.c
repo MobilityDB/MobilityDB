@@ -37,6 +37,7 @@
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
+#include "general/temporal.h"
 #include "point/tpoint_parser.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h" /* For oid_type */

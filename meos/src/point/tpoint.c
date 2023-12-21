@@ -43,6 +43,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
 
 /*****************************************************************************
  * General functions

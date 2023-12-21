@@ -34,7 +34,10 @@
 #ifndef __TBOOL_BOOLOPS_H__
 #define __TBOOL_BOOLOPS_H__
 
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
+#include <meos.h>
 #include "general/temporal.h"
 
 /*****************************************************************************/

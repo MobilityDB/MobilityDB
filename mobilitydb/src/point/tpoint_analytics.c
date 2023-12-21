@@ -32,30 +32,11 @@
  * @brief Analytic functions for temporal points and temporal floats
  */
 
-/* C */
-#include <assert.h>
-#include <float.h>
-#include <math.h>
-/* PostgreSQL */
-#include <postgres.h>
-#include <funcapi.h>
-#include <utils/float.h>
-#include <utils/timestamp.h>
-/* PostGIS */
-#include <liblwgeom_internal.h>
-#include <lwgeodetic_tree.h>
 /* MEOS */
 #include <meos.h>
-#include "general/lifting.h"
-#include "point/geography_funcs.h"
-#include "point/tpoint.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_spatialrels.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
-#include "pg_point/postgis.h"
 
 /*****************************************************************************/
 

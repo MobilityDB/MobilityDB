@@ -38,12 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "general/doublen.h"
 #include "general/meos_catalog.h"
-#include "general/span.h"
-#include "general/set.h"
-#include "general/tbox.h"
-#include "point/stbox.h"
 
 /* To avoid including pg_collation_d */
 #define DEFAULT_COLLATION_OID 100

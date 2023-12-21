@@ -39,6 +39,8 @@
 #include <postgres.h>
 #include <lib/stringinfo.h>
 #include <utils/rangetypes.h>
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************/
 

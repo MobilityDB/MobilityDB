@@ -40,8 +40,9 @@
 #include <assert.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
+#include "general/skiplist.h"
 #include "general/temporal_aggfuncs.h"
+#include "point/stbox.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h"
 

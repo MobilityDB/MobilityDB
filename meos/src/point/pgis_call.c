@@ -50,6 +50,7 @@
 #include <lwgeom_log.h>
 #include <lwgeom_geos.h>
 /* MEOS */
+#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /* To avoid including lwgeom_functions_analytic.h */
