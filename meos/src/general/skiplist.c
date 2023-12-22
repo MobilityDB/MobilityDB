@@ -45,6 +45,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/timestamp.h>
 #if MEOS
   #define MaxAllocSize   ((Size) 0x3fffffff) /* 1 gigabyte - 1 */
 #else
@@ -55,8 +56,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/span.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/type_util.h"
 

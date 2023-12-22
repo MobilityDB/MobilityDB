@@ -51,16 +51,11 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
-#include "general/spanset.h"
-#include "general/temporaltypes.h"
+#include "general/tsequence.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
-#if NPOINT
-  #include "npoint/tnpoint.h"
-  #include "npoint/tnpoint_static.h"
-#endif
 
 /*****************************************************************************
  * General functions

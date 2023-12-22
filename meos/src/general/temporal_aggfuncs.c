@@ -36,7 +36,6 @@
 
 /* C */
 #include <assert.h>
-#include <math.h>
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -44,12 +43,14 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/skiplist.h"
+#include "general/span.h"
 #include "general/spanset.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_tile.h"
 #include "general/tbool_boolops.h"
-#include "general/doublen.h"
+#include "general/tinstant.h"
+#include "general/tsequence.h"
+#include "general/type_util.h"
 
 #if ! MEOS
   extern FunctionCallInfo fetch_fcinfo();

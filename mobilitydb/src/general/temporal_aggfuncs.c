@@ -36,24 +36,19 @@
 
 /* C */
 #include <assert.h>
-#include <math.h>
-#include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_collation.h>
-#include <libpq/pqformat.h>
-#include <utils/memutils.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/skiplist.h"
-#include "general/temporaltypes.h"
+#include "general/span.h"
 #include "general/tbool_boolops.h"
-#include "general/doublen.h"
+#include "general/tbox.h"
   /* MobilityDB */
 #include "pg_general/skiplist.h"
-#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * Generic aggregate functions for TInstant and TSequence
@@ -75,7 +70,7 @@ Temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   store_fcinfo(fcinfo);
   SkipList *result = temporal_tagg_transfn(state, temp, func, crossings);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -91,8 +86,8 @@ Temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func,
   SkipList *state1, *state2;
   INPUT_AGG_COMB_STATE(fcinfo, state1, state2);
   store_fcinfo(fcinfo);
-  SkipList *result = temporal_tagg_combinefn(state1, state2, func, crossings);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SKIPLIST_P(temporal_tagg_combinefn(state1, state2, func,
+    crossings));
 }
 
 PGDLLEXPORT Datum Temporal_tagg_finalfn(PG_FUNCTION_ARGS);
@@ -111,7 +106,7 @@ Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
   Temporal *result = temporal_tagg_finalfn(state);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -135,12 +130,87 @@ Temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   state = temporal_tagg_transform_transfn(state, temp, func, crossings,
     transform);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(state);
+  PG_RETURN_SKIPLIST_P(state);
 }
 
 /*****************************************************************************
  * Temporal count
  *****************************************************************************/
+
+PGDLLEXPORT Datum Timestamptz_tcount_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestamptz_tcount_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal count aggregate of timestamptz values
+ * @sqlfn tcount()
+ */
+Datum
+Timestamptz_tcount_transfn(PG_FUNCTION_ARGS)
+{
+  SkipList *state;
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  store_fcinfo(fcinfo);
+  PG_RETURN_SKIPLIST_P(timestamptz_tcount_transfn(state, t));
+}
+
+PGDLLEXPORT Datum Tstzset_tcount_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzset_tcount_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal count aggregate of timestamptz sets
+ * @sqlfn tcount()
+ */
+Datum
+Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
+{
+  SkipList *state;
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
+  Set *ts = PG_GETARG_SET_P(1);
+  store_fcinfo(fcinfo);
+  state = tstzset_tcount_transfn(state, ts);
+  PG_FREE_IF_COPY(ts, 1);
+  PG_RETURN_SKIPLIST_P(state);
+}
+
+PGDLLEXPORT Datum Tstzspan_tcount_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_tcount_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal count aggregate of timestamptz spans
+ * @sqlfn tcount()
+ */
+Datum
+Tstzspan_tcount_transfn(PG_FUNCTION_ARGS)
+{
+  SkipList *state;
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
+  Span *s = PG_GETARG_SPAN_P(1);
+  store_fcinfo(fcinfo);
+  PG_RETURN_SKIPLIST_P(tstzspan_tcount_transfn(state, s));
+}
+
+PGDLLEXPORT Datum Tstzspanset_tcount_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspanset_tcount_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal count aggregate of timestamptz span
+ * sets
+ * @sqlfn tcount()
+ */
+Datum
+Tstzspanset_tcount_transfn(PG_FUNCTION_ARGS)
+{
+  SkipList *state;
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  store_fcinfo(fcinfo);
+  state = tstzspanset_tcount_transfn(state, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_SKIPLIST_P(state);
+}
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum Temporal_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tcount_transfn);
@@ -158,7 +228,7 @@ Temporal_tcount_transfn(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   state = temporal_tcount_transfn(state, temp);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(state);
+  PG_RETURN_SKIPLIST_P(state);
 }
 
 PGDLLEXPORT Datum Temporal_tcount_combinefn(PG_FUNCTION_ARGS);
@@ -195,7 +265,7 @@ Temporal_extent_transfn(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 /*****************************************************************************/
@@ -216,7 +286,7 @@ Tnumber_extent_transfn(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TBOX_P(result);
 }
 
 /*****************************************************************************
@@ -542,7 +612,7 @@ Tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
   Temporal *result = tnumber_tavg_finalfn(state);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -593,7 +663,7 @@ Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
   if (PG_ARGISNULL(1))
   {
     if (state)
-      PG_RETURN_POINTER(state);
+      PG_RETURN_TEMPORAL_P(state);
     else
       PG_RETURN_NULL();
   }
@@ -622,7 +692,7 @@ Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   state = temporal_app_tinst_transfn(state, (TInstant *) inst, maxdist, maxt);
   PG_FREE_IF_COPY(inst, 1);
-  PG_RETURN_POINTER(state);
+  PG_RETURN_TEMPORAL_P(state);
 }
 
 PGDLLEXPORT Datum Temporal_app_tseq_transfn(PG_FUNCTION_ARGS);
@@ -640,7 +710,7 @@ Temporal_app_tseq_transfn(PG_FUNCTION_ARGS)
   if (PG_ARGISNULL(1))
   {
     if (state)
-      PG_RETURN_POINTER(state);
+      PG_RETURN_TEMPORAL_P(state);
     else
       PG_RETURN_NULL();
   }
@@ -650,7 +720,7 @@ Temporal_app_tseq_transfn(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   state = temporal_app_tseq_transfn(state, (TSequence *) seq);
   PG_FREE_IF_COPY(seq, 1);
-  PG_RETURN_POINTER(state);
+  PG_RETURN_TEMPORAL_P(state);
 }
 
 PGDLLEXPORT Datum Temporal_append_finalfn(PG_FUNCTION_ARGS);
@@ -669,7 +739,7 @@ Temporal_append_finalfn(PG_FUNCTION_ARGS)
   Temporal *result = temporal_compact(state);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

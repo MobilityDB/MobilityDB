@@ -41,10 +41,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal.h"
-#include "general/type_util.h"
 #include "general/set.h"
 #include "general/span.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
@@ -65,7 +64,7 @@ Span_extent_transfn(PG_FUNCTION_ARGS)
   Span *result = span_extent_transfn(s1, s2);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 PGDLLEXPORT Datum Span_extent_combinefn(PG_FUNCTION_ARGS);
@@ -83,12 +82,11 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
   if (! s2 && ! s1)
     PG_RETURN_NULL();
   if (s1 && ! s2)
-    PG_RETURN_POINTER(s1);
+    PG_RETURN_SPAN_P(s1);
   if (s2 && ! s1)
-    PG_RETURN_POINTER(s2);
+    PG_RETURN_SPAN_P(s2);
   /* Non-strict union */
-  Span *result = super_union_span_span(s1, s2);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(super_union_span_span(s1, s2));
 }
 
 /*****************************************************************************/
@@ -107,11 +105,10 @@ Spanbase_extent_transfn(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   if (PG_ARGISNULL(1))
-    PG_RETURN_POINTER(s);
+    PG_RETURN_SPAN_P(s);
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  s = spanbase_extent_transfn(s, d, basetype);
-  PG_RETURN_POINTER(s);
+  PG_RETURN_SPAN_P(spanbase_extent_transfn(s, d, basetype));
 }
 
 PGDLLEXPORT Datum Set_extent_transfn(PG_FUNCTION_ARGS);
@@ -130,7 +127,7 @@ Set_extent_transfn(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(set, 1);
   if (! span)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(span);
+  PG_RETURN_SPAN_P(span);
 }
 
 PGDLLEXPORT Datum Spanset_extent_transfn(PG_FUNCTION_ARGS);
@@ -149,7 +146,7 @@ Spanset_extent_transfn(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 1);
   if (! s)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(s);
+  PG_RETURN_SPAN_P(s);
 }
 
 /*****************************************************************************/
@@ -251,7 +248,7 @@ Span_union_finalfn(PG_FUNCTION_ARGS)
   /* Free memory */
   pfree(spans);
 
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 /*****************************************************************************/

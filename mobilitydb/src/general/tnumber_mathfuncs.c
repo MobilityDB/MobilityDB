@@ -34,16 +34,12 @@
  * ...) for temporal numbers
  */
 
-/* C */
-#include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/float.h>
 /* MEOS */
 #include <meos.h>
-#include "general/lifting.h"
-#include "general/temporaltypes.h"
+#include "general/temporal.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_util.h"
 /* MobilityDB */
@@ -71,7 +67,7 @@ Arithop_number_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
   Temporal *result = arithop_tnumber_number(temp, value, basetype, oper, func,
     INVERT);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -90,7 +86,7 @@ Arithop_tnumber_number(FunctionCallInfo fcinfo, TArithmetic oper,
   Temporal *result = arithop_tnumber_number(temp, value, basetype, oper, func,
     INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -113,7 +109,7 @@ Arithop_tnumber_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -339,7 +335,7 @@ Tfloat_round(PG_FUNCTION_ARGS)
   int size = PG_GETARG_INT32(1);
   Temporal *result = tfloat_round(temp, size);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tfloatarr_round(PG_FUNCTION_ARGS);
@@ -386,7 +382,7 @@ Tnumber_abs(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnumber_abs(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_delta_value(PG_FUNCTION_ARGS);
@@ -404,7 +400,7 @@ Tnumber_delta_value(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Float_degrees(PG_FUNCTION_ARGS);
@@ -421,8 +417,7 @@ Float_degrees(PG_FUNCTION_ARGS)
   bool normalize = false;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     normalize = PG_GETARG_BOOL(1);
-  double result = float_degrees(value, normalize);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(float_degrees(value, normalize));
 }
 
 PGDLLEXPORT Datum Tfloat_degrees(PG_FUNCTION_ARGS);
@@ -441,7 +436,7 @@ Tfloat_degrees(PG_FUNCTION_ARGS)
     normalize = PG_GETARG_BOOL(1);
   Temporal *result = tfloat_degrees(temp, normalize);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tfloat_radians(PG_FUNCTION_ARGS);
@@ -457,7 +452,7 @@ Tfloat_radians(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tfloat_radians(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -479,7 +474,7 @@ Tfloat_derivative(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

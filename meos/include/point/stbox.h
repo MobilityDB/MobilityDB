@@ -39,7 +39,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
-#include "general/set.h"
+#include <meos.h>
 
 /*****************************************************************************
  * fmgr macros

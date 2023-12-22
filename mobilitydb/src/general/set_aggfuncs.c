@@ -36,17 +36,15 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/memutils.h>
-#include <utils/timestamp.h>
+#include <funcapi.h>
+#include <utils/array.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/temporal.h"
 #include "general/type_util.h"
-#include "general/skiplist.h"
 /* MobilityDB */
-#include "pg_general/skiplist.h"
-#include "pg_general/temporal.h"
 #include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
@@ -169,7 +167,7 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
   else
     pfree_array((void **) values, count);
 
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************/

@@ -66,7 +66,7 @@
 /**
  * @brief Comparison function for sorting float8 values, used for span lengths
  */
-int
+static int
 float8_qsort_cmp(const void *a1, const void *a2)
 {
   const float8 *f1 = (const float8 *) a1;

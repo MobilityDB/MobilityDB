@@ -45,9 +45,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
-#include "general/meos_catalog.h"
-#include "general/span.h"
-#include "general/temporal.h"
+#include <meos.h>
 
 
 /* Functions adapted from lwgeom_box.c */

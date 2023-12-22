@@ -44,12 +44,11 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/set.h"
+#include "general/span.h"
 #include "general/spanset.h"
-#include "general/temporal.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
-#include "point/tpoint.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 
@@ -339,7 +338,7 @@ stbox_copy(const STBox *box)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a spatiotemporal box from a geometry/geography and a
+ * @brief Construct a spatiotemporal box from a geometry/geography and a
  * timestamptz
  * @csqlfn #Stbox_constructor()
  */
@@ -362,7 +361,7 @@ geo_timestamptz_to_stbox(const GSERIALIZED *gs, TimestampTz t)
 
 /**
  * @ingroup libmeos_box_constructor
- * @brief Return a spatiotemporal box from a geometry/geography and a
+ * @brief Construct a spatiotemporal box from a geometry/geography and a
  * timestamptz span
  * @csqlfn #Stbox_constructor()
  */
@@ -572,7 +571,7 @@ spatialset_set_stbox(const Set *s, STBox *box)
 
 /**
  * @ingroup libmeos_box_conversion
- * @brief Return the bounding box of a spatial set
+ * @brief Convert a spatial set to a spatiotemporal box
  * @csqlfn #Geoset_to_stbox(), #Npointset_to_stbox()
  */
 STBox *
@@ -1177,7 +1176,7 @@ stbox_srid(const STBox *box)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Set the SRID of a spatiotemporal box
+ * @brief Return a spatiotemporal box with the coordinates set to an SRID
  * @csqlfn #Stbox_set_srid()
  */
 STBox *
@@ -1198,7 +1197,7 @@ stbox_set_srid(const STBox *box, int32 srid)
 /**
  * @ingroup libmeos_box_transf
  * @brief Return a spatiotemporal box with the time span expanded and/or scaled
- * by the intervals
+ * by two intervals
  * @csqlfn #Stbox_shift_time(), #Stbox_scale_time(), #Stbox_shift_scale_time()
  */
 STBox *
@@ -1243,7 +1242,7 @@ stbox_get_space(const STBox *box)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Return a spatiotemporal box expanded in the space dimension by a
+ * @brief Return a spatiotemporal box with the space bounds expanded by a
  * double
  * @csqlfn #Stbox_expand_space()
  */
@@ -1269,7 +1268,7 @@ stbox_expand_space(const STBox *box, double d)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Return a spatiotemporal box expanded in the time dimension by an
+ * @brief Return a spatiotemporal box with the time span expanded by an
  * interval
  * @csqlfn #Stbox_expand_time()
  */
@@ -1892,7 +1891,7 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Split the spatiotemporal box with respect to its space dimension in
+ * @brief Split a spatiotemporal box with respect to its space bounds in
  * four quadrants/octants
  *
  * The quadrants/octants are numbered as follows

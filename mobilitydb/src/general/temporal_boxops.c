@@ -47,15 +47,13 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/palloc.h>
 #include <fmgr.h>
-#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/tpoint_boxops.h"
-/* MobilityDB */
-#include "pg_general/meos_catalog.h"
+#include "general/span.h"
+#include "general/tbox.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 

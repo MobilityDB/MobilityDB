@@ -36,13 +36,12 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
 /* PostGIS */
 #include <liblwgeom.h>
+#include <lwgeodetic_tree.h>
 
 /*****************************************************************************/
-
-#include <fmgr.h>
-#include <lwgeodetic_tree.h>
 
 extern Datum geography_closestpoint(PG_FUNCTION_ARGS);
 extern Datum geography_shortestline(PG_FUNCTION_ARGS);

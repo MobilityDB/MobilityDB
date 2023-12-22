@@ -40,7 +40,6 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/palloc.h>
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>

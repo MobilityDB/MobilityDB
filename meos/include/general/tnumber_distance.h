@@ -35,8 +35,8 @@
 #define __TNUMBER_DISTANCE_H__
 
 /* MEOS */
+#include <meos.h>
 #include "general/meos_catalog.h"
-#include "general/temporal.h"
 
 /*****************************************************************************/
 

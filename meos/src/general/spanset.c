@@ -40,15 +40,14 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/timestamp.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
 #include "general/span.h"
+#include "general/temporal.h"
 #include "general/type_parser.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
@@ -674,7 +673,7 @@ spanset_compact(SpanSet *ss)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Return a number set shifted and/or scaled by the intervals.
+ * @brief Return a number set shifted and/or scaled by two intervals
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -707,7 +706,7 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
 #if MEOS
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return an integer span shifted and/or scaled by the values
+ * @brief Return an integer span shifted and/or scaled by two values
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -724,7 +723,7 @@ intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a big integer span shifted and/or scaled by the values
+ * @brief Return a big integer span shifted and/or scaled by two values
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -741,7 +740,7 @@ bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a float span shifted and/or scaled by the values
+ * @brief Return a float span shifted and/or scaled by two values
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -758,7 +757,7 @@ floatspanset_shift_scale(const SpanSet *ss, double shift, double width,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a date span shifted and/or scaled by the values
+ * @brief Return a date span shifted and/or scaled by two values
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -776,7 +775,7 @@ datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a timestamptz span set shifted and/or scaled by the intervals.
+ * @brief Return a timestamptz span set shifted and/or scaled by two intervals
  * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
  */
 SpanSet *
@@ -1497,49 +1496,49 @@ spanset_num_spans(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the start span of a span set
+ * @brief Return a pointer to the the start span of a span set
  * @return On error return NULL
  * @csqlfn #Spanset_start_span()
  */
-Span *
+const Span *
 spanset_start_span(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
-  return span_cp(SPANSET_SP_N(ss, 0));
+  return SPANSET_SP_N(ss, 0);
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the end span of a span set
+ * @brief Return a pointer to the end span of a span set
  * @return On error return NULL
  * @csqlfn #Spanset_end_span()
  */
-Span *
+const Span *
 spanset_end_span(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
-  return span_cp(SPANSET_SP_N(ss, ss->count - 1));
+  return SPANSET_SP_N(ss, ss->count - 1);
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th span of a span set
+ * @brief Return a pointer to the n-th span of a span set
  * @csqlfn #Spanset_span_n()
  */
-Span *
+const Span *
 spanset_span_n(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
 
-  Span *result = NULL;
+  const Span *result = NULL;
   if (i >= 1 && i <= ss->count)
-    result = span_cp(SPANSET_SP_N(ss, i - 1));
+    result = SPANSET_SP_N(ss, i - 1);
   return result;
 }
 

@@ -41,6 +41,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/span.h"
+#include "general/temporal.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */
@@ -56,7 +58,7 @@ PGDLLEXPORT Datum Set_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output a set in its Well-Known Text (WKT) representation
+ * @brief Output a set in the Well-Known Text (WKT) representation
  * @sqlfn asText()
  */
 Datum
@@ -77,7 +79,7 @@ PGDLLEXPORT Datum Geoset_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output a geo set in its Well-Known Text (WKT) representation
+ * @brief Output a geo set in the Well-Known Text (WKT) representation
  * @sqlfn asText()
  */
 Datum
@@ -98,7 +100,7 @@ PGDLLEXPORT Datum Geoset_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_as_ewkt);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output a geo set in its Extended Well-Known Text (EWKT) representation
+ * @brief Output a geo set in the Extended Well-Known Text (EWKT) representation
  * @sqlfn asEWKT()
  */
 Datum
@@ -119,7 +121,7 @@ PGDLLEXPORT Datum Span_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output a span in its Well-Known Text (WKT) representation
+ * @brief Output a span in the Well-Known Text (WKT) representation
  * @sqlfn asText()
  */
 Datum
@@ -139,7 +141,7 @@ PGDLLEXPORT Datum Spanset_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output a span set in its Well-Known Text (WKT) representation
+ * @brief Output a span set in the Well-Known Text (WKT) representation
  * @sqlfn asText()
  */
 Datum
@@ -424,8 +426,8 @@ Datum
 Span_as_wkb(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), s->spantype, false);
-  PG_RETURN_BYTEA_P(result);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(s), s->spantype,
+    false));
 }
 
 PGDLLEXPORT Datum Span_as_hexwkb(PG_FUNCTION_ARGS);
@@ -440,8 +442,7 @@ Datum
 Span_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(s), s->spantype);
-  PG_RETURN_TEXT_P(result);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(s), s->spantype));
 }
 
 /*****************************************************************************/
@@ -495,8 +496,7 @@ Datum
 Tbox_as_wkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  bytea *result = Datum_as_wkb(fcinfo, box, T_TBOX, false);
-  PG_RETURN_BYTEA_P(result);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_TBOX, false));
 }
 
 PGDLLEXPORT Datum Tbox_as_hexwkb(PG_FUNCTION_ARGS);
@@ -511,8 +511,7 @@ Datum
 Tbox_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  text *result = Datum_as_hexwkb(fcinfo, box, T_TBOX);
-  PG_RETURN_TEXT_P(result);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_TBOX));
 }
 
 /*****************************************************************************/
@@ -530,8 +529,7 @@ Stbox_as_wkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
   /* A spatiotemporal box always outputs the SRID */
-  bytea *result = Datum_as_wkb(fcinfo, box, T_STBOX, true);
-  PG_RETURN_BYTEA_P(result);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_STBOX, true));
 }
 
 PGDLLEXPORT Datum Stbox_as_hexwkb(PG_FUNCTION_ARGS);
@@ -546,8 +544,7 @@ Datum
 Stbox_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  text *result = Datum_as_hexwkb(fcinfo, box, T_STBOX);
-  PG_RETURN_TEXT_P(result);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_STBOX));
 }
 
 /*****************************************************************************/

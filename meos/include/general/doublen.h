@@ -35,8 +35,43 @@
 #ifndef __DOUBLEN_H__
 #define __DOUBLEN_H__
 
-/* MEOS */
-#include "general/temporal.h"
+/* C */
+#include <stdbool.h>
+
+/*****************************************************************************/
+
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for temporal number types
+ */
+typedef struct
+{
+  double a;
+  double b;
+} double2;
+
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for 2D temporal point types
+ */
+typedef struct
+{
+  double a;
+  double b;
+  double c;
+} double3;
+
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for 3D temporal point types
+ */
+typedef struct
+{
+  double a;
+  double b;
+  double c;
+  double d;
+} double4;
 
 /*****************************************************************************/
 

@@ -35,20 +35,19 @@
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
+#include "general/temporal_tile.h"
+
 /* C */
 #include <assert.h>
-#include <float.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
-#include <utils/datetime.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
-#include "general/temporal_tile.h"
-#include "general/type_util.h"
+#include "general/span.h"
+#include "general/tbox.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
@@ -69,8 +68,7 @@ Number_bucket(PG_FUNCTION_ARGS)
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Datum result = datum_bucket(value, size, origin, basetype);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_DATUM(datum_bucket(value, size, origin, basetype));
 }
 
 /*****************************************************************************
@@ -89,8 +87,7 @@ Timestamptz_bucket(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  TimestampTz result = timestamptz_bucket(t, duration, origin);
-  PG_RETURN_TIMESTAMPTZ(result);
+  PG_RETURN_TIMESTAMPTZ(timestamptz_bucket(t, duration, origin));
 }
 
 /*****************************************************************************/
@@ -210,8 +207,7 @@ Valuespan_bucket(PG_FUNCTION_ARGS)
   Datum origin = PG_GETARG_DATUM(2);
   meosType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Datum value_bucket = datum_bucket(value, size, origin, type);
-  Span *result = span_bucket_get(value_bucket, size, type);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(span_bucket_get(value_bucket, size, type));
 }
 
 PGDLLEXPORT Datum Tstzspan_bucket(PG_FUNCTION_ARGS);
@@ -228,9 +224,8 @@ Tstzspan_bucket(PG_FUNCTION_ARGS)
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
   TimestampTz time_bucket = timestamptz_bucket(t, duration, origin);
   int64 tunits = interval_units(duration);
-  Span *result = span_bucket_get(TimestampTzGetDatum(time_bucket),
-    Int64GetDatum(tunits), T_TIMESTAMPTZ);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(span_bucket_get(TimestampTzGetDatum(time_bucket),
+    Int64GetDatum(tunits), T_TIMESTAMPTZ));
 }
 
 /*****************************************************************************/
@@ -336,7 +331,7 @@ Tbox_tile(PG_FUNCTION_ARGS)
   TBox *result = palloc(sizeof(TBox));
   tbox_tile_get(Float8GetDatum(value_bucket), time_bucket,
     Float8GetDatum(xsize), tunits, T_FLOAT8, result);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TBOX_P(result);
 }
 
 /*****************************************************************************

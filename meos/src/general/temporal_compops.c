@@ -38,7 +38,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
-#include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************

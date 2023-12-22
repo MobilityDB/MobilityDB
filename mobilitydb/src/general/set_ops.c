@@ -408,7 +408,7 @@ Union_value_set(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Set *result = union_set_value(s, d, basetype);
   PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************/
@@ -429,7 +429,7 @@ Union_set_value(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Set *result = union_set_value(s, d, basetype);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Union_set_set(PG_FUNCTION_ARGS);
@@ -448,7 +448,7 @@ Union_set_set(PG_FUNCTION_ARGS)
   Set *result = union_set_set(s1, s2);
   PG_FREE_IF_COPY(s1, 0);
   PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************
@@ -473,7 +473,7 @@ Intersection_value_set(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(s, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Intersection_set_value(PG_FUNCTION_ARGS);
@@ -494,7 +494,7 @@ Intersection_set_value(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(s, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Intersection_set_set(PG_FUNCTION_ARGS);
@@ -515,7 +515,7 @@ Intersection_set_set(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(s2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************
@@ -541,7 +541,7 @@ Minus_value_set(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(s, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************/
@@ -564,7 +564,7 @@ Minus_set_value(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(s, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Minus_set_set(PG_FUNCTION_ARGS);
@@ -585,7 +585,7 @@ Minus_set_set(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(s2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /******************************************************************************
@@ -606,9 +606,7 @@ Distance_value_set(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   Set *s = PG_GETARG_SET_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Span s1;
-  set_set_span(s, &s1);
-  double result = distance_span_value(&s1, d, basetype);
+  double result = distance_set_value(s, d, basetype);
   PG_FREE_IF_COPY(s, 1);
   PG_RETURN_FLOAT8(result);
 }
@@ -627,9 +625,7 @@ Distance_set_value(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Span s1;
-  set_set_span(s, &s1);
-  double result = distance_span_value(&s1, d, basetype);
+  double result = distance_set_value(s, d, basetype);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_FLOAT8(result);
 }

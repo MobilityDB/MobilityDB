@@ -36,9 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MEOS */
-#include "general/temporal.h"
-#include "point/tpoint.h"
+#include <fmgr.h>
 
 
 /*****************************************************************************/

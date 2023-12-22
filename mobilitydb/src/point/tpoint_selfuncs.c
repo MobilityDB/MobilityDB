@@ -35,19 +35,16 @@
 #include "pg_point/tpoint_selfuncs.h"
 
 /* C */
-#include <assert.h>
-#include <float.h>
 #include <math.h>
 /* PostgreSQL */
-#include <parser/parsetree.h>
+#include <postgres.h>
+#include <utils/lsyscache.h>
 #include <utils/syscache.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/meos_catalog.h"
 /* MobilityDB */
-#include "pg_general/span_selfuncs.h"
-#include "pg_general/temporal_selfuncs.h"
 #include "pg_point/tpoint_analyze.h"
 
 /*****************************************************************************

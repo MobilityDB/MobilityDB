@@ -38,13 +38,10 @@
 
 #include "general/type_parser.h"
 
-/* C */
-#include <float.h>
-#include <limits.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
+#include "general/temporal.h"
 #include "general/type_util.h"
 
 /*****************************************************************************/

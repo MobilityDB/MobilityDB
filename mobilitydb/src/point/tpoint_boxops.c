@@ -44,21 +44,12 @@
 
 #include "point/tpoint_boxops.h"
 
-/* C */
-#include <assert.h>
-/* PostgreSQL */
-#include <utils/timestamp.h>
-/* PostGIS */
-#include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include "general/temporaltypes.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "general/temporal.h"
+#include "point/stbox.h"
 /* MobilityDB */
 #include "pg_general/type_util.h"
-#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Boxes function
@@ -82,7 +73,7 @@ Tpoint_stboxes(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   ArrayType *result = stboxarr_to_array(boxes, count);
   pfree(boxes);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_ARRAYTYPE_P(result);
 }
 
 /*****************************************************************************

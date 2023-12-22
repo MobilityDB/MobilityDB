@@ -40,6 +40,7 @@
 #include <float.h>
 #include <limits.h>
 /* PostgreSQL */
+#include <utils/timestamp.h>
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
 #else
@@ -48,8 +49,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/meos_catalog.h"
 #include "general/pg_types.h"
+#include "general/temporal.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
@@ -1256,7 +1257,7 @@ span_expand(const Span *s1, Span *s2)
 }
 
 /**
- * @brief Shift and/or scale the span bounds by the values.
+ * @brief Shift and/or scale the span bounds by two values
  * @param[in] shift Value to shift the bounds
  * @param[in] width Width of the result
  * @param[in] hasshift True when the shift argument is given
@@ -1291,7 +1292,7 @@ lower_upper_shift_scale_value(Datum shift, Datum width, meosType type,
 }
 
 /**
- * @brief Shift and/or scale period bounds by the intervals.
+ * @brief Shift and/or scale period bounds by two intervals.
  * @param[in] shift Interval to shift the bounds
  * @param[in] duration Interval for the duration of the result
  * @param[in,out] lower,upper Bounds of the period
@@ -1398,7 +1399,7 @@ tstzspan_delta_scale_iter(Span *s, TimestampTz origin, TimestampTz delta,
 }
 
 /**
- * @brief Shift and/or scale a span by the values.
+ * @brief Shift and/or scale a span by two values
  * @note Returns the delta and scale of the transformation
  */
 void
@@ -1440,7 +1441,7 @@ numspan_shift_scale1(Span *s, Datum shift, Datum width, bool hasshift,
 }
 
 /**
- * @brief Shift and/or scale a timestamptz span by the intervals.
+ * @brief Shift and/or scale a timestamptz span by two intervals.
  * @note Returns the delta and scale of the transformation
  */
 void
@@ -1467,7 +1468,7 @@ tstzspan_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Shift and/or scale a number span by the values.
+ * @brief Shift and/or scale a number span by two values
  * @csqlfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
  */
 Span *
@@ -1559,7 +1560,7 @@ datespan_shift_scale(const Span *s, int shift, int width, bool hasshift,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Shift and/or scale a timestamptz span by the intervals.
+ * @brief Shift and/or scale a timestamptz span by two intervals.
  * @csqlfn #Tstzspan_shift(), #Tstzspan_scale(), #Tstzspan_shift_scale()
  */
 Span *

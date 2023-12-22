@@ -40,6 +40,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/temporal.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 
@@ -1943,7 +1944,6 @@ minus_set_set(const Set *s1, const Set *s2)
  * Distance functions returning a double
  ******************************************************************************/
 
-#if MEOS
 /**
  * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between a set and a value as a double
@@ -1952,11 +1952,12 @@ double
 distance_set_value(const Set *s, Datum d, meosType basetype)
 {
   assert(s); assert(s->basetype == basetype);
-  Span sp;
-  set_set_span(s, &sp);
-  return distance_span_value(&sp, d, basetype);
+  Span s1;
+  set_set_span(s, &s1);
+  return distance_span_value(&s1, d, basetype);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a set and an integer as a double

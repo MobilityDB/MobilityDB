@@ -39,20 +39,21 @@
 /* C */
 #include <assert.h>
 #include <float.h>
-#include <math.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
+#include "general/span.h"
+#include "general/tbox.h"
 #include "general/temporal_boxops.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
-#include "pg_general/time_gist.h"
+#include "pg_general/span_gist.h"
 
 /*****************************************************************************
  * GiST consistent methods
@@ -314,7 +315,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
   TBox *result = tbox_cp(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     tbox_adjust((void *)result, DatumGetPointer(ent[i].key));
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TBOX_P(result);
 }
 
 /*****************************************************************************

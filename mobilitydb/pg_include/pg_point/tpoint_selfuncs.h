@@ -40,7 +40,6 @@
 #include <utils/selfuncs.h>
 /* MEOS */
 #include "general/meos_catalog.h"
-#include "point/tpoint.h"
 /* MobilityDB */
 #include "pg_point/tpoint_analyze.h"
 

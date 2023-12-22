@@ -35,10 +35,8 @@
 #include "npoint/tnpoint_parser.h"
 
 /* MEOS */
-#include "general/temporaltypes.h"
+#include <meos.h>
 #include "general/type_parser.h"
-#include "general/type_util.h"
-#include "npoint/tnpoint.h"
 #include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/

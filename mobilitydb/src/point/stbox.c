@@ -41,9 +41,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
 #include "general/set.h"
-#include "general/tnumber_mathfuncs.h"
+#include "general/span.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -52,7 +51,6 @@
 #include "pg_general/temporal.h"
 #include "pg_general/type_util.h"
 #include "pg_point/postgis.h"
-#include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Input/Ouput functions
@@ -69,7 +67,7 @@ Datum
 Stbox_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
-  PG_RETURN_POINTER(stbox_in(input));
+  PG_RETURN_STBOX_P(stbox_in(input));
 }
 
 PGDLLEXPORT Datum Stbox_out(PG_FUNCTION_ARGS);
@@ -100,7 +98,7 @@ Stbox_recv(PG_FUNCTION_ARGS)
   STBox *result = stbox_from_wkb((uint8_t *) buf->data, buf->len);
   /* Set cursor to the end of buffer (so the backend is happy) */
   buf->cursor = buf->len;
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Stbox_send(PG_FUNCTION_ARGS);
@@ -131,7 +129,8 @@ PGDLLEXPORT Datum Stbox_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_as_text);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Output function for spatiotemporal boxes
+ * @brief Output a spatiotemporal box in the Well-Known Text (WKT)
+ * representation
  * @sqlfn asText()
  */
 Datum
@@ -198,9 +197,8 @@ Stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz,
     srid = PG_GETARG_INT32(i++);
 
   /* Construct the box */
-  STBox *result = stbox_make(hasx, hasz, geodetic, srid, xmin, xmax,
-    ymin, ymax, zmin, zmax, period);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(stbox_make(hasx, hasz, geodetic, srid, xmin, xmax,
+    ymin, ymax, zmin, zmax, period));
 }
 
 /*****************************************************************************/
@@ -312,6 +310,50 @@ Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
   return Stbox_constructor(fcinfo, true, true, true, true);
 }
 
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_timestamptz_to_stbox);
+/**
+ * @ingroup mobilitydb_box_constructor
+ * @brief Construct a spatiotemporal box from a geometry/geography and a
+ * timestamptz
+ * @sqlfn stbox()
+ * @sqlfn @p ::
+ */
+Datum
+Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  STBox *result = geo_timestamptz_to_stbox(gs, t);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_STBOX_P(result);
+}
+
+PGDLLEXPORT Datum Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_tstzspan_to_stbox);
+/**
+ * @ingroup mobilitydb_box_constructor
+ * @brief Construct a spatiotemporal box from a geometry/geography and a
+ * timestamptz span
+ * 
+ * @sqlfn stbox()
+ */
+Datum
+Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Span *p = PG_GETARG_SPAN_P(1);
+  STBox *result = geo_tstzspan_to_stbox(gs, p);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_STBOX_P(result);
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/
@@ -320,7 +362,7 @@ PGDLLEXPORT Datum Stbox_to_box2d(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_to_box2d);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a spatiotemporal box to a PostGIS GBOX
+ * @brief Convert a spatiotemporal box to a PostGIS box2d
  * @sqlfn box2d()
  * @sqlfn @p ::
  */
@@ -336,7 +378,7 @@ PGDLLEXPORT Datum Stbox_to_box3d(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_to_box3d);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a spatiotemporal box to a PostGIS BOX3D
+ * @brief Convert a spatiotemporal box to a PostGIS box3d
  * @sqlfn box3d()
  * @sqlfn @p ::
  */
@@ -377,12 +419,10 @@ Stbox_to_tstzspan(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Span *result = stbox_to_tstzspan(box);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(result);
 }
 
-/*****************************************************************************
- * Conversion functions
- *****************************************************************************/
+/*****************************************************************************/
 
 PGDLLEXPORT Datum Box2d_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Box2d_to_stbox);
@@ -396,8 +436,7 @@ Datum
 Box2d_to_stbox(PG_FUNCTION_ARGS)
 {
   GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
-  STBox *result = gbox_to_stbox(box);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(gbox_to_stbox(box));
 }
 
 PGDLLEXPORT Datum Box3d_to_stbox(PG_FUNCTION_ARGS);
@@ -412,8 +451,7 @@ Datum
 Box3d_to_stbox(PG_FUNCTION_ARGS)
 {
   BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
-  STBox *result = box3d_to_stbox(box);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(box3d_to_stbox(box));
 }
 
 PGDLLEXPORT Datum Geo_to_stbox(PG_FUNCTION_ARGS);
@@ -433,14 +471,14 @@ Geo_to_stbox(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 0);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Geoset_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_to_stbox);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a geometry/geography to a spatiotemporal box
+ * @brief Convert a geometry/geography set to a spatiotemporal box
  * @sqlfn stbox()
  * @sqlfn @p ::
  */
@@ -450,7 +488,7 @@ Geoset_to_stbox(PG_FUNCTION_ARGS)
   Set *set = PG_GETARG_SET_P(0);
   STBox *result = spatialset_to_stbox(set);
   PG_FREE_IF_COPY(set, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Timestamptz_to_stbox(PG_FUNCTION_ARGS);
@@ -465,8 +503,7 @@ Datum
 Timestamptz_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  STBox *result = timestamptz_to_stbox(t);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(timestamptz_to_stbox(t));
 }
 
 PGDLLEXPORT Datum Tstzset_to_stbox(PG_FUNCTION_ARGS);
@@ -481,8 +518,7 @@ Datum
 Tstzset_to_stbox(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
-  STBox *result = tstzset_to_stbox(ts);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(tstzset_to_stbox(ts));
 }
 
 PGDLLEXPORT Datum Tstzspan_to_stbox(PG_FUNCTION_ARGS);
@@ -497,8 +533,7 @@ Datum
 Tstzspan_to_stbox(PG_FUNCTION_ARGS)
 {
   Span *p = PG_GETARG_SPAN_P(0);
-  STBox *result = tstzspan_to_stbox(p);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(tstzspan_to_stbox(p));
 }
 
 /**
@@ -506,16 +541,16 @@ Tstzspan_to_stbox(PG_FUNCTION_ARGS)
  * needs to be detoasted, extract only the header and not the full object.
  */
 void
-tstzspanset_stbox_slice(Datum psdatum, STBox *box)
+tstzspanset_stbox_slice(Datum ssdatum, STBox *box)
 {
-  SpanSet *ps = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
-    ps = (SpanSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
+  SpanSet *ss = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) ssdatum))
+    ss = (SpanSet *) PG_DETOAST_DATUM_SLICE(ssdatum, 0,
       time_max_header_size());
   else
-    ps = (SpanSet *) psdatum;
-  tstzspanset_set_stbox(ps, box);
-  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
+    ss = (SpanSet *) ssdatum;
+  tstzspanset_set_stbox(ss, box);
+  PG_FREE_IF_COPY_P(ss, DatumGetPointer(ssdatum));
   return;
 }
 
@@ -533,49 +568,7 @@ Tstzspanset_to_stbox(PG_FUNCTION_ARGS)
   Datum psdatum = PG_GETARG_DATUM(0);
   STBox *result = palloc(sizeof(STBox));
   tstzspanset_stbox_slice(psdatum, result);
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_timestamptz_to_stbox);
-/**
- * @ingroup mobilitydb_box_conversion
- * @brief Convert a geometry/geography and a timestamptz to a spatiotemporal box
- * @sqlfn stbox()
- * @sqlfn @p ::
- */
-Datum
-Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  STBox *result = geo_timestamptz_to_stbox(gs, t);
-  PG_FREE_IF_COPY(gs, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-PGDLLEXPORT Datum Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_tstzspan_to_stbox);
-/**
- * @ingroup mobilitydb_box_conversion
- * @brief Convert a geometry/geography and a timestamptz span to a
- * spatiotemporal box
- * @sqlfn stbox()
- */
-Datum
-Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Span *p = PG_GETARG_SPAN_P(1);
-  STBox *result = geo_tstzspan_to_stbox(gs, p);
-  PG_FREE_IF_COPY(gs, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************
@@ -762,7 +755,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmin_inc);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the minimum timestamptz value of a spatiotemporal box
- * is inclusive
+ * is inclusive, if any
  * @sqlfn Tmin_inc()
  */
 Datum
@@ -796,8 +789,8 @@ PGDLLEXPORT Datum Stbox_tmax_inc(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tmax_inc);
 /**
  * @ingroup mobilitydb_box_accessor
- * @brief Return true if the maximum timestamptz value of a spatiotemporal box is
- * inclusive
+ * @brief Return true if the maximum timestamptz value of a spatiotemporal box
+ * is inclusive, if any
  * @sqlfn Tmax_inc()
  */
 Datum
@@ -832,7 +825,7 @@ PGDLLEXPORT Datum Stbox_set_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_set_srid);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Sets the SRID of a spatiotemporal box
+ * @brief Return a spatiotemporal box with the coordinates set to an SRID
  * @sqlfn setSRID()
  */
 Datum
@@ -840,8 +833,7 @@ Stbox_set_srid(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   int32 srid = PG_GETARG_INT32(1);
-  STBox *result = stbox_set_srid(box, srid);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(stbox_set_srid(box, srid));
 }
 
 /**
@@ -892,7 +884,7 @@ PGDLLEXPORT Datum Stbox_transform(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_transform);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Transform a spatiotemporal box into another spatial reference system
+ * @brief Return a spatiotemporal box with the coordinates transformed to an SRID
  * @sqlfn transform()
  */
 Datum
@@ -902,8 +894,7 @@ Stbox_transform(PG_FUNCTION_ARGS)
   int32 srid = PG_GETARG_INT32(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  STBox *result = stbox_transform(box, srid);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(stbox_transform(box, srid));
 }
 
 /*****************************************************************************
@@ -922,8 +913,7 @@ Stbox_shift_time(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  STBox *result = stbox_shift_scale_time(box, shift, NULL);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(stbox_shift_scale_time(box, shift, NULL));
 }
 
 PGDLLEXPORT Datum Stbox_scale_time(PG_FUNCTION_ARGS);
@@ -938,8 +928,7 @@ Stbox_scale_time(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  STBox *result = stbox_shift_scale_time(box, NULL, duration);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(stbox_shift_scale_time(box, NULL, duration));
 }
 
 PGDLLEXPORT Datum Stbox_shift_scale_time(PG_FUNCTION_ARGS);
@@ -947,7 +936,7 @@ PG_FUNCTION_INFO_V1(Stbox_shift_scale_time);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box with the time span shifted and scaled by 
- * the intervals
+ * two intervals
  * @sqlfn shiftScaleTime()
  */
 Datum
@@ -956,8 +945,7 @@ Stbox_shift_scale_time(PG_FUNCTION_ARGS)
   STBox *box = PG_GETARG_STBOX_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  STBox *result = stbox_shift_scale_time(box, shift, duration);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(stbox_shift_scale_time(box, shift, duration));
 }
 
 PGDLLEXPORT Datum Stbox_get_space(PG_FUNCTION_ARGS);
@@ -971,7 +959,7 @@ Datum
 Stbox_get_space(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  PG_RETURN_POINTER(stbox_get_space(box));
+  PG_RETURN_STBOX_P(stbox_get_space(box));
 }
 
 PGDLLEXPORT Datum Stbox_expand_space(PG_FUNCTION_ARGS);
@@ -986,7 +974,7 @@ Stbox_expand_space(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  PG_RETURN_POINTER(stbox_expand_space(box, d));
+  PG_RETURN_STBOX_P(stbox_expand_space(box, d));
 }
 
 PGDLLEXPORT Datum Stbox_expand_time(PG_FUNCTION_ARGS);
@@ -1001,7 +989,7 @@ Stbox_expand_time(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
-  PG_RETURN_POINTER(stbox_expand_time(box, interval));
+  PG_RETURN_STBOX_P(stbox_expand_time(box, interval));
 }
 
 PGDLLEXPORT Datum Stbox_round(PG_FUNCTION_ARGS);
@@ -1017,7 +1005,7 @@ Stbox_round(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   int maxdd = PG_GETARG_INT32(1);
-  PG_RETURN_POINTER(stbox_round(box, maxdd));
+  PG_RETURN_STBOX_P(stbox_round(box, maxdd));
 }
 
 /*****************************************************************************
@@ -1182,7 +1170,7 @@ PGDLLEXPORT Datum Below_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Below_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
- * @brief Return true if the first spatiotemporal box is below of the second
+ * @brief Return true if the first spatiotemporal box is below the second
  * one
  * @sqlfn temporal_below()
  * @sqlop @p <<|
@@ -1284,8 +1272,8 @@ PGDLLEXPORT Datum Back_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Back_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
- * @brief Return true if the first spatiotemporal box is at back of the second
- * one
+ * @brief Return true if the first spatiotemporal box is at the back of the
+ * second one
  * @sqlfn temporal_below()
  * @sqlop @p />>
  */
@@ -1395,8 +1383,7 @@ Union_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
   STBox *box2 = PG_GETARG_STBOX_P(1);
-  STBox *result = union_stbox_stbox(box1, box2, true);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(union_stbox_stbox(box1, box2, true));
 }
 
 PGDLLEXPORT Datum Intersection_stbox_stbox(PG_FUNCTION_ARGS);
@@ -1415,7 +1402,7 @@ Intersection_stbox_stbox(PG_FUNCTION_ARGS)
   STBox *result = intersection_stbox_stbox(box1, box2);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************
@@ -1426,7 +1413,7 @@ PGDLLEXPORT Datum Stbox_quad_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quad_split);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Split the spatiotemporal box with respect to its space dimension in
+ * @brief Split a spatiotemporal box with respect to its space bounds in
  * four quadrants/octants
  * @sqlfn stbox_intersection()
  * @sqlop @p *
@@ -1439,7 +1426,7 @@ Stbox_quad_split(PG_FUNCTION_ARGS)
   STBox *boxes = stbox_quad_split(box, &count);
   ArrayType *result = stboxarr_to_array(boxes, count);
   pfree(boxes);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_ARRAYTYPE_P(result);
 }
 
 /*****************************************************************************
@@ -1460,26 +1447,20 @@ Stbox_extent_transfn(PG_FUNCTION_ARGS)
   /* Can't do anything with null inputs */
   if (! box1 && ! box2)
     PG_RETURN_NULL();
-  STBox *result = palloc(sizeof(STBox));
   /* One of the boxes is null, return the other one */
   if (! box1)
-  {
-    memcpy(result, box2, sizeof(STBox));
-    PG_RETURN_POINTER(result);
-  }
+    PG_RETURN_STBOX_P(stbox_cp(box2));
   if (! box2)
-  {
-    memcpy(result, box1, sizeof(STBox));
-    PG_RETURN_POINTER(result);
-  }
+    PG_RETURN_STBOX_P(stbox_cp(box1));
 
   /* Both boxes are not null */
   ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
   ensure_same_dimensionality(box1->flags, box2->flags);
   ensure_same_geodetic(box1->flags, box2->flags);
+  STBox *result = palloc(sizeof(STBox));
   memcpy(result, box1, sizeof(STBox));
   stbox_expand(box2, result);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Stbox_extent_combinefn(PG_FUNCTION_ARGS);
@@ -1495,14 +1476,14 @@ Stbox_extent_combinefn(PG_FUNCTION_ARGS)
   if (!box1 && !box2)
     PG_RETURN_NULL();
   if (box1 && !box2)
-    PG_RETURN_POINTER(box1);
+    PG_RETURN_STBOX_P(box1);
   if (!box1 && box2)
-    PG_RETURN_POINTER(box2);
+    PG_RETURN_STBOX_P(box2);
   /* Both boxes are not null */
   ensure_same_dimensionality(box1->flags, box2->flags);
   STBox *result = stbox_cp(box1);
   stbox_expand(box2, result);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************

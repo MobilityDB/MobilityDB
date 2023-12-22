@@ -34,9 +34,6 @@
 
 #include "point/tpoint_out.h"
 
-/* C */
-#include <assert.h>
-#include <float.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
 /* MEOS */
@@ -45,8 +42,6 @@
 #include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
-#include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Output in WKT and EWKT format

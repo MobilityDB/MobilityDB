@@ -40,6 +40,8 @@
 #ifndef int16
 typedef signed short int16;
 #endif
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************
  * Data structures
@@ -195,6 +197,15 @@ typedef struct
 } spansettype_catalog_struct;
 
 /*****************************************************************************/
+
+extern bool temptype_subtype(tempSubtype subtype);
+extern bool temptype_subtype_all(tempSubtype subtype);
+extern const char *tempsubtype_name(tempSubtype subtype);
+extern bool tempsubtype_from_string(const char *str, int16 *subtype);
+extern const char *meosoper_name(meosOper oper);
+extern meosOper meosoper_from_string(const char *name);
+extern const char *interptype_name(interpType interp);
+extern interpType interptype_from_string(const char *interp_str);
 
 /* Type conversion functions */
 

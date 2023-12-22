@@ -39,8 +39,7 @@
 #include <utils/palloc.h>
 #include <fmgr.h>
 /* MEOS */
-#include "general/temporal.h"
-#include "npoint/tnpoint.h"
+#include <meos.h>
 
 /*****************************************************************************/
 

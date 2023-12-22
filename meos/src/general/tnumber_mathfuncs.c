@@ -46,8 +46,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
-#include "general/pg_types.h"
-#include "general/temporaltypes.h"
+#include "general/tinstant.h"
+#include "general/tsequence.h"
 #include "general/type_util.h"
 
 /*****************************************************************************
@@ -291,12 +291,13 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
    * the common timespan */
   if (oper == DIV)
   {
-    SpanSet *ps = temporal_time(temp1);
-    Temporal *projtemp2 = temporal_restrict_tstzspanset(temp2, ps, REST_AT);
+    SpanSet *ss = temporal_time(temp1);
+    Temporal *projtemp2 = temporal_restrict_tstzspanset(temp2, ss, REST_AT);
     if (projtemp2 == NULL)
       return NULL;
     if (temporal_ever_eq(projtemp2, Float8GetDatum(0.0)))
     {
+      pfree(projtemp2);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
       return NULL;
     }

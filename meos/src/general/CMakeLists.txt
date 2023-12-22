@@ -2,6 +2,7 @@ add_library(general OBJECT
   doublen.c
   error.c
   lifting.c
+  meos.c
   meos_catalog.c
   pg_types.c
   skiplist.c

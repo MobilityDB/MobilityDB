@@ -46,16 +46,10 @@
 
 #include "point/tpoint_spatialrels.h"
 
-/* PostgreSQL */
-#include <assert.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/type_util.h"
-#include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "point/tpoint_tempspatialrels.h"
 /* MobilityDB */
 #include "pg_point/postgis.h"
 #include "pg_point/tpoint_spatialfuncs.h"

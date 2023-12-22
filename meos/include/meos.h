@@ -37,8 +37,15 @@
 /* C */
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 /* PostgreSQL */
+#if MEOS
 #include "postgres_int_defs.h"
+#else
+#include <postgres.h>
+#include <utils/date.h>
+#include <utils/timestamp.h>
+#endif
 /* PostGIS */
 #include <liblwgeom.h>
 
@@ -557,15 +564,15 @@ extern uint64 span_hash_extended(const Span *s, uint64 seed);
 extern bool span_lower_inc(const Span *s);
 extern bool span_upper_inc(const Span *s);
 extern double span_width(const Span *s);
-extern Span *spanset_end_span(const SpanSet *ss);
+extern const Span *spanset_end_span(const SpanSet *ss);
 extern uint32 spanset_hash(const SpanSet *ss);
 extern uint64 spanset_hash_extended(const SpanSet *ss, uint64 seed);
 extern bool spanset_lower_inc(const SpanSet *ss);
 extern int spanset_num_spans(const SpanSet *ss);
 extern Span *spanset_span(const SpanSet *ss);
-extern Span *spanset_span_n(const SpanSet *ss, int i);
+extern const Span *spanset_span_n(const SpanSet *ss, int i);
 extern const Span **spanset_spans(const SpanSet *ss);
-extern Span *spanset_start_span(const SpanSet *ss);
+extern const Span *spanset_start_span(const SpanSet *ss);
 extern bool spanset_upper_inc(const SpanSet *ss);
 extern double spanset_width(const SpanSet *ss, bool boundspan);
 extern STBox *spatialset_to_stbox(const Set *s);
@@ -1098,6 +1105,10 @@ extern bool tbox_xmax(const TBox *box, double *result);
 extern bool tbox_xmax_inc(const TBox *box, bool *result);
 extern bool tbox_xmin(const TBox *box, double *result);
 extern bool tbox_xmin_inc(const TBox *box, bool *result);
+extern bool tboxfloat_xmax(const TBox *box, double *result);
+extern bool tboxfloat_xmin(const TBox *box, double *result);
+extern bool tboxint_xmax(const TBox *box, int *result);
+extern bool tboxint_xmin(const TBox *box, int *result);
 
 /*****************************************************************************/
 
@@ -1328,9 +1339,9 @@ extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *durat
 extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
 extern Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration);
 extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift);
-extern Temporal *temporal_to_tinstant(const Temporal *temp);
-extern Temporal *temporal_to_tsequence(const Temporal *temp, interpType interp);
-extern Temporal *temporal_to_tsequenceset(const Temporal *temp, interpType interp);
+extern TInstant *temporal_to_tinstant(const Temporal *temp);
+extern TSequence *temporal_to_tsequence(const Temporal *temp, interpType interp);
+extern TSequenceSet *temporal_to_tsequenceset(const Temporal *temp, interpType interp);
 extern Temporal *tfloat_scale_value(const Temporal *temp, double width);
 extern Temporal *tfloat_shift_scale_value(const Temporal *temp, double shift, double width);
 extern Temporal *tfloat_shift_value(const Temporal *temp, double shift);

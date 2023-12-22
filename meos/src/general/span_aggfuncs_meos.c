@@ -39,8 +39,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/spanset.h"
-#include "general/type_util.h"
+#include "general/span.h"
+#include "general/temporal.h"
 
 /*****************************************************************************
  * Aggregate functions for span set types

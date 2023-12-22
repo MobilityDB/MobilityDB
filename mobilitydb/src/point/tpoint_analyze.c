@@ -60,15 +60,14 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <access/htup_details.h>
-#include <executor/spi.h>
-#include <utils/lsyscache.h>
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_spatialfuncs.h"
+#include "general/set.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/span_analyze.h"

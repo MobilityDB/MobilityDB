@@ -36,9 +36,10 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* PostgreSQL */
-#include "general/temporal.h"
-#include "general/span.h"
+/* MEOS */
+#include <meos.h>
+#include "general/doublen.h"
+#include "general/meos_catalog.h"
 
 /*****************************************************************************/
 

@@ -36,13 +36,11 @@
  * - `before`, `overbefore`, `after`, `overafter`for the time dimension
  */
 
-/* C */
-#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
+#include "general/temporal.h"
 #include "general/temporal_boxops.h"
 
 /*****************************************************************************/

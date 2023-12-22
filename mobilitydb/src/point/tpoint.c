@@ -34,17 +34,14 @@
 
 #include "point/tpoint.h"
 
-/* C */
-#include <limits.h>
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
+#include "general/temporal.h"
+#include "point/stbox.h"
 #include "point/tpoint_parser.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
@@ -174,8 +171,7 @@ Tpoint_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Temporal *result = tpoint_parse(&input, oid_type(temptypid));
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(tpoint_parse(&input, oid_type(temptypid)));
 }
 
 /**
@@ -403,7 +399,7 @@ Tpoint_enforce_typmod(PG_FUNCTION_ARGS)
   int32 typmod = PG_GETARG_INT32(1);
   /* Check if typmod of temporal point is consistent with the supplied one */
   temp = tpoint_valid_typmod(temp, typmod);
-  PG_RETURN_POINTER(temp);
+  PG_RETURN_TEMPORAL_P(temp);
 }
 
 /*****************************************************************************
@@ -424,7 +420,7 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Temporal *result = (Temporal *) tpointinst_make(gs, t);
   PG_FREE_IF_COPY(gs, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -445,7 +441,7 @@ Tpoint_to_stbox(PG_FUNCTION_ARGS)
   Datum tempdatum = PG_GETARG_DATUM(0);
   STBox *result = palloc(sizeof(STBox));
   temporal_bbox_slice(tempdatum, result);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************
@@ -469,7 +465,7 @@ Geo_expand_space(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Tpoint_expand_space(PG_FUNCTION_ARGS);
@@ -487,7 +483,7 @@ Tpoint_expand_space(PG_FUNCTION_ARGS)
   double d = PG_GETARG_FLOAT8(1);
   STBox *result = tpoint_expand_space(temp, d);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************/

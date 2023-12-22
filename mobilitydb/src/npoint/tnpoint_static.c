@@ -39,18 +39,17 @@
 
 /* PostgreSQL */
 #include <libpq/pqformat.h>
-#include <executor/spi.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
-#include "general/type_util.h"
 /* MobilityDB */
-#include "pg_general/temporal.h"
 #include "pg_npoint/tnpoint_static.h"
+#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Send/receive functions
@@ -191,7 +190,7 @@ Datum
 Npoint_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_POINTER(npoint_in(str, true));
+  PG_RETURN_NPOINT_P(npoint_in(str, true));
 }
 
 PGDLLEXPORT Datum Npoint_out(PG_FUNCTION_ARGS);
@@ -219,7 +218,7 @@ Datum
 Npoint_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(npoint_recv(buf));
+  PG_RETURN_NPOINT_P(npoint_recv(buf));
 }
 
 PGDLLEXPORT Datum Npoint_send(PG_FUNCTION_ARGS);
@@ -254,7 +253,7 @@ Datum
 Nsegment_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_POINTER(nsegment_in(str));
+  PG_RETURN_NSEGMENT_P(nsegment_in(str));
 }
 
 PGDLLEXPORT Datum Nsegment_out(PG_FUNCTION_ARGS);
@@ -282,7 +281,7 @@ Datum
 Nsegment_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(nsegment_recv(buf));
+  PG_RETURN_NSEGMENT_P(nsegment_recv(buf));
 }
 
 PGDLLEXPORT Datum Nsegment_send(PG_FUNCTION_ARGS);
@@ -315,7 +314,7 @@ Npoint_constructor(PG_FUNCTION_ARGS)
 {
   int64 rid = PG_GETARG_INT64(0);
   double pos = PG_GETARG_FLOAT8(1);
-  PG_RETURN_POINTER(npoint_make(rid, pos));
+  PG_RETURN_NPOINT_P(npoint_make(rid, pos));
 }
 
 PGDLLEXPORT Datum Nsegment_constructor(PG_FUNCTION_ARGS);
@@ -331,7 +330,7 @@ Nsegment_constructor(PG_FUNCTION_ARGS)
   int64 rid = PG_GETARG_INT64(0);
   double pos1 = PG_GETARG_FLOAT8(1);
   double pos2 = PG_GETARG_FLOAT8(2);
-  PG_RETURN_POINTER(nsegment_make(rid, pos1, pos2));
+  PG_RETURN_NSEGMENT_P(nsegment_make(rid, pos1, pos2));
 }
 
 /*****************************************************************************
@@ -349,7 +348,7 @@ Datum
 Npoint_to_nsegment(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_POINTER(npoint_to_nsegment(np));
+  PG_RETURN_NSEGMENT_P(npoint_to_nsegment(np));
 }
 
 /*****************************************************************************
@@ -443,7 +442,7 @@ Npoint_round(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(npoint_round(np, size));
+  PG_RETURN_NPOINT_P(npoint_round(np, size));
 }
 
 PGDLLEXPORT Datum Nsegment_round(PG_FUNCTION_ARGS);
@@ -459,7 +458,7 @@ Nsegment_round(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(nsegment_round(ns, size));
+  PG_RETURN_NSEGMENT_P(nsegment_round(ns, size));
 }
 
 /*****************************************************************************
@@ -477,8 +476,7 @@ Datum
 Npoint_to_geom(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  GSERIALIZED *result = npoint_geom(np);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(npoint_geom(np));
 }
 
 PGDLLEXPORT Datum Geom_to_npoint(PG_FUNCTION_ARGS);
@@ -495,7 +493,7 @@ Geom_to_npoint(PG_FUNCTION_ARGS)
   Npoint *result = geom_npoint(gs);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_NPOINT_P(result);
 }
 
 PGDLLEXPORT Datum Nsegment_to_geom(PG_FUNCTION_ARGS);
@@ -509,8 +507,7 @@ Datum
 Nsegment_to_geom(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  GSERIALIZED *result = nsegment_geom(ns);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(nsegment_geom(ns));
 }
 
 PGDLLEXPORT Datum Geom_to_nsegment(PG_FUNCTION_ARGS);
@@ -527,7 +524,7 @@ Geom_to_nsegment(PG_FUNCTION_ARGS)
   Nsegment *result = geom_nsegment(gs);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_NSEGMENT_P(result);
 }
 
 /*****************************************************************************

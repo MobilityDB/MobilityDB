@@ -35,7 +35,7 @@
 #define __TPOINT_TILE_H__
 
 /* MEOS */
-#include "general/temporal.h"
+#include <meos.h>
 
 #define MAXDIMS 4
 

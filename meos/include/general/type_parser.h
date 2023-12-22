@@ -35,10 +35,8 @@
 #define __TEMPORAL_PARSER_H__
 
 /* MEOS */
+#include <meos.h>
 #include "general/meos_catalog.h"
-#include "general/span.h"
-#include "general/set.h"
-#include "general/temporal.h"
 
 /*****************************************************************************/
 

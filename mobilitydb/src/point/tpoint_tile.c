@@ -43,8 +43,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
 #include "general/temporal_tile.h"
+#include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tile.h"
 /* MobilityDB */
@@ -209,9 +209,8 @@ Stbox_tile(PG_FUNCTION_ARGS)
     hast = true;
   }
 
-  STBox *result = stbox_tile(point, t, xsize, ysize, zsize, duration, 
-    sorigin, torigin, hast);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(stbox_tile(point, t, xsize, ysize, zsize, duration, 
+    sorigin, torigin, hast));
 }
 
 /*****************************************************************************

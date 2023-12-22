@@ -39,14 +39,6 @@
 /* MEOS */
 #include <meos.h>
 #include "general/meos_catalog.h"
-#include "general/span.h"
-#include "general/set.h"
-#include "general/tbox.h"
-#include "point/stbox.h"
-
-/* To avoid including builtins.h */
-extern text *cstring_to_text(const char *s);
-extern char *text_to_cstring(const text *t);
 
 /* To avoid including pg_collation_d */
 #define DEFAULT_COLLATION_OID 100
@@ -241,39 +233,6 @@ typedef union bboxunion
   STBox g;     /**< Spatiotemporal box */
 } bboxunion;
 
-/**
- * Structure to represent values of the internal type for computing aggregates
- * for temporal number types
- */
-typedef struct
-{
-  double a;
-  double b;
-} double2;
-
-/**
- * Structure to represent values of the internal type for computing aggregates
- * for 2D temporal point types
- */
-typedef struct
-{
-  double a;
-  double b;
-  double c;
-} double3;
-
-/**
- * Structure to represent values of the internal type for computing aggregates
- * for 3D temporal point types
- */
-typedef struct
-{
-  double a;
-  double b;
-  double c;
-  double d;
-} double4;
-
 /*****************************************************************************
  * Miscellaneous
  *****************************************************************************/
@@ -312,10 +271,20 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
   #define DatumGetTemporalP(X)       ((Temporal *) PG_DETOAST_DATUM(X))
 #endif /* MEOS */
 
-#define PG_GETARG_TEMPORAL_P(X)    ((Temporal *) PG_GETARG_VARLENA_P(X))
-#define PG_GETARG_TINSTANT_P(X)    ((TInstant *) PG_GETARG_VARLENA_P(X))
-#define PG_GETARG_TSEQUENCE_P(X)    ((TSequence *) PG_GETARG_VARLENA_P(X))
-#define PG_GETARG_TSEQUENCESET_P(X)    ((TSequenceSet *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TEMPORAL_P(X)      ((Temporal *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TINSTANT_P(X)      ((TInstant *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TSEQUENCE_P(X)     ((TSequence *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TSEQUENCESET_P(X)  ((TSequenceSet *) PG_GETARG_VARLENA_P(X))
+
+#define PG_RETURN_TEMPORAL_P(X)      PG_RETURN_POINTER(X)
+#define PG_RETURN_TINSTANT_P(X)      PG_RETURN_POINTER(X)
+#define PG_RETURN_TSEQUENCE_P(X)     PG_RETURN_POINTER(X)
+#define PG_RETURN_TSEQUENCESET_P(X)  PG_RETURN_POINTER(X)
+
+#define TemporalPGetDatum(X)         PointerGetDatum(X)
+#define TInstantPGetDatum(X)         PointerGetDatum(X)
+#define TSequencePGetDatum(X)        PointerGetDatum(X)
+#define TSequenceSetPGetDatum(X)     PointerGetDatum(X)
 
 #define DATUM_FREE(value, basetype) \
   do { \
@@ -349,14 +318,6 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 /* Parameter tests */
 
-extern bool temptype_subtype(tempSubtype subtype);
-extern bool temptype_subtype_all(tempSubtype subtype);
-extern const char *tempsubtype_name(tempSubtype subtype);
-extern bool tempsubtype_from_string(const char *str, int16 *subtype);
-extern const char *meosoper_name(meosOper oper);
-extern meosOper meosoper_from_string(const char *name);
-extern const char *interptype_name(interpType interp);
-extern interpType interptype_from_string(const char *interp_str);
 extern bool ensure_not_null(void *ptr);
 extern bool ensure_one_not_null(void *ptr1, void *ptr2);
 extern bool ensure_one_true(bool hasshift, bool haswidth);
@@ -390,11 +351,9 @@ extern bool ensure_valid_duration(const Interval *duration);
 /* General functions */
 
 extern void *temporal_bbox_ptr(const Temporal *temp);
-extern void temporal_tstzspan_slice(Datum tempdatum, Span *box);
-extern void temporal_bbox_slice(Datum tempdatum, void *box);
 
 extern bool intersection_temporal_temporal(const Temporal *temp1,
-  const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
+const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
 
 /* Version functions */
 

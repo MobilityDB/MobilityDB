@@ -64,6 +64,7 @@
  * @pre It is assumed that the geometry/geography IS NOT TOASTED
  */
 #define DatumGetGserializedP(X)      ((GSERIALIZED *) DatumGetPointer(X))
+#define GserializedPGetDatum(X)      PointerGetDatum(X)
 
 /**
  * @brief Definition for the internal aspects of  the GSERIALIZED struct
@@ -762,14 +763,14 @@ extern Temporal *tsequence_restrict_tstzspanset(const TSequence *seq, const Span
 extern TInstant *tsequence_restrict_timestamptz(const TSequence *seq, TimestampTz t, bool atfunc);
 extern TSequence *tsequence_restrict_tstzset(const TSequence *seq, const Set *s, bool atfunc);
 extern TSequenceSet *tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc);
-extern TSequenceSet *tsequence_restrict_values(const TSequence *seq, const Set *set, bool atfunc);
+extern TSequenceSet *tsequence_restrict_values(const TSequence *seq, const Set *s, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_minmax(const TSequenceSet *ss, bool min, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_tstzspan(const TSequenceSet *ss, const Span *s, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_tstzspanset(const TSequenceSet *ss, const SpanSet *ps, bool atfunc);
 extern Temporal *tsequenceset_restrict_timestamptz(const TSequenceSet *ss, TimestampTz t, bool atfunc);
 extern Temporal *tsequenceset_restrict_tstzset(const TSequenceSet *ss, const Set *s, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc);
-extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ss, const Set *set, bool atfunc);
+extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ss, const Set *s, bool atfunc);
 
 /*****************************************************************************/
 

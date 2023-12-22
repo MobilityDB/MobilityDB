@@ -32,37 +32,41 @@
  * @brief Index support functions for temporal types
  */
 
-#include "pg_general/temporal_supportfn.h"
-
 /* C */
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <funcapi.h>
-#include <access/htup_details.h>
-#include <access/stratnum.h>
-#include <catalog/namespace.h>
 #include <catalog/pg_opfamily.h>
-#include <catalog/pg_type_d.h>
 #include <catalog/pg_am_d.h>
 #include <nodes/supportnodes.h>
 #include <nodes/nodeFuncs.h>
 #include <nodes/makefuncs.h>
 #include <optimizer/optimizer.h>
 #include <parser/parse_func.h>
-#include <utils/array.h>
-#include <utils/builtins.h>
-#include <utils/lsyscache.h>
-#include <utils/numeric.h>
 #include <utils/syscache.h>
 /* MEOS */
 #include <meos.h>
-#include "general/meos_catalog.h"
 #include "general/temporal_boxops.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
-#include "pg_point/tpoint_selfuncs.h"
+
+/*****************************************************************************/
+
+/*
+* Depending on the function, we will deploy different index enhancement
+* strategies. Containment functions can use a more strict index strategy
+* than overlapping functions. We store the metadata to drive these choices
+* in the IndexableFunctions array.
+*/
+typedef struct
+{
+  const char *fn_name;  /* Name of the function */
+  uint16_t index;       /* Position of the strategy in the arrays */
+  uint8_t nargs;        /* Expected number of function arguments */
+  uint8_t expand_arg;   /* Radius argument for "within distance" search */
+} IndexableFunction;
+
 
 enum TEMPORAL_FUNCTION_IDX
 {
@@ -198,7 +202,7 @@ func_needs_index(Oid funcid, const IndexableFunction *idxfns,
  * searches like the && operator), so only implementations based on GIST
  * and SPGIST.
 */
-Oid
+static Oid
 opFamilyAmOid(Oid opfamilyoid)
 {
   Form_pg_opfamily familyform;
@@ -327,7 +331,7 @@ type_to_bbox(meosType type)
  * The function must also have an entry above in the IndexableFunctions array
  * so that we know what index search strategy we want to apply.
  */
-Datum
+static Datum
 Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   Node *rawreq = (Node *) PG_GETARG_POINTER(0);

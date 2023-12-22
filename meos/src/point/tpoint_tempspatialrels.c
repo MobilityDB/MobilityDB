@@ -80,9 +80,9 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
-#include "general/spanset.h"
-#include "general/temporaltypes.h"
 #include "general/tbool_boolops.h"
+#include "general/tinstant.h"
+#include "general/tsequence.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -252,34 +252,34 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     *count = 1;
     return result;
   }
-  SpanSet *ps;
+  SpanSet *ss;
   if (npers == 1)
-    ps = minus_span_span(&seq->period, &periods[0]);
+    ss = minus_span_span(&seq->period, &periods[0]);
   else
   {
     /* It is necessary to sort the periods */
     SpanSet *ps1 = spanset_make_exp(periods, npers, npers, NORMALIZE,
       ORDERED_NO);
-    ps = minus_span_spanset(&seq->period, ps1);
+    ss = minus_span_spanset(&seq->period, ps1);
     pfree(ps1);
   }
   int nseqs = npers;
-  if (ps != NULL)
-    nseqs += ps->count;
+  if (ss != NULL)
+    nseqs += ss->count;
   result = palloc(sizeof(TSequence *) * nseqs);
   for (int i = 0; i < npers; i++)
     result[i] = tsequence_from_base_tstzspan(datum_yes, T_TBOOL, &periods[i],
       STEP);
-  if (ps != NULL)
+  if (ss != NULL)
   {
-    for (int i = 0; i < ps->count; i++)
+    for (int i = 0; i < ss->count; i++)
     {
-      const Span *s = SPANSET_SP_N(ps, i);
+      const Span *s = SPANSET_SP_N(ss, i);
       result[i + npers] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, s,
         STEP);
     }
     tseqarr_sort(result, nseqs);
-    pfree(ps);
+    pfree(ss);
   }
   pfree(periods);
   *count = nseqs;

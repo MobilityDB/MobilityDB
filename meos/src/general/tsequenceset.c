@@ -45,17 +45,17 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/set.h"
 #include "general/span.h"
 #include "general/spanset.h"
-#include "general/temporaltypes.h"
+#include "general/tsequence.h"
 #include "general/temporal_boxops.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_spatialfuncs.h"
+#if NPOINT
+  #include "npoint/tnpoint_spatialfuncs.h"
+#endif
 
 /*****************************************************************************
  * General functions
@@ -1568,7 +1568,7 @@ tsequenceset_set_interp(const TSequenceSet *ss, interpType interp)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence set where the value dimension is shifted
- * and/or scaled by the values.
+ * and/or scaled by two values
  * @pre The duration is greater than 0 if it is not NULL
  * @csqlfn #Tnumber_shift_value(), #Tnumber_scale_value(),
  *    #Tnumber_shift_scale_value()
@@ -1604,7 +1604,7 @@ tnumberseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal sequence set shifted and/or scaled by the intervals.
+ * @brief Return a temporal sequence set shifted and/or scaled by two intervals
  * @pre The duration is greater than 0 if it is not NULL
  * @csqlfn #Temporal_shift_time(), #Temporal_scale_time(),
  *    #Temporal_shift_scale_time()
@@ -3286,7 +3286,7 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
   TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences,
     nseqs, &newcount);
   result = tsequenceset_make_free(normseqs, newcount, NORMALIZE_NO);
-  pfree_array((void **) tofree, nfree);
+  pfree_array((void **) tofree, nfree); pfree(minus);
   return result;
 }
 

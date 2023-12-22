@@ -40,6 +40,15 @@
 #include <meos.h>
 #include "general/temporal.h"
 
+/*****************************************************************************
+ * fmgr macros
+ *****************************************************************************/
+
+#define DatumGetSkipListP(X)      ((SkipList *) DatumGetPointer(X))
+#define SkipListPGetDatum(X)      PointerGetDatum(X)
+#define PG_GETARG_SKIPLIST_P(n)   DatumGetSkipListP(PG_GETARG_DATUM(n))
+#define PG_RETURN_SKIPLIST_P(x)   return SkipListPGetDatum(x)
+
 /*****************************************************************************/
 
 extern bool ensure_same_skiplist_subtype(SkipList *state, uint8 subtype);

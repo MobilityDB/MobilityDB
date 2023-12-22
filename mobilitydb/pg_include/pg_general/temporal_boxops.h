@@ -37,11 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include "general/meos_catalog.h"
-#include "general/temporal.h"
-#include "general/span.h"
-#include "general/tbox.h"
-#include "point/stbox.h"
+#include <meos.h>
 
 /*****************************************************************************/
 

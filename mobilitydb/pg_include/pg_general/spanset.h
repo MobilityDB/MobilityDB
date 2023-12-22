@@ -37,7 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include "general/span.h"
+#include <meos.h>
 
 /*****************************************************************************/
 

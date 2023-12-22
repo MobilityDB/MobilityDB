@@ -67,26 +67,14 @@
 
 /* C */
 #include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  #include <access/tuptoaster.h>
-#else
-  #include <access/heaptoast.h>
-#endif
-#include <catalog/pg_collation_d.h>
-#include <catalog/pg_operator_d.h>
-#include <commands/vacuum.h>
-#include <parser/parse_oper.h>
-#include <utils/datum.h>
-#include <utils/lsyscache.h>
-#include <utils/timestamp.h>
 #include <utils/typcache.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/span_analyze.h"

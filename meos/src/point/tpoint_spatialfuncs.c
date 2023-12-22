@@ -34,8 +34,6 @@
 
 #include "point/tpoint_spatialfuncs.h"
 
-/* C */
-#include <assert.h>
 /* PostgreSQL */
 #include <utils/float.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -51,11 +49,12 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/lifting.h"
-#include "general/meos_catalog.h"
-#include "general/temporaltypes.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/tsequence.h"
 #include "general/type_util.h"
 #include "point/pgis_call.h"
+#include "point/stbox.h"
+#include "point/tpoint.h"
 #include "point/tpoint_distance.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
@@ -2141,7 +2140,7 @@ tpoint_srid(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Set the SRID of a temporal instant point
+ * @brief Return a temporal instant point with the coordinates set to an SRID
  * @csqlfn #Tpoint_set_srid()
  */
 TInstant *
@@ -2157,7 +2156,7 @@ tpointinst_set_srid(const TInstant *inst, int32 srid)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Set the SRID of a temporal sequence point
+ * @brief Return a temporal sequence point with the coordinates set to an SRID
  * @csqlfn #Tpoint_set_srid()
  */
 TSequence *
@@ -2181,7 +2180,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Set the SRID of a temporal sequence set point
+ * @brief Return a temporal sequence set point with the coordinates set to an SRID
  * @csqlfn #Tpoint_set_srid()
  */
 TSequenceSet *
@@ -2214,7 +2213,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
 
 /**
  * @ingroup libmeos_temporal_spatial_transf
- * @brief Set the SRID of a temporal point.
+ * @brief Return a temporal point with the coordinates set to an SRID
  * @return On error return NULL
  * @see tpointinst_set_srid()
  * @see tpointseq_set_srid()

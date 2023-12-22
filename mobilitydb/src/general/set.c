@@ -48,7 +48,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/tnumber_mathfuncs.h"
+#include "general/span.h"
+#include "general/temporal.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */
@@ -65,15 +66,14 @@ PG_FUNCTION_INFO_V1(Set_in);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Input function for set types
- * @sqlfn intset_in(), bigintset_in(), floatset_in(), tstzset_in()
+ * @sqlfn intset_in(), floatset_in(), ...
  */
 Datum
 Set_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
-  Oid ostypid = PG_GETARG_OID(1);
-  Set *result = set_in(input, oid_type(ostypid));
-  PG_RETURN_POINTER(result);
+  Oid typid = PG_GETARG_OID(1);
+  PG_RETURN_SET_P(set_in(input, oid_type(typid)));
 }
 
 PGDLLEXPORT Datum Set_out(PG_FUNCTION_ARGS);
@@ -81,7 +81,7 @@ PG_FUNCTION_INFO_V1(Set_out);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Output function for set types
- * @sqlfn intset_out(), bigintset_out(), floatset_out(), tstzset_out()
+ * @sqlfn intset_out(), floatset_out(), ...
  */
 Datum
 Set_out(PG_FUNCTION_ARGS)
@@ -97,7 +97,7 @@ PG_FUNCTION_INFO_V1(Set_recv);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Receive function for set types
- * @sqlfn intset_recv(), bigintset_recv(), floatset_recv(), tstzset_recv()
+ * @sqlfn intset_recv(), floatset_recv(), ...
  */
 Datum
 Set_recv(PG_FUNCTION_ARGS)
@@ -106,7 +106,7 @@ Set_recv(PG_FUNCTION_ARGS)
   Set *result = set_from_wkb((uint8_t *) buf->data, buf->len);
   /* Set cursor to the end of buffer (so the backend is happy) */
   buf->cursor = buf->len;
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Set_send(PG_FUNCTION_ARGS);
@@ -114,7 +114,7 @@ PG_FUNCTION_INFO_V1(Set_send);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Send function for set types
- * @sqlfn intset_send(), bigintset_send(), floatset_send(), tstzset_send()
+ * @sqlfn intset_send(), floatset_send(), ...
  */
 Datum
 Set_send(PG_FUNCTION_ARGS)
@@ -150,7 +150,7 @@ Set_constructor(PG_FUNCTION_ARGS)
   meosType basetype = settype_basetype(settype);
   Set *result = set_make_free(values, count, basetype, ORDERED_NO);
   PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************
@@ -172,8 +172,7 @@ Value_to_set(PG_FUNCTION_ARGS)
   /* Detoast the value if necessary */
   if (basetype_varlength(basetype))
     d = PointerGetDatum(PG_DETOAST_DATUM(d));
-  Set *result = value_to_set(d, basetype);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(value_to_set(d, basetype));
 }
 
 PGDLLEXPORT Datum Set_to_span(PG_FUNCTION_ARGS);
@@ -188,7 +187,8 @@ Set_to_span(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Span *result = set_to_span(s);
-  PG_RETURN_POINTER(result);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SPAN_P(result);
 }
 
 PGDLLEXPORT Datum Intset_to_floatset(PG_FUNCTION_ARGS);
@@ -205,7 +205,7 @@ Intset_to_floatset(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Set *result = intset_to_floatset(s);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Floatset_to_intset(PG_FUNCTION_ARGS);
@@ -222,7 +222,7 @@ Floatset_to_intset(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Set *result = floatset_to_intset(s);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Dateset_to_tstzsset(PG_FUNCTION_ARGS);
@@ -239,7 +239,7 @@ Dateset_to_tstzset(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Set *result = dateset_to_tstzset(s);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Tstzset_to_dateset(PG_FUNCTION_ARGS);
@@ -256,7 +256,7 @@ Tstzset_to_dateset(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Set *result = tstzset_to_dateset(s);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************
@@ -287,9 +287,9 @@ PG_FUNCTION_INFO_V1(Set_num_values);
 Datum
 Set_num_values(PG_FUNCTION_ARGS)
 {
-  Set *ts = PG_GETARG_SET_P(0);
-  int result = set_num_values(ts);
-  PG_FREE_IF_COPY(ts, 0);
+  Set *s = PG_GETARG_SET_P(0);
+  int result = set_num_values(s);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_INT32(result);
 }
 
@@ -303,10 +303,10 @@ PG_FUNCTION_INFO_V1(Set_start_value);
 Datum
 Set_start_value(PG_FUNCTION_ARGS)
 {
-  Set *ts = PG_GETARG_SET_P(0);
-  TimestampTz result = set_start_value(ts);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_TIMESTAMPTZ(result);
+  Set *s = PG_GETARG_SET_P(0);
+  Datum result = set_start_value(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum Set_end_value(PG_FUNCTION_ARGS);
@@ -319,10 +319,10 @@ PG_FUNCTION_INFO_V1(Set_end_value);
 Datum
 Set_end_value(PG_FUNCTION_ARGS)
 {
-  Set *ts = PG_GETARG_SET_P(0);
-  TimestampTz result = set_end_value(ts);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_TIMESTAMPTZ(result);
+  Set *s = PG_GETARG_SET_P(0);
+  Datum result = set_end_value(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum Set_value_n(PG_FUNCTION_ARGS);
@@ -335,11 +335,11 @@ PG_FUNCTION_INFO_V1(Set_value_n);
 Datum
 Set_value_n(PG_FUNCTION_ARGS)
 {
-  Set *ts = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   Datum result;
-  bool found = set_value_n(ts, n, &result);
-  PG_FREE_IF_COPY(ts, 0);
+  bool found = set_value_n(s, n, &result);
+  PG_FREE_IF_COPY(s, 0);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
@@ -387,7 +387,7 @@ PGDLLEXPORT Datum Geoset_set_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_set_srid);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Set the SRID of a geo set
+ * @brief Return a geo set with the coordinates set to an SRID
  * @sqlfn setSRID()
  */
 Datum
@@ -397,7 +397,7 @@ Geoset_set_srid(PG_FUNCTION_ARGS)
   int32 srid = PG_GETARG_INT32(1);
   Set *result = geoset_set_srid(s, srid);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************
@@ -417,7 +417,8 @@ Numset_shift(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Datum shift = PG_GETARG_DATUM(1);
   Set *result = numset_shift_scale(s, shift, 0, true, false);
-  PG_RETURN_POINTER(result);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Tstzset_shift(PG_FUNCTION_ARGS);
@@ -434,7 +435,7 @@ Tstzset_shift(PG_FUNCTION_ARGS)
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Set *result = tstzset_shift_scale(s, shift, NULL);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Numset_scale(PG_FUNCTION_ARGS);
@@ -451,7 +452,7 @@ Numset_scale(PG_FUNCTION_ARGS)
   Datum width = PG_GETARG_DATUM(1);
   Set *result = numset_shift_scale(s, 0, width, false, true);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Tstzset_scale(PG_FUNCTION_ARGS);
@@ -468,14 +469,14 @@ Tstzset_scale(PG_FUNCTION_ARGS)
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   Set *result = tstzset_shift_scale(s, NULL, duration);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Numset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a number set shifted and scaled by the values
+ * @brief Return a number set shifted and scaled by two values
  * @sqlfn shiftScale()
  */
 Datum
@@ -485,14 +486,15 @@ Numset_shift_scale(PG_FUNCTION_ARGS)
   Datum shift = PG_GETARG_DATUM(1);
   Datum width = PG_GETARG_DATUM(2);
   Set *result = numset_shift_scale(s, shift, width, true, true);
-  PG_RETURN_POINTER(result);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Tstzset_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a timestamptz set shifted and scaled by the intervals
+ * @brief Return a timestamptz set shifted and scaled by two intervals
  * @sqlfn shiftScale()
  */
 Datum
@@ -502,15 +504,16 @@ Tstzset_shift_scale(PG_FUNCTION_ARGS)
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   Set *result = tstzset_shift_scale(s, shift, duration);
-  PG_RETURN_POINTER(result);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Floatset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatset_round);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a float set where the precision of the values is set to a
- * number of decimal places
+ * @brief Return a float set with the precision of the values set to a number
+ * of decimal places
  * @sqlfn round()
  */
 Datum
@@ -519,14 +522,15 @@ Floatset_round(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   int maxdd = PG_GETARG_INT32(1);
   Set *result = floatset_round(s, maxdd);
-  PG_RETURN_POINTER(result);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Textset_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_lower);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set where the values are in lowercase
+ * @brief Return a text set with the values in lowercase
  * @sqlfn lower()
  */
 Datum
@@ -535,14 +539,14 @@ Textset_lower(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Set *result = textset_lower(s);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Textset_upper(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_upper);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set where the values are in uppercase
+ * @brief Return a text set with the values in uppercase
  * @sqlfn upper()
  */
 Datum
@@ -551,7 +555,7 @@ Textset_upper(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Set *result = textset_upper(s);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************
@@ -749,7 +753,7 @@ Set_gt(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Function for defining hash indexes
+ * Functions for defining hash indexes
  *****************************************************************************/
 
 PGDLLEXPORT Datum Set_hash(PG_FUNCTION_ARGS);
@@ -764,6 +768,7 @@ Set_hash(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   uint32 result = set_hash(s);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_UINT32(result);
 }
 
@@ -780,6 +785,7 @@ Set_hash_extended(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   uint64 seed = PG_GETARG_INT64(1);
   uint64 result = set_hash_extended(s, seed);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_UINT64(result);
 }
 

@@ -34,8 +34,6 @@
 
 #include "general/ttext_textfuncs.h"
 
-/* C */
-#include <assert.h>
 /* MEOS */
 #include <meos.h>
 

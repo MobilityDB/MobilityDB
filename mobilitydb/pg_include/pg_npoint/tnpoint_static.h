@@ -40,6 +40,7 @@
 #include <catalog/pg_type.h>
 #include <lib/stringinfo.h>
 /* MEOS */
+#include <meos.h>
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************/

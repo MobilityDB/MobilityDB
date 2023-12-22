@@ -37,10 +37,10 @@
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
-#include "general/type_util.h"
+#include "general/temporal.h"
 #include "point/tpoint_parser.h"
 /* MobilityDB */
-#include "pg_general/meos_catalog.h"
+#include "pg_general/meos_catalog.h" /* For oid_type */
 
 /*****************************************************************************
  * Input in EWKT format
@@ -68,7 +68,7 @@ Tpoint_from_ewkt(PG_FUNCTION_ARGS)
   Temporal *result = tpoint_parse(&wkt_ptr, oid_type(temptypid));
   pfree(wkt);
   PG_FREE_IF_COPY(wkt_text, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

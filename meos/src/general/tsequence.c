@@ -36,7 +36,6 @@
 
 /* C */
 #include <assert.h>
-#include <float.h>
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -54,15 +53,14 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/doublen.h"
-#include "general/pg_types.h"
 #include "general/set.h"
+#include "general/span.h"
 #include "general/spanset.h"
-#include "general/temporaltypes.h"
+#include "general/tinstant.h"
 #include "general/temporal_boxops.h"
 #include "general/tnumber_distance.h"
+#include "general/type_util.h"
 #include "general/type_parser.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_distance.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
@@ -2216,7 +2214,7 @@ tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal sequence shifted and/or scaled by the intervals.
+ * @brief Return a temporal sequence shifted and/or scaled by two intervals
  * @pre The duration is greater than 0 if it is not NULL
  * @csqlfn #Temporal_shift_time(), #Temporal_scale_time(),
  *    #Temporal_shift_scale_time()

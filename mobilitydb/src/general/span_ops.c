@@ -32,17 +32,13 @@
  * @brief Operators for span types
  */
 
-/* C */
-#include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
-#include "general/type_util.h"
+#include "general/span.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
@@ -430,15 +426,14 @@ Union_value_span(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  SpanSet *result = union_span_value(s, d, basetype);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(union_span_value(s, d, basetype));
 }
 
 PGDLLEXPORT Datum Union_span_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_span_value);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the union of a value and a span
+ * @brief Return the union of a span and a value
  * @sqlfn time_union()
  * @sqlop @p +
  */
@@ -448,8 +443,7 @@ Union_span_value(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  SpanSet *result = union_span_value(s, d, basetype);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(union_span_value(s, d, basetype));
 }
 
 PGDLLEXPORT Datum Union_span_span(PG_FUNCTION_ARGS);
@@ -465,7 +459,7 @@ Union_span_span(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
   Span *s2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_POINTER(union_span_span(s1, s2));
+  PG_RETURN_SPANSET_P(union_span_span(s1, s2));
 }
 
 /*****************************************************************************
@@ -489,14 +483,14 @@ Intersection_value_span(PG_FUNCTION_ARGS)
   Span *result = intersection_span_value(s, d, basetype);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 PGDLLEXPORT Datum Intersection_span_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intersection_span_value);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the intersection of a value and a span
+ * @brief Return the intersection of a span and a value
  * @sqlfn span_intersection()
  * @sqlop @p *
  */
@@ -509,7 +503,7 @@ Intersection_span_value(PG_FUNCTION_ARGS)
   Span *result = intersection_span_value(s, d, basetype);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 PGDLLEXPORT Datum Intersection_span_span(PG_FUNCTION_ARGS);
@@ -552,7 +546,7 @@ Minus_value_span(PG_FUNCTION_ARGS)
   SpanSet *result = minus_value_span(d, basetype, s);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Minus_span_value(PG_FUNCTION_ARGS);
@@ -572,7 +566,7 @@ Minus_span_value(PG_FUNCTION_ARGS)
   SpanSet *result = minus_span_value(s, d, basetype);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 PGDLLEXPORT Datum Minus_span_span(PG_FUNCTION_ARGS);
@@ -591,7 +585,7 @@ Minus_span_span(PG_FUNCTION_ARGS)
   SpanSet *result = minus_span_span(s1, s2);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 
@@ -603,7 +597,7 @@ PGDLLEXPORT Datum Distance_value_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_value_value);
 /**
  * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance between the values
+ * @brief Return the distance between two values
  * @sqlfn span_distance()
  * @sqlop @p <->
  */
@@ -613,8 +607,7 @@ Distance_value_value(PG_FUNCTION_ARGS)
   Datum d1 = PG_GETARG_DATUM(0);
   Datum d2 = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  double result = distance_value_value(d1, d2, basetype);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(distance_value_value(d1, d2, basetype));
 }
 
 PGDLLEXPORT Datum Distance_value_span(PG_FUNCTION_ARGS);
@@ -631,8 +624,7 @@ Distance_value_span(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  double result = distance_span_value(s, d, basetype);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(distance_span_value(s, d, basetype));
 }
 
 PGDLLEXPORT Datum Distance_span_value(PG_FUNCTION_ARGS);
@@ -649,8 +641,7 @@ Distance_span_value(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  double result = distance_span_value(s, d, basetype);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(distance_span_value(s, d, basetype));
 }
 
 PGDLLEXPORT Datum Distance_span_span(PG_FUNCTION_ARGS);
@@ -666,8 +657,7 @@ Distance_span_span(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
   Span *s2 = PG_GETARG_SPAN_P(1);
-  double result = distance_span_span(s1, s2);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(distance_span_span(s1, s2));
 }
 
 /******************************************************************************/

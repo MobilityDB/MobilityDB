@@ -39,9 +39,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
-#include "general/temporal.h"
-#include "general/type_util.h"
-#include "point/stbox.h"
+#include <meos.h>
 
 /*****************************************************************************/
 

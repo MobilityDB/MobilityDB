@@ -43,8 +43,6 @@
 #include "utils/formatting.h"
 /* MEOS */
 #include "general/lifting.h"
-#include "general/temporal.h"
-#include "general/type_util.h"
 
 /*****************************************************************************
  * Textual functions on datums

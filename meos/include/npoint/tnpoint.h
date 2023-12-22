@@ -38,7 +38,6 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
 
 /*****************************************************************************
  * Struct definitions
@@ -75,6 +74,7 @@ typedef struct
 #define DatumGetNsegmentP(X)       ((Nsegment *) DatumGetPointer(X))
 #define NsegmentPGetDatum(X)       PointerGetDatum(X)
 #define PG_GETARG_NSEGMENT_P(X)    DatumGetNsegmentP(PG_GETARG_DATUM(X))
+#define PG_RETURN_NSEGMENT_P(X)    PG_RETURN_POINTER(X)
 
 /*****************************************************************************/
 

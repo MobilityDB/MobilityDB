@@ -34,9 +34,13 @@
 
 #include "general/temporal_compops.h"
 
+/* PostgreSQL */
+#include <postgres.h>
+#include <fmgr.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
@@ -77,7 +81,7 @@ Tcomp_base_temporal(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -112,7 +116,7 @@ Tcomp_temporal_base(FunctionCallInfo fcinfo,
   DATUM_FREE_IF_COPY(value, basetype, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -145,7 +149,7 @@ Tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************

@@ -36,18 +36,12 @@
 
 /* C */
 #include <assert.h>
-#include <float.h>
-#include <math.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/tsequence.h"
+#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "point/tpoint_boxops.h"
-#include "npoint/tnpoint.h"
-#include "npoint/tnpoint_static.h"
-#include "npoint/tnpoint_tempspatialrels.h"
 
 /*****************************************************************************
  * Parameter tests
@@ -798,17 +792,17 @@ tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
     return NULL;
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *resultgeom = tpoint_restrict_geom_time(tempgeom, gs, zspan,
+  Temporal *resgeom = tpoint_restrict_geom_time(tempgeom, gs, zspan,
     period, atfunc);
   Temporal *result = NULL;
-  if (resultgeom != NULL)
+  if (resgeom != NULL)
   {
     /* We do not call the function tgeompoint_tnpoint to avoid
      * roundoff errors */
-    SpanSet *ps = temporal_time(resultgeom);
-    result = temporal_restrict_tstzspanset(temp, ps, REST_AT);
-    pfree(resultgeom);
-    pfree(ps);
+    SpanSet *ss = temporal_time(resgeom);
+    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+    pfree(resgeom);
+    pfree(ss);
   }
   pfree(tempgeom);
   return result;

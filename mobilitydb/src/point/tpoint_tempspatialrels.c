@@ -44,22 +44,10 @@
 
 #include "point/tpoint_tempspatialrels.h"
 
-/* C */
-#include <assert.h>
-#include <math.h>
-/* PostgreSQL */
-#include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include "general/lifting.h"
-#include "general/temporaltypes.h"
-#include "general/tbool_boolops.h"
-#include "general/type_util.h"
-#include "point/pgis_call.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "point/tpoint_spatialrels.h"
 /* MobilityDB */
 #include "pg_point/postgis.h"
 #include "pg_point/tpoint_spatialfuncs.h"
@@ -95,7 +83,7 @@ Tinterrel_geo_tpoint(FunctionCallInfo fcinfo, bool tinter)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -124,7 +112,7 @@ Tinterrel_tpoint_geo(FunctionCallInfo fcinfo, bool tinter)
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -160,7 +148,7 @@ Tcontains_geo_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -261,7 +249,7 @@ Ttouches_geo_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Ttouches_tpoint_geo(PG_FUNCTION_ARGS);
@@ -293,7 +281,7 @@ Ttouches_tpoint_geo(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -331,7 +319,7 @@ Tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tdwithin_tpoint_geo(PG_FUNCTION_ARGS);
@@ -364,7 +352,7 @@ Tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -400,7 +388,7 @@ Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

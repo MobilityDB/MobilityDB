@@ -36,7 +36,6 @@
 
 /* C */
 #include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
@@ -44,8 +43,10 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
+#include "general/span.h"
+#include "general/temporal.h"
 /* MobilityDB */
-#include "pg_point/tpoint_spatialfuncs.h"
+#include "pg_general/skiplist.h" /* For store_fcinfo */
 
 /*****************************************************************************
  * Time precision functions for time types
@@ -64,8 +65,7 @@ Timestamptz_tprecision(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  TimestampTz result = timestamptz_tprecision(t, duration, origin);
-  PG_RETURN_TIMESTAMPTZ(result);
+  PG_RETURN_TIMESTAMPTZ(timestamptz_tprecision(t, duration, origin));
 }
 
 PGDLLEXPORT Datum Tstzspan_tprecision(PG_FUNCTION_ARGS);
@@ -81,8 +81,7 @@ Tstzspan_tprecision(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  Span *result = tstzspan_tprecision(s, duration, origin);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(tstzspan_tprecision(s, duration, origin));
 }
 
 PGDLLEXPORT Datum Tstzspanset_tprecision(PG_FUNCTION_ARGS);
@@ -99,7 +98,7 @@ Tstzspanset_tprecision(PG_FUNCTION_ARGS)
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
   SpanSet *result = tstzspanset_tprecision(ss, duration, origin);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(result);
 }
 
 /*****************************************************************************
@@ -121,7 +120,7 @@ Temporal_tprecision(PG_FUNCTION_ARGS)
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
   Temporal *result = temporal_tprecision(temp, duration, origin);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEXT_P(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Temporal_tsample(PG_FUNCTION_ARGS);
@@ -141,7 +140,7 @@ Temporal_tsample(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_TEXT_P(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************

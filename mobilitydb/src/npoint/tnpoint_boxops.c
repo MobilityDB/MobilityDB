@@ -46,14 +46,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
+#include "general/span.h"
+#include "point/stbox.h"
 #include "npoint/tnpoint.h"
-#include "npoint/tnpoint_static.h"
-#include "npoint/tnpoint_spatialfuncs.h"
 /* MobilityDB */
-#include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
 #include "pg_point/tpoint_boxops.h"
-#include "pg_npoint/tnpoint.h"
 
 /*****************************************************************************
  * Conversion functions
@@ -71,8 +69,7 @@ Datum
 Npoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  STBox *result = npoint_to_stbox(np);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(npoint_to_stbox(np));
 }
 
 PGDLLEXPORT Datum Nsegment_to_stbox(PG_FUNCTION_ARGS);
@@ -87,8 +84,7 @@ Datum
 Nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  STBox *result = nsegment_to_stbox(ns);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(nsegment_to_stbox(ns));
 }
 
 /*****************************************************************************/
@@ -107,7 +103,7 @@ Npointset_to_stbox(PG_FUNCTION_ARGS)
   Set *set = PG_GETARG_SET_P(0);
   STBox *result = spatialset_to_stbox(set);
   PG_FREE_IF_COPY(set, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************/
@@ -126,7 +122,7 @@ Npoint_timestamptz_to_stbox(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   STBox *result = npoint_timestamptz_to_stbox(np, t);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS);
@@ -144,7 +140,7 @@ Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
   STBox *result = npoint_tstzspan_to_stbox(np, s);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************/
@@ -163,7 +159,7 @@ Tnpoint_to_stbox(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *result = tpoint_to_stbox(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************

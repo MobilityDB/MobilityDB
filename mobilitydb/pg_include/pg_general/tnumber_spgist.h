@@ -35,9 +35,6 @@
 #ifndef __TNUMBER_SPGIST_H__
 #define __TNUMBER_SPGIST_H__
 
-/* MEOS */
-#include "general/temporal.h"
-
 /*****************************************************************************/
 
 extern int compareInt4(const void *a, const void *b);

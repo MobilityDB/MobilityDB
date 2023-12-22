@@ -34,12 +34,6 @@
 
 #include "point/tpoint_distance.h"
 
-/* C */
-#include <assert.h>
-#include <float.h>
-#include <math.h>
-/* PostgreSQL */
-
 /* PostGIS */
 #include <lwgeodetic_tree.h>
 #include <measures.h>
@@ -48,11 +42,10 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
-#include "general/temporaltypes.h"
-#include "general/type_util.h"
+#include "general/tinstant.h"
+#include "general/tsequence.h"
 #include "point/pgis_call.h"
 #include "point/geography_funcs.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************

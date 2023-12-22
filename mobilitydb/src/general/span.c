@@ -41,13 +41,12 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type_d.h>
-#include <libpq/pqformat.h>
 #include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/tnumber_mathfuncs.h"
+#include "general/span.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */
@@ -68,10 +67,9 @@ PG_FUNCTION_INFO_V1(Span_in);
 Datum
 Span_in(PG_FUNCTION_ARGS)
 {
-  const char *input = PG_GETARG_CSTRING(0);
+  const char *str = PG_GETARG_CSTRING(0);
   Oid spantypid = PG_GETARG_OID(1);
-  Span *result = span_in(input, oid_type(spantypid));
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(span_in(str, oid_type(spantypid)));
 }
 
 PGDLLEXPORT Datum Span_out(PG_FUNCTION_ARGS);
@@ -102,7 +100,7 @@ Span_recv(PG_FUNCTION_ARGS)
   Span *result = span_from_wkb((uint8_t *) buf->data, buf->len);
   /* Set cursor to the end of buffer (so the backend is happy) */
   buf->cursor = buf->len;
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 PGDLLEXPORT Datum Span_send(PG_FUNCTION_ARGS);
@@ -115,13 +113,13 @@ PG_FUNCTION_INFO_V1(Span_send);
 Datum
 Span_send(PG_FUNCTION_ARGS)
 {
-  Span *span = PG_GETARG_SPAN_P(0);
+  Span *s = PG_GETARG_SPAN_P(0);
   uint8_t variant = 0;
-  size_t wkb_size = VARSIZE_ANY_EXHDR(span);
-  uint8_t *wkb = span_as_wkb(span, variant, &wkb_size);
+  size_t wkb_size = VARSIZE_ANY_EXHDR(s);
+  uint8_t *wkb = span_as_wkb(s, variant, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
-  PG_FREE_IF_COPY(span, 0);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BYTEA_P(result);
 }
 
@@ -145,9 +143,7 @@ Span_constructor(PG_FUNCTION_ARGS)
   bool upper_inc = PG_GETARG_BOOL(3);
   meosType spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   meosType basetype = spantype_basetype(spantype);
-  Span *span;
-  span = span_make(lower, upper, lower_inc, upper_inc, basetype);
-  PG_RETURN_SPAN_P(span);
+  PG_RETURN_SPAN_P(span_make(lower, upper, lower_inc, upper_inc, basetype));
 }
 
 /*****************************************************************************
@@ -167,8 +163,7 @@ Value_to_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Span *result = value_to_span(d, basetype);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(value_to_span(d, basetype));
 }
 
 PGDLLEXPORT Datum Intspan_to_floatspan(PG_FUNCTION_ARGS);
@@ -183,8 +178,7 @@ Datum
 Intspan_to_floatspan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Span *result = intspan_to_floatspan(s);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(intspan_to_floatspan(s));
 }
 
 PGDLLEXPORT Datum Floatspan_to_intspan(PG_FUNCTION_ARGS);
@@ -199,8 +193,7 @@ Datum
 Floatspan_to_intspan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Span *result = floatspan_to_intspan(s);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(floatspan_to_intspan(s));
 }
 
 PGDLLEXPORT Datum Datespan_to_tstzspan(PG_FUNCTION_ARGS);
@@ -215,8 +208,7 @@ Datum
 Datespan_to_tstzspan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Span *result = datespan_to_tstzspan(s);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(datespan_to_tstzspan(s));
 }
 
 PGDLLEXPORT Datum Tstzspan_to_datespan(PG_FUNCTION_ARGS);
@@ -231,8 +223,7 @@ Datum
 Tstzspan_to_datespan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Span *result = tstzspan_to_datespan(s);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(tstzspan_to_datespan(s));
 }
 
 /*****************************************************************************/
@@ -248,12 +239,11 @@ PG_FUNCTION_INFO_V1(Span_to_range);
 Datum
 Span_to_range(PG_FUNCTION_ARGS)
 {
-  Span *span = PG_GETARG_SPAN_P(0);
-  assert(span->basetype == T_INT4 || span->basetype == T_DATE ||
-    span->basetype == T_TIMESTAMPTZ);
-  RangeType *range;
-  range = range_make(span->lower, span->upper, span->lower_inc,
-    span->upper_inc, span->basetype);
+  Span *s = PG_GETARG_SPAN_P(0);
+  assert(s->basetype == T_INT4 || s->basetype == T_DATE ||
+    s->basetype == T_TIMESTAMPTZ);
+  RangeType *range = range_make(s->lower, s->upper, s->lower_inc, s->upper_inc,
+    s->basetype);
   PG_RETURN_POINTER(range);
 }
 
@@ -274,9 +264,9 @@ range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
   RangeBound lower, upper;
   bool empty;
   range_deserialize(typcache, range, &lower, &upper, &empty);
-  meosType basetype;
   Oid type_id = typcache->rngelemtype->type_id;
   assert(type_id == INT4OID || type_id == DATEOID || type_id == TIMESTAMPTZOID);
+  meosType basetype;
   if (type_id == INT4OID)
     basetype = T_INT4;
   else if (type_id == DATEOID)
@@ -307,7 +297,7 @@ Range_to_span(PG_FUNCTION_ARGS)
     typcache->rngelemtype->type_id == TIMESTAMPTZOID);
   Span *result = palloc(sizeof(Span));
   range_set_span(range, typcache, result);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 /*****************************************************************************
@@ -385,8 +375,7 @@ Datum
 Span_width(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  double result = span_width(s);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(span_width(s));
 }
 
 PGDLLEXPORT Datum Datespan_duration(PG_FUNCTION_ARGS);
@@ -400,8 +389,7 @@ Datum
 Datespan_duration(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Interval *result = datespan_duration(s);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(datespan_duration(s));
 }
 
 PGDLLEXPORT Datum Tstzspan_duration(PG_FUNCTION_ARGS);
@@ -415,8 +403,7 @@ Datum
 Tstzspan_duration(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Interval *result = tstzspan_duration(s);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(tstzspan_duration(s));
 }
 
 /*****************************************************************************
@@ -441,8 +428,7 @@ Numspan_shift(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum shift = PG_GETARG_DATUM(1);
-  Span *result = numspan_shift_scale(s, shift, 0, true, false);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(numspan_shift_scale(s, shift, 0, true, false));
 }
 
 PGDLLEXPORT Datum Tstzspan_shift(PG_FUNCTION_ARGS);
@@ -457,8 +443,7 @@ Tstzspan_shift(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Span *result = tstzspan_shift_scale(s, shift, NULL);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(tstzspan_shift_scale(s, shift, NULL));
 }
 
 PGDLLEXPORT Datum Numspan_scale(PG_FUNCTION_ARGS);
@@ -474,8 +459,7 @@ Numspan_scale(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum duration = PG_GETARG_DATUM(1);
-  Span *result = numspan_shift_scale(s, 0, duration, false, true);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(numspan_shift_scale(s, 0, duration, false, true));
 }
 
 PGDLLEXPORT Datum Tstzspan_scale(PG_FUNCTION_ARGS);
@@ -490,15 +474,14 @@ Tstzspan_scale(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Span *result = tstzspan_shift_scale(s, NULL, duration);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(tstzspan_shift_scale(s, NULL, duration));
 }
 
 PGDLLEXPORT Datum Numspan_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numspan_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a number span shifted and scaled by the values
+ * @brief Return a number span shifted and scaled by two values
  * @note This function is also used for `datespan`
  * @sqlfn shiftScale()
  */
@@ -508,15 +491,14 @@ Numspan_shift_scale(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Datum shift = PG_GETARG_DATUM(1);
   Datum duration = PG_GETARG_DATUM(2);
-  Span *result = numspan_shift_scale(s, shift, duration, true, true);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(numspan_shift_scale(s, shift, duration, true, true));
 }
 
 PGDLLEXPORT Datum Tstzspan_shift_scale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_shift_scale);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a timestamptz span shifted and scaled by the intervals
+ * @brief Return a timestamptz span shifted and scaled by two intervals
  * @sqlfn shiftScale()
  */
 Datum
@@ -525,25 +507,23 @@ Tstzspan_shift_scale(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  Span *result = tstzspan_shift_scale(s, shift, duration);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(tstzspan_shift_scale(s, shift, duration));
 }
 
 PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspan_round);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a float span where the precision of the values is set to
- * a number of decimal places
+ * @brief Return a float span with the precision of the values set to a number
+ * of decimal places
  * @sqlfn round()
  */
 Datum
 Floatspan_round(PG_FUNCTION_ARGS)
 {
-  Span *span = PG_GETARG_SPAN_P(0);
+  Span *s = PG_GETARG_SPAN_P(0);
   int maxdd = PG_GETARG_INT32(1);
-  Span *result = floatspan_round(span, maxdd);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(floatspan_round(s, maxdd));
 }
 
 /*****************************************************************************
@@ -664,7 +644,7 @@ Span_gt(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Hash support
+ * Functions for defining hash indexes
  *****************************************************************************/
 
 PGDLLEXPORT Datum Span_hash(PG_FUNCTION_ARGS);
@@ -678,8 +658,7 @@ Datum
 Span_hash(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  uint32 result = span_hash(s);
-  PG_RETURN_UINT32(result);
+  PG_RETURN_UINT32(span_hash(s));
 }
 
 PGDLLEXPORT Datum Span_hash_extended(PG_FUNCTION_ARGS);
@@ -694,8 +673,7 @@ Span_hash_extended(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   uint64 seed = PG_GETARG_INT64(1);
-  uint64 result = span_hash_extended(s, seed);
-  PG_RETURN_UINT64(result);
+  PG_RETURN_UINT64(span_hash_extended(s, seed));
 }
 
 /******************************************************************************/

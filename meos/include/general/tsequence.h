@@ -37,8 +37,9 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
+#include <meos.h>
+#include "general/meos_catalog.h"
 #include "general/temporal.h"
-#include "general/span.h"
 
 /*****************************************************************************/
 
@@ -177,9 +178,9 @@ extern int tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
   TSequence **result);
 extern int tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
   TSequence **result);
-extern int tcontseq_at_tstzspanset1(const TSequence *seq, const SpanSet *ps,
+extern int tcontseq_at_tstzspanset1(const TSequence *seq, const SpanSet *ss,
   TSequence **result);
-extern int tcontseq_minus_tstzspanset_iter(const TSequence *seq, const SpanSet *ps,
+extern int tcontseq_minus_tstzspanset_iter(const TSequence *seq, const SpanSet *ss,
   TSequence **result);
 extern TSequence *tcontseq_at_tstzspan(const TSequence *seq, const Span *s);
 extern TInstant *tcontseq_at_timestamptz(const TSequence *seq, TimestampTz t);

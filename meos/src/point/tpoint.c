@@ -43,12 +43,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
-#include "general/lifting.h"
-#include "general/temporal_compops.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "general/temporal.h"
 
 /*****************************************************************************
  * General functions

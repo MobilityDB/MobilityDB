@@ -48,11 +48,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal.h"
 #include "general/pg_types.h"
-#include "general/doublen.h"
-#include "general/type_parser.h"
-#include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_static.h"

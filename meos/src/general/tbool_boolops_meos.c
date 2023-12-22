@@ -35,7 +35,7 @@
 #include "general/tbool_boolops.h"
 
 /* MEOS */
-#include "general/temporaltypes.h"
+#include <meos.h>
 
 /*****************************************************************************
  * Temporal and

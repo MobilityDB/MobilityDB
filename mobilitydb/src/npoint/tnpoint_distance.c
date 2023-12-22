@@ -34,13 +34,11 @@
 
 #include "npoint/tnpoint_distance.h"
 
-/* C */
-#include <assert.h>
 /* MEOS */
 #include <meos.h>
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_point/tpoint_spatialfuncs.h"
+#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Temporal distance
@@ -65,7 +63,7 @@ Distance_point_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Distance_tnpoint_point(PG_FUNCTION_ARGS);
@@ -87,7 +85,7 @@ Distance_tnpoint_point(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(geo, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Distance_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -106,7 +104,7 @@ Distance_npoint_tnpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = distance_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Distance_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -125,7 +123,7 @@ Distance_tnpoint_npoint(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(1);
   Temporal *result = distance_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Distance_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -147,7 +145,7 @@ Distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -174,7 +172,7 @@ NAI_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum NAI_tnpoint_geo(PG_FUNCTION_ARGS);
@@ -197,7 +195,7 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(geo, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum NAI_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -217,7 +215,7 @@ NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   TInstant *result = nai_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum NAI_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -237,7 +235,7 @@ NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   TInstant *result = nai_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -258,7 +256,7 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 /*****************************************************************************
@@ -387,7 +385,7 @@ Shortestline_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Shortestline_tnpoint_geo(PG_FUNCTION_ARGS);
@@ -409,7 +407,7 @@ Shortestline_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(geo, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -427,7 +425,7 @@ Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   GSERIALIZED *result = shortestline_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -445,7 +443,7 @@ Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(1);
   GSERIALIZED *result = shortestline_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************/
@@ -469,7 +467,7 @@ Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************/
