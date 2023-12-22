@@ -377,8 +377,8 @@ char *
 meos_get_datestyle(void)
 {
   char *result = palloc(32);
-  if (!result)
-    return false;
+  if (! result)
+    return NULL;
   sprintf(result, "%s, %s", datestyle_string(DateStyle), 
     dateorder_string(DateStyle));
   return result;
@@ -434,8 +434,8 @@ char *
 meos_get_intervalstyle(void)
 {
   char *result = palloc(32);
-  if (!result)
-    return false;
+  if (! result)
+    return NULL;
   sprintf(result, "%s", intervalstyle_string(IntervalStyle));
   return result;
 }
