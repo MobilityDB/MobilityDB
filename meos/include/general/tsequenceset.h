@@ -44,7 +44,7 @@
 
 /* General functions */
 
-extern bool tsequenceset_find_timestamp(const TSequenceSet *ss, TimestampTz t,
+extern bool tsequenceset_find_timestamptz(const TSequenceSet *ss, TimestampTz t,
   int *loc);
 
 /* Synchronize functions */

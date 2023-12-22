@@ -47,7 +47,7 @@
 #include "general/span.h"
 #include "general/tbool_boolops.h"
 #include "general/tbox.h"
-  /* MobilityDB */
+/* MobilityDB */
 #include "pg_general/skiplist.h"
 
 /*****************************************************************************

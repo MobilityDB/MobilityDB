@@ -135,27 +135,31 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for span set aggregate union
+ * @param[in,out] state Current aggregate state
+ * @param[in] s Span to aggregate
  */
 SpanSet *
-span_union_transfn(SpanSet *state, const Span *span)
+span_union_transfn(SpanSet *state, const Span *s)
 {
   /* Null span: return current state */
-  if (! span)
+  if (! s)
     return state;
   /* Null state: create a new span set with the input span */
   if (! state)
     /* Arbitrary initialization to 64 elements */
-    return spanset_make_exp((Span *) span, 1, 64, NORMALIZE_NO, ORDERED_NO);
+    return spanset_make_exp((Span *) s, 1, 64, NORMALIZE_NO, ORDERED_NO);
 
   /* Ensure validity of the arguments */
-  if (! ensure_same_span_type(&state->elems[0], span))
+  if (! ensure_same_span_type(&state->elems[0], s))
     return NULL;
-  return spanset_append_span(state, span, true);
+  return spanset_append_span(state, s, true);
 }
 
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for span set aggregate union
+ * @param[in,out] state Current aggregate state
+ * @param[in] ss Span set to aggregate
  */
 SpanSet *
 spanset_union_transfn(SpanSet *state, const SpanSet *ss)
@@ -181,6 +185,7 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for set aggregate of values
+ * @param[in] state Current aggregate state
  */
 SpanSet *
 spanset_union_finalfn(SpanSet *state)

@@ -67,7 +67,6 @@ typedef struct
   uint8_t expand_arg;   /* Radius argument for "within distance" search */
 } IndexableFunction;
 
-
 enum TEMPORAL_FUNCTION_IDX
 {
   /* Ever/always comparison functions */

@@ -165,14 +165,14 @@ extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **points, int count,
 extern LWLINE *lwline_make(Datum value1, Datum value2);
 extern LWGEOM *lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines,
   int npoints, int nlines);
-extern GSERIALIZED *tpointseq_disc_trajectory(const TSequence *seq);
-extern GSERIALIZED *tpointseq_cont_trajectory(const TSequence *seq);
+extern GSERIALIZED *tpointdiscseq_trajectory(const TSequence *seq);
+extern GSERIALIZED *tpointcontseq_trajectory(const TSequence *seq);
 
 /* Functions for spatial reference systems */
 
 extern TInstant *tpointinst_transform(const TInstant *inst, int srid);
-extern TSequence *tpointseq_disc_transform(const TSequence *is, int srid);
-extern TSequence *tpointseq_cont_transform(const TSequence *seq, int srid);
+extern TSequence *tpointdiscseq_transform(const TSequence *is, int srid);
+extern TSequence *tpointcontseq_transform(const TSequence *seq, int srid);
 extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ss, int srid);
 extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 

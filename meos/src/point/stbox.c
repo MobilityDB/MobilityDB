@@ -37,6 +37,8 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+/* PostgreSQL */
+#include "utils/timestamp.h"
 /* PostGIS */
 #include <lwgeodetic.h>
 /* MEOS */
@@ -66,6 +68,7 @@ extern void ll2cart(const POINT2D *g, POINT3D *p);
 /**
  * @ingroup libmeos_internal_box_transf
  * @brief Expand the second spatiotemporal box with the first one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @pre No tests are made concerning the srid, dimensionality, etc.
  * This should be ensured by the calling function.
  */
@@ -150,6 +153,7 @@ ensure_has_T_stbox(const STBox *box)
  * @endcode
  * where the commas are optional and the SRID is optional. If the SRID is not
  * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
+ * @param[in] str String
  */
 STBox *
 stbox_in(const char *str)
@@ -164,6 +168,8 @@ stbox_in(const char *str)
  * @ingroup libmeos_box_inout
  * @brief Return the Well-Known Text (WKT) representation of a spatiotemporal
  * box
+ * @param[in] box Spatiotemporal box
+ * @param[in] maxdd Maximum number of decimal digits
  */
 char *
 stbox_out(const STBox *box, int maxdd)
@@ -250,6 +256,13 @@ stbox_out(const STBox *box, int maxdd)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
+ * @param[in] hasx True if the values for the spatial dimension are givne
+ * @param[in] hasz True if there is a Z dimension
+ * @param[in] geodetic True if geodetic
+ * @param[in] srid SRID
+ * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
+ * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
+ * @param[in] s Span
  * @csqlfn #Stbox_constructor()
  */
 STBox *
@@ -267,6 +280,14 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 /**
  * @ingroup libmeos_internal_box_constructor
  * @brief Set a spatiotemporal box from the arguments
+ * @param[in] hasx True if the values for the spatial dimension are givne
+ * @param[in] hasz True if there is a Z dimension
+ * @param[in] geodetic True if geodetic
+ * @param[in] srid SRID
+ * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
+ * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
+ * @param[in] s Span
+ * @param[out] box Resulting box
  * @note This function is equivalent to #stbox_make without memory allocation
  */
 void
@@ -309,6 +330,7 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 /**
  * @ingroup libmeos_internal_box_constructor
  * @brief Return a copy of a spatiotemporal box
+ * @param[in] box Spatiotemporal box
  */
 STBox *
 stbox_cp(const STBox *box)
@@ -323,6 +345,7 @@ stbox_cp(const STBox *box)
 /**
  * @ingroup libmeos_box_constructor
  * @brief Return a copy of a spatiotemporal box
+ * @param[in] box Spatiotemporal box
  */
 STBox *
 stbox_copy(const STBox *box)
@@ -340,6 +363,8 @@ stbox_copy(const STBox *box)
  * @ingroup libmeos_box_constructor
  * @brief Construct a spatiotemporal box from a geometry/geography and a
  * timestamptz
+ * @param[in] gs Geometry/geography
+ * @param[in] t Timestamp
  * @csqlfn #Stbox_constructor()
  */
 STBox *
@@ -363,6 +388,8 @@ geo_timestamptz_to_stbox(const GSERIALIZED *gs, TimestampTz t)
  * @ingroup libmeos_box_constructor
  * @brief Construct a spatiotemporal box from a geometry/geography and a
  * timestamptz span
+ * @param[in] gs Geometry/geography
+ * @param[in] s Span
  * @csqlfn #Stbox_constructor()
  */
 STBox *
@@ -390,7 +417,9 @@ geo_tstzspan_to_stbox(const GSERIALIZED *gs, const Span *s)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a PostGIS GBOX from a spatiotemporal box
-  */
+ * @param[in] box Spatiotemporal box
+ * @param[out] gbox GBOX
+ */
 void
 stbox_set_gbox(const STBox *box, GBOX *gbox)
 {
@@ -417,7 +446,9 @@ stbox_set_gbox(const STBox *box, GBOX *gbox)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a PostGIS BOX3D from a spatiotemporal box
-  */
+ * @param[in] box Spatiotemporal box
+ * @param[out] box3d BOX3D
+ */
 void
 stbox_set_box3d(const STBox *box, BOX3D *box3d)
 {
@@ -443,8 +474,9 @@ stbox_set_box3d(const STBox *box, BOX3D *box3d)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a spatiotemporal box to a PostGIS GBOX
+ * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_box2d()
-  */
+ */
 GBOX *
 stbox_to_gbox(const STBox *box)
 {
@@ -460,8 +492,9 @@ stbox_to_gbox(const STBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a spatiotemporal box to a PostGIS BOX3D
+ * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_box3d()
-  */
+ */
 BOX3D *
 stbox_to_box3d(const STBox *box)
 {
@@ -479,8 +512,9 @@ stbox_to_box3d(const STBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a spatiotemporal box as a PostGIS geometry/geography
+ * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_geo()
-  */
+ */
 GSERIALIZED *
 stbox_to_geo(const STBox *box)
 {
@@ -540,8 +574,9 @@ stbox_to_geo(const STBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a spatiotemporal box to a timestamptz span
+ * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_tstzspan()
-  */
+ */
 Span *
 stbox_to_tstzspan(const STBox *box)
 {
@@ -558,6 +593,8 @@ stbox_to_tstzspan(const STBox *box)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set the last argument to the bounding box of a spatial set.
+ * @param[in] s Set
+ * @param[out] box Spatiotemporal box
  */
 void
 spatialset_set_stbox(const Set *s, STBox *box)
@@ -572,6 +609,7 @@ spatialset_set_stbox(const Set *s, STBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a spatial set to a spatiotemporal box
+ * @param[in] s Set
  * @csqlfn #Geoset_to_stbox(), #Npointset_to_stbox()
  */
 STBox *
@@ -590,6 +628,7 @@ spatialset_to_stbox(const Set *s)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Convert a GBOX to a spatiotemporal box
+ * @param[in] box GBOX
  */
 STBox *
 gbox_to_stbox(const GBOX *box)
@@ -620,11 +659,12 @@ gbox_to_stbox(const GBOX *box)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Convert a spatiotemporal box from a BOX3D
+ * @param[out] box BOX3D
  */
 STBox *
-box3d_to_stbox(const BOX3D *box3d)
+box3d_to_stbox(const BOX3D *box)
 {
-  assert(box3d);
+  assert(box);
 
   /* Note: zero-fill is required here, just as in heap tuples */
   STBox *result = palloc0(sizeof(STBox));
@@ -633,13 +673,13 @@ box3d_to_stbox(const BOX3D *box3d)
   MEOS_FLAGS_SET_T(result->flags, false);
   MEOS_FLAGS_SET_GEODETIC(result->flags, false);
 
-  result->xmin = box3d->xmin;
-  result->xmax = box3d->xmax;
-  result->ymin = box3d->ymin;
-  result->ymax = box3d->ymax;
-  result->zmin = box3d->zmin;
-  result->zmax = box3d->zmax;
-  result->srid = box3d->srid;
+  result->xmin = box->xmin;
+  result->xmax = box->xmax;
+  result->ymin = box->ymin;
+  result->ymax = box->ymax;
+  result->zmin = box->zmin;
+  result->zmax = box->zmax;
+  result->srid = box->srid;
   return result;
 }
 
@@ -671,6 +711,8 @@ point_get_coords(const GSERIALIZED *point, bool hasz, double *x, double *y,
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a spatiotemporal box from a geometry/geography
+ * @param[in] gs Geometry/geography
+ * @param[out] box Spatiotemporal box
  */
 bool
 geo_set_stbox(const GSERIALIZED *gs, STBox *box)
@@ -727,8 +769,9 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a geometry/geography to a spatiotemporal box
+ * @param[in] gs Geometry/geography
  * @csqlfn #Geo_to_stbox()
-  */
+ */
 STBox *
 geo_to_stbox(const GSERIALIZED *gs)
 {
@@ -766,6 +809,8 @@ geoarr_set_stbox(const Datum *values, int count, STBox *box)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a spatiotemporal box from a timestamptz
+ * @param[in] t Timestamp
+ * @param[out] box Spatiotemporal box
  */
 void
 timestamptz_set_stbox(TimestampTz t, STBox *box)
@@ -784,8 +829,9 @@ timestamptz_set_stbox(TimestampTz t, STBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a timestamptz to a spatiotemporal box
+ * @param[in] t Timestamp
  * @csqlfn #Timestamptz_to_stbox()
-  */
+ */
 STBox *
 timestamptz_to_stbox(TimestampTz t)
 {
@@ -797,6 +843,8 @@ timestamptz_to_stbox(TimestampTz t)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a spatiotemporal box from a timestamptz set
+ * @param[in] s Set
+ * @param[out] box Spatiotemporal box
  */
 void
 tstzset_set_stbox(const Set *s, STBox *box)
@@ -812,8 +860,9 @@ tstzset_set_stbox(const Set *s, STBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a timestamptz set to a spatiotemporal box
+ * @param[in] s Set
  * @csqlfn #Tstzset_to_stbox()
-  */
+ */
 STBox *
 tstzset_to_stbox(const Set *s)
 {
@@ -828,6 +877,8 @@ tstzset_to_stbox(const Set *s)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a spatiotemporal box from a timestamptz span
+ * @param[in] s Span
+ * @param[out] box Spatiotemporal box
  */
 void
 tstzspan_set_stbox(const Span *s, STBox *box)
@@ -843,8 +894,9 @@ tstzspan_set_stbox(const Span *s, STBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a timestamptz span to a spatiotemporal box
+ * @param[in] s Span
  * @csqlfn #Tstzspan_to_stbox()
-  */
+ */
 STBox *
 tstzspan_to_stbox(const Span *s)
 {
@@ -859,6 +911,8 @@ tstzspan_to_stbox(const Span *s)
 /**
  * @ingroup libmeos_internal_box_conversion
  * @brief Set a spatiotemporal box from a timestamptz span set
+ * @param[in] ss Span set
+ * @param[out] box Spatiotemporal box
  */
 void
 tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
@@ -875,8 +929,9 @@ tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
 /**
  * @ingroup libmeos_box_conversion
  * @brief Convert a timestamptz span set to a spatiotemporal box
+ * @param[in] ss Span set
  * @csqlfn #Tstzspanset_to_stbox()
-  */
+ */
 STBox *
 tstzspanset_to_stbox(const SpanSet *ss)
 {
@@ -897,6 +952,7 @@ tstzspanset_to_stbox(const SpanSet *ss)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if a spatiotemporal box has value dimension
+ * @param[out] box Spatiotemporal box
  * @csqlfn #Stbox_hasx()
  */
 bool
@@ -912,6 +968,7 @@ stbox_hasx(const STBox *box)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if a spatiotemporal box has Z dimension
+ * @param[out] box Spatiotemporal box
  * @csqlfn #Stbox_hasz()
  */
 bool
@@ -927,6 +984,7 @@ stbox_hasz(const STBox *box)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if a spatiotemporal box has time dimension
+ * @param[out] box Spatiotemporal box
  * @csqlfn #Stbox_hast()
  */
 bool
@@ -942,6 +1000,7 @@ stbox_hast(const STBox *box)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if a spatiotemporal box is geodetic
+ * @param[out] box Spatiotemporal box
  * @csqlfn #Stbox_isgeodetic()
  */
 bool
@@ -957,7 +1016,7 @@ stbox_isgeodetic(const STBox *box)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the minimum X value of a spatiotemporal box
- * @param[in] box Box
+ * @param[in] box Spatiotemporal box
  * @param[out] result Result
  * @csqlfn #Stbox_xmin()
  */
@@ -977,7 +1036,7 @@ stbox_xmin(const STBox *box, double *result)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum X value of a spatiotemporal box
- * @param[in] box Box
+ * @param[in] box Spatiotemporal box
  * @param[out] result Result
  * @csqlfn #Stbox_xmax()
  */
@@ -997,7 +1056,7 @@ stbox_xmax(const STBox *box, double *result)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the minimum Y value of a spatiotemporal box
- * @param[in] box Box
+ * @param[in] box Spatiotemporal box
  * @param[out] result Result
  * @csqlfn #Stbox_ymin()
  */
@@ -1017,7 +1076,7 @@ stbox_ymin(const STBox *box, double *result)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum Y value of a spatiotemporal box
- * @param[in] box Box
+ * @param[in] box Spatiotemporal box
  * @param[out] result Result
  * @csqlfn #Stbox_ymax()
  */
@@ -1037,7 +1096,7 @@ stbox_ymax(const STBox *box, double *result)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the minimum Z value of a spatiotemporal box
- * @param[in] box Box
+ * @param[in] box Spatiotemporal box
  * @param[out] result Result
  * @csqlfn #Stbox_zmin()
  */
@@ -1057,7 +1116,7 @@ stbox_zmin(const STBox *box, double *result)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum Z value of a spatiotemporal box
- * @param[in] box Box
+ * @param[in] box Spatiotemporal box
  * @param[out] result Result
  * @csqlfn #Stbox_zmax()
  */
@@ -1077,7 +1136,7 @@ stbox_zmax(const STBox *box, double *result)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the minimum timestamptz of a spatiotemporal box
- * @param[in] box Box
+ * @param[in] box Spatiotemporal box
  * @param[out] result Result
  * @csqlfn #Stbox_tmin()
  */
@@ -1098,7 +1157,7 @@ stbox_tmin(const STBox *box, TimestampTz *result)
  * @ingroup libmeos_box_accessor
  * @brief Return true if the minimum timestamptz of a spatiotemporal box is
  * inclusive
- * @param[in] box Box
+ * @param[in] box Spatiotemporal box
  * @param[out] result Result
  * @csqlfn #Stbox_tmin_inc()
  */
@@ -1118,7 +1177,7 @@ stbox_tmin_inc(const STBox *box, bool *result)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Compute the maximum timestamptz of a spatiotemporal box
- * @param[in] box Box
+ * @param[in] box Spatiotemporal box
  * @param[out] result Result
  * @csqlfn #Stbox_tmax()
  */
@@ -1139,7 +1198,7 @@ stbox_tmax(const STBox *box, TimestampTz *result)
  * @ingroup libmeos_box_accessor
  * @brief Return true if the maximum timestamptz of a spatiotemporal box is
  * inclusive
- * @param[in] box Box
+ * @param[in] box Spatiotemporal box
  * @param[out] result Result
  * @csqlfn #Stbox_tmax_inc()
  */
@@ -1163,6 +1222,7 @@ stbox_tmax_inc(const STBox *box, bool *result)
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the SRID of a spatiotemporal box
+ * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_get_srid()
  */
 int32
@@ -1177,6 +1237,8 @@ stbox_srid(const STBox *box)
 /**
  * @ingroup libmeos_box_transf
  * @brief Return a spatiotemporal box with the coordinates set to an SRID
+ * @param[in] box Spatiotemporal box
+ * @param[in] srid SRID
  * @csqlfn #Stbox_set_srid()
  */
 STBox *
@@ -1198,6 +1260,9 @@ stbox_set_srid(const STBox *box, int32 srid)
  * @ingroup libmeos_box_transf
  * @brief Return a spatiotemporal box with the time span expanded and/or scaled
  * by two intervals
+ * @param[in] box Spatiotemporal box
+ * @param[in] shift Interval to shift the value span, may be NULL
+ * @param[in] duration Duration of the result, may be NULL
  * @csqlfn #Stbox_shift_time(), #Stbox_scale_time(), #Stbox_shift_scale_time()
  */
 STBox *
@@ -1225,6 +1290,7 @@ stbox_shift_scale_time(const STBox *box, const Interval *shift,
  * @ingroup libmeos_box_transf
  * @brief Return a spatiotemporal box with only the space dimension
  * @csqlfn #Stbox_get_space()
+ * @param[in] box Spatiotemporal box
  */
 STBox *
 stbox_get_space(const STBox *box)
@@ -1244,6 +1310,8 @@ stbox_get_space(const STBox *box)
  * @ingroup libmeos_box_transf
  * @brief Return a spatiotemporal box with the space bounds expanded by a
  * double
+ * @param[in] box Spatiotemporal box
+ * @param[in] d Value for expanding
  * @csqlfn #Stbox_expand_space()
  */
 STBox *
@@ -1270,21 +1338,23 @@ stbox_expand_space(const STBox *box, double d)
  * @ingroup libmeos_box_transf
  * @brief Return a spatiotemporal box with the time span expanded by an
  * interval
+ * @param[in] box Spatiotemporal box
+ * @param[in] interv Interval for expanding
  * @csqlfn #Stbox_expand_time()
  */
 STBox *
-stbox_expand_time(const STBox *box, const Interval *interval)
+stbox_expand_time(const STBox *box, const Interval *interv)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) interval) ||
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) interv) ||
       ! ensure_has_T_stbox(box))
     return NULL;
 
   STBox *result = stbox_cp(box);
   TimestampTz tmin = pg_timestamp_mi_interval(DatumGetTimestampTz(
-    box->period.lower), interval);
+    box->period.lower), interv);
   TimestampTz tmax = pg_timestamp_pl_interval(DatumGetTimestampTz(
-    box->period.upper), interval);
+    box->period.upper), interv);
   result->period.lower = TimestampTzGetDatum(tmin);
   result->period.upper = TimestampTzGetDatum(tmax);
   return result;
@@ -1294,6 +1364,8 @@ stbox_expand_time(const STBox *box, const Interval *interval)
  * @ingroup libmeos_box_transf
  * @brief Return a spatiotemporal box with the precision of the coordinates set
  * to a number of decimal places
+ * @param[in] box Spatiotemporal box
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Stbox_round()
  */
 STBox *
@@ -1365,6 +1437,7 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
 /**
  * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the first spatiotemporal box contains the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Contains_stbox_stbox()
  */
 bool
@@ -1392,6 +1465,7 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the first spatiotemporal box is contained in the
  * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Contained_stbox_stbox()
  */
 bool
@@ -1430,6 +1504,7 @@ overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the spatiotemporal boxes are equal in the common
  * dimensions
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Same_stbox_stbox()
  */
 bool
@@ -1455,6 +1530,7 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
 /**
  * @ingroup libmeos_box_bbox_topo
  * @brief Return true if the spatiotemporal boxes are adjacent
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Adjacent_stbox_stbox()
  */
 bool
@@ -1516,6 +1592,7 @@ pos_stbox_stbox_test(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is to the left of the
  * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Left_stbox_stbox()
  */
 bool
@@ -1533,6 +1610,7 @@ left_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * right of the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Overleft_stbox_stbox()
  */
 bool
@@ -1550,6 +1628,7 @@ overleft_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is to the right of the
  * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Right_stbox_stbox()
  */
 bool
@@ -1567,6 +1646,7 @@ right_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * left of the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Overright_stbox_stbox()
  */
 bool
@@ -1583,6 +1663,7 @@ overright_stbox_stbox(const STBox *box1, const STBox *box2)
 /**
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is below the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Below_stbox_stbox()
  */
 bool
@@ -1600,6 +1681,7 @@ below_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend above the
  * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Overbelow_stbox_stbox()
  */
 bool
@@ -1616,6 +1698,7 @@ overbelow_stbox_stbox(const STBox *box1, const STBox *box2)
 /**
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is above the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Above_stbox_stbox()
  */
 bool
@@ -1633,6 +1716,7 @@ above_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend below the
  * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Overabove_stbox_stbox()
  */
 bool
@@ -1650,6 +1734,7 @@ overabove_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is in front of the
  * the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Front_stbox_stbox()
  */
 bool
@@ -1667,6 +1752,7 @@ front_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * back of the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Overfront_stbox_stbox()
  */
 bool
@@ -1684,6 +1770,7 @@ overfront_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is at the back of the
  * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Back_stbox_stbox()
  */
 bool
@@ -1701,6 +1788,7 @@ back_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * front of the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Overback_stbox_stbox()
  */
 bool
@@ -1717,6 +1805,7 @@ overback_stbox_stbox(const STBox *box1, const STBox *box2)
 /**
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is before the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Before_stbox_stbox()
  */
 bool
@@ -1733,6 +1822,7 @@ before_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is not after the second
  * one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Overbefore_stbox_stbox()
  */
 bool
@@ -1748,6 +1838,7 @@ overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
 /**
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is after the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #After_stbox_stbox()
  */
 bool
@@ -1764,6 +1855,7 @@ after_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_bbox_pos
  * @brief Return true if the first spatiotemporal box is not before the second
  * one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Overafter_stbox_stbox()
  */
 bool
@@ -1783,6 +1875,8 @@ overafter_stbox_stbox(const STBox *box1, const STBox *box2)
 /**
  * @ingroup libmeos_box_set
  * @brief Return the union of the spatiotemporal boxes
+ * @param[in] box1,box2 Spatiotemporal boxes
+ * @param[in] strict True when the boxes must overlap
  * @csqlfn #Union_stbox_stbox()
  */
 STBox *
@@ -1812,6 +1906,8 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
  * @ingroup libmeos_internal_box_set
  * @brief Set a spatiotemporal box with the result of the intersection of the
  * first two boxes
+ * @param[in] box1,box2 Spatiotemporal boxes
+ * @param[out] result Result
  * @note This function is equivalent to @ref intersection_stbox_stbox without
  * memory allocation
  */
@@ -1864,6 +1960,7 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
 /**
  * @ingroup libmeos_box_set
  * @brief Return the intersection of the spatiotemporal boxes
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Intersection_stbox_stbox()
  */
 STBox *
@@ -1903,6 +2000,8 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
  * |  0  |  1  |   |  4  |  5  |
  * -------------   -------------
  * @endcode
+ * @param[in] box Spatiotemporal box
+ * @param[out] count Number of elements in the output array
  * @csqlfn #Stbox_quad_split()
  */
 STBox *
@@ -1972,6 +2071,7 @@ stbox_quad_split(const STBox *box, int *count)
 /**
  * @ingroup libmeos_box_comp
  * @brief Return true if the spatiotemporal boxes are equal
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @note The function #stbox_cmp is not used to increase efficiency
  * @csqlfn #Stbox_eq()
  */
@@ -1995,6 +2095,7 @@ stbox_eq(const STBox *box1, const STBox *box2)
 /**
  * @ingroup libmeos_box_comp
  * @brief Return true if the spatiotemporal boxes are different
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_ne()
  */
 bool
@@ -2007,6 +2108,7 @@ stbox_ne(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal
  * box is less than, equal to, or greater than the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_cmp()
  */
 int
@@ -2079,6 +2181,7 @@ stbox_cmp(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_comp
  * @brief Return true if the first spatiotemporal box is less than the second
  * one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_lt()
  */
 bool
@@ -2092,6 +2195,7 @@ stbox_lt(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_comp
  * @brief Return true if the first spatiotemporal box is less than or equal to
  * the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_le()
  */
 bool
@@ -2105,6 +2209,7 @@ stbox_le(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_comp
  * @brief Return true if the first spatiotemporal box is greater than or equal
  * to the second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_ge()
  */
 bool
@@ -2118,6 +2223,7 @@ stbox_ge(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_box_comp
  * @brief Return true if the first spatiotemporal box is greater than the
  * second one
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_gt()
  */
 bool

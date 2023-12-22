@@ -44,6 +44,8 @@
 /**
  * @ingroup libmeos_temporal_bool
  * @brief Return the boolean and of a boolean and a temporal boolean
+ * @param[in] b Value
+ * @param[in] temp Temporal value
  * @csqlfn #Tand_bool_tbool()
  */
 Temporal *
@@ -59,6 +61,8 @@ tand_bool_tbool(bool b, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_bool
  * @brief Return the boolean and of a temporal boolean and a boolean
+ * @param[in] temp Temporal value
+ * @param[in] b Value
  * @csqlfn #Tand_tbool_bool()
  */
 Temporal *
@@ -74,6 +78,7 @@ tand_tbool_bool(const Temporal *temp, bool b)
 /**
  * @ingroup libmeos_temporal_bool
  * @brief Return the boolean and of the temporal booleans
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Tand_tbool_tbool()
  */
 Temporal *
@@ -94,6 +99,8 @@ tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_bool
  * @brief Return the boolean or of a boolean and a temporal boolean
+ * @param[in] b Value
+ * @param[in] temp Temporal value
  * @csqlfn #Tor_bool_tbool()
  */
 Temporal *
@@ -109,6 +116,8 @@ tor_bool_tbool(bool b, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_bool
  * @brief Return the boolean or of a temporal boolean and a boolean
+ * @param[in] temp Temporal value
+ * @param[in] b Value
  * @csqlfn #Tor_tbool_bool()
  */
 Temporal *
@@ -124,6 +133,7 @@ tor_tbool_bool(const Temporal *temp, bool b)
 /**
  * @ingroup libmeos_temporal_bool
  * @brief Return the boolean or of the temporal booleans
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Tor_tbool_tbool()
  */
 Temporal *

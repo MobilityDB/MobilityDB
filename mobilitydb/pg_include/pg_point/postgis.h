@@ -41,6 +41,18 @@
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeodetic_tree.h>
+/* MEOS */
+#include "general/temporal.h"
+
+/*****************************************************************************
+ * fmgr macros
+ *****************************************************************************/
+
+#define PG_GETARG_GSERIALIZED_P(varno) ((GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(varno)))
+#define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
+#define PG_RETURN_GSERIALIZED_P(x)   return PointerGetDatum(x)
+
+/*****************************************************************************/
 
 /*****************************************************************************
  * fmgr macros

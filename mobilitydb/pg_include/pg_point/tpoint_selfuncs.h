@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief Selectivity functions for temporal point types.
+ * @brief Selectivity functions for temporal points.
  */
 
 #ifndef __TPOINT_SELFUNCS_H__

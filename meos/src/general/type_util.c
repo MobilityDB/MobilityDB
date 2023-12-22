@@ -361,6 +361,8 @@ datum_div(Datum l, Datum r, meosType type)
 /**
  * @ingroup libmeos_internal_typefuncs
  * @brief Return the 32-bit hash of a value.
+ * @param[in] d Value
+ * @param[in] type Type of the value
  * @return On error return INT_MAX
  */
 uint32
@@ -399,7 +401,10 @@ datum_hash(Datum d, meosType type)
 
 /**
  * @ingroup libmeos_internal_typefuncs
- * @brief Return the 64-bit hash of a value using a seed.
+ * @brief Return the 64-bit hash of a value using a seed
+ * @param[in] d Value
+ * @param[in] type Type of the value
+ * @param[in] seed Seed
  * @return On error return INT_MAX
  */
 uint64
@@ -692,41 +697,43 @@ bstring2bytea(const uint8_t *wkb, size_t size)
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a C string into a text value
+ * @param[in] str String
  * @note We don't include `<utils/builtins.h>` to avoid collisions with 
  * `json-c/json.h`
  * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
  */
 text *
-cstring2text(const char *cstring)
+cstring2text(const char *str)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) cstring))
+  if (! ensure_not_null((void *) str))
     return NULL;
 
-  size_t len = strlen(cstring);
+  size_t len = strlen(str);
   text *result = palloc(len + VARHDRSZ);
   SET_VARSIZE(result, len + VARHDRSZ);
-  memcpy(VARDATA(result), cstring, len);
+  memcpy(VARDATA(result), str, len);
   return result;
 }
 
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a text value into a C string
+ * @param[in] txt Text
  * @note We don't include `<utils/builtins.h>` to avoid collisions with
  * `json-c/json.h`
  * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
  */
 char *
-text2cstring(const text *textptr)
+text2cstring(const text *txt)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) textptr))
+  if (! ensure_not_null((void *) txt))
     return NULL;
 
-  size_t size = VARSIZE_ANY_EXHDR(textptr);
+  size_t size = VARSIZE_ANY_EXHDR(txt);
   char *str = palloc(size + 1);
-  memcpy(str, VARDATA(textptr), size);
+  memcpy(str, VARDATA(txt), size);
   str[size] = '\0';
   return str;
 }
@@ -902,8 +909,8 @@ hypot3d(double x, double y, double z)
 
 #if 0 /* not used */
 /**
- * @brief Determine the 4D hypotenuse.
- * @see The function is a generalization of the 3D case in function hypot3d
+ * @brief Determine the 4D hypotenuse
+ * @note The function is a generalization of the 3D case in function hypot3d
  */
 double
 hypot4d(double x, double y, double z, double m)
@@ -1071,6 +1078,7 @@ basetype_in(const char *str, meosType type,
 /**
  * @ingroup libmeos_pg_types
  * @brief Output function for PG text values
+ * @param[in] txt Text
  */
 char *
 text_out(const text *txt)

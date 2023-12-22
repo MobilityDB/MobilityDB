@@ -47,6 +47,8 @@
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of an integer and a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
  * @csqlfn #Add_number_tnumber()
  */
 Temporal *
@@ -63,6 +65,8 @@ add_int_tint(int i, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of a float and a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
  * @csqlfn #Add_number_tnumber()
  */
 Temporal *
@@ -79,6 +83,8 @@ add_float_tfloat(double d, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of a temporal integer and an integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @csqlfn #Add_tnumber_number()
  */
 Temporal *
@@ -95,6 +101,8 @@ add_tint_int(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of a temporal float and a float
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @csqlfn #Add_tnumber_number()
  */
 Temporal *
@@ -111,6 +119,7 @@ add_tfloat_float(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of the temporal numbers
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Add_tnumber_tnumber()
  */
 Temporal *
@@ -131,6 +140,8 @@ add_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of an integer and a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
  * @csqlfn #Sub_number_tnumber()
  */
 Temporal *
@@ -147,6 +158,8 @@ sub_int_tint(int i, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of a float and a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
  * @csqlfn #Sub_number_tnumber()
  */
 Temporal *
@@ -163,6 +176,8 @@ sub_float_tfloat(double d, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of a temporal integer and an integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @csqlfn #Sub_tnumber_number()
  */
 Temporal *
@@ -179,6 +194,8 @@ sub_tint_int(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of a temporal float and a float
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @csqlfn #Sub_tnumber_number()
  */
 Temporal *
@@ -195,6 +212,7 @@ sub_tfloat_float(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of the temporal numbers
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Sub_tnumber_tnumber()
  */
 Temporal *
@@ -215,6 +233,8 @@ sub_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of an integer and a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
  * @csqlfn #Mult_number_tnumber()
  */
 Temporal *
@@ -231,6 +251,8 @@ mult_int_tint(int i, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of a float and a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
  * @csqlfn #Mult_number_tnumber()
  */
 Temporal *
@@ -247,6 +269,8 @@ mult_float_tfloat(double d, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of a temporal integer and an integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
  * @csqlfn #Mult_tnumber_number()
  */
 Temporal *
@@ -263,6 +287,8 @@ mult_tint_int(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of a temporal float and a float
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @csqlfn #Mult_tnumber_number()
  */
 Temporal *
@@ -279,6 +305,7 @@ mult_tfloat_float(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of the temporal numbers
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Mult_tnumber_tnumber()
  */
 Temporal *
@@ -300,6 +327,8 @@ mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal division of an integer and a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
  * @csqlfn #Div_number_tnumber()
  */
 Temporal *
@@ -316,6 +345,8 @@ div_int_tint(int i, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal division of a float and a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
  * @csqlfn #Div_number_tnumber()
  */
 Temporal *
@@ -332,7 +363,9 @@ div_float_tfloat(double d, const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal division of a temporal integer and an integer
- */
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+*/
 Temporal *
 div_tint_int(const Temporal *temp, int i)
 {
@@ -347,6 +380,8 @@ div_tint_int(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal division of a temporal float and a float
+ * @param[in] temp Temporal value
+ * @param[in] d Value
  * @csqlfn #Div_tnumber_number()
  */
 Temporal *
@@ -363,6 +398,7 @@ div_tfloat_float(const Temporal *temp, double d)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the temporal division of the temporal numbers
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Div_tnumber_tnumber()
  */
 Temporal *

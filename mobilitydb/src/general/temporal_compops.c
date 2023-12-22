@@ -160,8 +160,8 @@ PGDLLEXPORT Datum Teq_base_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a base value is equal to a
- * temporal value
+ * @brief Return a temporal boolean that states whether a base value is equal
+ * to a temporal value
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -175,8 +175,8 @@ PGDLLEXPORT Datum Teq_temporal_base(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a temporal value is equal
- * to a base value
+ * @brief Return a temporal boolean that states whether a temporal value is
+ * equal to a base value
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -190,8 +190,8 @@ PGDLLEXPORT Datum Teq_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether the first temporal value is
- * equal to the second one
+ * @brief Return a temporal boolean that states whether the first temporal
+ * value is equal to the second one
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -209,8 +209,8 @@ PGDLLEXPORT Datum Tne_base_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a base value is different
- * from a temporal value
+ * @brief Return a temporal boolean that states whether a base value is
+ * different from a temporal value
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
@@ -224,7 +224,7 @@ PGDLLEXPORT Datum Tne_temporal_base(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a temporal value is
+ * @brief Return a temporal boolean that states whether a temporal value is
  * different from a base value
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
@@ -239,8 +239,8 @@ PGDLLEXPORT Datum Tne_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether the first temporal value is
- * different from the second one
+ * @brief Return a temporal boolean that states whether the first temporal
+ * value is different from the second one
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
@@ -258,7 +258,8 @@ PGDLLEXPORT Datum Tlt_base_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tlt_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether the temporal less than comparison of a base value and a temporal value
+ * @brief Return a temporal boolean that states whether a base value is less
+ * than a temporal value
  * @sqlfn temporal_tlt()
  * @sqlop @p #<
  */
@@ -272,8 +273,8 @@ PGDLLEXPORT Datum Tlt_temporal_base(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tlt_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a temporal value is less
- * than a base value
+ * @brief Return a temporal boolean that states whether a temporal value is
+ * less than a base value
  * @sqlfn temporal_tlt()
  * @sqlop @p #<
  */
@@ -287,8 +288,8 @@ PGDLLEXPORT Datum Tlt_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tlt_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether the first temporal value is
- * less than the second one
+ * @brief Return a temporal boolean that states whether the first temporal
+ * value is less than the second one
  * @sqlfn temporal_tlt()
  * @sqlop @p #<
  */
@@ -306,8 +307,8 @@ PGDLLEXPORT Datum Tle_base_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tle_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a base value is less than
- * or equal to a temporal value
+ * @brief Return a temporal boolean that states whether a base value is less
+ * than or equal to a temporal value
  * @sqlfn temporal_tle()
  * @sqlop @p #<=
  */
@@ -321,8 +322,8 @@ PGDLLEXPORT Datum Tle_temporal_base(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tle_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a temporal value is less
- * than or equal to a base value
+ * @brief Return a temporal boolean that states whether a temporal value is
+ * less than or equal to a base value
  * @sqlfn temporal_tle()
  * @sqlop @p #<=
  */
@@ -336,8 +337,8 @@ PGDLLEXPORT Datum Tle_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tle_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether the first temporal value is
- * less than or equal to second one
+ * @brief Return a temporal boolean that states whether the first temporal
+ * value is less than or equal to second one
  * @sqlfn temporal_tle()
  * @sqlop @p #<=
  */
@@ -355,7 +356,7 @@ PGDLLEXPORT Datum Tgt_base_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgt_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a base value is greater
+ * @brief Return a temporal boolean that states whether a base value is greater
  * than a temporal value
  * @sqlfn temporal_tgt()
  * @sqlop @p #>
@@ -370,7 +371,7 @@ PGDLLEXPORT Datum Tgt_temporal_base(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgt_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a temporal value is
+ * @brief Return a temporal boolean that states whether a temporal value is
  * greater than a base value
  * @sqlfn temporal_tgt()
  * @sqlop @p #>
@@ -385,8 +386,8 @@ PGDLLEXPORT Datum Tgt_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgt_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a temporal value is greater
- * than the second one
+ * @brief Return a temporal boolean that states whether a temporal value is
+ * greater than the second one
  * @sqlfn temporal_tgt()
  * @sqlop @p #>
  */
@@ -404,7 +405,8 @@ PGDLLEXPORT Datum Tge_base_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tge_base_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a base value is greater than or equal to a temporal value
+ * @brief Return a temporal boolean that states whether a base value is greater
+ * than or equal to a temporal value
  * @sqlfn temporal_tge()
  * @sqlop @p #>=
  */
@@ -418,8 +420,8 @@ PGDLLEXPORT Datum Tge_temporal_base(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tge_temporal_base);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether a temporal value is greater
- * than or equal to a base value
+ * @brief Return a temporal boolean that states whether a temporal value is
+ * greater than or equal to a base value
  * @sqlfn temporal_tge()
  * @sqlop @p #>=
  */
@@ -433,8 +435,8 @@ PGDLLEXPORT Datum Tge_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tge_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_comp_temp
- * @brief Return a temporal boolean stating whether the first temporal value is
- * greater than or equal to the second one
+ * @brief Return a temporal boolean that states whether the first temporal
+ * value is greater than or equal to the second one
  * @sqlfn temporal_tge()
  * @sqlop @p #>=
  */

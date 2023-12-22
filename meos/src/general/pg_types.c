@@ -1543,7 +1543,7 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
 
 /**
  * @ingroup libmeos_pg_types
- * @brief Convert a string to an interval.
+ * @brief Convert a string to an interval
  * @note PostgreSQL function: Datum interval_in(PG_FUNCTION_ARGS)
  */
 Interval *
@@ -1659,7 +1659,7 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
 
 /**
  * @ingroup libmeos_pg_types
- * @brief Convert a time span to external form.
+ * @brief Convert a time span to external form
  * @note PostgreSQL function: Datum interval_out(PG_FUNCTION_ARGS)
  */
 char *
@@ -1689,7 +1689,7 @@ pg_interval_out(const Interval *span)
 
 /**
  * @ingroup libmeos_pg_types
- * @brief Multiply an interval by a scalar.
+ * @brief Multiply an interval by a scalar
  * @note PostgreSQL function: Datum interval_mul(PG_FUNCTION_ARGS)
  */
 Interval *
@@ -1779,7 +1779,7 @@ pg_interval_mul(const Interval *span, double factor)
 
 /**
  * @ingroup libmeos_pg_types
- * @brief Add an interval to a timestamp data type.
+ * @brief Add an interval to a timestamp data type
  * @note PostgreSQL function: Datum interval_pl(PG_FUNCTION_ARGS)
  */
 Interval *
@@ -1824,7 +1824,7 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
 
 /**
  * @ingroup libmeos_pg_types
- * @brief Add an interval to a timestamp data type.
+ * @brief Add an interval to a timestamp data type
  * @return On error return DT_NOEND
  *
  * Note that interval has provisions for qualitative year/month and day
@@ -1929,7 +1929,7 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
 
 /**
  * @ingroup libmeos_pg_types
- * @brief Add an interval to a timestamp data type.
+ * @brief Add an interval to a timestamp data type
  * @note PostgreSQL function: Datum timestamp_pl_interval(PG_FUNCTION_ARGS)
  */
 TimestampTz

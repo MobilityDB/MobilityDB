@@ -167,16 +167,14 @@ set_find_value(const Set *s, Datum d, int *loc)
 
 #if 0 /* not used */
 /**
- * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the location of a value in a ranked set (which is unordered)
  * using sequential search.
- * @note Contrary to function `set_find_value`, if the value is not found the
- * returned location is always 0.
- *
  * @param[in] s Set
  * @param[in] d Value
  * @param[out] loc Location of the value if found
  * @result Return true if the value is contained in the vecctor
+ * @note Contrary to function `set_find_value`, if the value is not found the
+ * returned location is always 0.
  */
 bool
 rset_find_value(const Set *s, Datum d, int *loc)
@@ -203,6 +201,8 @@ rset_find_value(const Set *s, Datum d, int *loc)
 /**
  * @ingroup libmeos_internal_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
+ * @param[in] settype Set type
  * @csqlfn #Set_in()
  */
 Set *
@@ -216,6 +216,7 @@ set_in(const char *str, meosType settype)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Set_in()
  */
 Set *
@@ -230,6 +231,7 @@ intset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Set_in()
  */
 Set *
@@ -244,6 +246,7 @@ bigintset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Set_in()
  */
 Set *
@@ -258,6 +261,7 @@ floatset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Set_in()
  */
 Set *
@@ -272,6 +276,7 @@ textset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Set_in()
  */
 Set *
@@ -286,6 +291,7 @@ dateset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Set_in()
  */
 Set *
@@ -300,6 +306,7 @@ tstzset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Set_in()
  */
 Set *
@@ -314,6 +321,7 @@ geomset_in(const char *str)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
+ * @param[in] str String
  * @csqlfn #Set_in()
  */
 Set *
@@ -366,6 +374,8 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
 /**
  * @ingroup libmeos_internal_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a set.
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Set_out()
  */
 char *
@@ -382,6 +392,7 @@ set_out(const Set *s, int maxdd)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Output an integer set.
+ * @param[in] s Set
  * @csqlfn #Set_out()
  */
 char *
@@ -396,6 +407,7 @@ intset_out(const Set *s)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Output a big integer set
+ * @param[in] s Set
  * @csqlfn #Set_out()
  */
 char *
@@ -410,6 +422,8 @@ bigintset_out(const Set *s)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Output a float set
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Set_out()
  */
 char *
@@ -425,6 +439,7 @@ floatset_out(const Set *s, int maxdd)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Output a text set
+ * @param[in] s Set
  * @csqlfn #Set_out()
  */
 char *
@@ -439,6 +454,7 @@ textset_out(const Set *s)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Output a date set
+ * @param[in] s Set
  * @csqlfn #Set_out()
  */
 char *
@@ -453,6 +469,7 @@ dateset_out(const Set *s)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Output a timestamptz set
+ * @param[in] s Set
  * @csqlfn #Set_out()
  */
 char *
@@ -467,6 +484,8 @@ tstzset_out(const Set *s)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Output a geometry set
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Set_out()
  */
 char *
@@ -496,6 +515,8 @@ geoset_as_text(const Set *s, int maxdd)
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a geo set.
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Geoset_as_ewkt()
  */
 char *
@@ -585,6 +606,8 @@ SET_OFFSETS_PTR(const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the n-th value of a set
+ * @param[in] s Set
+ * @param[in] index Element number
  * @pre The argument @p index is less than the number of values in the set
  */
 Datum
@@ -639,7 +662,7 @@ SET_VAL_N(const Set *s, int index)
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] maxcount Maximum number of elements in the array
- * @param[in] basetype Base type
+ * @param[in] basetype Type of the values
  * @param[in] ordered True when the values are ordered and without duplicates
  */
 Set *
@@ -783,7 +806,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
  * @brief Construct a set from an array of values
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
- * @param[in] basetype Base type
+ * @param[in] basetype Type of the values
  * @param[in] ordered True when the values are ordered and without duplicates
  * @csqlfn #Set_constructor()
  */
@@ -797,6 +820,8 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct an integer set from an array of values
+ * @param[in] values Array of values
+ * @param[in] count Number of elements of the array
  * @csqlfn #Set_constructor()
  */
 Set *
@@ -815,6 +840,8 @@ intset_make(const int *values, int count)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a big integer set from an array of values
+ * @param[in] values Array of values
+ * @param[in] count Number of elements of the array
  * @csqlfn #Set_constructor()
  */
 Set *
@@ -833,6 +860,8 @@ bigintset_make(const int64 *values, int count)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a float set from an array of values
+ * @param[in] values Array of values
+ * @param[in] count Number of elements of the array
  * @csqlfn #Set_constructor()
  */
 Set *
@@ -851,6 +880,8 @@ floatset_make(const double *values, int count)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a text set from an array of values
+ * @param[in] values Array of values
+ * @param[in] count Number of elements of the array
  * @csqlfn #Set_constructor()
  */
 Set *
@@ -869,6 +900,8 @@ textset_make(const text **values, int count)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a date set from an array of values
+ * @param[in] values Array of values
+ * @param[in] count Number of elements of the array
  * @csqlfn #Set_constructor()
  */
 Set *
@@ -887,6 +920,8 @@ dateset_make(const DateADT *values, int count)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a timestamptz set from an array of values
+ * @param[in] values Array of values
+ * @param[in] count Number of elements of the array
  * @csqlfn #Set_constructor()
  */
 Set *
@@ -905,6 +940,8 @@ tstzset_make(const TimestampTz *values, int count)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct a geometry set from an array of values
+ * @param[in] values Array of values
+ * @param[in] count Number of elements of the array
  * @csqlfn #Set_constructor()
  */
 Set *
@@ -929,7 +966,7 @@ geoset_make(const GSERIALIZED **values, int count)
  * after the creation.
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
- * @param[in] basetype Base type
+ * @param[in] basetype Type of the values
  * @param[in] ordered True when the values are ordered and without duplicates
  */
 Set *
@@ -946,6 +983,7 @@ set_make_free(Datum *values, int count, meosType basetype, bool ordered)
 /**
  * @ingroup libmeos_internal_setspan_constructor
  * @brief Return a copy of a set.
+ * @param[in] s Set
  */
 Set *
 set_cp(const Set *s)
@@ -960,6 +998,7 @@ set_cp(const Set *s)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Return a copy of a set.
+ * @param[in] s Set
  */
 Set *
 set_copy(const Set *s)
@@ -978,6 +1017,8 @@ set_copy(const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_conversion
  * @brief Convert a value to a set
+ * @param[in] d Value
+ * @param[in] basetype Type of the value
  * @csqlfn #Value_to_set()
  */
 Set *
@@ -990,6 +1031,7 @@ value_to_set(Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert an integer to a set
+ * @param[in] i Value
  * @csqlfn #Value_to_set()
  */
 Set *
@@ -1002,6 +1044,7 @@ int_to_set(int i)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a big integer to a set
+ * @param[in] i Value
  * @csqlfn #Value_to_set()
  */
 Set *
@@ -1014,6 +1057,7 @@ bigint_to_set(int64 i)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a float to a set
+ * @param[in] d Value
  * @csqlfn #Value_to_set()
  */
 Set *
@@ -1026,6 +1070,7 @@ float_to_set(double d)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a text to a set
+ * @param[in] txt Value
  * @csqlfn #Value_to_set()
  */
 Set *
@@ -1041,6 +1086,7 @@ text_to_set(text *txt)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a date to a set
+ * @param[in] d Value
  * @csqlfn #Value_to_set()
  */
 Set *
@@ -1053,6 +1099,7 @@ date_to_set(DateADT d)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a timestamptz to a set
+ * @param[in] t Value
  * @csqlfn #Value_to_set()
  */
 Set *
@@ -1065,6 +1112,7 @@ timestamptz_to_set(TimestampTz t)
 /**
  * @ingroup libmeos_setspan_conversion
  * @brief Convert a geometry/geography to a geo set
+ * @param[in] gs Value
  * @csqlfn #Value_to_set()
  */
 Set *
@@ -1082,20 +1130,23 @@ geo_to_set(GSERIALIZED *gs)
 /**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Set the last argument to the bounding span of a set.
+ * @param[in] s Set
+ * @param[in] sp Span
  */
 void
-set_set_span(const Set *set, Span *s)
+set_set_span(const Set *s, Span *sp)
 {
-  assert(set); assert(s);
-  meosType spantype = basetype_spantype(set->basetype);
-  span_set(SET_VAL_N(set, MINIDX), SET_VAL_N(set, set->MAXIDX), true, true,
-    set->basetype, spantype, s);
+  assert(s); assert(sp);
+  meosType spantype = basetype_spantype(s->basetype);
+  span_set(SET_VAL_N(s, MINIDX), SET_VAL_N(s, s->MAXIDX), true, true,
+    s->basetype, spantype, sp);
   return;
 }
 
 /**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the bounding span of a set.
+ * @param[in] s Set
  */
 Span *
 set_span(const Set *s)
@@ -1109,6 +1160,7 @@ set_span(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the bounding span of a set.
+ * @param[in] s Set
  * @csqlfn #Set_to_span()
  */
 Span *
@@ -1121,88 +1173,6 @@ set_to_span(const Set *s)
 }
 
 /*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_set_transf
- * @brief Transform an integer set into a float set
- * @csqlfn #Intset_to_floatset()
- */
-Set *
-intset_to_floatset(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_INTSET))
-    return NULL;
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
-  /* All distinct integers will yield distinct floats */
-  return set_make_free(values, s->count, T_FLOAT8, ORDERED);
-}
-
-/**
- * @ingroup libmeos_set_transf
- * @brief Transform a float set into an integer set
- * @csqlfn #Floatset_to_intset()
- */
-Set *
-floatset_to_intset(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_FLOATSET))
-    return NULL;
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
-  /* Two distinct floats can yield the same integer */
-  return set_make_free(values, s->count, T_INT4, ORDERED_NO);
-}
-
-/**
- * @ingroup libmeos_set_transf
- * @brief Transform a date set into a timestamptz set
- * @csqlfn #Dateset_to_tstzset()
- */
-Set *
-dateset_to_tstzset(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_DATESET))
-    return NULL;
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = TimestampTzGetDatum(pg_date_timestamptz(DatumGetDateADT(
-      SET_VAL_N(s, i))));
-  /* All distinct dates will yield distinct timestamptz */
-  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDERED);
-}
-
-/**
- * @ingroup libmeos_set_transf
- * @brief Transform a timestamptz set ininto a date set
- * @csqlfn #Tstzset_to_dateset()
- */
-Set *
-tstzset_to_dateset(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_TSTZSET))
-    return NULL;
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = DateADTGetDatum(pg_timestamptz_date(DatumGetTimestampTz(
-      SET_VAL_N(s, i))));
-  /* Two distinct timestamptz can yield the same date */
-  return set_make_free(values, s->count, T_DATE, ORDERED_NO);
-}
-
-/*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 
@@ -1210,6 +1180,7 @@ tstzset_to_dateset(const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the size in bytes of a set.
+ * @param[in] s Set
  * @csqlfn #Set_mem_size()
  */
 int
@@ -1224,6 +1195,7 @@ set_mem_size(const Set *s)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the number of values of a set.
  * @return On error return -1
+ * @param[in] s Set
  * @csqlfn #Set_num_values()
  */
 int
@@ -1238,6 +1210,7 @@ set_num_values(const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the start value of a set.
+ * @param[in] s Set
  */
 Datum
 set_start_value(const Set *s)
@@ -1252,6 +1225,7 @@ set_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of an integer set.
+ * @param[in] s Set
  * @return On error return INT_MAX
  * @csqlfn #Set_start_value()
  */
@@ -1267,6 +1241,7 @@ intset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a big integer set.
+ * @param[in] s Set
  * @return On error return INT_MAX
  * @csqlfn #Set_start_value()
  */
@@ -1282,6 +1257,7 @@ bigintset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a float set.
+ * @param[in] s Set
  * @return On error return DBL_MAX
  * @csqlfn #Set_start_value()
  */
@@ -1297,6 +1273,7 @@ floatset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a text set.
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_start_value()
  */
@@ -1312,6 +1289,7 @@ textset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a date set.
+ * @param[in] s Set
  * @return On error return DATEVAL_NOEND
  * @csqlfn #Set_start_value()
  */
@@ -1327,6 +1305,7 @@ dateset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a timestamptz set.
+ * @param[in] s Set
  * @return On error return DT_NOEND
  * @csqlfn #Set_start_value()
  */
@@ -1342,6 +1321,7 @@ tstzset_start_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a geo set.
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_start_value()
  */
@@ -1358,6 +1338,7 @@ geoset_start_value(const Set *s)
 /**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the end value of a set.
+ * @param[in] s Set
  */
 Datum
 set_end_value(const Set *s)
@@ -1372,6 +1353,7 @@ set_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of an integer set.
+ * @param[in] s Set
  * @return On error return INT_MAX
  * @csqlfn #Set_end_value()
  */
@@ -1387,6 +1369,7 @@ intset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a big integer set.
+ * @param[in] s Set
  * @return On error return INT_MAX
  * @csqlfn #Set_end_value()
  */
@@ -1402,6 +1385,7 @@ bigintset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a float set.
+ * @param[in] s Set
  * @return On error return DBL_MAX
  * @csqlfn #Set_end_value()
  */
@@ -1417,6 +1401,7 @@ floatset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a text set.
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_end_value()
  */
@@ -1432,6 +1417,7 @@ textset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a date set.
+ * @param[in] s Set
  * @return On error return DATEVAL_NOEND
  * @csqlfn #Set_end_value()
  */
@@ -1447,6 +1433,7 @@ dateset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a timestamptz set.
+ * @param[in] s Set
  * @return On error return DT_NOEND
  * @csqlfn #Set_end_value()
  */
@@ -1462,6 +1449,7 @@ tstzset_end_value(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a geo set.
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_end_value()
  */
@@ -1480,7 +1468,7 @@ geoset_end_value(const Set *s)
  * @brief Set the last argument to the n-th value of a set
  * @param[in] s Set
  * @param[in] n Number
- * @param[out] result Timestamp
+ * @param[out] result Value
  * @result Return true if the value is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Set_value_n()
@@ -1564,7 +1552,7 @@ floatset_value_n(const Set *s, int n, double *result)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Set the last argument to the n-th value of a text set
- * @param[in] s Float set
+ * @param[in] s Text set
  * @param[in] n Number
  * @param[out] result Value
  * @result Return true if the value is found
@@ -1585,7 +1573,7 @@ textset_value_n(const Set *s, int n, text **result)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Set the last argument to the n-th value of a date set
- * @param[in] s Timestamp set
+ * @param[in] s Date set
  * @param[in] n Number
  * @param[out] result Date
  * @result Return true if the date is found
@@ -1627,7 +1615,7 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Set the last argument to the n-th value of a geo set
- * @param[in] s Float set
+ * @param[in] s Geo set
  * @param[in] n Number
  * @param[out] result Value
  * @result Return true if the value is found
@@ -1649,6 +1637,7 @@ geoset_value_n(const Set *s, int n, GSERIALIZED **result)
 /**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the array of values of a set.
+ * @param[in] s Set
  * @csqlfn #Set_values()
  */
 Datum *
@@ -1665,6 +1654,7 @@ set_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of an integer set.
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_values()
  */
@@ -1684,6 +1674,7 @@ intset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a big integer set.
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_values()
  */
@@ -1703,6 +1694,7 @@ bigintset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a float set.
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_values()
  */
@@ -1722,6 +1714,7 @@ floatset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a text set.
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_values()
  */
@@ -1741,6 +1734,7 @@ textset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a date set.
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_values()
  */
@@ -1760,6 +1754,7 @@ dateset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a timestamptz set.
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_values()
  */
@@ -1779,6 +1774,7 @@ tstzset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a geo set
+ * @param[in] s Set
  * @return On error return NULL
  * @csqlfn #Set_values()
  */
@@ -1803,6 +1799,7 @@ geoset_values(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the SRID of a geo set
+ * @param[in] s Set
  * @csqlfn #Geoset_get_srid()
  */
 int
@@ -1819,6 +1816,8 @@ geoset_srid(const Set *s)
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Return a geo set with the coordinates set to an SRID
+ * @param[in] s Set
+ * @param[in] srid SRID
  * @return On error return NULL
  * @csqlfn #Geoset_set_srid()
  */
@@ -1851,7 +1850,8 @@ geoset_set_srid(const Set *s, int32 srid)
 /**
  * @ingroup libmeos_internal_setspan_transf
  * @brief Return a copy of a set ordered, without duplicates, and with no
- * additional free space.
+ * additional free space
+ * @param[in] s Set
  */
 Set *
 set_compact(const Set *s)
@@ -1870,7 +1870,10 @@ set_compact(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of the float set to the number of decimal places.
+ * @brief Return a float set with the precision of the values set to the number
+ * of decimal places.
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Floatset_round()
  */
 Set *
@@ -1890,7 +1893,10 @@ floatset_round(const Set *s, int maxdd)
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of the coordinates to the number of decimal places.
+ * @brief Return a geo set with the precision of the coordinates set to the
+ * number of decimal places
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Geoset_round()
  */
 Set *
@@ -1914,6 +1920,7 @@ geoset_round(const Set *s, int maxdd)
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Convert the text set to lowercase.
+ * @param[in] s Set
  * @csqlfn #Textset_lower()
  */
 Set *
@@ -1932,6 +1939,7 @@ textset_lower(const Set *s)
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Convert the text set to uppercase.
+ * @param[in] s Set
  * @csqlfn #Textset_upper()
  */
 Set *
@@ -1947,13 +1955,16 @@ textset_upper(const Set *s)
   return set_make_free(values, s->count, T_TEXT, ORDERED);
 }
 
-/*****************************************************************************
- * Modification functions
- *****************************************************************************/
+/*****************************************************************************/
 
 /**
  * @ingroup libmeos_internal_setspan_transf
  * @brief Return a number set shifted and/or scaled by two values
+ * @param[in] s Set
+ * @param[in] shift Value for shifting the elements
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
  */
 Set *
 numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
@@ -2005,6 +2016,11 @@ numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Return an integer set shifted and/or scaled by two values
+ * @param[in] s Set
+ * @param[in] shift Value for shifting the elements
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
  * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
  */
 Set *
@@ -2022,6 +2038,11 @@ intset_shift_scale(const Set *s, int shift, int width, bool hasshift,
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Return a big integer set shifted and/or scaled by two values
+ * @param[in] s Set
+ * @param[in] shift Value for shifting the elements
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
  * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
  */
 Set *
@@ -2039,6 +2060,11 @@ bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift,
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Return a float set shifted and/or scaled by two values
+ * @param[in] s Set
+ * @param[in] shift Value for shifting the elements
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
  * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
  */
 Set *
@@ -2055,6 +2081,11 @@ floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Return a date set shifted and/or scaled by two values
+ * @param[in] s Set
+ * @param[in] shift Value for shifting the elements
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
  * @csqlfn #Numset_shift(), #Numset_scale(), #Numset_shift_scale(),
  */
 Set *
@@ -2073,6 +2104,9 @@ dateset_shift_scale(const Set *s, int shift, int width, bool hasshift,
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Return a timestamptz set shifted and/or scaled by two intervals
+ * @param[in] s Set
+ * @param[in] shift Interval to shift the elements, may be NULL
+ * @param[in] duration Duation of the result, may be NULL
  * @csqlfn #Tstzset_shift(), #Tstzset_scale(), #Tstzset_shift_scale()
  */
 Set *
@@ -2115,6 +2149,90 @@ tstzset_shift_scale(const Set *s, const Interval *shift,
   return result;
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_set_transf
+ * @brief Transform an integer set into a float set
+ * @param[in] s Set
+ * @csqlfn #Intset_to_floatset()
+ */
+Set *
+intset_to_floatset(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_type(s, T_INTSET))
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
+  /* All distinct integers will yield distinct floats */
+  return set_make_free(values, s->count, T_FLOAT8, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_set_transf
+ * @brief Transform a float set into an integer set
+ * @param[in] s Set
+ * @csqlfn #Floatset_to_intset()
+ */
+Set *
+floatset_to_intset(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_type(s, T_FLOATSET))
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
+  /* Two distinct floats can yield the same integer */
+  return set_make_free(values, s->count, T_INT4, ORDERED_NO);
+}
+
+/**
+ * @ingroup libmeos_set_transf
+ * @brief Transform a date set into a timestamptz set
+ * @param[in] s Set
+ * @csqlfn #Dateset_to_tstzset()
+ */
+Set *
+dateset_to_tstzset(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_type(s, T_DATESET))
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = TimestampTzGetDatum(pg_date_timestamptz(DatumGetDateADT(
+      SET_VAL_N(s, i))));
+  /* All distinct dates will yield distinct timestamptz */
+  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_set_transf
+ * @brief Transform a timestamptz set ininto a date set
+ * @param[in] s Set
+ * @csqlfn #Tstzset_to_dateset()
+ */
+Set *
+tstzset_to_dateset(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_type(s, T_TSTZSET))
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = DateADTGetDatum(pg_timestamptz_date(DatumGetTimestampTz(
+      SET_VAL_N(s, i))));
+  /* Two distinct timestamptz can yield the same date */
+  return set_make_free(values, s->count, T_DATE, ORDERED_NO);
+}
+
 /*****************************************************************************
  * Unnest function
  *****************************************************************************/
@@ -2154,12 +2272,13 @@ set_unnest_state_next(SetUnnestState *state)
 }
 
 /*****************************************************************************
- * Functions for defining B-tree index
+ * Comparison functions for defining B-tree index
  *****************************************************************************/
 
 /**
  * @ingroup libmeos_internal_setspan_comp
  * @brief Return true if the two sets are equal.
+ * @param[in] s1,s2 Sets
  */
 bool
 set_eq1(const Set *s1, const Set *s2)
@@ -2178,7 +2297,8 @@ set_eq1(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the two sets are equal.
- * @note The internal B-tree comparator is not used to increase efficiency
+ * @param[in] s1,s2 Sets
+ * @note The function #set_cmp() is not used to increase efficiency
  * @csqlfn #Set_eq()
  */
 bool
@@ -2194,6 +2314,7 @@ set_eq(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first set is not equal to the second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Set_ne()
  */
 bool
@@ -2206,6 +2327,7 @@ set_ne(const Set *s1, const Set *s2)
  * @ingroup libmeos_internal_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first set is less
  * than, equal, or greater than the second one.
+ * @param[in] s1,s2 Sets
  */
 int
 set_cmp1(const Set *s1, const Set *s2)
@@ -2238,6 +2360,7 @@ set_cmp1(const Set *s1, const Set *s2)
  * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first set is less
  * than, equal, or greater than the second one.
+ * @param[in] s1,s2 Sets
  * @note Function used for B-tree comparison
  * @csqlfn #Set_cmp()
  */
@@ -2254,6 +2377,7 @@ set_cmp(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first set is less than the second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Set_lt()
  */
 bool
@@ -2265,6 +2389,7 @@ set_lt(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first set is less than or equal to the second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Set_le()
  */
 bool
@@ -2276,6 +2401,7 @@ set_le(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first set is greater than the second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Set_gt()
  */
 bool
@@ -2287,6 +2413,7 @@ set_gt(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return true if the first set is greater than or equal to the second one
+ * @param[in] s1,s2 Sets
  * @csqlfn #Set_ge()
  */
 bool
@@ -2304,6 +2431,7 @@ set_ge(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash of a set.
+ * @param[in] s Set
  * @csqlfn #
  */
 uint32
@@ -2326,6 +2454,8 @@ set_hash(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash of a set using a seed.
+ * @param[in] s Set
+ * @param[in] seed Seed
  * @csqlfn #
  */
 uint64

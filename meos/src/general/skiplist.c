@@ -220,6 +220,7 @@ skiplist_delete(SkipList *list, int cur)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Free the skiplist
+ * @param[in] list Skiplist
  */
 void
 skiplist_free(SkipList *list)

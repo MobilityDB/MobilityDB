@@ -51,7 +51,7 @@
 #include "general/type_util.h"
 
 /*****************************************************************************
- * Miscellaneous functions on datums
+ * Generic functions on datums
  *****************************************************************************/
 
 /**
@@ -90,33 +90,7 @@ datum_radians(Datum value)
   return Float8GetDatum(float8_mul(DatumGetFloat8(value), RADIANS_PER_DEGREE));
 }
 
-#if MEOS
-/**
- * @brief Round a float number to a given number of decimal places
- */
-Datum
-datum_round_float(Datum value, Datum size)
-{
-  Datum result = value;
-  double d = DatumGetFloat8(value);
-  int s = DatumGetInt32(size);
-  double inf = get_float8_infinity();
-  if (d != -1 * inf && d != inf)
-  {
-    if (s == 0)
-      result = Float8GetDatum(rint(d));
-    else
-    {
-      double power10 = pow(10.0, s);
-      double res = round(d * power10) / power10;
-      result = Float8GetDatum(res);
-    }
-  }
-  return result;
-}
-#else /* ! MEOS */
-extern Datum datum_round_float(Datum value, Datum size);
-#endif /* MEOS */
+/*****************************************************************************/
 
 /**
  * @brief Find the single timestamptz at which the operation of two temporal
@@ -217,7 +191,7 @@ tnumber_div_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
  * @brief Generic arithmetic operator on a temporal number and a number
  * @param[in] temp Temporal number
  * @param[in] value Number
- * @param[in] basetype Base type
+ * @param[in] basetype Type of the value
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] func Arithmetic function
  * @param[in] invert True if the base value is the first argument of the
@@ -328,6 +302,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Get the absolute value of a temporal number
+ * @param[in] inst Temporal instant
  * @csqlfn #Tnumber_abs()
  */
 TInstant *
@@ -421,6 +396,7 @@ tnumberseq_linear_abs(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Get the absolute value of a temporal number
+ * @param[in] seq Temporal sequence
  * @csqlfn #Tnumber_abs()
  */
 TSequence *
@@ -435,6 +411,7 @@ tnumberseq_abs(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Get the absolute value of a temporal number
+ * @param[in] ss Temporal sequence set
  * @csqlfn #Tnumber_abs()
  */
 TSequenceSet *
@@ -455,6 +432,7 @@ tnumberseqset_abs(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Get the absolute value of a temporal number
+ * @param[in] temp Temporal value
  * @csqlfn #Tnumber_abs()
  */
 Temporal *
@@ -533,6 +511,7 @@ tnumberseq_delta_value(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Return the temporal delta_value of a temporal number.
+ * @param[in] ss Temporal sequence set
  */
 TSequenceSet *
 tnumberseqset_delta_value(const TSequenceSet *ss)
@@ -566,6 +545,7 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the delta value of a temporal number.
+ * @param[in] temp Temporal value
  * @csqlfn #Tnumber_delta_value()
  */
 Temporal *
@@ -637,6 +617,7 @@ tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Return the temporal angular difference of a temporal number.
+ * @param[in] seq Temporal sequence
  */
 TSequence *
 tnumberseq_angular_difference(const TSequence *seq)
@@ -657,6 +638,7 @@ tnumberseq_angular_difference(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Return the angular difference of a temporal number.
+ * @param[in] ss Temporal sequence set
  */
 TSequence *
 tnumberseqset_angular_difference(const TSequenceSet *ss)
@@ -682,6 +664,7 @@ tnumberseqset_angular_difference(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the angular difference of a temporal number.
+ * @param[in] temp Temporal value
  * @csqlfn #Tpoint_angular_difference()
  */
 Temporal *
@@ -709,58 +692,9 @@ tnumber_angular_difference(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Round a temporal number to a given number of decimal places
- * @csqlfn #Tfloat_round()
- */
-Temporal *
-tfloat_round(const Temporal *temp, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT) ||
-      ! ensure_not_negative(maxdd))
-    return NULL;
-
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_round_float;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = Int32GetDatum(maxdd);
-  lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.argtype[1] = T_INT4;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal(temp, &lfinfo);
-}
-
-/**
- * @ingroup meos_temporal_math
- * @brief Set the precision of the coordinates of an array of temporal floats
- * to a number of decimal places.
- * @csqlfn #Tfloatarr_round()
- */
-Temporal **
-tfloatarr_round(const Temporal **temparr, int count, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temparr) ||
-      /* Ensure that the FIRST element is a temporal float */
-      ! ensure_temporal_isof_type(temparr[0], T_TFLOAT) ||
-      ! ensure_positive(count) || ! ensure_not_negative(maxdd))
-    return NULL;
-
-  Temporal **result = palloc(sizeof(Temporal *) * count);
-  for (int i = 0; i < count; i++)
-    result[i] = tfloat_round(temparr[i], maxdd);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_math
  * @brief Convert a temporal number from radians to degrees
+ * @param[in] temp Temporal value
+ * @param[in] normalize True when the result is normalized
  * @csqlfn #Tfloat_degrees()
  */
 Temporal *
@@ -789,6 +723,7 @@ tfloat_degrees(const Temporal *temp, bool normalize)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Convert a temporal number from degrees to radians
+ * @param[in] temp Temporal value
  * @csqlfn #Tfloat_radians()
  */
 Temporal *
@@ -819,6 +754,7 @@ tfloat_radians(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence number.
+ * @param[in] seq Temporal sequence
  * @csqlfn #Tfloat_derivative()
  */
 TSequence *
@@ -863,6 +799,7 @@ tfloatseq_derivative(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence set number
+ * @param[in] ss Temporal sequence set
  * @csqlfn #Tfloat_derivative()
  */
 TSequenceSet *
@@ -885,8 +822,9 @@ tfloatseqset_derivative(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_temporal_math
  * @brief Return the derivative of a temporal number
- * @see tfloatseq_derivative
- * @see tfloatseqset_derivative
+ * @param[in] temp Temporal value
+ * @see #tfloatseq_derivative()
+ * @see #tfloatseqset_derivative()
  * @csqlfn #Tfloat_derivative()
  */
 Temporal *

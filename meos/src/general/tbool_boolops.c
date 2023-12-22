@@ -79,7 +79,8 @@ datum_not(Datum d)
 /**
  * @ingroup libmeos_temporal_bool
  * @brief Return the boolean not of a temporal boolean.
- * @sqlop @p ~
+ * @param[in] temp Temporal value
+ * @csqlfn #Tnot_tbool()
  */
 Temporal *
 tnot_tbool(const Temporal *temp)
@@ -146,6 +147,8 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup libmeos_temporal_bool
  * @brief Return the time when the temporal boolean has value true.
+ * @param[in] temp Temporal value
+ * @csqlfn #Tbool_when_true()
  */
 SpanSet *
 tbool_when_true(const Temporal *temp)

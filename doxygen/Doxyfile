@@ -273,7 +273,7 @@ TAB_SIZE               = 4
 # with the commands \{ and \} for these it is advised to use the version @{ and
 # @} or use a double escape (\\{ and \\})
 
-ALIASES                = "csqlfn=@par SQL-C Function:^^" \
+ALIASES                = "csqlfn=@par C-SQL Function:^^" \
                          "sqlfn=@par SQL Function:^^" \
                          "sqlop=@par SQL Operator:^^" \
 

@@ -43,7 +43,7 @@
 
 extern Datum Boxop_timestamp_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum Boxop_temporal_timestamp(FunctionCallInfo fcinfo,
+extern Datum Boxop_temporal_timestamptz(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
 extern Datum Boxop_tstzset_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));

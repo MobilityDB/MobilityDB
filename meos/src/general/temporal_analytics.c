@@ -369,7 +369,10 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
 
 /**
  * @ingroup libmeos_temporal_analytics_reduction
- * @brief Set the precision of a temporal value according to period buckets
+ * @brief Return a temporal value with the precision set to period buckets
+ * @param[in] temp Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
  * @csqlfn #Temporal_tprecision()
  */
 Temporal *
@@ -400,7 +403,7 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @brief Return a temporal value sampled according to period buckets
+ * @brief Return a temporal value sampled at period buckets
  * @param[in] inst Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -544,8 +547,8 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
   assert(ss); assert(duration);
   assert(valid_duration(duration));
   int64 tunits = interval_units(duration);
-  TimestampTz lower = tsequenceset_start_timestamp(ss);
-  TimestampTz upper = tsequenceset_end_timestamp(ss);
+  TimestampTz lower = tsequenceset_start_timestamptz(ss);
+  TimestampTz upper = tsequenceset_end_timestamptz(ss);
   TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
   /* We need to add tunits to obtain the end timestamp of the last bucket */
   TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
@@ -568,6 +571,9 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
 /**
  * @ingroup libmeos_temporal_analytics_reduction
  * @brief Return a temporal value sampled according to period buckets
+ * @param[in] temp Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
  * @csqlfn #Temporal_tsample()
  */
 Temporal *
@@ -1088,8 +1094,8 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
  ***********************************************************************/
 
 /**
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain distance apart
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a given distance apart
  * @param[in] seq Temporal value
  * @param[in] dist Minimum distance
  */
@@ -1127,8 +1133,8 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
 }
 
 /**
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain distance apart
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a given distance apart
  * @param[in] ss Temporal value
  * @param[in] dist Distance
  */
@@ -1146,8 +1152,8 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
 
 /**
  * @ingroup libmeos_temporal_analytics_simplify
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain distance apart
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a given distance apart
  *
  * This function is inspired from the Moving Pandas function MinDistanceGeneralizer
  * https://github.com/movingpandas/movingpandas/blob/main/movingpandas/trajectory_generalizer.py
@@ -1187,8 +1193,8 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
  ***********************************************************************/
 
 /**
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain time interval apart
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a certain time interval apart
  * @param[in] seq Temporal value
  * @param[in] mint Minimum time interval
  */
@@ -1226,8 +1232,8 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
 }
 
 /**
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain time interval apart
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a certain time interval apart
  * @param[in] ss Temporal value
  * @param[in] mint Minimum time interval
  */
@@ -1245,8 +1251,8 @@ tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
 
 /**
  * @ingroup libmeos_temporal_analytics_simplify
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain time interval apart
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a certain time interval apart
  *
  * This function is inspired from the Moving Pandas function MinTimeDeltaGeneralizer
  * https://github.com/movingpandas/movingpandas/blob/main/movingpandas/trajectory_generalizer.py
@@ -1505,7 +1511,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
 /*****************************************************************************/
 
 /**
- * @brief Simplify the temporal sequence float/point using a single-pass
+ * @brief Return a temporal sequence float/point simplified using a single-pass
  * implementation of the Douglas-Peucker line simplification algorithm that
  * checks whether the provided distance threshold is exceeded
  * @param[in] seq Temporal value
@@ -1558,7 +1564,7 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
 }
 
 /**
- * @brief Simplify the temporal sequence set float/point using a single-pass
+ * @brief Simplify a temporal sequence set float/point using a single-pass
  * Douglas-Peucker line simplification algorithm
  * @param[in] ss Temporal point
  * @param[in] dist Distance
@@ -1581,7 +1587,7 @@ tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
 
 /**
  * @ingroup libmeos_temporal_analytics_simplify
- * @brief Simplify the temporal float/point using a single-pass Douglas-Peucker
+ * @brief Simplify a temporal float/point using a single-pass Douglas-Peucker
  * line simplification algorithm
  * @param[in] temp Temporal value
  * @param[in] dist Distance in the units of the values for temporal floats or
@@ -1634,7 +1640,7 @@ int_cmp(const void *a, const void *b)
 #define DP_STACK_SIZE 256
 
 /**
- * @brief Simplify the temporal sequence set float/point using the
+ * @brief Simplify a temporal sequence set float/point using the
  * Douglas-Peucker line simplification algorithm
  */
 static TSequence *
@@ -1710,7 +1716,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
 }
 
 /**
- * @brief Simplify the temporal sequence set float/point using the
+ * @brief Simplify a temporal sequence set float/point using the
  * Douglas-Peucker line simplification algorithm
  * @param[in] ss Temporal point
  * @param[in] dist Distance
@@ -1733,7 +1739,7 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
 
 /**
  * @ingroup libmeos_temporal_analytics_simplify
- * @brief Simplify the temporal float/point using the Douglas-Peucker line
+ * @brief Simplify a temporal float/point using the Douglas-Peucker line
  * simplification algorithm
  * @param[in] temp Temporal value
  * @param[in] dist Distance in the units of the values for temporal floats or

@@ -192,8 +192,8 @@ lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
  * computing the temporal distance.
  *
  * @param[in] start,end Instants defining the first segment
- * @param[in] point Base point
- * @param[in] basetype Base type
+ * @param[in] point Point
+ * @param[in] basetype Type of the point
  * @param[out] value Minimum distance at turning point
  * @param[out] t Timestamp at turning point
  * @pre The segment is not constant.
@@ -429,7 +429,9 @@ tpoint_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
  * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between a temporal point and a
  * geometry/geography
- * @sqlop @p <->
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry/geography
+ * @csqlfn #Distance_tpoint_point()
  */
 Temporal *
 distance_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
@@ -459,7 +461,8 @@ distance_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between two temporal points.
- * @sqlop @p <->
+ * @param[in] temp1,temp2 Temporal points
+ * @csqlfn #Distance_tpoint_tpoint()
  */
 Temporal *
 distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -707,6 +710,8 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach instant between a temporal point and
  * a geometry.
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
  * @csqlfn #NAI_tpoint_geo()
  */
 TInstant *
@@ -737,6 +742,7 @@ nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach instant between the temporal points.
+ * @param[in] temp1,temp2 Temporal points
  * @csqlfn #NAI_tpoint_tpoint()
  */
 TInstant *
@@ -769,7 +775,9 @@ nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal point
  * and a geometry
- * @sqlop @p |=|
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @csqlfn #NAD_tpoint_geo()
  */
 double
 nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -790,7 +798,9 @@ nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a spatiotemporal box
  * and a geometry
- * @sqlop @p |=|
+ * @param[in] box Spatiotemporal box
+ * @param[in] gs Geometry
+ * @csqlfn #NAD_stbox_geo()
  */
 double
 nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
@@ -811,8 +821,9 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between the spatio-temporal
  * boxes.
+ * @param[in] box1,box2 Spatiotemporal boxes
  * @return On error return -1.0
- * @sqlop @p |=|
+ * @csqlfn #NAD_stbox_stbox ()
  */
 double
 nad_stbox_stbox(const STBox *box1, const STBox *box2)
@@ -846,8 +857,10 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal point
  * and a spatio-temporal box
+ * @param[in] temp Temporal point
+ * @param[in] box Spatiotemporal box
  * @return On error return -1.0
- * @sqlop @p |=|
+ * @csqlfn #NAD_tpoint_stbox()
  */
 double
 nad_tpoint_stbox(const Temporal *temp, const STBox *box)
@@ -888,7 +901,8 @@ nad_tpoint_stbox(const Temporal *temp, const STBox *box)
 /**
  * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between the temporal points
- * @sqlop @p |=|
+ * @param[in] temp1,temp2 Temporal points
+ * @csqlfn #NAD_tpoint_tpoint()
  */
 double
 nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -915,6 +929,9 @@ nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_dist
  * @brief Return the line connecting the nearest approach point between a
  * temporal point and a geometry.
+ * @param[in] temp Temporal value
+ * @param[in] gs Geometry
+ * @param[out] result Result
  * @csqlfn #Shortestline_tpoint_geo()
  */
 bool
@@ -949,6 +966,8 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @ingroup libmeos_temporal_dist
  * @brief Return the line connecting the nearest approach point between the
  * temporal points
+ * @param[in] temp1,temp2 Temporal values
+ * @param[out] result Result
  * @csqlfn #Shortestline_tpoint_tpoint()
  */
 bool

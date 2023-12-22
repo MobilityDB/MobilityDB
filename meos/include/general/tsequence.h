@@ -45,8 +45,8 @@
 
 /* General functions */
 
-extern int tcontseq_find_timestamp(const TSequence *seq, TimestampTz t);
-extern int tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t);
+extern int tcontseq_find_timestamptz(const TSequence *seq, TimestampTz t);
+extern int tdiscseq_find_timestamptz(const TSequence *seq, TimestampTz t);
 extern bool ensure_valid_tinstarr_common(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp);
 extern TSequence *tsequence_make_exp1(const TInstant **instants, int count,

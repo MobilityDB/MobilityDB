@@ -109,7 +109,7 @@ PGDLLEXPORT Datum Temporal_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Set the precision of a temporal value according to period buckets
+ * @brief Return a temporal value with the precision set to period buckets
  * @sqlfn tprecision()
  */
 Datum
@@ -127,7 +127,7 @@ PGDLLEXPORT Datum Temporal_tsample(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tsample);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Sample a temporal value according to period buckets
+ * @brief Return a temporal value sampled at period buckets
  * @sqlfn tsample()
  */
 Datum

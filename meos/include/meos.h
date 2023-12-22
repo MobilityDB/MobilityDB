@@ -384,7 +384,7 @@ extern DateADT pg_timestamptz_date(TimestampTz t);
 extern char *pg_timestamptz_out(TimestampTz dt);
 extern text *pg_timestamptz_to_char(TimestampTz dt, text *fmt);
 extern DateADT pg_to_date(text *date_txt, text *fmt);
-extern TimestampTz pg_to_timestamp(text *date_txt, text *fmt);
+extern TimestampTz pg_to_timestamptz(text *date_txt, text *fmt);
 extern char *text2cstring(const text *textptr);
 extern char *text_out(const text *txt);
 
@@ -588,11 +588,11 @@ extern Interval *tstzspan_duration(const Span *s);
 extern TimestampTz tstzspan_lower(const Span *s);
 extern TimestampTz tstzspan_upper(const Span *s);
 extern Interval *tstzspanset_duration(const SpanSet *ss, bool boundspan);
-extern TimestampTz tstzspanset_end_timestamp(const SpanSet *ss);
+extern TimestampTz tstzspanset_end_timestamptz(const SpanSet *ss);
 extern TimestampTz tstzspanset_lower(const SpanSet *ss);
 extern int tstzspanset_num_timestamps(const SpanSet *ss);
-extern TimestampTz tstzspanset_start_timestamp(const SpanSet *ss);
-extern bool tstzspanset_timestamp_n(const SpanSet *ss, int n, TimestampTz *result);
+extern TimestampTz tstzspanset_start_timestamptz(const SpanSet *ss);
+extern bool tstzspanset_timestamptz_n(const SpanSet *ss, int n, TimestampTz *result);
 extern TimestampTz *tstzspanset_timestamps(const SpanSet *ss, int *count);
 extern TimestampTz tstzspanset_upper(const SpanSet *ss);
 
@@ -1290,7 +1290,7 @@ extern bool *tbool_values(const Temporal *temp, int *count);
 extern Interval *temporal_duration(const Temporal *temp, bool boundspan);
 extern const TInstant *temporal_end_instant(const Temporal *temp);
 extern TSequence *temporal_end_sequence(const Temporal *temp);
-extern TimestampTz temporal_end_timestamp(const Temporal *temp);
+extern TimestampTz temporal_end_timestamptz(const Temporal *temp);
 extern uint32 temporal_hash(const Temporal *temp);
 extern const TInstant *temporal_instant_n(const Temporal *temp, int n);
 extern const TInstant **temporal_instants(const Temporal *temp, int *count);
@@ -1305,11 +1305,11 @@ extern TSequence *temporal_sequence_n(const Temporal *temp, int i);
 extern TSequence **temporal_sequences(const Temporal *temp, int *count);
 extern const TInstant *temporal_start_instant(const Temporal *temp);
 extern TSequence *temporal_start_sequence(const Temporal *temp);
-extern TimestampTz temporal_start_timestamp(const Temporal *temp);
+extern TimestampTz temporal_start_timestamptz(const Temporal *temp);
 extern TSequenceSet *temporal_stops(const Temporal *temp, double maxdist, const Interval *minduration);
 extern char *temporal_subtype(const Temporal *temp);
 extern SpanSet *temporal_time(const Temporal *temp);
-extern bool temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result);
+extern bool temporal_timestamptz_n(const Temporal *temp, int n, TimestampTz *result);
 extern TimestampTz *temporal_timestamps(const Temporal *temp, int *count);
 extern double tfloat_end_value(const Temporal *temp);
 extern double tfloat_max_value(const Temporal *temp);
@@ -1744,10 +1744,10 @@ extern bool shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
 extern bool shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, GSERIALIZED **result);
 
 /*****************************************************************************
-  Spatial functions for temporal point types
+  Spatial functions for temporal points
  *****************************************************************************/
 
-/* Spatial accessor functions for temporal point types */
+/* Spatial accessor functions for temporal points */
 
 extern bool bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
 extern Temporal *bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert);
@@ -1769,10 +1769,10 @@ extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
 
 /*****************************************************************************/
 
-/* Spatial transformation functions for temporal point types */
+/* Spatial transformation functions for temporal points */
 
 extern STBox *geo_expand_space(const GSERIALIZED *gs, double d);
-Temporal *geo_to_tpoint(const GSERIALIZED *gs);
+extern Temporal *geomeas_to_tpoint(const GSERIALIZED *gs);
 extern Temporal *tgeogpoint_to_tgeompoint(const Temporal *temp);
 extern Temporal *tgeompoint_to_tgeogpoint(const Temporal *temp);
 bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr, int *count);
@@ -1781,11 +1781,11 @@ extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 extern Temporal *tpoint_round(const Temporal *temp, int maxdd);
 extern Temporal **tpointarr_round(const Temporal **temp, int count, int maxdd);
 extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
-bool tpoint_to_geo_meas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
+bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
 /*****************************************************************************/
 
-/* Ever spatial relationship functions for temporal point types */
+/* Ever spatial relationship functions for temporal points */
 
 extern int econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp);
 extern int edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
@@ -1798,7 +1798,7 @@ extern int etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 
 /*****************************************************************************/
 
-/* Temporal spatial relationship functions for temporal point types */
+/* Temporal spatial relationship functions for temporal points */
 
 extern Temporal *tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
 extern Temporal *tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
