@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file 
  * @brief Sections for the documentation of the MEOS library
  */
 

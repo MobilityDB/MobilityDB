@@ -1800,15 +1800,15 @@ lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
 }
 
 /**
- * @brief Compute a trajectory from a set of points. The result is either a
- * linestring or a multipoint depending on whether the interpolation is
- * step/discrete or linear.
- * @note The function does not remove duplicate points, that is, repeated
- * points in a multipoint or consecutive equal points in a line string. This
- * should be done in the calling function.
+ * @brief Return a trajectory from a set of points
+ * 
+ * The result is either a linestring or a multipoint depending on whether
+ * the interpolation is step/discrete or linear.
  * @param[in] points Array of points
  * @param[in] count Number of elements in the input array
  * @param[in] interp Interpolation
+ * @note The function does not remove duplicate points, that is, repeated
+ * points in a multipoint or consecutive equal points in a line string
  */
 LWGEOM *
 lwpointarr_make_trajectory(LWGEOM **points, int count, interpType interp)
@@ -1827,7 +1827,7 @@ lwpointarr_make_trajectory(LWGEOM **points, int count, interpType interp)
 }
 
 /**
- * @brief Compute the trajectory from two geometry points
+ * @brief Return the line connecting two geometry points
  * @param[in] value1,value2 Points
  */
 LWLINE *
@@ -1854,7 +1854,7 @@ lwline_make(Datum value1, Datum value2)
 /*****************************************************************************/
 
 /**
- * @brief Compute the trajectory of a temporal discrete sequence point
+ * @brief Return the trajectory of a temporal discrete sequence point
  * @param[in] seq Temporal value
  * @note Notice that this function does not remove duplicate points
  * @pre The sequence is not instantaneous
@@ -3854,14 +3854,15 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
  *****************************************************************************/
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of the n-th point in a point
+ * array to a number of decimal places
  */
 static void
-round_point(POINTARRAY *points, uint32_t i, Datum size, bool hasz, bool hasm)
+round_point(POINTARRAY *points, uint32_t n, Datum size, bool hasz, bool hasm)
 {
   /* N.B. lwpoint->point can be of 2, 3, or 4 dimensions depending on
    * the values of the arguments hasz and hasm !!! */
-  POINT4D *pt = (POINT4D *) getPoint_internal(points, i);
+  POINT4D *pt = (POINT4D *) getPoint_internal(points, n);
   pt->x = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->x), size));
   pt->y = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->y), size));
   if (hasz && hasm)
@@ -3878,7 +3879,7 @@ round_point(POINTARRAY *points, uint32_t i, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a point with the coordinates set to a number of decimal places
  */
 static Datum
 datum_round_point(GSERIALIZED *gs, Datum size)
@@ -3894,7 +3895,8 @@ datum_round_point(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a line to the number of
+ * decimal places
  */
 static void
 round_linestring(LWLINE *line, Datum size, bool hasz, bool hasm)
@@ -3906,7 +3908,7 @@ round_linestring(LWLINE *line, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a line with the coordinates set to a number of decimal places
  */
 static Datum
 datum_round_linestring(GSERIALIZED *gs, Datum size)
@@ -3922,7 +3924,8 @@ datum_round_linestring(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a triangle to a number of
+ * decimal places
  */
 static void
 round_triangle(LWTRIANGLE *triangle, Datum size, bool hasz, bool hasm)
@@ -3934,7 +3937,8 @@ round_triangle(LWTRIANGLE *triangle, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a triangle with the precision of the coordinates set to a
+ * number of decimal places
  */
 static Datum
 datum_round_triangle(GSERIALIZED *gs, Datum size)
@@ -3950,7 +3954,8 @@ datum_round_triangle(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a circular string to a number
+ * of decimal places
  */
 static void
 round_circularstring(LWCIRCSTRING *circstring, Datum size, bool hasz,
@@ -3963,7 +3968,8 @@ round_circularstring(LWCIRCSTRING *circstring, Datum size, bool hasz,
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a circular string with the precision of the coordinates set to
+ * a number of decimal places
  */
 static Datum
 datum_round_circularstring(GSERIALIZED *gs, Datum size)
@@ -3979,7 +3985,8 @@ datum_round_circularstring(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a polygon to a number of
+ * decimal places
  */
 static void
 round_polygon(LWPOLY *poly, Datum size, bool hasz, bool hasm)
@@ -3996,7 +4003,8 @@ round_polygon(LWPOLY *poly, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Reuturn a polygon with the precision of the coordinates set to a
+ * number of decimal places
  */
 static Datum
 datum_round_polygon(GSERIALIZED *gs, Datum size)
@@ -4012,7 +4020,8 @@ datum_round_polygon(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a multipoint to a number of
+ * decimal places
  */
 static void
 round_multipoint(LWMPOINT *mpoint, Datum size, bool hasz, bool hasm)
@@ -4027,7 +4036,8 @@ round_multipoint(LWMPOINT *mpoint, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a multipoint with the precision of the coordinates set to a
+ * number of decimal places
  */
 static Datum
 datum_round_multipoint(GSERIALIZED *gs, Datum size)
@@ -4043,7 +4053,8 @@ datum_round_multipoint(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a multilinestring to a
+ * number of decimal places
  */
 static void
 round_multilinestring(LWMLINE *mline, Datum size, bool hasz, bool hasm)
@@ -4060,7 +4071,8 @@ round_multilinestring(LWMLINE *mline, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a multilinestring with the precision of the coordinates set to
+ * a number of decimal places
  */
 static Datum
 datum_round_multilinestring(GSERIALIZED *gs, Datum size)
@@ -4076,7 +4088,8 @@ datum_round_multilinestring(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a multipolygon to a number of
+ * decimal places
  */
 static void
 round_multipolygon(LWMPOLY *mpoly, Datum size, bool hasz, bool hasm)
@@ -4091,7 +4104,8 @@ round_multipolygon(LWMPOLY *mpoly, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a multipolygon with the precision of the coordinates set to a
+ * number of decimal places
  */
 static Datum
 datum_round_multipolygon(GSERIALIZED *gs, Datum size)
@@ -4107,7 +4121,8 @@ datum_round_multipolygon(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a geometry collection to a
+ * number of decimal places
  */
 static Datum
 datum_round_geometrycollection(GSERIALIZED *gs, Datum size)
@@ -4149,7 +4164,8 @@ datum_round_geometrycollection(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places.
+ * @brief Return a geometry with the precision of the coordinates set to a
+ * number of decimal places
  * @note Currently not all geometry types are allowed
  */
 Datum
@@ -4178,15 +4194,14 @@ datum_round_geo(Datum value, Datum size)
     return datum_round_multipolygon(gs, size);
   if (type == COLLECTIONTYPE)
     return datum_round_geometrycollection(gs, size);
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Unsupported geometry type");
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Unsupported geometry type");
   return PointerGetDatum(NULL);
 }
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Set the precision of the coordinates of a temporal point to a
- * number of decimal places.
+ * @brief Return a temporal point with the precision of the coordinates set to
+ * a number of decimal places
  * @param[in] temp Temporal point
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Tpoint_round()
@@ -4214,8 +4229,8 @@ tpoint_round(const Temporal *temp, int maxdd)
 
 /**
  * @ingroup meos_temporal_transf
- * @brief Set the precision of the coordinates of an array of temporal point to
- * a number of decimal places.
+ * @brief Return an array of temporal poinst with the precision of the
+ * coordinates set to a number of decimal places
  * @param[in] temparr Array of temporal points
  * @param[in] count Number of elements in the array
  * @param[in] maxdd Maximum number of decimal digits
@@ -5017,7 +5032,7 @@ alpha(const POINT2D *p1, const POINT2D *p2)
 }
 
 /**
- * @brief Compute the bearing between two geometry points
+ * @brief Return the bearing between two geometry points
  */
 static Datum
 geom_bearing(Datum point1, Datum point2)
@@ -5042,7 +5057,7 @@ geom_bearing(Datum point1, Datum point2)
 }
 
 /**
- * @brief Compute the bearing between two geography points
+ * @brief Return the bearing between two geography points
  * @note Derived from https://gist.github.com/jeromer/2005586
  * @note In PostGIS, for geodetic coordinates, X is longitude and Y is latitude
  * The formulae used is the following:

@@ -52,7 +52,8 @@
  *****************************************************************************/
 
 /**
- * @brief Set the spatiotemporal box from the network point value.
+ * @brief Initialize the spatiotemporal box in the last argument from the
+ * network point value.
  * @param[in] np Network point
  * @param[out] box Spatiotemporal box
  */
@@ -78,7 +79,8 @@ npoint_to_stbox(const Npoint *np)
 }
 
 /**
- * @brief Set the spatiotemporal box from an array of network point values
+ * @brief Initialize the spatiotemporal box in the last argument from an array
+ * of network point values
  * @param[in] values Temporal network point values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -96,7 +98,8 @@ npointarr_set_stbox(const Datum *values, int count, STBox *box)
   return;
 }
 /**
- * @brief Set the spatiotemporal box from the network point value
+ * @brief Initialize the last argument with the spatiotemporal box of a 
+ * temporal network point instant
  * @param[in] inst Temporal network point
  * @param[out] box Spatiotemporal box
  */
@@ -111,8 +114,8 @@ tnpointinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @brief Set the spatiotemporal box from the array of temporal network point
- * values
+ * @brief Initialize the last argument with the spatiotemporal box of an array 
+ * of temporal network point instants
  * @param[in] instants Temporal network point values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -131,8 +134,8 @@ tnpointinstarr_step_set_stbox(const TInstant **instants, int count, STBox *box)
 }
 
 /**
- * @brief Set the spatiotemporal box from the array of temporal network point
- * values
+ * @brief Initialize the last argument with the spatiotemporal box of an array
+ * of temporal network point instants
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -166,8 +169,8 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
 }
 
 /**
- * @brief Set the spatiotemporal box from the array of temporal network point
- * values.
+ * @brief Initialize the last argument with the spatiotemporal box of an array
+ * of temporal network point instants
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[in] interp Interpolation

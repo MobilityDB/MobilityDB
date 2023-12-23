@@ -64,7 +64,8 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
  *****************************************************************************/
 
 /**
- * @brief Set the spatiotemporal box from a temporal instant point
+ * @brief Initialize the last argument with the spatiotemporal box from a
+ * temporal instant point
  */
 void
 tpointinst_set_stbox(const TInstant *inst, STBox *box)
@@ -77,7 +78,8 @@ tpointinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @brief Set the spatiotemporal box from an array of temporal instant points
+ * @brief Initialize the last argument with the spatiotemporal box of an array
+ * of temporal instant points
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -130,7 +132,8 @@ tpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
 }
 
 /**
- * @brief Set the spatiotemporal box from an array of temporal sequence points
+ * @brief Initialize the last argument with the the spatiotemporal box from an
+ * array of temporal point sequences
  * @param[in] sequences Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box

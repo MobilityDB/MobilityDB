@@ -898,7 +898,7 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Compute the temporal dwithin between two temporal sequence points
+ * @brief Return the temporal dwithin between two temporal sequence points
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)

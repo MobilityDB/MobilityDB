@@ -53,7 +53,7 @@
 #include "point/tpoint_spatialfuncs.h"
 
 /**
- * @brief Compute the shortest line between two geographies
+ * @brief Return the shortest line between two geographies
  */
 static LWGEOM *
 geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2,

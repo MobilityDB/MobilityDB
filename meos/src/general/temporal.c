@@ -1447,7 +1447,7 @@ tfloat_to_tint(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding period of a temporal value.
+ * @brief Initialize the last argument with the time span of a temporal value
  * @param[in] temp Temporal value
  * @param[out] s Span
  */
@@ -1486,7 +1486,7 @@ temporal_to_tstzspan(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the value span of a temporal number in the last argument
+ * @brief Initialize the last argument with the value span of a temporal number
  * @param[in] temp Temporal value
  * @param[out] s Span
  */
@@ -1627,8 +1627,8 @@ tfloat_round(const Temporal *temp, int maxdd)
 
 /**
  * @ingroup meos_temporal_transf
- * @brief Set the precision of the coordinates of an array of temporal floats
- * to a number of decimal places.
+ * @brief Return an array of temporal floats with the precision of the
+ * coordinates set to a number of decimal places.
  * @param[in] temparr Array of temporal values
  * @param[in] count Number of values in the input array
  * @param[in] maxdd Maximum number of decimal digits
@@ -2073,7 +2073,8 @@ temporal_interp(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding box of a temporal value
+ * @brief Initialize the last argument with the bounding box of a temporal
+ * value
  * @param[in] temp Temporal value
  * @param[out] box Boundind box
  * @note For temporal instants the bounding box must be computed. For the
@@ -3862,8 +3863,8 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Return true if the bounding box of the temporal and the set overlap
- * values.
+ * @brief Return true if the bounding boxes of a temporal value and a set
+ * overlap
  * @param[in] temp Temporal value
  * @param[in] s Set
  */
@@ -4095,7 +4096,8 @@ temporal_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Return the base value of a temporal value at the timestamp
+ * @brief Initialize the last argument with the base value of a temporal value
+ * at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,

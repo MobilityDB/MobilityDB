@@ -1129,7 +1129,7 @@ geo_to_set(GSERIALIZED *gs)
 
 /**
  * @ingroup libmeos_internal_setspan_accessor
- * @brief Set the last argument to the bounding span of a set.
+ * @brief Initialize the last argument to the bounding span of a set.
  * @param[in] s Set
  * @param[in] sp Span
  */
@@ -1465,7 +1465,7 @@ geoset_end_value(const Set *s)
 
 /**
  * @ingroup libmeos_internal_setspan_accessor
- * @brief Set the last argument to the n-th value of a set
+ * @brief Initialize the last argument to the n-th value of a set
  * @param[in] s Set
  * @param[in] n Number
  * @param[out] result Value
@@ -1488,7 +1488,7 @@ set_value_n(const Set *s, int n, Datum *result)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th value of an integer set
+ * @brief Initialize the last argument to the n-th value of an integer set
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -1509,7 +1509,7 @@ intset_value_n(const Set *s, int n, int *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th value of a big integer set
+ * @brief Initialize the last argument to the n-th value of a big integer set
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -1530,7 +1530,7 @@ bigintset_value_n(const Set *s, int n, int64 *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th value of a float set
+ * @brief Initialize the last argument to the n-th value of a float set
  * @param[in] s Float set
  * @param[in] n Number
  * @param[out] result Value
@@ -1551,7 +1551,7 @@ floatset_value_n(const Set *s, int n, double *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th value of a text set
+ * @brief Initialize the last argument to the n-th value of a text set
  * @param[in] s Text set
  * @param[in] n Number
  * @param[out] result Value
@@ -1572,7 +1572,7 @@ textset_value_n(const Set *s, int n, text **result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th value of a date set
+ * @brief Initialize the last argument to the n-th value of a date set
  * @param[in] s Date set
  * @param[in] n Number
  * @param[out] result Date
@@ -1593,7 +1593,7 @@ dateset_date_n(const Set *s, int n, DateADT *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th value of a timestamptz set
+ * @brief Initialize the last argument to the n-th value of a timestamptz set
  * @param[in] s Timestamptz set
  * @param[in] n Number
  * @param[out] result Timestamptz
@@ -1614,7 +1614,7 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th value of a geo set
+ * @brief Initialize the last argument to the n-th value of a geo set
  * @param[in] s Geo set
  * @param[in] n Number
  * @param[out] result Value

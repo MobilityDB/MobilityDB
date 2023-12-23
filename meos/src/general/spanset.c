@@ -651,7 +651,7 @@ set_to_spanset(const Set *s)
 
 /**
  * @ingroup libmeos_internal_setspan_conversion
- * @brief Convert a span as a span set.
+ * @brief Convert a span to a span set.
  * @param[in] s Span
  * @csqlfn #Span_to_spanset()
  */
@@ -1058,7 +1058,7 @@ datespanset_end_date(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th date of a span set
+ * @brief Initialize the last argument to the n-th date of a span set
  * @param[in] ss Span set
  * @param[in] n Number
  * @param[out] result Date
@@ -1195,7 +1195,7 @@ tstzspanset_end_timestamptz(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th timestamptz of a span set
+ * @brief Initialize the last argument with the n-th timestamptz of a span set
  * @param[in] ss Span set
  * @param[in] n Number
  * @param[out] result Timestamptz
@@ -1396,7 +1396,8 @@ spanset_compact(SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of the float span set to the number of decimal places.
+ * @brief Return a float span set with the precision of the spans set to a
+ * number of decimal places
  * @param[in] ss Span set
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Floatspanset_round()

@@ -176,9 +176,10 @@ temporal_bbox_size(meosType temptype)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding box of a temporal instant
+ * @brief Initialize the last argument with the bounding box of a temporal
+ * instant
  * @param[in] inst Temporal value
- * @param[in] box Bounding box
+ * @param[out] box Result
  */
 void
 tinstant_set_bbox(const TInstant *inst, void *box)
@@ -384,7 +385,8 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
 }
 
 /**
- * @brief Set the timestamptz span from the array of temporal sequence values
+ * @brief Initialize the timestamptz span in the last argument from an array of
+ * temporal sequence values
  * @param[in] sequences Temporal instants
  * @param[in] count Number of elements in the array
  * @param[out] s Result
@@ -400,7 +402,8 @@ tseqarr_set_tstzspan(const TSequence **sequences, int count, Span *s)
 }
 
 /**
- * @brief Set the temporal box from the array of temporal number sequence values
+ * @brief Initialize the temporal box in the last argument from an array of
+ * temporal number sequence values
  * @param[in] box Box
  * @param[in] sequences Temporal instants
  * @param[in] count Number of elements in the array
@@ -418,7 +421,8 @@ tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBox *box)
 }
 
 /**
- * @brief Set the bounding box from the array of temporal sequence values
+ * @brief Initialize the last argument with the bounding box from an array of
+ * temporal sequence values
  */
 void
 tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)

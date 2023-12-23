@@ -298,7 +298,7 @@ tnpoint_geom(const Temporal *temp)
 }
 
 /**
- * @brief Compute the trajectory of two instants.
+ * @brief Return the trajectory of two network points
  * @param[in] np1, np2 Network points
  */
 static Datum

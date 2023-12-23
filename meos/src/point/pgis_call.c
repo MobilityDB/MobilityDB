@@ -606,26 +606,27 @@ gserialized_reverse(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Compute the azimuth of segment defined by the two given Point
- * geometries.
- * @return NULL on exception (same point). Return radians otherwise.
+ * @brief Initialize the last argument with the azimuth of a segment defined by
+ * two points
+ * @return Return false on exception (same point)
  */
 bool
 gserialized_azimuth(GSERIALIZED *gs1, GSERIALIZED *gs2, double *result)
 {
-  LWPOINT *point;
+  assert(gserialized_get_type(gs1) == POINTTYPE);
+  assert(gserialized_get_type(gs2) == POINTTYPE);
+  assert(! gserialized_is_empty(gs1)); assert(! gserialized_is_empty(gs2));
+
   POINT2D p1, p2;
-  int32_t srid;
 
   /* Extract first point */
-  point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs1));
+  LWPOINT *point = (LWPOINT *) lwgeom_from_gserialized(gs1);
   if (! point)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Arguments must be point geometries");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error extracting point");
     return false;
   }
-  srid = point->srid;
+  int32_t srid = point->srid;
   if (!getPoint2d_p(point->point, 0, &p1))
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error extracting point");
@@ -637,8 +638,7 @@ gserialized_azimuth(GSERIALIZED *gs1, GSERIALIZED *gs2, double *result)
   point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs2));
   if (! point)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Arguments must be point geometries");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error extracting point");
     return false;
   }
   if (point->srid != srid)
@@ -649,8 +649,7 @@ gserialized_azimuth(GSERIALIZED *gs1, GSERIALIZED *gs2, double *result)
   }
   if (! getPoint2d_p(point->point, 0, &p2))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Error extracting point");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error extracting point");
     return false;
   }
   lwpoint_free(point);

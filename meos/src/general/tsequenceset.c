@@ -113,7 +113,8 @@ tsequenceset_find_timestamptz(const TSequenceSet *ss, TimestampTz t, int *loc)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding box of a temporal sequence set
+ * @brief Initialize the last argument with the bounding box of a temporal
+ * sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] box Bounding box
  */
@@ -956,7 +957,8 @@ tsequenceset_duration(const TSequenceSet *ss, bool boundspan)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding period of a temporal sequence set
+ * @brief Initialize the last argument with the time span of a temporal
+ * sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] s Span
  */
@@ -1118,7 +1120,7 @@ tsequenceset_instants(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the start timestamp of a temporal sequence set
+ * @brief Return the start timestamptz of a temporal sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Temporal_start_timestamptz()
  */
@@ -1132,7 +1134,7 @@ tsequenceset_start_timestamptz(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the end timestamp of a temporal sequence set
+ * @brief Return the end timestamptz of a temporal sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Temporal_end_timestamptz()
  */
@@ -1146,7 +1148,8 @@ tsequenceset_end_timestamptz(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the number of distinct timestamps of a temporal sequence set
+ * @brief Return the number of distinct timestamptz values of a temporal
+ * sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Temporal_num_timestamps()
  */
@@ -1174,7 +1177,8 @@ tsequenceset_num_timestamps(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the n-th distinct timestamptz of a temporal sequence set
+ * @brief Initialize the last argument with the n-th distinct timestamptz of a
+ * temporal sequence set
  * @param[in] ss Temporal sequence set
  * @param[in] n Number 
  * @param[out] result Timestamps
@@ -1253,7 +1257,8 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the base value of a temporal sequence set at a timestamp.
+ * @brief Initialize the last argument with the value of a temporal sequence
+ * set at a timestamptz
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
  * @param[in] strict True if exclusive bounds are taken into account

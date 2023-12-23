@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Definitions of the sections for the MobilityDB API
+ * @file
+ * @brief Sections for the documentation of the MobilityDB API
  */
 
 /*****************************************************************************
@@ -39,7 +40,7 @@
 
 /**
  * @defgroup mobilitydb_api MobilityDB API
- * @brief API of MobilityDB PostgreSQL extension.
+ * @brief API of the MobilityDB PostgreSQL extension.
  */
 
 /**

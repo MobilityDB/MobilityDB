@@ -145,8 +145,8 @@ Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Set the precision of the fraction of the temporal network point to the
- * number of decimal places.
+ * @brief Return a temporal network point with the precision of the fractions 
+ * set to a number of decimal places
  */
 Temporal *
 tnpoint_round(const Temporal *temp, Datum size)

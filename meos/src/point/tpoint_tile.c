@@ -263,7 +263,6 @@ bitmatrix_print(const BitMatrix *bm)
 /**
  * @brief Set in the bit matrix the bits of the tiles connecting with a line the
  * two input tiles
- *
  * @param[in] coords1, coords2 Coordinates of the input tiles
  * @param[in] eps1, eps2 Relative position of the points in the input tiles
  * @param[in] ndims Number of dimensions of the grid. It is either 2 (for 2D),

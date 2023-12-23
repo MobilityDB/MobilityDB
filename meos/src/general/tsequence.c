@@ -555,7 +555,8 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs, int count,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding box of a temporal sequence
+ * @brief Initialize the last argument with the bounding box of a temporal
+ * sequence
  * @param[in] seq Temporal sequence
  * @param[out] box Bounding box
  */
@@ -2525,7 +2526,8 @@ tsequence_duration(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding period of a temporal sequence
+ * @brief Initialize the last argument with the time span of a temporal
+ * sequence
  * @param[in] seq Temporal sequence
  * @param[out] s Span
  */
@@ -2810,11 +2812,12 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the base value of a temporal sequence at a timestamp.
+ * @brief Initialize the last argument with the value of a temporal sequence at
+ * a timestamptz.
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
  * @param[in] strict True if inclusive/exclusive bounds are taken into account
- * @param[out] result Base value
+ * @param[out] result Result
  * @result Return true if the timestamp is contained in the temporal sequence
  * @csqlfn #Temporal_value_at_timestamptz()
  */
@@ -4607,11 +4610,11 @@ tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @brief Compute the base value of a temporal discrete sequence at a timestamp
- *
- * @note In order to be compatible with the corresponding functions for temporal
- * sequences that need to interpolate the value, it is necessary to return
- * a copy of the value
+ * @brief Initialize the last argument with the value of a temporal discrete
+ * sequence at a timestamptz
+ * @note In order to be compatible with the corresponding functions for 
+ * temporal sequences that need to interpolate the value, it is necessary to
+ * return a copy of the value
  */
 bool
 tdiscseq_value_at_timestamptz(const TSequence *seq, TimestampTz t, Datum *result)

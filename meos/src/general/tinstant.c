@@ -100,7 +100,7 @@ tinstant_value_copy(const TInstant *inst)
 }
 
 /**
- * @brief Set the value and the timestamp of a temporal instant
+ * @brief Initialize the value and the timestamp of a temporal instant
  * @param[in,out] inst Temporal instant to be modified
  * @param[in] value Value
  * @param[in] t Timestamp
@@ -484,9 +484,9 @@ tinstant_time(const TInstant *inst)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding period of a temporal instant.
+ * @brief Initialize the last argument with the time span of a temporal instant
  * @param[in] inst Temporal instant
- * @param[out] s Span
+ * @param[out] s Result
  */
 void
 tinstant_set_tstzspan(const TInstant *inst, Span *s)
@@ -535,10 +535,11 @@ tinstant_instants(const TInstant *inst, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the base value of a temporal instant at a timestamp.
+ * @brief Initialize the last argument with the value of a temporal instant at
+ * a timestamp.
  * @param[in] inst Temporal instant
  * @param[in] t Timestamp
- * @param[out] result Resulting value
+ * @param[out] result Result
  * @note Since the corresponding function for temporal sequences need to
  * interpolate the value, it is necessary to return a copy of the value
  * @csqlfn #Temporal_value_at_timestamptz()

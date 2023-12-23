@@ -1322,7 +1322,7 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
 }
 
 /**
- * @brief Set the bound flags from their WKB representation
+ * @brief Initialize the bound flags from their WKB representation
  */
 static void
 bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
@@ -1461,7 +1461,8 @@ set_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * @brief Set the state flags according to a box byte flag read from the buffer.
+ * @brief Initialize the state flags according to a box byte flag read from the
+ * buffer
  */
 static void
 tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
@@ -1502,7 +1503,7 @@ tbox_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * @brief Set the state flags according to a box byte flag read from the buffer.
+ * @brief Initialize the state flags with a byte flag read from the buffer
  */
 static void
 stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
