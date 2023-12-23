@@ -1283,6 +1283,20 @@ tbox_round(const TBox *box, int maxdd)
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hast Boolean variables
  */
+static void
+tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
+{
+  assert(box1); assert(box2); assert(hasx); assert(hast);
+  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
+  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  return;
+}
+
+/**
+ * @brief Initialize the ouput variables with the flag values of the boxes
+ * @param[in] box1,box2 Input boxes
+ * @param[out] hasx,hast Boolean variables
+ */
 static bool
 topo_tbox_tbox_init(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 {
