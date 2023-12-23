@@ -133,7 +133,7 @@ file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
 file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
 file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
 # Generate meos_export.h
-string(REGEX REPLACE "#include \"postgres_int_defs.h\"" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_1_H "${MEOS_H}")
+string(REGEX REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#include <postgres.h>\n#include <utils/date.h>\n#include <utils/timestamp.h>\n#endif" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_1_H "${MEOS_H}")
 string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_EXP_2_H "${MEOS_EXP_1_H}")
 file(WRITE "${CMAKE_BINARY_DIR}/meos_export.h" "${MEOS_EXP_2_H}")
 # Generate meos_internal_export.h
