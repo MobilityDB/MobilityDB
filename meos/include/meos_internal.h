@@ -40,6 +40,7 @@
 /* MEOS */
 #include <meos.h>
 #include "general/meos_catalog.h" /* For meosType */
+#include "point/tpoint_tile.h"    /* For STboxGridState */
 
 /*****************************************************************************
  * Direct access to a single point in the GSERIALIZED struct
@@ -940,8 +941,7 @@ extern SkipList *ttext_tmax_transfn(SkipList *state, const Temporal *temp);
 
 /* Multidimensional tiling functions for temporal types */
 
-extern Temporal **tnumber_value_split(const Temporal *temp, Datum size,
-  Datum origin, Datum **buckets, int *count);
+extern Temporal **tnumber_value_split(const Temporal *temp, Datum size, Datum origin, Datum **buckets, int *count);
 
 /*****************************************************************************/
 

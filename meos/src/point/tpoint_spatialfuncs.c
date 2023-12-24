@@ -781,7 +781,7 @@ point_get_z(Datum point)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
- * @brief Get one of the coordinates of a temporal point as a temporal float.
+ * @brief Return one of the coordinates of a temporal point as a temporal float
  * @param[in] temp Temporal point
  * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
  */
@@ -2309,7 +2309,8 @@ pt_force_geodetic(LWPOINT *point)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Convert a temporal point from/to a geometry/geography point
+ * @brief Convert a temporal point instant from/to a temporal
+ * geometry/geography point
  * @param[in] inst Temporal instant point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2347,7 +2348,8 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Convert a temporal point from/to a geometry/geography point
+ * @brief Convert a temporal point sequence from/to a temporal
+ * geometry/geography point
  * @param[in] seq Temporal sequence point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2370,7 +2372,8 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Convert a temporal point from/to a geometry/geography point
+ * @brief Convert a temporal point sequence set from/to a temporal
+ * geometry/geography point
  * @param[in] ss Temporal sequence set point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2392,7 +2395,7 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Convert a temporal point to a geometry/geography point.
+ * @brief Convert a temporal point from/to a temporal geometry/geography point
  * @param[in] temp Temporal point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -4631,7 +4634,7 @@ tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
 
 /**
  * @ingroup libmeos_internal_temporal_agg
- * @brief Return the time-weighed centroid of a temporal geometry point.
+ * @brief Return the time-weighed centroid of a temporal geometry point sequence
  * @param[in] seq Temporal sequence
  * @csqlfn #Tpoint_twcentroid()
  */
@@ -4657,7 +4660,8 @@ tpointseq_twcentroid(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_agg
- * @brief Return the time-weighed centroid of a temporal geometry point.
+ * @brief Return the time-weighed centroid of a temporal geometry point
+ * sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tpoint_twcentroid()
  */

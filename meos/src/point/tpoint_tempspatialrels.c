@@ -320,7 +320,7 @@ tinterrel_tpointcontseq_geom_iter(const TSequence *seq, Datum geom,
   int nsimple;
   TSequence **simpleseqs = tpointseq_make_simple(seq, &nsimple);
   TSequence ***sequences = palloc(sizeof(TSequence *) * nsimple);
-  /* palloc0 used due to initialize the counters to 0 */
+  /* palloc0 used to initialize the counters to 0 */
   int *countseqs = palloc0(sizeof(int) * nsimple);
   int totalcount = 0;
   for (int i = 0; i < nsimple; i++)
@@ -611,9 +611,6 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   TimestampTz lower, TimestampTz upper, double dist, bool hasz,
   datum_func3 func, TimestampTz *t1, TimestampTz *t2)
 {
-  /* To reduce problems related to floating point arithmetic, lower and upper
-   * are shifted, respectively, to 0 and 1 before computing the solutions
-   * of the quadratic equation */
   double duration = (double) (upper - lower);
   long double a, b, c;
   if (hasz) /* 3D */

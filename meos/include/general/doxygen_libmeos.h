@@ -423,10 +423,6 @@
  * @defgroup libmeos_internal_temporal_agg Aggregate functions
  * @ingroup libmeos_internal_temporal
  * @brief Aggregate functions for temporal types.
- *
- * @defgroup libmeos_internal_temporal_analytics Analytics functions
- * @ingroup libmeos_temporal
- * @brief Analytics functions for temporal types.
  */
 
 /*****************************************************************************/

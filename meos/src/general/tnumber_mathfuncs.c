@@ -301,7 +301,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @ingroup libmeos_internal_temporal_math
- * @brief Get the absolute value of a temporal number
+ * @brief Return the absolute value of a temporal number instant
  * @param[in] inst Temporal instant
  * @csqlfn #Tnumber_abs()
  */
@@ -322,7 +322,7 @@ tnumberinst_abs(const TInstant *inst)
 }
 
 /**
- * @brief Get the absolute value of a temporal number
+ * @brief Return the absolute value of a temporal number sequence
  */
 static TSequence *
 tnumberseq_iter_abs(const TSequence *seq)
@@ -341,7 +341,7 @@ tnumberseq_iter_abs(const TSequence *seq)
 }
 
 /**
- * @brief Get the absolute value of a temporal number
+ * @brief Return the absolute value of a temporal number sequence
  */
 static TSequence *
 tnumberseq_linear_abs(const TSequence *seq)
@@ -395,7 +395,7 @@ tnumberseq_linear_abs(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_math
- * @brief Get the absolute value of a temporal number
+ * @brief Return the absolute value of a temporal number sequence
  * @param[in] seq Temporal sequence
  * @csqlfn #Tnumber_abs()
  */
@@ -410,7 +410,7 @@ tnumberseq_abs(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_math
- * @brief Get the absolute value of a temporal number
+ * @brief Return the absolute value of a temporal number sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tnumber_abs()
  */
@@ -431,7 +431,7 @@ tnumberseqset_abs(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Get the absolute value of a temporal number
+ * @brief Return the absolute value of a temporal number
  * @param[in] temp Temporal value
  * @csqlfn #Tnumber_abs()
  */
@@ -459,7 +459,7 @@ tnumber_abs(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @brief Return the delta value of the two numbers
+ * @brief Return the delta value of two numbers
  */
 static Datum
 delta_value(Datum value1, Datum value2, meosType basetype)
@@ -474,7 +474,8 @@ delta_value(Datum value1, Datum value2, meosType basetype)
 }
 
 /**
- * @brief Return the temporal delta value of a temporal number.
+ * @ingroup libmeos_internal_temporal_math
+ * @brief Return the delta value of a temporal number sequence
  */
 TSequence *
 tnumberseq_delta_value(const TSequence *seq)
@@ -510,7 +511,7 @@ tnumberseq_delta_value(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_math
- * @brief Return the temporal delta_value of a temporal number.
+ * @brief Return the delta value of a temporal number sequence set
  * @param[in] ss Temporal sequence set
  */
 TSequenceSet *
@@ -544,7 +545,7 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_temporal_math
- * @brief Return the delta value of a temporal number.
+ * @brief Return the delta value of a temporal number
  * @param[in] temp Temporal value
  * @csqlfn #Tnumber_delta_value()
  */
@@ -616,7 +617,7 @@ tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
 
 /**
  * @ingroup libmeos_internal_temporal_math
- * @brief Return the temporal angular difference of a temporal number.
+ * @brief Return the temporal angular difference of a temporal number sequence
  * @param[in] seq Temporal sequence
  */
 TSequence *
@@ -637,7 +638,7 @@ tnumberseq_angular_difference(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_math
- * @brief Return the angular difference of a temporal number.
+ * @brief Return the angular difference of a temporal number sequence set
  * @param[in] ss Temporal sequence set
  */
 TSequence *
@@ -753,7 +754,7 @@ tfloat_radians(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_math
- * @brief Return the derivative of a temporal sequence number.
+ * @brief Return the derivative of a temporal float sequence
  * @param[in] seq Temporal sequence
  * @csqlfn #Tfloat_derivative()
  */
@@ -798,7 +799,7 @@ tfloatseq_derivative(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_math
- * @brief Return the derivative of a temporal sequence set number
+ * @brief Return the derivative of a temporal float sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tfloat_derivative()
  */

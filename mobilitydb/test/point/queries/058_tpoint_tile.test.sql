@@ -121,6 +121,10 @@ SELECT spaceSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, geometry 
 -- Space-time split
 -------------------------------------------------------------------------------
 
+-- Without bitmatrix
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0, interval '2 days', bitmatrix:=false) AS sp) t;
+
 -- 2D
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0, interval '2 days') AS sp) t;

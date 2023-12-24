@@ -1448,27 +1448,20 @@ TSequenceSet *
 tsequence_to_tsequenceset_interp(const TSequence *seq, interpType interp)
 {
   assert(seq);
-  /* For discrete sequences, each composing instant will be transformed in
-   * an instantaneous sequence in the resulting sequence set */
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
-    return tdiscseq_to_tsequenceset(seq, interp);
-
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq->flags);
   if (interp == interp1)
     return tsequenceset_make(&seq, 1, NORMALIZE_NO);
+
+  Temporal *temp1 = tsequence_set_interp(seq, interp);
+  if (! temp1)
+    return NULL;
+  if (temp1->subtype == TSEQUENCESET)
+    return (TSequenceSet *) temp1;
   else
   {
-    Temporal *temp1 = tsequence_set_interp(seq, interp);
-    if (! temp1)
-      return NULL;
-    if (temp1->subtype == TSEQUENCESET)
-      return (TSequenceSet *) temp1;
-    else
-    {
-      TSequenceSet *result =  tsequence_to_tsequenceset((TSequence *) temp1);
-      pfree(temp1);
-      return result;
-    }
+    TSequenceSet *result =  tsequence_to_tsequenceset((TSequence *) temp1);
+    pfree(temp1);
+    return result;
   }
 }
 

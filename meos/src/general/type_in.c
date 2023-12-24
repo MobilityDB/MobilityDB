@@ -131,14 +131,14 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
       "Invalid value of the 'coordinates' array in MFJSON string");
     return 0;
   }
-  int numcoord = (int) json_object_array_length(poObj);
-  if (numcoord < 2)
+  int ncoord = (int) json_object_array_length(poObj);
+  if (ncoord < 2)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Too few elements in 'coordinates' values in MFJSON string");
     return 0;
   }
-  if (numcoord > 3)
+  if (ncoord > 3)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Too many elements in 'coordinates' values in MFJSON string");
@@ -157,7 +157,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
   y = json_object_get_double(poObjCoord);
 
   LWPOINT *point;
-  if (numcoord == 3)
+  if (ncoord == 3)
   {
     /* Read Z coordinate */
     poObjCoord = json_object_array_get_idx(poObj, 2);
@@ -196,15 +196,15 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
       "Invalid 'values' array in MFJSON string");
     return NULL;
   }
-  int numvalues = (int) json_object_array_length(jvalues);
-  if (numvalues < 1)
+  int nvalues = (int) json_object_array_length(jvalues);
+  if (nvalues < 1)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid value of 'values' array in MFJSON string");
     return NULL;
   }
-  Datum *values = palloc(sizeof(Datum) * numvalues);
-  for (int i = 0; i < numvalues; ++i)
+  Datum *values = palloc(sizeof(Datum) * nvalues);
+  for (int i = 0; i < nvalues; ++i)
   {
     json_object *jvalue = NULL;
     jvalue = json_object_array_get_idx(jvalues, i);
@@ -246,7 +246,7 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
         return NULL;
     }
   }
-  *count = numvalues;
+  *count = nvalues;
   return values;
 }
 
@@ -276,21 +276,21 @@ parse_mfjson_points(json_object *mfjson, int srid, bool geodetic,
     return NULL;
   }
 
-  int numpoints = (int) json_object_array_length(coordinates);
-  if (numpoints < 1)
+  int npoints = (int) json_object_array_length(coordinates);
+  if (npoints < 1)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid value of 'coordinates' array in MFJSON string");
     return NULL;
   }
 
-  Datum *values = palloc(sizeof(Datum) * numpoints);
-  for (int i = 0; i < numpoints; ++i)
+  Datum *values = palloc(sizeof(Datum) * npoints);
+  for (int i = 0; i < npoints; ++i)
   {
     json_object *coords = json_object_array_get_idx(coordinates, i);
     values[i] = parse_mfjson_coord(coords, srid, geodetic);
   }
-  *count = numpoints;
+  *count = npoints;
   return values;
 }
 
@@ -315,16 +315,16 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
     return NULL;
   }
 
-  int numdates = (int) json_object_array_length(datetimes);
-  if (numdates < 1)
+  int ndates = (int) json_object_array_length(datetimes);
+  if (ndates < 1)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid value of 'datetimes' array in MFJSON string");
     return NULL;
   }
 
-  TimestampTz *times = palloc(sizeof(TimestampTz) * numdates);
-  for (int i = 0; i < numdates; i++)
+  TimestampTz *times = palloc(sizeof(TimestampTz) * ndates);
+  for (int i = 0; i < ndates; i++)
   {
     json_object* datevalue = NULL;
     datevalue = json_object_array_get_idx(datetimes, i);
@@ -339,7 +339,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
       times[i] = pg_timestamptz_in(datetime, -1);
     }
   }
-  *count = numdates;
+  *count = ndates;
   return times;
 }
 
@@ -549,14 +549,14 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   bool geodetic = (temptype == T_TGEOGPOINT);
   bool byvalue = basetype_byvalue(temptype_basetype(temptype));
   /* Get coordinates and datetimes */
-  int numvalues = 0, numdates = 0;
+  int nvalues = 0, ndates = 0;
   Datum *values;
   if (! isgeo)
-    values = parse_mfjson_values(mfjson, temptype, &numvalues);
+    values = parse_mfjson_values(mfjson, temptype, &nvalues);
   else
-    values = parse_mfjson_points(mfjson, srid, geodetic, &numvalues);
-  TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
-  if (numvalues != numdates)
+    values = parse_mfjson_points(mfjson, srid, geodetic, &nvalues);
+  TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
+  if (nvalues != ndates)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Distinct number of elements in '%s' and 'datetimes' arrays",
@@ -565,17 +565,17 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   }
 
   /* Construct the array of temporal instant points */
-  TInstant **result = palloc(sizeof(TInstant *) * numvalues);
-  for (int i = 0; i < numvalues; i++)
+  TInstant **result = palloc(sizeof(TInstant *) * nvalues);
+  for (int i = 0; i < nvalues; i++)
     result[i] = tinstant_make(values[i], temptype, times[i]);
 
   if (! byvalue)
   {
-    for (int i = 0; i < numvalues; i++)
+    for (int i = 0; i < nvalues; i++)
       pfree(DatumGetPointer(values[i]));
   }
   pfree(values); pfree(times);
-  *count = numvalues;
+  *count = nvalues;
   return result;
 }
 
@@ -737,8 +737,8 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
       "Invalid 'sequences' array in MFJSON string");
     return NULL;
   }
-  int numseqs = (int) json_object_array_length(seqs);
-  if (numseqs < 1)
+  int nseqs = (int) json_object_array_length(seqs);
+  if (nseqs < 1)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid value of 'sequences' array in MFJSON string");
@@ -746,14 +746,14 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   }
 
   /* Construct the temporal point */
-  TSequence **sequences = palloc(sizeof(TSequence *) * numseqs);
-  for (int i = 0; i < numseqs; i++)
+  TSequence **sequences = palloc(sizeof(TSequence *) * nseqs);
+  for (int i = 0; i < nseqs; i++)
   {
     json_object* seqvalue = NULL;
     seqvalue = json_object_array_get_idx(seqs, i);
     sequences[i] = tsequence_from_mfjson(seqvalue, isgeo, srid, temptype, interp);
   }
-  return tsequenceset_make_free(sequences, numseqs, NORMALIZE);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 #if MEOS
@@ -1682,14 +1682,14 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
   for (int i = 0; i < count; i++)
   {
     /* Get the number of instants */
-    int countinst = int32_from_wkb_state(s);
+    int ninst = int32_from_wkb_state(s);
     /* Get the period bounds */
     uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
     bool lower_inc, upper_inc;
     bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
     /* Parse the instants */
-    TInstant **instants = palloc(sizeof(TInstant *) * countinst);
-    for (int j = 0; j < countinst; j++)
+    TInstant **instants = palloc(sizeof(TInstant *) * ninst);
+    for (int j = 0; j < ninst; j++)
     {
       /* Parse the value and the timestamp to create the temporal instant */
       Datum value = basevalue_from_wkb_state(s);
@@ -1698,7 +1698,7 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
       if (! basetype_byvalue(s->basetype))
         pfree(DatumGetPointer(value));
     }
-    sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
+    sequences[i] = tsequence_make_free(instants, ninst, lower_inc,
       upper_inc, s->interp, NORMALIZE);
   }
   return tsequenceset_make_free(sequences, count, NORMALIZE);

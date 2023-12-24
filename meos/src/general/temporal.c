@@ -1766,8 +1766,7 @@ temporal_to_tsequenceset(const Temporal *temp, interpType interp)
   if (temp->subtype == TINSTANT)
     result = tinstant_to_tsequenceset((TInstant *) temp, interp);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_to_tsequenceset_interp((TSequence *) temp,
-      interp);
+    result = tsequence_to_tsequenceset_interp((TSequence *) temp, interp);
   else /* temp->subtype == TSEQUENCESET */
     /* Since interp != DISCRETE the result subtype is TSequenceSet */
     result = (TSequenceSet *) tsequenceset_set_interp((TSequenceSet *) temp,
@@ -4750,11 +4749,11 @@ tnumber_twavg(const Temporal *temp)
 }
 
 /*****************************************************************************
- * Compact function for final append aggregate
+ * Compact function
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Compact the temporal value by removing extra storage space
  * @param[in] temp Temporal value
  */

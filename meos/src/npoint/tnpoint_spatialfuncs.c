@@ -674,7 +674,7 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
 
   /* General case */
   TInstant ***instants = palloc(sizeof(TInstant *) * (seq->count - 1));
-  int *countinsts = palloc0(sizeof(int) * (seq->count - 1));
+  int *ninsts = palloc0(sizeof(int) * (seq->count - 1));
   int totalinsts = 0; /* number of created instants so far */
   int nseqs = 0; /* number of created sequences */
   int m = 0; /* index of the segment from which to assemble instants */
@@ -683,14 +683,14 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    instants[i] = tnpointsegm_azimuth_iter(inst1, inst2, &countinsts[i]);
+    instants[i] = tnpointsegm_azimuth_iter(inst1, inst2, &ninsts[i]);
     /* If constant segment */
-    if (countinsts[i] == 0)
+    if (ninsts[i] == 0)
     {
       if (totalinsts != 0)
       {
         /* Assemble all instants created so far */
-        result[nseqs++] = tsequence_assemble_instants(instants, countinsts,
+        result[nseqs++] = tsequence_assemble_instants(instants, ninsts,
           totalinsts, m, i, lower_inc, inst1->t);
         /* Indicate that we have consommed all instants created so far */
         m = i;
@@ -699,7 +699,7 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
     }
     else
     {
-      totalinsts += countinsts[i];
+      totalinsts += ninsts[i];
     }
     inst1 = inst2;
     lower_inc = true;
@@ -707,11 +707,11 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   if (totalinsts != 0)
   {
     /* Assemble all instants created so far */
-    result[nseqs++] = tsequence_assemble_instants(instants, countinsts,
+    result[nseqs++] = tsequence_assemble_instants(instants, ninsts,
       totalinsts, m, seq->count - 1, lower_inc, inst1->t);
   }
   pfree(instants);
-  pfree(countinsts);
+  pfree(ninsts);
   return nseqs;
 }
 
@@ -741,8 +741,7 @@ tnpointseqset_azimuth(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    int countstep = tnpointseq_azimuth_iter(seq, &sequences[nseqs]);
-    nseqs += countstep;
+    nseqs += tnpointseq_azimuth_iter(seq, &sequences[nseqs]);
   }
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, nseqs, STEP);

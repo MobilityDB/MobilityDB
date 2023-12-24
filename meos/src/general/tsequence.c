@@ -1993,16 +1993,16 @@ tinstant_to_tsequence(const TInstant *inst, interpType interp)
 Temporal *
 tdiscseq_set_interp(const TSequence *seq, interpType interp)
 {
-  assert(seq);
-  assert(MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
+  assert(seq); assert(MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
   /* If the requested interpolation is discrete return a copy */
   if (interp == DISCRETE)
     return (Temporal *) tsequence_copy(seq);
 
+  const TInstant *inst;
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    inst = TSEQUENCE_INST_N(seq, 0);
     return (Temporal *) tsequence_make(&inst, 1, true, true, interp,
       NORMALIZE_NO);
   }
@@ -2011,7 +2011,7 @@ tdiscseq_set_interp(const TSequence *seq, interpType interp)
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    inst = TSEQUENCE_INST_N(seq, i);
     sequences[i] = tinstant_to_tsequence(inst, interp);
   }
   return (Temporal *) tsequenceset_make_free(sequences, seq->count,
@@ -2024,8 +2024,7 @@ tdiscseq_set_interp(const TSequence *seq, interpType interp)
 TSequence *
 tcontseq_to_discrete(const TSequence *seq)
 {
-  assert(seq);
-  assert(! MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
+  assert(seq); assert(! MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
   if (seq->count != 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -2158,8 +2157,7 @@ Temporal *
 tsequence_set_interp(const TSequence *seq, interpType interp)
 {
   assert(seq);
-  interpType seq_interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  if (seq_interp == DISCRETE)
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
     return tdiscseq_set_interp(seq, interp);
 
   if (interp == DISCRETE)

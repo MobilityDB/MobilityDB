@@ -1272,24 +1272,9 @@ tbox_round(const TBox *box, int maxdd)
   return result;
 }
 
-
 /*****************************************************************************
  * Topological operators
  *****************************************************************************/
-
-/**
- * @brief Initialize the ouput variables with the flag values of the boxes
- * @param[in] box1,box2 Input boxes
- * @param[out] hasx,hast Boolean variables
- */
-static void
-tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
-{
-  assert(box1); assert(box2); assert(hasx); assert(hast);
-  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  return;
-}
 
 /**
  * @brief Initialize the ouput variables with the flag values of the boxes
@@ -1702,8 +1687,8 @@ tbox_cmp(const TBox *box1, const TBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
     return INT_MAX;
 
-  bool hasx, hast;
-  tbox_tbox_flags(box1, box2, &hasx, &hast);
+  bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
+  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   int cmp;
   if (hast)
   {
