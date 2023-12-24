@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Bounding box operators for temporal points.
+ * @brief Bounding box operators for temporal points
  *
  * These operators test the bounding boxes of temporal points, which are an
  * `STBox`, where the *x*, *y*, and optional *z* coordinates are for the space
@@ -65,7 +65,7 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
 
 /**
  * @brief Initialize the last argument with the spatiotemporal box from a
- * temporal instant point
+ * temporal point instant
  */
 void
 tpointinst_set_stbox(const TInstant *inst, STBox *box)
@@ -80,7 +80,7 @@ tpointinst_set_stbox(const TInstant *inst, STBox *box)
 
 /**
  * @brief Initialize the last argument with the spatiotemporal box of an array
- * of temporal instant points
+ * of temporal point instants
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -160,7 +160,7 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
 
 /**
  * @brief Return an array of spatiotemporal boxes from the segments of a
- * temporal sequence point (iterator function)
+ * temporal point sequence (iterator function)
  * @param[in] seq Temporal value
  * @param[out] result Spatiotemporal box
  * @return Number of elements in the array
@@ -194,17 +194,16 @@ tpointseq_stboxes_iter(const TSequence *seq, STBox *result)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
- * temporal sequence point.
+ * temporal point sequence
  * @param[in] seq Temporal sequence
  * @param[out] count Number of elements in the output array
  */
 STBox *
 tpointseq_stboxes(const TSequence *seq, int *count)
 {
-  assert(seq); assert(count);
-  assert(tgeo_type(seq->temptype));
+  assert(seq); assert(count); assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   int newcount = seq->count == 1 ? 1 : seq->count - 1;
   STBox *result = palloc(sizeof(STBox) * newcount);
@@ -214,36 +213,32 @@ tpointseq_stboxes(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
- * temporal sequence set point.
+ * temporal point sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] count Number of elements in the output array
  */
 STBox *
 tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 {
-  assert(ss); assert(count);
-  assert(tgeo_type(ss->temptype));
+  assert(ss); assert(count); assert(tgeo_type(ss->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   STBox *result = palloc(sizeof(STBox) * ss->totalcount);
   int nboxes = 0;
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    nboxes += tpointseq_stboxes_iter(seq, &result[nboxes]);
-  }
+    nboxes += tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i), &result[nboxes]);
   *count = nboxes;
   return result;
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup meos_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal point
  * @param[in] temp Temporal value
  * @param[out] count Number of values of the output array
- * @return On error return NULL
+ * @return On error return @p NULL
  * @csqlfn #Tpoint_stboxes()
  */
 STBox *
@@ -254,15 +249,13 @@ tpoint_stboxes(const Temporal *temp, int *count)
       ! ensure_tgeo_type(temp->temptype))
     return NULL;
 
-  STBox *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
-    ;
+  if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return NULL;
   else if (temp->subtype == TSEQUENCE)
-    result = tpointseq_stboxes((TSequence *)temp, count);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tpointseqset_stboxes((TSequenceSet *)temp, count);
-  return result;
+    return tpointseq_stboxes((TSequence *)temp, count);
+  else /* TSEQUENCESET */
+    return tpointseqset_stboxes((TSequenceSet *)temp, count);
 }
 
 /*****************************************************************************
@@ -279,8 +272,7 @@ boxop_tpoint_stbox(const Temporal *temp, const STBox *box,
 {
   STBox box1;
   temporal_set_bbox(temp, &box1);
-  bool result = inverted ? func(box, &box1) : func(&box1, box);
-  return result;
+  return inverted ? func(box, &box1) : func(&box1, box);
 }
 
 /**
@@ -293,8 +285,7 @@ boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   STBox box1, box2;
   temporal_set_bbox(temp1, &box1);
   temporal_set_bbox(temp2, &box2);
-  bool result = func(&box1, &box2);
-  return result;
+  return func(&box1, &box2);
 }
 
 

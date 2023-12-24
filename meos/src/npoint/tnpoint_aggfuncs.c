@@ -29,9 +29,8 @@
 
 /**
  * @file
- * @brief Aggregate functions for temporal network points.
- *
- * The only function currently provided is temporal centroid.
+ * @brief Aggregate functions for temporal network points
+ * @note The only function currently provided is temporal centroid
  */
 
 /* PostgreSQL */

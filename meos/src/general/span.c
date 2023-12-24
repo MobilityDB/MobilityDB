@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief General functions for spans (a.k.a. ranges) composed of two `Datum`
- * values and two `Boolean` values stating whether the bounds are inclusive.
+ * values and two `Boolean` values stating whether the bounds are inclusive
  */
 
 #include "general/span.h"
@@ -139,10 +139,9 @@ span_deserialize(const Span *s, SpanBound *lower, SpanBound *upper)
 
 /**
  * @brief Compare two span boundary points, returning <0, 0, or >0 according to
- * whether the first one is less than, equal to, or greater than the second one.
- *
- * The boundaries can be any combination of upper and lower; so it's useful
- * for a variety of operators.
+ * whether the first one is less than, equal to, or greater than the second one
+ * @details The boundaries can be any combination of upper and lower; so it is 
+ * useful for a variety of operators.
  *
  * The simple case is when b1 and b2 are both inclusive, in which
  * case the result is just a comparison of the values held in b1 and b2.
@@ -189,7 +188,7 @@ span_bound_cmp(const SpanBound *b1, const SpanBound *b2)
 }
 
 /**
- * @brief Comparison function for sorting span bounds.
+ * @brief Comparison function for sorting span bounds
  */
 int
 span_bound_qsort_cmp(const void *a1, const void *a2)
@@ -201,8 +200,7 @@ span_bound_qsort_cmp(const void *a1, const void *a2)
 
 /**
  * @brief Compare the lower bounds of two spans, returning <0, 0, or >0 according to
- * whether the first bound is less than, equal to, or greater than the second one.
- *
+ * whether the first bound is less than, equal to, or greater than the second one
  * @note The function is equivalent to #span_bound_cmp but avoids
  * deserializing the spans into lower and upper bounds
  */
@@ -226,9 +224,9 @@ span_lower_cmp(const Span *s1, const Span *s2)
 }
 
 /**
- * @brief Compare the upper bounds of two spans, returning <0, 0, or >0 according to
- * whether the first bound is less than, equal to, or greater than the second one.
- *
+ * @brief Compare the upper bounds of two spans, returning <0, 0, or >0 
+ * according to whether the first bound is less than, equal to, or greater than
+ * the second one.
  * @note The function is equivalent to #span_bound_cmp but avoids
  * deserializing the spans into lower and upper bounds
  */
@@ -252,7 +250,7 @@ span_upper_cmp(const Span *s1, const Span *s2)
 }
 
 /**
- * @brief Return the bound increased by 1 for accounting for canonicalized spans.
+ * @brief Return the bound increased by 1 for accounting for canonicalized spans
  */
 Datum
 span_incr_bound(Datum lower, meosType basetype)
@@ -276,7 +274,7 @@ span_incr_bound(Datum lower, meosType basetype)
 }
 
 /**
- * @brief Return the bound decreased by 1 for accounting for canonicalized spans.
+ * @brief Return the bound decreased by 1 for accounting for canonicalized spans
  */
 Datum
 span_decr_bound(Datum lower, meosType basetype)
@@ -301,15 +299,13 @@ span_decr_bound(Datum lower, meosType basetype)
 
 /**
  * @brief Normalize an array of spans
- *
- * The input spans may overlap and may be non contiguous.
+ * @details The input spans may overlap and may be non contiguous.
  * The normalized spans are new spans that must be freed.
- *
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the input array
  * @param[in] ordered True if the spans are ordered
  * @param[out] newcount Number of elements in the output array
- * @pre i
+ * @pre @p count is greater than 0
  */
 Span *
 spanarr_normalize(Span *spans, int count, bool ordered, int *newcount)
@@ -324,7 +320,7 @@ spanarr_normalize(Span *spans, int count, bool ordered, int *newcount)
   for (int i = 1; i < count; i++)
   {
     Span *next = &spans[i];
-    if (over_adj_span_span(current, next))
+    if (ovadj_span_span(current, next))
       /* Compute the union of the spans */
       span_expand(next, current);
     else
@@ -344,8 +340,8 @@ spanarr_normalize(Span *spans, int count, bool ordered, int *newcount)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_inout
- * @brief Return a span from its Well-Known Text (WKT) representation.
+ * @ingroup meos_internal_setspan_inout
+ * @brief Return a span from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @param[in] spantype Span type
  */
@@ -361,10 +357,10 @@ span_in(const char *str, meosType spantype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_inout
- * @brief Return an integer span from its Well-Known Text (WKT) representation.
+ * @ingroup meos_setspan_inout
+ * @brief Return an integer span from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @return On error return NULL
+ * @return On error return @p NULL
  * @csqlfn #Span_in()
  */
 Span *
@@ -377,10 +373,10 @@ intspan_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
- * @brief Return an integer span from its Well-Known Text (WKT) representation.
+ * @ingroup meos_setspan_inout
+ * @brief Return an integer span from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @return On error return NULL
+ * @return On error return @p NULL
  * @csqlfn #Span_in()
  */
 Span *
@@ -393,10 +389,10 @@ bigintspan_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
- * @brief Return a float span from its Well-Known Text (WKT) representation.
+ * @ingroup meos_setspan_inout
+ * @brief Return a float span from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @return On error return NULL
+ * @return On error return @p NULL
  * @csqlfn #Span_in()
  */
 Span *
@@ -409,10 +405,10 @@ floatspan_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
- * @brief Return a date span from its Well-Known Text (WKT) representation.
+ * @ingroup meos_setspan_inout
+ * @brief Return a date span from its Well-Known Text (WKT) representation
  * @param[in] str String
- * @return On error return NULL
+ * @return On error return @p NULL
  * @csqlfn #Span_in()
  */
 Span *
@@ -425,11 +421,11 @@ datespan_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup meos_setspan_inout
  * @brief Return a timestamptz span from its Well-Known Text (WKT)
- * representation.
+ * representation
  * @param[in] str String
- * @return On error return NULL
+ * @return On error return @p NULL
  * @csqlfn #Span_in()
  */
 Span *
@@ -443,7 +439,8 @@ tstzspan_in(const char *str)
 #endif /* MEOS */
 
 /**
- * @brief Remove the quotes from the Well-Known Text (WKT) representation of a span
+ * @brief Remove the quotes from the Well-Known Text (WKT) representation of a
+ * span
  */
 static char *
 unquote(char *str)
@@ -462,8 +459,8 @@ unquote(char *str)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @ingroup meos_internal_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
  */
@@ -487,9 +484,9 @@ span_out(const Span *s, int maxdd)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a span.
- * @return On error return NULL
+ * @ingroup meos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span
+ * @return On error return @p NULL
  * @param[in] s Span
  * @csqlfn #Span_out()
  */
@@ -503,10 +500,10 @@ intspan_out(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @ingroup meos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span
  * @param[in] s Span
- * @return On error return NULL
+ * @return On error return @p NULL
  * @csqlfn #Span_out()
  */
 char *
@@ -519,11 +516,11 @@ bigintspan_out(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @ingroup meos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
- * @return On error return NULL
+ * @return On error return @p NULL
   * @csqlfn #Span_out()
 */
 char *
@@ -536,10 +533,10 @@ floatspan_out(const Span *s, int maxdd)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @ingroup meos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span
  * @param[in] s Span
- * @return On error return NULL
+ * @return On error return @p NULL
  * @csqlfn #Span_out()
  */
 char *
@@ -552,10 +549,10 @@ datespan_out(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a span.
+ * @ingroup meos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span
  * @param[in] s Span
- * @return On error return NULL
+ * @return On error return @p NULL
  * @csqlfn #Span_out()
  */
 char *
@@ -573,8 +570,8 @@ tstzspan_out(const Span *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_constructor
- * @brief Construct a span from the bounds.
+ * @ingroup meos_internal_setspan_constructor
+ * @brief Return a span from the bounds
  * @param[in] lower,upper Bounds
  * @param[in] lower_inc,upper_inc True when the bounds are inclusive
  * @param[in] basetype Type of the bounds
@@ -591,8 +588,8 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct an integer span from the bounds.
+ * @ingroup meos_setspan_constructor
+ * @brief Return an integer span from the bounds
  * @param[in] lower,upper Bounds
  * @param[in] lower_inc,upper_inc True when the bounds are inclusive
  * @csqlfn #Span_constructor()
@@ -608,8 +605,8 @@ intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct a big integer span from the bounds.
+ * @ingroup meos_setspan_constructor
+ * @brief Return a big integer span from the bounds
  * @param[in] lower,upper Bounds
  * @param[in] lower_inc,upper_inc True when the bounds are inclusive
  * @csqlfn #Span_constructor()
@@ -625,8 +622,8 @@ bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct a float span from the bounds.
+ * @ingroup meos_setspan_constructor
+ * @brief Return a float span from the bounds
  * @param[in] lower,upper Bounds
  * @param[in] lower_inc,upper_inc True when the bounds are inclusive
  * @csqlfn #Span_constructor()
@@ -642,8 +639,8 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct a date span from the bounds.
+ * @ingroup meos_setspan_constructor
+ * @brief Return a date span from the bounds
  * @param[in] lower,upper Bounds
  * @param[in] lower_inc,upper_inc True when the bounds are inclusive
  * @csqlfn #Span_constructor()
@@ -658,8 +655,8 @@ datespan_make(DateADT lower, DateADT upper, bool lower_inc, bool upper_inc)
   return s;
 }
 /**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct a timestamptz span from the bounds.
+ * @ingroup meos_setspan_constructor
+ * @brief Return a timestamptz span from the bounds
  * @param[in] lower,upper Bounds
  * @param[in] lower_inc,upper_inc True when the bounds are inclusive
  * @csqlfn #Span_constructor()
@@ -677,7 +674,7 @@ tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_constructor
+ * @ingroup meos_internal_setspan_constructor
  * @brief Initialize the last argument to a span constructed from the other
  * arguments
  * @param[in] lower,upper Bounds
@@ -736,8 +733,8 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 }
 
 /**
- * @ingroup libmeos_internal_setspan_constructor
- * @brief Return a copy of a span.
+ * @ingroup meos_internal_setspan_constructor
+ * @brief Return a copy of a span
  * @param[in] s Span
  */
 Span *
@@ -751,8 +748,8 @@ span_cp(const Span *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_constructor
- * @brief Return a copy of a span.
+ * @ingroup meos_setspan_constructor
+ * @brief Return a copy of a span
  * @param[in] s Span
  */
 Span *
@@ -770,38 +767,38 @@ span_copy(const Span *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
+ * @ingroup meos_internal_setspan_accessor
  * @brief Initialize the last argument to a span constructed from the value
- * @param[in] d Value
+ * @param[in] value Value
  * @param[in] basetype Type of the value
  * @param[out] s Result span
 */
 void
-value_set_span(Datum d, meosType basetype, Span *s)
+value_set_span(Datum value, meosType basetype, Span *s)
 {
   assert(s); assert(span_basetype(basetype));
   meosType spantype = basetype_spantype(basetype);
-  span_set(d, d, true, true, basetype, spantype, s);
+  span_set(value, value, true, true, basetype, spantype, s);
   return;
 }
 
 /**
- * @ingroup libmeos_internal_setspan_conversion
+ * @ingroup meos_internal_setspan_conversion
  * @brief Convert a value to a span
- * @param[in] d Value
+ * @param[in] value Value
  * @param[in] basetype Type of the value
  */
 Span *
-value_to_span(Datum d, meosType basetype)
+value_to_span(Datum value, meosType basetype)
 {
   Span *result = palloc(sizeof(Span));
-  value_set_span(d, basetype, result);
+  value_set_span(value, basetype, result);
   return result;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_conversion
+ * @ingroup meos_setspan_conversion
  * @brief Convert an integer to a span
  * @param[in] i Value
  * @csqlfn #Value_to_span()
@@ -817,7 +814,7 @@ int_to_span(int i)
 }
 
 /**
- * @ingroup libmeos_setspan_conversion
+ * @ingroup meos_setspan_conversion
  * @brief Convert a big integer to a span
  * @param[in] i Value
  * @csqlfn #Value_to_span()
@@ -833,7 +830,7 @@ bigint_to_span(int i)
 }
 
 /**
- * @ingroup libmeos_setspan_conversion
+ * @ingroup meos_setspan_conversion
  * @brief Convert a float to a span
  * @param[in] d Value
  * @csqlfn #Value_to_span()
@@ -848,7 +845,7 @@ float_to_span(double d)
 }
 
 /**
- * @ingroup libmeos_setspan_conversion
+ * @ingroup meos_setspan_conversion
  * @brief Convert a date to a span
  * @param[in] d Value
  * @csqlfn #Value_to_span()
@@ -864,7 +861,7 @@ date_to_span(DateADT d)
 }
 
 /**
- * @ingroup libmeos_setspan_conversion
+ * @ingroup meos_setspan_conversion
  * @brief Convert a timestamptz to a span
  * @param[in] t Value
  * @csqlfn #Value_to_span()
@@ -885,9 +882,9 @@ timestamptz_to_span(TimestampTz t)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of an integer span
- * @return On error return INT_MAX
+ * @return On error return @p INT_MAX
  * @param[in] s Span
  * @csqlfn #Span_lower()
  */
@@ -901,7 +898,7 @@ intspan_lower(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of an integer span
  * @param[in] s Span
  * @return On error return LONG_MAX
@@ -917,10 +914,10 @@ bigintspan_lower(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of a float span
  * @param[in] s Span
- * @return On error return DBL_MAX
+ * @return On error return @p DBL_MAX
  * @csqlfn #Span_lower()
  */
 double
@@ -933,7 +930,7 @@ floatspan_lower(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of a date span
  * @param[in] s Span
  * @return On error return DATEVAL_NOEND
@@ -949,7 +946,7 @@ datespan_lower(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of a timestamptz span
  * @param[in] s Span
  * @return On error return DT_NOEND
@@ -965,10 +962,10 @@ tstzspan_lower(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of an integer span
  * @param[in] s Span
- * @return On error return INT_MAX
+ * @return On error return @p INT_MAX
  * @csqlfn #Span_upper()
  */
 int
@@ -981,7 +978,7 @@ intspan_upper(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of an integer span
  * @param[in] s Span
  * @return On error return LONG_MAX
@@ -997,10 +994,10 @@ bigintspan_upper(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of a float span
  * @param[in] s Span
- * @return On error return DBL_MAX
+ * @return On error return @p DBL_MAX
  * @csqlfn #Span_upper()
  */
 double
@@ -1013,7 +1010,7 @@ floatspan_upper(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of a date span
  * @param[in] s Span
  * @return On error return DATEVAL_NOEND
@@ -1029,7 +1026,7 @@ datespan_upper(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of a timestamptz span
  * @param[in] s Span
  * @return On error return DT_NOEND
@@ -1045,7 +1042,7 @@ tstzspan_upper(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return true if the lower bound of a span is inclusive
  * @param[in] s Span
  * @csqlfn #Span_lower_inc()
@@ -1060,7 +1057,7 @@ span_lower_inc(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return true if the upper bound of a span is inclusive
  * @param[in] s Span
  * @csqlfn #Span_lower_inc()
@@ -1076,8 +1073,8 @@ span_upper_inc(const Span *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the width of a span.
+ * @ingroup meos_internal_setspan_accessor
+ * @brief Return the width of a span
  * @param[in] s Span
  * @return On error return -1
  * @csqlfn #Numspan_width()
@@ -1093,7 +1090,7 @@ numspan_width(const Span *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the width of an integer span
  * @param[in] s Span
  * @return On error return -1
@@ -1109,8 +1106,8 @@ intspan_width(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
- * @brief Return the width of an integer span
+ * @ingroup meos_setspan_accessor
+ * @brief Return the width of a big integer span
  * @param[in] s Span
  * @return On error return -1
  * @csqlfn #Numspan_width()
@@ -1125,7 +1122,7 @@ bigintspan_width(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the width of a float span
  * @param[in] s Span
  * @return On error return -1
@@ -1142,8 +1139,8 @@ floatspan_width(const Span *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
- * @brief Return the duration of a date span as an interval.
+ * @ingroup meos_setspan_accessor
+ * @brief Return the duration of a date span as an interval
  * @param[in] s Span
  * @csqlfn #Datespan_duration()
  */
@@ -1159,8 +1156,8 @@ datespan_duration(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
- * @brief Return the duration of a timestamptz span as an interval.
+ * @ingroup meos_setspan_accessor
+ * @brief Return the duration of a timestamptz span as an interval
  * @param[in] s Span
  * @csqlfn #Tstzspan_duration()
  */
@@ -1170,7 +1167,7 @@ tstzspan_duration(const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
-  return pg_timestamp_mi(s->upper, s->lower);
+  return minus_timestamptz_timestamptz(s->upper, s->lower);
 }
 
 /*****************************************************************************
@@ -1178,8 +1175,8 @@ tstzspan_duration(const Span *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_transf
- * @brief Initialize the last argument to a float span with the precision set 
+ * @ingroup meos_internal_setspan_transf
+ * @brief Initialize the last argument to a float span with the precision se
  * to the number of decimal places
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
@@ -1199,12 +1196,12 @@ floatspan_rnd(const Span *s, Datum maxdd, Span *result)
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Return a float span with the precision of the bounds set to the
- * number of decimal places.
+ * number of decimal places
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 Span *
 floatspan_round(const Span *s, int maxdd)
@@ -1222,10 +1219,10 @@ floatspan_round(const Span *s, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Transform an integer span to a float span
  * @param[in] s Span
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 Span *
 intspan_to_floatspan(const Span *s)
@@ -1239,10 +1236,10 @@ intspan_to_floatspan(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Transform a float span to an integer span
  * @param[in] s Span
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 Span *
 floatspan_to_intspan(const Span *s)
@@ -1256,10 +1253,10 @@ floatspan_to_intspan(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Transform a date span to a timestamptz span
  * @param[in] s Span
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 Span *
 datespan_to_tstzspan(const Span *s)
@@ -1273,10 +1270,10 @@ datespan_to_tstzspan(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Transform a timestamptz span to a date span
  * @param[in] s Span
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 Span *
 tstzspan_to_datespan(const Span *s)
@@ -1290,7 +1287,7 @@ tstzspan_to_datespan(const Span *s)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Initialize the second span with the first one transformed to a float
  * span
  * @param[in] s1,s2 Spans
@@ -1306,8 +1303,9 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_transf
- * @brief Initialize the second span with the first one transformed to an integer span
+ * @ingroup meos_internal_setspan_transf
+ * @brief Initialize the second span with the first one transformed to an
+ * integer span
  * @param[in] s1,s2 Spans
  */
 void
@@ -1321,7 +1319,7 @@ floatspan_set_intspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Initialize the second span with the first one transformed to a
  * timetstamptz span
  * @param[in] s1,s2 Spans
@@ -1331,16 +1329,16 @@ datespan_set_tstzspan(const Span *s1, Span *s2)
 {
   assert(s1); assert(s2); assert(s1->spantype == T_DATESPAN);
   Datum lower =
-    TimestampTzGetDatum(pg_date_timestamptz(DatumGetDateADT(s1->lower)));
+    TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(s1->lower)));
   Datum upper =
-    TimestampTzGetDatum(pg_date_timestamptz(DatumGetDateADT(s1->upper)));
+    TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(s1->upper)));
   /* Date spans are always canonicalized */
   span_set(lower, upper, true, false, T_TIMESTAMPTZ, T_TSTZSPAN, s2);
   return;
 }
 
 /**
- * @ingroup libmeos_internal_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Initialize the second span with the first one transformed to a date
  * span
  * @param[in] s1,s2 Spans
@@ -1349,8 +1347,8 @@ void
 tstzspan_set_datespan(const Span *s1, Span *s2)
 {
   assert(s1); assert(s2); assert(s1->spantype == T_TSTZSPAN);
-  DateADT lower = pg_timestamptz_date(DatumGetTimestampTz(s1->lower));
-  DateADT upper = pg_timestamptz_date(DatumGetTimestampTz(s1->upper));
+  DateADT lower = timestamptz_to_date(DatumGetTimestampTz(s1->lower));
+  DateADT upper = timestamptz_to_date(DatumGetTimestampTz(s1->upper));
   bool lower_inc = s1->lower_inc;
   bool upper_inc = s1->upper_inc;
   /* Both bounds are set to true when the resulting dates are equal, e.g.,
@@ -1366,7 +1364,7 @@ tstzspan_set_datespan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Expand the second span with the first one
  * @param[in] s1,s2 Spans
  */
@@ -1424,7 +1422,7 @@ lower_upper_shift_scale_value(Datum shift, Datum width, meosType basetype,
 }
 
 /**
- * @brief Shift and/or scale period bounds by two intervals.
+ * @brief Shift and/or scale period bounds by two intervals
  * @param[in] shift Interval to shift the bounds, may be NULL
  * @param[in] duration Interval for the duration of the result, may be NULL
  * @param[in,out] lower,upper Bounds of the period
@@ -1439,14 +1437,14 @@ lower_upper_shift_scale_time(const Interval *shift, const Interval *duration,
   bool instant = (*lower == *upper);
   if (shift)
   {
-    *lower = pg_timestamp_pl_interval(*lower, shift);
+    *lower = add_timestamptz_interval(*lower, shift);
     if (instant)
       *upper = *lower;
     else
-      *upper = pg_timestamp_pl_interval(*upper, shift);
+      *upper = add_timestamptz_interval(*upper, shift);
   }
   if (duration && ! instant)
-    *upper = pg_timestamp_pl_interval(*lower, duration);
+    *upper = add_timestamptz_interval(*lower, duration);
   return;
 }
 
@@ -1604,7 +1602,7 @@ tstzspan_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
 }
 
 /**
- * @ingroup libmeos_internal_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Return a number span shifted and/or scaled by two values
  * @param[in] s Span
  * @param[in] shift Value for shifting the bounds
@@ -1632,7 +1630,7 @@ numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Return an integer span shifted and/or scaled by the values
  * @param[in] s Span
  * @param[in] shift Value for shifting the bounds
@@ -1654,7 +1652,7 @@ intspan_shift_scale(const Span *s, int shift, int width, bool hasshift,
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Return a big integer span shifted and/or scaled by the values
  * @param[in] s Span
  * @param[in] shift Value for shifting the bounds
@@ -1676,7 +1674,7 @@ bigintspan_shift_scale(const Span *s, int64 shift, int64 width, bool hasshift,
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Return a float span shifted and/or scaled by the values
  * @param[in] s Span
  * @param[in] shift Value for shifting the bounds
@@ -1698,7 +1696,7 @@ floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift,
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Return a date span shifted and/or scaled by the values
  * @param[in] s Span
  * @param[in] shift Value for shifting the bounds
@@ -1721,7 +1719,7 @@ datespan_shift_scale(const Span *s, int shift, int width, bool hasshift,
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Return a timestamptz span shifted and/or scaled by two intervals
  * @param[in] s Span
  * @param[in] shift Interval to shift the bounds, may be NULL
@@ -1754,7 +1752,7 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_comp
+ * @ingroup meos_internal_setspan_comp
  * @brief Return true if the two spans are equal
  * @param[in] s1,s2 Sets
  */
@@ -1769,8 +1767,8 @@ span_eq1(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
- * @brief Return true if the two spans are equal.
+ * @ingroup meos_setspan_comp
+ * @brief Return true if the two spans are equal
  * @note The ifunction #span_cmp() is not used to increase efficiency
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_eq()
@@ -1786,8 +1784,8 @@ span_eq(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
- * @brief Return true if the first span is different from the second one.
+ * @ingroup meos_setspan_comp
+ * @brief Return true if the first span is different from the second one
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_ne()
  */
@@ -1798,9 +1796,9 @@ span_ne(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_comp
+ * @ingroup meos_internal_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span is less than,
- * equal, or greater than the second one.
+ * equal, or greater than the second one
  * @param[in] s1,s2 Sets
  */
 int
@@ -1821,9 +1819,9 @@ span_cmp1(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
+ * @ingroup meos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span is less than,
- * equal, or greater than the second one.
+ * equal, or greater than the second one
  * @param[in] s1,s2 Sets
  * @note Function used for B-tree comparison
  * @csqlfn #Span_cmp()
@@ -1841,8 +1839,8 @@ span_cmp(const Span *s1, const Span *s2)
 /* Inequality operators using the span_cmp function */
 
 /**
- * @ingroup libmeos_setspan_comp
- * @brief Return true if the first span is less than the second one.
+ * @ingroup meos_setspan_comp
+ * @brief Return true if the first span is less than the second one
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_lt()
  */
@@ -1853,9 +1851,8 @@ span_lt(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
- * @brief Return true if the first span is less than or equal to the
- * second one.
+ * @ingroup meos_setspan_comp
+ * @brief Return true if the first span is less than or equal to the second one
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_le()
  */
@@ -1866,9 +1863,9 @@ span_le(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
- * @brief Return true if the first span is greater than or equal to the
- * second one.
+ * @ingroup meos_setspan_comp
+ * @brief Return true if the first span is greater than or equal to the second
+ * one
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_gt()
  */
@@ -1879,8 +1876,8 @@ span_ge(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
- * @brief Return true if the first span is greater than the second one.
+ * @ingroup meos_setspan_comp
+ * @brief Return true if the first span is greater than the second one
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_ge()
  */
@@ -1895,10 +1892,10 @@ span_gt(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_accessor
- * @brief Return the 32-bit hash of a span.
+ * @ingroup meos_setspan_accessor
+ * @brief Return the 32-bit hash of a span
  * @param[in] s Span
- * @return On error return INT_MAX
+ * @return On error return @p INT_MAX
  * @csqlfn #Span_hash()
  */
 uint32
@@ -1935,11 +1932,11 @@ span_hash(const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup meos_setspan_accessor
  * @brief Return the 64-bit hash of a span using a seed
  * @param[in] s Span
  * @param[in] seed Seed
- * @return On error return INT_MAX
+ * @return On error return @p INT_MAX
  * @csqlfn #Span_hash_extended()
  */
 uint64

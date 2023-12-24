@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for parsing static network types.
+ * @brief Functions for parsing static network types
  */
 
 #include "npoint/tnpoint_parser.h"
@@ -42,7 +42,7 @@
 /*****************************************************************************/
 
 /**
- * @brief Parse a network point from its string representation.
+ * @brief Parse a network point from its string representation
  */
 Npoint *
 npoint_parse(const char **str, bool end)
@@ -94,7 +94,7 @@ npoint_parse(const char **str, bool end)
 }
 
 /**
- * @brief Parse a network segment from its string representation.
+ * @brief Parse a network segment from its string representation
  */
 Nsegment *
 nsegment_parse(const char **str)

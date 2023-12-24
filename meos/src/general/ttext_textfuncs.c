@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal text functions: `textcat`, `lower`, `upper`.
+ * @brief Temporal text functions
  */
 
 #include "general/ttext_textfuncs.h"
@@ -45,14 +45,12 @@
 #include "general/lifting.h"
 
 /*****************************************************************************
- * Textual functions on datums
+ * Generic text functions
  *****************************************************************************/
 
-/*
- * @brief Return the concatenation of the two text values.
- *
- * Arguments can be in short-header form, but not compressed or out-of-line
- * @note Function adapted from the external function in varlena.c
+/**
+ * @brief Return the concatenation of the two text values
+ * @note Function adapted from the external function in file @p varlena.c
  */
 static text *
 text_catenate(text *t1, text *t2)
@@ -87,7 +85,7 @@ text_catenate(text *t1, text *t2)
 }
 
 /**
- * @brief Return the concatenation of the two text values.
+ * @brief Return the concatenation of the two text values
  */
 Datum
 datum_textcat(Datum l, Datum r)
@@ -172,8 +170,9 @@ pnstrdup(const char *in, Size size)
 
 /**
  * @brief Convert the text value to lowercase
- * @note Function adapted from the external function lower() in varlena.c.
- * Notice that `DEFAULT_COLLATION_OID` is used instead of `PG_GET_COLLATION()`.
+ * @note Function adapted from the external function @p lower() in file
+ * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID is used instead of 
+ * @p PG_GET_COLLATION().
  */
 static Datum
 pg_lower(text *txt)
@@ -204,8 +203,9 @@ datum_lower(Datum value)
 
 /**
  * @brief Convert the text value to uppercase
- * @note Function adapted from the external function upper() in varlena.c.
- * Notice that `DEFAULT_COLLATION_OID` is used instead of `PG_GET_COLLATION()`.
+ * @note Function adapted from the external function @p upper() in file
+ * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID` is used instead of 
+ * @p PG_GET_COLLATION().
  */
 Datum
 pg_upper(text *txt)
@@ -235,7 +235,7 @@ datum_upper(Datum value)
 }
 
 /*****************************************************************************
- * Generic functions
+ * Generic functions on temporal texts
  *****************************************************************************/
 
 /**
@@ -284,7 +284,7 @@ textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func,
 }
 
 /**
- * @brief Apply the function to the temporal text value and the base text value.
+ * @brief Apply the function to the temporal text value and the base text value
  */
 Temporal *
 textfunc_ttext_ttext(const Temporal *temp1, const Temporal *temp2,

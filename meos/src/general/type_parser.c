@@ -30,8 +30,8 @@
 /**
  * @file
  * @brief Functions for parsing base, set, span, tbox, and temporal types
- * @note Many functions make two passes for parsing, the first one to obtain
- * the number of elements in order to do memory allocation with `palloc`, the
+ * @details Many functions make two passes for parsing, the first one to obtain
+ * the number of elements in order to do memory allocation with @p palloc, the
  * second one to create the type. This is the only approach we can see at the
  * moment which is both correct and simple.
  */
@@ -307,8 +307,8 @@ temporal_basetype_parse(const char **str, meosType basetype,
 /*****************************************************************************/
 
 /**
- * @brief Parse a temporal box value from the buffer.
- * @return On error return NULL
+ * @brief Parse a temporal box value from the buffer
+ * @return On error return @p NULL
  */
 TBox *
 tbox_parse(const char **str)
@@ -401,7 +401,7 @@ tbox_parse(const char **str)
 /* Time Types */
 
 /**
- * @brief Parse a timestamp value from the buffer.
+ * @brief Parse a timestamp value from the buffer
  * @return On error return DT_NOEND
  */
 TimestampTz
@@ -427,7 +427,7 @@ timestamp_parse(const char **str)
 /* Set and Span Types */
 
 /**
- * @brief Parse a element value from the buffer.
+ * @brief Parse a element value from the buffer
  * @return On error return false
  */
 bool
@@ -463,8 +463,8 @@ elem_parse(const char **str, meosType basetype, Datum *result)
 }
 
 /**
- * @brief Parse a set value from the buffer.
- * @return On error return NULL
+ * @brief Parse a set value from the buffer
+ * @return On error return @p NULL
  */
 Set *
 set_parse(const char **str, meosType settype)
@@ -573,7 +573,7 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
 
 /**
  * @brief Parse a span set value from the buffer
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 SpanSet *
 spanset_parse(const char **str, meosType spansettype)
@@ -646,7 +646,7 @@ tinstant_parse(const char **str, meosType temptype, bool end,
  * @brief Parse a temporal discrete sequence from the buffer
  * @param[in] str Input string
  * @param[in] temptype Base type
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 TSequence *
 tdiscseq_parse(const char **str, meosType temptype)
@@ -753,7 +753,7 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 TSequenceSet *
 tsequenceset_parse(const char **str, meosType temptype, interpType interp)
@@ -794,7 +794,7 @@ tsequenceset_parse(const char **str, meosType temptype, interpType interp)
  * @brief Parse a temporal value from the buffer (dispatch function)
  * @param[in] str Input string
  * @param[in] temptype Temporal type
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 Temporal *
 temporal_parse(const char **str, meosType temptype)

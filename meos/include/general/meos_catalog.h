@@ -220,7 +220,6 @@ extern meosType basetype_settype(meosType type);
 
 /* Catalog functions */
 
-extern bool meostype_internal(meosType type);
 extern bool meos_basetype(meosType type);
 extern bool alpha_basetype(meosType type);
 extern bool tnumber_basetype(meosType type);

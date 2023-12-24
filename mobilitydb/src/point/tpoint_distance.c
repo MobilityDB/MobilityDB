@@ -400,11 +400,10 @@ Shortestline_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  GSERIALIZED *result;
-  bool found = shortestline_tpoint_geo(temp, gs, &result);
+  GSERIALIZED *result = shortestline_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
@@ -422,11 +421,10 @@ Shortestline_tpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  GSERIALIZED *result;
-  bool found = shortestline_tpoint_geo(temp, gs, &result);
+  GSERIALIZED *result = shortestline_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
@@ -446,11 +444,10 @@ Shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  GSERIALIZED *result;
-  bool found = shortestline_tpoint_tpoint(temp1, temp2, &result);
+  GSERIALIZED *result = shortestline_tpoint_tpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }

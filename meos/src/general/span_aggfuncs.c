@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate functions for span types.
+ * @brief Aggregate functions for span types
  */
 
 /* C */
@@ -48,30 +48,28 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_agg
+ * @ingroup meos_internal_setspan_agg
  * @brief Transition function for span extent aggregate of values
  * @param[in,out] state Current aggregate state
- * @param[in] d Value to aggregate
+ * @param[in] value Value to aggregate
  * @param[in] basetype Type of the value
  */
 Span *
-spanbase_extent_transfn(Span *state, Datum d, meosType basetype)
+spanbase_extent_transfn(Span *state, Datum value, meosType basetype)
 {
-  assert(span_basetype(basetype));
-
   /* Null span: return the span of the base value */
   if (! state)
-    return span_make(d, d, true, true, basetype);
+    return span_make(value, value, true, true, basetype);
 
   Span s1;
-  span_set(d, d, true, true, basetype, state->spantype, &s1);
+  span_set(value, value, true, true, state->basetype, state->spantype, &s1);
   span_expand(&s1, state);
   return state;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of integers
  * @param[in,out] state Current aggregate state
  * @param[in] i Value to aggregate
@@ -86,7 +84,7 @@ int_extent_transfn(Span *state, int i)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of big integers
  * @param[in,out] state Current aggregate state
  * @param[in] i Value to aggregate
@@ -101,7 +99,7 @@ bigint_extent_transfn(Span *state, int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of floats
  * @param[in,out] state Current aggregate state
  * @param[in] d Value to aggregate
@@ -116,7 +114,7 @@ float_extent_transfn(Span *state, double d)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of dates
  * @param[in,out] state Current aggregate state
  * @param[in] d Value to aggregate
@@ -131,7 +129,7 @@ date_extent_transfn(Span *state, DateADT d)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of timestamptz
  * @param[in,out] state Current aggregate state
  * @param[in] t Value to aggregate
@@ -142,12 +140,13 @@ timestamptz_extent_transfn(Span *state, TimestampTz t)
   /* Ensure validity of the arguments */
   if (state && ! ensure_span_isof_type(state, T_TSTZSPAN))
     return NULL;
-  return spanbase_extent_transfn(state, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return spanbase_extent_transfn(state, TimestampTzGetDatum(t),
+    T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of sets
  * @param[in,out] state Current aggregate state
  * @param[in] s Set to aggregate
@@ -177,7 +176,7 @@ set_extent_transfn(Span *state, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of spans
  * @param[in,out] state Current aggregate state
  * @param[in] s Span to aggregate
@@ -204,7 +203,7 @@ span_extent_transfn(Span *state, const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of span sets
  * @param[in,out] state Current aggregate state
  * @param[in] ss Span set to aggregate

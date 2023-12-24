@@ -1,3 +1,51 @@
+SELECT geometry 'Point(1 1)' ?= tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT geometry 'Point(1 1)' ?<> tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT geometry 'Point(1 1)' %= tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT geometry 'Point(1 1)' %<> tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT geography 'Point(1 1)' ?= tgeogpoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT geography 'Point(1 1)' ?<> tgeogpoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT geography 'Point(1 1)' %= tgeogpoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT geography 'Point(1 1)' %<> tgeogpoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -49,6 +97,70 @@ SELECT tgeogpoint 'Point(1 1)@2000-01-01' %<> tgeogpoint 'Point(1 1)@2000-01-01'
 /* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'SRID=5676;Point(1 1)@2000-01-01';
 ERROR:  Operation on mixed SRID
+CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING gist(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= geometry 'Point(1 1)';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= geography 'Point(1.5 1.5)';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= geometry 'Point(1 1)';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= geography 'Point(1.5 1.5)';
+ count 
+-------
+     0
+(1 row)
+
+DROP INDEX tbl_tgeompoint_rtree_idx;
+DROP INDEX
+DROP INDEX tbl_tgeogpoint_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING spgist(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING spgist(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= geometry 'Point(1 1)';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= geography 'Point(1.5 1.5)';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= geometry 'Point(1 1)';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= geography 'Point(1.5 1.5)';
+ count 
+-------
+     0
+(1 row)
+
+DROP INDEX tbl_tgeompoint_quadtree_idx;
+DROP INDEX
+DROP INDEX tbl_tgeogpoint_quadtree_idx;
+DROP INDEX
 SELECT geometry 'Point(1 1)' #= tgeompoint 'Point(1 1)@2000-01-01';
             ?column?            
 --------------------------------

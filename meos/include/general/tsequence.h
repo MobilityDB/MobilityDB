@@ -43,6 +43,10 @@
 
 /*****************************************************************************/
 
+extern bool
+tsequence_norm_test(Datum value1, Datum value2, Datum value3, meosType basetype,
+  interpType interp, TimestampTz t1, TimestampTz t2, TimestampTz t3);
+  
 /* General functions */
 
 extern int tcontseq_find_timestamptz(const TSequence *seq, TimestampTz t);
@@ -76,6 +80,8 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1,
 
 /* Intersection functions */
 
+extern bool tfloatsegm_intersection_value(const TInstant *inst1,
+  const TInstant *inst2, Datum value, meosType basetype, TimestampTz *t);
 extern bool tlinearsegm_intersection_value(const TInstant *inst1,
   const TInstant *inst2, Datum value, meosType basetype, Datum *inter,
   TimestampTz *t);
@@ -126,76 +132,8 @@ extern int tsequence_timestamps_iter(const TSequence *seq, TimestampTz *result);
 extern Datum tsegment_value_at_timestamptz(const TInstant *inst1,
   const TInstant *inst2, interpType interp, TimestampTz t);
 
-/* Modification Functions */
+/* Local Aggregate Functions */
 
-extern Temporal *tcontseq_insert(const TSequence *seq1, const TSequence *seq2);
-
-/* Restriction Functions */
-
-extern TInstant *tdiscseq_at_timestamptz(const TSequence *seq, TimestampTz t);
-extern TSequence *tdiscseq_restrict_value(const TSequence *seq, Datum value,
-  bool atfunc);
-extern TSequence *tdiscseq_restrict_values(const TSequence *seq, const Set *s,
-  bool atfunc);
-extern TSequence *tdiscseq_restrict_minmax(const TSequence *seq, bool min,
-  bool atfunc);
-extern TSequence *tdiscseq_minus_timestamptz(const TSequence *seq,
-  TimestampTz t);
-extern TSequence *tdiscseq_restrict_tstzset(const TSequence *seq,
-  const Set *s, bool atfunc);
-extern TSequence *tdiscseq_restrict_tstzspanset(const TSequence *seq,
-  const SpanSet *ss, bool atfunc);
-extern int tcontseq_restrict_value_iter(const TSequence *seq, Datum value,
-  bool atfunc, TSequence **result);
-extern TSequenceSet *tcontseq_restrict_minmax(const TSequence *seq, bool min,
-  bool atfunc);
-extern TSequence *tcontseq_delete_timestamptz(const TSequence *seq,
-  TimestampTz t);
-extern TSequence *tcontseq_delete_tstzset(const TSequence *seq,
-  const Set *s);
-extern TSequence *tcontseq_delete_tstzspanset(const TSequence *seq,
-  const SpanSet *ss);
-extern TSequence *tcontseq_at_tstzset(const TSequence *seq, const Set *s);
-extern TSequenceSet *tcontseq_minus_timestamptz(const TSequence *seq,
-  TimestampTz t);
-extern TSequenceSet *tcontseq_minus_tstzset(const TSequence *seq,
-  const Set *s);
-extern TSequenceSet *tcontseq_minus_tstzspan(const TSequence *seq,
-  const Span *s);
-extern TSequenceSet *tcontseq_restrict_value(const TSequence *seq, Datum value,
-  bool atfunc);
-extern TSequenceSet *tcontseq_restrict_values(const TSequence *seq,
-  const Set *s, bool atfunc);
-extern int tsequence_at_values_iter(const TSequence *seq, const Set *set,
-  TSequence **result);
-extern int tnumbercontseq_restrict_span_iter(const TSequence *seq,
-  const Span *span, bool atfunc, TSequence **result);
-extern int tnumbercontseq_restrict_spanset_iter(const TSequence *seq,
-  const SpanSet *ss, bool atfunc, TSequence **result);
-extern TInstant *tsegment_at_timestamptz(const TInstant *inst1,
-  const TInstant *inst2, interpType interp, TimestampTz t);
-extern int tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
-  TSequence **result);
-extern int tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
-  TSequence **result);
-extern int tcontseq_at_tstzspanset1(const TSequence *seq, const SpanSet *ss,
-  TSequence **result);
-extern int tcontseq_minus_tstzspanset_iter(const TSequence *seq, const SpanSet *ss,
-  TSequence **result);
-extern TSequence *tcontseq_at_tstzspan(const TSequence *seq, const Span *s);
-extern TInstant *tcontseq_at_timestamptz(const TSequence *seq, TimestampTz t);
-extern TSequenceSet *tcontseq_restrict_tstzspanset(const TSequence *seq,
-  const SpanSet *ss, bool atfunc);
-extern bool tdiscseq_value_at_timestamptz(const TSequence *seq, TimestampTz t,
-  Datum *result);
-extern TSequence *tnumberdiscseq_restrict_span(const TSequence *seq,
-  const Span *span, bool atfunc);
-extern TSequence *tnumberdiscseq_restrict_spanset(const TSequence *seq,
-  const SpanSet *ss, bool atfunc);
-extern TSequenceSet *tnumbercontseq_restrict_span(const TSequence *seq,
-  const Span *span, bool atfunc);
-extern TSequenceSet *tnumbercontseq_restrict_spanset(const TSequence *seq,
-  const SpanSet *ss, bool atfunc);
 extern double tnumbercontseq_twavg(const TSequence *seq);
 
 /*****************************************************************************/

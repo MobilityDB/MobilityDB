@@ -72,6 +72,8 @@ extern GSERIALIZED *tnpoint_twcentroid(const Temporal *temp);
 extern Temporal *tnpoint_azimuth(const Temporal *temp);
 extern Temporal *tnpoint_restrict_geom_time(const Temporal *temp,
   const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
+extern Temporal *tnpoint_restrict_stbox(Temporal *temp, STBox *box,
+  bool atfunc);
 
 /*****************************************************************************/
 

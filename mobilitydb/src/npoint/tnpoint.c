@@ -36,6 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/array.h>
 /* MEOS */
 #include <meos.h>
 #include "general/lifting.h"
@@ -43,24 +44,15 @@
 #include "general/temporal.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
+#include "npoint/tnpoint_static.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
-#include "pg_npoint/tnpoint_static.h"
 
 /*****************************************************************************
  * General functions
  *****************************************************************************/
 
 #if 0 /* not used */
-/**
- * @brief Convert a C array of int64 values into a PostgreSQL array
- */
-ArrayType *
-int64arr_array(const int64 *int64arr, int count)
-{
-  return construct_array((Datum *)int64arr, count, INT8OID, 8, true, 'd');
-}
-
 /**
  * @brief Convert a C array of network point values into a PostgreSQL array
  */
@@ -143,26 +135,6 @@ Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
-
-/**
- * @brief Return a temporal network point with the precision of the fractions 
- * set to a number of decimal places
- */
-Temporal *
-tnpoint_round(const Temporal *temp, Datum size)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_npoint_round;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = size;
-  lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
 
 PGDLLEXPORT Datum Tnpoint_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_round);

@@ -162,7 +162,8 @@ tpointseq_transform(const TSequence *seq, int srid)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
+    Datum point = PointerGetDatum(
+      geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     instants[i] = tinstant_make(point, inst->temptype, inst->t);
     pfree(DatumGetPointer(point));
@@ -251,15 +252,16 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
 Temporal *
 tpoint_transform(const Temporal *temp, int srid)
 {
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tpointinst_transform((TInstant *) temp, srid);
-  else if (temp->subtype == TSEQUENCE)
-    result =  (Temporal *) tpointseq_transform((TSequence *) temp, srid);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tpointseqset_transform((TSequenceSet *) temp, srid);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tpointinst_transform((TInstant *) temp, srid);
+    case TSEQUENCE:
+      return  (Temporal *) tpointseq_transform((TSequence *) temp, srid);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tpointseqset_transform((TSequenceSet *) temp, srid);
+  }
 }
 
 PGDLLEXPORT Datum Tpoint_transform(PG_FUNCTION_ARGS);
@@ -397,12 +399,11 @@ Tpointarr_round(PG_FUNCTION_ARGS)
   }
   int maxdd = PG_GETARG_INT32(1);
 
-  Temporal **temparr = temporalarr_extract(array, &count);
+  Temporal **temparr = temparr_extract(array, &count);
   Temporal **resarr = tpointarr_round((const Temporal **) temparr, count,
       maxdd);
-  ArrayType *result = temporalarr_to_array((const Temporal **) resarr, count);
-
-  pfree(temparr); pfree_array((void **) resarr, count);
+  ArrayType *result = temparr_to_array(resarr, count, FREE_ALL);
+  pfree(temparr);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -495,7 +496,6 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
   }
 
   ArrayType *timesarr = int64arr_to_array(times, count);
-
   /* Build a tuple description for the function output */
   TupleDesc resultTupleDesc;
   get_call_result_type(fcinfo, NULL, &resultTupleDesc);
@@ -874,9 +874,7 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   Temporal **fragments = tpoint_make_simple(temp, &count);
-  ArrayType *result = temporalarr_to_array((const Temporal **) fragments,
-    count);
-  pfree_array((void **) fragments, count);
+  ArrayType *result = temparr_to_array(fragments, count, FREE_ALL);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }

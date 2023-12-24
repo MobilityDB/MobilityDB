@@ -52,6 +52,10 @@
  * but keep it so elog(ERROR, "xxx") can be both used in MEOS and in PostgreSQL
  * as soon as it is defined everything works fine.
  */
+#define INFO      17      /* Messages specifically requested by user (eg
+                 * VACUUM VERBOSE output); always sent to
+                 * client regardless of client_min_messages,
+                 * but by default not sent to server log. */
 #define NOTICE    18      /* Helpful messages to users about query
                  * operation; sent to client and not to server
                  * log by default. */

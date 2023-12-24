@@ -81,15 +81,15 @@ extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
 extern Datum *datumarr_extract(ArrayType *array, int *count);
 extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
 extern Span *spanarr_extract(ArrayType *array, int *count);
-extern Temporal **temporalarr_extract(ArrayType *array, int *count);
+extern Temporal **temparr_extract(ArrayType *array, int *count);
 
 extern ArrayType *datumarr_to_array(Datum *values, int count, meosType type);
-extern ArrayType *int64arr_to_array(const int64 *longints, int count);
-extern ArrayType *datearr_to_array(const DateADT *dates, int count);
-extern ArrayType *tstzarr_to_array(const TimestampTz *times, int count);
-extern ArrayType *spanarr_to_array(const Span **spans, int count);
+extern ArrayType *int64arr_to_array(int64 *longints, int count);
+extern ArrayType *datearr_to_array(DateADT *dates, int count);
+extern ArrayType *tstzarr_to_array(TimestampTz *times, int count);
+extern ArrayType *spanarr_to_array(Span **spans, int count);
 extern ArrayType *strarr_to_textarray(char **strarr, int count);
-extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
+extern ArrayType *temparr_to_array(Temporal **temporal, int count, bool free_all);
 extern ArrayType *stboxarr_to_array(STBox *boxarr, int count);
 
 /*****************************************************************************/

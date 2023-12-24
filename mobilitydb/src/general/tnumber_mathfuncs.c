@@ -320,55 +320,6 @@ datum_round_float(Datum value, Datum size)
   return result;
 }
 
-PGDLLEXPORT Datum Tfloat_round(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tfloat_round);
-/**
- * @ingroup mobilitydb_temporal_transf
- * @brief Return a temporal float with the values set to a number of decimal
- * places
- * @sqlfn round()
- */
-Datum
-Tfloat_round(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int size = PG_GETARG_INT32(1);
-  Temporal *result = tfloat_round(temp, size);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-PGDLLEXPORT Datum Tfloatarr_round(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tfloatarr_round);
-/**
- * @ingroup mobilitydb_temporal_transf
- * @brief Return an array of temporal floats with the precision of the values
- * set to a number of decimal places
- * @sqlfn asText()
- */
-Datum
-Tfloatarr_round(PG_FUNCTION_ARGS)
-{
-  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  /* Return NULL on empty array */
-  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-  if (count == 0)
-  {
-    PG_FREE_IF_COPY(array, 0);
-    PG_RETURN_NULL();
-  }
-  int maxdd = PG_GETARG_INT32(1);
-
-  Temporal **temparr = temporalarr_extract(array, &count);
-  Temporal **resarr = tfloatarr_round((const Temporal **) temparr, count,
-    maxdd);
-  ArrayType *result = temporalarr_to_array((const Temporal **) resarr, count);
-
-  pfree(temparr); pfree_array((void **) resarr, count);
-  PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
-}
-
 PGDLLEXPORT Datum Tnumber_abs(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_abs);
 /**

@@ -3180,7 +3180,6 @@ datetime_to_char_body(TmToChar *tmtc, text *fmt, bool is_interval, Oid collid)
  * -------------------
  */
 /**
- * @ingroup libmeos_pg_types
  * @brief Output a timestamp as text.
  */
 text *
@@ -3214,7 +3213,6 @@ pg_timestamp_to_char(Timestamp dt, text *fmt)
 }
 
 /**
- * @ingroup libmeos_pg_types
  * @brief Output a timestamptz as text.
  */
 text *
@@ -3254,7 +3252,6 @@ pg_timestamptz_to_char(TimestampTz dt, text *fmt)
  * -------------------
  */
 /**
- * @ingroup libmeos_pg_types
  * @brief Output an interval as text.
  */
 text *
@@ -3290,7 +3287,6 @@ pg_interval_to_char(Interval *it, text *fmt)
  * ---------------------
  */
 /**
- * @ingroup libmeos_pg_types
  * @brief Input a timestamp from date text.
  */
 TimestampTz
@@ -3339,7 +3335,6 @@ pg_to_timestamp(text *date_txt, text *fmt)
  * ----------
  */
 /**
- * @ingroup libmeos_pg_types
  * @brief Input a date from text.
  */
 DateADT

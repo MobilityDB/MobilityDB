@@ -47,7 +47,7 @@
  *****************************************************************************/
 
 /**
- * @brief Global variable that keeps the last error number.
+ * @brief Global variable that keeps the last error number
  */
 int _MEOS_ERRNO = 0;
 
@@ -77,11 +77,10 @@ meos_errno_set(int err)
 
 /**
  * @brief Set an error number
- *
- * Use #meos_errno_restore when the current function succeeds, but the
- * error flag was set on entry, and stored/reset using #meos_errno_reset
- * in order to monitor for new errors.
- * See usage example under #meos_errno_reset()
+ * @details Use #meos_errno_restore when the current function succeeds, but the
+ * error flag was set on entry, and stored/reset using #meos_errno_reset in
+ * order to monitor for new errors.
+ * @see See usage example under #meos_errno_reset()
  */
 int
 meos_errno_restore(int err)
@@ -93,7 +92,7 @@ meos_errno_restore(int err)
 }
 
 /**
- * @brief Clears errno.
+ * @brief Clears an error number
  * @return Returns the previous value of the errno, for convenient reset/restore
  * operations
  *

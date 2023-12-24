@@ -170,10 +170,10 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   meosType type = oid_type(typid);
   if (span_basetype(type))
   {
-    /* Since function span_gist_consistent is strict, d is not NULL */
-    Datum d = PG_GETARG_DATUM(1);
+    /* Since function span_gist_consistent is strict, value is not NULL */
+    Datum value = PG_GETARG_DATUM(1);
     meosType spantype = basetype_spantype(type);
-    span_set(d, d, true, true, type, spantype, result);
+    span_set(value, value, true, true, type, spantype, result);
   }
   else if (set_type(type))
   {

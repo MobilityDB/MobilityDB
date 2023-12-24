@@ -58,9 +58,9 @@ int main()
   GSERIALIZED *polygon = pgis_geometry_in(polygon_wkt, -1);
 
   /* Convert geometries to WKT */
-  char *point_text = gserialized_as_text(point, 6);
-  char *linestring_text = gserialized_as_text(linestring, 6);
-  char *polygon_text = gserialized_as_text(polygon, 6);
+  char *point_text = geo_as_text(point, 6);
+  char *linestring_text = geo_as_text(linestring, 6);
+  char *polygon_text = geo_as_text(polygon, 6);
 
   /* Revert generated WKT strings into geometries */
   GSERIALIZED *point1 = pgis_geometry_in(point_text, -1);
@@ -68,41 +68,41 @@ int main()
   GSERIALIZED *polygon1 = pgis_geometry_in(polygon_text, -1);
 
   /* Ensure that the reverted types are equal to the original ones */
-  if (! pgis_gserialized_same(point, point1))
+  if (! geo_same(point, point1))
     printf("ERROR: Distinct input and output geometries in WKT\n%s\n%s",
       point_wkt, point_text);
-  if (! pgis_gserialized_same(linestring, linestring1))
+  if (! geo_same(linestring, linestring1))
     printf("ERROR: Distinct input and output geometries in WKT\n%s\n%s",
       linestring_wkt, linestring_text);
-  if (! pgis_gserialized_same(polygon, polygon1))
+  if (! geo_same(polygon, polygon1))
     printf("ERROR: Distinct input and output geometries in WKT\n%s\n%s",
       polygon_wkt, polygon_text);
 
   /* Convert geometries to GeoJSON */
-  char *point_geojson = gserialized_as_geojson(point, 1, 6, NULL);
-  char *linestring_geojson = gserialized_as_geojson(linestring, 1, 6, NULL);
-  char *polygon_geojson = gserialized_as_geojson(polygon, 1, 6, NULL);
+  char *point_geojson = geo_as_geojson(point, 1, 6, NULL);
+  char *linestring_geojson = geo_as_geojson(linestring, 1, 6, NULL);
+  char *polygon_geojson = geo_as_geojson(polygon, 1, 6, NULL);
 
   /* Revert generated GeoJSON strings into geometries */
-  GSERIALIZED *point2 = gserialized_from_geojson(point_geojson);
-  GSERIALIZED *linestring2 = gserialized_from_geojson(linestring_geojson);
-  GSERIALIZED *polygon2 = gserialized_from_geojson(polygon_geojson);
+  GSERIALIZED *point2 = geo_from_geojson(point_geojson);
+  GSERIALIZED *linestring2 = geo_from_geojson(linestring_geojson);
+  GSERIALIZED *polygon2 = geo_from_geojson(polygon_geojson);
 
   /* Ensure that the reverted types are equal to the original ones */
-  if (! pgis_gserialized_same(point, point2))
+  if (! geo_same(point, point2))
     printf("ERROR: Distinct input and output geometries in GeoJSON\n%s\n%s",
       point_wkt, point_geojson);
-  if (! pgis_gserialized_same(linestring, linestring2))
+  if (! geo_same(linestring, linestring2))
     printf("ERROR: Distinct input and output geometries in GeoJSON\n%s\n%s",
       linestring_wkt, linestring_geojson);
-  if (! pgis_gserialized_same(polygon, polygon2))
+  if (! geo_same(polygon, polygon2))
     printf("ERROR: Distinct input and output geometries in GeoJSON\n%s\n%s",
       polygon_wkt, polygon_geojson);
 
   /* Convert geometries to HexEWKB */
-  char *point_hexwkb = gserialized_as_hexewkb(point, "XDR");
-  char *linestring_hexwkb = gserialized_as_hexewkb(linestring, "XDR");
-  char *polygon_hexwkb = gserialized_as_hexewkb(polygon, "XDR");
+  char *point_hexwkb = geo_as_hexewkb(point, "XDR");
+  char *linestring_hexwkb = geo_as_hexewkb(linestring, "XDR");
+  char *polygon_hexwkb = geo_as_hexewkb(polygon, "XDR");
 
   /* Revert generated GeoJSON strings into geometries */
   GSERIALIZED *point3 = geometry_from_hexewkb(point_hexwkb);
@@ -110,13 +110,13 @@ int main()
   GSERIALIZED *polygon3 = geometry_from_hexewkb(polygon_hexwkb);
 
   /* Ensure that the reverted types are equal to the original ones */
-  if (! pgis_gserialized_same(point, point3))
+  if (! geo_same(point, point3))
     printf("ERROR: Distinct input and output geometries in HexEWKB\n%s\n%s",
       point_wkt, point_text);
-  if (! pgis_gserialized_same(linestring, linestring3))
+  if (! geo_same(linestring, linestring3))
     printf("ERROR: Distinct input and output geometries in HexEWKB\n%s\n%s",
       linestring_wkt, linestring_text);
-  if (! pgis_gserialized_same(polygon, polygon3))
+  if (! geo_same(polygon, polygon3))
     printf("ERROR: Distinct input and output geometries in HexEWKB\n%s\n%s",
       polygon_wkt, polygon_text);
 

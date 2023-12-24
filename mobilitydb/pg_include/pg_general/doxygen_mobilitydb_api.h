@@ -62,9 +62,9 @@
  */
 
 /**
- * @defgroup mobilitydb_setspan_inout Input/output functions
+ * @defgroup mobilitydb_setspan_inout Input and output functions
  * @ingroup mobilitydb_setspan
- * @brief Input/output functions for set and span types.
+ * @brief Input and output functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_constructor Constructor functions
  * @ingroup mobilitydb_setspan
@@ -112,9 +112,9 @@
  */
 
 /**
- * @defgroup mobilitydb_box_inout Input/output functions
+ * @defgroup mobilitydb_box_inout Input and output functions
  * @ingroup mobilitydb_box
- * @brief Input/output functions for box types.
+ * @brief Input and output functions for box types.
  *
  * @defgroup mobilitydb_box_constructor Constructor functions
  * @ingroup mobilitydb_box
@@ -154,9 +154,9 @@
  */
 
 /**
- * @defgroup mobilitydb_temporal_inout Input/output functions
+ * @defgroup mobilitydb_temporal_inout Input and output functions
  * @ingroup mobilitydb_temporal
- * @brief Input/output functions for temporal types.
+ * @brief Input and output functions for temporal types.
  *
  * @defgroup mobilitydb_temporal_constructor Constructor functions
  * @ingroup mobilitydb_temporal

@@ -39,8 +39,65 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
+#include "pg_general/temporal.h"
+
+/*****************************************************************************
+ * Boolean operators
+ *****************************************************************************/
+
+/**
+ * @brief Generic function for set operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_base_set(FunctionCallInfo fcinfo,
+  bool (*func)(Datum, const Set *))
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = func(value, s);
+  DATUM_FREE_IF_COPY(value, s->basetype, 0);
+  PG_FREE_IF_COPY(s, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for boolean operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_set_base(FunctionCallInfo fcinfo,
+  bool (*func)(const Set *, Datum))
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Datum value = PG_GETARG_ANYDATUM(1);
+  bool result = func(s, value);
+  DATUM_FREE_IF_COPY(value, s->basetype, 1);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for boolean operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_set_set(FunctionCallInfo fcinfo,
+  bool (*func)(const Set *, const Set *))
+{
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = func(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
+  PG_RETURN_BOOL(result);
+}
 
 /*****************************************************************************/
 /* contains? */
@@ -56,12 +113,7 @@ PG_FUNCTION_INFO_V1(Contains_set_value);
 Datum
 Contains_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = contains_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_base(fcinfo, &contains_set_value);
 }
 
 PGDLLEXPORT Datum Contains_set_set(PG_FUNCTION_ARGS);
@@ -75,12 +127,7 @@ PG_FUNCTION_INFO_V1(Contains_set_set);
 Datum
 Contains_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = contains_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &contains_set_set);
 }
 
 /*****************************************************************************/
@@ -97,12 +144,7 @@ PG_FUNCTION_INFO_V1(Contained_value_set);
 Datum
 Contained_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = contained_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_set(fcinfo, &contained_value_set);
 }
 
 PGDLLEXPORT Datum Contained_set_set(PG_FUNCTION_ARGS);
@@ -116,12 +158,7 @@ PG_FUNCTION_INFO_V1(Contained_set_set);
 Datum
 Contained_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = contained_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &contained_set_set);
 }
 
 /*****************************************************************************/
@@ -138,12 +175,7 @@ PG_FUNCTION_INFO_V1(Overlaps_set_set);
 Datum
 Overlaps_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = overlaps_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &overlaps_set_set);
 }
 
 /*****************************************************************************/
@@ -160,12 +192,7 @@ PG_FUNCTION_INFO_V1(Left_value_set);
 Datum
 Left_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = left_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_set(fcinfo, &left_value_set);
 }
 
 PGDLLEXPORT Datum Left_set_value(PG_FUNCTION_ARGS);
@@ -179,12 +206,7 @@ PG_FUNCTION_INFO_V1(Left_set_value);
 Datum
 Left_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = left_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_base(fcinfo, &left_set_value);
 }
 
 PGDLLEXPORT Datum Left_set_set(PG_FUNCTION_ARGS);
@@ -198,12 +220,7 @@ PG_FUNCTION_INFO_V1(Left_set_set);
 Datum
 Left_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = left_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &left_set_set);
 }
 
 /*****************************************************************************/
@@ -220,12 +237,7 @@ PG_FUNCTION_INFO_V1(Right_value_set);
 Datum
 Right_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = right_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_set(fcinfo, &right_value_set);
 }
 
 PGDLLEXPORT Datum Right_set_value(PG_FUNCTION_ARGS);
@@ -239,12 +251,7 @@ PG_FUNCTION_INFO_V1(Right_set_value);
 Datum
 Right_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = right_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_base(fcinfo, &right_set_value);
 }
 
 PGDLLEXPORT Datum Right_set_set(PG_FUNCTION_ARGS);
@@ -258,12 +265,7 @@ PG_FUNCTION_INFO_V1(Right_set_set);
 Datum
 Right_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = right_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &right_set_set);
 }
 
 /*****************************************************************************/
@@ -280,12 +282,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_set);
 Datum
 Overleft_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = overleft_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_set(fcinfo, &overleft_value_set);
 }
 
 PGDLLEXPORT Datum Overleft_set_value(PG_FUNCTION_ARGS);
@@ -299,12 +296,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_value);
 Datum
 Overleft_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = overleft_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_base(fcinfo, &overleft_set_value);
 }
 
 PGDLLEXPORT Datum Overleft_set_set(PG_FUNCTION_ARGS);
@@ -319,12 +311,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_set);
 Datum
 Overleft_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = overleft_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &overleft_set_set);
 }
 
 /*****************************************************************************/
@@ -341,12 +328,7 @@ PG_FUNCTION_INFO_V1(Overright_value_set);
 Datum
 Overright_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = overright_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_set(fcinfo, &overright_value_set);
 }
 
 PGDLLEXPORT Datum Overright_set_value(PG_FUNCTION_ARGS);
@@ -360,12 +342,7 @@ PG_FUNCTION_INFO_V1(Overright_set_value);
 Datum
 Overright_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = overright_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_base(fcinfo, &overright_set_value);
 }
 
 PGDLLEXPORT Datum Overright_set_set(PG_FUNCTION_ARGS);
@@ -380,12 +357,68 @@ PG_FUNCTION_INFO_V1(Overright_set_set);
 Datum
 Overright_set_set(PG_FUNCTION_ARGS)
 {
+  return Boolop_set_set(fcinfo, &overright_set_set);
+}
+
+/*****************************************************************************
+ * Set operators
+ *****************************************************************************/
+
+/**
+ * @brief Generic function for set operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_base_set(FunctionCallInfo fcinfo,
+  Set * (*func)(Datum, const Set *))
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  Set *s = PG_GETARG_SET_P(1);
+  Set *result = func(value, s);
+  DATUM_FREE_IF_COPY(value, s->basetype, 0);
+  PG_FREE_IF_COPY(s, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+/**
+ * @brief Generic function for set operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_set_base(FunctionCallInfo fcinfo,
+  Set * (*func)(const Set *, Datum))
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Datum value = PG_GETARG_ANYDATUM(1);
+  Set *result = func(s, value);
+  DATUM_FREE_IF_COPY(value, s->basetype, 1);
+  PG_FREE_IF_COPY(s, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+/**
+ * @brief Generic function for set operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_set_set(FunctionCallInfo fcinfo,
+  Set * (*func)(const Set *, const Set *))
+{
   Set *s1 = PG_GETARG_SET_P(0);
   Set *s2 = PG_GETARG_SET_P(1);
-  bool result = overright_set_set(s1, s2);
+  Set *result = func(s1, s2);
   PG_FREE_IF_COPY(s1, 0);
   PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************
@@ -403,15 +436,8 @@ PG_FUNCTION_INFO_V1(Union_value_set);
 Datum
 Union_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Set *result = union_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_SET_P(result);
+  return Setop_base_set(fcinfo, &union_value_set);
 }
-
-/*****************************************************************************/
 
 PGDLLEXPORT Datum Union_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_set_value);
@@ -424,12 +450,7 @@ PG_FUNCTION_INFO_V1(Union_set_value);
 Datum
 Union_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Set *result = union_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_SET_P(result);
+  return Setop_set_base(fcinfo, &union_set_value);
 }
 
 PGDLLEXPORT Datum Union_set_set(PG_FUNCTION_ARGS);
@@ -443,12 +464,7 @@ PG_FUNCTION_INFO_V1(Union_set_set);
 Datum
 Union_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  Set *result = union_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_SET_P(result);
+  return Setop_set_set(fcinfo, &union_set_set);
 }
 
 /*****************************************************************************
@@ -466,14 +482,7 @@ PG_FUNCTION_INFO_V1(Intersection_value_set);
 Datum
 Intersection_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Set *result = intersection_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SET_P(result);
+  return Setop_base_set(fcinfo, &intersection_value_set);
 }
 
 PGDLLEXPORT Datum Intersection_set_value(PG_FUNCTION_ARGS);
@@ -487,14 +496,7 @@ PG_FUNCTION_INFO_V1(Intersection_set_value);
 Datum
 Intersection_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Set *result = intersection_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SET_P(result);
+  return Setop_set_base(fcinfo, &intersection_set_value);
 }
 
 PGDLLEXPORT Datum Intersection_set_set(PG_FUNCTION_ARGS);
@@ -508,14 +510,7 @@ PG_FUNCTION_INFO_V1(Intersection_set_set);
 Datum
 Intersection_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  Set *result = intersection_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SET_P(result);
+  return Setop_set_set(fcinfo, &intersection_set_set);
 }
 
 /*****************************************************************************
@@ -534,14 +529,7 @@ PG_FUNCTION_INFO_V1(Minus_value_set);
 Datum
 Minus_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Set *result = minus_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SET_P(result);
+  return Setop_base_set(fcinfo, &minus_value_set);
 }
 
 /*****************************************************************************/
@@ -557,14 +545,7 @@ PG_FUNCTION_INFO_V1(Minus_set_value);
 Datum
 Minus_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Set *result = minus_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SET_P(result);
+  return Setop_set_base(fcinfo, &minus_set_value);
 }
 
 PGDLLEXPORT Datum Minus_set_set(PG_FUNCTION_ARGS);
@@ -578,14 +559,7 @@ PG_FUNCTION_INFO_V1(Minus_set_set);
 Datum
 Minus_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  Set *result = minus_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SET_P(result);
+  return Setop_set_set(fcinfo, &minus_set_set);
 }
 
 /******************************************************************************
@@ -603,10 +577,9 @@ PG_FUNCTION_INFO_V1(Distance_value_set);
 Datum
 Distance_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Datum result = distance_set_value(s, d, basetype);
+  Datum result = distance_set_value(s, value);
   PG_FREE_IF_COPY(s, 1);
   PG_RETURN_DATUM(result);
 }
@@ -623,9 +596,8 @@ Datum
 Distance_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Datum result = distance_set_value(s, d, basetype);
+  Datum value = PG_GETARG_DATUM(1);
+  Datum result = distance_set_value(s, value);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_DATUM(result);
 }

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief General utility functions for temporal types.
+ * @brief General utility functions for temporal types
  */
 
 #include "general/type_util.h"
@@ -49,6 +49,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/span.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_static.h"
@@ -122,7 +123,8 @@ datum_lt(Datum l, Datum r, meosType type)
 }
 
 /**
- * @brief Return true if the first value is less than or equal to the second one
+ * @brief Return true if the first value is less than or equal to the second
+ * one
  */
 bool
 datum_le(Datum l, Datum r, meosType type)
@@ -140,7 +142,8 @@ datum_gt(Datum l, Datum r, meosType type)
 }
 
 /**
- * @brief Return true if the first value is greater than or equal to the second one
+ * @brief Return true if the first value is greater than or equal to the second
+ * one
  */
 bool
 datum_ge(Datum l, Datum r, meosType type)
@@ -150,8 +153,9 @@ datum_ge(Datum l, Datum r, meosType type)
 
 /**
  * @brief Return true if the values are equal
- * @note This function should be faster than the function datum_cmp
- * @pre For geometry and geography types it us supposed that the type is a POINT
+ * @note This function should be faster than the function #datum_cmp()
+ * @pre For geometry and geography types it is supposed that the type is a
+ * point
  */
 bool
 datum_eq(Datum l, Datum r, meosType type)
@@ -232,7 +236,8 @@ datum2_lt(Datum l, Datum r, meosType type)
 }
 
 /**
- * @brief Return a Datum true if the first value is less than or equal to the second one
+ * @brief Return a Datum true if the first value is less than or equal to the
+ * second one
  */
 Datum
 datum2_le(Datum l, Datum r, meosType type)
@@ -250,7 +255,8 @@ datum2_gt(Datum l, Datum r, meosType type)
 }
 
 /**
- * @brief Return a Datum true if the first value is greater than or equal to the second one
+ * @brief Return a Datum true if the first value is greater than or equal to
+ * the second one
  */
 Datum
 datum2_ge(Datum l, Datum r, meosType type)
@@ -359,11 +365,10 @@ datum_div(Datum l, Datum r, meosType type)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_typefuncs
- * @brief Return the 32-bit hash of a value.
+ * @brief Return the 32-bit hash of a value
  * @param[in] d Value
  * @param[in] type Type of the value
- * @return On error return INT_MAX
+ * @return On error return @p INT_MAX
  */
 uint32
 datum_hash(Datum d, meosType type)
@@ -400,12 +405,11 @@ datum_hash(Datum d, meosType type)
 }
 
 /**
- * @ingroup libmeos_internal_typefuncs
  * @brief Return the 64-bit hash of a value using a seed
  * @param[in] d Value
  * @param[in] type Type of the value
  * @param[in] seed Seed
- * @return On error return INT_MAX
+ * @return On error return @p INT_MAX
  */
 uint64
 datum_hash_extended(Datum d, meosType type, uint64 seed)
@@ -465,7 +469,7 @@ datum_copy(Datum value, meosType basetype)
 
 /**
  * @brief Convert a number to a double
- * @return On error return DBL_MAX
+ * @return On error return @p DBL_MAX
  */
 double
 datum_double(Datum d, meosType type)
@@ -529,7 +533,7 @@ datum_sort_cmp(const Datum *l, const Datum *r, const meosType *type)
 }
 
 /**
- * @brief Comparator function for timestamps
+ * @brief Comparator function for timestamptz values
  */
 static int
 timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
@@ -573,7 +577,7 @@ datumarr_sort(Datum *values, int count, meosType type)
 }
 
 /**
- * @brief Sort function for timestamps
+ * @brief Sort function for timestamptz values
  */
 void
 timestamparr_sort(TimestampTz *times, int count)
@@ -659,7 +663,7 @@ datumarr_remove_duplicates(Datum *values, int count, meosType type)
 }
 
 /**
- * @brief Remove duplicates from an array of timestamps
+ * @brief Remove duplicates from an array of timestamptz values
  */
 int
 timestamparr_remove_duplicates(TimestampTz *values, int count)
@@ -703,10 +707,10 @@ bstring2bytea(const uint8_t *wkb, size_t size)
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a C string into a text value
+ * @ingroup meos_pg_types
+ * @brief Return a C string converted to a text
  * @param[in] str String
- * @note We don't include `<utils/builtins.h>` to avoid collisions with 
+ * @note We don't include `<utils/builtins.h>` to avoid collisions with
  * `json-c/json.h`
  * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
  */
@@ -725,12 +729,12 @@ cstring2text(const char *str)
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a text value into a C string
+ * @ingroup meos_pg_types
+ * @brief Return a text converted to a C string
  * @param[in] txt Text
- * @note We don't include `<utils/builtins.h>` to avoid collisions with
- * `json-c/json.h`
- * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
+ * @note We don't include @p <utils/builtins.h> to avoid collisions with
+ * @p json-c/json.h
+ * @note Function taken from PostGIS file @p lwgeom_in_geojson.c
  */
 char *
 text2cstring(const text *txt)
@@ -761,7 +765,6 @@ varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
 
 /**
  * @brief Comparison function for text values
- *
  * @note Function copied from PostgreSQL since it is not exported
  */
 int
@@ -800,8 +803,7 @@ pfree_array(void **array, int count)
 }
 
 /**
- * @brief Return the string resulting from assembling the array of strings.
- * The function frees the memory of the input strings after finishing.
+ * @brief Return the string resulting from assembling the array of strings
  * @param[in] strings Array of strings to ouput
  * @param[in] count Number of elements in the input array
  * @param[in] outlen Total length of the elements and the additional ','
@@ -809,6 +811,7 @@ pfree_array(void **array, int count)
  * @param[in] open, close Starting/ending character (e.g., '{' and '}')
  * @param[in] quotes True when elements should be enclosed into quotes
  * @param[in] spaces True when elements should be separated by spaces
+ * @note The function frees the memory of the input strings after finishing
  */
 char *
 stringarr_to_string(char **strings, int count, size_t outlen, char *prefix,
@@ -835,7 +838,7 @@ stringarr_to_string(char **strings, int count, size_t outlen, char *prefix,
     result[pos++] = ',';
     if (spaces)
       result[pos++] = ' ';
-    pfree(strings[i]);
+    // pfree(strings[i]); /* ??? */
   }
   if (spaces)
   {
@@ -856,14 +859,13 @@ stringarr_to_string(char **strings, int count, size_t outlen, char *prefix,
  *****************************************************************************/
 
 /**
- * @brief Determine the 3D hypotenuse.
- *
- * If required, x, y, and z are swapped to make x the larger number. The
- * traditional formula of x^2+y^2+z^2 is rearranged to factor x outside the
- * sqrt. This allows computation of the hypotenuse for significantly
- * larger values, and with a higher precision than when using the naive
- * formula. In particular, this cannot overflow unless the final result
- * would be out-of-range.
+ * @brief Determine the 3D hypotenuse
+ * @details If required, @p x, @p y, and @p z are swapped to make @p x the
+ * larger number. The traditional formula of `x^2+y^2+z^2` is rearranged
+ * to factor @p x outside the @p sqrt function. This allows computation of the
+ * hypotenuse for significantly larger values, and with a higher precision than
+ * when using the naive formula. In particular, this cannot overflow unless the
+ * final result would be out-of-range.
  * @code
  * sqrt( x^2 + y^2 + z^2 ) = sqrt( x^2( 1 + y^2/x^2 + z^2/x^2) )
  *                         = x * sqrt( 1 + y^2/x^2 + z^2/x^2)
@@ -919,7 +921,7 @@ hypot3d(double x, double y, double z)
 #if 0 /* not used */
 /**
  * @brief Determine the 4D hypotenuse
- * @note The function is a generalization of the 3D case in function hypot3d
+ * @note The function is a generalization of the 3D case in function #hypot3d
  */
 double
 hypot4d(double x, double y, double z, double m)
@@ -1085,8 +1087,8 @@ basetype_in(const char *str, meosType type,
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Output function for PG text values
+ * @ingroup meos_pg_types
+ * @brief Return the string representation of a text
  * @param[in] txt Text
  */
 char *
@@ -1102,7 +1104,7 @@ text_out(const text *txt)
 
 /**
  * @brief Call output function of the base type
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 char *
 basetype_out(Datum value, meosType type, int maxdd)
@@ -1136,7 +1138,7 @@ basetype_out(Datum value, meosType type, int maxdd)
 #endif
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      return gserialized_out(DatumGetGserializedP(value));
+      return geo_out(DatumGetGserializedP(value));
 #if NPOINT
     case T_NPOINT:
       return npoint_out(DatumGetNpointP(value), maxdd);

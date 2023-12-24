@@ -176,7 +176,7 @@ int main(void)
         trip_splits[k].count++;
         trip_splits[k].distance += tpoint_length(split) / 1e3;
         dur1 = temporal_duration(split, false);
-        dur2 = pg_interval_pl(dur1, &trip_splits[k].duration);
+        dur2 = add_interval_interval(dur1, &trip_splits[k].duration);
         memcpy(&trip_splits[k].duration, dur2, sizeof(Interval));
         free(split); free(dur1); free(dur2);
       }
@@ -192,7 +192,7 @@ int main(void)
       {
         speed_splits[k].count++;
         dur1 = temporal_duration(split, false);
-        dur2 = pg_interval_pl(dur1, &speed_splits[k].duration);
+        dur2 = add_interval_interval(dur1, &speed_splits[k].duration);
         memcpy(&speed_splits[k].duration, dur2, sizeof(Interval));
         free(split); free(dur1); free(dur2);
       }

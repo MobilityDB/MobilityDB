@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate functions for span types.
+ * @brief Aggregate functions for span types
  */
 
 /* C */
@@ -47,7 +47,7 @@
  *****************************************************************************/
 
 /**
- * @brief Append a span to an unordered span set.
+ * @brief Append a span to an unordered span set
  * @param[in,out] ss Span set
  * @param[in] span Span to append
  * @param[in] expand True when using expandable structures
@@ -87,7 +87,7 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
 }
 
 /**
- * @brief Append a span set to an unordered span set.
+ * @brief Append a span set to an unordered span set
  * @param[in,out] ss1 Span set
  * @param[in] ss2 Span set to append
  * @param[in] expand True when using expandable structures
@@ -133,7 +133,7 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span set aggregate union
  * @param[in,out] state Current aggregate state
  * @param[in] s Span to aggregate
@@ -156,7 +156,7 @@ span_union_transfn(SpanSet *state, const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span set aggregate union
  * @param[in,out] state Current aggregate state
  * @param[in] ss Span set to aggregate
@@ -183,7 +183,7 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for set aggregate of values
  * @param[in] state Current aggregate state
  */

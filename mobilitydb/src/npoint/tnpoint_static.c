@@ -47,17 +47,21 @@
 #include "general/temporal.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
+#include "npoint/tnpoint_static.h"
 /* MobilityDB */
-#include "pg_npoint/tnpoint_static.h"
 #include "pg_point/postgis.h"
 
 /*****************************************************************************
+ * Input/Output functions for network point
+ *****************************************************************************/
+ 
+ /*****************************************************************************
  * Send/receive functions
  *****************************************************************************/
 
 /**
  * @brief Return a network point from its binary representation read
- * from a buffer.
+ * from a buffer
  */
 Npoint *
 npoint_recv(StringInfo buf)
@@ -109,75 +113,7 @@ nsegment_send(const Nsegment *ns)
   return pq_endtypsend(&buf);
 }
 
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-/**
- * @brief Return a network point with the precision of the position set to abort
- * number of decimal places
- * @note Funcion used by the lifting infrastructure
- */
-Datum
-datum_npoint_round(Datum npoint, Datum size)
-{
-  /* Set precision of position */
-  Npoint *np = (Npoint *) DatumGetPointer(npoint);
-  Npoint *result = npoint_round(np, size);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Return a network point with the precision of the position set to abort
- * number of decimal places
- */
-Npoint *
-npoint_round(const Npoint *np, Datum size)
-{
-  /* Set precision of position */
-  double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
-  Npoint *result = npoint_make(np->rid, pos);
-  return result;
-}
-
-/**
- * @brief Return a network segment with the precision of the positions set to a
- * number of decimal places
- */
-Nsegment *
-nsegment_round(const Nsegment *ns, Datum size)
-{
-  /* Set precision of positions */
-  double pos1 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos1),
-    size));
-  double pos2 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos2),
-    size));
-  Nsegment *result = nsegment_make(ns->rid, pos1, pos2);
-  return result;
-}
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Return a network point set with the precision of the positions set
- * to the number of decimal places
- * @csqlfn #Npointset_round()
- */
-Set *
-npointset_round(const Set *s, Datum prec)
-{
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-  {
-    Datum value = SET_VAL_N(s, i);
-    values[i] = datum_npoint_round(value, prec);
-  }
-  Set *result = set_make_free(values, s->count, s->basetype, ORDERED);
-  return result;
-}
-
-/*****************************************************************************
- * Input/Output functions for network point
- *****************************************************************************/
+/*****************************************************************************/
 
 PGDLLEXPORT Datum Npoint_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_in);
@@ -309,7 +245,7 @@ PGDLLEXPORT Datum Npoint_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a network segment from the arguments
+ * @brief Return a network segment from a route identifier and a position
  * @sqlfn npoint()
  */
 Datum
@@ -324,7 +260,7 @@ PGDLLEXPORT Datum Nsegment_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a network segment from the arguments
+ * @brief Return a network segment from a route identifier and two positions
  * @sqlfn nsegment()
  */
 Datum

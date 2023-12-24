@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal text functions: `textcat`, `lower`, `upper`.
+ * @brief Temporal text functions
  */
 
 #include "general/ttext_textfuncs.h"
@@ -42,7 +42,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_text
+ * @ingroup meos_temporal_text
  * @brief Return the concatenation of a text and a temporal text
  * @param[in] txt Value
  * @param[in] temp Temporal value
@@ -53,16 +53,14 @@ textcat_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
-
-  Temporal *result = textfunc_ttext_text(temp, PointerGetDatum(txt),
-    &datum_textcat, INVERT);
-  return result;
+  return textfunc_ttext_text(temp, PointerGetDatum(txt), &datum_textcat,
+    INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_text
+ * @ingroup meos_temporal_text
  * @brief Return the concatenation of a temporal text and a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
@@ -73,16 +71,14 @@ textcat_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
-
-  Temporal *result = textfunc_ttext_text(temp, PointerGetDatum(txt),
-    &datum_textcat, INVERT_NO);
-  return result;
+  return textfunc_ttext_text(temp, PointerGetDatum(txt), &datum_textcat,
+    INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_text
+ * @ingroup meos_temporal_text
  * @brief Return the concatenation of two temporal text values
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Textcat_ttext_ttext()
@@ -95,15 +91,13 @@ textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
       ! ensure_temporal_isof_type(temp1, T_TTEXT) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
-
-  Temporal *result = textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
-  return result;
+  return textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
 }
 
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_text
+ * @ingroup meos_temporal_text
  * @brief Return a temporal text transformed to uppercase
  * @param[in] temp Temporal value
  * @csqlfn #Ttext_upper()
@@ -115,13 +109,11 @@ ttext_upper(const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
-
-  Temporal *result = textfunc_ttext(temp, &datum_upper);
-  return result;
+  return textfunc_ttext(temp, &datum_upper);
 }
 
 /**
- * @ingroup libmeos_temporal_text
+ * @ingroup meos_temporal_text
  * @brief Return a temporal text transformed to lowercase
  * @param[in] temp Temporal value
  * @csqlfn #Ttext_lower()
@@ -133,9 +125,7 @@ ttext_lower(const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
-
-  Temporal *result = textfunc_ttext(temp, &datum_lower);
-  return result;
+  return textfunc_ttext(temp, &datum_lower);
 }
 
 /*****************************************************************************/

@@ -299,14 +299,7 @@ Tnpoint_at_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  Temporal *tgeom = tnpoint_tgeompoint(temp);
-  Temporal *tgeomres = tpoint_restrict_stbox(tgeom, box, BORDER_INC, REST_AT);
-  Temporal *result = NULL;
-  if (tgeomres)
-  {
-    result = tgeompoint_tnpoint(tgeomres);
-    pfree(tgeomres);
-  }
+  Temporal *result = tnpoint_restrict_stbox(temp, box, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -326,15 +319,7 @@ Tnpoint_minus_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  Temporal *tgeom = tnpoint_tgeompoint(temp);
-  Temporal *tgeomres = tpoint_restrict_stbox(tgeom, box, BORDER_INC, REST_MINUS);
-  Temporal *result = NULL;
-  if (tgeomres)
-  {
-    result = tgeompoint_tnpoint(tgeomres);
-    pfree(tgeomres);
-  }
-  pfree(tgeom);
+  Temporal *result = tnpoint_restrict_stbox(temp, box, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();

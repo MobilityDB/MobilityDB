@@ -32,8 +32,8 @@
  * @brief Position operators for temporal types
  *
  * The following operators are defined:
- * - `left`, `overleft`, `right`, `overright` for the value dimension
- * - `before`, `overbefore`, `after`, `overafter`for the time dimension
+ * - @p left, @p overleft, @p right, @p overright for the value dimension
+ * - @p before, @p overbefore, @p after, @p overafter for the time dimension
  */
 
 /* PostgreSQL */
@@ -47,8 +47,10 @@
 /* Span op Temporal */
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a timestamptz span is before a temporal value
+ * @param[in] s Span
+ * @param[in] temp Temporal value
  * @csqlfn #Before_tstzspan_temporal()
  */
 bool
@@ -58,8 +60,10 @@ before_tstzspan_temporal(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a timestamptz span is not after a temporal value
+ * @param[in] s Span
+ * @param[in] temp Temporal value
  * @csqlfn #Overbefore_tstzspan_temporal()
  */
 bool
@@ -69,8 +73,10 @@ overbefore_tstzspan_temporal(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a timestamptz span is after a temporal value
+ * @param[in] s Span
+ * @param[in] temp Temporal value
  * @csqlfn #After_tstzspan_temporal()
  */
 bool
@@ -80,8 +86,10 @@ after_tstzspan_temporal(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a timestamptz span is not before a temporal value
+ * @param[in] s Span
+ * @param[in] temp Temporal value
  * @csqlfn #Overafter_tstzspan_temporal()
  */
 bool
@@ -94,8 +102,10 @@ overafter_tstzspan_temporal(const Span *s, const Temporal *temp)
 /* Temporal op Period */
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal value is before a timestamptz span
+ * @param[in] temp Temporal value
+ * @param[in] s Span
  * @csqlfn #Before_temporal_tstzspan()
  */
 bool
@@ -105,8 +115,10 @@ before_temporal_tstzspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal value is not after a timestamptz span
+ * @param[in] temp Temporal value
+ * @param[in] s Span
  * @csqlfn #Overbefore_temporal_tstzspan()
  */
 bool
@@ -116,8 +128,10 @@ overbefore_temporal_tstzspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal value is after a timestamptz span
+ * @param[in] temp Temporal value
+ * @param[in] s Span
  * @csqlfn #After_temporal_tstzspan()
  */
 bool
@@ -127,8 +141,10 @@ after_temporal_tstzspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal value is not before a timestamptz span
+ * @param[in] temp Temporal value
+ * @param[in] s Span
  * @csqlfn #Overafter_temporal_tstzspan()
  */
 bool
@@ -141,8 +157,9 @@ overafter_temporal_tstzspan(const Temporal *temp, const Span *s)
 /* Temporal op Temporal */
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if the first temporal value is before the second one
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Before_temporal_temporal()
  */
 bool
@@ -152,8 +169,9 @@ before_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if the first temporal value is not after the second one
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Overbefore_temporal_temporal()
  */
 bool
@@ -163,8 +181,9 @@ overbefore_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if the first temporal value is after the second one
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #After_temporal_temporal()
  */
 bool
@@ -174,8 +193,9 @@ after_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if the first temporal value is not before the second one
+ * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Overafter_temporal_temporal()
  */
 bool
@@ -188,8 +208,10 @@ overafter_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /* Span op Tnumber */
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a number span is to the left of a temporal number
+ * @param[in] s Span
+ * @param[in] temp Temporal value
  * @csqlfn #Left_numspan_tnumber()
  */
 bool
@@ -199,9 +221,11 @@ left_numspan_tnumber(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a number span does not extend to the right of a
  * temporal number
+ * @param[in] s Span
+ * @param[in] temp Temporal value
  * @csqlfn #Overleft_numspan_tnumber()
  */
 bool
@@ -211,8 +235,10 @@ overleft_numspan_tnumber(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a number span is to the right of a temporal number
+ * @param[in] s Span
+ * @param[in] temp Temporal value
  * @csqlfn #Right_numspan_tnumber()
  */
 bool
@@ -222,8 +248,11 @@ right_numspan_tnumber(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
- * @brief Return true if a number span does not extend to the left of a temporal number
+ * @ingroup meos_temporal_bbox_pos
+ * @brief Return true if a number span does not extend to the left of a
+ * temporal number
+ * @param[in] s Span
+ * @param[in] temp Temporal value
  * @csqlfn #Overright_numspan_tnumber()
  */
 bool
@@ -236,8 +265,10 @@ overright_numspan_tnumber(const Span *s, const Temporal *temp)
 /* Tnumber op Span */
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal number is to the left of a number span
+ * @param[in] s Span
+ * @param[in] temp Temporal value
  * @csqlfn #Left_tnumber_numspan()
  */
 bool
@@ -247,8 +278,11 @@ left_tnumber_numspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
- * @brief Return true if a temporal number does not extend to the right of a number span
+ * @ingroup meos_temporal_bbox_pos
+ * @brief Return true if a temporal number does not extend to the right of a
+ * number span
+ * @param[in] temp Temporal value
+ * @param[in] s Span
  * @csqlfn #Overleft_tnumber_numspan()
  */
 bool
@@ -258,8 +292,10 @@ overleft_tnumber_numspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal number is to the right of a number span
+ * @param[in] temp Temporal value
+ * @param[in] s Span
  * @csqlfn #Right_tnumber_numspan()
  */
 bool
@@ -269,9 +305,11 @@ right_tnumber_numspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal number does not extend to the left of a
  * number span
+ * @param[in] temp Temporal value
+ * @param[in] s Span
  * @csqlfn #Overright_tnumber_numspan()
  */
 bool
@@ -284,8 +322,10 @@ overright_tnumber_numspan(const Temporal *temp, const Span *s)
 /* TBox op Temporal */
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal box is to the left of a temporal number
+ * @param[in] box Temporal box
+ * @param[in] temp Temporal number
  * @csqlfn #Left_tbox_tnumber()
  */
 bool
@@ -295,8 +335,11 @@ left_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
- * @brief Return true if a temporal box does not extend to the right of a temporal number
+ * @ingroup meos_temporal_bbox_pos
+ * @brief Return true if a temporal box does not extend to the right of a
+ * temporal number
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
  * @csqlfn #Overleft_tbox_tnumber()
  */
 bool
@@ -306,8 +349,10 @@ overleft_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal box is to the right of a temporal number
+ * @param[in] box Temporal box
+ * @param[in] temp Temporal number
  * @csqlfn #Right_tbox_tnumber()
  */
 bool
@@ -317,8 +362,11 @@ right_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
- * @brief Return true if a temporal box does not extend to the left of a temporal number
+ * @ingroup meos_temporal_bbox_pos
+ * @brief Return true if a temporal box does not extend to the left of a
+ * temporal number
+ * @param[in] box Temporal box
+ * @param[in] temp Temporal number
  * @csqlfn #Overright_tbox_tnumber()
  */
 bool
@@ -328,8 +376,10 @@ overright_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal box is before a temporal number
+ * @param[in] box Temporal box
+ * @param[in] temp Temporal number
  * @csqlfn #Before_tbox_tnumber()
  */
 bool
@@ -339,8 +389,10 @@ before_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal box is not after a temporal number
+ * @param[in] box Temporal box
+ * @param[in] temp Temporal number
  * @csqlfn #Overbefore_tbox_tnumber()
  */
 bool
@@ -350,8 +402,10 @@ overbefore_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal box is after a temporal number
+ * @param[in] box Temporal box
+ * @param[in] temp Temporal number
  * @csqlfn #After_tbox_tnumber()
  */
 bool
@@ -361,8 +415,10 @@ after_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal box is not before a temporal number
+ * @param[in] box Temporal box
+ * @param[in] temp Temporal number
  * @csqlfn #Overafter_tbox_tnumber()
  */
 bool
@@ -375,8 +431,10 @@ overafter_tbox_tnumber(const TBox *box, const Temporal *temp)
 /* Temporal op TBox */
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal number is to the left of a temporal box
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
  * @csqlfn #Left_tnumber_tbox()
  */
 bool
@@ -386,8 +444,11 @@ left_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
- * @brief Return true if a temporal number does not extend to the right of a temporal box
+ * @ingroup meos_temporal_bbox_pos
+ * @brief Return true if a temporal number does not extend to the right of a
+ * temporal box
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
  * @csqlfn #Overleft_tnumber_tbox()
  */
 bool
@@ -397,8 +458,10 @@ overleft_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal number is to the right of a temporal box
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
  * @csqlfn #Right_tnumber_tbox()
  */
 bool
@@ -408,8 +471,11 @@ right_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
- * @brief Return true if a temporal number does not extend to the left of a temporal box
+ * @ingroup meos_temporal_bbox_pos
+ * @brief Return true if a temporal number does not extend to the left of a
+ * temporal box
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
  * @csqlfn #Overright_tnumber_tbox()
  */
 bool
@@ -419,8 +485,10 @@ overright_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal number is before a temporal box
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
  * @csqlfn #Before_tnumber_tbox()
  */
 bool
@@ -430,8 +498,10 @@ before_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal number is not after a temporal box
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
  * @csqlfn #Overbefore_tnumber_tbox()
  */
 bool
@@ -441,8 +511,10 @@ overbefore_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal number is after a temporal box
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
  * @csqlfn #After_tnumber_tbox()
  */
 bool
@@ -452,8 +524,10 @@ after_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if a temporal number is not before a temporal box
+ * @param[in] temp Temporal number
+ * @param[in] box Temporal box
  * @csqlfn #Overafter_tnumber_tbox()
  */
 bool
@@ -466,9 +540,10 @@ overafter_tnumber_tbox(const Temporal *temp, const TBox *box)
 /* Tnumber op Tnumber */
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if the first temporal number is to the left of the
  * second one
+ * @param[in] temp1,temp2 Temporal numbers
  * @csqlfn #Left_tnumber_tnumber()
  */
 bool
@@ -478,9 +553,10 @@ left_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
- * @brief Return true if the first temporal number does not extend to the right of the
- * second one
+ * @ingroup meos_temporal_bbox_pos
+ * @brief Return true if the first temporal number does not extend to the right
+ * of the second one
+ * @param[in] temp1,temp2 Temporal numbers
  * @csqlfn #Overleft_tnumber_tnumber()
  */
 bool
@@ -490,9 +566,10 @@ overleft_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if the first temporal number is to the right of the
  * second one
+ * @param[in] temp1,temp2 Temporal numbers
  * @csqlfn #Right_tnumber_tnumber()
  */
 bool
@@ -502,9 +579,10 @@ right_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
- * @brief Return true if the first temporal number does not extend to the left of the
- * second one
+ * @ingroup meos_temporal_bbox_pos
+ * @brief Return true if the first temporal number does not extend to the left
+ * of the second one
+ * @param[in] temp1,temp2 Temporal numbers
  * @csqlfn #Overright_tnumber_tnumber()
  */
 bool
@@ -514,8 +592,9 @@ overright_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if the first temporal number is before the second one
+ * @param[in] temp1,temp2 Temporal numbers
  * @csqlfn #Before_tnumber_tnumber()
  */
 bool
@@ -525,8 +604,9 @@ before_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if the first temporal number is not after the second one
+ * @param[in] temp1,temp2 Temporal numbers
  * @csqlfn #Overbefore_tnumber_tnumber()
  */
 bool
@@ -536,8 +616,9 @@ overbefore_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if the first temporal number is after the second one
+ * @param[in] temp1,temp2 Temporal numbers
  * @csqlfn #After_tnumber_tnumber()
  */
 bool
@@ -547,8 +628,9 @@ after_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_pos
+ * @ingroup meos_temporal_bbox_pos
  * @brief Return true if the first temporal number is not before the second one
+ * @param[in] temp1,temp2 Temporal numbers
  * @csqlfn #Overafter_tnumber_tnumber()
  */
 bool

@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Internal types used in particular for computing the average and
- * centroid temporal aggregates.
+ * centroid temporal aggregates
  */
 #include "general/doublen.h"
 

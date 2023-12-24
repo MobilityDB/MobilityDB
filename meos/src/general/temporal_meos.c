@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Basic functions for temporal types of any subtype.
+ * @brief Basic functions for temporal types of any subtype
  */
 
 #include "general/temporal.h"
@@ -46,8 +46,8 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal boolean to a boolean.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal boolean to a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Temporal_at_value()
@@ -57,14 +57,14 @@ tbool_at_value(const Temporal *temp, bool b)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_BOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return temporal_restrict_value(temp, BoolGetDatum(b), REST_AT);
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal integer to an integer.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal integer to an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Temporal_at_value()
@@ -74,14 +74,14 @@ tint_at_value(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_restrict_value(temp, Int32GetDatum(i), REST_AT);
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal float to a float.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal float to a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Temporal_at_value()
@@ -91,14 +91,14 @@ tfloat_at_value(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_restrict_value(temp, Float8GetDatum(d), REST_AT);
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal text to a text.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal text to a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Temporal_at_value()
@@ -108,14 +108,14 @@ ttext_at_value(const Temporal *temp, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return temporal_restrict_value(temp, PointerGetDatum(txt), REST_AT);
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal point to a point.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal point to a point
  * @param[in] temp Temporal value
  * @param[in] gs Value
  * @csqlfn #Temporal_at_value()
@@ -131,8 +131,8 @@ tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal boolean to the complement of a boolean.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal boolean to the complement of a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Temporal_minus_value()
@@ -142,14 +142,14 @@ tbool_minus_value(const Temporal *temp, bool b)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_BOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return temporal_restrict_value(temp, BoolGetDatum(b), REST_MINUS);
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal integer to the complement of an integer.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal integer to the complement of an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Temporal_minus_value()
@@ -159,14 +159,14 @@ tint_minus_value(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_restrict_value(temp, Int32GetDatum(i), REST_MINUS);
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal float to the complement of a float.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal float to the complement of a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Temporal_minus_value()
@@ -176,14 +176,14 @@ tfloat_minus_value(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_restrict_value(temp, Float8GetDatum(d), REST_MINUS);
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal text to the complement of a text.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal text to the complement of a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Temporal_minus_value()
@@ -193,14 +193,14 @@ ttext_minus_value(const Temporal *temp, text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return temporal_restrict_value(temp, PointerGetDatum(txt), REST_MINUS);
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal point to the complement of a point.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal point to the complement of a point
  * @param[in] temp Temporal value
  * @param[in] gs Value
  * @csqlfn #Temporal_minus_value()
@@ -218,8 +218,8 @@ tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to a set of values.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to a set of values
  * @param[in] temp Temporal value
  * @param[in] s Set
  * @csqlfn #Temporal_at_values()
@@ -229,14 +229,14 @@ temporal_at_values(const Temporal *temp, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_temporal_basetype(temp, s->basetype))
+      ! ensure_temporal_isof_basetype(temp, s->basetype))
     return NULL;
   return temporal_restrict_values(temp, s, REST_AT);
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to the complement of a set of values.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to the complement of a set of values
  * @param[in] temp Temporal value
  * @param[in] s Set
  * @csqlfn #Temporal_minus_values()
@@ -246,7 +246,7 @@ temporal_minus_values(const Temporal *temp, const Set *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_temporal_basetype(temp, s->basetype))
+      ! ensure_temporal_isof_basetype(temp, s->basetype))
     return NULL;
   return temporal_restrict_values(temp, s, REST_MINUS);
 }
@@ -254,8 +254,8 @@ temporal_minus_values(const Temporal *temp, const Set *s)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Return the value of a temporal boolean at a timestamp
+ * @ingroup meos_temporal_accessor
+ * @brief Return the value of a temporal boolean at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
@@ -279,8 +279,8 @@ tbool_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Return the value of a temporal integer at a timestamp
+ * @ingroup meos_temporal_accessor
+ * @brief Return the value of a temporal integer at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
@@ -304,8 +304,8 @@ tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Return the value of a temporal integer at a timestamp
+ * @ingroup meos_temporal_accessor
+ * @brief Return the value of a temporal integer at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
@@ -329,8 +329,8 @@ tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Return the value of a temporal integer at a timestamp
+ * @ingroup meos_temporal_accessor
+ * @brief Return the value of a temporal integer at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
@@ -354,8 +354,8 @@ ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Return the value of a temporal geometry point at a timestamp
+ * @ingroup meos_temporal_accessor
+ * @brief Return the value of a temporal geometry point at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
@@ -381,7 +381,7 @@ tpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup meos_temporal_restrict
  * @brief Restrict a temporal value to its minimum base value
  * @param[in] temp Temporal value
  * @csqlfn #Temporal_at_min()
@@ -396,7 +396,7 @@ temporal_at_min(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup meos_temporal_restrict
  * @brief Restrict a temporal value to the complement of its minimum base value
  * @param[in] temp Temporal value
  * @csqlfn #Temporal_minus_min()
@@ -411,7 +411,7 @@ temporal_minus_min(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup meos_temporal_restrict
  * @brief Restrict a temporal value to its maximum base value
  * @param[in] temp Temporal value
  * @csqlfn #Temporal_at_max()
@@ -426,7 +426,7 @@ temporal_at_max(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup meos_temporal_restrict
  * @brief Restrict a temporal value to the complement of its maximum base value
  * @param[in] temp Temporal value
  * @csqlfn #Temporal_minus_max()
@@ -443,8 +443,8 @@ temporal_minus_max(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to a span of base values.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to a span of base values
  * @param[in] temp Temporal value
  * @param[in] s Span
  * @csqlfn #Tnumber_at_span()
@@ -461,8 +461,8 @@ tnumber_at_span(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to the complement of a span of base values.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to the complement of a span of base values
  * @param[in] temp Temporal value
  * @param[in] s Span
  * @csqlfn #Tnumber_minus_span()
@@ -479,8 +479,8 @@ tnumber_minus_span(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to an array of spans of base values.
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to an array of spans of base values
  * @param[in] temp Temporal value
  * @param[in] ss Span set
  * @csqlfn #Tnumber_at_spanset()
@@ -497,9 +497,9 @@ tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup meos_temporal_restrict
  * @brief Restrict a temporal value to the complement of an array of spans
- * of base values.
+ * of base values
  * @param[in] temp Temporal value
  * @param[in] ss Span set
  * @csqlfn #Tnumber_minus_spanset()
@@ -518,8 +518,8 @@ tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to a timestamp
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @csqlfn #Temporal_at_timestamptz()
@@ -534,8 +534,8 @@ temporal_at_timestamptz(const Temporal *temp, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to the complement of a timestamp
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to the complement of a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @csqlfn #Temporal_minus_timestamptz()
@@ -550,8 +550,8 @@ temporal_minus_timestamptz(const Temporal *temp, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to a timestamp set
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to a timestamptz set
  * @param[in] temp Temporal value
  * @param[in] s Timestamp set
  * @csqlfn #Temporal_at_tstzset()
@@ -567,8 +567,8 @@ temporal_at_tstzset(const Temporal *temp, const Set *s)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal value to the complement of a timestamp set
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to the complement of a timestamptz set
  * @param[in] temp Temporal value
  * @param[in] s Timestamp set
  * @csqlfn #Temporal_minus_tstzset()
@@ -584,7 +584,7 @@ temporal_minus_tstzset(const Temporal *temp, const Set *s)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup meos_temporal_restrict
  * @brief Restrict a temporal value to a timestamptz span
  * @param[in] temp Temporal value
  * @param[in] s Timestamp span
@@ -601,7 +601,7 @@ temporal_at_tstzspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup meos_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamptz span
  * @param[in] temp Temporal value
  * @param[in] s Timestamp span
@@ -618,7 +618,7 @@ temporal_minus_tstzspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup meos_temporal_restrict
  * @brief Restrict a temporal value to a timestamptz span set
  * @param[in] temp Temporal value
  * @param[in] ss Timestamp span set
@@ -635,7 +635,7 @@ temporal_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup meos_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamptz span set
  * @param[in] temp Temporal value
  * @param[in] ss Timestamp span set

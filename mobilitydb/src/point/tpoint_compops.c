@@ -279,13 +279,11 @@ Always_ne_tpoint_tpoint(PG_FUNCTION_ARGS)
  */
 static Datum
 Tcomp_point_tpoint(FunctionCallInfo fcinfo,
-  Temporal * (*func)(const Temporal *, const GSERIALIZED *))
+  Temporal * (*func)(const GSERIALIZED *, const Temporal *))
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = func(temp, gs);
+  Temporal *result = func(gs, temp);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -302,8 +300,6 @@ static Datum
 Tcomp_tpoint_point(FunctionCallInfo fcinfo,
   Temporal * (*func)(const Temporal *, const GSERIALIZED *))
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *result = func(temp, gs);
@@ -345,7 +341,7 @@ PG_FUNCTION_INFO_V1(Teq_point_tpoint);
 Datum
 Teq_point_tpoint(PG_FUNCTION_ARGS)
 {
-  return Tcomp_point_tpoint(fcinfo, &teq_tpoint_point);
+  return Tcomp_point_tpoint(fcinfo, &teq_point_tpoint);
 }
 
 PGDLLEXPORT Datum Tne_point_tpoint(PG_FUNCTION_ARGS);
@@ -358,7 +354,7 @@ PG_FUNCTION_INFO_V1(Tne_point_tpoint);
 Datum
 Tne_point_tpoint(PG_FUNCTION_ARGS)
 {
-  return Tcomp_point_tpoint(fcinfo, &tne_tpoint_point);
+  return Tcomp_point_tpoint(fcinfo, &tne_point_tpoint);
 }
 
 /*****************************************************************************/

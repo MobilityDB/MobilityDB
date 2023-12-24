@@ -37,6 +37,7 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <lib/stringinfo.h>
 /* MEOS */
 #include <meos.h>
@@ -151,7 +152,7 @@ Stbox_as_text(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Construct a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box from the arguments
  */
 static Datum
 Stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz,
@@ -207,7 +208,7 @@ PGDLLEXPORT Datum Stbox_constructor_x(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_x);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box from the arguments
  * @sqlfn stbox()
  */
 Datum
@@ -220,7 +221,7 @@ PGDLLEXPORT Datum Stbox_constructor_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_z);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box from the arguments
  * @sqlfn stbox_z()
  */
 Datum
@@ -233,7 +234,7 @@ PGDLLEXPORT Datum Stbox_constructor_t(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_t);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box from the arguments
  * @sqlfn stbox_t()
  */
 Datum
@@ -246,7 +247,7 @@ PGDLLEXPORT Datum Stbox_constructor_xt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_xt);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box from the arguments
  * @sqlfn stbox_xt()
  */
 Datum
@@ -259,7 +260,7 @@ PGDLLEXPORT Datum Stbox_constructor_zt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_zt);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box from the arguments
  * @sqlfn stbox_zt()
  */
 Datum
@@ -275,7 +276,7 @@ PGDLLEXPORT Datum Geodstbox_constructor_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_z);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box from the arguments
  * @sqlfn geodstbox_z()
  */
 Datum
@@ -288,7 +289,7 @@ PGDLLEXPORT Datum Geodstbox_constructor_t(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box from the arguments
  * @sqlfn geodstbox_t()
  */
 Datum
@@ -301,7 +302,7 @@ PGDLLEXPORT Datum Geodstbox_constructor_zt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_zt);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box from the arguments
  * @sqlfn geodstbox_zt()
  */
 Datum
@@ -316,7 +317,7 @@ PGDLLEXPORT Datum Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_timestamptz_to_stbox);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from a geometry/geography and a
+ * @brief Return a spatiotemporal box from a geometry/geography and a
  * timestamptz
  * @sqlfn stbox()
  * @sqlfn @p ::
@@ -337,9 +338,8 @@ PGDLLEXPORT Datum Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_tstzspan_to_stbox);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Construct a spatiotemporal box from a geometry/geography and a
+ * @brief Return a spatiotemporal box from a geometry/geography and a
  * timestamptz span
- * 
  * @sqlfn stbox()
  */
 Datum
@@ -935,7 +935,7 @@ PGDLLEXPORT Datum Stbox_shift_scale_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_shift_scale_time);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Return a spatiotemporal box with the time span shifted and scaled by 
+ * @brief Return a spatiotemporal box with the time span shifted and scaled by
  * two intervals
  * @sqlfn shiftScaleTime()
  */

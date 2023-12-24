@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for parsing temporal points.
+ * @brief Functions for parsing temporal points
  */
 
 #include "point/tpoint_parser.h"
@@ -43,7 +43,7 @@
 /*****************************************************************************/
 
 /**
- * @brief Parse a spatiotemporal box from the buffer.
+ * @brief Parse a spatiotemporal box from the buffer
  */
 STBox *
 stbox_parse(const char **str)
@@ -242,7 +242,7 @@ stbox_parse(const char **str)
 /*****************************************************************************/
 
 /**
- * @brief Parse a temporal instant point from the buffer.
+ * @brief Parse a temporal instant point from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] end Set to true when reading a single instant to ensure there is
@@ -300,7 +300,7 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
 }
 
 /**
- * @brief Parse a temporal discrete sequence point from the buffer.
+ * @brief Parse a temporal discrete sequence point from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in,out] tpoint_srid SRID of the temporal point
@@ -342,7 +342,7 @@ tpointdiscseq_parse(const char **str, meosType temptype, int *tpoint_srid)
 }
 
 /**
- * @brief Parse a temporal sequence point from the buffer.
+ * @brief Parse a temporal sequence point from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
@@ -406,7 +406,7 @@ tpointcontseq_parse(const char **str, meosType temptype, interpType interp,
 }
 
 /**
- * @brief Parse a temporal sequence set point from the buffer.
+ * @brief Parse a temporal sequence set point from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
@@ -450,7 +450,7 @@ tpointseqset_parse(const char **str, meosType temptype, interpType interp,
 }
 
 /**
- * @brief Parse a temporal point value from the buffer.
+ * @brief Parse a temporal point value from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  */
@@ -540,7 +540,7 @@ tpoint_parse(const char **str, meosType temptype)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_inout
+ * @ingroup meos_temporal_inout
  * @brief Return a temporal geometry point from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
@@ -554,7 +554,7 @@ tgeompoint_in(const char *str)
   return tpoint_parse(&str, T_TGEOMPOINT);
 }
 /**
- * @ingroup libmeos_temporal_inout
+ * @ingroup meos_temporal_inout
  * @brief Return a temporal geography point from its Well-Known Text (WKT)
  * representation
  * @param[in] str String

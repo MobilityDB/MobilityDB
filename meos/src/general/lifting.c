@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Generic functions for lifting functions and operators on temporal
- * types.
+ * types
  *
  * These functions are used for lifting arithmetic operators (`+`, `-`, `*`,
  * `/`), Boolean operators (`and`, `or`, `not`), comparisons (`<`, `<=`, `>`,
@@ -163,6 +163,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal_restrict.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
 #include "general/type_util.h"
@@ -174,7 +175,8 @@
  *****************************************************************************/
 
 /**
- * @brief Apply the variadic function with the optional arguments to a base value
+ * @brief Apply the variadic function with the optional arguments to a base
+ * value
  */
 static Datum
 tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
@@ -193,7 +195,8 @@ tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * @brief Apply a lifted function with the optional arguments to a temporal instant
+ * @brief Apply a lifted function with the optional arguments to a temporal
+ * instant
  * @param[in] inst Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
@@ -216,10 +219,7 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    instants[i] = tfunc_tinstant(inst, lfinfo);
-  }
+    instants[i] = tfunc_tinstant(TSEQUENCE_INST_N(seq, i), lfinfo);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 }
@@ -234,10 +234,7 @@ tfunc_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = tfunc_tsequence(seq, lfinfo);
-  }
+    sequences[i] = tfunc_tsequence(TSEQUENCESET_SEQ_N(ss, i), lfinfo);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
@@ -249,15 +246,16 @@ tfunc_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
 Temporal *
 tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
 {
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tfunc_tinstant((TInstant *) temp, lfinfo);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tfunc_tsequence((TSequence *) temp, lfinfo);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tfunc_tsequenceset((TSequenceSet *) temp, lfinfo);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tfunc_tinstant((TInstant *) temp, lfinfo);
+    case TSEQUENCE:
+      return (Temporal *) tfunc_tsequence((TSequence *) temp, lfinfo);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tfunc_tsequenceset((TSequenceSet *) temp, lfinfo);
+  }
 }
 
 /*****************************************************************************
@@ -327,10 +325,7 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    instants[i] = tfunc_tinstant_base(inst, value, lfinfo);
-  }
+    instants[i] = tfunc_tinstant_base(TSEQUENCE_INST_N(seq, i), value, lfinfo);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 }
@@ -549,9 +544,8 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
 
 /**
  * @brief Apply a lifted function to a temporal value and a base value
- *
- * Dispatch function depending on whether the function has
- * instantaneous discontinuities.
+ * @details Dispatch function depending on whether the function has
+ * instantaneous discontinuities
  */
 Temporal *
 tfunc_tlinearseq_base(const TSequence *seq, Datum value,
@@ -624,18 +618,19 @@ Temporal *
 tfunc_temporal_base(const Temporal *temp, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tfunc_tinstant_base((TInstant *) temp, value, lfinfo);
-  else if (temp->subtype == TSEQUENCE)
-    result = ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
-      (Temporal *) tfunc_tsequence_base((TSequence *) temp, value, lfinfo) :
-      (Temporal *) tfunc_tlinearseq_base((TSequence *) temp, value, lfinfo);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tfunc_tsequenceset_base((TSequenceSet *) temp, value,
-      lfinfo);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tfunc_tinstant_base((TInstant *) temp, value, lfinfo);
+    case TSEQUENCE:
+      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
+        (Temporal *) tfunc_tsequence_base((TSequence *) temp, value, lfinfo) :
+        (Temporal *) tfunc_tlinearseq_base((TSequence *) temp, value, lfinfo);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tfunc_tsequenceset_base((TSequenceSet *) temp, value,
+        lfinfo);
+  }
 }
 
 /*****************************************************************************
@@ -714,8 +709,8 @@ tfunc_tinstant_tdiscseq(const TInstant *inst, const TSequence *seq,
 }
 
 /**
- * @brief Synchronize two temporal values and apply to them a lifted function with
- * the optional argument
+ * @brief Synchronize two temporal values and apply to them a lifted function
+ * with an optional argument
  * @param[in] seq,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -736,7 +731,7 @@ tfunc_tcontseq_tinstant(const TSequence *seq, const TInstant *inst,
 }
 
 /**
- * @brief Synchronize two temporal values and apply to them a lifted function 
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] inst,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -749,7 +744,7 @@ tfunc_tinstant_tcontseq(const TInstant *inst, const TSequence *seq,
 }
 
 /**
- * @brief Synchronize two temporal values and apply to them a lifted function 
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] ss,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -924,13 +919,11 @@ tfunc_tdiscseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
 /*****************************************************************************/
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
- *
- * This function is applied when the result is a single sequence and thus
- * it is used when
+ * @brief Synchronize two temporal values and apply to them a lifted function
+ * @details This function is applied when the result is a single sequence and
+ * thus it is used when
  * - the function to lift has NOT instantaneous discontinuities
  * - the temporal values have equal interpolation.
- *
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
@@ -974,7 +967,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= upper || inst2->t <= upper))
   {
-    /* Synchronize the start instant */
+    /* Synchronize two start instant */
     int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
@@ -1035,13 +1028,11 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronize two temporal values and apply to them a function.
- *
- * This function is applied when the result is an array of sequences and thus
- * it is used when
+ * @brief Synchronize two temporal values and apply to them a lifted function
+ * @details This function is applied when the result is an array of sequences 
+ * and thus it is used when
  * - the function to lift has instantaneous discontinuities
  * - one temporal value has linear and the other has step interpolation.
- *
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
@@ -1068,7 +1059,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
   TInstant *start1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *start2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
   int i = 1, j = 1, nseqs = 0, ninsts = 0, nfree = 0;
-  /* Synchronize the start instant */
+  /* Synchronize two start instant */
   if (start1->t < DatumGetTimestampTz(inter->lower))
   {
     start1 = tsequence_at_timestamptz(seq1, inter->lower);
@@ -1091,7 +1082,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     startvalue1 = tinstant_value(start1);
     startvalue2 = tinstant_value(start2);
     startresult = tfunc_base_base(startvalue1, startvalue2, lfinfo);
-    /* Synchronize the end instants */
+    /* Synchronize two end instants */
     TInstant *end1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
     TInstant *end2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
     int cmp = timestamptz_cmp_internal(end1->t, end2->t);
@@ -1234,7 +1225,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronize two temporal values and apply to them a function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @note This function is called when one sequence has linear and the other
  * has step interpolation
  */
@@ -1253,7 +1244,7 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   TInstant *start1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *start2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
   int i = 1, j = 1, nfree = 0, ninsts = 0, nseqs = 0;
-  /* Synchronize the start instant */
+  /* Synchronize two start instant */
   if (start1->t < DatumGetTimestampTz(inter->lower))
   {
     start1 = tsequence_at_timestamptz(seq1, inter->lower);
@@ -1276,7 +1267,7 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   /* One sequence is produced for each instant of the step sequence */
   while (i < seq1->count && j < seq2->count)
   {
-    /* Synchronize the end instants */
+    /* Synchronize two end instants */
     TInstant *end1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
     TInstant *end2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
     int cmp = timestamptz_cmp_internal(end1->t, end2->t);
@@ -1478,7 +1469,7 @@ tfunc_tcontseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] ss1,ss2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1528,7 +1519,6 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
 
 /**
  * @brief Synchronize two temporal values and apply to them a lifted function
-
  * @param[in] temp1,temp2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1630,11 +1620,11 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************
  * Functions that take either (1) a temporal value and a base value, or (2) two
  * temporal values and apply to them a Boolean functio using the ever/always
- * semantics, that is, it stops when a true value (for ever) or a false value 
+ * semantics, that is, it stops when a true value (for ever) or a false value
  * (for always) is found. In the case of two temporal values the functions
  * synchronize two temporal values and apply the function in a single pass.
  *****************************************************************************/
- 
+
 /**
  * @brief Apply a lifted function to a temporal instant and a base value
  * @param[in] inst Temporal value
@@ -1729,8 +1719,8 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
       continue;
     Datum intvalue;
     TimestampTz inttime;
-    /* To avoid floating point imprecission, if the lifted function to 
-     * apply is datum2_eq or datum_point_eq, the equality test is computed in 
+    /* To avoid floating point imprecission, if the lifted function to
+     * apply is datum2_eq or datum_point_eq, the equality test is computed in
      * hascross */
     bool eqfn = ((lfinfo->func == (varfunc) &datum2_eq) ||
       (lfinfo->func == (varfunc) &datum2_point_eq));
@@ -1795,8 +1785,7 @@ eafunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
   /* General case */
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    int res = eafunc_tsequence_base(seq, value, lfinfo);
+    int res = eafunc_tsequence_base(TSEQUENCESET_SEQ_N(ss, i), value, lfinfo);
     if (lfinfo->ever && res == 1)
       return 1;
     else if (! lfinfo->ever && res != 1)
@@ -1831,9 +1820,9 @@ eafunc_temporal_base(const Temporal *temp, Datum value,
 }
 
 /*****************************************************************************/
- 
+
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] inst1,inst2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1852,7 +1841,7 @@ eafunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1870,7 +1859,7 @@ eafunc_tdiscseq_tinstant(const TSequence *seq, const TInstant *inst,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] inst,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1883,7 +1872,7 @@ eafunc_tinstant_tdiscseq(const TInstant *inst, const TSequence *seq,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1904,7 +1893,7 @@ eafunc_tcontseq_tinstant(const TSequence *seq, const TInstant *inst,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] inst,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1917,7 +1906,7 @@ eafunc_tinstant_tcontseq(const TInstant *inst, const TSequence *seq,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] ss,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1935,7 +1924,7 @@ eafunc_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] inst,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1950,7 +1939,7 @@ eafunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
 /*****************************************************************************/
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1996,7 +1985,7 @@ eafunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @note The bounding period test in the dispatch function
@@ -2031,7 +2020,7 @@ eafunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -2044,7 +2033,7 @@ eafunc_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @note The bounding period test in the dispatch function
@@ -2087,7 +2076,7 @@ eafunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a lifted function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -2100,12 +2089,10 @@ eafunc_tdiscseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them a function
- *
- * This function is applied for functions with instantaneous discontinuities. 
- * This function is applied when at least one temporal value has linear
- * interpolation.
- *
+ * @brief Synchronize two temporal values and apply to them a lifted function
+ * @details This function is applied for functions with instantaneous
+ * discontinuities and when at least one temporal value has linear
+ * interpolation
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
@@ -2124,7 +2111,7 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   TInstant *start1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *start2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
   int i = 1, j = 1, nfree = 0;
-  /* Synchronize the start instant */
+  /* Synchronize two start instant */
   if (start1->t < DatumGetTimestampTz(inter->lower))
   {
     start1 = tsequence_at_timestamptz(seq1, inter->lower);
@@ -2157,7 +2144,7 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
         return lfinfo->ever ? 1 : 0;
       }
     }
-    /* Synchronize the end instants */
+    /* Synchronize two end instants */
     TInstant *end1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
     TInstant *end2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
     int cmp = timestamptz_cmp_internal(end1->t, end2->t);
@@ -2186,29 +2173,14 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
       pfree_array((void **) tofree, nfree);
       return lfinfo->ever ? 1 : 0;
     }
-    Datum intvalue1, intvalue2;
-    TimestampTz inttime;
-    /* If either the start values or the end values are equal and both have
-     * linear interpolation compute the function an intermediate point */
-    if (datum_eq(startvalue1, startvalue2, basetype) ||
-         (interp1 == LINEAR && interp2 == LINEAR &&
-          datum_eq(endvalue1, endvalue2, basetype)))
+    /* If either the start values or the end values are equal, determine
+     * whether there is a crossing and if there is one compute the value at
+     * the crossing */
+    if (datum_ne(startvalue1, startvalue2, basetype) ||
+        datum_eq(endvalue1, endvalue2, basetype))
     {
-      /* Compute the function at the middle time between the start and end instants */
-      inttime = start1->t + ((end1->t - start1->t) / 2);
-      intvalue1 = tsegment_value_at_timestamptz(start1, end1, interp1, inttime);
-      intvalue2 = tsegment_value_at_timestamptz(start2, end2, interp2, inttime);
-      res = DatumGetBool(tfunc_base_base(intvalue1, intvalue2, lfinfo));
-     if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
-      {
-        pfree_array((void **) tofree, nfree);
-        return lfinfo->ever ? 1 : 0;
-      }
-    }
-    else
-    {
-      /* Determine whether there is a crossing and if there is one compute the
-       * value at the crossing */
+      Datum intvalue1, intvalue2;
+      TimestampTz inttime;
       bool hascross = tsegment_intersection(start1, end1, interp1,
         start2, end2, interp2, &intvalue1, &intvalue2, &inttime);
       if (hascross)
@@ -2241,7 +2213,7 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * (dispatch function)
  * @note This function is called for each composing sequence of a temporal
  * sequence set and therefore the bounding period test is repeated
@@ -2280,7 +2252,7 @@ eafunc_tcontseq_tcontseq(const TSequence *seq1,
 /*****************************************************************************/
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @note The bounding period test in the dispatch function
@@ -2315,7 +2287,7 @@ eafunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -2328,7 +2300,7 @@ eafunc_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] ss1,ss2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -2382,7 +2354,7 @@ eafunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
 /*****************************************************************************/
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] temp1,temp2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */

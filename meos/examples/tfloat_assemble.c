@@ -29,17 +29,17 @@
 
 /**
  * @brief A simple program that generates a given number of tfloat instants,
- * accumulates each generated instants into an array, and at the end assembles 
+ * accumulates each generated instants into an array, and at the end assembles
  * the sequence from the input instants and outputs the number of instants and
  * the last value of the sequence.
  *
  * This program and the program tfloat_expand.c in the same directory can be
- * used to compare the two alternative strategies for 
- * (1) assembling the sequence at the end from the input instants 
- * (2) expanding the sequence at each input instant 
+ * used to compare the two alternative strategies for
+ * (1) assembling the sequence at the end from the input instants
+ * (2) expanding the sequence at each input instant
  *
  * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence. 
+ * instants will appear in the final sequence.
  *
  * The program can be build as follows
  * @code
@@ -61,7 +61,7 @@ int main(void)
   clock_t tm;
   tm = clock();
 
-  /* Initialize MEOS */ 
+  /* Initialize MEOS */
   meos_initialize(NULL, NULL);
 
   /* Input instants that are accumulated */
@@ -78,7 +78,7 @@ int main(void)
   TimestampTz t = pg_timestamptz_in("1999-12-31", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
   {
-    t = pg_timestamp_pl_interval(t, oneday);
+    t = add_timestamptz_interval(t, oneday);
     instants[i] = tfloatinst_make(i % 2 + 1, t);
   }
 

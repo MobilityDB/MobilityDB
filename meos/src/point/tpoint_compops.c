@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal points.
+ * @brief Spatial functions for temporal points
  */
 
 /* PostgreSQL */
@@ -49,7 +49,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal point and a point satisfy the ever/always
  * comparison
  * @param[in] temp Temporal value
@@ -67,12 +66,10 @@ eacomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
       ! ensure_point_type(gs) ||
       ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return -1;
-
   return eacomp_temporal_base(temp, PointerGetDatum(gs), func, ever);
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if two temporal points satisfy the ever/always comparison
  * @param[in] temp1,temp2 Temporal values
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -88,14 +85,26 @@ eacomp_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
       ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return -1;
-
   return eacomp_temporal_temporal(temp1, temp2, func, ever);
 }
 
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a point is ever equal to a temporal point
+ * @param[in] gs Point
+ * @param[in] temp Temporal point
+ * @csqlfn #Ever_eq_point_tpoint()
+ */
+int
+ever_eq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return eacomp_tpoint_point(temp, gs, &datum2_eq, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal point is ever equal to a point
  * @param[in] temp Temporal point
  * @param[in] gs Point
@@ -108,7 +117,20 @@ ever_eq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a point is ever different to a temporal point
+ * @param[in] gs Point
+ * @param[in] temp Temporal point
+ * @csqlfn #Ever_ne_point_tpoint()
+ */
+int
+ever_ne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return eacomp_tpoint_point(temp, gs, &datum2_ne, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal point is ever different to a point
  * @param[in] temp Temporal point
  * @param[in] gs Point
@@ -121,7 +143,20 @@ ever_ne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a point is always equal to a temporal point
+ * @param[in] gs Point
+ * @param[in] temp Temporal point
+ * @csqlfn #Always_eq_point_tpoint()
+ */
+int
+always_eq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return eacomp_tpoint_point(temp, gs, &datum2_eq, ALWAYS);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal point is always equal to a point
  * @param[in] temp Temporal point
  * @param[in] gs Point
@@ -134,7 +169,20 @@ always_eq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a point is always different from a temporal point
+ * @param[in] gs Point
+ * @param[in] temp Temporal point
+ * @csqlfn #Always_ne_point_tpoint()
+ */
+int
+always_ne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return eacomp_tpoint_point(temp, gs, &datum2_ne, ALWAYS);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal point is always different from a point
  * @param[in] temp Temporal point
  * @param[in] gs Point
@@ -149,7 +197,7 @@ always_ne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if two temporal points are ever equal
  * @param[in] temp1,temp2 Temporal points
  * @csqlfn #Ever_eq_tpoint_tpoint()
@@ -161,7 +209,7 @@ ever_eq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if two temporal points are ever different
  * @param[in] temp1,temp2 Temporal points
  * @csqlfn #Ever_ne_tpoint_tpoint()
@@ -173,7 +221,7 @@ ever_ne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if two temporal points are always equal
  * @param[in] temp1,temp2 Temporal points
  * @csqlfn #Always_eq_tpoint_tpoint()
@@ -185,7 +233,7 @@ always_eq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if two temporal points are always different
  * @param[in] temp1,temp2 Temporal points
  * @csqlfn #Always_ne_tpoint_tpoint()
@@ -201,8 +249,7 @@ always_ne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return the temporal comparison of a temporal point and a point 
+ * @brief Return the temporal comparison of a temporal point and a point
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @param[in] func Comparison function
@@ -218,15 +265,12 @@ tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
       ! ensure_point_type(gs) ||
       ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return NULL;
-
   return tcomp_temporal_base(temp, PointerGetDatum(gs), func, invert);
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return the temporal comparison of two temporal points
  * @param[in] temp1,temp2 Temporal values
- * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] func Comparison function
  */
 static Temporal *
@@ -239,18 +283,17 @@ tcomp_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
       ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return NULL;
-
   return tcomp_temporal_temporal(temp1, temp2, func);
 }
 
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return the temporal equality of a temporal point and a point
- * @param[in] temp Temporal point
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a point and a temporal point
  * @param[in] gs Point
- * @csqlfn #Teq_tpoint_point()
+ * @param[in] temp Temporal point
+ * @csqlfn #Teq_point_tpoint()
  */
 Temporal *
 teq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
@@ -259,7 +302,7 @@ teq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal inequality of a point and a temporal point
  * @param[in] temp Temporal point
  * @param[in] gs Point
@@ -274,7 +317,7 @@ tne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal equality of a temporal point and a point
  * @param[in] temp Temporal point
  * @param[in] gs Point
@@ -287,7 +330,7 @@ teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal inequality of a temporal point and a point
  * @param[in] temp Temporal point
  * @param[in] gs Point
@@ -302,7 +345,7 @@ tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return true if two temporal points are ever equal
  * @param[in] temp1,temp2 Temporal points
  * @csqlfn #Ever_eq_tpoint_tpoint()
@@ -314,7 +357,7 @@ teq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return true if two temporal points are ever different
  * @param[in] temp1,temp2 Temporal points
  * @csqlfn #Ever_ne_tpoint_tpoint()

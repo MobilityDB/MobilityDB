@@ -103,7 +103,9 @@ extern void tbox_tile_get(Datum value, TimestampTz t, Datum vsize,
 extern TboxGridState *tbox_tile_state_make(const TBox *box, Datum vsize,
   const Interval *duration, Datum xorigin, TimestampTz torigin);
 extern void tbox_tile_state_next(TboxGridState *state);
-
+extern TBox *tbox_tile(Datum value, TimestampTz t, Datum vsize,
+  Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype);
+  
 /*****************************************************************************/
 
 extern int64 interval_units(const Interval *interval);

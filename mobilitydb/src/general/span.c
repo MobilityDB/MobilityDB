@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief General functions for span types (a.k.a. ranges) composed of two 
+ * @brief General functions for span types (a.k.a. ranges) composed of two
  * `Datum` values and two Boolean values stating whether the bounds are
  * inclusive or not
  */
@@ -62,6 +62,8 @@ PG_FUNCTION_INFO_V1(Span_in);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Input function for span types
+ * param[in] str String
+ * param[in] spantypid Type oid
  * @sqlfn span_in()
  */
 Datum
@@ -131,7 +133,7 @@ PGDLLEXPORT Datum Span_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_constructor);
 /**
  * @ingroup mobilitydb_setspan_constructor
- * @brief Construct a span from the arguments
+ * @brief Return a span from the bounds
  * @sqlfn intspan(), floatspan(), ...
  */
 Datum
@@ -161,9 +163,9 @@ PG_FUNCTION_INFO_V1(Value_to_span);
 Datum
 Value_to_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_SPAN_P(value_to_span(d, basetype));
+  PG_RETURN_SPAN_P(value_to_span(value, basetype));
 }
 
 PGDLLEXPORT Datum Intspan_to_floatspan(PG_FUNCTION_ARGS);
@@ -232,7 +234,7 @@ PGDLLEXPORT Datum Span_to_range(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_range);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a span to a range 
+ * @brief Convert a span to a range
  * @sqlfn int4range(), tstzrange()
  * @sqlop @p ::
  */
@@ -409,7 +411,7 @@ Tstzspan_duration(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Transformation functions
  *
- * Since in PostgreSQL the type date is defined as follows 
+ * Since in PostgreSQL the type date is defined as follows
  *   typedef int32 DateADT;
  * the functions #Numspan_shift, #Numspan_scale, and #Numspan_shift_scale are
  * also used for datespans and datespansets

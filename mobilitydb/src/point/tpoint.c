@@ -91,7 +91,7 @@ pg_notice(const char *fmt, va_list ap)
  * @brief Set the handlers for initializing the liblwgeom library
  */
 void
-temporalgeom_init()
+mobilitydb_init()
 {
   lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
   return;
@@ -411,7 +411,7 @@ PGDLLEXPORT Datum Tpointinst_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointinst_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal instant point value from the arguments
+ * @brief Return a temporal instant point from a point and a timestamptz
  * @sqlfn tgeompoint_inst(), tgeogpoint_inst()
  */
 Datum

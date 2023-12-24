@@ -39,9 +39,98 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/span.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/spanset.h"
+#include "pg_general/temporal.h"
+
+/*****************************************************************************
+ * Boolean operators
+ *****************************************************************************/
+
+/**
+ * @brief Generic function for set operators on span sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_base_spanset(FunctionCallInfo fcinfo,
+  bool (*func)(Datum, const SpanSet *))
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  bool result = func(value, ss);
+  DATUM_FREE_IF_COPY(value, ss->basetype, 0);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for boolean operators on span sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_spanset_base(FunctionCallInfo fcinfo,
+  bool (*func)(const SpanSet *, Datum))
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum value = PG_GETARG_ANYDATUM(1);
+  bool result = func(ss, value);
+  DATUM_FREE_IF_COPY(value, ss->basetype, 1);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for boolean operators on span sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_span_spanset(FunctionCallInfo fcinfo,
+  bool (*func)(const Span *, const SpanSet *))
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  bool result = func(s, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for boolean operators on span sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_spanset_span(FunctionCallInfo fcinfo,
+  bool (*func)(const SpanSet *, const Span *))
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  bool result = func(ss, s);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for boolean operators on span sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_spanset_spanset(FunctionCallInfo fcinfo,
+  bool (*func)(const SpanSet *, const SpanSet *))
+{
+  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
+  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
+  bool result = func(ss1, ss2);
+  PG_FREE_IF_COPY(ss1, 0);
+  PG_FREE_IF_COPY(ss2, 1);
+  PG_RETURN_BOOL(result);
+}
 
 /*****************************************************************************
  * Contains
@@ -58,12 +147,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_value);
 Datum
 Contains_spanset_value(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = contains_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_base(fcinfo, &contains_spanset_value);
 }
 
 PGDLLEXPORT Datum Contains_spanset_span(PG_FUNCTION_ARGS);
@@ -77,11 +161,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_span);
 Datum
 Contains_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  bool result = contains_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_span(fcinfo, &contains_spanset_span);
 }
 
 PGDLLEXPORT Datum Contains_span_spanset(PG_FUNCTION_ARGS);
@@ -95,11 +175,7 @@ PG_FUNCTION_INFO_V1(Contains_span_spanset);
 Datum
 Contains_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = contains_span_spanset(s, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_span_spanset(fcinfo, &contains_span_spanset);
 }
 
 PGDLLEXPORT Datum Contains_spanset_spanset(PG_FUNCTION_ARGS);
@@ -113,12 +189,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_spanset);
 Datum
 Contains_spanset_spanset(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
-  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  bool result = contains_spanset_spanset(ss1, ss2);
-  PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_spanset(fcinfo, &contains_spanset_spanset);
 }
 
 /*****************************************************************************
@@ -136,12 +207,7 @@ PG_FUNCTION_INFO_V1(Contained_value_spanset);
 Datum
 Contained_value_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = contained_value_spanset(d, basetype, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_spanset(fcinfo, &contained_value_spanset);
 }
 
 PGDLLEXPORT Datum Contained_span_spanset(PG_FUNCTION_ARGS);
@@ -155,11 +221,7 @@ PG_FUNCTION_INFO_V1(Contained_span_spanset);
 Datum
 Contained_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = contained_span_spanset(s, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_span_spanset(fcinfo, &contained_span_spanset);
 }
 
 PGDLLEXPORT Datum Contained_spanset_span(PG_FUNCTION_ARGS);
@@ -173,11 +235,7 @@ PG_FUNCTION_INFO_V1(Contained_spanset_span);
 Datum
 Contained_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  bool result = contained_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_span(fcinfo, &contained_spanset_span);
 }
 
 PGDLLEXPORT Datum Contained_spanset_spanset(PG_FUNCTION_ARGS);
@@ -191,12 +249,7 @@ PG_FUNCTION_INFO_V1(Contained_spanset_spanset);
 Datum
 Contained_spanset_spanset(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
-  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  bool result = contained_spanset_spanset(ss1, ss2);
-  PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_spanset(fcinfo, &contained_spanset_spanset);
 }
 
 /*****************************************************************************
@@ -214,11 +267,7 @@ PG_FUNCTION_INFO_V1(Overlaps_span_spanset);
 Datum
 Overlaps_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overlaps_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_span_spanset(fcinfo, &overlaps_span_spanset);
 }
 
 PGDLLEXPORT Datum Overlaps_spanset_span(PG_FUNCTION_ARGS);
@@ -232,11 +281,7 @@ PG_FUNCTION_INFO_V1(Overlaps_spanset_span);
 Datum
 Overlaps_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  bool result = overlaps_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_span(fcinfo, &overlaps_spanset_span);
 }
 
 PGDLLEXPORT Datum Overlaps_spanset_spanset(PG_FUNCTION_ARGS);
@@ -250,12 +295,7 @@ PG_FUNCTION_INFO_V1(Overlaps_spanset_spanset);
 Datum
 Overlaps_spanset_spanset(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
-  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  bool result = overlaps_spanset_spanset(ss1, ss2);
-  PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_spanset(fcinfo, &overlaps_spanset_spanset);
 }
 
 /*****************************************************************************
@@ -273,12 +313,7 @@ PG_FUNCTION_INFO_V1(Adjacent_value_spanset);
 Datum
 Adjacent_value_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = adjacent_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_spanset(fcinfo, &adjacent_value_spanset);
 }
 
 PGDLLEXPORT Datum Adjacent_spanset_value(PG_FUNCTION_ARGS);
@@ -292,12 +327,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_value);
 Datum
 Adjacent_spanset_value(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = adjacent_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_base(fcinfo, &adjacent_spanset_value);
 }
 
 PGDLLEXPORT Datum Adjacent_span_spanset(PG_FUNCTION_ARGS);
@@ -311,11 +341,7 @@ PG_FUNCTION_INFO_V1(Adjacent_span_spanset);
 Datum
 Adjacent_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = adjacent_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_span_spanset(fcinfo, &adjacent_span_spanset);
 }
 
 PGDLLEXPORT Datum Adjacent_spanset_span(PG_FUNCTION_ARGS);
@@ -329,11 +355,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_span);
 Datum
 Adjacent_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  bool result = adjacent_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_span(fcinfo, &adjacent_spanset_span);
 }
 
 PGDLLEXPORT Datum Adjacent_spanset_spanset(PG_FUNCTION_ARGS);
@@ -347,12 +369,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_spanset);
 Datum
 Adjacent_spanset_spanset(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
-  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  bool result = adjacent_spanset_spanset(ss1, ss2);
-  PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_spanset(fcinfo, &adjacent_spanset_spanset);
 }
 
 /*****************************************************************************
@@ -370,12 +387,7 @@ PG_FUNCTION_INFO_V1(Left_value_spanset);
 Datum
 Left_value_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = left_value_spanset(d, basetype, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_spanset(fcinfo, &left_value_spanset);
 }
 
 PGDLLEXPORT Datum Left_span_spanset(PG_FUNCTION_ARGS);
@@ -389,11 +401,7 @@ PG_FUNCTION_INFO_V1(Left_span_spanset);
 Datum
 Left_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = left_span_spanset(s, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_span_spanset(fcinfo, &left_span_spanset);
 }
 
 PGDLLEXPORT Datum Left_spanset_value(PG_FUNCTION_ARGS);
@@ -407,12 +415,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_value);
 Datum
 Left_spanset_value(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = left_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_base(fcinfo, &left_spanset_value);
 }
 
 PGDLLEXPORT Datum Left_spanset_span(PG_FUNCTION_ARGS);
@@ -426,11 +429,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_span);
 Datum
 Left_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  bool result = left_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_span(fcinfo, &left_spanset_span);
 }
 
 PGDLLEXPORT Datum Left_spanset_spanset(PG_FUNCTION_ARGS);
@@ -444,12 +443,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_spanset);
 Datum
 Left_spanset_spanset(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
-  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  bool result = left_spanset_spanset(ss1, ss2);
-  PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_spanset(fcinfo, &left_spanset_spanset);
 }
 
 /*****************************************************************************
@@ -467,12 +461,7 @@ PG_FUNCTION_INFO_V1(Right_value_spanset);
 Datum
 Right_value_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = right_value_spanset(d, basetype, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_spanset(fcinfo, &right_value_spanset);
 }
 
 PGDLLEXPORT Datum Right_span_spanset(PG_FUNCTION_ARGS);
@@ -486,11 +475,7 @@ PG_FUNCTION_INFO_V1(Right_span_spanset);
 Datum
 Right_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = right_span_spanset(s, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_span_spanset(fcinfo, &right_span_spanset);
 }
 
 PGDLLEXPORT Datum Right_spanset_value(PG_FUNCTION_ARGS);
@@ -504,12 +489,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_value);
 Datum
 Right_spanset_value(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = right_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_base(fcinfo, &right_spanset_value);
 }
 
 PGDLLEXPORT Datum Right_spanset_span(PG_FUNCTION_ARGS);
@@ -523,11 +503,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_span);
 Datum
 Right_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  bool result = right_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_span(fcinfo, &right_spanset_span);
 }
 
 PGDLLEXPORT Datum Right_spanset_spanset(PG_FUNCTION_ARGS);
@@ -541,12 +517,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_spanset);
 Datum
 Right_spanset_spanset(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
-  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  bool result = right_spanset_spanset(ss1, ss2);
-  PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_spanset(fcinfo, &right_spanset_spanset);
 }
 
 /*****************************************************************************
@@ -564,12 +535,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_spanset);
 Datum
 Overleft_value_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = overleft_value_spanset(d, basetype, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_spanset(fcinfo, &overleft_value_spanset);
 }
 
 PGDLLEXPORT Datum Overleft_spanset_value(PG_FUNCTION_ARGS);
@@ -583,12 +549,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_value);
 Datum
 Overleft_spanset_value(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = overleft_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_base(fcinfo, &overleft_spanset_value);
 }
 
 PGDLLEXPORT Datum Overleft_span_spanset(PG_FUNCTION_ARGS);
@@ -602,11 +563,7 @@ PG_FUNCTION_INFO_V1(Overleft_span_spanset);
 Datum
 Overleft_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overleft_span_spanset(s, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_span_spanset(fcinfo, &overleft_span_spanset);
 }
 
 PGDLLEXPORT Datum Overleft_spanset_span(PG_FUNCTION_ARGS);
@@ -620,11 +577,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_span);
 Datum
 Overleft_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  bool result = overleft_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_span(fcinfo, &overleft_spanset_span);
 }
 
 PGDLLEXPORT Datum Overleft_spanset_spanset(PG_FUNCTION_ARGS);
@@ -639,12 +592,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_spanset);
 Datum
 Overleft_spanset_spanset(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
-  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  bool result = overleft_spanset_spanset(ss1, ss2);
-  PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_spanset(fcinfo, &overleft_spanset_spanset);
 }
 
 /*****************************************************************************
@@ -662,12 +610,7 @@ PG_FUNCTION_INFO_V1(Overright_value_spanset);
 Datum
 Overright_value_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = overright_value_spanset(d, basetype, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_spanset(fcinfo, &overright_value_spanset);
 }
 
 PGDLLEXPORT Datum Overright_spanset_value(PG_FUNCTION_ARGS);
@@ -681,12 +624,7 @@ PG_FUNCTION_INFO_V1(Overright_spanset_value);
 Datum
 Overright_spanset_value(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = overright_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_base(fcinfo, &overright_spanset_value);
 }
 
 PGDLLEXPORT Datum Overright_span_spanset(PG_FUNCTION_ARGS);
@@ -700,11 +638,7 @@ PG_FUNCTION_INFO_V1(Overright_span_spanset);
 Datum
 Overright_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overright_span_spanset(s, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_span_spanset(fcinfo, &overright_span_spanset);
 }
 
 PGDLLEXPORT Datum Overright_spanset_span(PG_FUNCTION_ARGS);
@@ -718,11 +652,7 @@ PG_FUNCTION_INFO_V1(Overright_spanset_span);
 Datum
 Overright_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  bool result = overright_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_spanset_span(fcinfo, &overright_spanset_span);
 }
 
 PGDLLEXPORT Datum Overright_spanset_spanset(PG_FUNCTION_ARGS);
@@ -737,12 +667,104 @@ PG_FUNCTION_INFO_V1(Overright_spanset_spanset);
 Datum
 Overright_spanset_spanset(PG_FUNCTION_ARGS)
 {
+  return Boolop_spanset_spanset(fcinfo, &overright_spanset_spanset);
+}
+
+/*****************************************************************************
+ * Set operators
+ *****************************************************************************/
+
+/**
+ * @brief Generic function for set operators on span sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_base_spanset(FunctionCallInfo fcinfo,
+  SpanSet * (*func)(Datum, const SpanSet *))
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  SpanSet *result = func(value, ss);
+  DATUM_FREE_IF_COPY(value, ss->basetype, 0);
+  PG_FREE_IF_COPY(ss, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SPANSET_P(result);
+}
+
+/**
+ * @brief Generic function for set operators on span sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_spanset_base(FunctionCallInfo fcinfo,
+  SpanSet * (*func)(const SpanSet *, Datum))
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum value = PG_GETARG_ANYDATUM(1);
+  SpanSet *result = func(ss, value);
+  DATUM_FREE_IF_COPY(value, ss->basetype, 1);
+  PG_FREE_IF_COPY(ss, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SPANSET_P(result);
+}
+
+/**
+ * @brief Generic function for set operators on span sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_span_spanset(FunctionCallInfo fcinfo,
+  SpanSet * (*func)(const Span *, const SpanSet *))
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  SpanSet *result = func(s, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SPANSET_P(result);
+}
+
+/**
+ * @brief Generic function for set operators on span sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_spanset_span(FunctionCallInfo fcinfo,
+  SpanSet * (*func)(const SpanSet *, const Span *))
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  SpanSet *result = func(ss, s);
+  PG_FREE_IF_COPY(ss, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SPANSET_P(result);
+}
+
+/**
+ * @brief Generic function for set operators on span sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_spanset_spanset(FunctionCallInfo fcinfo,
+  SpanSet * (*func)(const SpanSet *, const SpanSet *))
+{
   SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
   SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  bool result = overright_spanset_spanset(ss1, ss2);
+  SpanSet *result = func(ss1, ss2);
   PG_FREE_IF_COPY(ss1, 0);
   PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_BOOL(result);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SPANSET_P(result);
 }
 
 /*****************************************************************************
@@ -760,12 +782,7 @@ PG_FUNCTION_INFO_V1(Union_value_spanset);
 Datum
 Union_value_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  SpanSet *result = union_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_SPANSET_P(result);
+  return Setop_base_spanset(fcinfo, &union_value_spanset);
 }
 
 PGDLLEXPORT Datum Union_span_spanset(PG_FUNCTION_ARGS);
@@ -779,11 +796,7 @@ PG_FUNCTION_INFO_V1(Union_span_spanset);
 Datum
 Union_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = union_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_SPANSET_P(result);
+  return Setop_span_spanset(fcinfo, &union_span_spanset);
 }
 
 PGDLLEXPORT Datum Union_spanset_value(PG_FUNCTION_ARGS);
@@ -797,12 +810,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_value);
 Datum
 Union_spanset_value(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  SpanSet *result = union_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_SPANSET_P(result);
+  return Setop_spanset_base(fcinfo, &union_spanset_value);
 }
 
 PGDLLEXPORT Datum Union_spanset_span(PG_FUNCTION_ARGS);
@@ -816,11 +824,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_span);
 Datum
 Union_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  SpanSet *result = union_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_SPANSET_P(result);
+  return Setop_spanset_span(fcinfo, &union_spanset_span);
 }
 
 PGDLLEXPORT Datum Union_spanset_spanset(PG_FUNCTION_ARGS);
@@ -834,12 +838,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_spanset);
 Datum
 Union_spanset_spanset(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
-  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = union_spanset_spanset(ss1, ss2);
-  PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_SPANSET_P(result);
+  return Setop_spanset_spanset(fcinfo, &union_spanset_spanset);
 }
 
 /*****************************************************************************
@@ -857,14 +856,7 @@ PG_FUNCTION_INFO_V1(Intersection_value_spanset);
 Datum
 Intersection_value_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  SpanSet *result = intersection_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPANSET_P(result);
+  return Setop_base_spanset(fcinfo, &intersection_value_spanset);
 }
 
 PGDLLEXPORT Datum Intersection_span_spanset(PG_FUNCTION_ARGS);
@@ -878,13 +870,7 @@ PG_FUNCTION_INFO_V1(Intersection_span_spanset);
 Datum
 Intersection_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = intersection_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPANSET_P(result);
+  return Setop_span_spanset(fcinfo, &intersection_span_spanset);
 }
 
 PGDLLEXPORT Datum Intersection_spanset_value(PG_FUNCTION_ARGS);
@@ -898,14 +884,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_value);
 Datum
 Intersection_spanset_value(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  SpanSet *result = intersection_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPANSET_P(result);
+  return Setop_spanset_base(fcinfo, &intersection_spanset_value);
 }
 
 PGDLLEXPORT Datum Intersection_spanset_span(PG_FUNCTION_ARGS);
@@ -919,13 +898,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_span);
 Datum
 Intersection_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  SpanSet *result = intersection_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPANSET_P(result);
+  return Setop_spanset_span(fcinfo, &intersection_spanset_span);
 }
 
 PGDLLEXPORT Datum Intersection_spanset_spanset(PG_FUNCTION_ARGS);
@@ -939,14 +912,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_spanset);
 Datum
 Intersection_spanset_spanset(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
-  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = intersection_spanset_spanset(ss1, ss2);
-  PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPANSET_P(result);
+  return Setop_spanset_spanset(fcinfo, &intersection_spanset_spanset);
 }
 
 /*****************************************************************************
@@ -965,14 +931,7 @@ PG_FUNCTION_INFO_V1(Minus_value_spanset);
 Datum
 Minus_value_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  SpanSet *result = minus_value_spanset(d, basetype, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPANSET_P(result);
+  return Setop_base_spanset(fcinfo, &minus_value_spanset);
 }
 
 PGDLLEXPORT Datum Minus_span_spanset(PG_FUNCTION_ARGS);
@@ -986,13 +945,7 @@ PG_FUNCTION_INFO_V1(Minus_span_spanset);
 Datum
 Minus_span_spanset(PG_FUNCTION_ARGS)
 {
-  Span *s = PG_GETARG_SPAN_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = minus_span_spanset(s, ss);
-  PG_FREE_IF_COPY(ss, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPANSET_P(result);
+  return Setop_span_spanset(fcinfo, &minus_span_spanset);
 }
 
 PGDLLEXPORT Datum Minus_spanset_value(PG_FUNCTION_ARGS);
@@ -1006,14 +959,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_value);
 Datum
 Minus_spanset_value(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  SpanSet *result = minus_spanset_value(ss, d, basetype);
-  PG_FREE_IF_COPY(ss, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPANSET_P(result);
+  return Setop_spanset_base(fcinfo, &minus_spanset_value);
 }
 
 PGDLLEXPORT Datum Minus_spanset_span(PG_FUNCTION_ARGS);
@@ -1027,13 +973,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_span);
 Datum
 Minus_spanset_span(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  SpanSet *result = minus_spanset_span(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPANSET_P(result);
+  return Setop_spanset_span(fcinfo, &minus_spanset_span);
 }
 
 PGDLLEXPORT Datum Minus_spanset_spanset(PG_FUNCTION_ARGS);
@@ -1047,14 +987,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_spanset);
 Datum
 Minus_spanset_spanset(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
-  SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = minus_spanset_spanset(ss1, ss2);
-  PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_SPANSET_P(result);
+  return Setop_spanset_spanset(fcinfo, &minus_spanset_spanset);
 }
 
 /******************************************************************************
@@ -1072,10 +1005,9 @@ PG_FUNCTION_INFO_V1(Distance_value_spanset);
 Datum
 Distance_value_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Datum result = distance_spanset_value(ss, d, basetype);
+  Datum result = distance_spanset_value(ss, value);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_DATUM(result);
 }
@@ -1111,9 +1043,8 @@ Datum
 Distance_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Datum result = distance_spanset_value(ss, d, basetype);
+  Datum value = PG_GETARG_DATUM(1);
+  Datum result = distance_spanset_value(ss, value);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_DATUM(result);
 }

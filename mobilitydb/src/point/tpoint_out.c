@@ -102,7 +102,7 @@ Tpoint_as_ewkt(PG_FUNCTION_ARGS)
  * representation
  */
 static Datum
-geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
+Geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   /* Return NULL on empty array */
@@ -119,7 +119,7 @@ geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
   char **strarr;
   if (temporal)
   {
-    Temporal **temparr = temporalarr_extract(array, &count);
+    Temporal **temparr = temparr_extract(array, &count);
     strarr = tpointarr_as_text((const Temporal **) temparr, count,
       dbl_dig_for_wkt, extended);
     /* We cannot use pfree_array */
@@ -129,10 +129,10 @@ geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
   {
     Datum *geoarr = datumarr_extract(array, &count);
     strarr = geoarr_as_text(geoarr, count, dbl_dig_for_wkt, extended);
+    /* We cannot use pfree_array */
     pfree(geoarr);
   }
   ArrayType *result = strarr_to_textarray(strarr, count);
-  pfree_array((void **) strarr, count);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -148,7 +148,7 @@ PG_FUNCTION_INFO_V1(Geoarr_as_text);
 Datum
 Geoarr_as_text(PG_FUNCTION_ARGS)
 {
-  return geoarr_as_text_ext(fcinfo, false, false);
+  return Geoarr_as_text_ext(fcinfo, false, false);
 }
 
 PGDLLEXPORT Datum Geoarr_as_ewkt(PG_FUNCTION_ARGS);
@@ -163,7 +163,7 @@ PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
 Datum
 Geoarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return geoarr_as_text_ext(fcinfo, false, true);
+  return Geoarr_as_text_ext(fcinfo, false, true);
 }
 
 PGDLLEXPORT Datum Tpointarr_as_text(PG_FUNCTION_ARGS);
@@ -177,7 +177,7 @@ PG_FUNCTION_INFO_V1(Tpointarr_as_text);
 Datum
 Tpointarr_as_text(PG_FUNCTION_ARGS)
 {
-  return geoarr_as_text_ext(fcinfo, true, false);
+  return Geoarr_as_text_ext(fcinfo, true, false);
 }
 
 PGDLLEXPORT Datum Tpointarr_as_ewkt(PG_FUNCTION_ARGS);
@@ -192,7 +192,7 @@ PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
 Datum
 Tpointarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return geoarr_as_text_ext(fcinfo, true, true);
+  return Geoarr_as_text_ext(fcinfo, true, true);
 }
 
 /*****************************************************************************/

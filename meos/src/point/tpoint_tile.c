@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for spatial and spatiotemporal tiles.
+ * @brief Functions for spatial and spatiotemporal tiles
  */
 
 /* C */
@@ -193,7 +193,7 @@ bitmatrix_print2D(const BitMatrix *bm, int *coords)
 
 /**
  * @brief Print the bit matrix
- * @note This function is only used while debugging
+ * @note This function is only used for debugging purposes
  */
 void
 bitmatrix_print(const BitMatrix *bm)
@@ -262,7 +262,7 @@ bitmatrix_print(const BitMatrix *bm)
  *****************************************************************************/
 
 /**
- * @brief Set in the bit matrix the bits of the tiles connecting with a line the
+ * @brief Set in the bit matrix the bits of the tiles connecting with a line
  * two input tiles
  * @param[in] coords1, coords2 Coordinates of the input tiles
  * @param[in] eps1, eps2 Relative position of the points in the input tiles
@@ -456,7 +456,8 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
 }
 
 /**
- * @brief Increment the current state to the next tile of the multidimensional grid
+ * @brief Increment the current state to the next tile of the multidimensional
+ * grid
  * @param[in] state State to increment
  */
 void
@@ -566,8 +567,8 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_analytics_tile
- * @brief Generate a multidimensional grid for temporal points.
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the multidimensional grid of a spatiotemporal box
  * @param[in] bounds Bounds
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
  * @param[in] duration Duration
@@ -658,8 +659,8 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_temporal_analytics_tile
- * @brief Generate a tile in a multidimensional grid for temporal points
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return a tile in the multidimensional grid of a spatiotemporal box
  * @param[in] point Point
  * @param[in] t Timestamp
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
@@ -776,7 +777,8 @@ tile_get_eps(double dx, double dy, double dz, TimestampTz dt,
 }
 
 /**
- * @brief Get the coordinates of the tile corresponding the temporal instant point
+ * @brief Get the coordinates of the tile corresponding the temporal point
+ * instant
  * @param[in] inst Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -809,7 +811,8 @@ tpointinst_get_coords_eps(const TInstant *inst, bool hasz, bool hast,
 }
 
 /**
- * @brief Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting a temporal point
+ * instant
  * @param[in] inst Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -830,7 +833,8 @@ tpointinst_set_tiles(const TInstant *inst, bool hasz, bool hast,
 }
 
 /**
- * @brief Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting a temporal point
+ * sequence
  * @param[in] seq Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -846,8 +850,8 @@ tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   memset(coords, 0, sizeof(coords));
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    tpointinst_get_coords_eps(inst, hasz, hast, state, coords, NULL);
+    tpointinst_get_coords_eps(TSEQUENCE_INST_N(seq, i), hasz, hast, state,
+      coords, NULL);
     bitmatrix_set_cell(bm, coords, true);
     result++;
   }
@@ -855,7 +859,8 @@ tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
 }
 
 /**
- * @brief Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting the temporal
+ * point sequence
  * @param[in] seq Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -871,12 +876,12 @@ tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   double eps1[MAXDIMS], eps2[MAXDIMS];
   memset(coords1, 0, sizeof(coords1));
   memset(coords2, 0, sizeof(coords2));
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  tpointinst_get_coords_eps(inst1, hasz, hast, state, coords1, eps1);
+  tpointinst_get_coords_eps(TSEQUENCE_INST_N(seq, 0), hasz, hast, state,
+    coords1, eps1);
   for (int i = 1; i < seq->count; i++)
   {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    tpointinst_get_coords_eps(inst2, hasz, hast, state, coords2, eps2);
+    tpointinst_get_coords_eps(TSEQUENCE_INST_N(seq, i), hasz, hast, state,
+      coords2, eps2);
     result += fastvoxel_bm(coords1, eps1, coords2, eps2, ndims, bm);
     memcpy(coords1, coords2, sizeof(coords1));
     memcpy(eps1, eps2, sizeof(eps1));
@@ -885,7 +890,8 @@ tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
 }
 
 /**
- * @brief Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting the temporal
+ * point sequence
  * @param[in] seq Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -896,16 +902,14 @@ static int
 tpointseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
-  int result;
-  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
-    result = tcontseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
-  else
-    result = tdiscseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
-  return result;
+  return MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
+    tcontseq_set_tiles((TSequence *) seq, hasz, hast, state, bm) :
+    tdiscseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
 }
 
 /**
- * @brief Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting a temporal point
+ * sequence set
  * @param[in] ss Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -918,15 +922,13 @@ tpointseqset_set_tiles(const TSequenceSet *ss, bool hasz, bool hast,
 {
   int result = 0;
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    result += tpointseq_set_tiles(seq, hasz, hast, state, bm);
-  }
+    result += tpointseq_set_tiles(TSEQUENCESET_SEQ_N(ss, i), hasz, hast, state,
+      bm);
   return result;
 }
 
 /**
- * @brief Set the bit corresponding to the tiles intersecting the temporal point
+ * @brief Set the bit corresponding to the tiles intersecting a temporal point
  * @param[in] temp Temporal point
  * @param[in] state Grid definition
  * @param[out] bm Bit matrix
@@ -939,14 +941,15 @@ tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
   bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
   bool hast = (state->tunits > 0);
   assert(temptype_subtype(temp->subtype));
-  int result;
-  if (temp->subtype == TINSTANT)
-    result = tpointinst_set_tiles((TInstant *) temp, hasz, hast, state, bm);
-  else if (temp->subtype == TSEQUENCE)
-    result = tpointseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tpointseqset_set_tiles((TSequenceSet *) temp, hasz, hast, state, bm);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return tpointinst_set_tiles((TInstant *) temp, hasz, hast, state, bm);
+    case TSEQUENCE:
+      return tpointseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
+    default: /* TSEQUENCESET */
+      return tpointseqset_set_tiles((TSequenceSet *) temp, hasz, hast, state, bm);
+  }
 }
 
 /*****************************************************************************/
@@ -1043,19 +1046,20 @@ tpoint_space_time_split_init(Temporal *temp, float xsize, float ysize,
   }
   return state;
 }
-  
+
 #if MEOS
 /**
- * @ingroup libmeos_temporal_analytics_tile
- * @brief Split a temporal point with respect to a space and possibly time grid
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the fragments a temporal point split according to a space and
+ * possibly a time grid
  * @param[in] temp Temporal point
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
  * @param[in] duration Duration
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
- * @param[out] space_buckets Array of space buckets 
- * @param[out] time_buckets Array of time buckets 
+ * @param[out] space_buckets Array of space buckets
+ * @param[out] time_buckets Array of time buckets
  * @param[out] count Number of elements in the output arrays
  */
 Temporal **
@@ -1069,7 +1073,7 @@ tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
   STboxGridState *state = tpoint_space_time_split_init(temp, xsize, ysize,
     zsize, duration, sorigin, torigin, bitmatrix, &ntiles);
   if (! state)
-    return NULL;    
+    return NULL;
 
   GSERIALIZED **spaces = palloc(sizeof(GSERIALIZED *) * ntiles);
   TimestampTz *times = NULL;

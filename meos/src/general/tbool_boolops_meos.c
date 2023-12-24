@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal Boolean operators: and, or, not.
+ * @brief Temporal Boolean operators: and, or, not
  */
 
 #include "general/tbool_boolops.h"
@@ -42,7 +42,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bool
+ * @ingroup meos_temporal_bool
  * @brief Return the boolean and of a boolean and a temporal boolean
  * @param[in] b Value
  * @param[in] temp Temporal value
@@ -53,13 +53,13 @@ tand_bool_tbool(bool b, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_BOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return boolop_tbool_bool(temp, b, &datum_and, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_bool
+ * @ingroup meos_temporal_bool
  * @brief Return the boolean and of a temporal boolean and a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
@@ -70,13 +70,13 @@ tand_tbool_bool(const Temporal *temp, bool b)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_BOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return boolop_tbool_bool(temp, b, &datum_and, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_bool
+ * @ingroup meos_temporal_bool
  * @brief Return the boolean and of the temporal booleans
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Tand_tbool_tbool()
@@ -97,7 +97,7 @@ tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bool
+ * @ingroup meos_temporal_bool
  * @brief Return the boolean or of a boolean and a temporal boolean
  * @param[in] b Value
  * @param[in] temp Temporal value
@@ -108,13 +108,13 @@ tor_bool_tbool(bool b, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_BOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return boolop_tbool_bool(temp, b, &datum_or, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_bool
+ * @ingroup meos_temporal_bool
  * @brief Return the boolean or of a temporal boolean and a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
@@ -125,13 +125,13 @@ tor_tbool_bool(const Temporal *temp, bool b)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_BOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return boolop_tbool_bool(temp, b, &datum_or, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_bool
+ * @ingroup meos_temporal_bool
  * @brief Return the boolean or of the temporal booleans
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Tor_tbool_tbool()

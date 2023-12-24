@@ -77,7 +77,7 @@ int main(void)
   TimestampTz t = pg_timestamptz_in("1999-12-31", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
   {
-    t = pg_timestamp_pl_interval(t, oneday);
+    t = add_timestamptz_interval(t, oneday);
     /* Generate an instant that is kept upon normalization */
     TInstant *inst = tfloatinst_make(i % 2 + 1, t);
     /* Test whether it is the first instant read */

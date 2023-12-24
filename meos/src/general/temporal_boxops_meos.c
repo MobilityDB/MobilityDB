@@ -32,11 +32,11 @@
  * @brief Bounding box functions for temporal types
  *
  * The bounding box of temporal values are
- * - a `Span` for temporal Boolean and temporal text values
- * - a `TBox` for temporal integers and floats, where the *x* coordinate is for
- *   the value dimension and the *t* coordinate is for the time dimension.
- * The following functions are defined: `overlaps`, `contains`, `contained`,
- * `same`, and `adjacent`.
+ * - a @p Span for temporal Boolean and temporal text values
+ * - a @p TBox for temporal integers and floats, where the @p x coordinate is 
+ *   for the value dimension and the @p t coordinate is for the time dimension.
+ * The following functions are defined: @p overlaps, @p contains, @p contained,
+ * @p same, and @p adjacent.
  *
  * The functions consider as many dimensions as they are shared in both
  * arguments: only the value dimension, only the time dimension, or both
@@ -57,7 +57,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a timestamptz span contains the time span of a
  * temporal value
  * @param[in] s Span
@@ -71,7 +71,7 @@ contains_tstzspan_temporal(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the time span of a temporal value contains a
  * timestamptz span
  * @param[in] temp Temporal value
@@ -85,7 +85,7 @@ contains_temporal_tstzspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the time span of the first temporal value
  * contains the one of the second one
  * @param[in] temp1,temp2 Temporal values
@@ -100,7 +100,7 @@ contains_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a timestamptz span is contained the time span of
  * a temporal value
  * @param[in] s Span
@@ -114,7 +114,7 @@ contained_tstzspan_temporal(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the time span of a temporal value is contained
  * in a timestamptz span
  * @param[in] temp Temporal value
@@ -128,7 +128,7 @@ contained_temporal_tstzspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the time span of the first temporal value is
  * contained in the one of the second temporal value
  * @param[in] temp1,temp2 Temporal values
@@ -143,7 +143,7 @@ contained_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a timestamptz span and the time span of a
  * temporal value overlap
  * @param[in] s Span
@@ -157,7 +157,7 @@ overlaps_tstzspan_temporal(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the time span of a temporal value and a
  * timestamptz span overlap
  * @param[in] temp Temporal value
@@ -171,7 +171,7 @@ overlaps_temporal_tstzspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the time spans of two temporal values overlap
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Overlaps_temporal_temporal()
@@ -185,7 +185,7 @@ overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a timestamptz span and the time span of a
  * temporal value are equal
  * @param[in] s Span
@@ -199,9 +199,9 @@ same_tstzspan_temporal(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if the time span of a temporal value and a
- * timestamptz span are equal
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if the time span of a temporal value and a timestamptz
+ * span are equal
  * @param[in] temp Temporal value
  * @param[in] s Span
  * @csqlfn #Same_temporal_tstzspan()
@@ -213,7 +213,7 @@ same_temporal_tstzspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the time spans of two temporal values are equal
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Same_temporal_temporal()
@@ -227,9 +227,9 @@ same_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if a timestamptz span and the time span of a
- * temporal value are adjacent
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if a timestamptz span and the time span of a temporal
+ * value are adjacent
  * @param[in] s Span
  * @param[in] temp Temporal value
  * @csqlfn #Adjacent_tstzspan_temporal()
@@ -241,9 +241,9 @@ adjacent_tstzspan_temporal(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if the time span of a temporal value and a
- * timestamptz span are adjacent
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if the time span of a temporal value and a timestamptz
+ * span are adjacent
  * @param[in] temp Temporal value
  * @param[in] s Span
  * @csqlfn #Adjacent_temporal_tstzspan()
@@ -255,7 +255,7 @@ adjacent_temporal_tstzspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the time spans of two temporal values are adjacent
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Adjacent_temporal_temporal()
@@ -271,7 +271,7 @@ adjacent_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a number span contains the value span of a temporal
  * number
  * @param[in] s Span
@@ -285,9 +285,9 @@ contains_numspan_tnumber(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if the value span of a temporal number contains
- * a number span
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if the value span of a temporal number contains a number
+ * span
  * @param[in] temp Temporal value
  * @param[in] s Span
  * @csqlfn #Contains_tnumber_numspan()
@@ -299,7 +299,7 @@ contains_tnumber_numspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a temporal box contains the bounding box of a
  * temporal number
  * @param[in] box Bounding box
@@ -313,7 +313,7 @@ contains_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the bounding box of a temporal number contains a
  * temporal box
  * @param[in] temp Temporal value
@@ -327,7 +327,7 @@ contains_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the bounding box of the first temporal number contains
  * the one of the second temporal number
  * @param[in] temp1,temp2 Temporal values
@@ -342,9 +342,9 @@ contains_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if a number span is contained in the value span
- * of a temporal number
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if a number span is contained in the value span of a
+ * temporal number
  * @param[in] s Span
  * @param[in] temp Temporal value
  * @csqlfn #Contained_numspan_tnumber()
@@ -356,9 +356,9 @@ contained_numspan_tnumber(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if the value span of a temporal number is
- * contained in a number span
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if the value span of a temporal number is contained in a
+ * number span
  * @param[in] temp Temporal value
  * @param[in] s Span
  * @csqlfn #Contained_tnumber_numspan()
@@ -370,7 +370,7 @@ contained_tnumber_numspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a temporal box is contained in the bounding box of a
  * temporal number
  * @param[in] box Bounding box
@@ -384,7 +384,7 @@ contained_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the bounding box of a temporal number is contained in
  * a temporal box
  * @param[in] temp Temporal value
@@ -398,7 +398,7 @@ contained_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the bounding box of the first temporal number is
  * contained in the one of the second temporal number
  * @param[in] temp1,temp2 Temporal values
@@ -413,9 +413,9 @@ contained_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if a number span and the value span of a
- * temporal number overlap
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if a number span and the value span of a temporal number
+ * overlap
  * @param[in] s Span
  * @param[in] temp Temporal value
  * @csqlfn #Overlaps_numspan_tnumber()
@@ -427,9 +427,9 @@ overlaps_numspan_tnumber(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if the value span of a temporal number and the
- * number span overlap
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if the value span of a temporal number and the number
+ * span overlap
  * @param[in] temp Temporal value
  * @param[in] s Span
  * @csqlfn #Overlaps_tnumber_numspan()
@@ -441,7 +441,7 @@ overlaps_tnumber_numspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a temporal box and the bounding box of a temporal
  * number overlap
  * @param[in] box Bounding box
@@ -455,7 +455,7 @@ overlaps_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the bounding box of a temporal number and a temporal
  * box overlap
  * @param[in] temp Temporal value
@@ -469,7 +469,7 @@ overlaps_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the bounding boxes of two temporal numbers overlap
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Overlaps_tnumber_tnumber()
@@ -483,9 +483,9 @@ overlaps_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if a number span and the value span of a
- * temporal number are equal
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if a number span and the value span of a temporal number
+ * are equal
  * @param[in] s Span
  * @param[in] temp Temporal value
  * @csqlfn #Same_numspan_tnumber()
@@ -497,7 +497,7 @@ same_numspan_tnumber(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the value span of a temporal number and a number span
  * are equal
  * @param[in] temp Temporal value
@@ -511,7 +511,7 @@ same_tnumber_numspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a temporal box and the bounding box of a temporal
  * number are equal in the common dimensions
  * @param[in] box Bounding box
@@ -525,9 +525,9 @@ same_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if the bounding box of a temporal number and a
- * temporal box are equal in the common dimensions
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if the bounding box of a temporal number and a temporal
+ * box are equal in the common dimensions
  * @param[in] temp Temporal value
  * @param[in] box Bounding box
  * @csqlfn #Same_tnumber_tbox()
@@ -539,7 +539,7 @@ same_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the bounding boxes of two temporal numbers are equal
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Same_tnumber_tnumber()
@@ -553,9 +553,9 @@ same_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if a number span and the value span of a
- * temporal number are adjacent
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if a number span and the value span of a temporal number
+ * are adjacent
  * @param[in] s Span
  * @param[in] temp Temporal value
  * @csqlfn #Adjacent_numspan_tnumber()
@@ -567,9 +567,9 @@ adjacent_numspan_tnumber(const Span *s, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if the value span of a temporal number and a
- * number span are adjacent
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if the value span of a temporal number and a number span
+ * are adjacent
  * @param[in] temp Temporal value
  * @param[in] s Span
  * @csqlfn #Adjacent_tnumber_numspan()
@@ -581,7 +581,7 @@ adjacent_tnumber_numspan(const Temporal *temp, const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a temporal box and the bounding box of a temporal
  * number are adjacent
  * @param[in] box Bounding box
@@ -595,7 +595,7 @@ adjacent_tbox_tnumber(const TBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the bounding box of a temporal number and a temporal
  * box are adjacent
  * @param[in] temp Temporal value
@@ -609,8 +609,9 @@ adjacent_tnumber_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_bbox_topo
- * @brief Return true if the bounding boxes of two temporal numbers are adjacent
+ * @ingroup meos_temporal_bbox_topo
+ * @brief Return true if the bounding boxes of two temporal numbers are
+ * adjacent
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Adjacent_tnumber_tnumber()
  */
