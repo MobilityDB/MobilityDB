@@ -252,22 +252,22 @@ SELECT tgeogpoint 'Interp=Step;{[Point(0 0)@2017-01-01 08:00:00,
 			Para los puntos temporales, es posible especificar el identificador de referencia espacial (SRID) utilizando la representación extendida de texto conocido (EWKT) de la siguiente manera:
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-SELECT tgeompoint 'SRID=5435;[Point(0 0)@2000-01-01,Point(0 1)@2000-01-02]'
+SELECT tgeompoint 'SRID=5435;[Point(0 0)@2001-01-01,Point(0 1)@2001-01-02]'
 </programlisting>
 		<para>
 			Todas las geometrías componentes serán entonces del SRID dado. Además, cada geometría componente puede especificar su SRID con el formato EWKT como en el siguiente ejemplo
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=5435;Point(0 1)@2000-01-02]'
+SELECT tgeompoint '[SRID=5435;Point(0 0)@2001-01-01,SRID=5435;Point(0 1)@2001-01-02]'
 </programlisting>
 		<para>
 			Se genera un error si las geometrías componentes no están todas en el mismo SRID o si el SRID de una geometría componente es diferente al del punto temporal.
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=4326;Point(0 1)@2000-01-02]';
+SELECT tgeompoint '[SRID=5435;Point(0 0)@2001-01-01,SRID=4326;Point(0 1)@2001-01-02]';
 -- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
-SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
-  SRID=4326;Point(0 1)@2000-01-02]'
+SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2001-01-01,
+  SRID=4326;Point(0 1)@2001-01-02]'
 -- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 </programlisting>
 
@@ -282,8 +282,8 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 				<para><varname>asText(tfloat,maxdecdigits=15) → text</varname></para>
 				<para>El argumento <varname>maxdecdigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asText(tfloat '[10.55@2000-01-01, 25.55@2000-01-02]', 0);
--- [11@2000-01-01, 26@2000-01-02]
+SELECT asText(tfloat '[10.55@2001-01-01, 25.55@2001-01-02]', 0);
+-- [11@2001-01-01, 26@2001-01-02]
 </programlisting>
 			</listitem>
 
@@ -512,17 +512,17 @@ SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
 				<para>Otro conjunto de constructores para valores de conjunto de secuencias tiene como primer argumento una matriz de valores de <emphasis>instante</emphasis> correspondientes, y dos argumentos que establecen un intervalo de tiempo máximo y una distancia máxima tal que se introduce un espacio entre secuencias del resultado siempre que dos instantes de entrada consecutivos tengan un intervalo de tiempo o una distancia mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Estos dos argumentos de brechas son opcionales, pero al menos uno de ellos debe especificarse. Además, cuando el tipo base es continuo, un último argumento adicional establece si la interpolación es escalonada o lineal. Si no se especifica este argumento, se asume que es lineal por defecto.</para>
 				<para>Los parámetros de la función dependen del tipo temporal. Por ejemplo, el parámetro de interpolación no está permitido para tipos temporales con subtipos discretos como <varname>tint</varname>. De manera similar, el parámetro <varname>maxdist</varname> no está permitido para tipos escalares como <varname>ttext</varname> que no tienen una función de distancia estándar.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
-  '5@2000-01-05'], '1 day', 1);
--- {[1@2000-01-01], [3@2000-01-02, 4@2000-01-03], [5@2000-01-05]}
-SELECT ttext_seqset_gaps(ARRAY[ttext 'AA@2000-01-01', 'BB@2000-01-02', 'AA@2000-01-03',
-'CC@2000-01-05'], '1 day');
--- {["AA"@2000-01-01, "BB"@2000-01-02, "AA"@2000-01-03], ["CC"@2000-01-05]}
-SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2000-01-01',
-  'Point(2 2)@2000-01-02', 'Point(3 2)@2000-01-03', 'Point(3 2)@2000-01-05'],
+SELECT tint_seqset_gaps(ARRAY[tint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03',
+  '5@2001-01-05'], '1 day', 1);
+-- {[1@2001-01-01], [3@2001-01-02, 4@2001-01-03], [5@2001-01-05]}
+SELECT ttext_seqset_gaps(ARRAY[ttext 'AA@2001-01-01', 'BB@2001-01-02', 'AA@2001-01-03',
+'CC@2001-01-05'], '1 day');
+-- {["AA"@2001-01-01, "BB"@2001-01-02, "AA"@2001-01-03], ["CC"@2001-01-05]}
+SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2001-01-01',
+  'Point(2 2)@2001-01-02', 'Point(3 2)@2001-01-03', 'Point(3 2)@2001-01-05'],
   '1 day', 1, 'step'));
-/* Interp=Step;{[POINT(1 1)@2000-01-01], [POINT(2 2)@2000-01-02, POINT(3 2)@2000-01-03],
-   [POINT(3 2)@2000-01-05]} */
+/* Interp=Step;{[POINT(1 1)@2001-01-01], [POINT(2 2)@2001-01-02, POINT(3 2)@2001-01-03],
+   [POINT(3 2)@2001-01-05]} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -542,8 +542,8 @@ SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2000-01-01',
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tstzspan;
 -- [2001-01-01, 2001-01-03]
-SELECT ttext '(A@2000-01-01, B@2000-01-03, C@2000-01-05]'::tstzspan;
--- (2000-01-01, 2000-01-05]
+SELECT ttext '(A@2001-01-01, B@2001-01-03, C@2001-01-05]'::tstzspan;
+-- (2001-01-01, 2001-01-05]
 SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::tstzspan;
 -- [2001-01-01, 2001-01-03]
 </programlisting>
@@ -551,16 +551,16 @@ SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::tstzspan;
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intspan;
 -- [1, 3)
-SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
+SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::floatspan;
 -- (1, 3]
-SELECT tfloat 'Interp=Step;(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
+SELECT tfloat 'Interp=Step;(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::floatspan;
 -- [1, 3]
 </programlisting>
 
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tbox;
 -- TBOX XT((1,2),[2001-01-01,2001-01-03])
-SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::tbox;
+SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::tbox;
 -- TBOX XT((1,3),[2001-01-01,2001-01-05])
 SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
 -- STBOX XT(((1,1),(3,3)),[2001-01-01, 2001-01-03])
@@ -579,8 +579,8 @@ SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 -- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]
-SELECT tint '[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]'::tfloat;
--- Interp=Step;[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]
+SELECT tint '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]'::tfloat;
+-- Interp=Step;[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]
 SELECT tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]
 SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
@@ -708,29 +708,29 @@ SELECT getTimestamp(tfloat '1@2001-01-01');
 				<para><varname>getValues(talpha) → {bool[],spanset,textset}</varname></para>
 				<para><varname>getTime(ttype) → tstzspanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT getValues(tbool '[false@2000-01-01, true@2000-01-02, false@2000-01-03]');
+SELECT getValues(tbool '[false@2001-01-01, true@2001-01-02, false@2001-01-03]');
 -- {f,t}
-SELECT getValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT getValues(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
 -- {[1, 3)}
-SELECT getValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],
-  [3@2000-01-04, 3@2000-01-05]}');
+SELECT getValues(tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],
+  [3@2001-01-04, 3@2001-01-05]}');
 -- {[1, 4)}
-SELECT getValues(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT getValues(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}');
 -- {[1, 1], [2, 2]}
-SELECT getValues(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],
-  [3@2000-01-04, 3@2000-01-05]}');
+SELECT getValues(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],
+  [3@2001-01-04, 3@2001-01-05]}');
 -- {[1, 1], [2, 2], [3, 3]}
-SELECT getValues(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT getValues(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
 -- {[1, 2]}
-SELECT getValues(tfloat '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],
-  [3@2000-01-04, 3@2000-01-05]}');
+SELECT getValues(tfloat '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],
+  [3@2001-01-04, 3@2001-01-05]}');
 -- {[1, 2], [3, 3]}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getTime(ttext 'walking@2001-01-01');
 -- {[2001-01-01, 2001-01-01]}
-SELECT getTime(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-{[2000-01-01, 2000-01-01], [2000-01-02, 2000-01-02], [2000-01-03, 2000-01-03]}
+SELECT getTime(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}');
+{[2001-01-01, 2001-01-01], [2001-01-02, 2001-01-02], [2001-01-03, 2001-01-03]}
 SELECT getTime(tint '[1@2001-01-01, 1@2001-01-15)');
 -- {[2001-01-01, 2001-01-15)}
 SELECT getTime(tfloat '{[1@2001-01-01, 1@2001-01-10), [12@2001-01-12, 12@2001-01-15]}');
@@ -853,7 +853,7 @@ SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-
 				<para>Obtener el número de instantes diferentes</para>
 				<para><varname>numInstants(ttype) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT numInstants(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-03)}');
+SELECT numInstants(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
 -- 3
 </programlisting>
 			</listitem>
@@ -868,13 +868,13 @@ SELECT numInstants(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-
 				<para><varname>instantN(ttype,integer) → ttype_inst</varname></para>
 				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT startInstant(tfloat '{[1@2000-01-01, 2@2000-01-02),
-  (2@2000-01-02, 3@2000-01-03)}');
--- 1@2000-01-01
-SELECT endInstant(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-03)}');
--- 3@2000-01-03
-SELECT instantN(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-03)}', 3);
--- 3@2000-01-03
+SELECT startInstant(tfloat '{[1@2001-01-01, 2@2001-01-02),
+  (2@2001-01-02, 3@2001-01-03)}');
+-- 1@2001-01-01
+SELECT endInstant(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
+-- 3@2001-01-03
+SELECT instantN(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}', 3);
+-- 3@2001-01-03
 </programlisting>
 			</listitem>
 
@@ -883,8 +883,8 @@ SELECT instantN(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-
 				<para>Obtener los instantes diferentes</para>
 				<para><varname>instants(ttype) → ttype_inst[]</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT instants(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-03)}');
--- {"1@2000-01-01","2@2000-01-02","3@2000-01-03"}
+SELECT instants(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
+-- {"1@2001-01-01","2@2001-01-02","3@2001-01-03"}
 </programlisting>
 			</listitem>
 
@@ -992,9 +992,9 @@ SELECT segments(tfloat '{[1@2001-01-01, 3@2001-01-02, 2@2001-01-03],
 				<para>Obtener el área bajo la curva</para>
 				<para><varname>integral(tnumber) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT  integral(tint '[1@2000-01-01,2@2000-01-02]') / (24 * 3600 * 1e6);
+SELECT  integral(tint '[1@2001-01-01,2@2001-01-02]') / (24 * 3600 * 1e6);
 -- 1
-SELECT integral(tfloat '[1@2000-01-01,2@2000-01-02]') / (24 * 3600 * 1e6);
+SELECT integral(tfloat '[1@2001-01-01,2@2001-01-02]') / (24 * 3600 * 1e6);
 -- 1.5
 </programlisting>
 			</listitem>
@@ -1044,16 +1044,16 @@ SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-03}');
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_seq(tbool 'true@2001-01-01','discrete');
 -- {t@2001-01-01}
-SELECT setInterp(tfloat '{[1@2000-01-01], [2@2000-01-02], [1@2000-01-03]}', 'discrete');
--- {1@2000-01-01, 2@2000-01-02, 1@2000-01-03}
-SELECT setInterp(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02,
-  1@2000-01-03, 2@2000-01-04]', 'linear');
-/* {[1@2000-01-01, 1@2000-01-02), [2@2000-01-02, 2@2000-01-03),
-   [1@2000-01-03, 1@2000-01-04), [2@2000-01-04]}" */
-SELECT asText(setInterp(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01,
-  Point(2 2)@2000-01-02], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}', 'linear'));
-/* {[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-02],
-   [POINT(3 3)@2000-01-05, POINT(3 3)@2000-01-06), [POINT(4 4)@2000-01-06]} */
+SELECT setInterp(tfloat '{[1@2001-01-01], [2@2001-01-02], [1@2001-01-03]}', 'discrete');
+-- {1@2001-01-01, 2@2001-01-02, 1@2001-01-03}
+SELECT setInterp(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02,
+  1@2001-01-03, 2@2001-01-04]', 'linear');
+/* {[1@2001-01-01, 1@2001-01-02), [2@2001-01-02, 2@2001-01-03),
+   [1@2001-01-03, 1@2001-01-04), [2@2001-01-04]}" */
+SELECT asText(setInterp(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01,
+  Point(2 2)@2001-01-02], [Point(3 3)@2001-01-05, Point(4 4)@2001-01-06]}', 'linear'));
+/* {[POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02), [POINT(2 2)@2001-01-02],
+   [POINT(3 3)@2001-01-05, POINT(3 3)@2001-01-06), [POINT(4 4)@2001-01-06]} */
 </programlisting>
 			</listitem>
 
@@ -1149,18 +1149,18 @@ SELECT asText(shiftScaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@200
 				<para><varname>stops({tcont_seq,ttype_seqset},maxDist=0.0,minDuration='0 minutes') → ttype_seqset</varname></para>
 				<para>Para los tipos espaciales, el tamaño del área se calcula como la diagonal del rectángulo mínimamente girado de los puntos de la subsecuencia. Para los tipos escalares, el tamaño se calcula como el ancho del intervalo circundante. Si no se proporciona <varname>maxDist</varname>, se supone que es 0.0 y, por lo tanto, la función extrae los segmentos constantes del valor temporal dado. Para puntos temporales, la distancia se calcula en las unidades del sistema de coordenadas. Nótese que aunque la función acepta geometrías 3D, el cálculo siempre se realiza en 2D.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT stops(tfloat '[1@2000-01-01, 1@2000-01-02, 2@2000-01-03]');
--- {[1@2000-01-01, 1@2000-01-02)}
-SELECT stops(tfloat '[1@2000-01-01, 1@2000-01-02, 2@2000-01-03]', 0.0, '2 days');
+SELECT stops(tfloat '[1@2001-01-01, 1@2001-01-02, 2@2001-01-03]');
+-- {[1@2001-01-01, 1@2001-01-02)}
+SELECT stops(tfloat '[1@2001-01-01, 1@2001-01-02, 2@2001-01-03]', 0.0, '2 days');
 -- NULL
-SELECT asText(stops(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02,
-  Point(2 2)@2000-01-03, Point(2 2)@2000-01-04]'));
-/* {[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-03,
-   POINT(2 2)@2000-01-04]} */
-SELECT asText(stops(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000-01-02,
-  Point(2 2 2)@2000-01-03, Point(2 2 2)@2000-01-04]', 1.75));
-/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (1 1 1)@2000-01-02, POINT Z (2 2 2)@2000-01-03,
-   POINT Z (2 2 2)@2000-01-04]} */
+SELECT asText(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02,
+  Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]'));
+/* {[POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02), [POINT(2 2)@2001-01-03,
+   POINT(2 2)@2001-01-04]} */
+SELECT asText(stops(tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 1 1)@2001-01-02,
+  Point(2 2 2)@2001-01-03, Point(2 2 2)@2001-01-04]', 1.75));
+/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03,
+   POINT Z (2 2 2)@2001-01-04]} */
 </programlisting>
 			</listitem>
 
@@ -1170,21 +1170,21 @@ SELECT asText(stops(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000-01-0
 				<para><varname>unnest(ttype) → {(value,time)}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT (un).value, (un).time
-FROM (SELECT unnest(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') AS un) t;
--- 1 | {[2000-01-01, 2000-01-01], [2000-01-03, 2000-01-03]}
--- 2 | {[2000-01-02, 2000-01-02]}
+FROM (SELECT unnest(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}') AS un) t;
+-- 1 | {[2001-01-01, 2001-01-01], [2001-01-03, 2001-01-03]}
+-- 2 | {[2001-01-02, 2001-01-02]}
 SELECT (un).value, (un).time
-FROM (SELECT unnest(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') AS un) t;
--- 1 | {[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-03]}
--- 2 | {[2000-01-02, 2000-01-03)}
+FROM (SELECT unnest(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]') AS un) t;
+-- 1 | {[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-03]}
+-- 2 | {[2001-01-02, 2001-01-03)}
 SELECT (un).value, (un).time
-FROM (SELECT unnest(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') AS un) t;
+FROM (SELECT unnest(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]') AS un) t;
 -- ERROR:  The temporal value cannot have linear interpolation
 SELECT ST_AsText((un).value), (un).time
-FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01,
-  Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]') AS un) t;
---  POINT(1 1) | {[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-03]}
---  POINT(2 2) | {[2000-01-02, 2000-01-03)}</programlisting>
+FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01,
+  Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]') AS un) t;
+--  POINT(1 1) | {[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-03]}
+--  POINT(2 2) | {[2001-01-02, 2001-01-03)}</programlisting>
 			</listitem>
 
 		</itemizedlist>

@@ -1103,8 +1103,7 @@ datespan_duration(const Span *s)
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
     return NULL;
   Interval *result = palloc0(sizeof(Interval));
-  /* Date spans are canonicalized */
-  result->day = DateADTGetDatum(s->upper) - DateADTGetDatum(s->lower) - 1;
+  result->day = DateADTGetDatum(s->upper) - DateADTGetDatum(s->lower);
   return result;
 }
 
