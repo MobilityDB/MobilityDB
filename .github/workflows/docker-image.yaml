@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4.0.0
 
       - name: Info
-        run: echo "Parameters. ${{ github.event.base_ref }}, ${{ github.ref_type }}, ${{ github.ref }}"
+        run: echo "Parameters. ${{ github.event.base_ref }}, ${{ github.ref_type }}, ${{ github.ref }}, ${{ github.ref_name }}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -41,14 +41,30 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (develop)
         uses: docker/build-push-action@v5
+        if: ${{ github.ref_type == 'branch' }}
         with:
           platforms: linux/amd64,linux/arm64
           context: .
           file: ./docker/Dockerfile
           push: true
-          tags: mobilitydb/mobilitydb:${{ matrix.psql }}-${{ matrix.postgis }}-1.1-beta1
+          tags: mobilitydb/mobilitydb:${{ matrix.psql }}-${{ matrix.postgis }}-develop
+          build-args: |
+            POSTGRES_VERSION=${{ matrix.psql }}
+            POSTGIS_VERSION=${{ matrix.postgis }}
+
+      - name: Build and push Docker image (release / tag)
+        uses: docker/build-push-action@v5
+        if: ${{ github.ref_type == 'tag' }}
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          tags: |
+            mobilitydb/mobilitydb:${{ matrix.psql }}-${{ matrix.postgis }}-latest
+            mobilitydb/mobilitydb:${{ matrix.psql }}-${{ matrix.postgis }}-${}
           build-args: |
             POSTGRES_VERSION=${{ matrix.psql }}
             POSTGIS_VERSION=${{ matrix.postgis }}
