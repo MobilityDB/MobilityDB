@@ -21,11 +21,24 @@ jobs:
     env:
       IMG_NAME: ${{ github.repository }}
     steps:
+      - name: Info
+        run: echo "Parameters. ${{ github.event.base_ref }}, ${{ github.ref_type }}, ${{ github.ref }}, ${{ github.ref_name }}"
+
       - name: Checkout
         uses: actions/checkout@v4.0.0
 
-      - name: Info
-        run: echo "Parameters. ${{ github.event.base_ref }}, ${{ github.ref_type }}, ${{ github.ref }}, ${{ github.ref_name }}"
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            mobilitydb/mobilitydb
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=ref,event=branch,prefix={{ matrix.psql }}-${{ matrix.postgis }}-
+            type=semver,pattern={{version}},prefix={{ matrix.psql }}-${{ matrix.postgis }}-
+            type=semver,pattern={{major}}.{{minor}},prefix={{ matrix.psql }}-${{ matrix.postgis }}-
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -41,30 +54,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image (develop)
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
-        if: ${{ github.ref_type == 'branch' }}
         with:
           platforms: linux/amd64,linux/arm64
           context: .
           file: ./docker/Dockerfile
           push: true
-          tags: mobilitydb/mobilitydb:${{ matrix.psql }}-${{ matrix.postgis }}-develop
-          build-args: |
-            POSTGRES_VERSION=${{ matrix.psql }}
-            POSTGIS_VERSION=${{ matrix.postgis }}
-
-      - name: Build and push Docker image (release / tag)
-        uses: docker/build-push-action@v5
-        if: ${{ github.ref_type == 'tag' }}
-        with:
-          platforms: linux/amd64,linux/arm64
-          context: .
-          file: ./docker/Dockerfile
-          push: true
-          tags: |
-            mobilitydb/mobilitydb:${{ matrix.psql }}-${{ matrix.postgis }}-latest
-            mobilitydb/mobilitydb:${{ matrix.psql }}-${{ matrix.postgis }}-${}
+          tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             POSTGRES_VERSION=${{ matrix.psql }}
             POSTGIS_VERSION=${{ matrix.postgis }}
