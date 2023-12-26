@@ -21,9 +21,6 @@ jobs:
     env:
       IMG_NAME: ${{ github.repository }}
     steps:
-      - name: Info
-        run: echo "Parameters. ${{ github.event.base_ref }}, ${{ github.ref_type }}, ${{ github.ref }}, ${{ github.ref_name }}"
-
       - name: Checkout
         uses: actions/checkout@v4.0.0
 
