@@ -2150,39 +2150,73 @@ minus_span_span(const Span *s1, const Span *s2)
 }
 
 /******************************************************************************
- * Distance functions returning a double
+ * Distance functions
  ******************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_dist
- * @brief Return the distance between two values as a double
+ * @brief Return the distance between two values as a double for the indexes
  * @param[in] l,r Values
  * @param[in] type Type of the values
- * @return On error return DBL_MAX
+ * @return On error return -1
  */
 double
+dist_double_value_value(Datum l, Datum r, meosType type)
+{
+  assert(span_basetype(type));
+  switch (type)
+  {
+    case T_INT4:
+      return Float8GetDatum((double) abs(DatumGetInt32(l) - DatumGetInt32(r)));
+    case T_INT8:
+      return Float8GetDatum((double) llabs(DatumGetInt64(l) - DatumGetInt64(r)));
+    case T_FLOAT8:
+      return Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
+    case T_DATE:
+      /* Distance in days if the base type is DateADT */
+      return Float8GetDatum((double) abs(DatumGetDateADT(l) - DatumGetDateADT(r)));
+    case T_TIMESTAMPTZ:
+      /* Distance in seconds if the base type is TimestampTz */
+      return Float8GetDatum((llabs((DatumGetTimestampTz(l) -
+        DatumGetTimestampTz(r)))) / USECS_PER_SEC);
+    default:
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown types for distance between values: %s",
+        meostype_name(type));
+      return (Datum) -1;
+  }
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_dist
+ * @brief Return the distance between two values
+ * @param[in] l,r Values
+ * @param[in] type Type of the values
+ * @return On error return -1
+ */
+Datum
 distance_value_value(Datum l, Datum r, meosType type)
 {
   assert(span_basetype(type));
   switch (type)
   {
     case T_INT4:
-      return (double) abs(DatumGetInt32(l) - DatumGetInt32(r));
+      return Int32GetDatum(abs(DatumGetInt32(l) - DatumGetInt32(r)));
     case T_INT8:
-      return (double) llabs(DatumGetInt64(l) - DatumGetInt64(r));
+      return Int64GetDatum(llabs(DatumGetInt64(l) - DatumGetInt64(r)));
     case T_FLOAT8:
-      return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
+      return Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
     case T_DATE:
-      return (double) abs(DatumGetDateADT(l) - DatumGetDateADT(r));
+      /* Distance in days if the base type is DateADT */
+      return Int32GetDatum(abs(DatumGetDateADT(l) - DatumGetDateADT(r)));
     case T_TIMESTAMPTZ:
       /* Distance in seconds if the base type is TimestampTz */
-      return (double) (llabs((DatumGetTimestampTz(l) -
-        DatumGetTimestampTz(r)))) / USECS_PER_SEC;
+      return Float8GetDatum((llabs((DatumGetTimestampTz(l) -
+        DatumGetTimestampTz(r)))) / USECS_PER_SEC);
     default:
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown types for distance between values: %s",
         meostype_name(type));
-      return DBL_MAX;
+      return (Datum) -1;
   }
 }
 
@@ -2193,13 +2227,13 @@ distance_value_value(Datum l, Datum r, meosType type)
  * @param[in] d Value
  * @param[in] basetype Type of the value
  */
-double
+Datum
 distance_span_value(const Span *s, Datum d, meosType basetype)
 {
   assert(s); assert(s->basetype == basetype);
   /* If the span contains the value return 0 */
   if (contains_span_value(s, d, basetype))
-    return 0.0;
+    return (Datum) 0;
 
   /* If the span is to the right of the value return the distance
    * between the value and the lower bound of the span
@@ -2222,15 +2256,15 @@ distance_span_value(const Span *s, Datum d, meosType basetype)
  * @brief Return the distance between a span and an integer as a double
  * @param[in] s Span
  * @param[in] i Value
- * @return On error return -1.0
+ * @return On error return -1
  * @csqlfn #Distance_span_value()
  */
-double
+int
 distance_span_int(const Span *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
-    return -1.0;
+    return -1;
   return distance_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
@@ -2239,15 +2273,15 @@ distance_span_int(const Span *s, int i)
  * @brief Return the distance between a span and a big integer as a double
  * @param[in] s Span
  * @param[in] i Value
- * @return On error return -1.0
+ * @return On error return -1
  * @csqlfn #Distance_span_value()
  */
-double
+int64
 distance_span_bigint(const Span *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
-    return -1.0;
+    return -1;
   return distance_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
@@ -2273,15 +2307,15 @@ distance_span_float(const Span *s, double d)
  * @brief Return the distance in days between a span and a date as a double
  * @param[in] s Span
  * @param[in] d Value
- * @return On error return -1.0
+ * @return On error return -1
  * @csqlfn #Distance_span_value()
  */
-double
+int
 distance_span_date(const Span *s, DateADT d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
-    return -1.0;
+    return -1;
   return distance_span_value(s, DateADTGetDatum(d), T_DATE);
 }
 
@@ -2310,14 +2344,14 @@ distance_span_timestamptz(const Span *s, TimestampTz t)
  * @param[in] s1,s2 Spans
  * @brief Return the distance between two spans as a double
  */
-double
+Datum
 dist_span_span(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
 
   /* If the spans intersect return 0 */
   if (over_span_span(s1, s2))
-    return 0.0;
+    return (Datum) 0;
 
   /* Account for canonicalized spans */
   Datum upper1 = span_decr_bound(s1->upper, s1->basetype);
@@ -2336,20 +2370,112 @@ dist_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between two spans as a double
  * @param[in] s1,s2 Spans
- * @return On error return -1.0
+ * @return On error return -1
  * @csqlfn #Distance_span_span()
  */
-double
+Datum
 distance_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
-    return -1.0;
+    return (Datum) -1;
   return dist_span_span(s1, s2);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between two integer spans
+ * @param[in] s1,s2 Spans
+ * @return On error return -1
+ * @csqlfn #Distance_span_span()
+ */
+int
+distance_intspan_intspan(const Span *s1, const Span *s2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) || 
+      ! ensure_span_isof_basetype(s1, T_INT4) ||
+      ! ensure_span_isof_basetype(s2, T_INT4))
+    return -1;
+  return DatumGetInt32(distance_span_span(s1, s2));
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between two big integer spans
+ * @param[in] s1,s2 Spans
+ * @return On error return -1
+ * @csqlfn #Distance_span_span()
+ */
+int64
+distance_bigintspan_bigintspan(const Span *s1, const Span *s2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) || 
+      ! ensure_span_isof_basetype(s1, T_INT8) ||
+      ! ensure_span_isof_basetype(s2, T_INT8))
+    return -1;
+  return DatumGetInt64(distance_span_span(s1, s2));
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between two float spans
+ * @param[in] s1,s2 Spans
+ * @return On error return -1.0
+ * @csqlfn #Distance_span_span()
+ */
+double
+distance_floatspan_floatspan(const Span *s1, const Span *s2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) || 
+      ! ensure_span_isof_basetype(s1, T_FLOAT8) ||
+      ! ensure_span_isof_basetype(s2, T_FLOAT8))
+    return -1.0;
+  return DatumGetFloat8(distance_span_span(s1, s2));
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between two date spans
+ * @param[in] s1,s2 Spans
+ * @return On error return -1
+ * @csqlfn #Distance_span_span()
+ */
+int
+distance_datespan_datespan(const Span *s1, const Span *s2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) || 
+     ! ensure_span_isof_basetype(s1, T_DATE) ||
+     ! ensure_span_isof_basetype(s2, T_DATE))
+    return -1;
+  return DatumGetInt32(distance_span_span(s1, s2));
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance in seconds between two timestamptz spans
+ * @param[in] s1,s2 Spans
+ * @return On error return -1.0
+ * @csqlfn #Distance_span_span()
+ */
+double
+distance_tstzspan_tstzspan(const Span *s1, const Span *s2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) || 
+      ! ensure_span_isof_basetype(s1, T_TIMESTAMPTZ) ||
+      ! ensure_span_isof_basetype(s2, T_TIMESTAMPTZ))
+    return -1.0;
+  return DatumGetFloat8(distance_span_span(s1, s2));
+}
+#endif /* MEOS */
 
 /******************************************************************************/

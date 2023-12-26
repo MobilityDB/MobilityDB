@@ -36,7 +36,7 @@
  * Temporal addition
  *****************************************************************************/
 
-/* int + <TYPE> */
+/* integer + <TYPE> */
 
 CREATE FUNCTION tnumber_add(integer, tint)
   RETURNS tint
@@ -114,7 +114,7 @@ CREATE OPERATOR + (
  * Temporal subtraction
  *****************************************************************************/
 
-/* int - <TYPE> */
+/* integer - <TYPE> */
 
 CREATE FUNCTION tnumber_sub(integer, tint)
   RETURNS tint
@@ -188,7 +188,7 @@ CREATE OPERATOR - (
  * Temporal multiplication
  *****************************************************************************/
 
-/* int * <TYPE> */
+/* integer * <TYPE> */
 
 CREATE FUNCTION tnumber_mult(integer, tint)
   RETURNS tint
@@ -266,7 +266,7 @@ CREATE OPERATOR * (
  * Temporal division
  *****************************************************************************/
 
-/* int / <TYPE> */
+/* integer / <TYPE> */
 
 CREATE FUNCTION tnumber_div(integer, tint)
   RETURNS tint

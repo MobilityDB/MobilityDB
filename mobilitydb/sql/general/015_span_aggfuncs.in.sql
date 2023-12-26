@@ -122,7 +122,7 @@ CREATE AGGREGATE extent(tstzspan) (
 /*****************************************************************************/
 -- span + base
 
-CREATE FUNCTION span_extent_transfn(intspan, int)
+CREATE FUNCTION span_extent_transfn(intspan, integer)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -143,7 +143,7 @@ CREATE FUNCTION span_extent_transfn(tstzspan, timestamptz)
   AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE extent(int) (
+CREATE AGGREGATE extent(integer) (
   SFUNC = span_extent_transfn,
   STYPE = intspan,
 #if POSTGRESQL_VERSION_NUMBER >= 130000

@@ -347,7 +347,7 @@ CREATE FUNCTION asHexWKB(tstzset, endianenconding text DEFAULT '')
  * Constructor functions
  ******************************************************************************/
 
-CREATE FUNCTION set(int[])
+CREATE FUNCTION set(integer[])
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Set_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -401,7 +401,7 @@ CREATE FUNCTION set(timestamptz)
   AS 'MODULE_PATHNAME', 'Value_to_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (int AS intset) WITH FUNCTION set(int);
+CREATE CAST (integer AS intset) WITH FUNCTION set(integer);
 CREATE CAST (bigint AS bigintset) WITH FUNCTION set(bigint);
 CREATE CAST (float AS floatset) WITH FUNCTION set(float);
 CREATE CAST (text AS textset) WITH FUNCTION set(text);
@@ -437,27 +437,27 @@ CREATE CAST (tstzset AS dateset) WITH FUNCTION dateset(tstzset);
  ******************************************************************************/
 
 CREATE FUNCTION memSize(intset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(bigintset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(floatset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(textset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(dateset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(tstzset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -591,7 +591,7 @@ CREATE FUNCTION getValues(tstzset)
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION shift(intset, int)
+CREATE FUNCTION shift(intset, integer)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Numset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -603,7 +603,7 @@ CREATE FUNCTION shift(floatset, float)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Numset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(dateset, int)
+CREATE FUNCTION shift(dateset, integer)
   RETURNS dateset
   AS 'MODULE_PATHNAME', 'Numset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -612,7 +612,7 @@ CREATE FUNCTION shift(tstzset, interval)
   AS 'MODULE_PATHNAME', 'Tstzset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION scale(intset, int)
+CREATE FUNCTION scale(intset, integer)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Numset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -624,7 +624,7 @@ CREATE FUNCTION scale(floatset, float)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Numset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION scale(dateset, int)
+CREATE FUNCTION scale(dateset, integer)
   RETURNS dateset
   AS 'MODULE_PATHNAME', 'Numset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -633,7 +633,7 @@ CREATE FUNCTION scale(tstzset, interval)
   AS 'MODULE_PATHNAME', 'Tstzset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftScale(intset, int, int)
+CREATE FUNCTION shiftScale(intset, integer, integer)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Numset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -645,7 +645,7 @@ CREATE FUNCTION shiftScale(floatset, float, float)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Numset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftScale(dateset, int, int)
+CREATE FUNCTION shiftScale(dateset, integer, integer)
   RETURNS dateset
   AS 'MODULE_PATHNAME', 'Numset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -673,7 +673,7 @@ CREATE FUNCTION upper(textset)
  ******************************************************************************/
 
 CREATE FUNCTION unnest(intset)
-  RETURNS SETOF int
+  RETURNS SETOF integer
   AS 'MODULE_PATHNAME', 'Set_unnest'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION unnest(bigintset)
@@ -702,7 +702,7 @@ CREATE FUNCTION unnest(tstzset)
  ******************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_union_transfn(internal, int)
+CREATE FUNCTION set_union_transfn(internal, integer)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -778,7 +778,7 @@ CREATE FUNCTION textset_union_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE set_union(int) (
+CREATE AGGREGATE set_union(integer) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = intset_union_finalfn,

@@ -590,7 +590,7 @@ Minus_span_span(PG_FUNCTION_ARGS)
 
 
 /******************************************************************************
- * Distance functions returning a double representing the number of seconds
+ * Distance functions
  ******************************************************************************/
 
 PGDLLEXPORT Datum Distance_value_value(PG_FUNCTION_ARGS);
@@ -607,7 +607,7 @@ Distance_value_value(PG_FUNCTION_ARGS)
   Datum d1 = PG_GETARG_DATUM(0);
   Datum d2 = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_FLOAT8(distance_value_value(d1, d2, basetype));
+  PG_RETURN_DATUM(distance_value_value(d1, d2, basetype));
 }
 
 PGDLLEXPORT Datum Distance_value_span(PG_FUNCTION_ARGS);
@@ -624,7 +624,7 @@ Distance_value_span(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_FLOAT8(distance_span_value(s, d, basetype));
+  PG_RETURN_DATUM(distance_span_value(s, d, basetype));
 }
 
 PGDLLEXPORT Datum Distance_span_value(PG_FUNCTION_ARGS);
@@ -641,7 +641,7 @@ Distance_span_value(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PG_RETURN_FLOAT8(distance_span_value(s, d, basetype));
+  PG_RETURN_DATUM(distance_span_value(s, d, basetype));
 }
 
 PGDLLEXPORT Datum Distance_span_span(PG_FUNCTION_ARGS);
@@ -657,7 +657,7 @@ Distance_span_span(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
   Span *s2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_FLOAT8(distance_span_span(s1, s2));
+  PG_RETURN_DATUM(distance_span_span(s1, s2));
 }
 
 /******************************************************************************/

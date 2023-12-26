@@ -941,22 +941,41 @@ extern bool right_text_set(text *txt, const Set *s);
 
 /* Distance functions for set and span types */
 
-extern double distance_set_bigint(const Set *s, int64 i);
+extern int64 distance_set_bigint(const Set *s, int64 i);
+extern int distance_set_date(const Set *s, DateADT d);
 extern double distance_set_float(const Set *s, double d);
-extern double distance_set_int(const Set *s, int i);
-extern double distance_set_set(const Set *s1, const Set *s2);
+extern int distance_set_int(const Set *s, int i);
 extern double distance_set_timestamptz(const Set *s, TimestampTz t);
-extern double distance_span_bigint(const Span *s, int64 i);
+
+extern int64 distance_span_bigint(const Span *s, int64 i);
+extern int distance_span_date(const Span *s, DateADT d);
 extern double distance_span_float(const Span *s, double d);
-extern double distance_span_int(const Span *s, int i);
-extern double distance_span_span(const Span *s1, const Span *s2);
+extern int distance_span_int(const Span *s, int i);
 extern double distance_span_timestamptz(const Span *s, TimestampTz t);
-extern double distance_spanset_bigint(const SpanSet *ss, int64 i);
+
+extern int64 distance_bigintspan_bigintspan(const Span *s1, const Span *s2);
+extern int distance_datespan_datespan(const Span *s1, const Span *s2);
+extern double distance_floatspan_floatspan(const Span *s1, const Span *s2);
+extern int distance_intspan_intspan(const Span *s1, const Span *s2);
+extern double distance_tstzspan_tstzspan(const Span *s1, const Span *s2);
+
+extern int64 distance_spanset_bigint(const SpanSet *ss, int64 i);
+extern int distance_spanset_date(const SpanSet *ss, DateADT d);
 extern double distance_spanset_float(const SpanSet *ss, double d);
-extern double distance_spanset_int(const SpanSet *ss, int i);
+extern int distance_spanset_int(const SpanSet *ss, int i);
 extern double distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t);
-extern double distance_spanset_span(const SpanSet *ss, const Span *s);
-extern double distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
+
+extern int64 distance_bigintspanset_bigintspan(const SpanSet *ss, const Span *s);
+extern int distance_datespanset_datespan(const SpanSet *ss, const Span *s);
+extern double distance_floatspanset_floatspan(const SpanSet *ss, const Span *s);
+extern int distance_intspanset_intspan(const SpanSet *ss, const Span *s);
+extern double distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s);
+
+extern int64 distance_bigintspanset_bigintspanset(const SpanSet *ss1, const SpanSet *ss2);
+extern int distance_datespanset_datespanset(const SpanSet *ss1, const SpanSet *ss2);
+extern double distance_floatspanset_floatspanset(const SpanSet *ss1, const SpanSet *ss2);
+extern int distance_intspanset_intspanset(const SpanSet *ss1, const SpanSet *ss2);
+extern double distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2);
 
 /*****************************************************************************/
 

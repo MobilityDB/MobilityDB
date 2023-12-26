@@ -407,21 +407,21 @@ SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_floatset t2;
 (1 row)
 
 SELECT MIN(t1.d <-> t2.d) FROM tbl_date t1, tbl_dateset t2;
-    min     
-------------
- 01-01-2000
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(t1.d <-> t2.d) FROM tbl_dateset t1, tbl_date t2;
-    min     
-------------
- 01-01-2000
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(t1.d <-> t2.d) FROM tbl_dateset t1, tbl_dateset t2;
-    min     
-------------
- 01-01-2000
+ min 
+-----
+   0
 (1 row)
 
 SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_tstzset t2;

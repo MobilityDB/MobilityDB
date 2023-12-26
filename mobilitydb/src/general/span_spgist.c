@@ -1007,10 +1007,6 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
     /* Convert the query to a span and perform the test */
     span_spgist_get_span(&in->scankeys[i], &span);
-    /* All tests are lossy for temporal types */
-    if (temporal_type(in->scankeys[i].sk_subtype))
-      out->recheck = true;
-
     result = span_index_consistent_leaf(key, &span, strategy);
 
     /* If any check is failed, we have found our answer. */
@@ -1020,8 +1016,8 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
   if (result && in->norderbys > 0)
   {
-    /* Recheck is necessary when computing distance with bounding boxes */
-    out->recheckDistances = true;
+    /* Recheck is not necessary when computing distance for span types */
+    out->recheckDistances = false;
     double *distances = palloc(sizeof(double) * in->norderbys);
     out->distances = distances;
     for (i = 0; i < in->norderbys; i++)
@@ -1030,8 +1026,6 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       span_spgist_get_span(&in->orderbys[i], &span);
       distances[i] = dist_span_span(&span, key);
     }
-    /* Recheck is necessary when computing distance with bounding boxes */
-    out->recheckDistances = true;
   }
 
   PG_RETURN_BOOL(result);

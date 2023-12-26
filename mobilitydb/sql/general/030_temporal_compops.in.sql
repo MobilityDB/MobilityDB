@@ -579,7 +579,7 @@ CREATE FUNCTION temporal_tgt(float, tfloat)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_tgt(tfloat, int)
+CREATE FUNCTION temporal_tgt(tfloat, integer)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -612,7 +612,7 @@ CREATE FUNCTION temporal_tgt(float, tfloat, atvalue bool DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_tgt(tfloat, int, atvalue bool DEFAULT NULL)
+CREATE FUNCTION temporal_tgt(tfloat, integer, atvalue bool DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -867,7 +867,7 @@ CREATE FUNCTION temporal_tge(float, tfloat)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tge_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_tge(tfloat, int)
+CREATE FUNCTION temporal_tge(tfloat, integer)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -900,7 +900,7 @@ CREATE FUNCTION temporal_tge(float, tfloat, atvalue bool DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tge_base_temporal'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_tge(tfloat, int, atvalue bool DEFAULT NULL)
+CREATE FUNCTION temporal_tge(tfloat, integer, atvalue bool DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;

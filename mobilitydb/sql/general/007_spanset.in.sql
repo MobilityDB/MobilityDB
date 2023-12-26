@@ -314,7 +314,7 @@ CREATE FUNCTION spanset(tstzspan[])
  * Conversion functions
  ******************************************************************************/
 
-CREATE FUNCTION spanset(int)
+CREATE FUNCTION spanset(integer)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Value_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -335,7 +335,7 @@ CREATE FUNCTION spanset(timestamptz)
   AS 'MODULE_PATHNAME', 'Value_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (int AS intspanset) WITH FUNCTION spanset(int);
+CREATE CAST (integer AS intspanset) WITH FUNCTION spanset(integer);
 CREATE CAST (bigint AS bigintspanset) WITH FUNCTION spanset(bigint);
 CREATE CAST (float AS floatspanset) WITH FUNCTION spanset(float);
 CREATE CAST (date AS datespanset) WITH FUNCTION spanset(date);
@@ -486,28 +486,28 @@ CREATE CAST (tstzmultirange AS tstzspanset) WITH FUNCTION spanset(tstzmultirange
  ******************************************************************************/
 
 CREATE FUNCTION memSize(intspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(bigintspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(floatspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(datespanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(tstzspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lower(intspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lower(bigintspanset)
@@ -528,7 +528,7 @@ CREATE FUNCTION lower(tstzspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upper(intspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upper(bigintspanset)
@@ -770,7 +770,7 @@ CREATE FUNCTION timestamps(tstzspanset)
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION shift(intspanset, int)
+CREATE FUNCTION shift(intspanset, integer)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Numspanset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -782,7 +782,7 @@ CREATE FUNCTION shift(floatspanset, float)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Numspanset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(datespanset, int)
+CREATE FUNCTION shift(datespanset, integer)
   RETURNS datespanset
   AS 'MODULE_PATHNAME', 'Numspanset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -791,7 +791,7 @@ CREATE FUNCTION shift(tstzspanset, interval)
   AS 'MODULE_PATHNAME', 'Tstzspanset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION scale(intspanset, int)
+CREATE FUNCTION scale(intspanset, integer)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Numspanset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -803,7 +803,7 @@ CREATE FUNCTION scale(floatspanset, float)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Numspanset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION scale(datespanset, int)
+CREATE FUNCTION scale(datespanset, integer)
   RETURNS datespanset
   AS 'MODULE_PATHNAME', 'Numspanset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -812,7 +812,7 @@ CREATE FUNCTION scale(tstzspanset, interval)
   AS 'MODULE_PATHNAME', 'Tstzspanset_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftScale(intspanset, int, int)
+CREATE FUNCTION shiftScale(intspanset, integer, integer)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Numspanset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -824,7 +824,7 @@ CREATE FUNCTION shiftScale(floatspanset, float, float)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Numspanset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftScale(datespanset, int, int)
+CREATE FUNCTION shiftScale(datespanset, integer, integer)
   RETURNS datespanset
   AS 'MODULE_PATHNAME', 'Numspanset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

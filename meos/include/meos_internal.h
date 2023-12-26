@@ -387,13 +387,16 @@ extern SpanSet *union_spanset_value(const SpanSet *ss, Datum d, meosType basetyp
 
 /* Distance functions for set and span types */
 
-extern double dist_set_set(const Set *s1, const Set *s2);
-extern double dist_span_span(const Span *s1, const Span *s2);
-extern double distance_value_value(Datum l, Datum r, meosType basetype);
-extern double distance_span_value(const Span *s, Datum d, meosType basetype);
-extern double distance_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
-extern double distance_value_set(Datum d, meosType basetype, const Set *s);
-extern double distance_set_value(const Set *s, Datum d, meosType basetype);
+extern Datum dist_set_set(const Set *s1, const Set *s2);
+extern Datum dist_span_span(const Span *s1, const Span *s2);
+extern Datum distance_set_set(const Set *s1, const Set *s2);
+extern Datum distance_set_value(const Set *s, Datum d, meosType basetype);
+extern Datum distance_span_span(const Span *s1, const Span *s2);
+extern Datum distance_span_value(const Span *s, Datum d, meosType basetype);
+extern Datum distance_spanset_span(const SpanSet *ss, const Span *s);
+extern Datum distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
+extern Datum distance_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
+extern Datum distance_value_value(Datum l, Datum r, meosType basetype);
 
 /*****************************************************************************/
 

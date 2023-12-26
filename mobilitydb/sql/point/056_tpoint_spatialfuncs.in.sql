@@ -33,7 +33,7 @@
  */
 
 CREATE FUNCTION SRID(stbox)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Stbox_get_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setSRID(stbox, integer)
@@ -133,20 +133,20 @@ CREATE FUNCTION getZ(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tpoint_get_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(tgeompoint, int DEFAULT 0)
+CREATE FUNCTION round(tgeompoint, integer DEFAULT 0)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION round(tgeogpoint, int DEFAULT 0)
+CREATE FUNCTION round(tgeogpoint, integer DEFAULT 0)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tpoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(tgeompoint[], int DEFAULT 0)
+CREATE FUNCTION round(tgeompoint[], integer DEFAULT 0)
   RETURNS tgeompoint[]
   AS 'MODULE_PATHNAME', 'Tpointarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION round(tgeogpoint[], int DEFAULT 0)
+CREATE FUNCTION round(tgeogpoint[], integer DEFAULT 0)
   RETURNS tgeogpoint[]
   AS 'MODULE_PATHNAME', 'Tpointarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -112,6 +112,8 @@ extern int mi_span_span(const Span *s1, const Span *s2, Span *result);
 extern int mi_span_value(const Span *s, Datum d, meosType basetype,
   Span *result);
 
+extern double dist_double_value_value(Datum l, Datum r, meosType type);
+
 /*****************************************************************************/
 
 #endif /* __SPAN_H__ */

@@ -295,7 +295,7 @@ CREATE FUNCTION asHexWKB(tstzspan, endianenconding text DEFAULT '')
  * Constructor functions
  ******************************************************************************/
 
-CREATE FUNCTION span(int, int, boolean DEFAULT true, boolean DEFAULT false)
+CREATE FUNCTION span(integer, integer, boolean DEFAULT true, boolean DEFAULT false)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -435,7 +435,7 @@ CREATE CAST (tstzspan AS tstzrange) WITH FUNCTION range(tstzspan);
  ******************************************************************************/
 
 CREATE FUNCTION lower(intspan)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Span_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lower(bigintspan)
@@ -456,7 +456,7 @@ CREATE FUNCTION lower(tstzspan)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upper(intspan)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Span_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upper(bigintspan)
@@ -544,7 +544,7 @@ CREATE FUNCTION duration(tstzspan)
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION shift(intspan, int)
+CREATE FUNCTION shift(intspan, integer)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Numspan_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -556,7 +556,7 @@ CREATE FUNCTION shift(floatspan, float)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Numspan_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(datespan, int)
+CREATE FUNCTION shift(datespan, integer)
   RETURNS datespan
   AS 'MODULE_PATHNAME', 'Numspan_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -565,7 +565,7 @@ CREATE FUNCTION shift(tstzspan, interval)
   AS 'MODULE_PATHNAME', 'Tstzspan_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION scale(intspan, int)
+CREATE FUNCTION scale(intspan, integer)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Numspan_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -577,7 +577,7 @@ CREATE FUNCTION scale(floatspan, float)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Numspan_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION scale(datespan, int)
+CREATE FUNCTION scale(datespan, integer)
   RETURNS datespan
   AS 'MODULE_PATHNAME', 'Numspan_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -586,7 +586,7 @@ CREATE FUNCTION scale(tstzspan, interval)
   AS 'MODULE_PATHNAME', 'Tstzspan_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftScale(intspan, int, int)
+CREATE FUNCTION shiftScale(intspan, integer, integer)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -598,7 +598,7 @@ CREATE FUNCTION shiftScale(floatspan, float, float)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftScale(datespan, int, int)
+CREATE FUNCTION shiftScale(datespan, integer, integer)
   RETURNS datespan
   AS 'MODULE_PATHNAME', 'Numspan_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

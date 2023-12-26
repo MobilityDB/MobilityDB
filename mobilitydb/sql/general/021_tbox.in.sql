@@ -272,7 +272,7 @@ CREATE FUNCTION Tmax_inc(tbox)
  * Transformation functions
  *****************************************************************************/
 
-CREATE FUNCTION shiftValue(tbox, int)
+CREATE FUNCTION shiftValue(tbox, integer)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Tbox_shift_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -285,7 +285,7 @@ CREATE FUNCTION shiftTime(tbox, interval)
   AS 'MODULE_PATHNAME', 'Tbox_shift_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION scaleValue(tbox, int)
+CREATE FUNCTION scaleValue(tbox, integer)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Tbox_scale_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -298,7 +298,7 @@ CREATE FUNCTION scaleTime(tbox, interval)
   AS 'MODULE_PATHNAME', 'Tbox_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftScaleValue(tbox, int, int)
+CREATE FUNCTION shiftScaleValue(tbox, integer, integer)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Tbox_shift_scale_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -311,7 +311,7 @@ CREATE FUNCTION shiftScaleTime(tbox, interval, interval)
   AS 'MODULE_PATHNAME', 'Tbox_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION expandValue(tbox, int)
+CREATE FUNCTION expandValue(tbox, integer)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Tbox_expand_int'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -1472,7 +1472,7 @@ CREATE FUNCTION setInterp(ttext, text)
 
 /******************************************************************************/
 
-CREATE FUNCTION shiftValue(tint, int)
+CREATE FUNCTION shiftValue(tint, integer)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_shift_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1481,7 +1481,7 @@ CREATE FUNCTION shiftValue(tfloat, float)
   AS 'MODULE_PATHNAME', 'Tnumber_shift_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION scaleValue(tint, int)
+CREATE FUNCTION scaleValue(tint, integer)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_scale_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1490,7 +1490,7 @@ CREATE FUNCTION scaleValue(tfloat, float)
   AS 'MODULE_PATHNAME', 'Tnumber_scale_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftScaleValue(tint, int, int)
+CREATE FUNCTION shiftScaleValue(tint, integer, integer)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_shift_scale_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

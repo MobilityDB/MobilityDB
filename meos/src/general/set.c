@@ -1581,7 +1581,7 @@ textset_value_n(const Set *s, int n, text **result)
  * @csqlfn #Set_value_n()
  */
 bool
-dateset_date_n(const Set *s, int n, DateADT *result)
+dateset_value_n(const Set *s, int n, DateADT *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||

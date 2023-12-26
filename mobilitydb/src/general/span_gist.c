@@ -151,7 +151,8 @@ span_index_recheck(StrategyNumber strategy)
   if (strategy == RTLeftStrategyNumber ||
       strategy == RTOverLeftStrategyNumber ||
       strategy == RTRightStrategyNumber ||
-      strategy == RTOverRightStrategyNumber)
+      strategy == RTOverRightStrategyNumber ||
+      strategy == RTKNNSearchStrategyNumber)
     return false;
   return true;
 }
@@ -308,7 +309,7 @@ PG_FUNCTION_INFO_V1(Span_gist_penalty);
  *
  * The penalty function has the following goals (in order from most to least
  * important):
- * - Avoid broadening (as determined by distance_value_value) the original
+ * - Avoid broadening (as determined by dist_double_value_value) the original
  *   predicate
  * - Favor adding spans to narrower original predicates
  */
@@ -324,12 +325,12 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
   span_deserialize(orig, &orig_lower, &orig_upper);
   span_deserialize(new, &new_lower, &new_upper);
 
-  /* Calculate extension of original span by calling distance_value_value */
+  /* Calculate extension of original span by calling dist_double_value_value */
   float8 diff = 0.0;
   if (span_bound_cmp(&new_lower, &orig_lower) < 0)
-    diff += distance_value_value(orig->lower, new->lower, orig->basetype);
+    diff += dist_double_value_value(orig->lower, new->lower, orig->basetype);
   if (span_bound_cmp(&new_upper, &orig_upper) > 0)
-    diff += distance_value_value(new->upper, orig->upper, new->basetype);
+    diff += dist_double_value_value(new->upper, orig->upper, new->basetype);
   *penalty = (float4) diff;
 
   PG_RETURN_POINTER(penalty);
@@ -448,7 +449,7 @@ span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
      * values) and minimal ratio secondarily.  The subtype_diff is
      * used for overlap measure.
      */
-    overlap = (float4) distance_value_value(left_upper->val, right_lower->val,
+    overlap = (float4) dist_double_value_value(left_upper->val, right_lower->val,
       left_upper->basetype);
 
     /* If there is no previous selection, select this split */
@@ -756,9 +757,9 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
          * (context.left_upper - upper)
          */
         common_entries[common_entries_count].delta =
-          distance_value_value(span->lower, context.right_lower.val,
+          dist_double_value_value(span->lower, context.right_lower.val,
             span->basetype) -
-          distance_value_value(context.left_upper.val, span->upper,
+          dist_double_value_value(context.left_upper.val, span->upper,
             span->basetype);
         common_entries_count++;
       }
@@ -883,22 +884,22 @@ Span_gist_distance(PG_FUNCTION_ARGS)
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   Span *key = (Span *) DatumGetPointer(entry->key);
   Span query;
-  double distance;
+  Datum distance;
 
   /* The index is not lossy */
   if (GIST_LEAF(entry))
     *recheck = false;
 
   if (key == NULL)
-    PG_RETURN_FLOAT8(DBL_MAX);
+    PG_RETURN_DATUM((Datum) -1);
 
-  /* Transform the query into a box */
+  /* Transform the query into a span */
   if (! span_gist_get_span(fcinfo, &query, typid))
-    PG_RETURN_FLOAT8(DBL_MAX);
+    PG_RETURN_DATUM((Datum) -1);
 
   distance = dist_span_span(key, &query);
 
-  PG_RETURN_FLOAT8(distance);
+  PG_RETURN_DATUM(distance);
 }
 
 /*****************************************************************************

@@ -1528,32 +1528,32 @@ CREATE OPERATOR * (
 /*****************************************************************************/
 
 CREATE FUNCTION set_distance(integer, integer)
-  RETURNS float
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(integer, intset)
-  RETURNS float
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(intset, integer)
-  RETURNS float
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(intset, intset)
-  RETURNS float
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_distance(bigint, bigint)
-  RETURNS float
+  RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(bigint, bigintset)
-  RETURNS float
+  RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(bigintset, bigint)
-  RETURNS float
+  RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(bigintset, bigintset)
@@ -1579,19 +1579,19 @@ CREATE FUNCTION set_distance(floatset, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_distance(date, date)
-  RETURNS date
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(date, dateset)
-  RETURNS date
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(dateset, date)
-  RETURNS date
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(dateset, dateset)
-  RETURNS date
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

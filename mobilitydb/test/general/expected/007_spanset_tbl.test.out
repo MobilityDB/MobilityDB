@@ -338,9 +338,9 @@ SELECT MAX(width(i)) FROM tbl_intspanset;
 (1 row)
 
 SELECT MAX(width(f)) FROM tbl_floatspanset;
-        max         
---------------------
- 35.939052925331154
+          max          
+-----------------------
+ 4.614463283914867e+19
 (1 row)
 
 SELECT MAX(duration(d)) FROM tbl_datespanset;

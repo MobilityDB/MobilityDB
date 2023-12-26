@@ -194,11 +194,11 @@ CREATE CAST (geography AS geogset) WITH FUNCTION set(geography);
  ******************************************************************************/
 
 CREATE FUNCTION memSize(geomset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(geogset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -252,11 +252,11 @@ CREATE FUNCTION getValues(geogset)
  *****************************************************************************/
 
 CREATE FUNCTION SRID(geomset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Geoset_get_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION SRID(geogset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Geoset_get_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setSRID(geomset, integer)

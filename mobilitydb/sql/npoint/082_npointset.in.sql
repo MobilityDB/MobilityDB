@@ -129,7 +129,7 @@ CREATE FUNCTION round(npointset, integer DEFAULT 0)
  ******************************************************************************/
 
 CREATE FUNCTION memSize(npointset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
