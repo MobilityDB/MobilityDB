@@ -693,8 +693,8 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   ConsiderSplitContext context;
   void *box, *leftBox, *rightBox;
   SplitInterval *intervalsLower, *intervalsUpper;
-  CommonEntry *commonEntries;
-  int nentries, commonEntriesCount, dim;
+  CommonEntry *common_entries;
+  int nentries, common_entries_count, dim;
   assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
 
   int maxdims = bbox_max_dims(bboxtype);
@@ -905,6 +905,8 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
     }
   }
 
+  pfree(intervalsLower); pfree(intervalsUpper);
+
   /*
    * If we failed to find any acceptable splits, use trivial split.
    */
@@ -935,8 +937,8 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
    * Allocate an array for "common entries" - entries which can be placed to
    * either group without affecting overlap along selected axis.
    */
-  commonEntriesCount = 0;
-  commonEntries = palloc(nentries * sizeof(CommonEntry));
+  common_entries_count = 0;
+  common_entries = palloc(nentries * sizeof(CommonEntry));
 
   /*
    * Distribute entries which can be distributed unambiguously, and collect
@@ -994,7 +996,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
       if (FLOAT8_GE(lower, context.rightLower))
       {
         /* Fits also to the right group, so "common entry" */
-        commonEntries[commonEntriesCount++].index = i;
+        common_entries[common_entries_count++].index = i;
       }
       else
       {
@@ -1019,7 +1021,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   /*
    * Distribute "common entries", if any.
    */
-  if (commonEntriesCount > 0)
+  if (common_entries_count > 0)
   {
     /*
      * Calculate minimum number of entries that must be placed in both
@@ -1031,10 +1033,10 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
      * Calculate delta between penalties of join "common entries" to
      * different groups.
      */
-    for (i = 0; i < commonEntriesCount; i++)
+    for (i = 0; i < common_entries_count; i++)
     {
-      box = DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
-      commonEntries[i].delta = fabs(bbox_penalty(leftBox, box) -
+      box = DatumGetPointer(entryvec->vector[common_entries[i].index].key);
+      common_entries[i].delta = fabs(bbox_penalty(leftBox, box) -
         bbox_penalty(rightBox, box));
     }
 
@@ -1042,24 +1044,24 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
      * Sort "common entries" by calculated deltas in order to distribute
      * the most ambiguous entries first.
      */
-    qsort(commonEntries, (size_t) commonEntriesCount, sizeof(CommonEntry),
+    qsort(common_entries, (size_t) common_entries_count, sizeof(CommonEntry),
       common_entry_cmp);
 
     /*
      * Distribute "common entries" between groups.
      */
-    for (i = 0; i < commonEntriesCount; i++)
+    for (i = 0; i < common_entries_count; i++)
     {
-      OffsetNumber idx = (OffsetNumber) (commonEntries[i].index);
+      OffsetNumber idx = (OffsetNumber) (common_entries[i].index);
       box = DatumGetPointer(entryvec->vector[idx].key);
 
       /*
        * Check if we have to place this entry in either group to achieve
        * LIMIT_RATIO.
        */
-      if (v->spl_nleft + (commonEntriesCount - i) <= m)
+      if (v->spl_nleft + (common_entries_count - i) <= m)
         PLACE_LEFT(box, idx);
-      else if (v->spl_nright + (commonEntriesCount - i) <= m)
+      else if (v->spl_nright + (common_entries_count - i) <= m)
         PLACE_RIGHT(box, idx);
       else
       {
@@ -1074,6 +1076,9 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
 
   v->spl_ldatum = PointerGetDatum(leftBox);
   v->spl_rdatum = PointerGetDatum(rightBox);
+
+  pfree(common_entries);
+
   PG_RETURN_POINTER(v);
 }
 

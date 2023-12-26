@@ -149,9 +149,13 @@ span_index_recheck(StrategyNumber strategy)
 {
   /* These operators are based on bounding boxes */
   if (strategy == RTLeftStrategyNumber ||
+      strategy == RTBeforeStrategyNumber ||
       strategy == RTOverLeftStrategyNumber ||
+      strategy == RTOverBeforeStrategyNumber ||
       strategy == RTRightStrategyNumber ||
+      strategy == RTAfterStrategyNumber ||
       strategy == RTOverRightStrategyNumber ||
+      strategy == RTOverAfterStrategyNumber ||
       strategy == RTKNNSearchStrategyNumber)
     return false;
   return true;
@@ -703,6 +707,8 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
     span_gist_consider_split(&context, right_lower, i1 + 1, left_upper, i2 + 1);
   }
 
+  pfree(by_lower); pfree(by_upper);
+
   /*
    * If we failed to find any acceptable splits, use trivial split.
    */
@@ -814,6 +820,9 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   v->spl_ldatum = PointerGetDatum(left_span);
   v->spl_rdatum = PointerGetDatum(right_span);
+  
+  pfree(common_entries);
+
   return;
 }
 

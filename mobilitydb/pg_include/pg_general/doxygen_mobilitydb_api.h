@@ -107,7 +107,7 @@
  * @brief Comparison functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_agg Aggregate functions
- * @ingroup libmeos_setspan
+ * @ingroup mobilitydb_setspan
  * @brief Aggregate functions for set and span types.
  */
 

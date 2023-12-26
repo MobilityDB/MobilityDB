@@ -46,6 +46,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/set.h"
 #include "general/span.h"
 #include "general/spanset.h"
 #include "general/temporal_tile.h"
@@ -74,6 +75,29 @@ timestamptz_tprecision(TimestampTz t, const Interval *duration,
       ! ensure_valid_duration(duration))
     return DT_NOEND;
   return timestamptz_bucket(t, duration, torigin);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a timestamptz set with the precision set to a time bucket
+ * @param[in] s Timestamptz set
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+Set *
+tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
+      ! ensure_set_isof_type(s, T_TSTZSET) ||
+      ! ensure_valid_duration(duration))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  /* Loop for each value */
+  for (int i = 0; i < s->count; i++)
+    values[i] = timestamptz_bucket(SET_VAL_N(s, i), duration, torigin);
+  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDERED_NO);
 }
 
 /**

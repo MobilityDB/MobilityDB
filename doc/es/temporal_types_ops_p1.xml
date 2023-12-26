@@ -461,8 +461,8 @@ SELECT tgeogpoint_seqset('SRID=7844;Point(0 0)', tstzspanset '{[2001-01-01, 2001
 				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
 				<para>Constructores para tipos temporales de subtipo secuencia</para>
 				<para>Estos constructores tienen un primer argumento obligatorio, que es una matriz de valores de los valores instantáneos correspondientes y argumentos opcionales adicionales. El segundo argumento establece la interpolación. Si no se proporciona el argumento, es por defecto escalonada para los tipos de base base discretos como los enteros y es lineal para tipos de base continuous como los flotantes. Se genera un error cuando se establece la interpolación lineal para valores temporales con tipos de base discretos. Para secuencias continuas, el tercero y el cuarto argumentos son valores booleanos que indican, respectivamente, si los límites izquierdo y derecho son inclusivos o exclusivos. Se supone que estos argumentos son verdaderos de forma predeterminada si no se especifican.</para>
-				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
-				<para><varname>ttype_seq(ttype_inst[],interp={'step','linear'},left_inc=true,right_inc=true) → ttype_seq</varname></para>
+				<para><varname>ttype_seq(ttype_inst[],interp={'step','linear'},left_inc bool=true,</varname></para>
+        <para><varname>  right_inc bool=true) → ttype_seq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_seq(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00'],
   'discrete');

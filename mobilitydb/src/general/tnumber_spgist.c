@@ -938,7 +938,7 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   /*
    * Switch memory context to allocate memory for new traversal values
    * (next_nodebox) and pass these pieces of memory to further calls of
-   * this function.
+   * this function  
    */
   old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
@@ -949,8 +949,7 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
     if (idxtype == SPGIST_QUADTREE)
       tboxnode_quadtree_next(nodebox, centroid, node, &next_nodebox);
     else
-      tboxnode_kdtree_next(nodebox, centroid, node, in->level,
-        &next_nodebox);
+      tboxnode_kdtree_next(nodebox, centroid, node, in->level, &next_nodebox);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {

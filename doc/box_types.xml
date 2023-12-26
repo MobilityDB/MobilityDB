@@ -154,9 +154,9 @@ SELECT stboxFromHexWKB(
 			<listitem id="tbox">
 				<indexterm><primary><varname>tbox</varname></primary></indexterm>
 				<para>Constructor for <varname>tbox</varname></para>
-				<para><varname>tbox(time) → tbox</varname></para>
 				<para><varname>tbox({number,numspan}) → tbox</varname></para>
-				<para><varname>tbox({number,numspan},time) → tbox</varname></para>
+				<para><varname>tbox({timestamptz,tstzspan}) → tbox</varname></para>
+				<para><varname>tbox({number,numspan},{timestamptz,tstzspan}) → tbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 -- Both value and time dimensions
 SELECT tbox(1.0, timestamptz '2001-01-01');
@@ -186,15 +186,15 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 				<para>Constructor for <varname>stbox</varname></para>
 				<para><varname>stbox_x(float,float,float,float,srid=0) → stbox</varname></para>
 				<para><varname>stbox_z(float,float,float,float,float,float,srid=0) → stbox</varname></para>
-				<para><varname>stbox_t(time) → stbox</varname></para>
+				<para><varname>stbox_t({timestamptz,tstzspan}) → stbox</varname></para>
 				<para><varname>stbox_xt(float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
 				<para><varname>stbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
 				<para><varname>geodstbox_z(float,float,float,float,float,float,srid=4326) → stbox</varname></para>
-				<para><varname>geodstbox_t(time) → stbox</varname></para>
+				<para><varname>geodstbox_t({timestamptz,tstzspan}) → stbox</varname></para>
 				<para><varname>geodstbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},srid=4326)</varname></para>
 				<para><varname>  → stbox</varname></para>
 				<para><varname>stbox(geo) → stbox</varname></para>
-				<para><varname>stbox(geo,time) → stbox</varname></para>
+				<para><varname>stbox(geo,{timestamptz,tstzspan}) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 -- Only value dimension with X and Y coordinates
 SELECT stbox_x(1.0,2.0,1.0,2.0);
@@ -230,8 +230,13 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03,2001-01-
 			<listitem id="tbox_convert_to">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convert a <varname>tbox</varname> to another type</para>
-				<para><varname>tbox::{floatspan,tstzspan}</varname></para>
+				<para><varname>tbox::{intspan,floatspan,tstzspan}</varname></para>
+				<para><varname>intspan(tbox) → tbox</varname></para>
+				<para><varname>floatspan(tbox) → tbox</varname></para>
+				<para><varname>tstzspan(tbox) → tbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
+SELECT tbox 'TBOXINT XT([1,4),[2001-01-01,2001-01-02))'::intspan;
+-- [1,4)
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02))'::floatspan;
 -- (1, 2)
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02))'::tstzspan;
@@ -242,8 +247,11 @@ SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02))'::tstzspan;
 			<listitem id="tbox_convert_from">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convert another type to a <varname>tbox</varname></para>
-				<para><varname>{number,span,time,tnumber}::tbox</varname></para>
+				<para><varname>{numbers,times,tnumber}::tbox</varname></para>
+				<para><varname>tbox({numbers,times,tnumber}) → tbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
+SELECT intset '{1,2}'::tbox;
+-- TBOXINT X([1, 3))
 SELECT intspan '[1,2]'::tbox;
 -- TBOXINT X([1, 3))
 SELECT floatspan '(1.0,2.0)'::tbox;
@@ -256,7 +264,7 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 			<listitem id="stbox_convert_to">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convert an <varname>stbox</varname> to a another type</para>
-				<para><varname>stbox::{tstzspan,box2d,box3d,geometry}</varname></para>
+				<para><varname>stbox::{box2d,box3d,geometry,tstzspan}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan;
 -- [2001-01-01, 2001-01-03]
@@ -282,6 +290,7 @@ SELECT ST_AsEWKT(stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2001-01-01,2001-01-05])'::
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convert another type to an <varname>stbox</varname></para>
 				<para><varname>{box2d,box3d,geo,time,tpoint}::stbox</varname></para>
+				<para><varname>stbox({box2d,box3d,geo}) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT geometry 'Linestring(1 1 1,2 2 2)'::box3d::stbox;
 -- STBOX Z((1,1,1),(2,2,2))

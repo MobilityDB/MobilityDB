@@ -629,13 +629,13 @@ extern Set *textset_lower(const Set *s);
 extern Set *textset_upper(const Set *s);
 extern TimestampTz timestamptz_tprecision(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Set *tstzset_shift_scale(const Set *s, const Interval *shift, const Interval *duration);
-extern Span *datespan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
-extern Span *tstzspan_shift_scale(const Span *s, const Interval *shift, const Interval *duration);
-extern Span *tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
 extern Set *tstzset_to_dateset(const Set *s);
+extern Set *tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin);
+extern Span *tstzspan_shift_scale(const Span *s, const Interval *shift, const Interval *duration);
 extern Span *tstzspan_to_datespan(const Span *s);
-extern SpanSet *tstzspanset_to_datespanset(const SpanSet *ss);
+extern Span *tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
 extern SpanSet *tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift, const Interval *duration);
+extern SpanSet *tstzspanset_to_datespanset(const SpanSet *ss);
 extern SpanSet *tstzspanset_tprecision(const SpanSet *ss, const Interval *duration, TimestampTz torigin);
 
 /*****************************************************************************/

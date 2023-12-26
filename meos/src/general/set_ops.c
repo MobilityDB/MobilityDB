@@ -2216,7 +2216,7 @@ distance_set_int(const Set *s, int i)
  * @result On error return -1.0
  * @csqlfn #Distance_set_value()
  */
-double
+int64
 distance_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
@@ -2314,9 +2314,8 @@ distance_set_set(const Set *s1, const Set *s2)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a set and an integer
- * @param[in] s1 Set
- * @param[in] i Value
+ * @brief Return the distance between two integer sets
+ * @param[in] s1,s2 Sets
  * @result On error return -1
  * @csqlfn #Distance_set_set()
  */
@@ -2333,9 +2332,8 @@ distance_intset_intset(const Set *s1, const Set *s2)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a set and a big integer
- * @param[in] s1 Set
- * @param[in] i Value
+ * @brief Return the distance between two big integer sets
+ * @param[in] s1,s2 Sets
  * @result On error return -1
  * @csqlfn #Distance_set_set()
  */
@@ -2352,9 +2350,8 @@ distance_bigintset_bigintset(const Set *s1, const Set *s2)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a set and a float
- * @param[in] s1 Set
- * @param[in] d Value
+ * @brief Return the distance between two float sets
+ * @param[in] s1,s2 Sets
  * @result On error return -1.0
  * @csqlfn #Distance_set_set()
  */
@@ -2371,9 +2368,8 @@ distance_floatset_floatset(const Set *s1, const Set *s2)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance in days between a set and a date
- * @param[in] s1 Set
- * @param[in] d Value
+ * @brief Return the distance in days between two date sets
+ * @param[in] s1,s2 Sets
  * @result On error return -1
  * @csqlfn #Distance_set_set()
  */
@@ -2390,10 +2386,8 @@ distance_dateset_dateset(const Set *s1, const Set *s2)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance in seconds between a set and a timestamptz as a
- * double
- * @param[in] s1 Set
- * @param[in] t Value
+ * @brief Return the distance in seconds between two timestamptz sets
+ * @param[in] s1,s2 Sets
  * @result On error return -1.0
  * @csqlfn #Distance_set_set()
  */
