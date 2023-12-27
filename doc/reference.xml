@@ -52,7 +52,7 @@
 					<entry><varname>ttext</varname></entry>
 				</row>
 				<row>
-					<entry><emphasis role="bold"><varname>int</varname></emphasis></entry>
+					<entry><emphasis role="bold"><varname>integer</varname></emphasis></entry>
 					<entry><varname>intset</varname></entry>
 					<entry><varname>intspan</varname></entry>
 					<entry><varname>intspanset</varname></entry>

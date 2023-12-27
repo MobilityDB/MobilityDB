@@ -697,7 +697,7 @@ SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 				<indexterm><primary><varname>shift</varname></primary></indexterm>
 				<para>Desplazar el conjunto o el span con un valor o intervalo de tiempo</para>
 				<para><varname>shift(numbers,base) → numbers</varname></para>
-				<para><varname>shift(dates,int) → dates</varname></para>
+				<para><varname>shift(dates,integer) → dates</varname></para>
 				<para><varname>shift(times,interval) → times</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT shift(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', interval '1 day');
@@ -720,7 +720,7 @@ SELECT shift(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 				<indexterm><primary><varname>scale</varname></primary></indexterm>
 				<para>Escalear el conjunto o el rango con un valor o intervalo</para>
 				<para><varname>scale(numbers,base) → numbers</varname></para>
-				<para><varname>scale(dates,int) → dates</varname></para>
+				<para><varname>scale(dates,integer) → dates</varname></para>
 				<para><varname>scale(times,interval) → times</varname></para>
 				<para>Si el ancho o el lapso de tiempo del valor de entrada es cero (por ejemplo, para un conjunto de marcas de tiempo único), el resultado es el valor de entrada. El valor o intervalo de tiempo dado debe ser estrictamente mayor que cero.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -748,7 +748,7 @@ SELECT scale(tstzset '{2001-01-01}', '-1 day');
 				<indexterm><primary><varname>shiftScale</varname></primary></indexterm>
 				<para>Desplazar y escalear el conjunto o rango con los valores o intervalos</para>
 				<para><varname>shiftScale(numbers,base,base) → numbers</varname></para>
-				<para><varname>shiftScale(dates,int,int) → dates</varname></para>
+				<para><varname>shiftScale(dates,integer,integer) → dates</varname></para>
 				<para><varname>shiftScale(times,interval,interval) → times</varname></para>
 				<para>Estas funciones combinan las funciones <link linkend="setspan_shift"><varname>shift</varname></link> y <link linkend="setspan_scale"><varname>scale</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -774,7 +774,7 @@ SELECT shiftScale(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-0
 			<listitem id="floatspan_round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
 				<para>Redondear los límites de un rango flotante a un número de decimales</para>
-				<para><varname>round(floatspans,integer) → floatspan</varname></para>
+				<para><varname>round(floatspans,integer=0) → floatspan</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(floatspan '[1.123456789,2.123456789)', 3);
 -- [1.123,2.123)
@@ -1050,7 +1050,7 @@ SELECT timestamp '2001-01-01' #&amp;&gt; tstzspan '[2001-01-01, 2001-01-05)';
 				<indexterm><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 				<para>Obtener la distancia mínima</para>
 				<para><varname>numbers &lt;-&gt; numbers → base</varname></para>
-				<para><varname>dates &lt;-&gt; dates → int</varname></para>
+				<para><varname>dates &lt;-&gt; dates → integer</varname></para>
 				<para><varname>times &lt;-&gt; times → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT 3 &lt;-&gt; intspan '[6, 8)';

@@ -157,7 +157,7 @@ SELECT deltaValue(tfloat '{[1.5@2001-01-01, 2@2001-01-02, 1@2001-01-03],
 			<listitem id="round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
 				<para>Round the values to a number of decimal places</para>
-				<para><varname>round(tfloat,integer) → tfloat</varname></para>
+				<para><varname>round(tfloat,integer=0) → tfloat</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(tfloat '[0.785398163397448@2001-01-01, 2.35619449019234@2001-01-02]', 2);
 -- [0.79@2001-01-01, 2.36@2001-01-02]

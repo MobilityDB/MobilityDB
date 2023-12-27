@@ -115,7 +115,7 @@ SELECT nsegment(76, 0.3, 0.5);
 				<listitem id="npoint_round">
 					<indexterm><primary><varname>round</varname></primary></indexterm>
 					<para>Round the position(s) of the network point or the network segment to the number of decimal places</para>
-					<para><varname>round({npoint,nsegment},integer) → {npoint,nsegment}</varname></para>
+					<para><varname>round({npoint,nsegment},integer=0) → {npoint,nsegment}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT round(npoint(76, 0.123456789), 6);
 --  NPoint(76,0.123457)
@@ -175,7 +175,7 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 				<listitem id="npoint_srid">
 					<indexterm><primary><varname>SRID</varname></primary></indexterm>
 					<para>Get the spatial reference identifier</para>
-					<para><varname>srid({npoint,nsegment}) → int</varname></para>
+					<para><varname>srid({npoint,nsegment}) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT SRID(nspoint 'Npoint(76, 0.3)');
 -- 5676

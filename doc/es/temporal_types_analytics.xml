@@ -383,10 +383,10 @@ SELECT spanBucket(2, 2.5, 1.5);
 					<para><varname>  timestamptz</varname></para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT timeBucket(timestamptz '2020-05-01', interval '2 days');
--- 2020-04-29 01:00:00+02
-SELECT timeBucket(timestamptz '2020-05-01', interval '2 days', timestamptz '2020-01-01');
--- 2020-04-30 01:00:00+02
+SELECT timeBucket(timestamptz '2001-05-01', interval '2 days');
+-- 2001-04-29 01:00:00+02
+SELECT timeBucket(timestamptz '2001-05-01', interval '2 days', timestamptz '2001-01-01');
+-- 2001-04-30 01:00:00+02
 </programlisting>
 				</listitem>
 
@@ -394,7 +394,7 @@ SELECT timeBucket(timestamptz '2020-05-01', interval '2 days', timestamptz '2020
 					<indexterm><primary><varname>periodBucket</varname></primary></indexterm>
 					<para>Obtener el período en el espacio de intervalos que contiene la marca de tiempo de entrada</para>
 					<para><varname>periodBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03') → </varname></para>
-					<para><varname>  period</varname></para>
+					<para><varname>  tstzspan</varname></para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT periodBucket('2001-01-04', interval '1 week');
@@ -530,22 +530,22 @@ SELECT valueSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 2.0, 1.0);
 					<para>El resultado es un conjunto de pares <varname>(time,temp)</varname>. Si el origen del tiempo no se especifica, su valor se establece por defecto en el lunes 3 de enero de 2000.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (ts).time, (ts).temp
-FROM (SELECT timeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', '2 days') AS ts) t;
--- 2011-12-31 | [1@2001-01-01, 2@2001-01-02)
--- 2001-01-02 | [2@2001-01-02, 4@2001-01-04)
--- 2001-01-04 | [4@2001-01-04, 6@2001-01-06)
+FROM (SELECT timeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', '2 days') AS ts) t;
+-- 2001-01-31 | [1@2001-02-01, 2@2001-02-02)
+-- 2001-02-02 | [2@2001-02-02, 4@2001-02-04)
+-- 2001-02-04 | [4@2001-02-04, 6@2001-02-06)
 -- ...
 SELECT (ts).time, astext((ts).temp) AS temp
-FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]',
-  '2 days', '2001-01-01') AS ts) AS t;
--- 2001-01-01 | [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-03)
--- 2001-01-03 | [POINT Z (3 3 3)@2001-01-03, POINT Z (5 5 5)@2001-01-05)
--- 2001-01-05 | [POINT Z (5 5 5)@2001-01-05, POINT Z (7 7 7)@2001-01-07)
+FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-10]',
+  '2 days', '2001-02-01') AS ts) AS t;
+-- 2001-02-01 | [POINT(1 1)@2001-02-01, POINT(3 3)@2001-02-03)
+-- 2001-02-03 | [POINT(3 3)@2001-02-03, POINT(5 5)@2001-02-05)
+-- 2001-02-05 | [POINT(5 5)@2001-02-05, POINT(7 7)@2001-02-07)
 -- ...
 </programlisting>
 					<para>Observe que se puede fragmentar un valor temporal en intervalos de tiempo cíclicos (en lugar de lineales). Los siguientes dos ejemplos muestran cómo fragmentar un valor temporal por hora y por día de la semana.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT (ts).time::time as hour, merge((ts).temp) as temp
+SELECT (ts).time::time AS hour, merge((ts).temp) AS temp
 FROM (SELECT timeSplit(tfloat '[1@2001-01-01, 10@2001-01-03]', '1 hour') AS ts) t
 GROUP BY hour ORDER BY hour;
 /* 00:00:00 | {[1@2001-01-01 00:00:00+01, 1.1875@2001-01-01 01:00:00+01),
@@ -557,8 +557,8 @@ GROUP BY hour ORDER BY hour;
 /* 03:00:00 | {[1.5625@2001-01-01 03:00:00+01, 1.75@2001-01-01 04:00:00+01),
                [6.0625@2001-01-02 03:00:00+01, 6.25@2001-01-02 04:00:00+01)} */
 /* ... */
-SELECT EXTRACT(DOW FROM (ts).time) as dow_no, TO_CHAR((ts).time, 'Dy') as dow,
-  asText(round(merge((ts).temp), 2)) as temp
+SELECT EXTRACT(DOW FROM (ts).time) AS dow_no, TO_CHAR((ts).time, 'Dy') AS dow,
+  asText(round(merge((ts).temp), 2)) AS temp
 FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-14)',
   '1 hour') AS ts) t
 GROUP BY dow, dow_no ORDER BY dow_no;
@@ -580,14 +580,15 @@ GROUP BY dow, dow_no ORDER BY dow_no;
 					<para>El resultado es un conjunto de triples <varname>(number,time,tnumber)</varname>. Si el origen de los valores y/o el tiempo no se especifican, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (sp).number, (sp).time, (sp).tnumber
-FROM (SELECT valueTimeSplit(tint '[1@2001-01-01, 2@2001-01-02, 5@2001-01-05,
-  10@2001-01-10]', 5, '5 days') AS sp) t;
--- 0 | 2011-12-31 | [1@2001-01-01, 2@2001-01-02, 2@2001-01-05)
--- 5 | 2001-01-05 | [5@2001-01-05, 5@2001-01-10)
--- 10 | 2001-01-10 | [10@2001-01-10]
+FROM (SELECT valueTimeSplit(tint '[1@2001-02-01, 2@2001-02-02, 5@2001-02-05,
+  10@2001-02-10]', 5, '5 days') AS sp) t;
+--  0 | 2001-02-01 | {[1@2001-02-01, 2@2001-02-02, 2@2001-02-05)}
+--  5 | 2001-02-01 | {[5@2001-02-05, 5@2001-02-06)}
+--  5 | 2001-02-06 | {[5@2001-02-06, 5@2001-02-10)}
+-- 10 | 2001-02-06 | {[10@2001-02-10]}
 SELECT (sp).number, (sp).time, (sp).tnumber
-FROM (SELECT valueTimeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 5.0, '5 days', 1.0,
-  '2001-01-01') AS sp) t;
+FROM (SELECT valueTimeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', 5.0, '5 days', 1.0,
+  '2001-02-01') AS sp) t;
 -- 1 | 2001-01-01 | [1@2001-01-01, 6@2001-01-06)
 -- 6 | 2001-01-06 | [6@2001-01-06, 10@2001-01-10)
 </programlisting>
@@ -597,22 +598,22 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 5.0, '5 days
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial &SRF;</para>
 					<para><varname>spaceSplit(tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
-					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix=true) → {(point,tpoint)}</varname></para>
+					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix boolean=true) → {(point,tpoint)}</varname></para>
 					<para>El resultado es un conjunto de pares <varname>(point,tpoint)</varname>. Si el origen del espacio no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname>. Los argumentos <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
-FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2001-03-01, Point(10 10)@2001-03-10]',
   2.0) AS sp) t;
--- POINT(0 0) | {[POINT(1 1)@2020-03-01, POINT(2 2)@2020-03-02)}
--- POINT(2 2) | {[POINT(2 2)@2020-03-02, POINT(4 4)@2020-03-04)}
--- POINT(4 4) | {[POINT(4 4)@2020-03-04, POINT(6 6)@2020-03-06)}
+-- POINT(0 0) | {[POINT(1 1)@2001-03-01, POINT(2 2)@2001-03-02)}
+-- POINT(2 2) | {[POINT(2 2)@2001-03-02, POINT(4 4)@2001-03-04)}
+-- POINT(4 4) | {[POINT(4 4)@2001-03-04, POINT(6 6)@2001-03-06)}
 -- ...
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
-FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
-  Point(10 10 10)@2020-03-10]', 2.0, 'Point(1 1 1)') AS sp) t;
--- POINT Z(1 1 1) | {[POINT Z (1 1 1)@2020-03-01, POINT Z (3 3 3)@2020-03-03)}
--- POINT Z(3 3 3) | {[POINT Z (3 3 3)@2020-03-03, POINT Z (5 5 5)@2020-03-05)}
--- POINT Z(5 5 5) | {[POINT Z (5 5 5)@2020-03-05, POINT Z (7 7 7)@2020-03-07)}
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-03-01,
+  Point(10 10 10)@2001-03-10]', 2.0, geometry 'Point(1 1 1)') AS sp) t;
+-- POINT Z(1 1 1) | {[POINT Z (1 1 1)@2001-03-01, POINT Z (3 3 3)@2001-03-03)}
+-- POINT Z(3 3 3) | {[POINT Z (3 3 3)@2001-03-03, POINT Z (5 5 5)@2001-03-05)}
+-- POINT Z(5 5 5) | {[POINT Z (5 5 5)@2001-03-05, POINT Z (7 7 7)@2001-03-07)}
 -- ...
 </programlisting>
 				</listitem>
@@ -621,22 +622,23 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal &SRF;</para>
 					<para><varname>spaceTimeSplit(tgeompoint,xsize float,[ysize float,ysize float,]</varname></para>
 					<para><varname>  duration interval,sorigin geompoint='Point(0 0 0)',</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix=true) → {(point,time,tpoint)}</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix boolean=true) → {(point,time,tpoint)}</varname></para>
 					<para>El resultado es un conjunto de triples <varname>(point,time,tpoint)</varname>. Si el origen del espacio y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. Los argumentos <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
-FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
-  2.0, '2 days') AS sp) t;
--- POINT(0 0) | 2020-03-01 | {[POINT(1 1)@2020-03-01, POINT(2 2)@2020-03-02)}
--- POINT(2 2) | 2020-03-01 | {[POINT(2 2)@2020-03-02, POINT(3 3)@2020-03-03]}
--- POINT(2 2) | 2020-03-03 | {[POINT(3 3)@2020-03-03, POINT(4 4)@2020-03-04)}
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-10]',
+  2.0, interval '2 days') AS sp) t;
+-- POINT(0 0) | 2001-01-31 | {[POINT(1 1)@2001-02-01, POINT(2 2)@2001-02-02)}
+-- POINT(2 2) | 2001-01-31 | {[POINT(2 2)@2001-02-02]}
+-- POINT(2 2) | 2001-02-02 | {[POINT(2 2)@2001-02-02, POINT(4 4)@2001-02-04)}
 -- ...
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
-FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
-  Point(10 10 10)@2020-03-10]', 2.0, '2 days', 'Point(1 1)', '2020-03-01') AS sp) t;
--- POINT Z(1 1 1) | 2020-03-01 | {[POINT Z(1 1 1)@2020-03-01, POINT Z(3 3 3)@2020-03-03)}
--- POINT Z(3 3 3) | 2020-03-03 | {[POINT Z(3 3 3)@2020-03-03, POINT Z(5 5 5)@2020-03-05)}
--- POINT Z(5 5 5) | 2020-03-05 | {[POINT Z(5 5 5)@2020-03-05, POINT Z(7 7 7)@2020-03-07)}
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2001-02-01,
+  Point(10 10 10)@2001-02-10]', 2.0, interval '2 days', 'Point(1 1 1)',
+  '2001-03-01') AS sp) t;
+-- POINT Z(1 1 1) | 2001-02-01 | {[POINT Z(1 1 1)@2001-02-01, POINT Z(3 3 3)@2001-02-03)}
+-- POINT Z(3 3 3) | 2001-02-01 | {[POINT Z(3 3 3)@2001-02-03]}
+-- POINT Z(3 3 3) | 2001-02-03 | {[POINT Z(3 3 3)@2001-02-03, POINT Z (5 5 5)@2001-02-05)}
 -- ...
 </programlisting>
 				</listitem>

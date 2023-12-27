@@ -115,7 +115,7 @@ SELECT nsegment(76, 0.3, 0.5);
 				<listitem id="npoint_round">
 					<indexterm><primary><varname>npoint_round</varname></primary></indexterm>
 					<para>Redondear la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
-					<para><varname>round({npoint,nsegment},int) → {npoint,nsegment}</varname></para>
+					<para><varname>round({npoint,nsegment},integer=0) → {npoint,nsegment}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT round(npoint(76, 0.123456789), 6);
 --  NPoint(76,0.123457)
@@ -175,7 +175,7 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 				<listitem id="npoint_srid">
 					<indexterm><primary><varname>SRID</varname></primary></indexterm>
 					<para>Obtener el identificador de referencia espacial</para>
-					<para><varname>SRID({npoint,nsegment}) → int</varname></para>
+					<para><varname>SRID({npoint,nsegment}) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT SRID(nspoint 'Npoint(76, 0.3)');
 -- 5676
@@ -502,7 +502,7 @@ SELECT setInterp(tnpoint '{[NPoint(1,0.1)@2001-01-01], [NPoint(1,0.2)@2001-01-02
 			<listitem id="tnpoint_round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
 				<para>Redondear la fracción del punto de red temporal en el número de lugares decimales</para>
-				<para><varname>round(tnpoint,integer) → tnpoint</varname></para>
+				<para><varname>round(tnpoint,integer=0) → tnpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-02)}', 6);
 -- {[NPoint(1,0.123457)@2001-01-01 00:00:00+01, NPoint(1,0.5)@2001-01-02 00:00:00+01)}

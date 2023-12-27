@@ -245,10 +245,6 @@ CREATE CAST (tstzspanset AS stbox) WITH FUNCTION stbox(tstzspanset);
 
 /*****************************************************************************/
 
-CREATE FUNCTION timeSpan(stbox)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Stbox_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION box2d(stbox)
   RETURNS box2d
   AS 'MODULE_PATHNAME', 'Stbox_to_box2d'
@@ -265,12 +261,16 @@ CREATE FUNCTION geography(stbox)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Stbox_to_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeSpan(stbox)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Stbox_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (stbox AS tstzspan) WITH FUNCTION timeSpan(stbox);
 CREATE CAST (stbox AS box2d) WITH FUNCTION box2d(stbox);
 CREATE CAST (stbox AS box3d) WITH FUNCTION box3d(stbox);
 CREATE CAST (stbox AS geometry) WITH FUNCTION geometry(stbox);
 CREATE CAST (stbox AS geography) WITH FUNCTION geography(stbox);
+CREATE CAST (stbox AS tstzspan) WITH FUNCTION timeSpan(stbox);
 
 /*****************************************************************************
  * Accessor functions

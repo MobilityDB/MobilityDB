@@ -302,10 +302,10 @@
 		</para>
 
 		<programlisting language="sql" xml:space="preserve">
-CREATE OR REPLACE FUNCTION create_test_tables_temporal(size int DEFAULT 100)
+CREATE OR REPLACE FUNCTION create_test_tables_temporal(size integer DEFAULT 100)
 RETURNS text AS $$
 DECLARE
-  perc int;
+  perc integer;
 BEGIN
 perc := size * 0.01;
 IF perc &lt; 1 THEN perc := 1; END IF;

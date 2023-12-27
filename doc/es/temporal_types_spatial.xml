@@ -454,7 +454,7 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001
 			<listitem id="tpoint_round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
 				<para>Redondear los valores de las coordenadas a un número de decimales &Z_support; &geography_support;</para>
-				<para><varname>round(tpoint,integer) → tpoint</varname></para>
+				<para><varname>round(tpoint,integer=0) → tpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(round(tgeompoint '{Point(1.12345 1.12345 1.12345)@2001-01-01,
   Point(2 2 2)@2001-01-02, Point(1.12345 1.12345 1.12345)@2001-01-03}', 2));

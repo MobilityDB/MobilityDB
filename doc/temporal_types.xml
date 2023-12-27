@@ -14,7 +14,7 @@
 	<sect1 id="temporal_types_introduction">
 		<title>Introduction</title>
 		<para>
-			MobilityDB provides six built-in temporal types, namely, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname> (the last two types restricted to 2D or 3D points with Z dimension).
+			MobilityDB provides six built-in temporal types, namely, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>integer</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname> (the last two types restricted to 2D or 3D points with Z dimension).
 		</para>
 
 		<para>
@@ -134,11 +134,11 @@ CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 			</listitem>
 
 			<listitem>
-				<para>A <varname>tbox</varname> (temporal box) type for the <varname>tint</varname> and <varname>tfloat</varname> types, where the value and the time extents are defined, respectively, by a number span and a time span.</para>
+				<para>The <varname>tbox</varname> (temporal box) type for the <varname>tint</varname> and <varname>tfloat</varname> types, where the value and the time extents are defined, respectively, by a number span and a time span.</para>
 			</listitem>
 
 			<listitem>
-				<para>A <varname>stbox</varname> (spatiotemporal box) type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, where the spatial extent is defined in the X, Y, and Z dimensions, and the time extent by a time span.</para>
+				<para>The <varname>stbox</varname> (spatiotemporal box) type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, where the spatial extent is defined in the X, Y, and Z dimensions, and the time extent by a time span.</para>
 			</listitem>
 		</itemizedlist>
 

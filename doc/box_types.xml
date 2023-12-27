@@ -264,7 +264,7 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 			<listitem id="stbox_convert_to">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convert an <varname>stbox</varname> to a another type</para>
-				<para><varname>stbox::{box2d,box3d,geometry,tstzspan}</varname></para>
+				<para><varname>stbox::{box2d,box3d,geo,tstzspan}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan;
 -- [2001-01-01, 2001-01-03]
@@ -290,7 +290,7 @@ SELECT ST_AsEWKT(stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2001-01-01,2001-01-05])'::
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convert another type to an <varname>stbox</varname></para>
 				<para><varname>{box2d,box3d,geo,time,tpoint}::stbox</varname></para>
-				<para><varname>stbox({box2d,box3d,geo}) → stbox</varname></para>
+				<para><varname>stbox({box2d,box3d,geo,time,tpoint}) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT geometry 'Linestring(1 1 1,2 2 2)'::box3d::stbox;
 -- STBOX Z((1,1,1),(2,2,2))
@@ -425,7 +425,7 @@ SELECT Tmax_inc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<indexterm><primary><varname>shiftValue</varname></primary></indexterm>
 				<indexterm><primary><varname>shiftTime</varname></primary></indexterm>
 				<para>Shift the span or the period of the bounding box by a value or interval</para>
-				<para><varname>shiftValue(box,{int,float}) → box</varname></para>
+				<para><varname>shiftValue(box,{integer,float}) → box</varname></para>
 				<para><varname>shiftTime(box,interval) → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT shiftValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 1.0);
@@ -445,7 +445,7 @@ SELECT shiftTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
 				<indexterm><primary><varname>scaleValue</varname></primary></indexterm>
 				<indexterm><primary><varname>scaleTime</varname></primary></indexterm>
 				<para>Scale the span or the period of the bounding box to a value or interval. If the width or the time span of the period is zero (that is, the lower and upper bound are equal), the result is the box. The given value or interval must be strictly greater than zero.</para>
-				<para><varname>scaleValue(box,{int,float}) → box</varname></para>
+				<para><varname>scaleValue(box,{integer,float}) → box</varname></para>
 				<para><varname>scaleTime(box,interval) → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT scaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0);
@@ -466,7 +466,7 @@ SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
 				<indexterm><primary><varname>shiftScaleValue</varname></primary></indexterm>
 				<indexterm><primary><varname>shiftScaleTime</varname></primary></indexterm>
 				<para>Shift and scale the span or the period of the bounding box to the two values or intervals</para>
-				<para><varname>shiftScaleValue(box,{int,float},{int,float}) → box</varname></para>
+				<para><varname>shiftScaleValue(tbox,{integer,float},{integer,float}) → box</varname></para>
 				<para><varname>shiftScaleTime(box,interval,interval) → box</varname></para>
 				<para>These functions combine the functions <link linkend="box_shift"><varname>shiftValue</varname></link> and <link linkend="box_scale"><varname>scaleValue</varname></link> or <link linkend="box_shift"><varname>shiftTime</varname></link> and <link linkend="box_scale"><varname>scaleTime</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -499,7 +499,7 @@ SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 			<listitem id="expandValue">
 				<indexterm><primary><varname>expandValue</varname></primary></indexterm>
 				<para>Expand the numeric dimension of the bounding box by a float value</para>
-				<para><varname>expandValue(tbox,float) → tbox</varname></para>
+				<para><varname>expandValue(tbox,{integer,float}) → tbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT expandValue(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', 1);
 -- TBOXFLOAT XT((0,3),[2001-01-01,2001-01-03])
@@ -536,7 +536,7 @@ SELECT expandTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])',
 			<listitem id="box_round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
 				<para>Round the value or the coordinates of the bounding box to a number of decimal places</para>
-				<para><varname>round(box,integer) → box</varname></para>
+				<para><varname>round(box,integer=0) → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(tbox 'TBOXFLOAT XT((1.12345,2.12345),[2001-01-01,2001-01-02])', 2);
 -- TBOXFLOAT XT((1.12,2.12),[2001-01-01, 2001-01-02])
