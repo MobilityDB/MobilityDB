@@ -37,14 +37,8 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # Install MobilityDB
-RUN wget -O MobilityDB.tar.gz "https://github.com/MobilityDB/MobilityDB/archive/v1.1.0-beta1.tar.gz" \
- && mkdir -p /usr/local/src/MobilityDB \
- && tar \
-        --extract \
-        --file MobilityDB.tar.gz \
-        --directory /usr/local/src/MobilityDB \
-        --strip-components 1 \
- && rm MobilityDB.tar.gz
+RUN mkdir -p /usr/local/src/MobilityDB
+COPY ./* /usr/local/src/MobilityDB
 RUN mkdir /usr/local/src/MobilityDB/build
 RUN cd /usr/local/src/MobilityDB/build && \
     cmake .. && \
