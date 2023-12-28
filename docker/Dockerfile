@@ -35,6 +35,20 @@ RUN apt-get update \
     postgresql-server-dev-${PG_MAJOR} \
   && rm -rf /var/lib/apt/lists/*
 
+RUN wget -O MobilityDB.tar.gz "https://github.com/MobilityDB/MobilityDB/archive/v1.1.0-beta1.tar.gz" \
+ && mkdir -p /usr/local/src/MobilityDB \
+ && tar \
+        --extract \
+        --file MobilityDB.tar.gz \
+        --directory /usr/local/src/MobilityDB \
+        --strip-components 1 \
+ && rm MobilityDB.tar.gz
+RUN mkdir /usr/local/src/MobilityDB/build
+RUN cd /usr/local/src/MobilityDB/build && \
+    cmake .. && \
+    make -j$(nproc) && \
+    make install
+
 RUN rm /docker-entrypoint-initdb.d/10_postgis.sh
 COPY ./docker/initdb-mobilitydb.sh /docker-entrypoint-initdb.d/mobilitydb.sh
 RUN chmod +x /docker-entrypoint-initdb.d/mobilitydb.sh
