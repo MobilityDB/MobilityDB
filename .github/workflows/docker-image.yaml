@@ -34,8 +34,7 @@ jobs:
           # generate Docker tags based on the following events/attributes
           flavor: prefix=${{ matrix.psql }}-${{ matrix.postgis }}-
           tags: |
-            type=ref,event=branch,prefix=${{ matrix.psql }}-${{ matrix.postgis }}-
-            type=raw,event=branch,latest=${{ matrix.psql == '16' }}
+            type=ref,event=branch,latest=${{ matrix.psql == '16' }}
             type=semver,pattern={{major}}.{{minor}},latest=${{ matrix.psql == '16' }}
 
       - name: Set up QEMU
