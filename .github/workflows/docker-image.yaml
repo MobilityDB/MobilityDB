@@ -32,10 +32,12 @@ jobs:
           # list of Docker images to use as base name for tags
           images: mobilitydb/mobilitydb
           # generate Docker tags based on the following events/attributes
-          flavor: prefix=${{ matrix.psql }}-${{ matrix.postgis }}-
+          flavor: |
+            latest=${{ matrix.psql == '16' }}
+            prefix=${{ matrix.psql }}-${{ matrix.postgis }}-
           tags: |
             type=ref,event=branch
-            type=semver,pattern={{major}}.{{minor}},latest=${{ matrix.psql == '16' }}
+            type=semver,pattern={{major}}.{{minor}}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
