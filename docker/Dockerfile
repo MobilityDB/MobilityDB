@@ -1,6 +1,5 @@
 ARG POSTGRES_VERSION
 ARG POSTGIS_VERSION
-ARG MOBILITYDB_TAG
 
 FROM postgis/postgis:$POSTGRES_VERSION-$POSTGIS_VERSION
 
@@ -35,6 +34,8 @@ RUN apt-get update \
     libgslcblas0 \
     postgresql-server-dev-${PG_MAJOR} \
   && rm -rf /var/lib/apt/lists/*
+
+ARG MOBILITYDB_TAG
 
 RUN wget -O MobilityDB.tar.gz "https://github.com/mschoema/MobilityDB/archive/$MOBILITYDB_TAG.tar.gz" \
  && mkdir -p /usr/local/src/MobilityDB \
