@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # Install MobilityDB
-cp /github/workspace/* /MobilityDB
-mkdir /MobilityDB/build
-cd /MobilityDB/build
+mkdir /github/workspace/build
+cd /github/workspace/build
 cmake .. && make -j$(nproc) && make install
 
 echo "shared_preload_libraries = 'postgis-3.so'" >> $PGDATA/postgresql.conf
