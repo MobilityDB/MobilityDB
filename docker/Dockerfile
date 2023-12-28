@@ -35,16 +35,6 @@ RUN apt-get update \
     postgresql-server-dev-${PG_MAJOR} \
   && rm -rf /var/lib/apt/lists/*
 
-# Check workdir
-RUN ls -R
-
-# Install MobilityDB
-RUN mkdir ./build
-RUN cd ./build && \
-    cmake .. && \
-    make -j$(nproc) && \
-    make install
-
 RUN rm /docker-entrypoint-initdb.d/10_postgis.sh
 COPY ./docker/initdb-mobilitydb.sh /docker-entrypoint-initdb.d/mobilitydb.sh
 RUN chmod +x /docker-entrypoint-initdb.d/mobilitydb.sh
