@@ -1,7 +1,7 @@
-FROM postgis/postgis:$POSTGRES_VERSION-$POSTGIS_VERSION
-
 ARG POSTGRES_VERSION
 ARG POSTGIS_VERSION
+
+FROM postgis/postgis:$POSTGRES_VERSION-$POSTGIS_VERSION
 
 # Configuration Parameters
 LABEL maintainer="MobilityDB Project - https://github.com/MobilityDB/MobilityDB"
