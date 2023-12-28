@@ -37,10 +37,8 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # Install MobilityDB
-RUN mkdir -p /usr/local/src/MobilityDB
-COPY ./* /usr/local/src/MobilityDB
-RUN mkdir /usr/local/src/MobilityDB/build
-RUN cd /usr/local/src/MobilityDB/build && \
+RUN mkdir ./build
+RUN cd ./build && \
     cmake .. && \
     make -j$(nproc) && \
     make install
