@@ -35,6 +35,6 @@ RUN apt-get update \
     postgresql-server-dev-${PG_MAJOR} \
   && rm -rf /var/lib/apt/lists/*
 
-RUN rm /docker-entrypoint-initdb.d/10_postgis.sh
-COPY ./docker/initdb-mobilitydb.sh /docker-entrypoint-initdb.d/mobilitydb.sh
-RUN chmod +x /docker-entrypoint-initdb.d/mobilitydb.sh
+# RUN rm /docker-entrypoint-initdb.d/10_postgis.sh
+# COPY ./docker/initdb-mobilitydb.sh /docker-entrypoint-initdb.d/mobilitydb.sh
+# RUN chmod +x /docker-entrypoint-initdb.d/mobilitydb.sh
