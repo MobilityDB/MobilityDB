@@ -30,13 +30,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           # list of Docker images to use as base name for tags
-          images: |
-            mobilitydb/mobilitydb
+          images: mobilitydb/mobilitydb
           # generate Docker tags based on the following events/attributes
           tags: |
-            type=ref,event=branch,prefix={{ matrix.psql }}-${{ matrix.postgis }}-
-            type=semver,pattern={{version}},prefix={{ matrix.psql }}-${{ matrix.postgis }}-
-            type=semver,pattern={{major}}.{{minor}},prefix={{ matrix.psql }}-${{ matrix.postgis }}-
+            type=ref,event=branch,prefix=${{ matrix.psql }}-${{ matrix.postgis }}-
+            type=semver,pattern={{version}},prefix=${{ matrix.psql }}-${{ matrix.postgis }}-
+            type=semver,pattern={{major}}.{{minor}},prefix=${{ matrix.psql }}-${{ matrix.postgis }}-
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
