@@ -1,7 +1,7 @@
+FROM postgis/postgis:$POSTGRES_VERSION-$POSTGIS_VERSION
+
 ARG POSTGRES_VERSION
 ARG POSTGIS_VERSION
-
-FROM postgis/postgis:$POSTGRES_VERSION-$POSTGIS_VERSION
 
 # Configuration Parameters
 LABEL maintainer="MobilityDB Project - https://github.com/MobilityDB/MobilityDB"
@@ -12,7 +12,6 @@ ENV MOBILITYDB_VERSION $MOBDB_VERSION
 
 # Fix the Release file expired problem
 RUN echo "Acquire::Check-Valid-Until \"false\";\nAcquire::Check-Date \"false\";" | cat > /etc/apt/apt.conf.d/10no--check-valid-until
-
 
 # Install Prerequisites
 RUN apt-get update \
@@ -35,6 +34,9 @@ RUN apt-get update \
     libgslcblas0 \
     postgresql-server-dev-${PG_MAJOR} \
   && rm -rf /var/lib/apt/lists/*
+
+# Check workdir
+RUN ls
 
 # Install MobilityDB
 RUN mkdir ./build
