@@ -36,7 +36,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # Check workdir
-RUN ls
+RUN ls -R
 
 # Install MobilityDB
 RUN mkdir ./build
