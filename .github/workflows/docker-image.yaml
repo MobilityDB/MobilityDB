@@ -33,7 +33,7 @@ jobs:
           images: mobilitydb/mobilitydb
           # generate Docker tags based on the following events/attributes
           flavor: |
-            latest=${{ matrix.psql == '16' }}
+            latest=${{ matrix.psql == '16' && github.ref_type == 'tag' }}
             prefix=${{ matrix.psql }}-${{ matrix.postgis }}-
           tags: |
             type=ref,event=branch
