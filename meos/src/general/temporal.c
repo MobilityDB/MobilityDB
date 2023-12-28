@@ -195,6 +195,21 @@ ensure_same_continuous_interp(int16 flags1, int16 flags2)
 }
 
 /**
+ * @brief Ensure that a temporal value has linear interpolation
+ */
+bool
+ensure_linear_interp(int16 flags)
+{
+  if (! MEOS_FLAGS_LINEAR_INTERP(flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal value must have linear interpolation");
+    return false;
+  }
+  return true;
+}
+
+/**
  * @brief Ensure that a temporal value does not have linear interpolation
  */
 bool
@@ -1117,7 +1132,7 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) seq) ||
       ! ensure_same_temporal_type(temp, (Temporal *) seq) ||
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE) ||
-      ! ensure_same_interp(temp, (Temporal *) seq) ||
+      (temp->subtype != TINSTANT && ! ensure_same_interp(temp, (Temporal *) seq)) ||
       ! ensure_spatial_validity(temp, (Temporal *) seq))
     return NULL;
 
@@ -3018,7 +3033,7 @@ temporal_instant_n(const Temporal *temp, int n)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the array of instants of a temporal value.
+ * @brief Return the array of distinct instants of a temporal value.
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
  * @return On error return NULL
@@ -3043,7 +3058,8 @@ temporal_instants(const Temporal *temp, int *count)
   else /* temp->subtype == TSEQUENCESET */
   {
     result = tsequenceset_instants((TSequenceSet *) temp);
-    *count = ((TSequenceSet *) temp)->totalcount;
+    *count = tinstarr_remove_duplicates(result,
+      ((TSequenceSet *) temp)->totalcount);
   }
   return result;
 }

@@ -634,6 +634,7 @@ tseqarr_sort(TSequence **sequences, int count)
 /*****************************************************************************
  * Remove duplicate functions
  * These functions assume that the array has been sorted before
+ * These functions pack the distinct values at the begining
  *****************************************************************************/
 
 /**

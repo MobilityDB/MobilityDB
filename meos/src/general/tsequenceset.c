@@ -748,32 +748,30 @@ tnumberseqset_valuespans(const TSequenceSet *ss)
   assert(ss);
   int count, i;
   Span *spans;
-  meosType basetype = temptype_basetype(ss->temptype);
-  meosType spantype = basetype_spantype(basetype);
-
-  /* Temporal sequence number with discrete or step interpolation */
-  if (! MEOS_FLAGS_LINEAR_INTERP(ss->flags))
-  {
-    Datum *values = tsequenceset_values(ss, &count);
-    spans = palloc(sizeof(Span) * count);
-    for (i = 0; i < count; i++)
-      span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);
-    SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
-    pfree(values);
-    return result;
-  }
 
   /* Temporal sequence number with linear interpolation */
-  spans = palloc(sizeof(Span) * ss->count);
-  for (i = 0; i < ss->count; i++)
+  if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
   {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    TBox *box = TSEQUENCE_BBOX_PTR(seq);
-    memcpy(&spans[i], &box->span, sizeof(Span));
+    spans = palloc(sizeof(Span) * ss->count);
+    for (i = 0; i < ss->count; i++)
+    {
+      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      TBox *box = TSEQUENCE_BBOX_PTR(seq);
+      memcpy(&spans[i], &box->span, sizeof(Span));
+    }
+    return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED_NO);
   }
-  Span *normspans = spanarr_normalize(spans, ss->count, ORDERED_NO, &count);
-  pfree(spans);
-  return spanset_make_free(normspans, count, NORMALIZE);
+
+  /* Temporal sequence number with discrete or step interpolation */
+  meosType basetype = temptype_basetype(ss->temptype);
+  meosType spantype = basetype_spantype(basetype);
+  Datum *values = tsequenceset_values(ss, &count);
+  spans = palloc(sizeof(Span) * count);
+  for (i = 0; i < count; i++)
+    span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE, ORDERED_NO);
+  pfree(values);
+  return result;
 }
 
 /**
@@ -921,7 +919,7 @@ tsequenceset_time(const TSequenceSet *ss)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     periods[i] = seq->period;
   }
-  return spanset_make_free(periods, ss->count, NORMALIZE_NO);
+  return spanset_make_free(periods, ss->count, NORMALIZE_NO, ORDERED);
 }
 
 /**
@@ -1099,7 +1097,8 @@ tsequenceset_inst_n(const TSequenceSet *ss, int n)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the distinct instants of a temporal sequence set
+ * @brief Return the instants of a temporal sequence set
+ * @note The function does NOT remove duplicate instants
  * @param[in] ss Temporal sequence set
  * @csqlfn #Temporal_instants()
  */
@@ -3128,7 +3127,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         {
           str = pg_timestamptz_out(inst1->t);
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-            "The temporal values have different value at their common instant %s",
+            "The temporal values have different value at their common timestamp %s",
             str);
           return NULL;
         }
@@ -3141,7 +3140,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         {
           str = pg_timestamptz_out(inst1->t);
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-            "The temporal values have different value at their common instant %s",
+            "The temporal values have different value at their common timestamp %s",
             str);
           return NULL;
         }

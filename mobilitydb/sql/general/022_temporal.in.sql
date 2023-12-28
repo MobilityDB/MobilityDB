@@ -1410,23 +1410,19 @@ CREATE FUNCTION ttext_inst(ttext)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The function is not strict
-CREATE FUNCTION tbool_seq(tbool)
+CREATE FUNCTION tbool_seq(tbool, text DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tint_seq(tint)
+CREATE FUNCTION tint_seq(tint, text DEFAULT NULL)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tfloat_seq(tfloat, text)
+CREATE FUNCTION tfloat_seq(tfloat, text DEFAULT NULL)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tfloat_seq(tfloat)
-  RETURNS tfloat
-  AS 'SELECT @extschema@.tfloat_seq($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION ttext_seq(ttext)
+CREATE FUNCTION ttext_seq(ttext, text DEFAULT NULL)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -1440,14 +1436,10 @@ CREATE FUNCTION tint_seqset(tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tfloat_seqset(tfloat, text)
+CREATE FUNCTION tfloat_seqset(tfloat, text DEFAULT NULL)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tfloat_seqset(tfloat)
-  RETURNS tfloat
-  AS 'SELECT @extschema@.tfloat_seqset($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION ttext_seqset(ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'

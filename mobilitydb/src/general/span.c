@@ -364,18 +364,18 @@ Span_upper_inc(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(s->upper_inc != 0);
 }
 
-PGDLLEXPORT Datum Span_width(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_width);
+PGDLLEXPORT Datum Numspan_width(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_width);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the width of a number span
  * @sqlfn width()
  */
 Datum
-Span_width(PG_FUNCTION_ARGS)
+Numspan_width(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_FLOAT8(span_width(s));
+  PG_RETURN_DATUM(numspan_width(s));
 }
 
 PGDLLEXPORT Datum Datespan_duration(PG_FUNCTION_ARGS);

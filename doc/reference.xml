@@ -210,15 +210,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Get the number of different dates or timestamps</para>
+					<para><link linkend="setspan_numValues"><varname>numValues</varname></link>: Get the number of values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Get the start, end, or n-th date or timestamp</para>
+					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname>,: Get the start, end, or n-th value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Get the different dates or timestamps</para>
+					<para><link linkend="setspan_timestamps"><varname>getValues</varname></link>: Get the values</para>
 				</listitem>
 
 				<listitem>
@@ -231,6 +231,18 @@
 
 				<listitem>
 					<para><link linkend="spans"><varname>spans</varname></link>: Get the spans</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Get the number of different dates or timestamps</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Get the start, end, or n-th date or timestamp</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Get the different dates or timestamps</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

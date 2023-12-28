@@ -591,17 +591,18 @@ CREATE FUNCTION upper_inc(tstzspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION width(intspanset, boundspan boolean DEFAULT FALSE)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Spanset_width'
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Numspanset_width'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION width(bigintspanset, boundspan boolean DEFAULT FALSE)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Spanset_width'
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Numspanset_width'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION width(floatspanset, boundspan boolean DEFAULT FALSE)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Spanset_width'
+  AS 'MODULE_PATHNAME', 'Numspanset_width'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION duration(datespanset, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Datespanset_duration'

@@ -236,7 +236,7 @@ extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, m
 extern SpanSet *spanset_cp(const SpanSet *ss);
 extern SpanSet *spanset_compact(SpanSet *ss);
 extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool ordered);
-extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize);
+extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool ordered);
 extern char *spanset_out(const SpanSet *ss, int maxdd);
 
 /*****************************************************************************/
@@ -259,9 +259,11 @@ extern Span *set_span(const Set *s);
 extern Datum set_start_value(const Set *s);
 extern bool set_value_n(const Set *s, int n, Datum *result);
 extern Datum *set_values(const Set *s);
+extern Datum numspan_width(const Span *s);
 extern Datum spanset_lower(const SpanSet *ss);
 extern int spanset_mem_size(const SpanSet *ss);
 extern Datum spanset_upper(const SpanSet *ss);
+extern Datum numspanset_width(const SpanSet *ss, bool boundspan);
 extern void spatialset_set_stbox(const Set *set, STBox *box);
 extern void value_set_span(Datum d, meosType basetype, Span *s);
 

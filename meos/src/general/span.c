@@ -83,8 +83,8 @@ ensure_span_isof_basetype(const Span *s, meosType basetype)
   if (s->basetype != basetype)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed span and base types: %d and %d",
-      s->spantype, basetype);
+      "Operation on mixed span and base types: %s and %s",
+      meostype_name(s->spantype), meostype_name(basetype));
     return false;
   }
   return true;
@@ -1075,20 +1075,70 @@ span_upper_inc(const Span *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
- * @brief Return the width of a span as a double.
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the width of a span.
  * @param[in] s Span
- * @return On error return -1.0
- * @csqlfn #Span_width()
+ * @return On error return -1
+ * @csqlfn #Numspan_width()
  */
-double
-span_width(const Span *s)
+Datum
+numspan_width(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s))
-    return -1.0;
+    return (Datum) -1;
   return distance_value_value(s->upper, s->lower, s->basetype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the width of an integer span
+ * @param[in] s Span
+ * @return On error return -1
+ * @csqlfn #Numspan_width()
+ */
+int
+intspan_width(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
+    return -1;
+  return Int32GetDatum(numspan_width(s));
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the width of an integer span
+ * @param[in] s Span
+ * @return On error return -1
+ * @csqlfn #Numspan_width()
+ */
+int64
+bigintspan_width(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
+    return -1;
+  return Int64GetDatum(numspan_width(s));
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the width of a float span
+ * @param[in] s Span
+ * @return On error return -1
+ * @csqlfn #Numspan_width()
+ */
+double
+floatspan_width(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
+    return -1.0;
+  return DatumGetFloat8(numspan_width(s));
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_accessor

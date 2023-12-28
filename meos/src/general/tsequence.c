@@ -1806,14 +1806,15 @@ tsequence_merge_array1(const TSequence **sequences, int count,
     const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
     const TSequence *seq2 = sequences[i];
     const TInstant *inst2 = TSEQUENCE_INST_N(seq2, 0);
-    char *t1;
+    char *str1;
     if (inst1->t > inst2->t)
     {
-      char *t2;
-      t1 = pg_timestamptz_out(inst1->t);
-      t2 = pg_timestamptz_out(inst2->t);
+      char *str2;
+      str1 = pg_timestamptz_out(inst1->t);
+      str2 = pg_timestamptz_out(inst2->t);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The temporal values cannot overlap on time: %s, %s", t1, t2);
+        "The temporal values cannot overlap on time: %s, %s", str1, str2);
+      pfree(str1); pfree(str2);
       return NULL;
     }
     else if (inst1->t == inst2->t && seq1->period.upper_inc &&
@@ -1821,10 +1822,11 @@ tsequence_merge_array1(const TSequence **sequences, int count,
     {
       if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
       {
-        t1 = pg_timestamptz_out(inst1->t);
+        str1 = pg_timestamptz_out(inst1->t);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "The temporal values have different value at their common instant %s",
-          t1);
+          "The temporal values have different value at their common timestamp %s",
+          str1);
+        pfree(str1);
         return NULL;
       }
     }
@@ -2362,7 +2364,7 @@ tnumberseq_valuespans(const TSequence *seq)
   Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
     span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);
-  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE, ORDERED);
   pfree(values);
   return result;
 }
@@ -2389,7 +2391,7 @@ tsequence_time(const TSequence *seq)
     span_set(inst->t, inst->t, true, true, T_TIMESTAMPTZ, T_TSTZSPAN,
       &periods[i]);
   }
-  return spanset_make_free(periods, seq->count, NORMALIZE_NO);
+  return spanset_make_free(periods, seq->count, NORMALIZE_NO, ORDERED);
 }
 
 /**
@@ -5566,8 +5568,9 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
     {
       char *str = pg_timestamptz_out(instants[0]->t);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The temporal values have different value at their common instant %s",
+        "The temporal values have different value at their common timestamp %s",
         str);
+      pfree(str);
       return NULL;
     }
   }

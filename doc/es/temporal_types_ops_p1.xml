@@ -106,7 +106,7 @@
 		</para>
 		<programlisting language="sql" xml:space="preserve">
 -- Comparación temporal
-SELECT tint '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001-01-03)';
+SELECT tfloat '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001-01-03)';
 -- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
 SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt; tfloat '[3@2001-01-03, 1@2001-01-05)';
 -- NULL
@@ -294,13 +294,13 @@ SELECT asText(tfloat '[10.55@2001-01-01, 25.55@2001-01-02]', 0);
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asBinary(tbool 'true@2001-01-01');
--- \x010d000101009c57d3c11c0000
+-- \x011a000101009c57d3c11c0000
 SELECT asBinary(tint '1@2001-01-01', 'XDR');
--- \x000016010000000100001cc1d3579c00
+-- \x000023010000000100001cc1d3579c00
 SELECT asBinary(tfloat '1.5@2001-01-01');
--- \x01130081000000000000f83f009c57d3c11c0000
+-- \x01210001000000000000f83f009c57d3c11c0000
 SELECT asBinary(ttext 'AAA@2001-01-01');
--- \x01170001040000000000000041414100009c57d3c11c0000
+-- \x01290001040000000000000041414100009c57d3c11c0000
 </programlisting>
 			</listitem>
 
@@ -311,13 +311,13 @@ SELECT asBinary(ttext 'AAA@2001-01-01');
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(tbool 'true@2001-01-01');
--- 010D000101009C57D3C11C0000
+-- 011A000101009C57D3C11C0000
 SELECT asHexWKB(tint '1@2001-01-01', 'XDR');
--- 000016010000000100001CC1D3579C00
+-- 000023010000000100001CC1D3579C00
 SELECT asHexWKB(tfloat '1.5@2001-01-01');
--- 01130081000000000000F83F009C57D3C11C0000
+-- 01210001000000000000F83F009C57D3C11C0000
 SELECT asHexWKB(ttext 'AAA@2001-01-01');
--- 01170001040000000000000041414100009C57D3C11C0000
+-- 01290001040000000000000041414100009C57D3C11C0000
 </programlisting>
 			</listitem>
 
@@ -338,22 +338,22 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 				</itemizedlist>
 				<para>El argumento <varname>maxdecdigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asMFJSON(tbool 't@2019-01-01 18:00:00', 1);
-/* {"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
-  "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
-  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"} */
-SELECT asMFJSON(tint '{10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}', 1);
-/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
-   "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
-   "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
+SELECT asMFJSON(tbool 't@2001-01-01 18:00:00', 1);
+/* {"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
+  "end":"2001-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
+  "values":[true],"datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"} */
+SELECT asMFJSON(tint '{10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}', 1);
+/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00+01",
+   "end":"2001-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2001-01-01T18:00:00+01",
+   "2001-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
    "interpolation":"Discrete"} */
-SELECT asMFJSON(tfloat '[10.5@2019-01-01 18:00:00+02, 25.5@2019-01-01 18:10:00+02]');
-/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
-  "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"} */
-SELECT asMFJSON(ttext '{[walking@2019-01-01 18:00:00+02,
-  driving@2019-01-01 18:10:00+02]}');
+SELECT asMFJSON(tfloat '[10.5@2001-01-01 18:00:00+02, 25.5@2001-01-01 18:10:00+02]');
+/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00+01",
+  "2001-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"} */
+SELECT asMFJSON(ttext '{[walking@2001-01-01 18:00:00+02,
+  driving@2001-01-01 18:10:00+02]}');
 /* {"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
+  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
   "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
 </programlisting>
 			</listitem>
@@ -399,26 +399,26 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 				<para>Hay una función por tipo temporal, el nombre de esta función tiene como prefijo el nombre del tipo, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos a continuación</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboolFromMFJSON(text
-  '{"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
-  "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
-  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"}');
--- t@2019-01-01 18:00:00
+  '{"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
+  "end":"2001-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
+  "values":[true],"datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"}');
+-- t@2001-01-01 18:00:00
 SELECT tintFromMFJSON(text
-  '{"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
-   "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
-   "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
+  '{"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00+01",
+   "end":"2001-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2001-01-01T18:00:00+01",
+   "2001-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
    "interpolation":"Discrete"}');
--- {10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}
+-- {10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}
 SELECT tfloatFromMFJSON(text
-  '{"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
-   "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,
+  '{"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00+01",
+   "2001-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,
    "interpolation":"Linear"}');
--- [10.5@2019-01-01 18:00:00, 25.5@2019-01-01 18:10:00]'
+-- [10.5@2001-01-01 18:00:00, 25.5@2001-01-01 18:10:00]'
 SELECT ttextFromMFJSON(text
   '{"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
+  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
   "lower_inc":true,"upper_inc":true}],"interpolation":"Step"}');
--- {["walking"@2019-01-01 18:00:00, "driving"@2019-01-01 18:10:00]}');
+-- {["walking"@2001-01-01 18:00:00, "driving"@2001-01-01 18:10:00]}');
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -507,7 +507,7 @@ SELECT tgeogpoint_seqset(ARRAY[tgeogpoint
 SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
   2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
   '[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
--- ERROR:  Input sequences must have the same interpolation
+-- ERROR:  The temporal values must have the same interpolation
 </programlisting>
 				<para>Otro conjunto de constructores para valores de conjunto de secuencias tiene como primer argumento una matriz de valores de <emphasis>instante</emphasis> correspondientes, y dos argumentos que establecen un intervalo de tiempo máximo y una distancia máxima tal que se introduce un espacio entre secuencias del resultado siempre que dos instantes de entrada consecutivos tengan un intervalo de tiempo o una distancia mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Estos dos argumentos de brechas son opcionales, pero al menos uno de ellos debe especificarse. Además, cuando el tipo base es continuo, un último argumento adicional establece si la interpolación es escalonada o lineal. Si no se especifica este argumento, se asume que es lineal por defecto.</para>
 				<para>Los parámetros de la función dependen del tipo temporal. Por ejemplo, el parámetro de interpolación no está permitido para tipos temporales con subtipos discretos como <varname>tint</varname>. De manera similar, el parámetro <varname>maxdist</varname> no está permitido para tipos escalares como <varname>ttext</varname> que no tienen una función de distancia estándar.</para>
@@ -516,7 +516,7 @@ SELECT tint_seqset_gaps(ARRAY[tint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03
   '5@2001-01-05'], '1 day', 1);
 -- {[1@2001-01-01], [3@2001-01-02, 4@2001-01-03], [5@2001-01-05]}
 SELECT ttext_seqset_gaps(ARRAY[ttext 'AA@2001-01-01', 'BB@2001-01-02', 'AA@2001-01-03',
-'CC@2001-01-05'], '1 day');
+  'CC@2001-01-05'], '1 day');
 -- {["AA"@2001-01-01, "BB"@2001-01-02, "AA"@2001-01-03], ["CC"@2001-01-05]}
 SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2001-01-01',
   'Point(2 2)@2001-01-02', 'Point(3 2)@2001-01-03', 'Point(3 2)@2001-01-05'],
@@ -559,9 +559,9 @@ SELECT tfloat 'Interp=Step;(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::floatspa
 
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tbox;
--- TBOX XT((1,2),[2001-01-01,2001-01-03])
+-- TBOXINT XT((1,2),[2001-01-01,2001-01-03])
 SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::tbox;
--- TBOX XT((1,3),[2001-01-01,2001-01-05])
+-- TBOXFLOAT XT((1,3),[2001-01-01,2001-01-05])
 SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
 -- STBOX XT(((1,1),(3,3)),[2001-01-01, 2001-01-03])
 SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
@@ -578,7 +578,7 @@ SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
 				<para><varname>tfloat::tint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
--- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]
+-- Interp=Step;[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]'::tfloat;
 -- Interp=Step;[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]
 SELECT tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
@@ -655,7 +655,7 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 				<para><varname>memSize(ttype) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT memSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
--- 280
+-- 176
 </programlisting>
 			</listitem>
 
@@ -710,11 +710,11 @@ SELECT getTimestamp(tfloat '1@2001-01-01');
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValues(tbool '[false@2001-01-01, true@2001-01-02, false@2001-01-03]');
 -- {f,t}
-SELECT getValues(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
--- {[1, 3)}
+SELECT getValues(tint '[1@2001-01-01, 3@2001-01-02, 1@2001-01-03]');
+-- {[1, 2), [3, 4)}
 SELECT getValues(tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],
-  [3@2001-01-04, 3@2001-01-05]}');
--- {[1, 4)}
+  [4@2001-01-04, 4@2001-01-05]}');
+-- {[1, 3), [4, 5)}
 SELECT getValues(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}');
 -- {[1, 1], [2, 2]}
 SELECT getValues(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],
@@ -730,7 +730,7 @@ SELECT getValues(tfloat '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],
 SELECT getTime(ttext 'walking@2001-01-01');
 -- {[2001-01-01, 2001-01-01]}
 SELECT getTime(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}');
-{[2001-01-01, 2001-01-01], [2001-01-02, 2001-01-02], [2001-01-03, 2001-01-03]}
+-- {[2001-01-01, 2001-01-01], [2001-01-02, 2001-01-02], [2001-01-03, 2001-01-03]}
 SELECT getTime(tint '[1@2001-01-01, 1@2001-01-15)');
 -- {[2001-01-01, 2001-01-15)}
 SELECT getTime(tfloat '{[1@2001-01-01, 1@2001-01-10), [12@2001-01-12, 12@2001-01-15]}');
@@ -868,7 +868,7 @@ SELECT numInstants(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-
 				<para><varname>instantN(ttype,integer) → ttype_inst</varname></para>
 				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT startInstant(tfloat '{[1@2001-01-01, 2@2001-01-02),
+SELECT startInstant(tfloat '{[1@2001-01-01, 2@2001-01-02), 
   (2@2001-01-02, 3@2001-01-03)}');
 -- 1@2001-01-01
 SELECT endInstant(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
@@ -1042,7 +1042,7 @@ SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-03}');
 				<para>Transformar un valor temporal a otra interpolación</para>
 				<para><varname>setInterp(ttype, interp) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tbool_seq(tbool 'true@2001-01-01','discrete');
+SELECT setInterp(tbool 'true@2001-01-01','discrete');
 -- {t@2001-01-01}
 SELECT setInterp(tfloat '{[1@2001-01-01], [2@2001-01-02], [1@2001-01-03]}', 'discrete');
 -- {1@2001-01-01, 2@2001-01-02, 1@2001-01-03}
@@ -1184,7 +1184,8 @@ SELECT ST_AsText((un).value), (un).time
 FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01,
   Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]') AS un) t;
 --  POINT(1 1) | {[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-03]}
---  POINT(2 2) | {[2001-01-02, 2001-01-03)}</programlisting>
+--  POINT(2 2) | {[2001-01-02, 2001-01-03)}
+</programlisting>
 			</listitem>
 
 		</itemizedlist>

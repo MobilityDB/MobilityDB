@@ -366,9 +366,9 @@ SELECT SUM(width(i)) FROM tbl_intspan;
 (1 row)
 
 SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;
-            round             
-------------------------------
- 457056452735846000000.000000
+   round    
+------------
+ 524.526653
 (1 row)
 
 SELECT MAX(lower(i)) FROM tbl_intspan;

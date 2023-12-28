@@ -1831,7 +1831,7 @@ union_spanset_span(const SpanSet *ss, const Span *s)
   /* Add the remaining component spans if any are left */
   while (i < ss->count)
     spans[nspans++] = *SPANSET_SP_N(ss, i++);
-  return spanset_make_free(spans, nspans, NORMALIZE_NO);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
 }
 
 /**
@@ -1917,7 +1917,7 @@ union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     spans[nspans++] = *SPANSET_SP_N(ss1, i++);
   while (j < ss2->count)
     spans[nspans++] = *SPANSET_SP_N(ss2, j++);
-  return spanset_make_free(spans, nspans, NORMALIZE_NO);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
 }
 
 /*****************************************************************************
@@ -2073,7 +2073,7 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
     if (s->upper < s1->upper)
       break;
   }
-  return spanset_make_free(spans, nspans, NORMALIZE_NO);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
 }
 
 /**
@@ -2123,7 +2123,7 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     else
       j++;
   }
-  return spanset_make_free(spans, nspans, NORMALIZE_NO);;
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
 }
 
 /*****************************************************************************
@@ -2301,7 +2301,7 @@ minus_span_spanset(const Span *s, const SpanSet *ss)
 
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
   int count = mi_span_spanset(s, ss, 0, ss->count, spans);
-  return spanset_make_free(spans, count, false);
+  return spanset_make_free(spans, count, NORMALIZE_NO, ORDERED);
 }
 
 /**
@@ -2327,7 +2327,7 @@ minus_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
     const Span *s = SPANSET_SP_N(ss, i);
     nspans += mi_span_value(s, d, basetype, &spans[nspans]);
   }
-  return spanset_make_free(spans, nspans, NORMALIZE_NO);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
 }
 
 #if MEOS
@@ -2448,7 +2448,7 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
     const Span *s1 = SPANSET_SP_N(ss, i);
     nspans += mi_span_span(s1, s, &spans[nspans]);
   }
-  return spanset_make_free(spans, nspans, NORMALIZE_NO);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
 }
 
 /**
@@ -2512,7 +2512,7 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   /* Copy the sequences after the span set */
   while (i < ss1->count)
     spans[nspans++] = *SPANSET_SP_N(ss1, i++);
-  return spanset_make_free(spans, nspans, NORMALIZE_NO);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
 }
 
 /******************************************************************************

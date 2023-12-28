@@ -86,9 +86,9 @@ SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
--- \x0103210001005c6c29ffffffff00bc434713000000070001000000000000f03f0000000000000040
+-- \x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))', 'XDR');
--- \x0003002101ffffffff296c5c00000000134743bc000007013ff00000000000004000000000000000
+-- \x000300270100001cc1d3579c0000001cd5f12efc00000d013ff00000000000004000000000000000
 SELECT asBinary(stbox 'STBOX X((1,1),(2,2))');
 -- \x0101000000000000f03f0000000000000040000000000000f03f0000000000000040
 </programlisting>
@@ -101,9 +101,9 @@ SELECT asBinary(stbox 'STBOX X((1,1),(2,2))');
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
--- 0103210001005C6C29FFFFFFFF00BC434713000000070001000000000000F03F0000000000000040
+-- 0103270001009C57D3C11C000000FC2EF1D51C00000D0001000000000000F03F0000000000000040
 SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2)[2001-01-01,2001-01-02))', 'XDR');
--- 0003002101FFFFFFFF296C5C00000000134743BC000007013FF00000000000004000000000000000
+-- 000300270100001CC1D3579C0000001CD5F12EFC00000D013FF00000000000004000000000000000
 SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 -- 0101000000000000F03F0000000000000040000000000000F03F0000000000000040
 </programlisting>
@@ -117,7 +117,7 @@ SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 					<para><varname>stboxFromBinary(bytea) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tboxFromBinary(
-  '\x0103210001005c6c29ffffffff00bc434713000000070001000000000000f03f0000000000000040');
+  '\x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040');
 -- TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))
 SELECT stboxFromBinary(
   '\x0101000000000000f03f0000000000000040000000000000f03f0000000000000040');
@@ -133,8 +133,8 @@ SELECT stboxFromBinary(
 					<para><varname>stboxFromHexWKB(text) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tboxFromHexWKB(
-  '0103210001005C6C29FFFFFFFF00BC434713000000070001000000000000F03F0000000000000040');
--- TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02)))
+  '0103270001009C57D3C11C000000FC2EF1D51C00000D0001000000000000F03F0000000000000040');
+-- TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02)))
 SELECT stboxFromHexWKB(
   '0101000000000000F03F0000000000000040000000000000F03F0000000000000040');
 -- STBOX X((1,1),(2,2))
@@ -252,7 +252,7 @@ SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02))'::tstzspan;
 				<programlisting language="sql" xml:space="preserve">
 SELECT intset '{1,2}'::tbox;
 -- TBOXINT X([1, 3))
-SELECT intspan '[1,2]'::tbox;
+SELECT intspan '[1,3)'::tbox;
 -- TBOXINT X([1, 3))
 SELECT floatspan '(1.0,2.0)'::tbox;
 -- TBOXFLOAT X((1, 2))
@@ -265,9 +265,12 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convert an <varname>stbox</varname> to a another type</para>
 				<para><varname>stbox::{box2d,box3d,geo,tstzspan}</varname></para>
+				<para><varname>box2d(stbox) → box2d</varname></para>
+				<para><varname>box3d(stbox) → box2d</varname></para>
+				<para><varname>geometry(stbox) → geometry</varname></para>
+				<para><varname>geography(stbox) → geography</varname></para>
+				<para><varname>tstzspan(stbox) → tstzspan</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan;
--- [2001-01-01, 2001-01-03]
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::box2d;
 -- BOX(1 2,3 4)
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05])'::
@@ -275,27 +278,29 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2001-01-01,2001-01-05]
 -- SRID=4326;POLYGON((1 1,1 5,5 5,5 1,1 1))
 SELECT ST_AsEWKT(stbox 'STBOX XT(((1,1),(1,5)),[2001-01-01,2001-01-05])'::geometry);
 -- LINESTRING(1 1,1 5)
-SELECT ST_AsEWKT(stbox 'STBOX XT(((1,1),(1,1)),[2001-01-01,2001-01-05])'::geometry);
--- POINT(1 1)
+SELECT ST_AsEWKT(stbox 'GEODSTBOX XT(((1,1),(1,1)),[2001-01-01,2001-01-05])'::geography);
+-- SRID=4326;POINT(1 1)
 SELECT ST_AsEWKT(stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2001-01-01,2001-01-05])'::
   geometry);
 /* POLYHEDRALSURFACE(((1 1 1,1 5 1,5 5 1,5 1 1,1 1 1)),
    ((1 1 5,5 1 5,5 5 5,1 5 5,1 1 5)),((1 1 1,1 1 5,1 5 5,1 5 1,1 1 1)),
    ((5 1 1,5 5 1,5 5 5,5 1 5,5 1 1)),((1 1 1,5 1 1,5 1 5,1 1 5,1 1 1)),
    ((1 5 1,1 5 5,5 5 5,5 5 1,1 5 1))) */
+SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan;
+-- [2001-01-01, 2001-01-03]
 </programlisting>
 			</listitem>
 
 			<listitem id="stbox_convert_from">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convert another type to an <varname>stbox</varname></para>
+				<para>Convert another type to an <varname>stbox</varname></para>  
 				<para><varname>{box2d,box3d,geo,time,tpoint}::stbox</varname></para>
 				<para><varname>stbox({box2d,box3d,geo,time,tpoint}) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT geometry 'Linestring(1 1 1,2 2 2)'::box3d::stbox;
 -- STBOX Z((1,1,1),(2,2,2))
-SELECT geometry 'Linestring(1 1,2 2)'::stbox;
--- STBOX X((1,1),(2,2))
+SELECT geography 'Linestring(1 1,2 2)'::stbox;
+-- SRID=4326;GEODSTBOX X((1,1),(2,2))
 SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 -- STBOX T((2001-01-01,2001-01-04))
 </programlisting>
@@ -458,7 +463,7 @@ SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 00:00:00, 2001-01-01 01:00:00])
 SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
   interval '-1 day');
--- ERROR:  The duration must be a positive interval: -1 days
+-- ERROR:  The interval must be positive: -1 days
 </programlisting>
 			</listitem>
 
@@ -501,7 +506,7 @@ SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 				<para>Expand the numeric dimension of the bounding box by a float value</para>
 				<para><varname>expandValue(tbox,{integer,float}) → tbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT expandValue(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', 1);
+SELECT expandValue(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', 1.0);
 -- TBOXFLOAT XT((0,3),[2001-01-01,2001-01-03])
 SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have value dimension
@@ -516,7 +521,7 @@ SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03))', 1);
 SELECT expandSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])', 1);
 -- STBOX ZT(((0,0,0),(3,3,3)),[2001-01-01,2001-01-03])
 SELECT expandSpace(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
--- The box must have XY(Z) dimension
+-- The box must have space dimension
 </programlisting>
 			</listitem>
 
@@ -541,7 +546,7 @@ SELECT expandTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])',
 SELECT round(tbox 'TBOXFLOAT XT((1.12345,2.12345),[2001-01-01,2001-01-02])', 2);
 -- TBOXFLOAT XT((1.12,2.12),[2001-01-01, 2001-01-02])
 SELECT round(stbox 'STBOX XT(((1.12345, 1.12345),(2.12345, 2.12345)),
-	[2001-01-01,2001-01-02])', 2);
+  [2001-01-01,2001-01-02])', 2);
 -- STBOX XT(((1.12,1.12),(2.12,2.12)),[2001-01-01, 2001-01-02])
 </programlisting>
 			</listitem>
@@ -562,7 +567,7 @@ SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02
 SELECT SRID(stbox 'SRID=5676;STBOX XT(((1.0,2.0),(4.0,5.0)),[2001-01-01,2001-01-02])');
 -- 5676
 SELECT SRID(stbox 'GEODSTBOX T([2001-01-01,2001-01-02))');
--- 4326
+-- ERROR:  The box must have space dimension
 </programlisting>
 			</listitem>
 
@@ -582,10 +587,10 @@ SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
 				<para>Transform to a different spatial reference</para>
 				<para><varname>transform(stbox,integer) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT transform(stbox 'SRID=4326;STBOX XT(((2.340088,49.400250),(6.575317,51.553167)),
-  [2001-01-01,2001-01-02])', 3812);
-/* SRID=3812;STBOX XT(((502773.4299808172,511805.1204015772),
-  (803028.9082648156,751590.7426289867)), [2001-01-01,2001-01-02]) */
+SELECT round(transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
+  (6.575317, 51.553167)),[2001-01-01,2001-01-02])', 3812), 6);
+/* SRID=3812;STBOX XT(((502773.429981,511805.120402),(803028.908265,751590.742629)),
+  [2001-01-01, 2001-01-02]) */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -637,7 +642,7 @@ SELECT quadSplit(stbox 'STBOX Z((0,0,0),(4,4,4))');
 				<para><varname>box + box → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXINT XT([1,3),[2001-01-01,2001-01-03])' +
-  tbox 'TBOXINT T([2,4),[2001-01-02,2001-01-04])';
+  tbox 'TBOXINT XT([2,4),[2001-01-02,2001-01-04])';
 -- TBOXINT XT([1,4),[2001-01-01,2001-01-04])
 SELECT stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])' +
   stbox 'STBOX XT(((2,2),(3,3))),[2001-01-01,2001-01-03]';

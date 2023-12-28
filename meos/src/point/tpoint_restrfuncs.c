@@ -1285,7 +1285,8 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   }
   /* Compute the periodset */
   assert(totalpers > 0);
-  SpanSet *ss = spanset_make_free(allperiods, totalpers, NORMALIZE);
+  SpanSet *ss = spanset_make_free(allperiods, totalpers, NORMALIZE,
+    ORDERED_NO);
   /* Recover the Z values from the original sequence */
   result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
   pfree(ss);

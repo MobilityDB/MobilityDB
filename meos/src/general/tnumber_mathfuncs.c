@@ -833,14 +833,14 @@ tfloat_derivative(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT) ||
+      ! ensure_linear_interp(temp->flags))
     return NULL;
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    ;
-  else if (temp->subtype == TSEQUENCE)
+  /* Temporal instants does not have linear interpolation */
+  if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tfloatseq_derivative((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tfloatseqset_derivative((TSequenceSet *) temp);

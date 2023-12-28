@@ -211,15 +211,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Obtener el número de fechas o marcas de tiempo</para>
+					<para><link linkend="setspan_numValues"><varname>numValues</varname></link>: Obtener el número de valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener la fecha or marca de tiempo inicial, final o enésima</para>
+					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimp</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Obtener los fechas o marcas de tiempo diferentes</para>
+					<para><link linkend="setspan_getValues"><varname>getValue</varname></link>: Obtener los valores</para>
 				</listitem>
 
 				<listitem>
@@ -232,6 +232,18 @@
 
 				<listitem>
 					<para><link linkend="spans"><varname>spans</varname></link>: Obtener los rangos</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Obtener el número de fechas o marcas de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener la fecha or marca de tiempo inicial, final o enésima</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Obtener los fechas o marcas de tiempo diferentes</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

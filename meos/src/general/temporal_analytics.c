@@ -169,7 +169,7 @@ tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
     lower += tunits;
     upper += tunits;
   }
-  return spanset_make_free(spans, nspans, NORMALIZE);
+  return spanset_make_free(spans, nspans, NORMALIZE, ORDERED);
 }
 
 /*****************************************************************************

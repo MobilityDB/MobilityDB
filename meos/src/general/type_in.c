@@ -1400,7 +1400,7 @@ spanset_from_wkb_state(wkb_parse_state *s)
   /* Read and create the span set */
   for (int i = 0; i < count; i++)
     span_from_wkb_state_iter(s, &spans[i]);
-  return spanset_make_free(spans, count, NORMALIZE);
+  return spanset_make_free(spans, count, NORMALIZE, ORDERED);
 }
 
 /*****************************************************************************/
