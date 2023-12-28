@@ -52,11 +52,25 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker image
+        if: ${{ github.ref_type == 'branch' }}
         uses: docker/build-push-action@v5
         with:
           platforms: linux/amd64,linux/arm64
           context: .
           file: ./docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            POSTGRES_VERSION=${{ matrix.psql }}
+            POSTGIS_VERSION=${{ matrix.postgis }}
+
+      - name: Build and push Docker image
+        if: ${{ github.ref_type == 'tag' }}
+        uses: docker/build-push-action@v5
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: .
+          file: ./docker/tag.Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |

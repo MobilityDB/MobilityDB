@@ -35,7 +35,7 @@ RUN apt-get update \
     postgresql-server-dev-${PG_MAJOR} \
   && rm -rf /var/lib/apt/lists/*
 
-RUN wget -O MobilityDB.tar.gz "https://github.com/MobilityDB/MobilityDB/archive/v1.1.0-beta1.tar.gz" \
+RUN wget -O MobilityDB.tar.gz "https://github.com/MobilityDB/MobilityDB/archive/develop.tar.gz" \
  && mkdir -p /usr/local/src/MobilityDB \
  && tar \
         --extract \
