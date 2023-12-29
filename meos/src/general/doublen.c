@@ -97,6 +97,7 @@ double2_set(double a, double b, double2 *result)
   memset(result, 0, sizeof(double2));
   result->a = a;
   result->b = b;
+  return;
 }
 
 /**
@@ -184,6 +185,7 @@ double3_set(double a, double b, double c, double3 *result)
   result->a = a;
   result->b = b;
   result->c = c;
+  return;
 }
 
 /**
@@ -280,6 +282,7 @@ double4_set(double a, double b, double c, double d, double4 *result)
   result->b = b;
   result->c = c;
   result->d = d;
+  return;
 }
 
 /**

@@ -995,6 +995,7 @@ MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
       *time = -((((-*time) + TimeOffsets[typmod]) / TimeScales[typmod]) *
             TimeScales[typmod]);
   }
+  return;
 }
 
 /**
@@ -1143,6 +1144,7 @@ void
 MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 {
   (void) MEOSAdjustTimestampForTypmodError(time, typmod, NULL);
+  return;
 }
 
 /**
@@ -1539,6 +1541,7 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
       }
     }
   }
+  return;
 }
 
 /**

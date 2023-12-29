@@ -272,7 +272,8 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
   int geo_srid = gserialized_get_srid(gs);
   if (*tpoint_srid == SRID_UNKNOWN && geo_srid != SRID_UNKNOWN)
     *tpoint_srid = geo_srid;
-  else if (*tpoint_srid != SRID_UNKNOWN && geo_srid == SRID_UNKNOWN)
+  else if (*tpoint_srid != SRID_UNKNOWN &&
+    ( geo_srid == SRID_UNKNOWN || geo_srid == SRID_DEFAULT ))
     gserialized_set_srid(gs, *tpoint_srid);
   /* If the SRID of the temporal point and of the geometry do not match */
   else if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN &&

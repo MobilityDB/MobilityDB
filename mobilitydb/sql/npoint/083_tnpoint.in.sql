@@ -304,6 +304,16 @@ CREATE FUNCTION duration(tnpoint, boundspan boolean DEFAULT FALSE)
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION lower_inc(tnpoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION upper_inc(tnpoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION numInstants(tnpoint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_instants'
@@ -432,7 +442,7 @@ CREATE FUNCTION tnpoint_supportfn(internal)
 
 CREATE FUNCTION ever_eq(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_ever_eq'
+  AS 'MODULE_PATHNAME', 'Ever_eq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
@@ -444,7 +454,7 @@ CREATE OPERATOR ?= (
 
 CREATE FUNCTION always_eq(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_always_eq'
+  AS 'MODULE_PATHNAME', 'Always_eq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
@@ -456,7 +466,7 @@ CREATE OPERATOR %= (
 
 CREATE FUNCTION ever_ne(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_ever_ne'
+  AS 'MODULE_PATHNAME', 'Ever_ne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
@@ -468,7 +478,7 @@ CREATE OPERATOR ?<> (
 
 CREATE FUNCTION always_ne(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_always_ne'
+  AS 'MODULE_PATHNAME', 'Always_ne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (

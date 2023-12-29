@@ -472,7 +472,7 @@ SELECT upper(tstzspan '[2001-01-01, 2001-01-05)');
 </programlisting>
 			</listitem>
 
-			<listitem id="lower_inc">
+			<listitem id="setspan_lower_inc">
 				<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
 				<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
 				<para>¿Es el límite inferior/superior inclusivo?</para>

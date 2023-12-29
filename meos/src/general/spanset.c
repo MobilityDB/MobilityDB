@@ -502,6 +502,7 @@ spanset_make(Span *spans, int count, bool normalize, bool ordered)
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized.
+ * @param[in] ordered True if the input spans are ordered
  * @see #spanset_make
  */
 SpanSet *
@@ -948,51 +949,54 @@ numspanset_width(const SpanSet *ss, bool boundspan)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the width of an integer span set
  * @param[in] ss Span
+ * @param[in] boundspan True when the potential time gaps are ignored
  * @return On error return -1
  * @csqlfn #Numspanset_width(()
  */
 int
-intspanset_width(const SpanSet *ss)
+intspanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return -1;
-  return Int32GetDatum(numspanset_width(ss));
+  return Int32GetDatum(numspanset_width(ss, boundspan));
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the width of an integer span set
  * @param[in] ss Span
+ * @param[in] boundspan True when the potential time gaps are ignored
  * @return On error return -1
  * @csqlfn #Numspanset_width(()
  */
 int64
-bigintspanset_width(const SpanSet *ss)
+bigintspanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return -1;
-  return Int64GetDatum(numspanset_width(ss));
+  return Int64GetDatum(numspanset_width(ss, boundspan));
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the width of a float span set
  * @param[in] ss Span
+ * @param[in] boundspan True when the potential time gaps are ignored
  * @return On error return -1
  * @csqlfn #Numspanset_width(()
  */
 double
-floatspanset_width(const SpanSet *ss)
+floatspanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
-      ! ensure_span_isof_type(ss, T_FLOATSPANSET))
+      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return -1.0;
-  return DatumGetFloat8(numspanset_width(ss));
+  return DatumGetFloat8(numspanset_width(ss, boundspan));
 }
 #endif /* MEOS */
 

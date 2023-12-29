@@ -455,7 +455,8 @@ void
 int_set_tbox(int i, TBox *box)
 {
   assert(box);
-  return number_set_tbox(Int32GetDatum(i), T_INT4, box);
+  number_set_tbox(Int32GetDatum(i), T_INT4, box);
+  return;
 }
 
 /**
@@ -483,7 +484,8 @@ void
 float_set_tbox(double d, TBox *box)
 {
   assert(box);
-  return number_set_tbox(Float8GetDatum(d), T_FLOAT8, box);
+  number_set_tbox(Float8GetDatum(d), T_FLOAT8, box);
+  return;
 }
 
 /**

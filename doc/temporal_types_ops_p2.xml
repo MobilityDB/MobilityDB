@@ -616,15 +616,15 @@ SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt;= tint '[2@2001-01-03, 2@2001-01-
 		<sect2 id="ever_always_comparison">
 			<title>Ever and Always Comparisons</title>
 			<para>
-				A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) to temporal types consists in determining whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.
+				A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) to temporal types consists in determining whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type or two temporal values is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever and always equality and non-equality are available for all temporal types, while ever and always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.
 			</para>
 			<itemizedlist>
 				<listitem id="ttype_eveq">
 					<indexterm><primary><varname>?=</varname></primary></indexterm>
 					<indexterm><primary><varname>%=</varname></primary></indexterm>
-					<para>Is the temporal value ever/always equal to the value?</para>
-					<para><varname>ttype ?= base → boolean</varname></para>
-					<para><varname>ttype %= base → boolean</varname></para>
+					<para>Is the temporal value ever or always equal to the value?</para>
+					<para><varname>{base,ttype} ?= {base,ttype} → boolean</varname></para>
+					<para><varname>{base,ttype} %= {base,ttype} → boolean</varname></para>
 					<para>The ever function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 3@2001-01-04]' ?= 2;
@@ -652,9 +652,9 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-04)' %=
 				<listitem id="ttype_evne">
 					<indexterm><primary><varname>?&lt;&gt;</varname></primary></indexterm>
 					<indexterm><primary><varname>%&lt;&gt;</varname></primary></indexterm>
-					<para>Is the temporal value ever/always different from the value?</para>
-					<para><varname>ttype ?&lt;&gt; base → boolean</varname></para>
-					<para><varname>ttype %&lt;&gt; base → boolean</varname></para>
+					<para>Is the temporal value ever or always different from the value?</para>
+					<para><varname>{base,ttype} ?&lt;&gt; {base,ttype} → boolean</varname></para>
+					<para><varname>{base,ttype} %&lt;&gt; {base,ttype} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' ?&lt;&gt; 2;
 -- true
@@ -678,9 +678,9 @@ SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-04)' %&lt;&gt;
 				<listitem id="ttype_evlt">
 					<indexterm><primary><varname>?&lt;</varname></primary></indexterm>
 					<indexterm><primary><varname>%&lt;</varname></primary></indexterm>
-					<para>Is the temporal value ever/always less than the value?</para>
-					<para><varname>tnumber ?&lt; number → boolean</varname></para>
-					<para><varname>tnumber %&lt; number → boolean</varname></para>
+					<para>Is the temporal value ever or always less than the value?</para>
+					<para><varname>{base,torder} ?&lt; {base,torder} → boolean</varname></para>
+					<para><varname>{base,torder} %&lt; {base,torder} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 4@2001-01-04]' ?&lt; 2;
 -- true
@@ -694,9 +694,9 @@ SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' %&lt; 2;
 				<listitem id="ttype_evgt">
 					<indexterm><primary><varname>?&gt;</varname></primary></indexterm>
 					<indexterm><primary><varname>%&gt;</varname></primary></indexterm>
-					<para>Is the temporal value ever/always greater than the value?</para>
-					<para><varname>tnumber ?&gt; number → boolean</varname></para>
-					<para><varname>tnumber %&gt; number → boolean</varname></para>
+					<para>Is the temporal value ever or always greater than the value?</para>
+					<para><varname>{base,torder} ?&gt; {base,torder} → boolean</varname></para>
+					<para><varname>{base,torder} %&gt; {base,torder} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-03, 1@2001-01-05]' ?&gt; 0;
 -- true
@@ -710,9 +710,9 @@ SELECT tfloat '[1@2001-01-03, 1@2001-01-05)' %&gt; 1;
 				<listitem id="ttype_evle">
 					<indexterm><primary><varname>?&lt;=</varname></primary></indexterm>
 					<indexterm><primary><varname>%&lt;=</varname></primary></indexterm>
-					<para>Is the temporal value ever/always less than or equal to the value?</para>
-					<para><varname>tnumber ?&lt;= number → boolean</varname></para>
-					<para><varname>tnumber %&lt;= number → boolean</varname></para>
+					<para>Is the temporal value ever or always less than or equal to the value?</para>
+					<para><varname>{base,torder} ?&lt;= {base,torder} → boolean</varname></para>
+					<para><varname>{base,torder} %&lt;= {base,torder} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 1@2001-01-05]' ?&lt;= 2;
 -- true
@@ -726,9 +726,9 @@ SELECT tfloat '[1@2001-01-01, 1@2001-01-05)' %&lt;= 4;
 				<listitem id="ttype_evge">
 					<indexterm><primary><varname>?&gt;=</varname></primary></indexterm>
 					<indexterm><primary><varname>%&gt;=</varname></primary></indexterm>
-					<para>Is the temporal value ever/always greater than or equal to the value?</para>
-					<para><varname>tnumber ?&gt;= number → boolean</varname></para>
-					<para><varname>tnumber %&gt;= number → boolean</varname></para>
+					<para>Is the temporal value ever or always greater than or equal to the value?</para>
+					<para><varname>{base,torder} ?&gt;= {base,torder} → boolean</varname></para>
+					<para><varname>{base,torder} %&gt;= {base,torder} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03), [BBB@2001-01-04, BBB@2001-01-05)}'
    ?&gt; 'AAA'::text;

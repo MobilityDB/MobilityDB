@@ -366,10 +366,8 @@ extern char *mobilitydb_full_version(void);
 
 /* Ever/always equal operators */
 
-extern bool temporal_bbox_ev_al_eq(const Temporal *temp, Datum value,
-  bool ever);
-extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value,
-  bool ever);
+extern bool ea_eq_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
+extern bool ea_lt_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
 
 /* Restriction functions */
 

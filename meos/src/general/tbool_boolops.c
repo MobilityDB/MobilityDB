@@ -162,6 +162,7 @@ tbool_when_true(const Temporal *temp)
   if (! temp1)
     return NULL;
   SpanSet *result = temporal_time(temp1);
+  pfree(temp1);
   return result;
 }
 

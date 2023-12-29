@@ -1326,6 +1326,8 @@ extern int temporal_num_timestamps(const Temporal *temp);
 extern TSequence **temporal_segments(const Temporal *temp, int *count);
 extern TSequence *temporal_sequence_n(const Temporal *temp, int i);
 extern TSequence **temporal_sequences(const Temporal *temp, int *count);
+extern int temporal_lower_inc(const Temporal *temp);
+extern int temporal_upper_inc(const Temporal *temp);
 extern const TInstant *temporal_start_instant(const Temporal *temp);
 extern TSequence *temporal_start_sequence(const Temporal *temp);
 extern TimestampTz temporal_start_timestamptz(const Temporal *temp);
@@ -1363,8 +1365,8 @@ extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
 extern Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration);
 extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift);
 extern TInstant *temporal_to_tinstant(const Temporal *temp);
-extern TSequence *temporal_to_tsequence(const Temporal *temp, interpType interp);
-extern TSequenceSet *temporal_to_tsequenceset(const Temporal *temp, interpType interp);
+extern TSequence *temporal_to_tsequence(const Temporal *temp, char *interp_str);
+extern TSequenceSet *temporal_to_tsequenceset(const Temporal *temp, char *interp_str);
 extern Temporal *tfloat_scale_value(const Temporal *temp, double width);
 extern Temporal *tfloat_shift_scale_value(const Temporal *temp, double shift, double width);
 extern Temporal *tfloat_shift_value(const Temporal *temp, double shift);
@@ -1449,28 +1451,66 @@ extern bool temporal_ne(const Temporal *temp1, const Temporal *temp2);
 
 /* Ever/always comparison functions for temporal types */
 
-extern bool tbool_always_eq(const Temporal *temp, bool b);
-extern bool tbool_ever_eq(const Temporal *temp, bool b);
-extern bool tfloat_always_eq(const Temporal *temp, double d);
-extern bool tfloat_always_le(const Temporal *temp, double d);
-extern bool tfloat_always_lt(const Temporal *temp, double d);
-extern bool tfloat_ever_eq(const Temporal *temp, double d);
-extern bool tfloat_ever_le(const Temporal *temp, double d);
-extern bool tfloat_ever_lt(const Temporal *temp, double d);
-extern bool tint_always_eq(const Temporal *temp, int i);
-extern bool tint_always_le(const Temporal *temp, int i);
-extern bool tint_always_lt(const Temporal *temp, int i);
-extern bool tint_ever_eq(const Temporal *temp, int i);
-extern bool tint_ever_le(const Temporal *temp, int i);
-extern bool tint_ever_lt(const Temporal *temp, int i);
-extern bool tpoint_always_eq(const Temporal *temp, const GSERIALIZED *gs);;
-extern bool tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs);;
-extern bool ttext_always_eq(const Temporal *temp, text *txt);
-extern bool ttext_always_le(const Temporal *temp, text *txt);
-extern bool ttext_always_lt(const Temporal *temp, text *txt);
-extern bool ttext_ever_eq(const Temporal *temp, text *txt);
-extern bool ttext_ever_le(const Temporal *temp, text *txt);
-extern bool ttext_ever_lt(const Temporal *temp, text *txt);
+extern bool always_eq_tbool_bool(const Temporal *temp, bool b);
+extern int always_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_eq_tfloat_float(const Temporal *temp, double d);
+extern bool always_eq_tint_int(const Temporal *temp, int i);
+extern int always_eq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern int always_eq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool always_eq_ttext_text(const Temporal *temp, const text *txt);
+extern bool always_ne_tbool_bool(const Temporal *temp, bool b);
+extern int always_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_ne_tfloat_float(const Temporal *temp, double d);
+extern bool always_ne_tint_int(const Temporal *temp, int i);
+extern int always_ne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern int always_ne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool always_ne_ttext_text(const Temporal *temp, const text *txt);
+extern int always_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_ge_tfloat_float(const Temporal *temp, double d);
+extern bool always_ge_tint_int(const Temporal *temp, int i);
+extern bool always_ge_ttext_text(const Temporal *temp, const text *txt);
+extern int always_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_gt_tfloat_float(const Temporal *temp, double d);
+extern bool always_gt_tint_int(const Temporal *temp, int i);
+extern bool always_gt_ttext_text(const Temporal *temp, const text *txt);
+extern int always_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_le_tfloat_float(const Temporal *temp, double d);
+extern bool always_le_tint_int(const Temporal *temp, int i);
+extern bool always_le_ttext_text(const Temporal *temp, const text *txt);
+extern int always_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_lt_tfloat_float(const Temporal *temp, double d);
+extern bool always_lt_tint_int(const Temporal *temp, int i);
+extern bool always_lt_ttext_text(const Temporal *temp, const text *txt);
+extern bool ever_eq_tbool_base(const Temporal *temp, bool b);
+extern int ever_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_eq_tfloat_float(const Temporal *temp, double d);
+extern bool ever_eq_tint_int(const Temporal *temp, int i);
+extern int ever_eq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern int ever_eq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_eq_ttext_text(const Temporal *temp, const text *txt);
+extern int ever_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_ge_tfloat_float(const Temporal *temp, double d);
+extern bool ever_ge_tint_int(const Temporal *temp, int i);
+extern bool ever_ge_ttext_text(const Temporal *temp, const text *txt);
+extern int ever_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_gt_tfloat_float(const Temporal *temp, double d);
+extern bool ever_gt_tint_int(const Temporal *temp, int i);
+extern bool ever_gt_ttext_text(const Temporal *temp, const text *txt);
+extern int ever_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_le_tfloat_float(const Temporal *temp, double d);
+extern bool ever_le_tint_int(const Temporal *temp, int i);
+extern bool ever_le_ttext_text(const Temporal *temp, const text *txt);
+extern int ever_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_lt_tfloat_float(const Temporal *temp, double d);
+extern bool ever_lt_tint_int(const Temporal *temp, int i);
+extern bool ever_lt_ttext_text(const Temporal *temp, const text *txt);
+extern bool ever_ne_tbool_base(const Temporal *temp, bool b);
+extern int ever_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_ne_tfloat_float(const Temporal *temp, double d);
+extern bool ever_ne_tint_int(const Temporal *temp, int i);
+extern int ever_ne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern int ever_ne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_ne_ttext_text(const Temporal *temp, const text *txt);
 
 /*****************************************************************************/
 
@@ -1485,6 +1525,7 @@ extern Temporal *teq_temporal_temporal(const Temporal *temp1, const Temporal *te
 extern Temporal *teq_text_ttext(const text *txt, const Temporal *temp);
 extern Temporal *teq_tfloat_float(const Temporal *temp, double d);
 extern Temporal *teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *teq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *teq_tint_int(const Temporal *temp, int i);
 extern Temporal *teq_ttext_text(const Temporal *temp, const text *txt);
 extern Temporal *tge_float_tfloat(double d, const Temporal *temp);
@@ -1524,6 +1565,7 @@ extern Temporal *tne_temporal_temporal(const Temporal *temp1, const Temporal *te
 extern Temporal *tne_text_ttext(const text *txt, const Temporal *temp);
 extern Temporal *tne_tfloat_float(const Temporal *temp, double d);
 extern Temporal *tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tne_tint_int(const Temporal *temp, int i);
 extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 
@@ -1808,8 +1850,16 @@ bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *measure, b
 
 /*****************************************************************************/
 
-/* Ever spatial relationship functions for temporal points */
+/* Ever/always spatial relationship functions for temporal points */
 
+extern int acontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp);
+extern int adisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int adisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern int adwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
+extern int adwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist);
+extern int aintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int aintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern int atouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp);
 extern int edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);

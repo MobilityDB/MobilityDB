@@ -113,6 +113,7 @@ tinstant_set(TInstant *inst, Datum value, TimestampTz t)
   assert(inst);
   inst->t = t;
   inst->value = value;
+  return;
 }
 
 /**
@@ -630,100 +631,6 @@ tinstant_shift_time(const TInstant *inst, const Interval *interv)
   TInstant *result = tinstant_copy(inst);
   result->t = pg_timestamp_pl_interval(inst->t, interv);
   return result;
-}
-
-/*****************************************************************************
- * Ever/always functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal instant is ever equal to a base value.
- * @param[in] inst Temporal instant
- * @param[in] value Value
- * @csqlfn #Temporal_ever_eq()
- */
-bool
-tinstant_ever_eq(const TInstant *inst, Datum value)
-{
-  assert(inst);
-  return datum_eq(tinstant_value(inst), value,
-    temptype_basetype(inst->temptype));
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal instant is always equal to a base value.
- * @param[in] inst Temporal instant
- * @param[in] value Value
- * @csqlfn #Temporal_ever_eq()
- */
-bool
-tinstant_always_eq(const TInstant *inst, Datum value)
-{
-  return tinstant_ever_eq(inst, value);
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal instant is ever less than a base value.
- * @param[in] inst Temporal instant
- * @param[in] value Value
- * @csqlfn #Temporal_ever_lt()
- */
-bool
-tinstant_ever_lt(const TInstant *inst, Datum value)
-{
-  assert(inst);
-  return datum_lt(tinstant_value(inst), value,
-    temptype_basetype(inst->temptype));
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal instant is ever less than or equal to
- * a base value.
- * @param[in] inst Temporal instant
- * @param[in] value Value
- * @csqlfn #Temporal_ever_le()
- */
-bool
-tinstant_ever_le(const TInstant *inst, Datum value)
-{
-  assert(inst);
-  return datum_le(tinstant_value(inst), value,
-    temptype_basetype(inst->temptype));
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal instant is always less than a base value.
- * @param[in] inst Temporal instant
- * @param[in] value Value
- * @csqlfn #Temporal_ever_lt()
- */
-bool
-tinstant_always_lt(const TInstant *inst, Datum value)
-{
-  assert(inst);
-  return datum_lt(tinstant_value(inst), value,
-    temptype_basetype(inst->temptype));
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal instant is always less than or equal to a
- * base value.
- * @csqlfn #Temporal_always_lt()
- */
-bool
-tinstant_always_le(const TInstant *inst, Datum value)
-{
-  assert(inst);
-  return datum_le(tinstant_value(inst), value,
-    temptype_basetype(inst->temptype));
 }
 
 /*****************************************************************************

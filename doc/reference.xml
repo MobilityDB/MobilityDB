@@ -194,7 +194,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: Is the lower/upper bound inclusive?</para>
+					<para><link linkend="setspan_lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: Is the lower/upper bound inclusive?</para>
 				</listitem>
 
 				<listitem>
@@ -214,7 +214,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname>,: Get the start, end, or n-th value</para>
+					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Get the start, end, or n-th value</para>
 				</listitem>
 
 				<listitem>
@@ -789,6 +789,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: Is the start/end instant inclusive?</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="numInstants"><varname>numInstants</varname></link>: Get the number of different instants</para>
 				</listitem>
 
@@ -976,27 +980,27 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname></link>: Is the temporal value ever/always equal to the value?</para>
+						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname></link>: Is the temporal value ever or always equal to the value?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: Is the temporal value ever/always different from the value?</para>
+						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: Is the temporal value ever or always different from the value?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evlt"><varname>?&lt;</varname>, <varname>%&lt;</varname></link>: Is the temporal value ever/always less than the value?</para>
+						<para><link linkend="ttype_evlt"><varname>?&lt;</varname>, <varname>%&lt;</varname></link>: Is the temporal value ever or always less than the value?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evgt"><varname>?&gt;</varname>, <varname>%&gt;</varname></link>: Is the temporal value ever/always greater than the value?</para>
+						<para><link linkend="ttype_evgt"><varname>?&gt;</varname>, <varname>%&gt;</varname></link>: Is the temporal value ever or always greater than the value?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evle"><varname>?&lt;=</varname>, <varname>%&lt;=</varname></link>: Is the temporal value ever/always less than or equal to the value?</para>
+						<para><link linkend="ttype_evle"><varname>?&lt;=</varname>, <varname>%&lt;=</varname></link>: Is the temporal value ever or always less than or equal to the value?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evge"><varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: Is the temporal value ever/always greater than or equal to the value?</para>
+						<para><link linkend="ttype_evge"><varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: Is the temporal value ever or always greater than or equal to the value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1296,27 +1300,27 @@
 			<title>Spatial Relationships</title>
 
 			<sect3>
-				<title>Ever Spatial Relationships</title>
+				<title>Ever or Always Spatial Relationships</title>
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="econtains"><varname>econtains</varname></link>: Ever contains</para>
+						<para><link linkend="eContains"><varname>eContains</varname>, <varname>aContains</varname></link>: Ever or always contains</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Is ever disjoint</para>
+						<para><link linkend="eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Is ever or always disjoint</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Is ever at distance within</para>
+						<para><link linkend="eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Is ever or always at distance within</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Ever intersects</para>
+						<para><link linkend="eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Ever or always intersects</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="etouches"><varname>etouches</varname></link>: Ever touches</para>
+						<para><link linkend="eTouches"><varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever or always touches</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1326,23 +1330,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Temporal contains</para>
+						<para><link linkend="tContains"><varname>tContains</varname></link>: Temporal contains</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Temporal disjoint</para>
+						<para><link linkend="tDisjoint"><varname>tDisjoint</varname></link>: Temporal disjoint</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Temporal distance within</para>
+						<para><link linkend="tDwithin"><varname>tDwithin</varname></link>: Temporal distance within</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tintersects"><varname>tintersects</varname></link>: Temporal intersects</para>
+						<para><link linkend="tIntersects"><varname>tIntersects</varname></link>: Temporal intersects</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Temporal touches</para>
+						<para><link linkend="tTouches"><varname>tTouches</varname></link>: Temporal touches</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1784,11 +1788,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_espatialrels"><varname>econtains, edisjoint, eintersects, etouches, edwithin</varname></link>: Possible spatial relationships</para>
+						<para><link linkend="tnpoint_espatialrels"><varname>eContains, eDisjoint, eIntersects, eTouches, eDwithin</varname></link>: Possible spatial relationships</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_tspatialrels"><varname>tcontains, tdisjoint, tintersects, ttouches, tdwithin</varname></link>: Temporal spatial relationships</para>
+						<para><link linkend="tnpoint_tspatialrels"><varname>tContains, tDisjoint, tIntersects, tTouches, tDwithin</varname></link>: Temporal spatial relationships</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

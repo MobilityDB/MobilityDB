@@ -28,160 +28,261 @@
  *****************************************************************************/
 
 /**
- * tnpoint_spatialrels.sql
- * Spatial relationships for temporal network points.
+ * @file 
+ * @brief Spatial relationships for temporal network points
  *
  * These relationships are generalized to the temporal dimension with the
  * "at any instant" semantics, that is, the traditional operator is applied to
  * the union of all values taken by the temporal npoint and returns a Boolean.
  * The following relationships are supported:
- *    econtains, edisjoint, eintersects, etouches, and edwithin
- * All these relationships, excepted edisjoint, will automatically
+ *    eContains, aContains, eDisjoint, aDisjoint, eIntersects, aIntersects,
+ *    eTouches, aTouches, eDwithin, and aDwithin
+ * All these relationships, excepted eDisjoint, will automatically
  * include a bounding box comparison that will make use of any spatial,
  * temporal, or spatiotemporal indexes that are available.
  */
 
 /*****************************************************************************
- * econtains
+ * eContains, aContains
  *****************************************************************************/
 
-CREATE FUNCTION econtains(geometry, tnpoint)
+CREATE FUNCTION eContains(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Econtains_geo_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION aContains(geometry, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Acontains_geo_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
- * edisjoint
+ * eDisjoint, aDisjoint
  *****************************************************************************/
 
-CREATE FUNCTION edisjoint(geometry, tnpoint)
+CREATE FUNCTION eDisjoint(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION edisjoint(npoint, tnpoint)
+CREATE FUNCTION eDisjoint(npoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION edisjoint(tnpoint, geometry)
+CREATE FUNCTION eDisjoint(tnpoint, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION edisjoint(tnpoint, npoint)
+CREATE FUNCTION eDisjoint(tnpoint, npoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION edisjoint(tnpoint, tnpoint)
+CREATE FUNCTION eDisjoint(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION aDisjoint(geometry, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adisjoint_geo_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aDisjoint(npoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adisjoint_npoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aDisjoint(tnpoint, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adisjoint_tnpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aDisjoint(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adisjoint_tnpoint_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aDisjoint(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adisjoint_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
- * eintersects
+ * eIntersects, aIntersects
  *****************************************************************************/
 
 CREATE FUNCTION _eintersects(npoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eintersects(npoint, tnpoint)
+CREATE FUNCTION eIntersects(npoint, tnpoint)
   RETURNS boolean
   AS 'SELECT stbox($1) OPERATOR(@extschema@.&&) $2 AND @extschema@._eintersects($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION aIntersects(npoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Aintersects_npoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION _eintersects(tnpoint, npoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eintersects(tnpoint, npoint)
+CREATE FUNCTION eIntersects(tnpoint, npoint)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) stbox($2) AND @extschema@._eintersects($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION eintersects(geometry, tnpoint)
+CREATE FUNCTION aIntersects(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Aintersects_tnpoint_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION eIntersects(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_geo_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eintersects(tnpoint, geometry)
+CREATE FUNCTION eIntersects(tnpoint, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_tnpoint_geo'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eintersects(tnpoint, tnpoint)
+CREATE FUNCTION eIntersects(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_tnpoint_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION aIntersects(geometry, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Aintersects_geo_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aIntersects(tnpoint, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Aintersects_tnpoint_geo'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aIntersects(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Aintersects_tnpoint_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
- * etouches
+ * eTouches, aTouches
  *****************************************************************************/
 
-CREATE FUNCTION _etouches(npoint, tnpoint)
+CREATE FUNCTION _eTouches(npoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Etouches_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION etouches(npoint, tnpoint)
+CREATE FUNCTION eTouches(npoint, tnpoint)
   RETURNS boolean
   AS 'SELECT stbox($1) OPERATOR(@extschema@.&&) $2 AND @extschema@._etouches($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION _etouches(tnpoint, npoint)
+CREATE FUNCTION aTouches(npoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Atouches_npoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION _eTouches(tnpoint, npoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Etouches_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION etouches(tnpoint, npoint)
+CREATE FUNCTION eTouches(tnpoint, npoint)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) stbox($2) AND @extschema@._etouches($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION etouches(geometry, tnpoint)
+CREATE FUNCTION aTouches(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Atouches_tnpoint_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION eTouches(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Etouches_geo_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION etouches(tnpoint, geometry)
+CREATE FUNCTION eTouches(tnpoint, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Etouches_tnpoint_geo'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION aTouches(geometry, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Atouches_geo_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aTouches(tnpoint, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Atouches_tnpoint_geo'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
- * Edwithin
+ * eDwithin, aDwithin
  *****************************************************************************/
 
-CREATE FUNCTION _edwithin(npoint, tnpoint, dist float)
+CREATE FUNCTION _eDwithin(npoint, tnpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(npoint, tnpoint, dist float)
+CREATE FUNCTION eDwithin(npoint, tnpoint, dist float)
   RETURNS boolean
   AS 'SELECT @extschema@.expandSpace(stbox($1),$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._edwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION _edwithin(tnpoint, npoint, dist float)
+CREATE FUNCTION aDwithin(npoint, tnpoint, dist float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adwithin_npoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION _eDwithin(tnpoint, npoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(tnpoint, npoint, dist float)
+CREATE FUNCTION eDwithin(tnpoint, npoint, dist float)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpace(stbox($2),$3) AND @extschema@._edwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION Edwithin(geometry, tnpoint, dist float)
+CREATE FUNCTION aDwithin(tnpoint, npoint, dist float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adwithin_tnpoint_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION eDwithin(geometry, tnpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_geo_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(tnpoint, geometry, dist float)
+CREATE FUNCTION eDwithin(tnpoint, geometry, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tnpoint_geo'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(tnpoint, tnpoint, dist float)
+CREATE FUNCTION eDwithin(tnpoint, tnpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tnpoint_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION aDwithin(geometry, tnpoint, dist float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adwithin_geo_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aDwithin(tnpoint, geometry, dist float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adwithin_tnpoint_geo'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aDwithin(tnpoint, tnpoint, dist float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adwithin_tnpoint_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

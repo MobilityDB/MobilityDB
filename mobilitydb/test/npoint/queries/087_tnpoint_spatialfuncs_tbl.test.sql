@@ -38,7 +38,7 @@ SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tnpoint;
 
 SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tnpoint;
 
-SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tnpoint;
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tnpoint WHERE interp(temp) = 'Linear';
 
 SELECT round(azimuth(temp), 13) FROM tbl_tnpoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
 

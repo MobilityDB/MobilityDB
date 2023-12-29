@@ -208,7 +208,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
   {
     if (invert)
     {
-      if (temporal_ever_eq(temp, Float8GetDatum(0.0)))
+      if (ever_eq_temporal_base(temp, Float8GetDatum(0.0)))
       {
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
         return NULL;
@@ -269,7 +269,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
     Temporal *projtemp2 = temporal_restrict_tstzspanset(temp2, ss, REST_AT);
     if (projtemp2 == NULL)
       return NULL;
-    if (temporal_ever_eq(projtemp2, Float8GetDatum(0.0)))
+    if (ever_eq_temporal_base(projtemp2, Float8GetDatum(0.0)))
     {
       pfree(projtemp2);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
@@ -277,13 +277,14 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
     }
   }
 
+  /* Fill the lifted structure */
+  meosType basetype = temptype_basetype(temp1->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
   lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
-  lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
+  lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
   lfinfo.restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
     T_TINT : T_TFLOAT;
   lfinfo.reslinear = linear1 || linear2;
@@ -761,8 +762,7 @@ tfloat_radians(const Temporal *temp)
 TSequence *
 tfloatseq_derivative(const TSequence *seq)
 {
-  assert(seq);
-  assert(seq->temptype == T_TFLOAT);
+  assert(seq); assert(seq->temptype == T_TFLOAT);
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
   /* Instantaneous sequence */

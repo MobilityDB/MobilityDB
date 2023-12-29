@@ -291,6 +291,7 @@ temporal_extra_info(VacAttrStats *stats)
   stats->extra_data = extra_data;
 
   stats->minrows = 300 * attr->attstattarget;
+  return;
 }
 
 /*****************************************************************************/

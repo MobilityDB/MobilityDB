@@ -94,6 +94,7 @@ void
 temporalgeom_init()
 {
   lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
+  return;
 }
 
 /*****************************************************************************

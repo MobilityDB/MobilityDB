@@ -134,6 +134,7 @@ span_deserialize(const Span *s, SpanBound *lower, SpanBound *upper)
     upper->spantype = s->spantype;
     upper->basetype = s->basetype;
   }
+  return;
 }
 
 /**

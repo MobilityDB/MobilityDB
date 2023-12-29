@@ -23,21 +23,21 @@
 				<para>En el caso de puntos temporales la distancia se especifica en las unidades del sistema de coordenadas. Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT minDistSimplify(tfloat '[1@2001-01-01,2@2001-01-02,3@2001-01-04,4@2001-01-05]', 1);
--- [1@2001-01-01, 3@2001-01-04]
+-- [1@2001-01-01, 3@2001-01-04, 4@2001-01-05]
 SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2001-01-01,
   Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-04, Point(5 5 5)@2001-01-05)', sqrt(3)));
 -- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (5 5 5)@2001-01-05)
 SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2001-01-01,
   Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-04, Point(4 4 4)@2001-01-05)', sqrt(3)));
--- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04]
+-- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (4 4 4)@2001-01-05]
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT minTimeDeltaSimplify(tfloat '[1@2001-01-01, 2@2001-01-02, 3@2001-01-04,
   4@2001-01-05]', '1 day');
--- [1@2001-01-01, 3@2001-01-04]
+-- [1@2001-01-01, 3@2001-01-04, 4@2001-01-05]
 SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2001-01-01,
   Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-04, Point(5 5 5)@2001-01-05)', '1 day'));
--- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04]
+-- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (5 5 5)@2001-01-05]
 </programlisting>
 			</listitem>
 
@@ -159,7 +159,6 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-
   Point(1 1)@2001-01-09)', '2 days', '2001-01-01'));
 /* [POINT(2 2)@2001-01-01, POINT(4 4)@2001-01-03, POINT(4 4)@2001-01-05,
    POINT(2 2)@2001-01-07] */
--- [POINT(1.5 1.5)@1999-12-31, POINT(3.5 3.5)@2001-01-02, POINT(3 3)@2001-01-04]
 SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05,
   Point(1 1)@2001-01-09)', '4 days', '2001-01-01'));
 -- [POINT(3 3)@2001-01-01, POINT(3 3)@2001-01-05]
@@ -249,10 +248,10 @@ SELECT frechetDistancePath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-0
 SELECT dynTimeWarpDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- 2
-SELECT round(dynTimeWarpDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
-  Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
-  Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
-  Point(1.5 2)@2001-01-05]')::numeric, 6);
+SELECT round(dynTimeWarpDistance(tgeompoint '[Point(1 1)@2001-01-01,
+  Point(3 3)@2001-01-03, Point(1 1)@2001-01-05]', 
+  tgeompoint '[Point(1.1 1.1)@2001-01-01, Point(2.5 2.5)@2001-01-02,
+  Point(4 4)@2001-01-03, Point(3 3)@2001-01-04, Point(1.5 2)@2001-01-05]')::numeric, 6);
 -- 3.380776
 </programlisting>
 			</listitem>
@@ -366,13 +365,13 @@ SELECT valueBucket(3.5, 2.5, 1.5);
 					<para>Si el origen no se especifica, su valor se establece por defecto en 0.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT spanBucket(2, 2);
--- [2,4)
+-- [2, 4)
 SELECT spanBucket(2, 2, 1);
--- [1,3)
+-- [1, 3)
 SELECT spanBucket(2, 2.5);
--- [0,2.5)
+-- [0, 2.5)
 SELECT spanBucket(2, 2.5, 1.5);
--- [1.5,4)
+-- [1.5, 4)
 </programlisting>
 				</listitem>
 
@@ -384,9 +383,9 @@ SELECT spanBucket(2, 2.5, 1.5);
 					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT timeBucket(timestamptz '2001-05-01', interval '2 days');
--- 2001-04-29 01:00:00+02
+-- 2001-04-29 01:00:00
 SELECT timeBucket(timestamptz '2001-05-01', interval '2 days', timestamptz '2001-01-01');
--- 2001-04-30 01:00:00+02
+-- 2001-04-30 01:00:00
 </programlisting>
 				</listitem>
 
@@ -398,9 +397,9 @@ SELECT timeBucket(timestamptz '2001-05-01', interval '2 days', timestamptz '2001
 					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT periodBucket('2001-01-04', interval '1 week');
--- [2001-01-03,2001-01-10)
+-- [2001-01-03, 2001-01-10)
 SELECT periodBucket('2001-01-04', interval '1 week', '2001-01-07');
--- [1999-12-31,2001-01-07)
+-- [2000-12-31, 2001-01-07)
 </programlisting>
 				</listitem>
 
@@ -460,7 +459,8 @@ SELECT tileList(tgeompoint '[Point(3 3)@2001-01-15,
 -- (3,"STBOX XT(((6,2),(8,4)),[2001-01-15,2001-01-17))")
 -- ...
 SELECT tileList(tgeompoint '[Point(3 3 3)@2001-01-15,
-  Point(15 15 15)@2001-01-25]'::stbox, 2.0, '2 days', 'Point(3 3 3)', '2001-01-15');
+  Point(15 15 15)@2001-01-25]'::stbox, 2.0, interval '2 days',
+  'Point(3 3 3)', '2001-01-15');
 -- (1,"STBOX ZT(((3,3,3),(5,5,5)),[2001-01-15,2001-01-17))")
 -- (2,"STBOX ZT(((5,3,3),(7,5,5)),[2001-01-15,2001-01-17))")
 -- (3,"STBOX ZT(((7,3,3),(9,5,5)),[2001-01-15,2001-01-17))")
@@ -490,7 +490,7 @@ SELECT tile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days');
 -- STBOX XT((0,0),(2,2),[2001-01-01,2001-01-03))
 SELECT tile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days',
   'Point(1 1)', '2001-01-02');
--- STBOX XT(((1,1),(3,3)),[1999-12-31,2001-01-02))
+-- STBOX XT(((1,1),(3,3)),[2000-12-31,2001-01-02))
 </programlisting>
 				</listitem>
 			</itemizedlist>

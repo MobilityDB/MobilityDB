@@ -162,9 +162,8 @@ span_bucket_state_make(const Span *s, Datum size, Datum origin)
   state->basetype = s->basetype;
   state->size = size;
   state->origin = origin;
-  /* intspans are in canonical form so their upper bound is exclusive */
-  Datum upper = (s->basetype == T_INT4) ? /** xx **/
-    Int32GetDatum(DatumGetInt32(s->upper) - 1) : s->upper;
+  /* Account for canonicalized spans */
+  Datum upper = span_decr_bound(s->upper, s->basetype);
   state->minvalue = state->value =
     datum_bucket(s->lower, size, origin, state->basetype);
   state->maxvalue = datum_bucket(upper, size, origin, state->basetype);
@@ -541,8 +540,7 @@ tbox_tile_state_make(const TBox *box, Datum vsize, const Interval *duration,
 {
   assert(box);
   int64 tunits = duration ? interval_units(duration) : 0;
-  double size = (box->span.basetype == T_INT4) ? /** xx **/
-    (double) DatumGetInt32(vsize) : DatumGetFloat8(vsize);
+  double size = datum_double(vsize, box->span.basetype);
   assert(size > 0 || tunits > 0);
   TboxGridState *state = palloc0(sizeof(TboxGridState));
 
@@ -595,8 +593,7 @@ tbox_tile_get(Datum value, TimestampTz t, Datum vsize, int64 tunits,
   Span span, period;
   memset(&span, 0, sizeof(Span));
   memset(&period, 0, sizeof(Span));
-  double size = (box->span.basetype == T_INT4) ? /** xx **/
-    (double) DatumGetInt32(vsize) : DatumGetFloat8(vsize);
+  double size = datum_double(vsize, basetype);
   meosType spantype = basetype_spantype(basetype);
   if (size)
     span_set(xmin, xmax, true, false, basetype, spantype, &span);
@@ -665,8 +662,7 @@ tbox_tile_list(const TBox *box, Datum vsize, const Interval *duration,
   int nrows = 1, ncols = 1;
   Datum start_bucket, end_bucket;
   /* Determine the number of value buckets */
-  double size = (box->span.basetype == T_INT4) ? /** xx **/
-    (double) DatumGetInt32(vsize) : DatumGetFloat8(vsize);
+  double size = datum_double(vsize, box->span.basetype);
   if (size)
     nrows = span_no_buckets(&box->span, vsize, vorigin, &start_bucket,
       &end_bucket);

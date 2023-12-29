@@ -696,6 +696,8 @@ extern Datum *tsequenceset_values(const TSequenceSet *ss, int *count);
 
 /* Transformation functions for temporal types */
 
+extern TSequence *temporal_tsequence(const Temporal *temp, interpType interp);
+extern TSequenceSet *temporal_tsequenceset(const Temporal *temp, interpType interp);
 extern Temporal *tinstant_merge(const TInstant *inst1, const TInstant *inst2);
 extern Temporal *tinstant_merge_array(const TInstant **instants, int count);
 extern TInstant *tinstant_shift_time(const TInstant *inst, const Interval *interval);
@@ -796,36 +798,66 @@ extern double nad_tnumber_number(const Temporal *temp, Datum value, meosType bas
 
 /* Ever/always functions for temporal types */
 
-extern bool temporal_always_eq(const Temporal *temp, Datum value);
-extern bool temporal_always_le(const Temporal *temp, Datum value);
-extern bool temporal_always_lt(const Temporal *temp, Datum value);
-extern bool temporal_ever_eq(const Temporal *temp, Datum value);
-extern bool temporal_ever_le(const Temporal *temp, Datum value);
-extern bool temporal_ever_lt(const Temporal *temp, Datum value);
-extern bool tinstant_always_eq(const TInstant *inst, Datum value);
-extern bool tinstant_always_le(const TInstant *inst, Datum value);
-extern bool tinstant_always_lt(const TInstant *inst, Datum value);
-extern bool tinstant_ever_eq(const TInstant *inst, Datum value);
-extern bool tinstant_ever_le(const TInstant *inst, Datum value);
-extern bool tinstant_ever_lt(const TInstant *inst, Datum value);
-extern bool tpointinst_always_eq(const TInstant *inst, Datum value);
-extern bool tpointinst_ever_eq(const TInstant *inst, Datum value);
-extern bool tpointseq_always_eq(const TSequence *seq, Datum value);
-extern bool tpointseq_ever_eq(const TSequence *seq, Datum value);
-extern bool tpointseqset_always_eq(const TSequenceSet *ss, Datum value);
-extern bool tpointseqset_ever_eq(const TSequenceSet *ss, Datum value);
-extern bool tsequence_always_eq(const TSequence *seq, Datum value);
-extern bool tsequence_always_le(const TSequence *seq, Datum value);
-extern bool tsequence_always_lt(const TSequence *seq, Datum value);
-extern bool tsequence_ever_eq(const TSequence *seq, Datum value);
-extern bool tsequence_ever_le(const TSequence *seq, Datum value);
-extern bool tsequence_ever_lt(const TSequence *seq, Datum value);
-extern bool tsequenceset_always_eq(const TSequenceSet *ss, Datum value);
-extern bool tsequenceset_always_le(const TSequenceSet *ss, Datum value);
-extern bool tsequenceset_always_lt(const TSequenceSet *ss, Datum value);
-extern bool tsequenceset_ever_eq(const TSequenceSet *ss, Datum value);
-extern bool tsequenceset_ever_le(const TSequenceSet *ss, Datum value);
-extern bool tsequenceset_ever_lt(const TSequenceSet *ss, Datum value);
+extern bool always_eq_temporal_base(const Temporal *temp, Datum value);
+extern bool always_eq_tinstant_base(const TInstant *inst, Datum value);
+extern bool always_eq_tpointinst_base(const TInstant *inst, Datum value);
+extern bool always_eq_tpointseq_base(const TSequence *seq, Datum value);
+extern bool always_eq_tpointseqset_base(const TSequenceSet *ss, Datum value);
+extern bool always_eq_tsequence_base(const TSequence *seq, Datum value);
+extern bool always_eq_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool always_ne_temporal_base(const Temporal *temp, Datum value);
+extern bool always_ne_tinstant_base(const TInstant *inst, Datum value);
+extern bool always_ne_tpointinst_base(const TInstant *inst, Datum value);
+extern bool always_ne_tpointseq_base(const TSequence *seq, Datum value);
+extern bool always_ne_tpointseqset_base(const TSequenceSet *ss, Datum value);
+extern bool always_ne_tsequence_base(const TSequence *seq, Datum value);
+extern bool always_ne_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool always_ge_temporal_base(const Temporal *temp, Datum value);
+extern bool always_ge_tinstant_base(const TInstant *inst, Datum value);
+extern bool always_ge_tsequence_base(const TSequence *seq, Datum value);
+extern bool always_ge_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool always_gt_temporal_base(const Temporal *temp, Datum value);
+extern bool always_gt_tinstant_base(const TInstant *inst, Datum value);
+extern bool always_gt_tsequence_base(const TSequence *seq, Datum value);
+extern bool always_gt_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool always_le_temporal_base(const Temporal *temp, Datum value);
+extern bool always_le_tinstant_base(const TInstant *inst, Datum value);
+extern bool always_le_tsequence_base(const TSequence *seq, Datum value);
+extern bool always_le_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool always_lt_temporal_base(const Temporal *temp, Datum value);
+extern bool always_lt_tinstant_base(const TInstant *inst, Datum value);
+extern bool always_lt_tsequence_base(const TSequence *seq, Datum value);
+extern bool always_lt_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool ever_eq_temporal_base(const Temporal *temp, Datum value);
+extern bool ever_eq_tinstant_base(const TInstant *inst, Datum value);
+extern bool ever_eq_tpointinst_base(const TInstant *inst, Datum value);
+extern bool ever_eq_tpointseq_base(const TSequence *seq, Datum value);
+extern bool ever_eq_tpointseqset_base(const TSequenceSet *ss, Datum value);
+extern bool ever_eq_tsequence_base(const TSequence *seq, Datum value);
+extern bool ever_eq_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool ever_ne_temporal_base(const Temporal *temp, Datum value);
+extern bool ever_ne_tinstant_base(const TInstant *inst, Datum value);
+extern bool ever_ne_tpointinst_base(const TInstant *inst, Datum value);
+extern bool ever_ne_tpointseq_base(const TSequence *seq, Datum value);
+extern bool ever_ne_tpointseqset_base(const TSequenceSet *ss, Datum value);
+extern bool ever_ne_tsequence_base(const TSequence *seq, Datum value);
+extern bool ever_ne_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool ever_ge_temporal_base(const Temporal *temp, Datum value);
+extern bool ever_ge_tinstant_base(const TInstant *inst, Datum value);
+extern bool ever_ge_tsequence_base(const TSequence *seq, Datum value);
+extern bool ever_ge_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool ever_gt_temporal_base(const Temporal *temp, Datum value);
+extern bool ever_gt_tinstant_base(const TInstant *inst, Datum value);
+extern bool ever_gt_tsequence_base(const TSequence *seq, Datum value);
+extern bool ever_gt_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool ever_le_temporal_base(const Temporal *temp, Datum value);
+extern bool ever_le_tinstant_base(const TInstant *inst, Datum value);
+extern bool ever_le_tsequence_base(const TSequence *seq, Datum value);
+extern bool ever_le_tsequenceset_base(const TSequenceSet *ss, Datum value);
+extern bool ever_lt_temporal_base(const Temporal *temp, Datum value);
+extern bool ever_lt_tinstant_base(const TInstant *inst, Datum value);
+extern bool ever_lt_tsequence_base(const TSequence *seq, Datum value);
+extern bool ever_lt_tsequenceset_base(const TSequenceSet *ss, Datum value);
 
 /*****************************************************************************/
 

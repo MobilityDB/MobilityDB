@@ -619,15 +619,15 @@ SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt;= tint '[2@2001-01-03, 2@2001-01-
 
 		<sect2 id="ever_always_comparison">
 			<title>Comparaciones alguna vez y siempre</title>
-			<para>Una posible generalización de los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) a tipos temporales consiste en determinar si la comparación es alguna vez o siempre verdadera. En este caso, el resultado es un valor booleano. MobilityDB proporciona operadores para probar si la comparación de un valor temporal y un valor del tipo base es alguna vez o siempre verdadera. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). Algunos ejemplos son <varname>?=</varname>, <varname>%&lt;&gt;</varname> o <varname>?&lt;=</varname>. La igualdad y la no igualdad alguna vez/siempre están disponibles para todos los tipos temporales, mientras que las desigualdades alguna vez/siempre sólo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>. Las comparaciones alguna vez y siempre son operadores inversos: por ejemplo, <varname>?=</varname> es el inverso de <varname>%&lt;&gt;</varname> y <varname>?&gt;</varname> es el inverso de <varname>%&lt;=</varname>.</para>
+			<para>Una posible generalización de los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) a tipos temporales consiste en determinar si la comparación es alguna vez o siempre verdadera. En este caso, el resultado es un valor booleano. MobilityDB proporciona operadores para probar si la comparación de un valor temporal y un valor del tipo base or dos valores temporales es alguna vez o siempre verdadera. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). Algunos ejemplos son <varname>?=</varname>, <varname>%&lt;&gt;</varname> o <varname>?&lt;=</varname>. La igualdad y la no igualdad alguna vez o siempre están disponibles para todos los tipos temporales, mientras que las desigualdades alguna vez o siempre sólo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>. Las comparaciones alguna vez y siempre son operadores inversos: por ejemplo, <varname>?=</varname> es el inverso de <varname>%&lt;&gt;</varname> y <varname>?&gt;</varname> es el inverso de <varname>%&lt;=</varname>.</para>
 
 			<itemizedlist>
 				<listitem id="ttype_eveq">
 					<indexterm><primary><varname>?=</varname></primary></indexterm>
 					<indexterm><primary><varname>%=</varname></primary></indexterm>
-					<para>¿Es el valor temporal alguna vez/siempre igual al valor?</para>
-					<para><varname>ttype ?= base → boolean</varname></para>
-					<para><varname>ttype %= base → boolean</varname></para>
+					<para>¿Es el valor temporal alguna vez o siempre igual al valor?</para>
+					<para><varname>{base,ttype} ?= {base,ttype} → boolean</varname></para>
+					<para><varname>{base,ttype} %= {base,ttype} → boolean</varname></para>
 					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 3@2001-01-04]' ?= 2;
@@ -656,8 +656,8 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-04)' %=
 					<indexterm><primary><varname>?&lt;&gt;</varname></primary></indexterm>
 					<indexterm><primary><varname>%&lt;&gt;</varname></primary></indexterm>
 					<para>¿Es el valor temporal alguna/siempre vez diferente del valor?</para>
-					<para><varname>ttype ?&lt;&gt; base → boolean</varname></para>
-					<para><varname>ttype %&lt;&gt; base → boolean</varname></para>
+					<para><varname>{base,ttype} ?&lt;&gt; {base,ttype} → boolean</varname></para>
+					<para><varname>{base,ttype} %&lt;&gt; {base,ttype} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' ?&lt;&gt; 2;
 -- true
@@ -681,9 +681,9 @@ SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-04)' %&lt;&gt;
 				<listitem id="ttype_evlt">
 					<indexterm><primary><varname>?&lt;</varname></primary></indexterm>
 					<indexterm><primary><varname>%&lt;</varname></primary></indexterm>
-					<para>¿Es el valor temporal alguna vez/siempre menor que el valor?</para>
-					<para><varname>tnumber ?&lt; number → boolean</varname></para>
-					<para><varname>tnumber %&lt; number → boolean</varname></para>
+					<para>¿Es el valor temporal alguna vez o siempre menor que el valor?</para>
+					<para><varname>{base,torder} ?&lt; {base,torder} → boolean</varname></para>
+					<para><varname>{base,torder} %&lt; {base,torder} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 4@2001-01-04]' ?&lt; 2;
 -- true
@@ -698,8 +698,8 @@ SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' %&lt; 2;
 					<indexterm><primary><varname>?&gt;</varname></primary></indexterm>
 					<indexterm><primary><varname>%&gt;</varname></primary></indexterm>
 					<para>¿Es el valor temporal alguna vez mayor que el valor?</para>
-					<para><varname>tnumber ?&gt; number → boolean</varname></para>
-					<para><varname>tnumber %&gt; number → boolean</varname></para>
+					<para><varname>{base,torder} ?&gt; {base,torder} → boolean</varname></para>
+					<para><varname>{base,torder} %&gt; {base,torder} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-03, 1@2001-01-05]' ?&gt; 0;
 -- true
@@ -713,9 +713,9 @@ SELECT tfloat '[1@2001-01-03, 1@2001-01-05)' %&gt; 1;
 				<listitem id="ttype_evle">
 					<indexterm><primary><varname>?&lt;=</varname></primary></indexterm>
 					<indexterm><primary><varname>%&lt;=</varname></primary></indexterm>
-					<para>¿Es el valor temporal alguna vez/siempre menor o igual que el valor?</para>
-					<para><varname>tnumber ?&lt;= number → boolean</varname></para>
-					<para><varname>tnumber %&lt;= number → boolean</varname></para>
+					<para>¿Es el valor temporal alguna vez o siempre menor o igual que el valor?</para>
+					<para><varname>{base,torder} ?&lt;= {base,torder} → boolean</varname></para>
+					<para><varname>{base,torder} %&lt;= {base,torder} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 1@2001-01-05]' ?&lt;= 2;
 -- true
@@ -729,9 +729,9 @@ SELECT tfloat '[1@2001-01-01, 1@2001-01-05)' %&lt;= 4;
 				<listitem id="ttype_evge">
 					<indexterm><primary><varname>?&gt;=</varname></primary></indexterm>
 					<indexterm><primary><varname>%&gt;=</varname></primary></indexterm>
-					<para>¿Es el valor temporal alguna vez/siempre mayor o igual que el valor?</para>
-					<para><varname>tnumber ?&gt;= number → boolean</varname></para>
-					<para><varname>tnumber %&gt;= number → boolean</varname></para>
+					<para>¿Es el valor temporal alguna vez o siempre mayor o igual que el valor?</para>
+					<para><varname>{base,torder} ?&gt;= {base,torder} → boolean</varname></para>
+					<para><varname>{base,torder} %&gt;= {base,torder} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03), [BBB@2001-01-04, BBB@2001-01-05)}'
    ?&gt; 'AAA'::text;

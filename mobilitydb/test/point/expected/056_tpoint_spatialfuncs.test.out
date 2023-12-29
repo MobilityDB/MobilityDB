@@ -1487,18 +1487,6 @@ SELECT round(cumulativeLength(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2000-
  {[0@Sat Jan 01 00:00:00 2000 PST, 0@Mon Jan 03 00:00:00 2000 PST], [0@Tue Jan 04 00:00:00 2000 PST, 0@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT round(speed(tgeompoint 'Point(1 1)@2000-01-01'), 6);
- round 
--------
- 
-(1 row)
-
-SELECT round(speed(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'), 6);
- round 
--------
- 
-(1 row)
-
 SELECT round(speed(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6);
                                            round                                            
 --------------------------------------------------------------------------------------------
@@ -1509,18 +1497,6 @@ SELECT round(speed(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, P
                                                                              round                                                                              
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
  Interp=Step;{[0.000016@Sat Jan 01 00:00:00 2000 PST, 0.000016@Mon Jan 03 00:00:00 2000 PST], [0@Tue Jan 04 00:00:00 2000 PST, 0@Wed Jan 05 00:00:00 2000 PST]}
-(1 row)
-
-SELECT round(speed(tgeogpoint 'Point(1.5 1.5)@2000-01-01'), 6);
- round 
--------
- 
-(1 row)
-
-SELECT round(speed(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'), 6);
- round 
--------
- 
 (1 row)
 
 SELECT round(speed(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 6);
@@ -1535,42 +1511,6 @@ SELECT round(speed(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-
  Interp=Step;{[1.815459@Sat Jan 01 00:00:00 2000 PST, 1.815459@Mon Jan 03 00:00:00 2000 PST], [0@Tue Jan 04 00:00:00 2000 PST, 0@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT round(speed(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6);
- round 
--------
- 
-(1 row)
-
-SELECT round(speed(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'), 6);
- round 
--------
- 
-(1 row)
-
-SELECT round(speed(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 6);
- round 
--------
- 
-(1 row)
-
-SELECT round(speed(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
- round 
--------
- 
-(1 row)
-
-SELECT round(speed(tgeompoint 'Point(1 1 1)@2000-01-01'), 6);
- round 
--------
- 
-(1 row)
-
-SELECT round(speed(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'), 6);
- round 
--------
- 
-(1 row)
-
 SELECT round(speed(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'), 6);
                                           round                                           
 ------------------------------------------------------------------------------------------
@@ -1581,18 +1521,6 @@ SELECT round(speed(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-0
                                                                             round                                                                             
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
  Interp=Step;{[0.00002@Sat Jan 01 00:00:00 2000 PST, 0.00002@Mon Jan 03 00:00:00 2000 PST], [0@Tue Jan 04 00:00:00 2000 PST, 0@Wed Jan 05 00:00:00 2000 PST]}
-(1 row)
-
-SELECT round(speed(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01'), 6);
- round 
--------
- 
-(1 row)
-
-SELECT round(speed(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}'), 6);
- round 
--------
- 
 (1 row)
 
 SELECT round(speed(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'), 6);
@@ -1608,30 +1536,22 @@ SELECT round(speed(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.
 (1 row)
 
 /* Errors */
+SELECT round(speed(tgeompoint 'Point(1 1)@2000-01-01'), 6);
+ERROR:  The temporal value must have linear interpolation
+SELECT round(speed(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'), 6);
+ERROR:  The temporal value must have linear interpolation
 SELECT round(speed(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'), 6);
- round 
--------
- 
-(1 row)
-
+ERROR:  The temporal value must have linear interpolation
 SELECT round(speed(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'), 6);
- round 
--------
- 
-(1 row)
-
+ERROR:  The temporal value must have linear interpolation
+SELECT round(speed(tgeogpoint 'Point(1.5 1.5)@2000-01-01'), 6);
+ERROR:  The temporal value must have linear interpolation
+SELECT round(speed(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'), 6);
+ERROR:  The temporal value must have linear interpolation
 SELECT round(speed(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'), 6);
- round 
--------
- 
-(1 row)
-
+ERROR:  The temporal value must have linear interpolation
 SELECT round(speed(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
- round 
--------
- 
-(1 row)
-
+ERROR:  The temporal value must have linear interpolation
 SELECT direction(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]');
  direction 
 -----------

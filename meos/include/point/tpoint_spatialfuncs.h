@@ -121,6 +121,11 @@ extern bool ensure_valid_tpoint_tpoint(const Temporal *temp1,
 
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
+/* Ever/always comparisons */
+
+extern int eacomp_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+  Datum (*func)(Datum, Datum, meosType), bool ever);
+
 /* Functions derived from PostGIS to increase floating-point precision */
 
 extern long double closest_point2d_on_segment_ratio(const POINT2D *p,

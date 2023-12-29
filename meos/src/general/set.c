@@ -564,23 +564,15 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   /* Currently, only geo set types have bounding box */
   assert(set_basetype(basetype)); assert(! alphanum_basetype(basetype));
   if (geo_basetype(basetype))
-  {
     geoarr_set_stbox(values, count, (STBox *) box);
-    return;
-  }
 #if NPOINT
   else if (basetype == T_NPOINT)
-  {
     npointarr_set_stbox(values, count, (STBox *) box);
-    return;
-  }
 #endif
   else
-  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown set type for computing the bounding box: %d", basetype);
-    return;
-  }
+  return;
 }
 
 #ifdef DEBUG_BUILD

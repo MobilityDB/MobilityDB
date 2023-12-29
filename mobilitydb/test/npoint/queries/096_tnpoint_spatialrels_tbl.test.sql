@@ -34,38 +34,63 @@ set parallel_setup_cost=0;
 -- Geometry rel tnpoint
  -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE econtains(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE edisjoint(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE eintersects(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE etouches(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE edwithin(ST_SetSRID(t1.g, 5676), t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE eContains(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE eDisjoint(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE eIntersects(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE eTouches(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE eDwithin(ST_SetSRID(t1.g, 5676), t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+
+SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE aContains(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE aDisjoint(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE aIntersects(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE aTouches(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE aDwithin(ST_SetSRID(t1.g, 5676), t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 
 -------------------------------------------------------------------------------
 -- npoint rel tnpoint
  -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE edisjoint(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE eintersects(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE etouches(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE edwithin(t1.np, t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE eDisjoint(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE eIntersects(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE eTouches(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE eDwithin(t1.np, t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE aDisjoint(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE aIntersects(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE aTouches(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE aDwithin(t1.np, t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 
 -------------------------------------------------------------------------------
 -- tnpoint rel <type>
  -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE edisjoint(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE eintersects(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE etouches(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE edwithin(t1.temp, ST_SetSRID(t2.g, 5676), 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE eDisjoint(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE eIntersects(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE eTouches(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE eDwithin(t1.temp, ST_SetSRID(t2.g, 5676), 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
 
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE edisjoint(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE eintersects(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE etouches(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE edwithin(t1.temp, t2.np, 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE aDisjoint(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE aIntersects(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE aTouches(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE aDwithin(t1.temp, ST_SetSRID(t2.g, 5676), 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
 
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE edisjoint(t1.temp, t2.temp) AND t1.k%4 = 0 AND t2.k%4 = 0;
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE eintersects(t1.temp, t2.temp) AND t1.k%4 = 0 AND t2.k%4 = 0;
-SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE edwithin(t1.temp, t2.temp, 0.01) AND t1.k%4 = 0 AND t2.k%4 = 0 AND tempSubtype(t1.temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE eDisjoint(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE eIntersects(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE eTouches(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE eDwithin(t1.temp, t2.np, 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE aDisjoint(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE aIntersects(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE aTouches(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE aDwithin(t1.temp, t2.np, 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE eDisjoint(t1.temp, t2.temp) AND t1.k%4 = 0 AND t2.k%4 = 0;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE eIntersects(t1.temp, t2.temp) AND t1.k%4 = 0 AND t2.k%4 = 0;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE eDwithin(t1.temp, t2.temp, 0.01) AND t1.k%4 = 0 AND t2.k%4 = 0 AND tempSubtype(t1.temp) != 'SequenceSet';
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE aDisjoint(t1.temp, t2.temp) AND t1.k%4 = 0 AND t2.k%4 = 0;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE aIntersects(t1.temp, t2.temp) AND t1.k%4 = 0 AND t2.k%4 = 0;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE aDwithin(t1.temp, t2.temp, 0.01) AND t1.k%4 = 0 AND t2.k%4 = 0 AND tempSubtype(t1.temp) != 'SequenceSet';
 
 -------------------------------------------------------------------------------
 set parallel_tuple_cost=100;
@@ -75,22 +100,38 @@ set parallel_setup_cost=100;
 
 CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE econtains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eContains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aContains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
 
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE edisjoint(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE edisjoint(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE edisjoint(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE eDisjoint(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE eDisjoint(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE eDisjoint(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE eintersects(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
-SELECT COUNT(*) FROM tbl_tnpoint WHERE eintersects(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
-SELECT COUNT(*) FROM tbl_tnpoint WHERE eintersects(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE aDisjoint(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE aDisjoint(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE aDisjoint(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE etouches(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
-SELECT COUNT(*) FROM tbl_tnpoint WHERE etouches(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eIntersects(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eIntersects(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eIntersects(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE edwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
-SELECT COUNT(*) FROM tbl_tnpoint WHERE edwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
-SELECT COUNT(*) FROM tbl_tnpoint WHERE edwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aIntersects(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aIntersects(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aIntersects(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eTouches(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eTouches(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aTouches(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aTouches(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eDwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eDwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eDwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aDwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aDwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aDwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
 
 DROP INDEX tbl_tnpoint_rtree_idx;
 
@@ -100,22 +141,38 @@ DROP INDEX tbl_tnpoint_rtree_idx;
 
 CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE econtains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eContains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aContains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
 
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE edisjoint(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE edisjoint(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE edisjoint(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE eDisjoint(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE eDisjoint(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE eDisjoint(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE eintersects(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
-SELECT COUNT(*) FROM tbl_tnpoint WHERE eintersects(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
-SELECT COUNT(*) FROM tbl_tnpoint WHERE eintersects(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE aDisjoint(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE aDisjoint(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tnpoint WHERE aDisjoint(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE etouches(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
-SELECT COUNT(*) FROM tbl_tnpoint WHERE etouches(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eIntersects(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eIntersects(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eIntersects(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE edwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
-SELECT COUNT(*) FROM tbl_tnpoint WHERE edwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
-SELECT COUNT(*) FROM tbl_tnpoint WHERE edwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aIntersects(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aIntersects(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aIntersects(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]');
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eTouches(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eTouches(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aTouches(temp, geometry 'SRID=5676;Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aTouches(geometry 'SRID=5676;Linestring(0 0,5 5)', temp);
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eDwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eDwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE eDwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aDwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aDwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE aDwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
 
 DROP INDEX tbl_tnpoint_quadtree_idx;
 

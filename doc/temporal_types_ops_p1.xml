@@ -116,7 +116,7 @@ SELECT tint '[1@2001-01-01, 1@2001-01-03)' + tint '[2@2001-01-02, 2@2001-01-05)'
 -- [3@2001-01-02, 3@2001-01-03)
 
 -- Temporal intersects
-SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+SELECT tIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
 
@@ -127,16 +127,16 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:
 </programlisting>
 
 		<para>
-			Another common requirement is to determine whether the operands <emphasis>ever</emphasis> or <emphasis>always</emphasis> satisfy a condition with respect to an operation. These can be obtained by applying the ever/always comparison operators. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Examples of ever and always comparison operators are given next.
+			Another common requirement is to determine whether the operands <emphasis>ever</emphasis> or <emphasis>always</emphasis> satisfy a condition with respect to an operation. These can be obtained by applying the ever or always comparison operators. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Examples of ever and always comparison operators are given next.
 		</para>
 		<programlisting language="sql" xml:space="preserve">
 -- Does the operands ever intersect?
-SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+SELECT eIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
 -- true
 
 -- Does the operands always intersect?
-SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+SELECT aIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 -- true
 
@@ -151,7 +151,7 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 -- true
 </programlisting>
 		<para>
-		For efficiency reasons, some common operations with the ever or the always semantics are natively provided. For example, the <varname>intersects</varname> function determines whether there is an instant at which the two arguments spatially intersect.
+		For example, the <varname>eIntersects</varname> function determines whether there is an instant at which the two arguments spatially intersect.
 		</para>
 
 		<para>
@@ -856,6 +856,20 @@ SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-
 SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-05)}',
   true);
 -- 4 days
+</programlisting>
+			</listitem>
+
+			<listitem id="lower_inc">
+				<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
+				<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
+				<para>Is the start/end instant inclusive?</para>
+				<para><varname>lower_inc(ttype) → bool</varname></para>
+				<para><varname>upper_inc(ttype) → bool</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT lower_inc(tint '[1@2001-01-01, 2@2001-01-02)');
+-- true
+SELECT upper_inc(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
+-- false
 </programlisting>
 			</listitem>
 

@@ -177,7 +177,7 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 					<para>Obtener el identificador de referencia espacial</para>
 					<para><varname>SRID({npoint,nsegment}) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT SRID(nspoint 'Npoint(76, 0.3)');
+SELECT SRID(npoint 'Npoint(76, 0.3)');
 -- 5676
 SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 5676
@@ -837,47 +837,57 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt
 			</listitem>
 
 			<listitem id="tnpoint_espatialrels">
-				<indexterm><primary><varname>econtains</varname></primary></indexterm>
-				<indexterm><primary><varname>edisjoint</varname></primary></indexterm>
-				<indexterm><primary><varname>eintersects</varname></primary></indexterm>
-				<indexterm><primary><varname>etouches</varname></primary></indexterm>
-				<indexterm><primary><varname>edwithin</varname></primary></indexterm>
+				<indexterm><primary><varname>eContains</varname></primary></indexterm>
+				<indexterm><primary><varname>aContains</varname></primary></indexterm>
+				<indexterm><primary><varname>eDisjoint</varname></primary></indexterm>
+				<indexterm><primary><varname>aDisjoint</varname></primary></indexterm>
+				<indexterm><primary><varname>eIntersects</varname></primary></indexterm>
+				<indexterm><primary><varname>aIntersects</varname></primary></indexterm>
+				<indexterm><primary><varname>eTouches</varname></primary></indexterm>
+				<indexterm><primary><varname>aTouches</varname></primary></indexterm>
+				<indexterm><primary><varname>eDwithin</varname></primary></indexterm>
+				<indexterm><primary><varname>aDwithin</varname></primary></indexterm>
 				<para>Relaciones espaciales alguna vez</para>
-				<para><varname>econtains(geometry,tnpoint) → boolean</varname></para>
-				<para><varname>edisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
-				<para><varname>eintersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
-				<para><varname>etouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
-				<para><varname>edwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</varname></para>
+				<para><varname>eContains(geometry,tnpoint) → boolean</varname></para>
+				<para><varname>aContains(geometry,tnpoint) → boolean</varname></para>
+				<para><varname>eDisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>aDisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>eIntersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>aIntersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>eTouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>aTouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>eDwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</varname></para>
+				<para><varname>aDwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT econtains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)');
 -- false
-SELECT edisjoint(npoint 'NPoint(2, 0.0)',
+SELECT eDisjoint(npoint 'NPoint(2, 0.0)',
   tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)');
 -- true
-SELECT eintersects(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)',
+SELECT eIntersects(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)',
   tnpoint '[NPoint(2, 0.0)@2001-01-01, NPoint(2, 1)@2001-01-03)');
 -- false
 </programlisting>
 			</listitem>
 
 			<listitem id="tnpoint_tspatialrels">
-				<indexterm><primary><varname>tcontains</varname></primary></indexterm>
-				<indexterm><primary><varname>tdisjoint</varname></primary></indexterm>
-				<indexterm><primary><varname>tintersects</varname></primary></indexterm>
-				<indexterm><primary><varname>ttouches</varname></primary></indexterm>
-				<indexterm><primary><varname>tdwithin</varname></primary></indexterm>
+				<indexterm><primary><varname>tContains</varname></primary></indexterm>
+				<indexterm><primary><varname>tDisjoint</varname></primary></indexterm>
+				<indexterm><primary><varname>tIntersects</varname></primary></indexterm>
+				<indexterm><primary><varname>tTouches</varname></primary></indexterm>
+				<indexterm><primary><varname>tDwithin</varname></primary></indexterm>
 				<para>Relaciones espaciales temporales</para>
-				<para><varname>tcontains(geometry,tnpoint) → boolean</varname></para>
-				<para><varname>tdisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
-				<para><varname>tintersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
-				<para><varname>ttouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
-				<para><varname>tdwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</varname></para>
+				<para><varname>tContains(geometry,tnpoint) → boolean</varname></para>
+				<para><varname>tDisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>tIntersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>tTouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>tDwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tdisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+SELECT tDisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)');
 -- {[t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)}
-SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)',
+SELECT tDwithin(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)',
   tnpoint '[NPoint(1, 0.5)@2001-01-01, NPoint(1, 0.3)@2001-01-03)', 1);
 /* {[t@2001-01-01 00:00:00+01, t@2001-01-01 22:35:55.379053+01],
    (f@2001-01-01 22:35:55.379053+01, t@2001-01-02 01:24:04.620946+01,

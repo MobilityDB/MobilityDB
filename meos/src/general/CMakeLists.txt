@@ -19,8 +19,6 @@ add_library(general OBJECT
   temporal_aggfuncs.c
   temporal_analytics.c
   temporal_boxops.c
-  temporal_boxops_meos.c
-  temporal_posops_meos.c
   temporal_compops.c
   temporal_tile.c
   temporal_waggfuncs.c
@@ -40,8 +38,10 @@ add_library(general_meos OBJECT
   set_aggfuncs_meos.c
   span_aggfuncs_meos.c
   tbool_boolops_meos.c
+  temporal_boxops_meos.c
   temporal_compops_meos.c
   temporal_meos.c
+  temporal_posops_meos.c
   tnumber_mathfuncs_meos.c
   ttext_textfuncs_meos.c
 )

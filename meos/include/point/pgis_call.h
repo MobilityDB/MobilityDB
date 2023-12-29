@@ -90,7 +90,9 @@ extern bool gserialized_spatialrel(const GSERIALIZED *gs1,
 extern GSERIALIZED *gserialized_intersection(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
 extern GSERIALIZED *gserialized_array_union(GSERIALIZED **gsarr, int nelems);
-extern GSERIALIZED *gserialized_convex_hull(const GSERIALIZED *geom);
+extern GSERIALIZED *gserialized_buffer(const GSERIALIZED *gs, double size,
+  char *params);
+extern GSERIALIZED *gserialized_convex_hull(const GSERIALIZED *gs);
 extern double gserialized_hausdorffdistance(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
 

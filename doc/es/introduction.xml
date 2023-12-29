@@ -508,7 +508,7 @@ SET client_min_messages TO notice;
 				</para>
 			</listitem>
 			<listitem>
-				<para>Las funciones <varname>contains</varname>, <varname>disjoint</varname>, <varname>dwithin</varname>, <varname>intersects</varname> y <varname>touches</varname> fueron renombradas, respectivamente, a <varname>econtains</varname>, <varname>edisjoint</varname>, <varname>edwithin</varname>, <varname>eintersects</varname> y <varname>etouches</varname>.
+				<para>Las funciones <varname>contains</varname>, <varname>disjoint</varname>, <varname>dwithin</varname>, <varname>intersects</varname> y <varname>touches</varname> fueron renombradas, respectivamente, a <varname>eContains</varname>, <varname>eDisjoint</varname>, <varname>eDwithin</varname>, <varname>eIntersects</varname> y <varname>eTouches</varname>.
 			</para>
 			</listitem>
 		</itemizedlist>

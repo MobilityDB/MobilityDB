@@ -248,6 +248,7 @@ bitmatrix_print(const BitMatrix *bm)
     }
   }
   printf("Total tiles: %d, Tiles set: %d\n", totalcount, count);
+  return;
 }
 #endif /* DEBUG_BUILD */
 

@@ -489,11 +489,11 @@ CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);
 CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING gist(temp);
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= 'Point(1 1)';
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= geography 'Point(1.5 1.5)';
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= geography 'Point(1.5 1.5)';
 
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX tbl_tgeogpoint_rtree_idx;
@@ -506,11 +506,11 @@ CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING spgist(temp);
 CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING spgist(temp);
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= 'Point(1 1)';
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= geography 'Point(1.5 1.5)';
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= geography 'Point(1.5 1.5)';
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX tbl_tgeogpoint_quadtree_idx;

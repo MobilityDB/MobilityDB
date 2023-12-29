@@ -75,6 +75,7 @@ tpointinst_set_stbox(const TInstant *inst, STBox *box)
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
+  return;
 }
 
 /**

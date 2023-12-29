@@ -127,31 +127,31 @@ tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
 </programlisting>
 
 		<para>
-			Otro requisito común es determinar si los operandos satisfacen <emphasis>alguna vez</emphasis> o <emphasis>siempre</emphasis> una condición con respecto a una operación. Estos se pueden obtener aplicando los operadores de comparación alguna vez/siempre. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). A continuación se dan ejemplos de operadores de comparación alguna vez y siempre.
+			Otro requisito común es determinar si los operandos satisfacen <emphasis>alguna vez</emphasis> o <emphasis>siempre</emphasis> una condición con respecto a una operación. Estos se pueden obtener aplicando los operadores de comparación alguna vez o siempre. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). A continuación se dan ejemplos de operadores de comparación alguna vez y siempre.
 		</para>
 		<programlisting language="sql" xml:space="preserve">
 -- ¿Se cruzan los operandos alguna vez?
-SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+SELECT eIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
 -- true
 
 -- ¿Se cruzan los operandos siempre?
-SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+SELECT aIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 -- true
 
 -- ¿Es el operando izquierdo alguna vez menor que el derecho?
-SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' ?&lt;
   tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
 -- true
 
 -- ¿Es el operando izquierdo siempre menor que el derecho?
-SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' %&lt;
   tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
 -- true
 </programlisting>
 		<para>
-			Por razones de eficiencia, algunas operaciones comunes con la semántica alguna vez o siempre se proporcionan de forma nativa. Por ejemplo, la función <varname>intersects</varname> determina si hay un instante en el que los dos argumentos se cruzan espacialmente.
+			Por ejemplo, la función <varname>eIntersects</varname> determina si hay un instante en el que los dos argumentos se cruzan espacialmente.
 		</para>
 
 		<para>
@@ -845,6 +845,20 @@ SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-
 SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-05)}',
   true);
 -- 4 days
+</programlisting>
+			</listitem>
+
+			<listitem id="lower_inc">
+				<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
+				<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
+				<para>¿Es el instante inicial/final inclusivo?</para>
+				<para><varname>lower_inc(ttype) → bool</varname></para>
+				<para><varname>upper_inc(ttype) → bool</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT lower_inc(tint '[1@2001-01-01, 2@2001-01-02)');
+-- true
+SELECT upper_inc(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
+-- false
 </programlisting>
 			</listitem>
 
