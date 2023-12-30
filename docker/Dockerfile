@@ -11,11 +11,11 @@ ENV POSTGRES_PASSWORD=docker
 ENV MOBILITYDB_VERSION $MOBDB_VERSION
 
 # Fix the Release file expired problem
-RUN echo "Acquire::Check-Valid-Until \"false\";\nAcquire::Check-Date \"false\";" | cat > /etc/apt/apt.conf.d/10no--check-valid-until
+RUN printf "Acquire::Check-Valid-Until \"false\";\nAcquire::Check-Date \"false\";" | cat > /etc/apt/apt.conf.d/10no--check-valid-until
 
 # Install Prerequisites
 RUN apt-get update \
- && apt-get install -y \
+ && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     git \
@@ -32,7 +32,7 @@ RUN apt-get update \
     xsltproc \
     libgsl-dev \
     libgslcblas0 \
-    postgresql-server-dev-${PG_MAJOR} \
+    postgresql-server-dev-"${PG_MAJOR}" \
   && rm -rf /var/lib/apt/lists/*
 
 ARG MOBILITYDB_TAG
@@ -46,11 +46,12 @@ RUN wget -O MobilityDB.tar.gz "https://github.com/MobilityDB/MobilityDB/archive/
         --strip-components 1 \
  && rm MobilityDB.tar.gz
 RUN mkdir /usr/local/src/MobilityDB/build
-RUN cd /usr/local/src/MobilityDB/build && \
-    cmake .. && \
-    make -j$(nproc) && \
+WORKDIR /usr/local/src/MobilityDB/build
+RUN cmake .. && \
+    make -j"$(nproc)" && \
     make install
 
+WORKDIR /usr/local/src/MobilityDB/
 RUN rm /docker-entrypoint-initdb.d/10_postgis.sh
 COPY ./docker/initdb-mobilitydb.sh /docker-entrypoint-initdb.d/mobilitydb.sh
 RUN chmod +x /docker-entrypoint-initdb.d/mobilitydb.sh

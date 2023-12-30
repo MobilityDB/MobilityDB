@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "shared_preload_libraries = 'postgis-3.so'" >> $PGDATA/postgresql.conf
+echo "shared_preload_libraries = 'postgis-3.so'" >> "$PGDATA"/postgresql.conf
 
 set -e
 
