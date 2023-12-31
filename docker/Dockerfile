@@ -5,9 +5,7 @@ FROM postgis/postgis:$POSTGRES_VERSION-$POSTGIS_VERSION
 
 # Configuration Parameters
 LABEL maintainer="MobilityDB Project - https://github.com/MobilityDB/MobilityDB"
-ENV POSTGRES_DB=mobilitydb
-ENV POSTGRES_USER=docker
-ENV POSTGRES_PASSWORD=docker
+
 ENV MOBILITYDB_VERSION $MOBDB_VERSION
 
 # Fix the Release file expired problem
