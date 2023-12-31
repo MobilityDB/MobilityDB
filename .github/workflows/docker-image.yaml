@@ -55,7 +55,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          platforms: linux/amd64,linux/arm64
+          # Add linux/arm64 when postgis builds arm64 version
+          platforms: linux/amd64
           context: .
           file: ./docker/Dockerfile
           push: true
