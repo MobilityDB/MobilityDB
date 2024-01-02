@@ -35,7 +35,7 @@ RUN apt-get update \
 
 ARG MOBILITYDB_TAG
 
-RUN wget -O MobilityDB.tar.gz "https://github.com/MobilityDB/MobilityDB/archive/$MOBILITYDB_TAG.tar.gz" \
+RUN wget -O MobilityDB.tar.gz "https://github.com/mschoema/MobilityDB/archive/$MOBILITYDB_TAG.tar.gz" \
  && mkdir -p /usr/local/src/MobilityDB \
  && tar \
         --extract \
