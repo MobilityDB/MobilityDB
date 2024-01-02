@@ -35,7 +35,7 @@ RUN apt-get update \
 
 ARG MOBILITYDB_TAG
 
-RUN wget -O MobilityDB.tar.gz "https://github.com/mschoema/MobilityDB/archive/$MOBILITYDB_TAG.tar.gz" \
+RUN wget -O MobilityDB.tar.gz "https://github.com/MobilityDB/MobilityDB/archive/$MOBILITYDB_TAG.tar.gz" \
  && mkdir -p /usr/local/src/MobilityDB \
  && tar \
         --extract \
@@ -52,4 +52,3 @@ RUN cmake .. && \
 WORKDIR /usr/local/src/MobilityDB/
 RUN rm /docker-entrypoint-initdb.d/10_postgis.sh
 COPY ./docker/initdb-mobilitydb.sh /docker-entrypoint-initdb.d/mobilitydb.sh
-# RUN chmod +x /docker-entrypoint-initdb.d/mobilitydb.sh
