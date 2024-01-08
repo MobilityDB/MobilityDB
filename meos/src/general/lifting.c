@@ -2400,11 +2400,11 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 
   assert(temptype_subtype(temp1->subtype));
   assert(temptype_subtype(temp2->subtype));
-  switch ((tempSubtype) temp1->subtype)
+  switch (temp1->subtype)
   {
     case TINSTANT:
     {
-      switch ((tempSubtype) temp2->subtype)
+      switch (temp2->subtype)
       {
         case TINSTANT:
           return eafunc_tinstant_tinstant((TInstant *) temp1,
@@ -2422,7 +2422,7 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     }
     case TSEQUENCE:
     {
-      switch ((tempSubtype) temp2->subtype)
+      switch (temp2->subtype)
       {
         case TINSTANT:
           return  MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
@@ -2463,7 +2463,7 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     }
     default: /* TSEQUENCESET */
     {
-      switch ((tempSubtype) temp2->subtype)
+      switch (temp2->subtype)
       {
         case TINSTANT:
           return eafunc_tsequenceset_tinstant((TSequenceSet *) temp1,
