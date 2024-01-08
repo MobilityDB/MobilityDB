@@ -1598,7 +1598,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
               (TSequence *) temp1, (TSequenceSet *) temp2, lfinfo);
       }
     }
-    case TSEQUENCESET:
+    default: /* TSEQUENCESET */
     {
       switch (temp2->subtype)
       {
@@ -2412,7 +2412,7 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
               (TSequenceSet *) temp2, lfinfo);
       }
     }
-    case TSEQUENCESET:
+    default: /* TSEQUENCESET */
     {
       switch (temp2->subtype)
       {
