@@ -1732,8 +1732,8 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
     /* To avoid floating point imprecission, if the lifted function to 
      * apply is datum2_eq or datum_point_eq, the equality test is computed in 
      * hascross */
-    bool eqfn = (lfinfo->func == (varfunc) &datum2_eq) ||
-      (lfinfo->func == (varfunc) &datum2_point_eq);
+    bool eqfn = ((lfinfo->func == (varfunc) &datum2_eq) ||
+      (lfinfo->func == (varfunc) &datum2_point_eq));
     /* Determine whether there is a crossing and if there is one compute the
      * value at the crossing */
     bool hascross = tlinearsegm_intersection_value(start, end, value,
