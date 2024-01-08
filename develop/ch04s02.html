@@ -11,14 +11,14 @@ INSERT INTO Temperature VALUES
 -- Value at a timestamp
 SELECT RoomNo, valueAtTimestamp(Temp, '2001-01-01 08:10:00')
 FROM temperature;
--- 1001 |
+-- 1001 | 20
 -- 2001 | 22.5
 
 -- Restriction to a value
 SELECT DeptNo, atValue(NoEmps, 10)
 FROM Department;
 -- 10 | [10@2001-01-01, 10@2001-04-01)
--- 20 | NULL
+-- 20 |
 
 -- Restriction to a period
 SELECT DeptNo, atTime(NoEmps, tstzspan '[2001-01-01, 2001-04-01]')
@@ -30,7 +30,7 @@ FROM Department;
 SELECT DeptNo, NoEmps #&lt;= 10
 FROM Department;
 -- 10 | [t@2001-01-01, f@2001-04-01, f@2001-08-01)
--- 20 | [t@2001-04-02, t@2001-10-01)
+-- 20 | [t@2001-02-01, t@2001-10-01)
 
 -- Temporal aggregation
 SELECT tsum(NoEmps)
@@ -51,11 +51,11 @@ FROM Trips;
 -- 10 | POINT(2 0)
 -- 20 | POINT(1 1)
 
--- Restriction to a given value
-SELECT CarId, asText(atValue(Trip, 'Point(2 0)'))
+-- Restriction to a value
+SELECT CarId, asText(atValues(Trip, geometry 'Point(2 0)'))
 FROM Trips;
 -- 10 | {"[POINT(2 0)@2001-01-01 08:10:00+00]"}
--- 20 | NULL
+-- 20 | 
 
 -- Restriction to a period
 SELECT CarId, asText(atTime(Trip, tstzspan '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
@@ -67,6 +67,6 @@ FROM Trips;
 SELECT T1.CarId, T2.CarId, T1.Trip &lt;-&gt; T2.Trip
 FROM Trips T1, Trips T2
 WHERE T1.CarId &lt; T2.CarId;
-/* 10;20;{[1@2001-01-01 08:05:00+00, 1.4142135623731@2001-01-01 08:10:00+00,
-   1@2001-01-01 08:15:00+00)}
+/* 10 | 20 | {[1@2001-01-01 08:05:00+00, 1.4142135623731@2001-01-01 08:10:00+00,
+   1@2001-01-01 08:15:00+00)} */
 </pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch04.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 4. Temporal Types </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Validity of Temporal Types</td></tr></table></div></body></html>
