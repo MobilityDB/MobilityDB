@@ -166,6 +166,7 @@
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
 #include "general/type_util.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Functions where the argument is a temporal type.
@@ -173,7 +174,7 @@
  *****************************************************************************/
 
 /**
- * @brief Apply the variadic function with the optional arguments to the base value
+ * @brief Apply the variadic function with the optional arguments to a base value
  */
 static Datum
 tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
@@ -192,7 +193,7 @@ tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * @brief Apply the function with the optional arguments to the temporal value
+ * @brief Apply a lifted function with the optional arguments to a temporal instant
  * @param[in] inst Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
@@ -206,7 +207,7 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * @brief Apply the function to the temporal value
+ * @brief Apply a lifted function to a temporal sequence
  * @param[in] seq Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
@@ -224,7 +225,7 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * @brief Apply the function to the temporal value
+ * @brief Apply a lifted function to a temporal sequence set
  * @param[in] ss Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
@@ -241,7 +242,7 @@ tfunc_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * @brief Apply the function to the temporal value (dispatch function)
+ * @brief Apply a lifted function to a temporal value (dispatch function)
  * @param[in] temp Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
@@ -298,7 +299,7 @@ tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * @brief Apply the function to the temporal value and the base value
+ * @brief Apply a lifted function to a temporal value and the base value
  * @param[in] inst Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
@@ -315,7 +316,7 @@ tfunc_tinstant_base(const TInstant *inst, Datum value,
 }
 
 /**
- * @brief Apply the function to the temporal value and the base value
+ * @brief Apply a lifted function to a temporal value and a base value
  * @param[in] seq Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
@@ -335,7 +336,7 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
 }
 
 /**
- * @brief Apply the function to the temporal value and the base value when
+ * @brief Apply a lifted function to a temporal value and a base value when
  * turning points should be added
  * @param[in] seq Temporal value
  * @param[in] value Base value
@@ -381,7 +382,7 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
 }
 
 /**
- * @brief Apply the function to the temporal value and the base value when the
+ * @brief Apply a lifted function to a temporal value and a base value when the
  * function has instantaneuous discontinuties
  * @param[in] seq Temporal value
  * @param[in] value Base value
@@ -547,7 +548,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
 }
 
 /**
- * @brief Apply the function to the temporal value and the base value.
+ * @brief Apply a lifted function to a temporal value and a base value
  *
  * Dispatch function depending on whether the function has
  * instantaneous discontinuities.
@@ -580,7 +581,7 @@ tfunc_tlinearseq_base(const TSequence *seq, Datum value,
 }
 
 /**
- * @brief Apply the function to the temporal value and the base value
+ * @brief Apply a lifted function to a temporal value and a base value
  * @param[in] ss Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
@@ -613,7 +614,7 @@ tfunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
 }
 
 /**
- * @brief Apply the function to the temporal value and the base value
+ * @brief Apply a lifted function to a temporal value and a base value
  * (dispatch function)
  * @param[in] temp Temporal value
  * @param[in] value Base value
@@ -652,10 +653,11 @@ lfinfo_invert_args(LiftedFunctionInfo *lfinfo)
   meosType temp = lfinfo->argtype[0];
   lfinfo->argtype[0] = lfinfo->argtype[1];
   lfinfo->argtype[1] = temp;
+  return;
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  *
  * @param[in] inst1,inst2 Temporal values
  * @param[in] lfinfo Information about the lifted function
@@ -679,16 +681,16 @@ tfunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
- * @param[in] is,inst Temporal values
+ * @brief Synchronize two temporal values and apply to them a lifted function
+ * @param[in] seq,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
-tfunc_tdiscseq_tinstant(const TSequence *is, const TInstant *inst,
+tfunc_tdiscseq_tinstant(const TSequence *seq, const TInstant *inst,
   LiftedFunctionInfo *lfinfo)
 {
   Datum value1;
-  if (! tdiscseq_value_at_timestamptz(is, inst->t, &value1))
+  if (! tdiscseq_value_at_timestamptz(seq, inst->t, &value1))
     return NULL;
 
   Datum value2 = tinstant_value(inst);
@@ -699,20 +701,20 @@ tfunc_tdiscseq_tinstant(const TSequence *is, const TInstant *inst,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
- * @param[in] inst,is Temporal values
+ * @brief Synchronize two temporal values and apply to them a lifted function
+ * @param[in] inst,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
-tfunc_tinstant_tdiscseq(const TInstant *inst, const TSequence *is,
+tfunc_tinstant_tdiscseq(const TInstant *inst, const TSequence *seq,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert_args(lfinfo);
-  return tfunc_tdiscseq_tinstant(is, inst, lfinfo);
+  return tfunc_tdiscseq_tinstant(seq, inst, lfinfo);
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
+ * @brief Synchronize two temporal values and apply to them a lifted function with
  * the optional argument
  * @param[in] seq,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
@@ -734,8 +736,7 @@ tfunc_tcontseq_tinstant(const TSequence *seq, const TInstant *inst,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
+ * @brief Synchronize two temporal values and apply to them a lifted function 
  * @param[in] inst,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -748,8 +749,7 @@ tfunc_tinstant_tcontseq(const TInstant *inst, const TSequence *seq,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
+ * @brief Synchronize two temporal values and apply to them a lifted function 
  * @param[in] ss,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -769,8 +769,7 @@ tfunc_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] inst,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -785,8 +784,7 @@ tfunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
 /*****************************************************************************/
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * with optional argument
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @note This function is called by other functions besides the dispatch
@@ -826,8 +824,7 @@ tfunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -859,8 +856,7 @@ tfunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -873,8 +869,7 @@ tfunc_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -914,23 +909,22 @@ tfunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
- * @param[in] is,ss Temporal values
+ * @brief Synchronize two temporal values and apply to them a lifted function
+ * @param[in] seq,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static TSequence *
-tfunc_tdiscseq_tsequenceset(const TSequence *is, const TSequenceSet *ss,
+tfunc_tdiscseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert_args(lfinfo);
-  return tfunc_tsequenceset_tdiscseq(ss, is, lfinfo);
+  return tfunc_tsequenceset_tdiscseq(ss, seq, lfinfo);
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Synchronizes the temporal values and apply to them the function.
+ * @brief Synchronize the temporal values and apply to them a lifted function
  *
  * This function is applied when the result is a single sequence and thus
  * it is used when
@@ -1015,9 +1009,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     instants[ninsts++] = tinstant_make(value, lfinfo->restype, inst1->t);
     DATUM_FREE(value, resbasetype);
     if (i == seq1->count || j == seq2->count)
-    {
       break;
-    }
     prev1 = inst1;
     prev2 = inst2;
     inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
@@ -1043,7 +1035,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function.
+ * @brief Synchronize two temporal values and apply to them a function.
  *
  * This function is applied when the result is an array of sequences and thus
  * it is used when
@@ -1064,7 +1056,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
   int count = seq1->count + seq2->count;
   /* Array that keeps the new instants to be accumulated */
   TInstant **instants = palloc(sizeof(TInstant *) * count);
-  /* Array that keeps the new instants added for the synchronization */
+  /* Array that keeps the new instants added for synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
@@ -1120,8 +1112,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
       tofree[nfree++] = end1;
     }
     /* Compute the function at the end instant */
-    Datum endvalue1 = interp1 == LINEAR ? tinstant_value(end1) : startvalue1;
-    Datum endvalue2 = interp2 == LINEAR ? tinstant_value(end2) : startvalue2;
+    Datum endvalue1 = (interp1 == LINEAR) ? tinstant_value(end1) : startvalue1;
+    Datum endvalue2 = (interp2 == LINEAR) ? tinstant_value(end2) : startvalue2;
     Datum endresult = tfunc_base_base(endvalue1, endvalue2, lfinfo);
     Datum intvalue1, intvalue2, intresult;
     TimestampTz inttime = 0; /* make compiler quiet */
@@ -1242,7 +1234,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronizes the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a function
  * @note This function is called when one sequence has linear and the other
  * has step interpolation
  */
@@ -1315,7 +1307,7 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
     /* Close the current sequence if the step sequence changed value */
     if (makeseq)
     {
-      Datum closeresult = interp1 == LINEAR ?
+      Datum closeresult = (interp1 == LINEAR) ?
         tfunc_base_base(endvalue1, startvalue2, lfinfo) :
         tfunc_base_base(startvalue1, endvalue2, lfinfo);
       instants[ninsts++] = tinstant_make(closeresult, restype, end1->t);
@@ -1346,7 +1338,7 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronizes the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @note This function is called for each composing sequence of a temporal
  * sequence set and therefore the bounding period test is repeated
  */
@@ -1388,7 +1380,7 @@ tfunc_tcontseq_tcontseq_dispatch(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  */
 Temporal *
 tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
@@ -1432,7 +1424,7 @@ tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
 /*****************************************************************************/
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1473,7 +1465,7 @@ tfunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * @param[in] seq,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1486,7 +1478,7 @@ tfunc_tcontseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize the temporal values and apply to them a lifted function
  * @param[in] ss1,ss2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1535,7 +1527,7 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
 /*****************************************************************************/
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
+ * @brief Synchronize two temporal values and apply to them a lifted function
 
  * @param[in] temp1,temp2 Temporal values
  * @param[in] lfinfo Information about the lifted function
@@ -1551,211 +1543,433 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   if (! over_span_span(&s1, &s2))
     return NULL;
 
-  Temporal *result = NULL;
-  assert(temptype_subtype(temp1->subtype));
-  assert(temptype_subtype(temp2->subtype));
-  if (temp1->subtype == TINSTANT)
+  tempSubtype subtype1 = temp1->subtype;
+  tempSubtype subtype2 = temp2->subtype;
+  assert(temptype_subtype(subtype1));
+  assert(temptype_subtype(subtype2));
+  switch (subtype1)
   {
-    if (temp2->subtype == TINSTANT)
-      result = (Temporal *) tfunc_tinstant_tinstant(
-        (TInstant *) temp1, (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == TSEQUENCE)
-      result = MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
-        (Temporal *) tfunc_tinstant_tdiscseq(
-          (TInstant *) temp1, (TSequence *) temp2, lfinfo) :
-        (Temporal *) tfunc_tinstant_tcontseq(
-          (TInstant *) temp1, (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == TSEQUENCESET */
-      result = (Temporal *) tfunc_tinstant_tsequenceset(
-        (TInstant *) temp1, (TSequenceSet *) temp2, lfinfo);
-  }
-  else if (temp1->subtype == TSEQUENCE)
-  {
-    TSequence *seq1 = (TSequence *) temp1;
-    interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
-    if (temp2->subtype == TINSTANT)
-      result = (interp1 == DISCRETE) ?
-        (Temporal *) tfunc_tdiscseq_tinstant(
-          (TSequence *) temp1, (TInstant *) temp2, lfinfo) :
-        (Temporal *) tfunc_tcontseq_tinstant(
-          (TSequence *) temp1, (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == TSEQUENCE)
+    case TINSTANT:
     {
-      TSequence *seq2 = (TSequence *) temp2;
-      interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
-      if (interp1 == DISCRETE && interp2 == DISCRETE)
-        result = (Temporal *) tfunc_tdiscseq_tdiscseq(seq1, seq2, lfinfo);
-      else if (interp1 == DISCRETE && interp2 != DISCRETE)
-        result = (Temporal *) tfunc_tdiscseq_tcontseq(seq1, seq2, lfinfo);
-      else if (interp1 != DISCRETE && interp2 == DISCRETE)
-        result = (Temporal *) tfunc_tcontseq_tdiscseq(seq1, seq2, lfinfo);
-      else /* interp1 != DISCRETE && interp2 = DISCRETE */
-        result = (Temporal *) tfunc_tcontseq_tcontseq(seq1, seq2, lfinfo);
+      switch (subtype2)
+      {
+        case TINSTANT:
+          return (Temporal *) tfunc_tinstant_tinstant(
+            (TInstant *) temp1, (TInstant *) temp2, lfinfo);
+        case TSEQUENCE:
+          return MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
+            (Temporal *) tfunc_tinstant_tdiscseq(
+              (TInstant *) temp1, (TSequence *) temp2, lfinfo) :
+            (Temporal *) tfunc_tinstant_tcontseq(
+              (TInstant *) temp1, (TSequence *) temp2, lfinfo);
+        default: /* TSEQUENCESET */
+          return (Temporal *) tfunc_tinstant_tsequenceset(
+            (TInstant *) temp1, (TSequenceSet *) temp2, lfinfo);
+      }
     }
-    else /* temp2->subtype == TSEQUENCESET */
-      result = MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
-        (Temporal *) tfunc_tdiscseq_tsequenceset(
-          (TSequence *) temp1, (TSequenceSet *) temp2, lfinfo) :
-        (Temporal *) tfunc_tcontseq_tsequenceset(
-          (TSequence *) temp1, (TSequenceSet *) temp2, lfinfo);
+    case TSEQUENCE:
+    {
+      TSequence *seq1 = (TSequence *) temp1;
+      interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
+      switch (subtype2)
+      {
+        case TINSTANT:
+          return (interp1 == DISCRETE) ?
+            (Temporal *) tfunc_tdiscseq_tinstant(
+              (TSequence *) temp1, (TInstant *) temp2, lfinfo) :
+            (Temporal *) tfunc_tcontseq_tinstant(
+              (TSequence *) temp1, (TInstant *) temp2, lfinfo);
+        case TSEQUENCE:
+        {
+          TSequence *seq2 = (TSequence *) temp2;
+          interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
+          if (interp1 == DISCRETE)
+          {
+            if (interp2 == DISCRETE)
+              return (Temporal *) tfunc_tdiscseq_tdiscseq(seq1, seq2, lfinfo);
+            else /* interp2 != DISCRETE */
+              return (Temporal *) tfunc_tdiscseq_tcontseq(seq1, seq2, lfinfo);
+           }
+         else /* interp1 != DISCRETE */
+         {
+           if (interp2 == DISCRETE)
+              return (Temporal *) tfunc_tcontseq_tdiscseq(seq1, seq2, lfinfo);
+            else /* interp2 = DISCRETE */
+              return (Temporal *) tfunc_tcontseq_tcontseq(seq1, seq2, lfinfo);
+         }
+        }
+        default: /* TSEQUENCESET */
+          return MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
+            (Temporal *) tfunc_tdiscseq_tsequenceset(
+              (TSequence *) temp1, (TSequenceSet *) temp2, lfinfo) :
+            (Temporal *) tfunc_tcontseq_tsequenceset(
+              (TSequence *) temp1, (TSequenceSet *) temp2, lfinfo);
+      }
+    }
+    default: /* TSEQUENCESET */
+    {
+      switch (subtype2)
+      {
+        case TINSTANT:
+          return (Temporal *) tfunc_tsequenceset_tinstant(
+            (TSequenceSet *) temp1, (TInstant *) temp2, lfinfo);
+        case TSEQUENCE:
+          return MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
+            (Temporal *) tfunc_tsequenceset_tdiscseq(
+              (TSequenceSet *) temp1, (TSequence *) temp2, lfinfo) :
+            (Temporal *) tfunc_tsequenceset_tcontseq(
+              (TSequenceSet *) temp1, (TSequence *) temp2, lfinfo);
+        default: /* TSEQUENCESET */
+          return (Temporal *) tfunc_tsequenceset_tsequenceset(
+              (TSequenceSet *) temp1, (TSequenceSet *) temp2, lfinfo);
+      }
+    }
   }
-  else /* temp1->subtype == TSEQUENCESET */
-  {
-    if (temp2->subtype == TINSTANT)
-      result = (Temporal *) tfunc_tsequenceset_tinstant(
-        (TSequenceSet *) temp1, (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == TSEQUENCE)
-      result = MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
-        (Temporal *) tfunc_tsequenceset_tdiscseq(
-          (TSequenceSet *) temp1, (TSequence *) temp2, lfinfo) :
-        (Temporal *) tfunc_tsequenceset_tcontseq(
-          (TSequenceSet *) temp1, (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == TSEQUENCESET */
-      result = (Temporal *) tfunc_tsequenceset_tsequenceset(
-          (TSequenceSet *) temp1, (TSequenceSet *) temp2, lfinfo);
-  }
-  return result;
 }
 
 /*****************************************************************************
- * Functions that synchronize two temporal values and apply a Boolean function
- * in a single pass using the ever semantics, that is, it stops when a true
- * value is found.
+ * Functions that take either (1) a temporal value and a base value, or (2) two
+ * temporal values and apply to them a Boolean functio using the ever/always
+ * semantics, that is, it stops when a true value (for ever) or a false value 
+ * (for always) is found. In the case of two temporal values the functions
+ * synchronize two temporal values and apply the function in a single pass.
  *****************************************************************************/
-
+ 
 /**
- * @brief Synchronize the temporal values and apply to them the function
- * @param[in] inst1,inst2 Temporal values
+ * @brief Apply a lifted function to a temporal instant and a base value
+ * @param[in] inst Temporal value
+ * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
- * @note This function is called by other functions besides the dispatch
- * function #efunc_temporal_temporal and thus the overlapping test is
- * repeated
  */
 static int
-efunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
+eafunc_tinstant_base(const TInstant *inst, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-  /* The following is ensured by the period bound test in the dispatch
-   * function */
-  assert(inst1->t == inst2->t);
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
-  bool result = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
-  return result ? 1 : 0;
+  assert(inst);
+  Datum value1 = tinstant_value(inst);
+  /* Result is the same for both EVER and ALWAYS */
+  return DatumGetBool(tfunc_base_base(value1, value, lfinfo)) ? 1 : 0;
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
- * @param[in] is,inst Temporal values
+ * @brief Apply a lifted function to a temporal discrete or step sequence and a
+ * base value
+ * @param[in] seq Temporal value
+ * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tdiscseq_tinstant(const TSequence *is, const TInstant *inst,
+eafunc_tdiscstepseq_base(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-  Datum value1;
-  if (! tdiscseq_value_at_timestamptz(is, inst->t, &value1))
-    return -1;
-
-  Datum value2 = tinstant_value(inst);
-  bool result = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
-  return result ? 1 : 0;
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != LINEAR);
+  for (int i = 0; i < seq->count; i++)
+  {
+    Datum value1 = tinstant_value(TSEQUENCE_INST_N(seq, i));
+    bool res = DatumGetBool(tfunc_base_base(value1, value, lfinfo));
+    if (lfinfo->ever && res)
+      return 1;
+    else if (! lfinfo->ever && ! res)
+      return 0;
+  }
+  return lfinfo->ever ? 0 : 1;
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function
- * @param[in] inst,is Temporal values
+ * @brief Apply a lifted function to a temporal continuous sequence and a base
+ * value
+ * @param[in] seq Temporal value
+ * @param[in] value Base value
+ * @param[in] lfinfo Information about the lifted function
+ * @pre The lifted function is discontinuous
+ * @note All ever/always functions currently available, that is, comparisons
+ * (=, <, ...) and spatial relationship (contains, intersects, ...), are
+ * discontinuous. When this would be no longer the case, additional functions
+ * must be added to take account of the remaining cases
+ */
+static int
+eafunc_tlinearseq_base(const TSequence *seq, Datum value,
+  LiftedFunctionInfo *lfinfo)
+{
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
+  assert(lfinfo->discont);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return eafunc_tinstant_base(TSEQUENCE_INST_N(seq, 0), value, lfinfo);
+
+  /* General case */
+  bool lower_inc = seq->period.lower_inc;
+  meosType basetype = temptype_basetype(seq->temptype);
+  TInstant *start = (TInstant *) TSEQUENCE_INST_N(seq, 0);
+  Datum startvalue;
+  bool res;
+  for (int i = 1; i < seq->count; i++)
+  {
+    /* Compute the function at the start instant */
+    startvalue = tinstant_value(start);
+    if (lower_inc || ! lfinfo->ever)
+    {
+      res = DatumGetBool(tfunc_base_base(startvalue, value, lfinfo));
+      if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+        return lfinfo->ever ? 1 : 0;
+    }
+    /* Compute the function at the end instant */
+    TInstant *end = (TInstant *) TSEQUENCE_INST_N(seq, i);
+    Datum endvalue = tinstant_value(end);
+    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+    if (upper_inc || ! lfinfo->ever)
+    {
+      res = DatumGetBool(tfunc_base_base(endvalue, value, lfinfo));
+      if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+        return lfinfo->ever ? 1 : 0;
+    }
+    /* Continue if the segment is constant */
+    if (datum_eq(startvalue, endvalue, basetype))
+      continue;
+    Datum intvalue;
+    TimestampTz inttime;
+    /* To avoid floating point imprecission, if the lifted function to 
+     * apply is datum2_eq or datum_point_eq, the equality test is computed in 
+     * hascross */
+    bool eqfn = ((lfinfo->func == (varfunc) &datum2_eq) ||
+      (lfinfo->func == (varfunc) &datum2_point_eq));
+    /* Determine whether there is a crossing and if there is one compute the
+     * value at the crossing */
+    bool hascross = tlinearsegm_intersection_value(start, end, value,
+      basetype, eqfn ? NULL : &intvalue, eqfn ? NULL : &inttime);
+    if (eqfn)
+      res = hascross;
+    else
+      res = ! hascross ||
+        DatumGetBool(tfunc_base_base(intvalue, value, lfinfo));
+    if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+    {
+      if (! eqfn)
+        DATUM_FREE(intvalue, basetype);
+      return lfinfo->ever ? 1 : 0;
+    }
+    if (! eqfn)
+      DATUM_FREE(intvalue, basetype);
+    start = end;
+    lower_inc = true;
+  }
+  return lfinfo->ever ? 0 : 1;
+}
+
+
+/**
+ * @brief Apply a lifted function to a temporal sequence and a base value
+ * (dispatch function)
+ * @param[in] seq Temporal value
+ * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tinstant_tdiscseq(const TInstant *inst, const TSequence *is,
+eafunc_tsequence_base(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-  lfinfo_invert_args(lfinfo);
-  return efunc_tdiscseq_tinstant(is, inst, lfinfo);
+  assert(seq); assert(lfinfo->discont);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp == DISCRETE || interp == STEP)
+    return eafunc_tdiscstepseq_base(seq, value, lfinfo);
+  else
+    return eafunc_tlinearseq_base(seq, value, lfinfo);
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with the
- * optional argument
- * @param[in] seq,inst Temporal values
+ * @brief Apply a lifted function to a temporal sequence set and a base value
+ * @param[in] ss Temporal value
+ * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tcontseq_tinstant(const TSequence *seq, const TInstant *inst,
+eafunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-  Datum value1;
-  /* The following call is ensured to return true due to the period bound test
-   * in the dispatch function */
-  tsequence_value_at_timestamptz(seq, inst->t, true, &value1);
-  Datum value2 = tinstant_value(inst);
-  bool result = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
-  return result ? 1 : 0;
-}
+  assert(ss);
+  /* Singleton sequence set */
+  if (ss->count == 1)
+    return eafunc_tsequence_base(TSEQUENCESET_SEQ_N(ss, 0), value, lfinfo);
 
-/**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
- * @param[in] inst,seq Temporal values
- * @param[in] lfinfo Information about the lifted function
- */
-static int
-efunc_tinstant_tcontseq(const TInstant *inst, const TSequence *seq,
-  LiftedFunctionInfo *lfinfo)
-{
-  lfinfo_invert_args(lfinfo);
-  return efunc_tcontseq_tinstant(seq, inst, lfinfo);
-}
-
-/**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
- * @param[in] ss,inst Temporal values
- * @param[in] lfinfo Information about the lifted function
- */
-static int
-efunc_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
-  LiftedFunctionInfo *lfinfo)
-{
-  Datum value1;
-  if (! tsequenceset_value_at_timestamptz(ss, inst->t, true, &value1))
-    return -1;
-
-  Datum value2 = tinstant_value(inst);
-  bool result = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
-  return result ? 1 : 0;
-}
-
-/**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
- * @param[in] inst,ss Temporal values
- * @param[in] lfinfo Information about the lifted function
- */
-static int
-efunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
-  LiftedFunctionInfo *lfinfo)
-{
-  lfinfo_invert_args(lfinfo);
-  return efunc_tsequenceset_tinstant(ss, inst, lfinfo);
+  /* General case */
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    int res = eafunc_tsequence_base(seq, value, lfinfo);
+    if (lfinfo->ever && res == 1)
+      return 1;
+    else if (! lfinfo->ever && res != 1)
+      return 0;
+  }
+  return lfinfo->ever ? 0 : 1;
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
- * @param[in] seq1,seq2 Temporal values
+ * @brief Apply a lifted function to a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
- * @note This function is called by other functions besides the dispatch
- * function efunc_temporal_temporal and thus the bounding period test is
- * repeated
  */
-static int
-efunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
+int
+eafunc_temporal_base(const Temporal *temp, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
+  assert(temp);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return eafunc_tinstant_base((TInstant *) temp, value, lfinfo);
+    case TSEQUENCE:
+      return eafunc_tsequence_base((TSequence *) temp, value, lfinfo);
+    default: /* TSEQUENCESET */
+      return eafunc_tsequenceset_base((TSequenceSet *) temp, value, lfinfo);
+  }
+}
+
+/*****************************************************************************/
+ 
+/**
+ * @brief Synchronize the temporal values and apply to them a lifted function
+ * @param[in] inst1,inst2 Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ */
+static int
+eafunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
+  LiftedFunctionInfo *lfinfo)
+{
+  assert(inst1); assert(inst2); assert(inst1->temptype == inst2->temptype);
+  /* The following is ensured by the period bound test in the dispatch
+   * function */
+  assert(inst1->t == inst2->t);
+  Datum value1 = tinstant_value(inst1);
+  Datum value2 = tinstant_value(inst2);
+  /* Result is the same for both EVER and ALWAYS */
+  return DatumGetBool(tfunc_base_base(value1, value2, lfinfo)) ? 1 : 0;
+}
+
+/**
+ * @brief Synchronize the temporal values and apply to them a lifted function
+ * @param[in] seq,inst Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ */
+static int
+eafunc_tdiscseq_tinstant(const TSequence *seq, const TInstant *inst,
+  LiftedFunctionInfo *lfinfo)
+{
+  assert(seq); assert(inst); assert(seq->temptype == inst->temptype);
+  Datum value1;
+  if (! tdiscseq_value_at_timestamptz(seq, inst->t, &value1))
+    return -1;
+  Datum value2 = tinstant_value(inst);
+  /* Result is the same for both EVER and ALWAYS */
+  return DatumGetBool(tfunc_base_base(value1, value2, lfinfo)) ? 1 : 0;
+}
+
+/**
+ * @brief Synchronize the temporal values and apply to them a lifted function
+ * @param[in] inst,seq Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ */
+static int
+eafunc_tinstant_tdiscseq(const TInstant *inst, const TSequence *seq,
+  LiftedFunctionInfo *lfinfo)
+{
+  lfinfo_invert_args(lfinfo);
+  return eafunc_tdiscseq_tinstant(seq, inst, lfinfo);
+}
+
+/**
+ * @brief Synchronize the temporal values and apply to them a lifted function
+ * @param[in] seq,inst Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ */
+static int
+eafunc_tcontseq_tinstant(const TSequence *seq, const TInstant *inst,
+  LiftedFunctionInfo *lfinfo)
+{
+  assert(seq); assert(inst); assert(seq->temptype == inst->temptype);
+  Datum value1;
+  /* The following call is ensured to return true due to the period bound test
+   * in the dispatch function */
+  tsequence_value_at_timestamptz(seq, inst->t, true, &value1);
+  Datum value2 = tinstant_value(inst);
+  /* Result is the same for both EVER and ALWAYS */
+  bool result = DatumGetBool(tfunc_base_base(value1, value2, lfinfo)) ? 1 : 0;
+  DATUM_FREE(value1, temptype_basetype(seq->temptype));
+  return result;
+}
+
+/**
+ * @brief Synchronize the temporal values and apply to them a lifted function
+ * @param[in] inst,seq Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ */
+static int
+eafunc_tinstant_tcontseq(const TInstant *inst, const TSequence *seq,
+  LiftedFunctionInfo *lfinfo)
+{
+  lfinfo_invert_args(lfinfo);
+  return eafunc_tcontseq_tinstant(seq, inst, lfinfo);
+}
+
+/**
+ * @brief Synchronize the temporal values and apply to them a lifted function
+ * @param[in] ss,inst Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ */
+static int
+eafunc_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
+  LiftedFunctionInfo *lfinfo)
+{
+  assert(ss); assert(inst); assert(ss->temptype == inst->temptype);
+  Datum value1;
+  if (! tsequenceset_value_at_timestamptz(ss, inst->t, true, &value1))
+    return -1;
+  Datum value2 = tinstant_value(inst);
+  /* Result is the same for both EVER and ALWAYS */
+  return DatumGetBool(tfunc_base_base(value1, value2, lfinfo)) ? 1 : 0;
+}
+
+/**
+ * @brief Synchronize the temporal values and apply to them a lifted function
+ * @param[in] inst,ss Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ */
+static int
+eafunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
+  LiftedFunctionInfo *lfinfo)
+{
+  lfinfo_invert_args(lfinfo);
+  return eafunc_tsequenceset_tinstant(ss, inst, lfinfo);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Synchronize the temporal values and apply to them a lifted function
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ */
+static int
+eafunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
+  LiftedFunctionInfo *lfinfo)
+{
+  assert(seq1); assert(seq2); assert(seq1->temptype == seq2->temptype);
+  /* We need to verify that the sequences intersect in time in addition 
+   * to the bounding period test done in the dispatch function
+   * #eafunc_temporal_temporal to return -1 if they do not intersect in time
+   */
+  SpanSet *s1 = tsequence_time(seq1);
+  SpanSet *s2 = tsequence_time(seq2);
+  bool found = overlaps_spanset_spanset(s1, s2);
+  pfree(s1); pfree(s2);
+  if (! found)
+      return -1;
+
   int i = 0, j = 0;
   const TInstant *inst1 = TSEQUENCE_INST_N(seq1, i);
   const TInstant *inst2 = TSEQUENCE_INST_N(seq2, j);
@@ -1766,8 +1980,11 @@ efunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
     {
       Datum value1 = tinstant_value(inst1);
       Datum value2 = tinstant_value(inst2);
-      if (DatumGetBool(tfunc_base_base(value1, value2, lfinfo)))
+      bool res = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
+      if (lfinfo->ever && res)
         return 1;
+      else if (! lfinfo->ever && ! res)
+        return 0;
       i++;
     }
     else if (cmp < 0)
@@ -1775,19 +1992,22 @@ efunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
     else
       inst2 = TSEQUENCE_INST_N(seq2, ++j);
   }
-  return 0;
+  return lfinfo->ever ? 0 : 1;
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
+ * @brief Synchronize the temporal values and apply to them a lifted function
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
+ * @note The bounding period test in the dispatch function
+ * #eafunc_temporal_temporal ensures that the sequences are not disjoint and
+ * thus we are sure that we do not need to return -1 in this function
  */
 static int
-efunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
+eafunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   LiftedFunctionInfo *lfinfo)
 {
+  assert(seq1); assert(seq2); assert(seq1->temptype == seq2->temptype);
   TimestampTz upper1 = DatumGetTimestampTz(seq1->period.upper);
   for (int i = 0; i < seq2->count; i++)
   {
@@ -1797,39 +2017,45 @@ efunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
       Datum value1;
       tsequence_value_at_timestamptz(seq1, inst->t, true, &value1);
       Datum value2 = tinstant_value(inst);
-      if (DatumGetBool(tfunc_base_base(value1, value2, lfinfo)))
+      bool res = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
+      DATUM_FREE(value1, temptype_basetype(seq1->temptype));
+      if (lfinfo->ever && res)
         return 1;
+      else if (! lfinfo->ever && ! res)
+        return 0;
     }
-    if ( upper1 < inst->t)
+    if (upper1 < inst->t)
       break;
   }
-  return 0;
+  return lfinfo->ever ? 0 : 1;
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
+ * @brief Synchronize the temporal values and apply to them a lifted function
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
+eafunc_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert_args(lfinfo);
-  return efunc_tcontseq_tdiscseq(seq2, seq1, lfinfo);
+  return eafunc_tcontseq_tdiscseq(seq2, seq1, lfinfo);
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
+ * @brief Synchronize the temporal values and apply to them a lifted function
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
+ * @note The bounding period test in the dispatch function
+ * #eafunc_temporal_temporal ensures that the sequences are not disjoint and
+ * thus we are sure that we do not need to return -1 in this function
  */
 static int
-efunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
+eafunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
   LiftedFunctionInfo *lfinfo)
 {
+  assert(ss); assert(seq); assert(ss->temptype == seq->temptype);
   int i = 0, j = 0;
   while (i < ss->count && j < seq->count)
   {
@@ -1840,8 +2066,11 @@ efunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
       Datum value1;
       tsequenceset_value_at_timestamptz(ss, inst->t, true, &value1);
       Datum value2 = tinstant_value(inst);
-      if (DatumGetBool(tfunc_base_base(value1, value2, lfinfo)))
+      bool res = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
+      if (lfinfo->ever && res)
         return 1;
+      else if (! lfinfo->ever && ! res)
+        return 0;
     }
     int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq1->period.upper),
       inst->t);
@@ -1854,39 +2083,42 @@ efunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
     else
       j++;
   }
-  return 0;
+  return lfinfo->ever ? 0 : 1;
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function with
- * the optional argument
- * @param[in] is,ss Temporal values
+ * @brief Synchronize the temporal values and apply to them a lifted function
+ * @param[in] seq,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tdiscseq_tsequenceset(const TSequence *is, const TSequenceSet *ss,
+eafunc_tdiscseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert_args(lfinfo);
-  return efunc_tsequenceset_tdiscseq(ss, is, lfinfo);
+  return eafunc_tsequenceset_tdiscseq(ss, seq, lfinfo);
 }
 
 /**
- * @brief Synchronize the temporal values and apply to them the function.
- * This function is applied for functions with instantaneous discontinuities
- * and thus the result is an array of sequences. This function is applied
- * when at least one temporal value has linear interpolation.
+ * @brief Synchronize the temporal values and apply to them a function
+ *
+ * This function is applied for functions with instantaneous discontinuities. 
+ * This function is applied when at least one temporal value has linear
+ * interpolation.
  *
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
+ * @note The bounding period test in the dispatch function
+ * #eafunc_temporal_temporal ensures that the sequences are not disjoint and
+ * thus we are sure that we do not need to return -1 in this function
  */
 static int
-efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
+eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   const TSequence *seq2, LiftedFunctionInfo *lfinfo, Span *inter)
 {
-  assert(seq1->temptype == seq2->temptype);
-  /* Array that keeps the new instants added for the synchronization */
+  assert(seq1); assert(seq2); assert(seq1->temptype == seq2->temptype);
+  /* Array that keeps the new instants added for synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
     (seq1->count + seq2->count) * 2);
   TInstant *start1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
@@ -1910,16 +2142,20 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
   Datum startvalue1, startvalue2;
   meosType basetype = temptype_basetype(seq1->temptype);
+  bool res;
   while (i < seq1->count && j < seq2->count)
   {
     /* Compute the function at the start instant */
     startvalue1 = tinstant_value(start1);
     startvalue2 = tinstant_value(start2);
-    if (lower_inc &&
-        DatumGetBool(tfunc_base_base(startvalue1, startvalue2, lfinfo)))
+    if (lower_inc)
     {
-      pfree_array((void **) tofree, nfree);
-      return 1;
+      res = DatumGetBool(tfunc_base_base(startvalue1, startvalue2, lfinfo));
+      if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+      {
+        pfree_array((void **) tofree, nfree);
+        return lfinfo->ever ? 1 : 0;
+      }
     }
     /* Synchronize the end instants */
     TInstant *end1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
@@ -1942,14 +2178,14 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
       tofree[nfree++] = end1;
     }
     /* Compute the function at the end instant */
-    Datum endvalue1 = interp1 == LINEAR ? tinstant_value(end1) : startvalue1;
-    Datum endvalue2 = interp2 == LINEAR ? tinstant_value(end2) : startvalue2;
-    if (DatumGetBool(tfunc_base_base(endvalue1, endvalue2, lfinfo)))
+    Datum endvalue1 = (interp1 == LINEAR) ? tinstant_value(end1) : startvalue1;
+    Datum endvalue2 = (interp2 == LINEAR) ? tinstant_value(end2) : startvalue2;
+    res = DatumGetBool(tfunc_base_base(endvalue1, endvalue2, lfinfo));
+    if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
     {
       pfree_array((void **) tofree, nfree);
-      return 1;
+      return lfinfo->ever ? 1 : 0;
     }
-
     Datum intvalue1, intvalue2;
     TimestampTz inttime;
     /* If either the start values or the end values are equal and both have
@@ -1962,10 +2198,11 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
       inttime = start1->t + ((end1->t - start1->t) / 2);
       intvalue1 = tsegment_value_at_timestamptz(start1, end1, interp1, inttime);
       intvalue2 = tsegment_value_at_timestamptz(start2, end2, interp2, inttime);
-      if (DatumGetBool(tfunc_base_base(intvalue1, intvalue2, lfinfo)))
+      res = DatumGetBool(tfunc_base_base(intvalue1, intvalue2, lfinfo));
+     if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
       {
         pfree_array((void **) tofree, nfree);
-        return 1;
+        return lfinfo->ever ? 1 : 0;
       }
     }
     else
@@ -1974,10 +2211,14 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
        * value at the crossing */
       bool hascross = tsegment_intersection(start1, end1, interp1,
         start2, end2, interp2, &intvalue1, &intvalue2, &inttime);
-      if (hascross && DatumGetBool(tfunc_base_base(intvalue1, intvalue2, lfinfo)))
+      if (hascross)
       {
-        pfree_array((void **) tofree, nfree);
-        return 1;
+        res = DatumGetBool(tfunc_base_base(intvalue1, intvalue2, lfinfo));
+        if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+        {
+          pfree_array((void **) tofree, nfree);
+          return lfinfo->ever ? 1 : 0;
+        }
       }
     }
     start1 = end1; start2 = end2;
@@ -1988,14 +2229,15 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   {
     startvalue1 = tinstant_value(start1);
     startvalue2 = tinstant_value(start2);
-    if (DatumGetBool(tfunc_base_base(startvalue1, startvalue2, lfinfo)))
+    res = DatumGetBool(tfunc_base_base(startvalue1, startvalue2, lfinfo));
+    if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
     {
       pfree_array((void **) tofree, nfree);
-      return 1;
+      return lfinfo->ever ? 1 : 0;
     }
   }
   pfree_array((void **) tofree, nfree);
-  return 0;
+  return lfinfo->ever ? 0 : 1;
 }
 
 /**
@@ -2005,9 +2247,10 @@ efunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
  * sequence set and therefore the bounding period test is repeated
  */
 static int
-efunc_tcontseq_tcontseq(const TSequence *seq1,
+eafunc_tcontseq_tcontseq(const TSequence *seq1,
   const TSequence *seq2, LiftedFunctionInfo *lfinfo)
 {
+  assert(seq1); assert(seq2); assert(seq1->temptype == seq2->temptype);
   /* Test whether the bounding period of the two temporal values overlap */
   Span inter;
   if (! inter_span_span(&seq1->period, &seq2->period, &inter))
@@ -2019,12 +2262,19 @@ efunc_tcontseq_tcontseq(const TSequence *seq1,
     Datum value1, value2;
     tsequence_value_at_timestamptz(seq1, inter.lower, true, &value1);
     tsequence_value_at_timestamptz(seq2, inter.lower, true, &value2);
-    bool resvalue = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
-    return resvalue ? 1 : 0;
+    int result = DatumGetBool(tfunc_base_base(value1, value2, lfinfo)) ? 1 : 0;
+    DATUM_FREE(value1, temptype_basetype(seq1->temptype));
+    DATUM_FREE(value2, temptype_basetype(seq2->temptype));
+    return result;
   }
-  /* Ever functions are always discontinuous */
+  /* All ever/always functions currently available, that is, comparisons
+   * (=, <, ...) and spatial relationship (contains, intersects, ...), are
+   * discontinuous. When this is no longer the case, additional functions
+   * must be added to take account of the remaining cases
+   */
   assert(lfinfo->discont);
-  return efunc_tcontseq_tcontseq_discfn(seq1, seq2, lfinfo, &inter);
+  int result = eafunc_tcontseq_tcontseq_discfn(seq1, seq2, lfinfo, &inter);
+  return result;
 }
 
 /*****************************************************************************/
@@ -2033,11 +2283,15 @@ efunc_tcontseq_tcontseq(const TSequence *seq1,
  * @brief Synchronize the temporal values and apply to them the function
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
+ * @note The bounding period test in the dispatch function
+ * #eafunc_temporal_temporal ensures that the sequences are not disjoint and
+ * thus we are sure that we do not need to return -1 in this function
  */
 static int
-efunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
+eafunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
   LiftedFunctionInfo *lfinfo)
 {
+  assert(ss); assert(seq); assert(ss->temptype == seq->temptype);
   TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
   int loc;
   tsequenceset_find_timestamptz(ss, seq->period.lower, &loc);
@@ -2046,15 +2300,18 @@ efunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
   for (int i = loc; i < ss->count; i++)
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
-    if (efunc_tcontseq_tcontseq(seq1, seq, lfinfo) == 1)
+    int res = eafunc_tcontseq_tcontseq(seq1, seq, lfinfo);
+    if (lfinfo->ever && res == 1)
       return 1;
+    else if (! lfinfo->ever && res != 1)
+      return 0;
     int cmp = timestamptz_cmp_internal(upper,
       DatumGetTimestampTz(seq1->period.upper));
     if (cmp < 0 ||
       (cmp == 0 && (! seq->period.upper_inc || seq1->period.upper_inc)))
       break;
   }
-  return 0;
+  return lfinfo->ever ? 0 : 1;
 }
 
 /**
@@ -2063,11 +2320,11 @@ efunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
+eafunc_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert_args(lfinfo);
-  return efunc_tsequenceset_tcontseq(ss, seq, lfinfo);
+  return eafunc_tsequenceset_tcontseq(ss, seq, lfinfo);
 }
 
 /**
@@ -2076,23 +2333,38 @@ efunc_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-efunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
+eafunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
   const TSequenceSet *ss2, LiftedFunctionInfo *lfinfo)
 {
+  assert(ss1); assert(ss2); assert(ss1->temptype == ss2->temptype);
+  /* We need to verify that the sequence sets intersect in time in addition 
+   * to the bounding period test done in the dispatch function
+   * #eafunc_temporal_temporal to return -1 if they do not intersect in time
+   */
+  SpanSet *s1 = tsequenceset_time(ss1);
+  SpanSet *s2 = tsequenceset_time(ss2);
+  bool found = overlaps_spanset_spanset(s1, s2);
+  pfree(s1); pfree(s2);
+  if (! found)
+      return -1;
+
   int i = 0, j = 0;
   while (i < ss1->count && j < ss2->count)
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
     const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, j);
-    if (efunc_tcontseq_tcontseq(seq1, seq2, lfinfo) == 1)
+    int res = eafunc_tcontseq_tcontseq(seq1, seq2, lfinfo);
+    if (lfinfo->ever && res == 1)
       return 1;
+    else if (! lfinfo->ever && res != 1)
+      return 0;
     int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq1->period.upper),
       DatumGetTimestampTz(seq2->period.upper));
     if (cmp == 0)
     {
       if (! seq1->period.upper_inc && seq2->period.upper_inc)
         cmp = -1;
-      else if (seq1->period.upper_inc && !seq2->period.upper_inc)
+      else if (seq1->period.upper_inc && ! seq2->period.upper_inc)
         cmp = 1;
     }
     if (cmp == 0)
@@ -2104,7 +2376,7 @@ efunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
     else
       j++;
   }
-  return 0;
+  return lfinfo->ever ? 0 : 1;
 }
 
 /*****************************************************************************/
@@ -2115,9 +2387,10 @@ efunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
  * @param[in] lfinfo Information about the lifted function
  */
 int
-efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
+eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo *lfinfo)
 {
+  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
   /* Bounding box test */
   Span s1, s2;
   temporal_set_tstzspan(temp1, &s1);
@@ -2125,72 +2398,88 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   if (! over_span_span(&s1, &s2))
     return -1;
 
-  int result;
   assert(temptype_subtype(temp1->subtype));
   assert(temptype_subtype(temp2->subtype));
-  if (temp1->subtype == TINSTANT)
+  switch (temp1->subtype)
   {
-    if (temp2->subtype == TINSTANT)
-      result = efunc_tinstant_tinstant((TInstant *) temp1,
-        (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == TSEQUENCE)
-      result = MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
-        efunc_tinstant_tdiscseq((TInstant *) temp1,
-          (TSequence *) temp2, lfinfo) :
-        efunc_tinstant_tcontseq((TInstant *) temp1,
-          (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == TSEQUENCESET */
-      result = efunc_tinstant_tsequenceset((TInstant *) temp1,
-        (TSequenceSet *) temp2, lfinfo);
-  }
-  else if (temp1->subtype == TSEQUENCE)
-  {
-    if (temp2->subtype == TINSTANT)
-      result =  MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
-        efunc_tdiscseq_tinstant((TSequence *) temp1,
-          (TInstant *) temp2, lfinfo) :
-        efunc_tcontseq_tinstant((TSequence *) temp1,
-          (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == TSEQUENCE)
+    case TINSTANT:
     {
-      interpType interp1 = MEOS_FLAGS_GET_INTERP(temp1->flags);
-      interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
-      if (interp1 == DISCRETE && interp2 == DISCRETE )
-        result = efunc_tdiscseq_tdiscseq((TSequence *) temp1,
-          (TSequence *) temp2, lfinfo);
-      else if (interp1 == DISCRETE && interp2 != DISCRETE)
-        result = efunc_tdiscseq_tcontseq((TSequence *) temp1,
-          (TSequence *) temp2, lfinfo);
-      else if (interp1 != DISCRETE && interp2 == DISCRETE)
-        result = efunc_tcontseq_tdiscseq((TSequence *) temp1,
-          (TSequence *) temp2, lfinfo);
-      else /* interp1 != DISCRETE && interp2 != DISCRETE */
-        result = efunc_tcontseq_tcontseq((TSequence *) temp1,
-          (TSequence *) temp2, lfinfo);
+      switch (temp2->subtype)
+      {
+        case TINSTANT:
+          return eafunc_tinstant_tinstant((TInstant *) temp1,
+            (TInstant *) temp2, lfinfo);
+        case TSEQUENCE:
+          return MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
+            eafunc_tinstant_tdiscseq((TInstant *) temp1,
+              (TSequence *) temp2, lfinfo) :
+            eafunc_tinstant_tcontseq((TInstant *) temp1,
+              (TSequence *) temp2, lfinfo);
+        default: /* TSEQUENCESET */
+          return eafunc_tinstant_tsequenceset((TInstant *) temp1,
+            (TSequenceSet *) temp2, lfinfo);
+      }
     }
-    else /* temp2->subtype == TSEQUENCESET */
-      result = MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
-        efunc_tdiscseq_tsequenceset((TSequence *) temp1,
-          (TSequenceSet *) temp2, lfinfo) :
-        efunc_tsequence_tsequenceset((TSequence *) temp1,
-          (TSequenceSet *) temp2, lfinfo);
+    case TSEQUENCE:
+    {
+      switch (temp2->subtype)
+      {
+        case TINSTANT:
+          return  MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
+            eafunc_tdiscseq_tinstant((TSequence *) temp1,
+              (TInstant *) temp2, lfinfo) :
+            eafunc_tcontseq_tinstant((TSequence *) temp1,
+              (TInstant *) temp2, lfinfo);
+        case TSEQUENCE:
+        {
+          interpType interp1 = MEOS_FLAGS_GET_INTERP(temp1->flags);
+          interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
+          if (interp1 == DISCRETE)
+          {
+            if (interp2 == DISCRETE )
+              return eafunc_tdiscseq_tdiscseq((TSequence *) temp1,
+                (TSequence *) temp2, lfinfo);
+            else /* interp2 != DISCRETE */
+              return eafunc_tdiscseq_tcontseq((TSequence *) temp1,
+                (TSequence *) temp2, lfinfo);
+          }
+          else /* interp1 != DISCRETE */
+          {
+            if (interp2 == DISCRETE)
+              return eafunc_tcontseq_tdiscseq((TSequence *) temp1,
+                (TSequence *) temp2, lfinfo);
+            else /* interp2 != DISCRETE */
+              return eafunc_tcontseq_tcontseq((TSequence *) temp1,
+                (TSequence *) temp2, lfinfo);
+          }
+        }
+        default: /* TSEQUENCESET */
+          return MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
+            eafunc_tdiscseq_tsequenceset((TSequence *) temp1,
+              (TSequenceSet *) temp2, lfinfo) :
+            eafunc_tsequence_tsequenceset((TSequence *) temp1,
+              (TSequenceSet *) temp2, lfinfo);
+      }
+    }
+    default: /* TSEQUENCESET */
+    {
+      switch (temp2->subtype)
+      {
+        case TINSTANT:
+          return eafunc_tsequenceset_tinstant((TSequenceSet *) temp1,
+            (TInstant *) temp2, lfinfo);
+        case TSEQUENCE:
+          return MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
+            eafunc_tsequenceset_tdiscseq((TSequenceSet *) temp1,
+              (TSequence *) temp2, lfinfo) :
+            eafunc_tsequenceset_tcontseq((TSequenceSet *) temp1,
+              (TSequence *) temp2, lfinfo);
+        default: /* TSEQUENCESET */
+          return eafunc_tsequenceset_tsequenceset((TSequenceSet *) temp1,
+            (TSequenceSet *) temp2, lfinfo);
+      }
+    }
   }
-  else /* temp1->subtype == TSEQUENCESET */
-  {
-    if (temp2->subtype == TINSTANT)
-      result = efunc_tsequenceset_tinstant((TSequenceSet *) temp1,
-        (TInstant *) temp2, lfinfo);
-    else if (temp2->subtype == TSEQUENCE)
-      result = MEOS_FLAGS_DISCRETE_INTERP(temp2->flags) ?
-        efunc_tsequenceset_tdiscseq((TSequenceSet *) temp1,
-          (TSequence *) temp2, lfinfo) :
-        efunc_tsequenceset_tcontseq((TSequenceSet *) temp1,
-          (TSequence *) temp2, lfinfo);
-    else /* temp2->subtype == TSEQUENCESET */
-      result = efunc_tsequenceset_tsequenceset((TSequenceSet *) temp1,
-        (TSequenceSet *) temp2, lfinfo);
-  }
-  return result;
 }
 
 /*****************************************************************************/

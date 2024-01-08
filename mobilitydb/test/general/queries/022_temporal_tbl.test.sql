@@ -347,6 +347,16 @@ SELECT MAX(array_length(segments(ss),1)) FROM tbl_tint_seqset;
 SELECT MAX(array_length(segments(ss),1)) FROM tbl_tfloat_seqset;
 SELECT MAX(array_length(segments(ss),1)) FROM tbl_ttext_seqset;
 
+SELECT COUNT(lower_inc(temp)) FROM tbl_tbool;
+SELECT COUNT(lower_inc(temp)) FROM tbl_tint;
+SELECT COUNT(lower_inc(temp)) FROM tbl_tfloat;
+SELECT COUNT(lower_inc(temp)) FROM tbl_ttext;
+
+SELECT COUNT(upper_inc(temp)) FROM tbl_tbool;
+SELECT COUNT(upper_inc(temp)) FROM tbl_tint;
+SELECT COUNT(upper_inc(temp)) FROM tbl_tfloat;
+SELECT COUNT(upper_inc(temp)) FROM tbl_ttext;
+
 SELECT MAX(numInstants(temp)) FROM tbl_tbool;
 SELECT MAX(numInstants(temp)) FROM tbl_tint;
 SELECT MAX(numInstants(temp)) FROM tbl_tfloat;
@@ -473,62 +483,6 @@ SELECT MAX(numInstants(stops(seq, 50.0, '5 min'))) FROM tbl_tfloat_seq;
 SELECT MAX(numInstants(stops(inst, 50.0))) FROM tbl_tfloat_inst;
 SELECT MAX(numInstants(stops(seq, -50.0))) FROM tbl_tfloat_seq;
 SELECT MAX(numInstants(stops(seq, 50.0, '-10 minutes'))) FROM tbl_tfloat_seq;
-
--------------------------------------------------------------------------------
--- Ever/always comparison functions
--------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
-SELECT COUNT(*) FROM tbl_tint WHERE temp ?= startValue(temp);
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?= startValue(temp);
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ?= startValue(temp);
-
-SELECT COUNT(*) FROM tbl_tbool WHERE temp %= true;
-SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %= i;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %= f;
-SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %= t;
-
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ?<> startValue(temp);
-SELECT COUNT(*) FROM tbl_tint WHERE temp ?<> startValue(temp);
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<> startValue(temp);
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<> startValue(temp);
-
-SELECT COUNT(*) FROM tbl_tbool WHERE temp %<> true;
-SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<> i;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<> f;
-SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<> t;
-
-SELECT COUNT(*) FROM tbl_tint WHERE temp ?< startValue(temp);
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?< startValue(temp);
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ?< startValue(temp);
-
-SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %< i;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %< f;
-SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %< t;
-
-SELECT COUNT(*) FROM tbl_tint WHERE temp ?<= startValue(temp);
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<= startValue(temp);
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<= startValue(temp);
-
-SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<= i;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<= f;
-SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<= t;
-
-SELECT COUNT(*) FROM tbl_tint WHERE temp ?> startValue(temp);
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?> startValue(temp);
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ?> startValue(temp);
-
-SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %> i;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %> f;
-SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %> t;
-
-SELECT COUNT(*) FROM tbl_tint WHERE temp ?>= startValue(temp);
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?>= startValue(temp);
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ?>= startValue(temp);
-
-SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %>= i;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %>= f;
-SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %>= t;
 
 -------------------------------------------------------------------------------
 -- Restriction functions
@@ -726,50 +680,5 @@ SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp > t2.temp;
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp >= t2.temp;
-
--------------------------------------------------------------------------------
-
--- RESTRICTION SELECTIVITY
--- Test index support function
-
-CREATE INDEX tbl_tbool_big_rtree_idx ON tbl_tbool_big USING gist(temp);
-CREATE INDEX tbl_tint_big_rtree_idx ON tbl_tint_big USING gist(temp);
-CREATE INDEX tbl_tfloat_big_rtree_idx ON tbl_tfloat_big USING gist(temp);
-CREATE INDEX tbl_ttext_rtree_idx ON tbl_ttext_big USING gist(temp);
-
--- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ?= 1;
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5;
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ?= 'AAA';
-
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
-SELECT COUNT(*) FROM tbl_ttext_big WHERE temp %= 'AAA';
-
-DROP INDEX tbl_tbool_big_rtree_idx;
-DROP INDEX tbl_tint_big_rtree_idx;
-DROP INDEX tbl_tfloat_big_rtree_idx;
-DROP INDEX tbl_ttext_rtree_idx;
-
--------------------------------------------------------------------------------
-
--- RESTRICTION SELECTIVITY
--- Test index support function
-
-CREATE INDEX tbl_tbool_big_quadtree_idx ON tbl_tbool_big USING spgist(temp);
-CREATE INDEX tbl_tint_big_quadtree_idx ON tbl_tint_big USING spgist(temp);
-CREATE INDEX tbl_tfloat_big_quadtree_idx ON tbl_tfloat_big USING spgist(temp);
-CREATE INDEX tbl_ttext_quadtree_idx ON tbl_ttext_big USING spgist(temp);
-
--- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp ?= 1;
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5;
-SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
-SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
-
-DROP INDEX tbl_tbool_big_quadtree_idx;
-DROP INDEX tbl_tint_big_quadtree_idx;
-DROP INDEX tbl_tfloat_big_quadtree_idx;
-DROP INDEX tbl_ttext_quadtree_idx;
 
 -------------------------------------------------------------------------------

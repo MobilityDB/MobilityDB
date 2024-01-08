@@ -218,7 +218,7 @@ skiplist_delete(SkipList *list, int cur)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Free the skiplist
  * @param[in] list Skiplist
  */
@@ -296,6 +296,7 @@ skiplist_print(const SkipList *list)
   }
   sprintf(buf+len, "}\n");
   meos_error(WARNING, 0, "SKIPLIST: %s", buf);
+  return;
 }
 #endif
 
@@ -323,6 +324,7 @@ aggstate_set_extra(SkipList *state, void *data, size_t size)
 #if ! MEOS
   MemoryContextSwitchTo(oldctx);
 #endif /* ! MEOS */
+  return;
 }
 
 /**
@@ -464,11 +466,11 @@ void
 skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   bool crossings)
 {
+  assert(list->length > 0);
+
 #if ! MEOS
   MemoryContext oldctx;
 #endif /* ! MEOS */
-
-  assert(list->length > 0);
 
   /* Temporal aggregation cannot mix instants and sequences */
   Temporal *temp1 = (Temporal *) skiplist_headval(list);

@@ -148,7 +148,7 @@ Spanset_constructor(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   int count;
   Span *spans = spanarr_extract(array, &count);
-  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE, ORDERED);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_SPANSET_P(result);
 }
@@ -347,7 +347,8 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
     RangeType *range = multirange_get_range(typcache->rngtype, mrange, i);
     range_set_span(range, typcache->rngtype, &spans[i]);
   }
-  SpanSet *result = spanset_make_free(spans, mrange->rangeCount, NORMALIZE);
+  SpanSet *result = spanset_make_free(spans, mrange->rangeCount, NORMALIZE,
+    ORDERED);
   PG_FREE_IF_COPY(mrange, 0);
   PG_RETURN_SPANSET_P(result);
 }
@@ -436,21 +437,21 @@ Spanset_upper_inc(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PGDLLEXPORT Datum Spanset_width(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Spanset_width);
+PGDLLEXPORT Datum Numspanset_width(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspanset_width);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the width of a number span set
  * @sqlfn width()
  */
 Datum
-Spanset_width(PG_FUNCTION_ARGS)
+Numspanset_width(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   bool boundspan = PG_GETARG_BOOL(1);
-  double result = spanset_width(ss, boundspan);
+  Datum result = numspanset_width(ss, boundspan);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 Datum Datespanset_duration(PG_FUNCTION_ARGS);

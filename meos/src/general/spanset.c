@@ -482,15 +482,16 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized
+ * @param[in] ordered True if the input spans are ordered
  * @csqlfn #Spanset_constructor()
  */
 SpanSet *
-spanset_make(Span *spans, int count, bool normalize)
+spanset_make(Span *spans, int count, bool normalize, bool ordered)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) spans) || ! ensure_positive(count))
     return NULL;
-  return spanset_make_exp(spans, count, count, normalize, ORDERED);
+  return spanset_make_exp(spans, count, count, normalize, ordered);
 }
 #endif /* MEOS */
 
@@ -501,15 +502,16 @@ spanset_make(Span *spans, int count, bool normalize)
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized.
+ * @param[in] ordered True if the input spans are ordered
  * @see #spanset_make
  */
 SpanSet *
-spanset_make_free(Span *spans, int count, bool normalize)
+spanset_make_free(Span *spans, int count, bool normalize, bool ordered)
 {
   assert(spans); assert(count >= 0);
   SpanSet *result = NULL;
   if (count > 0)
-    result = spanset_make_exp(spans, count, count, normalize, ORDERED);
+    result = spanset_make_exp(spans, count, count, normalize, ordered);
   pfree(spans);
   return result;
 }
@@ -646,12 +648,12 @@ set_to_spanset(const Set *s)
     Datum d = SET_VAL_N(s, i);
     span_set(d, d, true, true, s->basetype, spantype, &spans[i]);
   }
-  return spanset_make_free(spans, s->count, NORMALIZE_NO);
+  return spanset_make_free(spans, s->count, NORMALIZE_NO, ORDERED);
 }
 
 /**
  * @ingroup libmeos_internal_setspan_conversion
- * @brief Convert a span as a span set.
+ * @brief Convert a span to a span set.
  * @param[in] s Span
  * @csqlfn #Span_to_spanset()
  */
@@ -912,19 +914,19 @@ spanset_upper_inc(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the width of a span set as a double.
  * @param[in] ss Span set
  * @param[in] boundspan True when the potential time gaps are ignored
- * @return On error return -1.0
- * @csqlfn #Spanset_width()
+ * @return On error return -1
+ * @csqlfn #Numspanset_width()
  */
-double
-spanset_width(const SpanSet *ss, bool boundspan)
+Datum
+numspanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
-    return -1.0;
+    return (Datum) -1;
 
   if (boundspan)
   {
@@ -933,14 +935,70 @@ spanset_width(const SpanSet *ss, bool boundspan)
     return distance_value_value(lower, upper, ss->basetype);
   }
 
-  double result = 0;
+  Datum result = (Datum) 0;
   for (int i = 0; i < ss->count; i++)
   {
     const Span *s = SPANSET_SP_N(ss, i);
-    result += span_width(s);
+    result = datum_add(result, numspan_width(s), s->basetype);
   }
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the width of an integer span set
+ * @param[in] ss Span
+ * @param[in] boundspan True when the potential time gaps are ignored
+ * @return On error return -1
+ * @csqlfn #Numspanset_width(()
+ */
+int
+intspanset_width(const SpanSet *ss, bool boundspan)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
+    return -1;
+  return Int32GetDatum(numspanset_width(ss, boundspan));
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the width of an integer span set
+ * @param[in] ss Span
+ * @param[in] boundspan True when the potential time gaps are ignored
+ * @return On error return -1
+ * @csqlfn #Numspanset_width(()
+ */
+int64
+bigintspanset_width(const SpanSet *ss, bool boundspan)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
+    return -1;
+  return Int64GetDatum(numspanset_width(ss, boundspan));
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the width of a float span set
+ * @param[in] ss Span
+ * @param[in] boundspan True when the potential time gaps are ignored
+ * @return On error return -1
+ * @csqlfn #Numspanset_width(()
+ */
+double
+floatspanset_width(const SpanSet *ss, bool boundspan)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
+    return -1.0;
+  return DatumGetFloat8(numspanset_width(ss, boundspan));
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_accessor
@@ -1058,7 +1116,7 @@ datespanset_end_date(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th date of a span set
+ * @brief Initialize the last argument to the n-th date of a span set
  * @param[in] ss Span set
  * @param[in] n Number
  * @param[out] result Date
@@ -1195,7 +1253,7 @@ tstzspanset_end_timestamptz(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Set the last argument to the n-th timestamptz of a span set
+ * @brief Initialize the last argument with the n-th timestamptz of a span set
  * @param[in] ss Span set
  * @param[in] n Number
  * @param[out] result Timestamptz
@@ -1396,7 +1454,8 @@ spanset_compact(SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of the float span set to the number of decimal places.
+ * @brief Return a float span set with the precision of the spans set to a
+ * number of decimal places
  * @param[in] ss Span set
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Floatspanset_round()
@@ -1416,7 +1475,7 @@ floatspanset_round(const SpanSet *ss, int maxdd)
     const Span *span = SPANSET_SP_N(ss, i);
     floatspan_rnd(span, size, &spans[i]);
   }
-  return spanset_make_free(spans, ss->count, NORMALIZE);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
 }
 
 /*****************************************************************************/
@@ -1437,7 +1496,7 @@ intspanset_to_floatspanset(const SpanSet *ss)
   Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     intspan_set_floatspan(SPANSET_SP_N(ss, i), &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
 }
 
 /**
@@ -1456,7 +1515,7 @@ floatspanset_to_intspanset(const SpanSet *ss)
   Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     floatspan_set_intspan(SPANSET_SP_N(ss, i), &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
 }
 
 /**
@@ -1475,7 +1534,7 @@ datespanset_to_tstzspanset(const SpanSet *ss)
   Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     datespan_set_tstzspan(SPANSET_SP_N(ss, i), &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
 }
 
 /**
@@ -1494,9 +1553,7 @@ tstzspanset_to_datespanset(const SpanSet *ss)
   Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     tstzspan_set_datespan(SPANSET_SP_N(ss, i), &spans[i]);
-  int newcount;
-  Span *normspans = spanarr_normalize(spans, ss->count, ORDERED, &newcount);
-  return spanset_make_free(normspans, newcount, NORMALIZE);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED_NO);
 }
 
 /*****************************************************************************/

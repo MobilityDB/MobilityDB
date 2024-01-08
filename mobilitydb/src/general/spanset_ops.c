@@ -1058,7 +1058,7 @@ Minus_spanset_spanset(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************
- * Distance functions returning a double
+ * Distance functions
  ******************************************************************************/
 
 PGDLLEXPORT Datum Distance_value_spanset(PG_FUNCTION_ARGS);
@@ -1075,9 +1075,9 @@ Distance_value_spanset(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  double result = distance_spanset_value(ss, d, basetype);
+  Datum result = distance_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum Distance_span_spanset(PG_FUNCTION_ARGS);
@@ -1095,8 +1095,8 @@ Distance_span_spanset(PG_FUNCTION_ARGS)
   Datum ss = PG_GETARG_DATUM(1);
   Span sp1;
   spanset_span_slice(ss, &sp1);
-  double result = distance_span_span(&sp1, s);
-  PG_RETURN_FLOAT8(result);
+  Datum result = distance_span_span(&sp1, s);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum Distance_spanset_value(PG_FUNCTION_ARGS);
@@ -1113,9 +1113,9 @@ Distance_spanset_value(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  double result = distance_spanset_value(ss, d, basetype);
+  Datum result = distance_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum Distance_spanset_span(PG_FUNCTION_ARGS);
@@ -1131,9 +1131,9 @@ Distance_spanset_span(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  double result = distance_spanset_span(ss, s);
+  Datum result = distance_spanset_span(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum Distance_spanset_spanset(PG_FUNCTION_ARGS);
@@ -1149,10 +1149,10 @@ Distance_spanset_spanset(PG_FUNCTION_ARGS)
 {
   SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
   SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  double result = distance_spanset_spanset(ss1, ss2);
+  Datum result = distance_spanset_spanset(ss1, ss2);
   PG_FREE_IF_COPY(ss1, 0);
   PG_FREE_IF_COPY(ss2, 1);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 /******************************************************************************/

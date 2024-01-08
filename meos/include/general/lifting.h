@@ -62,6 +62,7 @@ typedef struct
   bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool discont;              /**< True if the function has instantaneous discontinuities */
+  bool ever;                 /**< True/false when computing the ever/always semantics */
   bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, meosType,
     Datum *, TimestampTz *); /**< Turning point function for temporal and base types*/
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
@@ -104,7 +105,9 @@ extern Temporal *tfunc_temporal_temporal(const Temporal *temp1,
 
 /*****************************************************************************/
 
-extern int efunc_temporal_temporal(const Temporal *temp1,
+extern int eafunc_temporal_base(const Temporal *temp, Datum value,
+  LiftedFunctionInfo *lfinfo);
+extern int eafunc_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, LiftedFunctionInfo *lfinfo);
 
 /*****************************************************************************/

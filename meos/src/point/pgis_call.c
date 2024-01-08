@@ -552,7 +552,7 @@ gserialized_3Dintersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @brief Return true if the geometries are within the given distance
+ * @brief Return true if the geometries are within a distance
  * @note PostGIS function: LWGEOM_dwithin(PG_FUNCTION_ARGS)
  */
 bool
@@ -573,7 +573,7 @@ gserialized_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 }
 
 /**
- * @brief Return true if the geometries are within the given distance
+ * @brief Return true if the geometries are within a distance
  * @note PostGIS function: LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
  */
 bool
@@ -606,26 +606,27 @@ gserialized_reverse(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Compute the azimuth of segment defined by the two given Point
- * geometries.
- * @return NULL on exception (same point). Return radians otherwise.
+ * @brief Initialize the last argument with the azimuth of a segment defined by
+ * two points
+ * @return Return false on exception (same point)
  */
 bool
 gserialized_azimuth(GSERIALIZED *gs1, GSERIALIZED *gs2, double *result)
 {
-  LWPOINT *point;
+  assert(gserialized_get_type(gs1) == POINTTYPE);
+  assert(gserialized_get_type(gs2) == POINTTYPE);
+  assert(! gserialized_is_empty(gs1)); assert(! gserialized_is_empty(gs2));
+
   POINT2D p1, p2;
-  int32_t srid;
 
   /* Extract first point */
-  point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs1));
+  LWPOINT *point = (LWPOINT *) lwgeom_from_gserialized(gs1);
   if (! point)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Arguments must be point geometries");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error extracting point");
     return false;
   }
-  srid = point->srid;
+  int32_t srid = point->srid;
   if (!getPoint2d_p(point->point, 0, &p1))
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error extracting point");
@@ -637,8 +638,7 @@ gserialized_azimuth(GSERIALIZED *gs1, GSERIALIZED *gs2, double *result)
   point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs2));
   if (! point)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Arguments must be point geometries");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error extracting point");
     return false;
   }
   if (point->srid != srid)
@@ -649,8 +649,7 @@ gserialized_azimuth(GSERIALIZED *gs1, GSERIALIZED *gs2, double *result)
   }
   if (! getPoint2d_p(point->point, 0, &p2))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Error extracting point");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error extracting point");
     return false;
   }
   lwpoint_free(point);
@@ -748,7 +747,7 @@ POSTGIS2GEOS(const GSERIALIZED *gs)
 {
   GEOSGeometry *result;
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  if ( ! lwgeom )
+  if (! lwgeom)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "POSTGIS2GEOS: unable to deserialize input");
@@ -766,7 +765,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
   GSERIALIZED *result;
 
   lwgeom = GEOS2LWGEOM(geom, want3d);
-  if ( ! lwgeom )
+  if (! lwgeom)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "GEOS2LWGEOM returned NULL");
@@ -1133,6 +1132,233 @@ gserialized_convex_hull(const GSERIALIZED *gs)
   return result;
 }
 
+int
+lwgeom_isfinite(const LWGEOM *lwgeom)
+{
+  LWPOINTITERATOR* it = lwpointiterator_create(lwgeom);
+  int hasz = lwgeom_has_z(lwgeom);
+  int hasm = lwgeom_has_m(lwgeom);
+
+  while (lwpointiterator_has_next(it))
+  {
+    POINT4D p;
+    lwpointiterator_next(it, &p);
+    int finite = isfinite(p.x) && isfinite(p.y) &&
+      (hasz ? isfinite(p.z) : 1) && (hasm ? isfinite(p.m) : 1);
+
+    if (!finite)
+    {
+      lwpointiterator_destroy(it);
+      return LW_FALSE;
+    }
+  }
+  lwpointiterator_destroy(it);
+  return LW_TRUE;
+}
+
+/**
+ * @brief Return a POLYGON or MULTIPOLYGON that represents all points whose
+ * distance from a geometry/geography is less than or equal to a given distance
+  * @param[in] gs Geometry
+ * @param[in] size Distance
+ * @param[in] params Buffer style parameters
+ * @note PostGIS function: ST_Buffer(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+gserialized_buffer(const GSERIALIZED *gs, double size, char *params)
+{
+  assert(gs); assert(params);
+  
+  GEOSBufferParams *bufferparams;
+  GEOSGeometry *g1, *g3 = NULL;
+  GSERIALIZED *result;
+  LWGEOM *lwg;
+  int quadsegs = 8; /* the default */
+  int singleside = 0; /* the default */
+  enum
+  {
+    ENDCAP_ROUND = 1,
+    ENDCAP_FLAT = 2,
+    ENDCAP_SQUARE = 3
+  };
+  enum
+  {
+    JOIN_ROUND = 1,
+    JOIN_MITRE = 2,
+    JOIN_BEVEL = 3
+  };
+  const double DEFAULT_MITRE_LIMIT = 5.0;
+  const int DEFAULT_ENDCAP_STYLE = ENDCAP_ROUND;
+  const int DEFAULT_JOIN_STYLE = JOIN_ROUND;
+  double mitreLimit = DEFAULT_MITRE_LIMIT;
+  int endCapStyle = DEFAULT_ENDCAP_STYLE;
+  int joinStyle  = DEFAULT_JOIN_STYLE;
+
+  char *param;
+  for (param = params; ; param = NULL)
+  {
+    char *key, *val;
+    param = strtok(param, " ");
+    if (! param)
+      break;
+
+    key = param;
+    val = strchr(key, '=');
+    if (! val || *(val + 1) == '\0')
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Missing value for buffer parameter %s", key);
+      return NULL;
+    }
+    *val = '\0';
+    ++val;
+
+    if (! strcmp(key, "endcap"))
+    {
+      /* Supported end cap styles: "round", "flat", "square" */
+      if (! strcmp(val, "round"))
+        endCapStyle = ENDCAP_ROUND;
+      else if (! strcmp(val, "flat") || ! strcmp(val, "butt"))
+        endCapStyle = ENDCAP_FLAT;
+      else if (! strcmp(val, "square"))
+        endCapStyle = ENDCAP_SQUARE;
+      else
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+          "Invalid buffer end cap style: %s (accept: 'round', 'flat', "
+          "'butt' or 'square')", val);
+        return NULL;
+      }
+    }
+    else if (! strcmp(key, "join"))
+    {
+      if (! strcmp(val, "round"))
+        joinStyle = JOIN_ROUND;
+      else if (! strcmp(val, "mitre") || ! strcmp(val, "miter"))
+        joinStyle = JOIN_MITRE;
+      else if (! strcmp(val, "bevel"))
+        joinStyle = JOIN_BEVEL;
+      else
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+          "Invalid buffer end cap style: %s (accept: 'round', 'mitre', "
+          "'miter'  or 'bevel')", val);
+        return NULL;
+      }
+    }
+    else if (! strcmp(key, "mitre_limit") || ! strcmp(key, "miter_limit"))
+      /* mitreLimit is a float */
+      mitreLimit = atof(val);
+    else if (! strcmp(key, "quad_segs"))
+      /* quadrant segments is an int */
+      quadsegs = atoi(val);
+    else if (! strcmp(key, "side"))
+    {
+      if (! strcmp(val, "both"))
+        singleside = 0;
+      else if (! strcmp(val, "left"))
+        singleside = 1;
+      else if (! strcmp(val, "right"))
+      {
+        singleside = 1;
+        size *= -1;
+      }
+      else
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+          "Invalid side parameter: %s (accept: 'right', 'left', 'both')",
+          val);
+        return NULL;
+      }
+    }
+    else
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Invalid buffer parameter: %s (accept: 'endcap', 'join', "
+        "'mitre_limit', 'miter_limit', 'quad_segs' and 'side')", key);
+      return NULL;
+    }
+  }
+
+  /* Empty.Buffer() == Empty[polygon] */
+  if (gserialized_is_empty(gs))
+  {
+    lwg = lwpoly_as_lwgeom(lwpoly_construct_empty(gserialized_get_srid(gs),
+      0, 0)); // buffer wouldn't give back z or m anyway
+    GSERIALIZED *result = geo_serialize(lwg);
+    lwgeom_free(lwg);
+    return result;
+  }
+
+  lwg = lwgeom_from_gserialized(gs);
+
+  if (! lwgeom_isfinite(lwg))
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Geometry contains invalid coordinates");
+    return NULL;
+  }
+
+  lwgeom_free(lwg);
+
+  initGEOS(lwnotice, lwgeom_geos_error);
+
+  g1 = POSTGIS2GEOS(gs);
+  if (! g1)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "First argument geometry could not be converted to GEOS");
+    return NULL;
+  }
+
+  bufferparams = GEOSBufferParams_create();
+  if (bufferparams)
+  {
+    if (GEOSBufferParams_setEndCapStyle(bufferparams, endCapStyle) &&
+      GEOSBufferParams_setJoinStyle(bufferparams, joinStyle) &&
+      GEOSBufferParams_setMitreLimit(bufferparams, mitreLimit) &&
+      GEOSBufferParams_setQuadrantSegments(bufferparams, quadsegs) &&
+      GEOSBufferParams_setSingleSided(bufferparams, singleside))
+    {
+      g3 = GEOSBufferWithParams(g1, bufferparams, size);
+    }
+    else
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Error setting buffer parameters.");
+    }
+    GEOSBufferParams_destroy(bufferparams);
+  }
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Error setting buffer parameters.");
+  }
+
+  GEOSGeom_destroy(g1);
+
+  if (! g3)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "GEOSBuffer returned error");
+    return NULL;
+  }
+
+  GEOSSetSRID(g3, gserialized_get_srid(gs));
+
+  result = GEOS2POSTGIS(g3, gserialized_has_z(gs));
+  GEOSGeom_destroy(g3);
+
+  if (! result)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "GEOS buffer() threw an error (result postgis geometry formation)!");
+    return NULL; /* never get here */
+  }
+
+  return result;
+}
+
 /*****************************************************************************
  * Functions adapted from geography_measurement.c
  *****************************************************************************/
@@ -1162,7 +1388,7 @@ gserialized_geog_length(GSERIALIZED *gs, bool use_spheroid)
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
   /* User requests spherical calculation, turn our spheroid into a sphere */
-  if ( ! use_spheroid )
+  if (!  use_spheroid )
     s.a = s.b = s.radius;
 
   /* Calculate the length */
@@ -1183,7 +1409,7 @@ gserialized_geog_length(GSERIALIZED *gs, bool use_spheroid)
 }
 
 /**
- * @brief Return true if the geographies are within the given distance
+ * @brief Return true if the geographies are within a distance
  * @note PostGIS function: geography_dwithin_uncached(PG_FUNCTION_ARGS)
  * where we use the WGS84 spheroid
  */
@@ -1205,7 +1431,7 @@ gserialized_geog_dwithin(GSERIALIZED *gs1, GSERIALIZED *gs2, double tolerance,
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
   /* Set to sphere if requested */
-  if ( ! use_spheroid )
+  if (!  use_spheroid )
     s.a = s.b = s.radius;
 
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
@@ -1257,7 +1483,7 @@ gserialized_geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
   /* Set to sphere if requested */
-  if ( ! use_spheroid )
+  if (!  use_spheroid )
     s.a = s.b = s.radius;
 
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
@@ -1907,14 +2133,12 @@ pgis_gserialized_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 void
 geography_valid_type(uint8_t type)
 {
-  if ( ! (type == POINTTYPE || type == LINETYPE || type == POLYGONTYPE ||
+  if (! (type == POINTTYPE || type == LINETYPE || type == POLYGONTYPE ||
           type == MULTIPOINTTYPE || type == MULTILINETYPE ||
           type == MULTIPOLYGONTYPE || type == COLLECTIONTYPE) )
-  {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Geography type does not support %s", lwtype_name(type));
-    return;
-  }
+  return;
 }
 
 GSERIALIZED *
@@ -1987,7 +2211,7 @@ pgis_geography_in(char *str, int32 geog_typmod)
      * but needs discussion */
     lwgeom = lwgeom_from_hexwkb(str, LW_PARSER_CHECK_NONE);
     /* Error out if something went sideways */
-    if ( ! lwgeom )
+    if (!  lwgeom )
     {
       meos_error(ERROR, MEOS_ERR_TEXT_INPUT, "parse error - invalid geometry");
       return NULL;
@@ -2031,7 +2255,7 @@ pgis_geography_from_binary(const char *wkb_bytea)
   uint8_t *wkb = (uint8_t *) VARDATA(wkb_bytea);
   LWGEOM *geom = lwgeom_from_wkb(wkb, wkb_size, LW_PARSER_CHECK_NONE);
 
-  if ( ! geom )
+  if (!  geom )
   {
     meos_error(ERROR, MEOS_ERR_WKB_INPUT, "Unable to parse WKB string");
     return NULL;
@@ -2307,7 +2531,7 @@ gserialized_line_substring(GSERIALIZED *geom, double from, double to)
 
     }
     /* If we got any points, we need to return a GEOMETRYCOLLECTION */
-    if ( ! homogeneous )
+    if (!  homogeneous )
       type = COLLECTIONTYPE;
 
     olwgeom = (LWGEOM*)lwcollection_construct(type, iline->srid, NULL, g, geoms);
@@ -2411,7 +2635,7 @@ gserialized_pointn_linestring(const GSERIALIZED *gs, int where)
 
   lwgeom_free(geom);
 
-  if ( ! point )
+  if (!  point )
     return NULL;
 
   return geo_serialize(lwpoint_as_lwgeom(point));

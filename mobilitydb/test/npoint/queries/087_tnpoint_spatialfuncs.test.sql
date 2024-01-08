@@ -114,8 +114,8 @@ SELECT round(minusStbox(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@200
 SELECT round(minusStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
 SELECT round(minusStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
 
-SELECT equals(npoint(1, 0.5), npoint(1, 0.50000001));
-SELECT equals(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
+SELECT same(npoint(1, 0.5), npoint(1, 0.50000001));
+SELECT same(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
 -- TODO
 -- SELECT equals(npoint(1, 0.7744007411523213), npoint(2, 0.6952992297355585));
 
@@ -131,6 +131,9 @@ SELECT round(cumulativeLength(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, 
 
 SELECT round(speed(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
 SELECT round(speed(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6);
+/* Errors */
+SELECT round(speed(tnpoint 'Npoint(1, 0.2)@2000-01-01'), 6);
+SELECT round(speed(tnpoint '{Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6);
 SELECT round(speed(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
 SELECT round(speed(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6);
 

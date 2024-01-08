@@ -115,6 +115,36 @@ Tinterrel_tpoint_geo(FunctionCallInfo fcinfo, bool tinter)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+/**
+ * @brief Return the temporal disjoint/intersection relationship between two
+ * temporal points
+ */
+static Datum
+Tinterrel_tpoint_tpoint(FunctionCallInfo fcinfo, bool tinter)
+{
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool restr = false;
+  bool atvalue = false;
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
+  {
+    atvalue = PG_GETARG_BOOL(2);
+    restr = true;
+  }
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  /* Result depends on whether we are computing tintersects or tdisjoint */
+  Temporal *result = tinterrel_tpoint_tpoint(temp1, temp2, tinter, restr,
+    atvalue);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************
  * Temporal contains
  *****************************************************************************/
@@ -183,6 +213,20 @@ Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
   return Tinterrel_tpoint_geo(fcinfo, TDISJOINT);
 }
 
+PGDLLEXPORT Datum Tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdisjoint_tpoint_tpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_temp
+ * @brief Return a temporal boolean that states whether two temporal points
+ * are disjoint
+ * @sqlfn tdisjoint()
+ */
+Datum
+Tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+  return Tinterrel_tpoint_tpoint(fcinfo, TDISJOINT);
+}
+
 /*****************************************************************************
  * Temporal intersects
  * Available for temporal geography points
@@ -214,6 +258,20 @@ Datum
 Tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
   return Tinterrel_tpoint_geo(fcinfo, TINTERSECTS);
+}
+
+PGDLLEXPORT Datum Tintersects_tpoint_tpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tintersects_tpoint_tpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_temp
+ * @brief Return a temporal boolean that states whether two temporal points
+ * are disjoint
+ * @sqlfn tdisjoint()
+ */
+Datum
+Tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+  return Tinterrel_tpoint_tpoint(fcinfo, TINTERSECTS);
 }
 
 /*****************************************************************************

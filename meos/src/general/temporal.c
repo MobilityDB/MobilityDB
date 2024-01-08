@@ -57,9 +57,6 @@
 #include "general/type_parser.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
-#if NPOINT
-  #include "npoint/tnpoint_static.h"
-#endif
 
 /*****************************************************************************
  * Parameter tests
@@ -109,23 +106,6 @@ ensure_one_true(bool hasshift, bool haswidth)
   }
   return true;
 }
-
-#if 0 /* not used */
-/**
- * @brief Ensure that a temporal value has discrete interpolation
- */
-bool
-ensure_discrete_interp(int16 flags)
-{
-  if (! MEOS_FLAGS_DISCRETE_INTERP(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal value must have discrete interpolation");
-    return false;
-  }
-  return true;
-}
-#endif /* not used */
 
 /**
  * @brief Ensure that the interpolation is valid
@@ -189,6 +169,38 @@ ensure_same_continuous_interp(int16 flags1, int16 flags2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal values must have the same continuous interpolation");
+    return false;
+  }
+  return true;
+}
+
+#if 0 /* not used */
+/**
+ * @brief Ensure that a temporal value does not have discrete interpolation
+ */
+bool
+ensure_not_discrete_interp(int16 flags)
+{
+  if (MEOS_FLAGS_DISCRETE_INTERP(flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal value cannot have discrete interpolation");
+    return false;
+  }
+  return true;
+}
+#endif /* not used */
+
+/**
+ * @brief Ensure that a temporal value has linear interpolation
+ */
+bool
+ensure_linear_interp(int16 flags)
+{
+  if (! MEOS_FLAGS_LINEAR_INTERP(flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal value must have linear interpolation");
     return false;
   }
   return true;
@@ -473,12 +485,14 @@ ensure_positive_datum(Datum size, meosType basetype)
     char str[256];
     if (basetype == T_INT4)
       sprintf(str, "%d", DatumGetInt32(size));
-    else if (basetype == T_INT8)
-      sprintf(str, "%ld", DatumGetInt64(size));
     else if (basetype == T_FLOAT8)
       sprintf(str, "%f", DatumGetFloat8(size));
+#if 0 /* not used */
+    else if (basetype == T_INT8)
+      sprintf(str, "%ld", DatumGetInt64(size));
     else /* basetype == T_TIMESTAMPTZ */
       sprintf(str, INT64_FORMAT, DatumGetInt64(size));
+#endif /* not used */
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The value must be strictly positive: %s", str);
     return false;
@@ -1082,24 +1096,27 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
 
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
+  switch (temp->subtype)
   {
-    /* Default interpolation depending on the base type */
-    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
-    TSequence *seq = tinstant_to_tsequence((const TInstant *) temp, interp);
-    result = (Temporal *) tsequence_append_tinstant(seq, inst, maxdist, maxt,
-      expand);
-    pfree(seq);
+    case TINSTANT:
+    {
+      /* Default interpolation depending on the base type */
+      interpType interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ?
+        LINEAR : STEP;
+      TSequence *seq = tinstant_to_tsequence((const TInstant *) temp, interp);
+      Temporal *result = (Temporal *) tsequence_append_tinstant(seq, inst,
+        maxdist, maxt, expand);
+      pfree(seq);
+      return result;
+    }
+    case TSEQUENCE:
+      return (Temporal *) tsequence_append_tinstant((TSequence *) temp,
+        inst, maxdist, maxt, expand);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_append_tinstant((TSequenceSet *) temp,
+        inst, maxdist, maxt, expand);
   }
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_append_tinstant((TSequence *) temp,
-      inst, maxdist, maxt, expand);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_append_tinstant((TSequenceSet *) temp,
-      inst, maxdist, maxt, expand);
-  return result;
 }
 
 /**
@@ -1117,7 +1134,7 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) seq) ||
       ! ensure_same_temporal_type(temp, (Temporal *) seq) ||
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE) ||
-      ! ensure_same_interp(temp, (Temporal *) seq) ||
+      (temp->subtype != TINSTANT && ! ensure_same_interp(temp, (Temporal *) seq)) ||
       ! ensure_spatial_validity(temp, (Temporal *) seq))
     return NULL;
 
@@ -1171,8 +1188,8 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
     else
     {
       interpType interp = Max(interp1, interp2);
-      *out1 = (Temporal *) temporal_to_tsequenceset(temp1, interp);
-      *out2 = (Temporal *) temporal_to_tsequenceset(temp2, interp);
+      *out1 = (Temporal *) temporal_tsequenceset(temp1, interp);
+      *out2 = (Temporal *) temporal_tsequenceset(temp2, interp);
     }
     return;
   }
@@ -1447,7 +1464,7 @@ tfloat_to_tint(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding period of a temporal value.
+ * @brief Initialize the last argument with the time span of a temporal value
  * @param[in] temp Temporal value
  * @param[out] s Span
  */
@@ -1486,7 +1503,7 @@ temporal_to_tstzspan(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the value span of a temporal number in the last argument
+ * @brief Initialize the last argument with the value span of a temporal number
  * @param[in] temp Temporal value
  * @param[out] s Span
  */
@@ -1627,8 +1644,8 @@ tfloat_round(const Temporal *temp, int maxdd)
 
 /**
  * @ingroup meos_temporal_transf
- * @brief Set the precision of the coordinates of an array of temporal floats
- * to a number of decimal places.
+ * @brief Return an array of temporal floats with the precision of the
+ * coordinates set to a number of decimal places.
  * @param[in] temparr Array of temporal values
  * @param[in] count Number of values in the input array
  * @param[in] maxdd Maximum number of decimal digits
@@ -1700,14 +1717,14 @@ temporal_to_tinstant(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal value transformed into a temporal sequence
  * @param[in] temp Temporal value
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_to_tsequence()
  */
 TSequence *
-temporal_to_tsequence(const Temporal *temp, interpType interp)
+temporal_tsequence(const Temporal *temp, interpType interp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
@@ -1742,13 +1759,37 @@ temporal_to_tsequence(const Temporal *temp, interpType interp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal value transformed into a temporal sequence set.
+ * @brief Return a temporal value transformed into a temporal sequence
+ * @param[in] temp Temporal value
+ * @param[in] interp_str Interpolation string, may be NULL
+ * @csqlfn #Temporal_to_tsequence()
+ */
+TSequence *
+temporal_to_tsequence(const Temporal *temp, char *interp_str)
+{
+  interpType interp;
+  /* If the interpolation is not NULL */
+  if (interp_str)
+    interp = interptype_from_string(interp_str);
+  else
+  {
+    if (temp->subtype == TSEQUENCE)
+      interp = MEOS_FLAGS_GET_INTERP(temp->flags);
+    else
+      interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
+  }
+  return temporal_tsequence(temp, interp);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal value transformed into a temporal sequence set
  * @param[in] temp Temporal value
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_to_tsequenceset()
  */
 TSequenceSet *
-temporal_to_tsequenceset(const Temporal *temp, interpType interp)
+temporal_tsequenceset(const Temporal *temp, interpType interp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
@@ -1761,18 +1802,41 @@ temporal_to_tsequenceset(const Temporal *temp, interpType interp)
       "The temporal sequence set cannot have discrete interpolation");
     return NULL;
   }
+
   TSequenceSet *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_to_tsequenceset((TInstant *) temp, interp);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_to_tsequenceset_interp((TSequence *) temp,
-      interp);
+    result = tsequence_to_tsequenceset_interp((TSequence *) temp, interp);
   else /* temp->subtype == TSEQUENCESET */
     /* Since interp != DISCRETE the result subtype is TSequenceSet */
     result = (TSequenceSet *) tsequenceset_set_interp((TSequenceSet *) temp,
       interp);
   return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal value transformed into a temporal sequence set
+ * @param[in] temp Temporal value
+ * @param[in] interp_str Interpolation string
+ * @csqlfn #Temporal_to_tsequenceset()
+ */
+TSequenceSet *
+temporal_to_tsequenceset(const Temporal *temp, char *interp_str)
+{
+  interpType interp;
+  /* If the interpolation is not NULL */
+  if (interp_str)
+    interp = interptype_from_string(interp_str);
+  else
+  {
+    interp = MEOS_FLAGS_GET_INTERP(temp->flags);
+    if (interp == INTERP_NONE || interp == DISCRETE)
+      interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
+  }
+  return temporal_tsequenceset(temp, interp);
 }
 
 /**
@@ -2073,7 +2137,8 @@ temporal_interp(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding box of a temporal value
+ * @brief Initialize the last argument with the bounding box of a temporal
+ * value
  * @param[in] temp Temporal value
  * @param[out] box Boundind box
  * @note For temporal instants the bounding box must be computed. For the
@@ -2922,6 +2987,52 @@ temporal_num_instants(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_accessor
+ * @brief Return 1 if the start instant of a temporal value is inclusive
+ * @param[in] temp Temporal value
+ * @return On error return -1
+ * @csqlfn #Temporal_lower_inc()
+ */
+int 
+temporal_lower_inc(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return -1;
+
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+    return 1;
+  else if (temp->subtype == TSEQUENCE)
+    return ((TSequence *) temp)->period.lower_inc;
+  else /* temp->subtype == TSEQUENCESET */
+    return ((TSequenceSet *) temp)->period.lower_inc;
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return 1 if the end instant of a temporal value is inclusive
+ * @param[in] temp Temporal value
+ * @return On error return -1
+ * @csqlfn #Temporal_upper_inc()
+ */
+int 
+temporal_upper_inc(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return -1;
+
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+    return 1;
+  else if (temp->subtype == TSEQUENCE)
+    return ((TSequence *) temp)->period.upper_inc;
+  else /* temp->subtype == TSEQUENCESET */
+    return ((TSequenceSet *) temp)->period.upper_inc;
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the start instant of a temporal value.
  * @param[in] temp Temporal value
  * @return On error return NULL
@@ -3018,7 +3129,7 @@ temporal_instant_n(const Temporal *temp, int n)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the array of instants of a temporal value.
+ * @brief Return the array of distinct instants of a temporal value.
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
  * @return On error return NULL
@@ -3043,7 +3154,8 @@ temporal_instants(const Temporal *temp, int *count)
   else /* temp->subtype == TSEQUENCESET */
   {
     result = tsequenceset_instants((TSequenceSet *) temp);
-    *count = ((TSequenceSet *) temp)->totalcount;
+    *count = tinstarr_remove_duplicates(result,
+      ((TSequenceSet *) temp)->totalcount);
   }
   return result;
 }
@@ -3190,561 +3302,6 @@ temporal_timestamps(const Temporal *temp, int *count)
 }
 
 /*****************************************************************************
- * Ever/always functions
- * The functions assume that the temporal value and the datum value are of
- * the same basetype. Ever/always equal are valid for all temporal types
- * including temporal points. All the other comparisons are only valid for
- * temporal alphanumeric types.
- *****************************************************************************/
-
-/**
- * @brief Return true if the bounding box of a temporal value is ever/always
- * equal to a base value
- * @param[in] temp Temporal value
- * @param[in] value Value to be found
- * @param[in] ever True when testing ever, false when testing always
- */
-bool
-temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
-{
-  assert(temp);
-
-  /* Bounding box test */
-  if (tnumber_type(temp->temptype))
-  {
-    TBox box;
-    temporal_set_bbox(temp, &box);
-    Datum upper = box.span.basetype == T_INT4 ?
-      Int32GetDatum(DatumGetInt32(box.span.upper) - 1) : box.span.upper;
-    return (ever && contains_span_value(&box.span, value, box.span.basetype)) ||
-      (!ever && datum_eq(box.span.lower, value, box.span.basetype) &&
-      datum_eq(upper, value, box.span.basetype));
-  }
-  else if (tspatial_type(temp->temptype))
-  {
-    STBox box1, box2;
-    temporal_set_bbox(temp, &box1);
-    if (tgeo_type(temp->temptype))
-      geo_set_stbox(DatumGetGserializedP(value), &box2);
-#if NPOINT
-    else if (temp->temptype == T_TNPOINT)
-    {
-      GSERIALIZED *geom = npoint_geom(DatumGetNpointP(value));
-      geo_set_stbox(geom, &box2);
-      pfree(geom);
-    }
-#endif
-    return (ever && contains_stbox_stbox(&box1, &box2)) ||
-      (!ever && same_stbox_stbox(&box1, &box2));
-  }
-  return true;
-}
-
-/**
- * @brief Return true if the bounding box of a temporal value is ever/always
- * less than or equal to the base value.
- * @param[in] temp Temporal value
- * @param[in] value Base value
- * @param[in] ever True when testing ever, false when testing always
- */
-bool
-temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
-{
-  assert(temp);
-
-  if (tnumber_type(temp->temptype))
-  {
-    TBox box;
-    temporal_set_bbox(temp, &box);
-    Datum upper = box.span.basetype == T_INT4 ?
-      Int32GetDatum(DatumGetInt32(box.span.upper) - 1) : box.span.upper;
-    if ((ever && datum_lt(value, box.span.lower, box.span.basetype)) ||
-      (! ever && datum_lt(value, upper, box.span.basetype)))
-      return false;
-  }
-  return true;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal value is ever equal to a base value.
- * @csqlfn #Temporal_ever_eq()
- * @param[in] temp Temporal value
- * @param[in] value Value
- */
-bool
-temporal_ever_eq(const Temporal *temp, Datum value)
-{
-  assert(temp);
-  bool result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tinstant_ever_eq((TInstant *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_ever_eq((TSequence *) temp, value);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_ever_eq((TSequenceSet *) temp, value);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal boolean is ever equal to a boolean.
- * @param[in] temp Temporal value
- * @param[in] b Value
- * @csqlfn #Temporal_ever_eq()
- */
-bool
-tbool_ever_eq(const Temporal *temp, bool b)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TBOOL))
-    return false;
-  return temporal_ever_eq(temp, BoolGetDatum(b));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is ever equal to an integer.
- * @param[in] temp Temporal value
- * @param[in] i Value
- * @csqlfn #Temporal_ever_eq()
- */
-bool
-tint_ever_eq(const Temporal *temp, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return false;
-  return temporal_ever_eq(temp, Int32GetDatum(i));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is ever equal to a float.
- * @param[in] temp Temporal value
- * @param[in] d Value
- * @csqlfn #Temporal_ever_eq()
- */
-bool
-tfloat_ever_eq(const Temporal *temp, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return false;
-  return temporal_ever_eq(temp, Float8GetDatum(d));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is ever equal to a text.
- * @param[in] temp Temporal value
- * @param[in] txt Value
- * @csqlfn #Temporal_ever_eq()
- */
-bool
-ttext_ever_eq(const Temporal *temp, text *txt)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return false;
-  return temporal_ever_eq(temp, PointerGetDatum(txt));
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal value is always equal to a base value.
- * @param[in] temp Temporal value
- * @param[in] value Value
- * @csqlfn #Temporal_always_eq()
- */
-bool
-temporal_always_eq(const Temporal *temp, Datum value)
-{
-  assert(temp);
-  bool result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tinstant_always_eq((TInstant *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_always_eq((TSequence *) temp, value);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_always_eq((TSequenceSet *) temp, value);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal boolean is always equal to a boolean.
- * @param[in] temp Temporal value
- * @param[in] b Value
- * @csqlfn #Temporal_always_eq()
- */
-bool tbool_always_eq(const Temporal *temp, bool b)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TBOOL))
-    return false;
-  return temporal_always_eq(temp, BoolGetDatum(b));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is always equal to an integer.
- * @param[in] temp Temporal value
- * @param[in] i Value
- * @csqlfn #Temporal_always_eq()
- */
-bool tint_always_eq(const Temporal *temp, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return false;
-  return temporal_always_eq(temp, Int32GetDatum(i));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is always equal to a float.
- * @param[in] temp Temporal value
- * @param[in] d Value
- * @csqlfn #Temporal_always_eq()
- */
-bool tfloat_always_eq(const Temporal *temp, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) &&
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return false;
-  return temporal_always_eq(temp, Float8GetDatum(d));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is always equal to a text.
- * @param[in] temp Temporal value
- * @param[in] txt Value
- * @csqlfn #Temporal_always_eq()
- */
-bool ttext_always_eq(const Temporal *temp, text *txt)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return false;
-  return temporal_always_eq(temp, PointerGetDatum(txt));
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal value is ever less than a base value.
- * @param[in] temp Temporal value
- * @param[in] value Value
- * @csqlfn #Temporal_ever_lt()
- */
-bool
-temporal_ever_lt(const Temporal *temp, Datum value)
-{
-  assert(temp);
-  bool result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tinstant_ever_lt((TInstant *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_ever_lt((TSequence *) temp, value);
-  else /* subtype == TSEQUENCESET */
-    result = tsequenceset_ever_lt((TSequenceSet *) temp, value);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is ever less than an integer.
- * @param[in] temp Temporal value
- * @param[in] i Value
- * @csqlfn #Temporal_ever_lt()
- */
-bool tint_ever_lt(const Temporal *temp, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return false;
-  return temporal_ever_lt(temp, Int32GetDatum(i));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is ever less than a float.
- * @param[in] temp Temporal value
- * @param[in] d Value
- * @csqlfn #Temporal_ever_lt()
- */
-bool tfloat_ever_lt(const Temporal *temp, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return false;
-  return temporal_ever_lt(temp, Float8GetDatum(d));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is ever less than a text.
- * @param[in] temp Temporal value
- * @param[in] txt Value
- * @csqlfn #Temporal_ever_lt()
- */
-bool ttext_ever_lt(const Temporal *temp, text *txt)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return false;
-  return temporal_ever_lt(temp, PointerGetDatum(txt));
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal value is always less than a base value.
- * @param[in] temp Temporal value
- * @param[in] value Value
- * @csqlfn #Temporal_always_lt()
- */
-bool
-temporal_always_lt(const Temporal *temp, Datum value)
-{
-  assert(temp);
-  bool result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tinstant_always_lt((TInstant *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_always_lt((TSequence *) temp, value);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_always_lt((TSequenceSet *) temp, value);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is always less than an integer.
- * @param[in] temp Temporal value
- * @param[in] i Value
- * @csqlfn #Temporal_always_lt()
- */
-bool
-tint_always_lt(const Temporal *temp, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return false;
-  return temporal_always_lt(temp, Int32GetDatum(i));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is always less than  a float.
- * @param[in] temp Temporal value
- * @param[in] d Value
- * @csqlfn #Temporal_always_lt()
- */
-bool
-tfloat_always_lt(const Temporal *temp, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return false;
-  return temporal_always_lt(temp, Float8GetDatum(d));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is always less than  a text.
- * @param[in] temp Temporal value
- * @param[in] txt Value
- * @csqlfn #Temporal_always_lt()
- */
-bool
-ttext_always_lt(const Temporal *temp, text *txt)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return false;
-  return temporal_always_lt(temp, PointerGetDatum(txt));
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal value is ever less than or equal to a
- * base value
- * @param[in] temp Temporal value
- * @param[in] value Value
- * @csqlfn #Temporal_ever_le()
- */
-bool
-temporal_ever_le(const Temporal *temp, Datum value)
-{
-  assert(temp);
-  bool result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tinstant_ever_le((TInstant *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_ever_le((TSequence *) temp, value);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_ever_le((TSequenceSet *) temp, value);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is ever less than or equal to an integer.
- * @param[in] temp Temporal value
- * @param[in] i Value
- * @csqlfn #Temporal_ever_le()
- */
-bool
-tint_ever_le(const Temporal *temp, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return false;
-  return temporal_ever_le(temp, Int32GetDatum(i));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is ever less than or equal to a float.
- * @param[in] temp Temporal value
- * @param[in] d Value
- * @csqlfn #Temporal_ever_le()
- */
-bool
-tfloat_ever_le(const Temporal *temp, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return false;
-  return temporal_ever_le(temp, Float8GetDatum(d));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is ever less than or equal to a text.
- * @param[in] temp Temporal value
- * @param[in] txt Value
- * @csqlfn #Temporal_ever_le()
- */
-bool
-ttext_ever_le(const Temporal *temp, text *txt)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return false;
-  return temporal_ever_le(temp, PointerGetDatum(txt));
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal value is always less than or equal to a
- * base value.
- * @param[in] temp Temporal value
- * @param[in] value Value
- * @csqlfn #Temporal_always_le()
- */
-bool
-temporal_always_le(const Temporal *temp, Datum value)
-{
-  assert(temp);
-  bool result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tinstant_always_le((TInstant *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_always_le((TSequence *) temp, value);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_always_le((TSequenceSet *) temp, value);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is always less than or equal to an integer.
- * @param[in] temp Temporal value
- * @param[in] i Value
- * @csqlfn #Temporal_always_le()
- */
-bool
-tint_always_le(const Temporal *temp, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return false;
-  return temporal_always_le(temp, Int32GetDatum(i));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is always less than or equal to a float.
- * @param[in] temp Temporal value
- * @param[in] d Value
- * @csqlfn #Temporal_always_le()
- */
-bool
-tfloat_always_le(const Temporal *temp, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return false;
-  return temporal_always_le(temp, Float8GetDatum(d));
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is always less than or equal to a text.
- * @param[in] temp Temporal value
- * @param[in] txt Value
- * @csqlfn #Temporal_always_le()
- */
-bool
-ttext_always_le(const Temporal *temp, text *txt)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return false;
-  return temporal_always_le(temp, PointerGetDatum(txt));
-}
-#endif /* MEOS */
-
-/*****************************************************************************
  * Bounding box tests for the restriction functions
  *****************************************************************************/
 
@@ -3862,8 +3419,8 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Return true if the bounding box of the temporal and the set overlap
- * values.
+ * @brief Return true if the bounding boxes of a temporal value and a set
+ * overlap
  * @param[in] temp Temporal value
  * @param[in] s Set
  */
@@ -4095,7 +3652,8 @@ temporal_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Return the base value of a temporal value at the timestamp
+ * @brief Initialize the last argument with the base value of a temporal value
+ * at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
@@ -4748,11 +4306,11 @@ tnumber_twavg(const Temporal *temp)
 }
 
 /*****************************************************************************
- * Compact function for final append aggregate
+ * Compact function
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Compact the temporal value by removing extra storage space
  * @param[in] temp Temporal value
  */

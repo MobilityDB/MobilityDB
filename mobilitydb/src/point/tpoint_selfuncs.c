@@ -447,7 +447,7 @@ nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, meosOper oper)
  *****************************************************************************/
 
 /**
- * @brief Set the values of an ND_BOX from an spatiotemporal box
+ * @brief Initialize the ND_BOX in the last argument with a spatiotemporal box
  *
  * The function only takes into account the x, y, and z dimensions of the box?
  * and assumes that they exist. This is to be ensured by the calling function.

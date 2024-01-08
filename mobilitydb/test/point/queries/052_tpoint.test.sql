@@ -958,14 +958,14 @@ SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(
 SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ?= ST_Point(1.5,1.5);
 SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ?= ST_Point(1.5,1.5);
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}' ?= 'Point(1.5 1.5)';
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]' ?= 'Point(1 1)';
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(2 2)';
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(1.5 1.5)';
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]}' ?= 'Point(0 0)';
-SELECT tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(1.5 1.5)';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}' ?= geometry 'Point(1.5 1.5)';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]' ?= geometry 'Point(1 1)';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geometry 'Point(2 2)';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geometry 'Point(1.5 1.5)';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]}' ?= geometry 'Point(0 0)';
+SELECT tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geometry 'Point(1.5 1.5)';
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03]' ?= 'Point(2 2 2)';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03]' ?= geometry 'Point(2 2 2)';
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Point empty';
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ?= geometry 'Point empty';

@@ -6,6 +6,7 @@ add_library(pg_point OBJECT
   tpoint_analytics.c
   tpoint_analyze.c
   tpoint_boxops.c
+  tpoint_compops.c
   tpoint_datagen.c
   tpoint_distance.c
   tpoint_gist.c

@@ -44,15 +44,16 @@
  */
 typedef struct SpanBucketState
 {
-  bool done;
-  int i;
-  meosType basetype;
-  Temporal *temp; /* NULL when generating bucket list, used for splitting */
-  Datum size;
-  Datum origin;
-  Datum minvalue;
-  Datum maxvalue;
-  Datum value;
+  bool done;       /**< True when the state is consumed */
+  uint8 basetype;  /**< span basetype */
+  char padding[2]; /**< Not used */
+  int i;           /**< Current tile number */
+  Temporal *temp;  /**< NULL when generating bucket list, used for splitting */
+  Datum size;      /**< Size of the values */ 
+  Datum origin;    /**< Origin of the values */
+  Datum minvalue;  /**< Maximum value */
+  Datum maxvalue;  /**< Maximum value */
+  Datum value;     /**< Current value */
 } SpanBucketState;
 
 /**
@@ -60,13 +61,14 @@ typedef struct SpanBucketState
  */
 typedef struct TboxGridState
 {
-  bool done;
-  int i;
-  Datum vsize;
-  int64 tunits;
-  TBox box;
-  Datum value;
-  TimestampTz t;
+  bool done;       /**< True when the state is consumed */
+  char padding[3]; /**< Not used */
+  int i;           /**< Current tile number */
+  Datum vsize;     /**< Vertical size of the values */
+  int64 tunits;    /**< Horizontal size of the time */
+  TBox box;        /**< Bounding box */
+  Datum value;     /**< Current value */
+  TimestampTz t;   /**< Current time */
 } TboxGridState;
 
 /*****************************************************************************/

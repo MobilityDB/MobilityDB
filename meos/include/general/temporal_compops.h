@@ -28,7 +28,10 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal comparison operators (=, <>, <, >, <=, >=).
+ * @file
+ * @brief Ever comparison operators (?=, ?<>, ?<, ?>, ?<=, ?>=),
+ * always comparison operators (%=, %<>, %<, %>, %<=, %>=), and
+ * temporal comparison operators (#=, #<>, #<, #>, #<=, #>=).
  */
 
 #ifndef __TEMPORAL_COMPOPS_H__
@@ -42,9 +45,13 @@
 
 /*****************************************************************************/
 
+extern int eacomp_temporal_base(const Temporal *temp, Datum value,
+  Datum (*func)(Datum, Datum, meosType), bool ever);
+extern int eacomp_temporal_temporal(const Temporal *temp1,
+  const Temporal *temp2, Datum (*func)(Datum, Datum, meosType), bool ever);
+
 extern Temporal *tcomp_temporal_base(const Temporal *temp, Datum value,
-  meosType basetype, Datum (*func)(Datum, Datum, meosType),
-  bool invert);
+  Datum (*func)(Datum, Datum, meosType), bool invert);
 extern Temporal *tcomp_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, Datum (*func)(Datum, Datum, meosType));
 

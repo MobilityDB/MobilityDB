@@ -156,7 +156,7 @@ default_error_handler(int errlevel, int errcode, char *errmsg)
  * @brief Error handler function that sets the errcode and the error message
  */
 void
-error_handler_errno(int errlevel __attribute((__unused__)), int errcode,
+error_handler_errno(int errlevel __attribute__((__unused__)), int errcode,
   char *errmsg)
 {
   perror(errmsg);

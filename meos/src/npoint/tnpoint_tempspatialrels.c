@@ -176,7 +176,7 @@ ttouches_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool restr,
 
 /**
  * @brief Return a temporal Boolean that states whether the geometry and the
- * temporal network point are within the given distance
+ * temporal network point are within a distance
  */
 Temporal *
 tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, double dist, bool restr,
@@ -192,7 +192,7 @@ tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, double dist, bool restr,
 
 /**
  * @brief Return a temporal Boolean that states whether the geometry and the
- * temporal network point are within the given distance
+ * temporal network point are within a distance
  */
 Temporal *
 tdwithin_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, double dist, bool restr,
@@ -203,7 +203,7 @@ tdwithin_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, double dist, bool restr,
 
 /**
  * @brief Return a temporal Boolean that states whether the network point and
- * the temporal network point are within the given distance
+ * the temporal network point are within a distance
  */
 Temporal *
 tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, double dist, bool restr,
@@ -218,7 +218,7 @@ tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, double dist, bool restr,
 
 /**
  * @brief Return a temporal Boolean that states whether the network point and
- * the temporal network point are within the given distance
+ * the temporal network point are within a distance
  */
 Temporal *
 tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, double dist, bool restr,
@@ -229,7 +229,7 @@ tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, double dist, bool restr,
 
 /**
  * @brief Return a temporal Boolean that states whether the temporal network
- * points are within the given distance
+ * points are within a distance
  */
 Temporal *
 tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, double dist,

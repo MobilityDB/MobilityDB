@@ -298,7 +298,7 @@ tnpoint_geom(const Temporal *temp)
 }
 
 /**
- * @brief Compute the trajectory of two instants.
+ * @brief Return the trajectory of two network points
  * @param[in] np1, np2 Network points
  */
 static Datum
@@ -497,46 +497,35 @@ tnpoint_cumulative_length(const Temporal *temp)
 static TSequence *
 tnpointseq_speed(const TSequence *seq)
 {
+  assert(seq); assert(tspatial_type(seq->temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+
   /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
 
+  /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  /* Step interpolation */
-  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  Npoint *np1 = DatumGetNpointP(tinstant_value(inst1));
+  double rlength = route_length(np1->rid);
+  const TInstant *inst2 = NULL; /* make the compiler quiet */
+  double speed = 0; /* make the compiler quiet */
+  for (int i = 0; i < seq->count - 1; i++)
   {
-    Datum length = Float8GetDatum(0.0);
-    for (int i = 0; i < seq->count; i++)
-    {
-      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-      instants[i] = tinstant_make(length, T_TFLOAT, inst->t);
-    }
+    inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    Npoint *np2 = DatumGetNpointP(tinstant_value(inst2));
+    double length = fabs(np2->pos - np1->pos) * rlength;
+    speed = length / (((double)(inst2->t) - (double)(inst1->t)) / 1000000);
+    instants[i] = tinstant_make(Float8GetDatum(speed), T_TFLOAT, inst1->t);
+    inst1 = inst2;
+    np1 = np2;
   }
-  else
-  /* Linear interpolation */
-  {
-    const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-    Npoint *np1 = DatumGetNpointP(tinstant_value(inst1));
-    double rlength = route_length(np1->rid);
-    const TInstant *inst2 = NULL; /* make the compiler quiet */
-    double speed = 0; /* make the compiler quiet */
-    for (int i = 0; i < seq->count - 1; i++)
-    {
-      inst2 = TSEQUENCE_INST_N(seq, i + 1);
-      Npoint *np2 = DatumGetNpointP(tinstant_value(inst2));
-      double length = fabs(np2->pos - np1->pos) * rlength;
-      speed = length / (((double)(inst2->t) - (double)(inst1->t)) / 1000000);
-      instants[i] = tinstant_make(Float8GetDatum(speed), T_TFLOAT, inst1->t);
-      inst1 = inst2;
-      np1 = np2;
-    }
-    instants[seq->count-1] = tinstant_make(Float8GetDatum(speed), T_TFLOAT,
-      inst2->t);
-  }
+  instants[seq->count-1] = tinstant_make(Float8GetDatum(speed), T_TFLOAT,
+    inst2->t);
   /* The resulting sequence has step interpolation */
-  TSequence *result = tsequence_make_free(instants, seq->count,
+  return tsequence_make_free(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, true);
-  return result;
 }
 
 /**
@@ -545,6 +534,8 @@ tnpointseq_speed(const TSequence *seq)
 static TSequenceSet *
 tnpointseqset_speed(const TSequenceSet *ss)
 {
+  assert(ss); assert(tspatial_type(ss->temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
@@ -564,11 +555,16 @@ tnpointseqset_speed(const TSequenceSet *ss)
 Temporal *
 tnpoint_speed(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tspatial_type(temp->temptype) ||
+      ! ensure_linear_interp(temp->flags))
+    return NULL;
+
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
-    ;
-  else if (temp->subtype == TSEQUENCE)
+  /* Temporal instants does not have linear interpolation */
+  if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_speed((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tnpointseqset_speed((TSequenceSet *) temp);
@@ -674,7 +670,7 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
 
   /* General case */
   TInstant ***instants = palloc(sizeof(TInstant *) * (seq->count - 1));
-  int *countinsts = palloc0(sizeof(int) * (seq->count - 1));
+  int *ninsts = palloc0(sizeof(int) * (seq->count - 1));
   int totalinsts = 0; /* number of created instants so far */
   int nseqs = 0; /* number of created sequences */
   int m = 0; /* index of the segment from which to assemble instants */
@@ -683,14 +679,14 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    instants[i] = tnpointsegm_azimuth_iter(inst1, inst2, &countinsts[i]);
+    instants[i] = tnpointsegm_azimuth_iter(inst1, inst2, &ninsts[i]);
     /* If constant segment */
-    if (countinsts[i] == 0)
+    if (ninsts[i] == 0)
     {
       if (totalinsts != 0)
       {
         /* Assemble all instants created so far */
-        result[nseqs++] = tsequence_assemble_instants(instants, countinsts,
+        result[nseqs++] = tsequence_assemble_instants(instants, ninsts,
           totalinsts, m, i, lower_inc, inst1->t);
         /* Indicate that we have consommed all instants created so far */
         m = i;
@@ -699,7 +695,7 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
     }
     else
     {
-      totalinsts += countinsts[i];
+      totalinsts += ninsts[i];
     }
     inst1 = inst2;
     lower_inc = true;
@@ -707,11 +703,11 @@ tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   if (totalinsts != 0)
   {
     /* Assemble all instants created so far */
-    result[nseqs++] = tsequence_assemble_instants(instants, countinsts,
+    result[nseqs++] = tsequence_assemble_instants(instants, ninsts,
       totalinsts, m, seq->count - 1, lower_inc, inst1->t);
   }
   pfree(instants);
-  pfree(countinsts);
+  pfree(ninsts);
   return nseqs;
 }
 
@@ -741,8 +737,7 @@ tnpointseqset_azimuth(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    int countstep = tnpointseq_azimuth_iter(seq, &sequences[nseqs]);
-    nseqs += countstep;
+    nseqs += tnpointseq_azimuth_iter(seq, &sequences[nseqs]);
   }
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, nseqs, STEP);

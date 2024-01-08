@@ -46,6 +46,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/set.h"
 #include "general/span.h"
 #include "general/spanset.h"
 #include "general/temporal_tile.h"
@@ -60,7 +61,7 @@
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of a timestamptz according to time buckets
+ * @brief Return a timestamptz with the precision set to a time bucket
  * @param[in] t Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -78,13 +79,37 @@ timestamptz_tprecision(TimestampTz t, const Interval *duration,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of a timestamptz span according to time buckets
+ * @brief Return a timestamptz set with the precision set to a time bucket
+ * @param[in] s Timestamptz set
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+Set *
+tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
+      ! ensure_set_isof_type(s, T_TSTZSET) ||
+      ! ensure_valid_duration(duration))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  /* Loop for each value */
+  for (int i = 0; i < s->count; i++)
+    values[i] = timestamptz_bucket(SET_VAL_N(s, i), duration, torigin);
+  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDERED_NO);
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a timestamptz span with the precision set to a time bucket
  * @param[in] s Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  */
 Span *
-tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin)
+tstzspan_tprecision(const Span *s, const Interval *duration,
+  TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
@@ -105,7 +130,7 @@ tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of a timestamptz span set according to time buckets
+ * @brief Return a timestamptz span set with the precision set to a time bucket
  * @param[in] ss Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -144,7 +169,7 @@ tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
     lower += tunits;
     upper += tunits;
   }
-  return spanset_make_free(spans, nspans, NORMALIZE);
+  return spanset_make_free(spans, nspans, NORMALIZE, ORDERED);
 }
 
 /*****************************************************************************
@@ -152,7 +177,7 @@ tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @brief Set the precision of a temporal value according to time buckets
+ * @brief Return a temporal instant with the precision set to a time bucket
  * @param[in] inst Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -169,8 +194,7 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
 }
 
 /**
- * @brief Set the precision of a temporal value according to timestamptz span
- * buckets
+ * @brief Return a temporal sequence with the precision set to a time bucket
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -288,7 +312,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
 }
 
 /**
- * @brief Set the precision of a temporal value according to period buckets
+ * @brief Return a temporal sequence set with the precision set to a time bucket
  * @param[in] ss Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -697,7 +721,7 @@ tinstarr_similarity(const TInstant **instants1, int count1,
 }
 
 /**
- * @brief Compute the similarity distance between two temporal values
+ * @brief Return the similarity distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
@@ -722,7 +746,7 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
 #if MEOS
 /**
  * @ingroup libmeos_temporal_analytics_similarity
- * @brief Compute the Frechet distance between two temporal values
+ * @brief Return the Frechet distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @return On error return DBL_MAX
  * @csqlfn #Temporal_frechet_distance()
@@ -739,7 +763,7 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup libmeos_temporal_analytics_similarity
- * @brief Compute the Dynamic Time Warp distance between two temporal values
+ * @brief Return the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @result On error return DBL_MAX
  * @csqlfn #Temporal_dyntimewarp_distance()
@@ -810,7 +834,7 @@ path_print(Match *path, int count)
 #endif
 
 /**
- * @brief Compute the similarity path between two temporal values based on the
+ * @brief Return the similarity path between two temporal values based on the
  * distance matrix
  * @param[in] dist Matrix keeping the distances
  * @param[in] count1,count2 Number of rows and columns of the matrix
@@ -854,7 +878,7 @@ tinstarr_similarity_path(double *dist, int count1, int count2, int *count)
 }
 
 /**
- * @brief Compute the similarity distance between two temporal values using a
+ * @brief Return the similarity distance between two temporal values using a
  * full matrix
  * @param[in] instants1,instants2 Instants of the temporal values
  * @param[in] count1,count2 Number of instants of the temporal values
@@ -920,7 +944,7 @@ tinstarr_similarity_matrix1(const TInstant **instants1, int count1,
 }
 
 /**
- * @brief Compute the similarity distance between two temporal values
+ * @brief Return the similarity distance between two temporal values
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
@@ -950,7 +974,7 @@ tinstarr_similarity_matrix(const TInstant **instants1, int count1,
  *****************************************************************************/
 
 /**
- * @brief Compute the similarity path between two temporal values
+ * @brief Return the similarity path between two temporal values
  */
 Match *
 temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
@@ -974,7 +998,7 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
 #if MEOS
 /**
  * @ingroup libmeos_temporal_analytics_similarity
- * @brief Compute the Frechet distance between two temporal values
+ * @brief Return the Frechet distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array
  * @csqlfn #Temporal_frechet_path()
@@ -992,7 +1016,7 @@ temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 
 /**
  * @ingroup libmeos_temporal_analytics_similarity
- * @brief Compute the Dynamic Time Warp distance between two temporal values
+ * @brief Return the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array
  * @csqlfn #Temporal_dyntimewarp_path()
@@ -1015,7 +1039,7 @@ temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @brief Compute the discrete Hausdorff distance between two temporal values
+ * @brief Return the discrete Hausdorff distance between two temporal values
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  */
@@ -1065,7 +1089,7 @@ tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
 
 /**
  * @ingroup libmeos_temporal_analytics_similarity
- * @brief Compute the Hausdorf distance between two temporal values
+ * @brief Return the Hausdorf distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @return On error return -1.0
  */

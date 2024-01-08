@@ -167,6 +167,7 @@ npointarr_sort(Npoint **points, int count)
 {
   qsort(points, (size_t) count, sizeof(Npoint *),
       (qsort_comparator) &npoint_sort_cmp);
+  return;
 }
 #endif
 
@@ -187,6 +188,7 @@ nsegmentarr_sort(Nsegment **segments, int count)
 {
   qsort(segments, (size_t) count, sizeof(Nsegment *),
       (qsort_comparator) &nsegment_sort_cmp);
+  return;
 }
 
 /**
@@ -336,6 +338,7 @@ npoint_set(int64 rid, double pos, Npoint *np)
   /* Fill in the network point */
   np->rid = rid;
   np->pos = pos;
+  return;
 }
 
 /**
@@ -371,6 +374,7 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
   ns->rid = rid;
   ns->pos1 = Min(pos1, pos2);
   ns->pos2 = Max(pos1, pos2);
+  return;
 }
 
 /*****************************************************************************

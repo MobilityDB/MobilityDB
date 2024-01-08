@@ -318,15 +318,15 @@ ERROR:  Geometry SRID (4269) does not match temporal type SRID (7844)
 LINE 1: SELECT tgeogpoint '[SRID=7844;Point(0 1)@2000-01-01, SRID=42...
                           ^
 SELECT tgeogpoint 'SRID=7844;{Point(1 1)@2001-01-01 08:00:00,SRID=4269;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (7844)
+ERROR:  Geometry SRID (4269) does not match temporal type SRID (7844)
 LINE 1: SELECT tgeogpoint 'SRID=7844;{Point(1 1)@2001-01-01 08:00:00...
                           ^
 SELECT tgeogpoint 'SRID=7844;[Point(1 1)@2001-01-01 08:00:00,SRID=4269;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (7844)
+ERROR:  Geometry SRID (4269) does not match temporal type SRID (7844)
 LINE 1: SELECT tgeogpoint 'SRID=7844;[Point(1 1)@2001-01-01 08:00:00...
                           ^
 SELECT tgeogpoint 'SRID=7844;{[Point(1 1)@2001-01-01 08:00:00],[SRID=4269;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (7844)
+ERROR:  Geometry SRID (4269) does not match temporal type SRID (7844)
 LINE 1: SELECT tgeogpoint 'SRID=7844;{[Point(1 1)@2001-01-01 08:00:0...
                           ^
 SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
@@ -1631,7 +1631,7 @@ ERROR:  The arguments must be of the same dimensionality
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]');
 ERROR:  The temporal values cannot overlap on time: Mon Jan 03 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
-ERROR:  The temporal values have different value at their common instant Mon Jan 03 00:00:00 2000 PST
+ERROR:  The temporal values have different value at their common timestamp Mon Jan 03 00:00:00 2000 PST
 SELECT merge(tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
 ERROR:  Operation on mixed SRID
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05]');
@@ -1639,7 +1639,7 @@ ERROR:  The arguments must be of the same dimensionality
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-04, Point(2 2)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
 ERROR:  The temporal values cannot overlap on time: Wed Jan 05 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
-ERROR:  The temporal values have different value at their common instant Wed Jan 05 00:00:00 2000 PST
+ERROR:  The temporal values have different value at their common timestamp Wed Jan 05 00:00:00 2000 PST
 SELECT merge(tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
 ERROR:  Operation on mixed SRID
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}');
@@ -1721,7 +1721,7 @@ ERROR:  The arguments must be of the same dimensionality
 SELECT merge(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]']);
 ERROR:  The temporal values cannot overlap on time: Mon Jan 03 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST
 SELECT merge(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]']);
-ERROR:  The temporal values have different value at their common instant Mon Jan 03 00:00:00 2000 PST
+ERROR:  The temporal values have different value at their common timestamp Mon Jan 03 00:00:00 2000 PST
 SELECT merge(ARRAY [tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]']);
 ERROR:  Operation on mixed SRID
 SELECT merge(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05]']);
@@ -1729,7 +1729,7 @@ ERROR:  The arguments must be of the same dimensionality
 SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(2 2)@2000-01-04, Point(2 2)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
 ERROR:  The temporal values cannot overlap on time: Wed Jan 05 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST
 SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
-ERROR:  The temporal values have different value at their common instant Wed Jan 05 00:00:00 2000 PST
+ERROR:  The temporal values have different value at their common timestamp Wed Jan 05 00:00:00 2000 PST
 SELECT merge(ARRAY [tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(1 1)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
 ERROR:  Operation on mixed SRID
 SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}']);
@@ -3088,43 +3088,43 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}' ?= 'Point(1.5 1.5)';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}' ?= geometry 'Point(1.5 1.5)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]' ?= 'Point(1 1)';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]' ?= geometry 'Point(1 1)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(2 2)';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geometry 'Point(2 2)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(1.5 1.5)';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geometry 'Point(1.5 1.5)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]}' ?= 'Point(0 0)';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]}' ?= geometry 'Point(0 0)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(1.5 1.5)';
+SELECT tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geometry 'Point(1.5 1.5)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03]' ?= 'Point(2 2 2)';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03]' ?= geometry 'Point(2 2 2)';
  ?column? 
 ----------
  t
@@ -3133,55 +3133,55 @@ SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03]' ?= 'Point
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ?= geometry 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ?= geometry 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ?= geometry 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ?= geography 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ?= geography 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ?= geography 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ?= geography 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geography 'POINT(1.49988573656168 1.5000570914792)';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point(1 1)';
@@ -3193,7 +3193,7 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point(1 1)';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point empty';
  ?column? 
 ----------
- t
+ 
 (1 row)
 
 /* Errors */
@@ -3260,49 +3260,49 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point
 SELECT tgeompoint 'Point(1 1)@2000-01-01' %= geometry 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' %= geometry 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' %= geometry 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' %= geometry 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' %= geography 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' %= geography 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' %= geography 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' %= geography 'Point empty';
  ?column? 
 ----------
- f
+ 
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> geometry 'Point(1 1)';
@@ -3314,7 +3314,7 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> geometry 'Point(1 1)';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> geometry 'Point empty';
  ?column? 
 ----------
- t
+ 
 (1 row)
 
 /* Errors */

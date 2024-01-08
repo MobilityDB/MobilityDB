@@ -345,11 +345,11 @@ CREATE FUNCTION interp(tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION memSize(tgeompoint)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(tgeogpoint)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -416,6 +416,24 @@ CREATE FUNCTION duration(tgeompoint, boundspan boolean DEFAULT FALSE)
 CREATE FUNCTION duration(tgeogpoint, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION lower_inc(tgeompoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lower_inc(tgeogpoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION upper_inc(tgeompoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION upper_inc(tgeogpoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numInstants(tgeompoint)
@@ -636,111 +654,6 @@ CREATE FUNCTION unnest(tgeogpoint)
   RETURNS SETOF geog_tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_unnest'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * Index Support Function
- *****************************************************************************/
-
-CREATE FUNCTION tpoint_supportfn(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tpoint_supportfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * Ever/Always Comparison Functions
- *****************************************************************************/
-
-CREATE FUNCTION ever_eq(tgeompoint, geometry(Point))
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpoint_ever_eq'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ever_eq(tgeogpoint, geography(Point))
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpoint_ever_eq'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ?= (
-  LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
-  PROCEDURE = ever_eq,
-  NEGATOR = %<>,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
-CREATE OPERATOR ?= (
-  LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
-  PROCEDURE = ever_eq,
-  NEGATOR = %<>,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
-
-CREATE FUNCTION always_eq(tgeompoint, geometry(Point))
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpoint_always_eq'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_eq(tgeogpoint, geography(Point))
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpoint_always_eq'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR %= (
-  LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
-  PROCEDURE = always_eq,
-  NEGATOR = ?<>,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
-CREATE OPERATOR %= (
-  LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
-  PROCEDURE = always_eq,
-  NEGATOR = ?<>,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
-
-CREATE FUNCTION ever_ne(tgeompoint, geometry(Point))
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpoint_ever_ne'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ever_ne(tgeogpoint, geography(Point))
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpoint_ever_ne'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ?<> (
-  LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
-  PROCEDURE = ever_ne,
-  NEGATOR = %=,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
-CREATE OPERATOR ?<> (
-  LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
-  PROCEDURE = ever_ne,
-  NEGATOR = %=,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
-
-CREATE FUNCTION always_ne(tgeompoint, geometry(Point))
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpoint_always_ne'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_ne(tgeogpoint, geography(Point))
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpoint_always_ne'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR %<> (
-  LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
-  PROCEDURE = always_ne,
-  NEGATOR = ?=,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
-CREATE OPERATOR %<> (
-  LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
-  PROCEDURE = always_ne,
-  NEGATOR = ?=,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
 
 /*****************************************************************************
  * Restriction Functions

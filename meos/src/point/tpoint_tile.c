@@ -248,6 +248,7 @@ bitmatrix_print(const BitMatrix *bm)
     }
   }
   printf("Total tiles: %d, Tiles set: %d\n", totalcount, count);
+  return;
 }
 #endif /* DEBUG_BUILD */
 
@@ -263,7 +264,6 @@ bitmatrix_print(const BitMatrix *bm)
 /**
  * @brief Set in the bit matrix the bits of the tiles connecting with a line the
  * two input tiles
- *
  * @param[in] coords1, coords2 Coordinates of the input tiles
  * @param[in] eps1, eps2 Relative position of the points in the input tiles
  * @param[in] ndims Number of dimensions of the grid. It is either 2 (for 2D),
@@ -566,7 +566,7 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_tile
+ * @ingroup libmeos_temporal_analytics_tile
  * @brief Generate a multidimensional grid for temporal points.
  * @param[in] bounds Bounds
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
@@ -658,7 +658,7 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_temporal_tile
+ * @ingroup libmeos_temporal_analytics_tile
  * @brief Generate a tile in a multidimensional grid for temporal points
  * @param[in] point Point
  * @param[in] t Timestamp
@@ -950,27 +950,21 @@ tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
 }
 
 /*****************************************************************************/
-#if MEOS
-/**
- * @brief Split a temporal value with respect to a space and possibly time grid
- */
-Temporal **
-tpoint_space_split(Temporal *temp, float xsize, float ysize, float zsize,
-  GSERIALIZED *sorigin, bool bitmatrix, GSERIALIZED ***space_buckets,
-  int *newcount)
-{
-  return tpoint_space_time_split(temp, xsize, ysize, zsize, NULL, sorigin, 0,
-    bitmatrix, space_buckets, NULL, newcount);
-}
 
 /**
- * @brief Split a temporal value with respect to a space and possibly time grid
+ * @brief Split a temporal point with respect to a space and possibly time grid
+ * @param[in] temp Temporal point
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] duration Duration
+ * @param[in] sorigin Origin for the space dimension
+ * @param[in] torigin Origin for the time dimension
+ * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
+ * @param[out] ntiles Number of tiles
  */
-Temporal **
-tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
-  Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
-  bool bitmatrix, GSERIALIZED ***space_buckets, TimestampTz **time_buckets,
-  int *newcount)
+STboxGridState *
+tpoint_space_time_split_init(Temporal *temp, float xsize, float ysize,
+  float zsize, Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
+  bool bitmatrix, int *ntiles)
 {
   /* Set bounding box */
   STBox bounds;
@@ -981,21 +975,20 @@ tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
     MEOS_FLAGS_SET_T(bounds.flags, false);
 
   /* Ensure parameter validity */
-  POINT3DZ pt;
-  bool hasz;
-  int64 tunits = 0;
-  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
-  ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
-  ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
-  ensure_not_empty(sorigin);
-  ensure_point_type(sorigin);
-  ensure_same_geodetic(temp->flags, sorigin->gflags);
+  if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
+      ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
+      ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8) ||
+      ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin) ||
+      ! ensure_same_geodetic(temp->flags, sorigin->gflags))
+    return NULL;
   int32 srid = bounds.srid;
   int32 gs_srid = gserialized_get_srid(sorigin);
-  if (gs_srid != SRID_UNKNOWN)
-    ensure_same_srid(srid, gs_srid);
+  if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
+    return NULL;
+
+  POINT3DZ pt;
   memset(&pt, 0, sizeof(POINT3DZ));
-  hasz = MEOS_FLAGS_GET_Z(temp->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
   if (hasz)
   {
     ensure_has_Z_gs(sorigin);
@@ -1010,6 +1003,7 @@ tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
     pt.x = p2d->x;
     pt.y = p2d->y;
   }
+  int64 tunits = 0;
   if (timesplit)
   {
     ensure_valid_duration(duration);
@@ -1019,42 +1013,71 @@ tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
   /* Create function state */
   STboxGridState *state = stbox_tile_state_make(temp, &bounds, xsize, ysize,
     zsize, tunits, pt, torigin);
-  int count[MAXDIMS];
-  memset(&count, 0, sizeof(count));
+  int nbuckets[MAXDIMS];
+  memset(&nbuckets, 0, sizeof(nbuckets));
   int ndims = 2;
   /* We need to add 1 to take into account the last bucket for each dimension */
-  count[0] = (int) ((state->box.xmax - state->box.xmin) / state->xsize) + 1;
-  count[1] = (int) ((state->box.ymax - state->box.ymin) / state->ysize) + 1;
+  nbuckets[0] = (int) ((state->box.xmax - state->box.xmin) / state->xsize) + 1;
+  nbuckets[1] = (int) ((state->box.ymax - state->box.ymin) / state->ysize) + 1;
   if (MEOS_FLAGS_GET_Z(state->box.flags))
-    count[ndims++] = (int) ((state->box.zmax - state->box.zmin) /
+    nbuckets[ndims++] = (int) ((state->box.zmax - state->box.zmin) /
       state->zsize) + 1;
   if (state->tunits)
-    count[ndims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
+    nbuckets[ndims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
       DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
-  int ntiles;
   /* If a bit matrix is used to speed up the process */
   if (bitmatrix)
   {
     /* Create the bit matrix and set the tiles traversed by the temporal point */
-    state->bm = bitmatrix_make(count, ndims);
-    ntiles = tpoint_set_tiles(temp, state, state->bm);
+    state->bm = bitmatrix_make(nbuckets, ndims);
+    *ntiles = tpoint_set_tiles(temp, state, state->bm);
   }
   else
   {
-    ntiles = count[0] * count[1];
+    *ntiles = nbuckets[0] * nbuckets[1];
     int j = 2;
     if (MEOS_FLAGS_GET_Z(state->box.flags))
-      ntiles *= count[j++];
+      *ntiles *= nbuckets[j++];
     if (state->tunits)
-      ntiles *= count[j++];
+      *ntiles *= nbuckets[j++];
   }
+  return state;
+}
+  
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_analytics_tile
+ * @brief Split a temporal point with respect to a space and possibly time grid
+ * @param[in] temp Temporal point
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] duration Duration
+ * @param[in] sorigin Origin for the space dimension
+ * @param[in] torigin Origin for the time dimension
+ * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
+ * @param[out] space_buckets Array of space buckets 
+ * @param[out] time_buckets Array of time buckets 
+ * @param[out] count Number of elements in the output arrays
+ */
+Temporal **
+tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
+  Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
+  bool bitmatrix, GSERIALIZED ***space_buckets, TimestampTz **time_buckets,
+  int *count)
+{
+  /* Initialize state */
+  int ntiles;
+  STboxGridState *state = tpoint_space_time_split_init(temp, xsize, ysize,
+    zsize, duration, sorigin, torigin, bitmatrix, &ntiles);
+  if (! state)
+    return NULL;    
 
   GSERIALIZED **spaces = palloc(sizeof(GSERIALIZED *) * ntiles);
   TimestampTz *times = NULL;
+  bool timesplit = (duration != NULL);
   if (timesplit)
     times = palloc(sizeof(TimestampTz) * ntiles);
   Temporal **result = palloc(sizeof(Temporal *) * ntiles);
-  hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
   int i = 0;
   /* We need to loop since atStbox may be NULL */
   while (true)
@@ -1088,13 +1111,13 @@ tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
       continue;
 
     /* Construct value of the result */
-    spaces[i] = gspoint_make(box.xmin, box.ymin, box.zmin, hasz,
-      false, box.srid);
+    spaces[i] = gspoint_make(box.xmin, box.ymin, box.zmin, hasz, false,
+      box.srid);
     if (timesplit)
       times[i] = DatumGetTimestampTz(box.period.lower);
     result[i++] = atstbox;
   }
-  *newcount = i;
+  *count = i;
   if (space_buckets)
     *space_buckets = spaces;
   if (time_buckets)

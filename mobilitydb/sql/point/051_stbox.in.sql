@@ -95,13 +95,13 @@ CREATE FUNCTION asHexWKB(stbox, endianenconding text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION stbox_x(float, float, float, float, srid int DEFAULT 0)
+CREATE FUNCTION stbox_x(float, float, float, float, srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_x'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox_z(float, float, float, float, float, float,
-    srid int DEFAULT 0)
+    srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -117,25 +117,25 @@ CREATE FUNCTION stbox_t(tstzspan)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox_xt(float, float, float, float, timestamptz,
-    srid int DEFAULT 0)
+    srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_xt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox_xt(float, float, float, float, tstzspan,
-    srid int DEFAULT 0)
+    srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_xt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox_zt(float, float, float, float, float, float,
-    timestamptz, srid int DEFAULT 0)
+    timestamptz, srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox_zt(float, float, float, float, float, float,
-    tstzspan, srid int DEFAULT 0)
+    tstzspan, srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -151,25 +151,44 @@ CREATE FUNCTION geodstbox_t(tstzspan)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geodstbox_z(float, float, float, float, float, float,
-    srid int DEFAULT 4326)
+    srid integer DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geodstbox_zt(float, float, float, float, float, float,
-    timestamptz, srid int DEFAULT 4326)
+    timestamptz, srid integer DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geodstbox_zt(float, float, float, float, float, float,
-    tstzspan, srid int DEFAULT 4326)
+    tstzspan, srid integer DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************/
+ 
+CREATE FUNCTION stbox(geometry, timestamptz)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Geo_timestamptz_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stbox(geography, timestamptz)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Geo_timestamptz_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stbox(geometry, tstzspan)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Geo_tstzspan_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stbox(geography, tstzspan)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Geo_tstzspan_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
- * Casting
+ * Conversion
  *****************************************************************************/
 
 CREATE FUNCTION stbox(box2d)
@@ -212,22 +231,6 @@ CREATE FUNCTION stbox(tstzspanset)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tstzspanset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geometry, timestamptz)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geo_timestamptz_to_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geography, timestamptz)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geo_timestamptz_to_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geometry, tstzspan)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geo_tstzspan_to_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geography, tstzspan)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geo_tstzspan_to_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (box2d AS stbox) WITH FUNCTION stbox(box2d);
 CREATE CAST (box3d AS stbox) WITH FUNCTION stbox(box3d);
@@ -242,10 +245,6 @@ CREATE CAST (tstzspanset AS stbox) WITH FUNCTION stbox(tstzspanset);
 
 /*****************************************************************************/
 
-CREATE FUNCTION timeSpan(stbox)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Stbox_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION box2d(stbox)
   RETURNS box2d
   AS 'MODULE_PATHNAME', 'Stbox_to_box2d'
@@ -262,12 +261,16 @@ CREATE FUNCTION geography(stbox)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Stbox_to_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeSpan(stbox)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Stbox_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (stbox AS tstzspan) WITH FUNCTION timeSpan(stbox);
 CREATE CAST (stbox AS box2d) WITH FUNCTION box2d(stbox);
 CREATE CAST (stbox AS box3d) WITH FUNCTION box3d(stbox);
 CREATE CAST (stbox AS geometry) WITH FUNCTION geometry(stbox);
 CREATE CAST (stbox AS geography) WITH FUNCTION geography(stbox);
+CREATE CAST (stbox AS tstzspan) WITH FUNCTION timeSpan(stbox);
 
 /*****************************************************************************
  * Accessor functions

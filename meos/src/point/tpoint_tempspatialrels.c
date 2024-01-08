@@ -81,6 +81,7 @@
 #include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/tbool_boolops.h"
+#include "general/temporal_compops.h"
 #include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
@@ -320,7 +321,7 @@ tinterrel_tpointcontseq_geom_iter(const TSequence *seq, Datum geom,
   int nsimple;
   TSequence **simpleseqs = tpointseq_make_simple(seq, &nsimple);
   TSequence ***sequences = palloc(sizeof(TSequence *) * nsimple);
-  /* palloc0 used due to initialize the counters to 0 */
+  /* palloc0 used to initialize the counters to 0 */
   int *countseqs = palloc0(sizeof(int) * nsimple);
   int totalcount = 0;
   for (int i = 0; i < nsimple; i++)
@@ -507,6 +508,70 @@ tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
 }
 #endif /* MEOS */
 
+/*****************************************************************************/
+
+/**
+ * @brief Evaluates tintersects/tdisjoint for two temporal points.
+ * @param[in] temp1,temp2 Temporal point2
+ * @param[in] tinter True when computing tintersects, false for tdisjoint
+ * @param[in] restr True if the atValue function is applied to the result
+ * @param[in] atvalue Value to be used for the atValue function
+ */
+Temporal *
+tinterrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
+  bool tinter, bool restr, bool atvalue)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2))
+    return NULL;
+
+  Temporal *result = tinter ? 
+    tcomp_temporal_temporal(temp1, temp2, &datum2_eq) :
+    tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
+  /* Restrict the result to the Boolean value in the last argument if any */
+  if (result != NULL && restr)
+  {
+    Temporal *atresult = temporal_restrict_value(result, BoolGetDatum(atvalue),
+      REST_AT);
+    pfree(result);
+    result = atresult;
+  }
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_spatial_rel_temp
+ * @brief Return the temporal disjoint relationship between two temporal points
+ * @param[in] temp1,temp2 Temporal point2
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdisjoint_tpoint_tpoint()
+ */
+Temporal *
+tdisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tpoint_tpoint(temp1, temp2, TDISJOINT, restr, atvalue);
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_rel_temp
+ * @brief Return the temporal intersects relationship between two temporal
+ * points
+ * @param[in] temp1,temp2 Temporal point2
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tintersects_tpoint_tpoint()
+ */
+Temporal *
+tintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tpoint_tpoint(temp1, temp2, TINTERSECTS, restr, atvalue);
+}
+#endif /* MEOS */
+
 /*****************************************************************************
  * Functions to compute the tdwithin relationship between temporal sequences.
  * This requires to determine the instants t1 and t2 at which two temporal
@@ -593,8 +658,8 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
  *****************************************************************************/
 
 /**
- * @brief Return the timestamps at which EITHER the segments of the two temporal
- * points OR a segment of a temporal point and a point are within the given
+ * @brief Return the timestamps at which EITHER the segments of the two
+ * temporal points OR a segment of a temporal point and a point are within a
  * distance.
  * @param[in] sv1,ev1 Points defining the first segment
  * @param[in] sv2,ev2 Points defining the second segment
@@ -611,9 +676,6 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   TimestampTz lower, TimestampTz upper, double dist, bool hasz,
   datum_func3 func, TimestampTz *t1, TimestampTz *t2)
 {
-  /* To reduce problems related to floating point arithmetic, lower and upper
-   * are shifted, respectively, to 0 and 1 before computing the solutions
-   * of the quadratic equation */
   double duration = (double) (upper - lower);
   long double a, b, c;
   if (hasz) /* 3D */
@@ -808,7 +870,7 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
 
 /**
  * @brief Return the timestamps at which the segments of two temporal points are
- * within the given distance (iterator function)
+ * within a distance (iterator function)
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -898,7 +960,7 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Compute the temporal dwithin between two temporal sequence points
+ * @brief Return the temporal dwithin between two temporal sequence points
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -917,7 +979,7 @@ tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
 
 /**
  * @brief Return the timestamps at which the segments of two temporal points
- * are within the given distance
+ * are within a distance
  * @param[in] ss1,ss2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -949,7 +1011,7 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
 
 /**
  * @brief Return the timestamps at which a temporal point and a point are
- * within the given distance (iterator function)
+ * within a distance (iterator function)
  * @param[in] seq Temporal point
  * @param[in] point Point
  * @param[in] dist Distance
@@ -1032,7 +1094,7 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
 
 /**
  * @brief Return the timestamps at which the a temporal point and a point are
- * within the given distance
+ * within a distance
  * @param[in] seq Temporal point
  * @param[in] point Point
  * @param[in] dist Distance
@@ -1051,7 +1113,7 @@ tdwithin_tpointseq_point(const TSequence *seq, Datum point, Datum dist,
 
 /**
  * @brief Return the timestamps at which a temporal point and a point are
- * within the given distance
+ * within a distance
  * @param[in] ss Temporal point
  * @param[in] point Point
  * @param[in] dist Distance
@@ -1178,7 +1240,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
 /**
  * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal point and
- * a geometry are within the given distance.
+ * a geometry are within a distance.
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] dist Distance
@@ -1245,7 +1307,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
 
 /**
  * @brief Return a temporal Boolean that states whether the temporal points
- * are within the given distance.
+ * are within a distance.
  * @pre The temporal points are synchronized.
  */
 Temporal *
@@ -1255,55 +1317,60 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
   Temporal *result;
   assert(temptype_subtype(sync1->subtype));
-  if (sync1->subtype == TINSTANT)
+  switch (sync1->subtype)
   {
-    Datum value1 = tinstant_value((TInstant *) sync1);
-    Datum value2 = tinstant_value((TInstant *) sync2);
-    result = (Temporal *) tinstant_make(func(value1, value2,
-      Float8GetDatum(dist)), T_TBOOL, ((TInstant *) sync1)->t);
-  }
-  else if (sync1->subtype == TSEQUENCE)
-  {
-    interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
-    interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
-    if (interp1 == LINEAR || interp2 == LINEAR)
-      result = (Temporal *) tdwithin_tpointseq_tpointseq((TSequence *) sync1,
-        (TSequence *) sync2, dist, func);
-    else
+    case TINSTANT:
     {
-      /* Both sequences have either discrete or step interpolation */
-      LiftedFunctionInfo lfinfo;
-      memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-      lfinfo.func = (varfunc) func;
-      lfinfo.numparam = 1;
-      lfinfo.param[0] = Float8GetDatum(dist);
-      lfinfo.restype = T_TBOOL;
-      if (interp1 == DISCRETE)
-        result = (Temporal *) tfunc_tdiscseq_tdiscseq((TSequence *) sync1,
-          (TSequence *) sync2, &lfinfo);
-      else /* interp1 == STEP && interp2 == STEP */
-        result = tfunc_tcontseq_tcontseq((TSequence *) sync1,
-          (TSequence *) sync2, &lfinfo);
+      Datum value1 = tinstant_value((TInstant *) sync1);
+      Datum value2 = tinstant_value((TInstant *) sync2);
+      result = (Temporal *) tinstant_make(func(value1, value2,
+        Float8GetDatum(dist)), T_TBOOL, ((TInstant *) sync1)->t);
+      break;
     }
-  }
-  else /* sync1->subtype == TSEQUENCESET */
-  {
-    interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
-    interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
-    if (interp1 == LINEAR || interp2 == LINEAR)
-      result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
-        (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
-    else
+    case TSEQUENCE:
     {
-      /* Both sequence sets have step interpolation */
-      LiftedFunctionInfo lfinfo;
-      memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-      lfinfo.func = (varfunc) func;
-      lfinfo.numparam = 1;
-      lfinfo.param[0] = Float8GetDatum(dist);
-      lfinfo.restype = T_TBOOL;
-      result = (Temporal *) tfunc_tsequenceset_tsequenceset(
-        (TSequenceSet *) sync1, (TSequenceSet *) sync2, &lfinfo);
+      interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
+      interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
+      if (interp1 == LINEAR || interp2 == LINEAR)
+        result = (Temporal *) tdwithin_tpointseq_tpointseq((TSequence *) sync1,
+          (TSequence *) sync2, dist, func);
+      else
+      {
+        /* Both sequences have either discrete or step interpolation */
+        LiftedFunctionInfo lfinfo;
+        memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+        lfinfo.func = (varfunc) func;
+        lfinfo.numparam = 1;
+        lfinfo.param[0] = Float8GetDatum(dist);
+        lfinfo.restype = T_TBOOL;
+        if (interp1 == DISCRETE)
+          result = (Temporal *) tfunc_tdiscseq_tdiscseq((TSequence *) sync1,
+            (TSequence *) sync2, &lfinfo);
+        else /* interp1 == STEP && interp2 == STEP */
+          result = tfunc_tcontseq_tcontseq((TSequence *) sync1,
+            (TSequence *) sync2, &lfinfo);
+      }
+      break;
+    }
+    default: /* TSEQUENCESET */
+    {
+      interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
+      interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
+      if (interp1 == LINEAR || interp2 == LINEAR)
+        result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
+          (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
+      else
+      {
+        /* Both sequence sets have step interpolation */
+        LiftedFunctionInfo lfinfo;
+        memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+        lfinfo.func = (varfunc) func;
+        lfinfo.numparam = 1;
+        lfinfo.param[0] = Float8GetDatum(dist);
+        lfinfo.restype = T_TBOOL;
+        result = (Temporal *) tfunc_tsequenceset_tsequenceset(
+          (TSequenceSet *) sync1, (TSequenceSet *) sync2, &lfinfo);
+      }
     }
   }
   /* Restrict the result to the Boolean value in the fourth argument if any */
@@ -1319,7 +1386,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 /**
  * @ingroup libmeos_temporal_spatial_rel_temp
  * @brief Return a temporal Boolean that states whether the temporal points
- * are within the given distance.
+ * are within a distance.
  * @param[in] temp1,temp2 Temporal points
  * @param[in] dist Distance
  * @param[in] restr True when the result is restricted to a value

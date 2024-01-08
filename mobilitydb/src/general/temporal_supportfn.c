@@ -73,11 +73,17 @@ enum TEMPORAL_FUNCTION_IDX
   EVER_EQ_IDX                    = 1,
   ALWAYS_EQ_IDX                  = 2,
   /* Ever spatial relationships */
-  ECONTAINS_IDX                   = 3,
-  EDISJOINT_IDX                   = 4,
-  EINTERSECTS_IDX                 = 5,
-  ETOUCHES_IDX                    = 6,
-  EDWITHIN_IDX                    = 7,
+  ECONTAINS_IDX                  = 3,
+  EDISJOINT_IDX                  = 4,
+  EINTERSECTS_IDX                = 5,
+  ETOUCHES_IDX                   = 6,
+  EDWITHIN_IDX                   = 7,
+  /* Always spatial relationships */
+  ACONTAINS_IDX                  = 8,
+  ADISJOINT_IDX                  = 9,
+  AINTERSECTS_IDX                = 10,
+  ATOUCHES_IDX                   = 11,
+  ADWITHIN_IDX                   = 12,
 };
 
 static const int16 TNumberStrategies[] =
@@ -98,6 +104,12 @@ static const int16 TPointStrategies[] =
   [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
   [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
   [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
+  /* Always spatial relationships */
+  [ACONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [ADISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [AINTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [ATOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 
 #if NPOINT
@@ -109,6 +121,12 @@ static const int16 TNPointStrategies[] =
   [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
   [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
   [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
+  /* Always spatial relationships */
+  [ACONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [ADISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [AINTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [ATOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 #endif /* NPOINT */
 
@@ -139,6 +157,12 @@ static const IndexableFunction TPointIndexableFunctions[] = {
   {"eintersects", EINTERSECTS_IDX, 2, 0},
   {"etouches", ETOUCHES_IDX, 2, 0},
   {"edwithin", EDWITHIN_IDX, 3, 3},
+  /* Ever spatial relationships */
+  {"acontains", ECONTAINS_IDX, 2, 0},
+  {"adisjoint", EDISJOINT_IDX, 2, 0},
+  {"aintersects", EINTERSECTS_IDX, 2, 0},
+  {"atouches", ETOUCHES_IDX, 2, 0},
+  {"adwithin", EDWITHIN_IDX, 3, 3},
   {NULL, 0, 0, 0}
 };
 
@@ -150,6 +174,12 @@ static const IndexableFunction TNPointIndexableFunctions[] = {
   {"eintersects", EINTERSECTS_IDX, 2, 0},
   {"etouches", ETOUCHES_IDX, 2, 0},
   {"edwithin", EDWITHIN_IDX, 3, 3},
+  /* Always spatial relationships */
+  {"acontains", ECONTAINS_IDX, 2, 0},
+  {"adisjoint", EDISJOINT_IDX, 2, 0},
+  {"aintersects", EINTERSECTS_IDX, 2, 0},
+  {"atouches", ETOUCHES_IDX, 2, 0},
+  {"adwithin", EDWITHIN_IDX, 3, 3},
   {NULL, 0, 0, 0}
 };
 #endif /* NPOINT */
@@ -323,7 +353,7 @@ type_to_bbox(meosType type)
  * @code
  * CREATE OR REPLACE FUNCTION ever_eq(tfloat, float)
  *   RETURNS boolean
- *   AS 'MODULE_PATHNAME','temporal_ever_eq'
+ *   AS 'MODULE_PATHNAME','ever_eq_temporal_base'
  *   SUPPORT temporal_supportfn
  *   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
  * @endcode

@@ -52,7 +52,7 @@
 					<entry><varname>ttext</varname></entry>
 				</row>
 				<row>
-					<entry><emphasis role="bold"><varname>int</varname></emphasis></entry>
+					<entry><emphasis role="bold"><varname>integer</varname></emphasis></entry>
 					<entry><varname>intset</varname></entry>
 					<entry><varname>intspan</varname></entry>
 					<entry><varname>intspanset</varname></entry>
@@ -195,7 +195,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: ¿Es el límite inferior/superior inclusivo?</para>
+					<para><link linkend="setspan_lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: ¿Es el límite inferior/superior inclusivo?</para>
 				</listitem>
 
 				<listitem>
@@ -211,15 +211,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Obtener el número de fechas o marcas de tiempo</para>
+					<para><link linkend="setspan_numValues"><varname>numValues</varname></link>: Obtener el número de valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener la fecha or marca de tiempo inicial, final o enésima</para>
+					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimp</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Obtener los fechas o marcas de tiempo diferentes</para>
+					<para><link linkend="setspan_getValues"><varname>getValue</varname></link>: Obtener los valores</para>
 				</listitem>
 
 				<listitem>
@@ -232,6 +232,18 @@
 
 				<listitem>
 					<para><link linkend="spans"><varname>spans</varname></link>: Obtener los rangos</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Obtener el número de fechas o marcas de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener la fecha or marca de tiempo inicial, final o enésima</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Obtener los fechas o marcas de tiempo diferentes</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -797,6 +809,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: ¿Es el instante inicial/final inclusivo?</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="numInstants"><varname>numInstants</varname></link>: Obtener el número de instantes diferentes</para>
 				</listitem>
 
@@ -983,27 +999,27 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname></link>: ¿Es el valor temporal alguna vez/siempre igual al valor?</para>
+						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname></link>: ¿Es el valor temporal alguna vez o siempre igual al valor?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: ¿Es el valor temporal alguna vez/siempre diferente del valor?</para>
+						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: ¿Es el valor temporal alguna vez o siempre diferente del valor?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evlt"><varname>?&lt;</varname>, <varname>%&lt;</varname></link>: ¿Es el valor temporal alguna vez/siempre menor que el valor?</para>
+						<para><link linkend="ttype_evlt"><varname>?&lt;</varname>, <varname>%&lt;</varname></link>: ¿Es el valor temporal alguna vez o siempre menor que el valor?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evgt"><varname>?&gt;</varname>, <varname>%&gt;</varname></link>: ¿Es el valor temporal alguna vez/siempre mayor que el valor?</para>
+						<para><link linkend="ttype_evgt"><varname>?&gt;</varname>, <varname>%&gt;</varname></link>: ¿Es el valor temporal alguna vez o siempre mayor que el valor?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evle"><varname>?&lt;=</varname>, <varname>%&lt;=</varname></link>: ¿Es el valor temporal alguna vez/siempre menor o igual que el valor?</para>
+						<para><link linkend="ttype_evle"><varname>?&lt;=</varname>, <varname>%&lt;=</varname></link>: ¿Es el valor temporal alguna vez o siempre menor o igual que el valor?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evge"><varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: ¿Es el valor temporal alguna vez/siempre mayor o igual que el valor?</para>
+						<para><link linkend="ttype_evge"><varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: ¿Es el valor temporal alguna vez o siempre mayor o igual que el valor?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1314,27 +1330,27 @@
 			<title>Relaciones espaciales</title>
 
 			<sect3>
-				<title>Relaciones espaciales alguna vez</title>
+				<title>Relaciones espaciales alguna vez o siempre</title>
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="econtains"><varname>econtains</varname></link>: Contiene alguna vez</para>
+						<para><link linkend="eContains"><varname>eContains</varname>, <varname>aContains</varname></link>: Contiene alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Es disjunto alguna vez</para>
+						<para><link linkend="eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Es disjunto alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Está alguna vez a distancia de</para>
+						<para><link linkend="eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Está alguna vez o siempre a distancia de</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Cruza alguna vez</para>
+						<para><link linkend="eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Cruza alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="etouches"><varname>etouches</varname></link>: Toca alguna vez</para>
+						<para><link linkend="eTouches"><varname>eTouches</varname>, <varname>aTouches</varname></link>: Toca alguna vez o siempre</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1344,23 +1360,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
+						<para><link linkend="tContains"><varname>tContains</varname></link>: Contiene temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Disjunto temporal</para>
+						<para><link linkend="tdisjoint"><varname>tDisjoint</varname></link>: Disjunto temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
+						<para><link linkend="tdwithin"><varname>tDwithin</varname></link>: Estar a distancia de temporal </para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tintersects"><varname>tintersects</varname></link>: Intersección temporal</para>
+						<para><link linkend="tintersects"><varname>tIntersects</varname></link>: Intersección temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Toca temporal</para>
+						<para><link linkend="tTouches"><varname>tTouches</varname></link>: Toca temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1789,11 +1805,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_espatialrels"><varname>econtains, edisjoint, eintersects, etouches, edwithin</varname></link>: Relaciones espaciales alguna vez</para>
+						<para><link linkend="tnpoint_espatialrels"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Relaciones espaciales alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_tspatialrels"><varname>tcontains, tdisjoint, tintersects, ttouches, tdwithin</varname></link>: Relaciones espaciales temporales</para>
+						<para><link linkend="tnpoint_tspatialrels"><varname>tContains</varname>, <varname>tDisjoint</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname>, <varname>tDwithin</varname></link>: Relaciones espaciales temporales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

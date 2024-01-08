@@ -114,8 +114,8 @@ nsegment_send(const Nsegment *ns)
  *****************************************************************************/
 
 /**
- * @brief Set the precision of the position of a network point to the number of
- * decimal places
+ * @brief Return a network point with the precision of the position set to abort
+ * number of decimal places
  * @note Funcion used by the lifting infrastructure
  */
 Datum
@@ -128,8 +128,8 @@ datum_npoint_round(Datum npoint, Datum size)
 }
 
 /**
- * @brief Set the precision of the position of a network point to the number of
- * decimal places
+ * @brief Return a network point with the precision of the position set to abort
+ * number of decimal places
  */
 Npoint *
 npoint_round(const Npoint *np, Datum size)
@@ -141,8 +141,8 @@ npoint_round(const Npoint *np, Datum size)
 }
 
 /**
- * @brief Set the precision of the position of a network point to the number of
- * decimal places
+ * @brief Return a network segment with the precision of the positions set to a
+ * number of decimal places
  */
 Nsegment *
 nsegment_round(const Nsegment *ns, Datum size)

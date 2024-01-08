@@ -452,9 +452,9 @@ SELECT DISTINCT upper_inc(t) FROM tbl_tstzspan;
 (3 rows)
 
 SELECT MAX(duration(d)) FROM tbl_datespan;
-  max   
---------
- 9 days
+   max   
+---------
+ 10 days
 (1 row)
 
 SELECT MAX(duration(t)) FROM tbl_tstzspan;

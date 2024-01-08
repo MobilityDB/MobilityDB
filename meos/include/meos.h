@@ -156,7 +156,6 @@ typedef enum
   TSEQUENCESET =     3,  /**< Temporal sequence set subtype */
 } tempSubtype;
 
-
 /**
  * @brief Enumeration that defines the interpolation types used in MEOS
  */
@@ -485,7 +484,7 @@ extern Span *intspan_make(int lower, int upper, bool lower_inc, bool upper_inc);
 extern Set *set_copy(const Set *s);
 extern Span *span_copy(const Span *s);
 extern SpanSet *spanset_copy(const SpanSet *ss);
-extern SpanSet *spanset_make(Span *spans, int count, bool normalize);
+extern SpanSet *spanset_make(Span *spans, int count, bool normalize, bool ordered);
 extern Set *textset_make(const text **values, int count);
 extern Set *tstzset_make(const TimestampTz *values, int count);
 extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc);
@@ -525,8 +524,10 @@ extern bool bigintset_value_n(const Set *s, int n, int64 *result);
 extern int64 *bigintset_values(const Set *s);
 extern int64 bigintspan_lower(const Span *s);
 extern int64 bigintspan_upper(const Span *s);
+extern int64 bigintspan_width(const Span *s);
 extern int64 bigintspanset_lower(const SpanSet *ss);
 extern int64 bigintspanset_upper(const SpanSet *ss);
+extern int64 bigintspanset_width(const SpanSet *ss, bool boundspan);
 extern DateADT dateset_end_value(const Set *s);
 extern DateADT dateset_start_value(const Set *s);
 extern bool dateset_value_n(const Set *s, int n, DateADT *result);
@@ -544,8 +545,10 @@ extern bool floatset_value_n(const Set *s, int n, double *result);
 extern double *floatset_values(const Set *s);
 extern double floatspan_lower(const Span *s);
 extern double floatspan_upper(const Span *s);
+extern double floatspan_width(const Span *s);
 extern double floatspanset_lower(const SpanSet *ss);
 extern double floatspanset_upper(const SpanSet *ss);
+extern double floatspanset_width(const SpanSet *ss, bool boundspan);
 extern GSERIALIZED *geoset_end_value(const Set *s);
 extern int geoset_srid(const Set *s);
 extern Set *geoset_set_srid(const Set *s, int32 srid);
@@ -558,8 +561,10 @@ extern bool intset_value_n(const Set *s, int n, int *result);
 extern int *intset_values(const Set *s);
 extern int intspan_lower(const Span *s);
 extern int intspan_upper(const Span *s);
+extern int intspan_width(const Span *s);
 extern int intspanset_lower(const SpanSet *ss);
 extern int intspanset_upper(const SpanSet *ss);
+extern int intspanset_width(const SpanSet *ss, bool boundspan);
 extern uint32 set_hash(const Set *s);
 extern uint64 set_hash_extended(const Set *s, uint64 seed);
 extern int set_num_values(const Set *s);
@@ -568,7 +573,6 @@ extern uint32 span_hash(const Span *s);
 extern uint64 span_hash_extended(const Span *s, uint64 seed);
 extern bool span_lower_inc(const Span *s);
 extern bool span_upper_inc(const Span *s);
-extern double span_width(const Span *s);
 extern const Span *spanset_end_span(const SpanSet *ss);
 extern uint32 spanset_hash(const SpanSet *ss);
 extern uint64 spanset_hash_extended(const SpanSet *ss, uint64 seed);
@@ -579,7 +583,6 @@ extern const Span *spanset_span_n(const SpanSet *ss, int i);
 extern const Span **spanset_spans(const SpanSet *ss);
 extern const Span *spanset_start_span(const SpanSet *ss);
 extern bool spanset_upper_inc(const SpanSet *ss);
-extern double spanset_width(const SpanSet *ss, bool boundspan);
 extern STBox *spatialset_to_stbox(const Set *s);
 extern text *textset_end_value(const Set *s);
 extern text *textset_start_value(const Set *s);
@@ -634,13 +637,13 @@ extern Set *textset_lower(const Set *s);
 extern Set *textset_upper(const Set *s);
 extern TimestampTz timestamptz_tprecision(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Set *tstzset_shift_scale(const Set *s, const Interval *shift, const Interval *duration);
-extern Span *datespan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
-extern Span *tstzspan_shift_scale(const Span *s, const Interval *shift, const Interval *duration);
-extern Span *tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
 extern Set *tstzset_to_dateset(const Set *s);
+extern Set *tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin);
+extern Span *tstzspan_shift_scale(const Span *s, const Interval *shift, const Interval *duration);
 extern Span *tstzspan_to_datespan(const Span *s);
-extern SpanSet *tstzspanset_to_datespanset(const SpanSet *ss);
+extern Span *tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
 extern SpanSet *tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift, const Interval *duration);
+extern SpanSet *tstzspanset_to_datespanset(const SpanSet *ss);
 extern SpanSet *tstzspanset_tprecision(const SpanSet *ss, const Interval *duration, TimestampTz torigin);
 
 /*****************************************************************************/
@@ -946,22 +949,41 @@ extern bool right_text_set(text *txt, const Set *s);
 
 /* Distance functions for set and span types */
 
-extern double distance_set_bigint(const Set *s, int64 i);
+extern int64 distance_set_bigint(const Set *s, int64 i);
+extern int distance_set_date(const Set *s, DateADT d);
 extern double distance_set_float(const Set *s, double d);
-extern double distance_set_int(const Set *s, int i);
-extern double distance_set_set(const Set *s1, const Set *s2);
+extern int distance_set_int(const Set *s, int i);
 extern double distance_set_timestamptz(const Set *s, TimestampTz t);
-extern double distance_span_bigint(const Span *s, int64 i);
+
+extern int64 distance_span_bigint(const Span *s, int64 i);
+extern int distance_span_date(const Span *s, DateADT d);
 extern double distance_span_float(const Span *s, double d);
-extern double distance_span_int(const Span *s, int i);
-extern double distance_span_span(const Span *s1, const Span *s2);
+extern int distance_span_int(const Span *s, int i);
 extern double distance_span_timestamptz(const Span *s, TimestampTz t);
-extern double distance_spanset_bigint(const SpanSet *ss, int64 i);
+
+extern int64 distance_bigintspan_bigintspan(const Span *s1, const Span *s2);
+extern int distance_datespan_datespan(const Span *s1, const Span *s2);
+extern double distance_floatspan_floatspan(const Span *s1, const Span *s2);
+extern int distance_intspan_intspan(const Span *s1, const Span *s2);
+extern double distance_tstzspan_tstzspan(const Span *s1, const Span *s2);
+
+extern int64 distance_spanset_bigint(const SpanSet *ss, int64 i);
+extern int distance_spanset_date(const SpanSet *ss, DateADT d);
 extern double distance_spanset_float(const SpanSet *ss, double d);
-extern double distance_spanset_int(const SpanSet *ss, int i);
+extern int distance_spanset_int(const SpanSet *ss, int i);
 extern double distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t);
-extern double distance_spanset_span(const SpanSet *ss, const Span *s);
-extern double distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
+
+extern int64 distance_bigintspanset_bigintspan(const SpanSet *ss, const Span *s);
+extern int distance_datespanset_datespan(const SpanSet *ss, const Span *s);
+extern double distance_floatspanset_floatspan(const SpanSet *ss, const Span *s);
+extern int distance_intspanset_intspan(const SpanSet *ss, const Span *s);
+extern double distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s);
+
+extern int64 distance_bigintspanset_bigintspanset(const SpanSet *ss1, const SpanSet *ss2);
+extern int distance_datespanset_datespanset(const SpanSet *ss1, const SpanSet *ss2);
+extern double distance_floatspanset_floatspanset(const SpanSet *ss1, const SpanSet *ss2);
+extern int distance_intspanset_intspanset(const SpanSet *ss1, const SpanSet *ss2);
+extern double distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2);
 
 /*****************************************************************************/
 
@@ -1308,6 +1330,8 @@ extern int temporal_num_timestamps(const Temporal *temp);
 extern TSequence **temporal_segments(const Temporal *temp, int *count);
 extern TSequence *temporal_sequence_n(const Temporal *temp, int i);
 extern TSequence **temporal_sequences(const Temporal *temp, int *count);
+extern int temporal_lower_inc(const Temporal *temp);
+extern int temporal_upper_inc(const Temporal *temp);
 extern const TInstant *temporal_start_instant(const Temporal *temp);
 extern TSequence *temporal_start_sequence(const Temporal *temp);
 extern TimestampTz temporal_start_timestamptz(const Temporal *temp);
@@ -1345,8 +1369,8 @@ extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
 extern Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration);
 extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift);
 extern TInstant *temporal_to_tinstant(const Temporal *temp);
-extern TSequence *temporal_to_tsequence(const Temporal *temp, interpType interp);
-extern TSequenceSet *temporal_to_tsequenceset(const Temporal *temp, interpType interp);
+extern TSequence *temporal_to_tsequence(const Temporal *temp, char *interp_str);
+extern TSequenceSet *temporal_to_tsequenceset(const Temporal *temp, char *interp_str);
 extern Temporal *tfloat_scale_value(const Temporal *temp, double width);
 extern Temporal *tfloat_shift_scale_value(const Temporal *temp, double shift, double width);
 extern Temporal *tfloat_shift_value(const Temporal *temp, double shift);
@@ -1431,28 +1455,66 @@ extern bool temporal_ne(const Temporal *temp1, const Temporal *temp2);
 
 /* Ever/always comparison functions for temporal types */
 
-extern bool tbool_always_eq(const Temporal *temp, bool b);
-extern bool tbool_ever_eq(const Temporal *temp, bool b);
-extern bool tfloat_always_eq(const Temporal *temp, double d);
-extern bool tfloat_always_le(const Temporal *temp, double d);
-extern bool tfloat_always_lt(const Temporal *temp, double d);
-extern bool tfloat_ever_eq(const Temporal *temp, double d);
-extern bool tfloat_ever_le(const Temporal *temp, double d);
-extern bool tfloat_ever_lt(const Temporal *temp, double d);
-extern bool tint_always_eq(const Temporal *temp, int i);
-extern bool tint_always_le(const Temporal *temp, int i);
-extern bool tint_always_lt(const Temporal *temp, int i);
-extern bool tint_ever_eq(const Temporal *temp, int i);
-extern bool tint_ever_le(const Temporal *temp, int i);
-extern bool tint_ever_lt(const Temporal *temp, int i);
-extern bool tpoint_always_eq(const Temporal *temp, const GSERIALIZED *gs);;
-extern bool tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs);;
-extern bool ttext_always_eq(const Temporal *temp, text *txt);
-extern bool ttext_always_le(const Temporal *temp, text *txt);
-extern bool ttext_always_lt(const Temporal *temp, text *txt);
-extern bool ttext_ever_eq(const Temporal *temp, text *txt);
-extern bool ttext_ever_le(const Temporal *temp, text *txt);
-extern bool ttext_ever_lt(const Temporal *temp, text *txt);
+extern bool always_eq_tbool_bool(const Temporal *temp, bool b);
+extern int always_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_eq_tfloat_float(const Temporal *temp, double d);
+extern bool always_eq_tint_int(const Temporal *temp, int i);
+extern int always_eq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern int always_eq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool always_eq_ttext_text(const Temporal *temp, const text *txt);
+extern bool always_ne_tbool_bool(const Temporal *temp, bool b);
+extern int always_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_ne_tfloat_float(const Temporal *temp, double d);
+extern bool always_ne_tint_int(const Temporal *temp, int i);
+extern int always_ne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern int always_ne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool always_ne_ttext_text(const Temporal *temp, const text *txt);
+extern int always_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_ge_tfloat_float(const Temporal *temp, double d);
+extern bool always_ge_tint_int(const Temporal *temp, int i);
+extern bool always_ge_ttext_text(const Temporal *temp, const text *txt);
+extern int always_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_gt_tfloat_float(const Temporal *temp, double d);
+extern bool always_gt_tint_int(const Temporal *temp, int i);
+extern bool always_gt_ttext_text(const Temporal *temp, const text *txt);
+extern int always_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_le_tfloat_float(const Temporal *temp, double d);
+extern bool always_le_tint_int(const Temporal *temp, int i);
+extern bool always_le_ttext_text(const Temporal *temp, const text *txt);
+extern int always_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool always_lt_tfloat_float(const Temporal *temp, double d);
+extern bool always_lt_tint_int(const Temporal *temp, int i);
+extern bool always_lt_ttext_text(const Temporal *temp, const text *txt);
+extern bool ever_eq_tbool_base(const Temporal *temp, bool b);
+extern int ever_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_eq_tfloat_float(const Temporal *temp, double d);
+extern bool ever_eq_tint_int(const Temporal *temp, int i);
+extern int ever_eq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern int ever_eq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_eq_ttext_text(const Temporal *temp, const text *txt);
+extern int ever_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_ge_tfloat_float(const Temporal *temp, double d);
+extern bool ever_ge_tint_int(const Temporal *temp, int i);
+extern bool ever_ge_ttext_text(const Temporal *temp, const text *txt);
+extern int ever_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_gt_tfloat_float(const Temporal *temp, double d);
+extern bool ever_gt_tint_int(const Temporal *temp, int i);
+extern bool ever_gt_ttext_text(const Temporal *temp, const text *txt);
+extern int ever_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_le_tfloat_float(const Temporal *temp, double d);
+extern bool ever_le_tint_int(const Temporal *temp, int i);
+extern bool ever_le_ttext_text(const Temporal *temp, const text *txt);
+extern int ever_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_lt_tfloat_float(const Temporal *temp, double d);
+extern bool ever_lt_tint_int(const Temporal *temp, int i);
+extern bool ever_lt_ttext_text(const Temporal *temp, const text *txt);
+extern bool ever_ne_tbool_base(const Temporal *temp, bool b);
+extern int ever_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_ne_tfloat_float(const Temporal *temp, double d);
+extern bool ever_ne_tint_int(const Temporal *temp, int i);
+extern int ever_ne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern int ever_ne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool ever_ne_ttext_text(const Temporal *temp, const text *txt);
 
 /*****************************************************************************/
 
@@ -1467,6 +1529,7 @@ extern Temporal *teq_temporal_temporal(const Temporal *temp1, const Temporal *te
 extern Temporal *teq_text_ttext(const text *txt, const Temporal *temp);
 extern Temporal *teq_tfloat_float(const Temporal *temp, double d);
 extern Temporal *teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *teq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *teq_tint_int(const Temporal *temp, int i);
 extern Temporal *teq_ttext_text(const Temporal *temp, const text *txt);
 extern Temporal *tge_float_tfloat(double d, const Temporal *temp);
@@ -1506,6 +1569,7 @@ extern Temporal *tne_temporal_temporal(const Temporal *temp1, const Temporal *te
 extern Temporal *tne_text_ttext(const text *txt, const Temporal *temp);
 extern Temporal *tne_tfloat_float(const Temporal *temp, double d);
 extern Temporal *tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tne_tint_int(const Temporal *temp, int i);
 extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 
@@ -1790,8 +1854,16 @@ bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *measure, b
 
 /*****************************************************************************/
 
-/* Ever spatial relationship functions for temporal points */
+/* Ever/always spatial relationship functions for temporal points */
 
+extern int acontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp);
+extern int adisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int adisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern int adwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
+extern int adwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist);
+extern int aintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int aintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern int atouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp);
 extern int edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
@@ -1886,7 +1958,6 @@ extern Temporal **tfloat_value_time_split(Temporal *temp, double size, Interval 
 extern TimestampTz timestamptz_bucket(TimestampTz timestamp, const Interval *duration, TimestampTz origin);
 extern Temporal **tint_value_split(Temporal *temp, int size, int origin, int **value_buckets, int *count);
 extern Temporal **tint_value_time_split(Temporal *temp, int size, Interval *duration, int vorigin, TimestampTz torigin, int **value_buckets, TimestampTz **time_buckets, int *count);
-extern Temporal **tpoint_space_split(Temporal *temp, float xsize, float ysize, float zsize, GSERIALIZED *sorigin, bool bitmatrix, GSERIALIZED ***space_buckets, int *count);
 extern Temporal **tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize, Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, GSERIALIZED ***space_buckets, TimestampTz **time_buckets, int *count);
 
 

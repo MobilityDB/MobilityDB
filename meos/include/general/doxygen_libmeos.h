@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file 
  * @brief Sections for the documentation of the MEOS library
  */
 
@@ -205,9 +206,9 @@
  * @ingroup libmeos_temporal_comp
  * @brief Traditional comparison functions for temporal types.
  *
- * @defgroup libmeos_temporal_comp_ever Ever/always comparison functions
+ * @defgroup libmeos_temporal_comp_ever Ever and always comparison functions
  * @ingroup libmeos_temporal_comp
- * @brief Ever/always comparison functions for temporal types.
+ * @brief Ever and always comparison functions for temporal types.
  *
  * @defgroup libmeos_temporal_comp_temp Temporal comparison functions
  * @ingroup libmeos_temporal_comp
@@ -245,9 +246,9 @@
  * @ingroup libmeos_temporal_spatial
  * @brief Spatial relationship functions for temporal points.
  *
- * @defgroup libmeos_temporal_spatial_rel_ever Ever spatial relationship functions
+ * @defgroup libmeos_temporal_spatial_rel_ever Ever and always spatial relationship functions
  * @ingroup libmeos_temporal_spatial_rel
- * @brief Ever spatial relationship functions for temporal points.
+ * @brief Ever and always spatial relationship functions for temporal points.
  *
  * @defgroup libmeos_temporal_spatial_rel_temp Temporal spatial relationship functions
  * @ingroup libmeos_temporal_spatial_rel
@@ -422,10 +423,6 @@
  * @defgroup libmeos_internal_temporal_agg Aggregate functions
  * @ingroup libmeos_internal_temporal
  * @brief Aggregate functions for temporal types.
- *
- * @defgroup libmeos_internal_temporal_analytics Analytics functions
- * @ingroup libmeos_temporal
- * @brief Analytics functions for temporal types.
  */
 
 /*****************************************************************************/

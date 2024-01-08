@@ -29,14 +29,16 @@
 
 /**
  * @file
- * @brief Ever spatial relationships for temporal network points.
+ * @brief Ever/always spatial relationships for temporal network points.
  *
- * These relationships compute the ever spatial relationship between the
- * arguments and return a Boolean. These functions may be used for filtering
- * purposes before applying the corresponding temporal spatial relationship.
+ * These relationships compute the ever/always spatial relationship between 
+ * the arguments and return a Boolean. These functions may be used for 
+ * filtering purposes before applying the corresponding temporal spatial
+ * relationship.
  *
  * The following relationships are supported:
- * contains, disjoint, intersects, touches, and dwithin
+ * eContains, aContains, eDisjoint, aDisjoint, eIntersects, aIntersects,
+ * eTouches, aTouches, eDwithin, and aDwithin
  */
 
 #include "npoint/tnpoint_spatialrels.h"
@@ -53,86 +55,103 @@
 #include "pg_point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
- * Generic binary functions for tnpoint <rel> (geo | Npoint)
+ * Generic ever/always relationship
  *****************************************************************************/
 
 /**
- * @brief Generic spatial relationships for a temporal network point and a geometry
+ * @brief Return true if a geometry and a temporal network point ever/always
+ * intersect
  */
-Datum
-Espatialrel_geo_tnpoint(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum))
+static Datum
+EAspatialrel_geo_tnpoint(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const GSERIALIZED *, bool), bool ever)
 {
-  Datum geom = PG_GETARG_DATUM(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum result = espatialrel_tnpoint_geo(temp, geom, func, INVERT);
+  int result = func(temp, gs, ever);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_DATUM(result);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_INT32(result);
 }
 
 /**
- * @brief Generic spatial relationships for a temporal network point and a geometry
+ * @brief Return true if a geometry and a temporal network point ever/always
+ * intersect
  */
 static Datum
-Espatialrel_tnpoint_geo(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum))
+EAspatialrel_tnpoint_geo(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const GSERIALIZED *, bool), bool ever)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum geom = PG_GETARG_DATUM(1);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum result = espatialrel_tnpoint_geo(temp, geom, func, INVERT_NO);
+  int result = func(temp, gs, ever);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_INT32(result);
 }
 
 /**
- * @brief Generic spatial relationships for a temporal network point and a network point
+ * @brief Return true if a geometry and a temporal network point ever/always
+ * intersect
  */
 static Datum
-Espatialrel_npoint_tnpoint(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum))
+EAspatialrel_npoint_tnpoint(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const Npoint *, bool), bool ever)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum result = espatialrel_tnpoint_npoint(temp, np, func, INVERT);
+  int result = func(temp, np, ever);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_DATUM(result);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_INT32(result);
 }
 
 /**
- * @brief Generic spatial relationships for a temporal network point and a network point
+ * @brief Return true if a geometry and a temporal network point ever/always
+ * intersect
  */
 static Datum
-Espatialrel_tnpoint_npoint(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum))
+EAspatialrel_tnpoint_npoint(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const Npoint *, bool), bool ever)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum result = espatialrel_tnpoint_npoint(temp, np, func, INVERT_NO);
+  int result = func(temp, np, ever);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_INT32(result);
 }
 
+/*****************************************************************************/
+ 
 /**
- * @brief Return true if the temporal network points ever satisfy the spatial
- * relationship
+ * @brief Return true if the temporal network points ever/always satisfy the
+ * spatial relationship
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Spatial relationship
+ * @param[in] ever True to compute the ever semantics, false for always
  */
 static Datum
-Espatialrel_tnpoint_tnpoint(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum))
+EAspatialrel_tnpoint_tnpoint(FunctionCallInfo fcinfo,
+  Datum (*func)(Datum, Datum), bool ever)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  int result = espatialrel_tnpoint_tnpoint(temp1, temp2, func);
+  int result = ea_spatialrel_tnpoint_tnpoint(temp1, temp2, func, ever);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result < 0)
@@ -141,270 +160,440 @@ Espatialrel_tnpoint_tnpoint(FunctionCallInfo fcinfo,
 }
 
 /*****************************************************************************
- * Ever contains
+ * Ever/always contains
  *****************************************************************************/
+
+/**
+ * @brief Return true if a geometry ever/always contains a temporal network 
+ * point
+ */
+static Datum
+EAcontains_geo_tnpoint(FunctionCallInfo fcinfo, bool ever)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  int result = ea_contains_geo_tnpoint(gs, temp, ever);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_INT32(result);
+}
 
 PGDLLEXPORT Datum Econtains_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Econtains_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a geometry contains the trajectory of a temporal
- * network point
- * @sqlfn econtains
+ * @brief Return true if a geometry ever contains a temporal network point
+ * @sqlfn eContains()
  */
 Datum
 Econtains_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_geo_tnpoint(fcinfo, &geom_contains);
+  return EAcontains_geo_tnpoint(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Acontains_geo_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acontains_geo_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a geometry always contains a temporal network point
+ * @sqlfn aContains()
+ */
+Datum
+Acontains_geo_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAcontains_geo_tnpoint(fcinfo, ALWAYS);
 }
 
 /*****************************************************************************
- * Ever disjoint
+ * Ever/always disjoint
  *****************************************************************************/
 
 PGDLLEXPORT Datum Edisjoint_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a geometry and the trajectory of a temporal network
- * point are disjoint
- * @sqlfn edisjoint
+ * @brief Return true if a geometry and a temporal network
+ * point ever intersect
+ * @sqlfn eIntersects()
  */
 Datum
 Edisjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_geo_tnpoint(fcinfo, &geom_disjoint2d);
+  return EAspatialrel_geo_tnpoint(fcinfo, &ea_disjoint_tnpoint_geo, EVER);
+}
+
+PGDLLEXPORT Datum Adisjoint_geo_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adisjoint_geo_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a geometry and a temporal network
+ * point always intersect
+ * @sqlfn aIntersects()
+ */
+Datum
+Adisjoint_geo_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_geo_tnpoint(fcinfo, &ea_disjoint_tnpoint_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Edisjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a network point and the trajectory of a temporal
- * network point are disjoint
- * @sqlfn edisjoint
+ * @brief Return true if a network point and a temporal network point are ever
+ * disjoint
+ * @sqlfn eDisjoint()
  */
 Datum
 Edisjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_npoint_tnpoint(fcinfo, &geom_disjoint2d);
+  return EAspatialrel_npoint_tnpoint(fcinfo, &ea_disjoint_tnpoint_npoint, EVER);
+}
+
+PGDLLEXPORT Datum Adisjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adisjoint_npoint_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a network point and a temporal network point are
+ * always disjoint
+ * @sqlfn aDisjoint()
+ */
+Datum
+Adisjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_npoint_tnpoint(fcinfo, &ea_disjoint_tnpoint_npoint, ALWAYS);
 }
 
 PGDLLEXPORT Datum Edisjoint_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if the trajectory of a temporal network point and a
- * geometry are disjoint
- * @sqlfn edisjoint
+ * @brief Return true if a temporal network point and a geometry are ever
+ * disjoint
+ * @sqlfn eDisjoint()
  */
 Datum
 Edisjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_tnpoint_geo(fcinfo, &geom_disjoint2d);
+  return EAspatialrel_tnpoint_geo(fcinfo, &ea_disjoint_tnpoint_geo, EVER);
+}
+
+PGDLLEXPORT Datum Adisjoint_tnpoint_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adisjoint_tnpoint_geo);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a temporal network point and a geometry are always
+ * disjoint
+ * @sqlfn aDisjoint()
+ */
+Datum
+Adisjoint_tnpoint_geo(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_tnpoint_geo(fcinfo, &ea_disjoint_tnpoint_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Edisjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if the trajectory of a temporal network point and a
- * network point are disjoint
- * @sqlfn edisjoint
+ * @brief Return true if a temporal network point and a network point are ever
+ * disjoint
+ * @sqlfn eDisjoint()
  */
 Datum
 Edisjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_tnpoint_npoint(fcinfo, &geom_disjoint2d);
+  return EAspatialrel_tnpoint_npoint(fcinfo, &ea_disjoint_tnpoint_npoint, EVER);
 }
+
+PGDLLEXPORT Datum Adisjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adisjoint_tnpoint_npoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a temporal network point and a network point are
+ * always disjoint
+ * @sqlfn aDisjoint()
+ */
+Datum
+Adisjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_tnpoint_npoint(fcinfo, &ea_disjoint_tnpoint_npoint, ALWAYS);
+}
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum Edisjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if two temporal points are ever disjoint
- * @sqlfn edisjoint
+ * @brief Return true if two temporal network points are ever disjoint
+ * @sqlfn eDisjoint()
  */
 Datum
 Edisjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_ne);
+  return EAspatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_ne, EVER);
+}
+
+PGDLLEXPORT Datum Adisjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adisjoint_tnpoint_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if two temporal network points are always disjoint
+ * @sqlfn aDisjoint()
+ */
+Datum
+Adisjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_ne, ALWAYS);
 }
 
 /*****************************************************************************
- * Ever intersects
+ * Ever/always intersects
  *****************************************************************************/
 
 PGDLLEXPORT Datum Eintersects_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a geometry and the trajectory of a temporal network
- * point intersect
- * @sqlfn eintersects
+ * @brief Return true if a geometry and a temporal network
+ * point ever intersect
+ * @sqlfn eIntersects()
  */
 Datum
 Eintersects_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_geo_tnpoint(fcinfo, &geom_intersects2d);
+  return EAspatialrel_geo_tnpoint(fcinfo, &ea_intersects_tnpoint_geo, EVER);
+}
+
+PGDLLEXPORT Datum Aintersects_geo_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Aintersects_geo_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a geometry and a temporal network
+ * point always intersect
+ * @sqlfn aIntersects()
+ */
+Datum
+Aintersects_geo_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_geo_tnpoint(fcinfo, &ea_intersects_tnpoint_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Eintersects_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a network point and the trajectory of a temporal
- * network point intersect
- * @sqlfn eintersects
+ * @brief Return true if a network point and a temporal
+ * network point ever intersect
+ * @sqlfn eIntersects()
  */
 Datum
 Eintersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_npoint_tnpoint(fcinfo, &geom_intersects2d);
+  return EAspatialrel_npoint_tnpoint(fcinfo, &ea_intersects_tnpoint_npoint, EVER);
+}
+
+PGDLLEXPORT Datum Aintersects_npoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Aintersects_npoint_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a network point and a temporal
+ * network point always intersect
+ * @sqlfn aIntersects()
+ */
+Datum
+Aintersects_npoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_npoint_tnpoint(fcinfo, &ea_intersects_tnpoint_npoint, ALWAYS);
 }
 
 PGDLLEXPORT Datum Eintersects_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if the trajectory of a temporal network point and a
- * geometry intersect
- * @sqlfn eintersects
+ * @brief Return true if a temporal network point and a
+ * geometry ever intersect
+ * @sqlfn eIntersects()
  */
 Datum
 Eintersects_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_tnpoint_geo(fcinfo, &geom_intersects2d);
+  return EAspatialrel_tnpoint_geo(fcinfo, &ea_intersects_tnpoint_geo, EVER);
+}
+
+PGDLLEXPORT Datum Aintersects_tnpoint_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Aintersects_tnpoint_geo);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a temporal network point and a
+ * geometry always intersect
+ * @sqlfn aIntersects()
+ */
+Datum
+Aintersects_tnpoint_geo(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_tnpoint_geo(fcinfo, &ea_intersects_tnpoint_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Eintersects_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if the trajectory of a temporal network point and a
- * network point intersect
- * @sqlfn intersects()
+ * @brief Return true if a temporal network point and a
+ * network point ever intersect
+ * @sqlfn eIntersects()
  */
 Datum
 Eintersects_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_tnpoint_npoint(fcinfo, &geom_intersects2d);
+  return EAspatialrel_tnpoint_npoint(fcinfo, &ea_intersects_tnpoint_npoint, EVER);
 }
+
+PGDLLEXPORT Datum Aintersects_tnpoint_npoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Aintersects_tnpoint_npoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a temporal network point and a
+ * network point always intersect
+ * @sqlfn aIntersects()
+ */
+Datum
+Aintersects_tnpoint_npoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_tnpoint_npoint(fcinfo, &ea_intersects_tnpoint_npoint, ALWAYS);
+}
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum Eintersects_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if two temporal points are ever disjoint
- * @sqlfn intersects()
+ * @brief Return true if two temporal network points ever intersect
+ * @sqlfn eIntersects()
  */
 Datum
 Eintersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_eq);
+  return EAspatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_eq, EVER);
+}
+
+PGDLLEXPORT Datum Aintersects_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Aintersects_tnpoint_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if two temporal network points always intersect
+ * @sqlfn aIntersects()
+ */
+Datum
+Aintersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_eq, ALWAYS);
 }
 
 /*****************************************************************************
- * Ever dwithin
+ * Ever/always dwithin
  *****************************************************************************/
 
-PGDLLEXPORT Datum Edwithin_geo_tnpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Edwithin_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a geometry and the trajectory of a temporal network
- * point are ever within a given distance
- * @sqlfn edwithin
+ * @brief Return true if a geometry and a temporal network  point are
+ * ever/always within a distance
+ * @sqlfn eDwithin(), aDwithin()
  */
-Datum
-Edwithin_geo_tnpoint(PG_FUNCTION_ARGS)
+static Datum
+EAdwithin_geo_tnpoint(FunctionCallInfo fcinfo, bool ever)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  int result = edwithin_tnpoint_geom(temp, gs, dist);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  int result = ea_dwithin_tnpoint_geom(temp, gs, dist, ever);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_INT32(result);
 }
 
-PGDLLEXPORT Datum Edwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Edwithin_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if a network point and the trajectory of a temporal network
- * point are ever within a given distance
- * @sqlfn edwithin
+ * @brief Return true if a network point and a temporal network point are
+ * ever/always within a distance
+ * @sqlfn eDwithin(), aDwithin()
  */
-Datum
-Edwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
+static Datum
+EAdwithin_npoint_tnpoint(FunctionCallInfo fcinfo, bool ever)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   double dist = PG_GETARG_FLOAT8(2);
-  Datum result = edwithin_tnpoint_npoint(temp, np, dist);
+  Datum result = ea_dwithin_tnpoint_npoint(temp, np, dist, ever);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
 }
 
-PGDLLEXPORT Datum Edwithin_tnpoint_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Edwithin_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if the trajectory of a temporal network point and a
- * geometry are ever within a given distance
- * @sqlfn edwithin
+ * @brief Return true if a temporal network point and a geometry are
+ * ever/always within a distance
+ * @sqlfn eDwithin(), aDwithin()
  */
-Datum
-Edwithin_tnpoint_geo(PG_FUNCTION_ARGS)
+static Datum
+EAdwithin_tnpoint_geo(FunctionCallInfo fcinfo, bool ever)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  int result = edwithin_tnpoint_geom(temp, gs, dist);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  int result = DatumGetInt32(ea_dwithin_tnpoint_geom(temp, gs, dist, ever));
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result < 0)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_INT32(result);
 }
 
-PGDLLEXPORT Datum Edwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Edwithin_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if the trajectory of a temporal network point and a
- * network point are ever within a given distance
- * @sqlfn edwithin
+ * @brief Return true if a temporal network point and a network point are
+ * ever/always within a distance
+ * @sqlfn eDwithin(), aDwithin()
  */
-Datum
-Edwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
+static Datum
+EAdwithin_tnpoint_npoint(FunctionCallInfo fcinfo, bool ever)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   double dist = PG_GETARG_FLOAT8(2);
-  Datum result = edwithin_tnpoint_npoint(temp, np, dist);
+  Datum result = ea_dwithin_tnpoint_npoint(temp, np, dist, ever);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
 
-PGDLLEXPORT Datum Edwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Edwithin_tnpoint_tnpoint);
 /**
- * @ingroup mobilitydb_temporal_spatial_rel_ever
- * @brief Return true if the trajectories of two temporal network points are ever within
- * a given distance
- * @sqlfn edwithin
+ * @brief Return true if two temporal network points are ever/always within a
+ * distance
+ * @sqlfn eDwithin(), aDwithin()
  */
-Datum
-Edwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+static Datum
+EAdwithin_tnpoint_tnpoint(FunctionCallInfo fcinfo, bool ever)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  int result = edwithin_tnpoint_tnpoint(temp1, temp2, dist);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  int result = ea_dwithin_tnpoint_tnpoint(temp1, temp2, dist, ever);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result < 0)
@@ -412,8 +601,149 @@ Edwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Edwithin_geo_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Edwithin_geo_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a geometry and a temporal network point are ever
+ * within a distance
+ * @sqlfn eDwithin(), aDwithin()
+ */
+Datum
+Edwithin_geo_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAdwithin_geo_tnpoint(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Adwithin_geo_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adwithin_geo_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a geometry and a temporal network point are always
+ * within a distance
+ * @sqlfn aDwithin()
+ */
+Datum
+Adwithin_geo_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAdwithin_geo_tnpoint(fcinfo, ALWAYS);
+}
+
+PGDLLEXPORT Datum Edwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Edwithin_npoint_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a network point and a temporal network point are ever
+ * within a distance
+ * @sqlfn eDwithin()
+ */
+Datum
+Edwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAdwithin_npoint_tnpoint(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Adwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adwithin_npoint_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a network point and a temporal network point are
+ * always within a distance
+ * @sqlfn aDwithin()
+ */
+Datum
+Adwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAdwithin_npoint_tnpoint(fcinfo, ALWAYS);
+}
+
+PGDLLEXPORT Datum Edwithin_tnpoint_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Edwithin_tnpoint_geo);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a temporal network point and a geometry are ever
+ * within a distance
+ * @sqlfn eDwithin()
+ */
+Datum
+Edwithin_tnpoint_geo(PG_FUNCTION_ARGS)
+{
+  return EAdwithin_tnpoint_geo(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Adwithin_tnpoint_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adwithin_tnpoint_geo);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a temporal network point and a geometry are always
+ * within a distance
+ * @sqlfn aDwithin()
+ */
+Datum
+Adwithin_tnpoint_geo(PG_FUNCTION_ARGS)
+{
+  return EAdwithin_tnpoint_geo(fcinfo, ALWAYS);
+}
+
+PGDLLEXPORT Datum Edwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Edwithin_tnpoint_npoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a temporal network point and a network point are ever
+ * within a distance
+ * @sqlfn eDwithin()
+ */
+Datum
+Edwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
+{
+  return EAdwithin_tnpoint_npoint(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Adwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adwithin_tnpoint_npoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a temporal network point and a
+ * network point are always within a distance
+ * @sqlfn eDwithin()
+ */
+Datum
+Adwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
+{
+  return EAdwithin_tnpoint_npoint(fcinfo, ALWAYS);
+}
+
+PGDLLEXPORT Datum Edwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Edwithin_tnpoint_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if two temporal network points are ever within a distance
+ * @sqlfn eDwithin()
+ */
+Datum
+Edwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAdwithin_tnpoint_tnpoint(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Adwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adwithin_tnpoint_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if two temporal network points are always within a
+ * distance
+ * @sqlfn aDwithin()
+ */
+Datum
+Adwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAdwithin_tnpoint_tnpoint(fcinfo, ALWAYS);
+}
+
 /*****************************************************************************
- * Ever touches
+ * Ever/always touches
  *****************************************************************************/
 
 PGDLLEXPORT Datum Etouches_geo_tnpoint(PG_FUNCTION_ARGS);
@@ -421,13 +751,27 @@ PG_FUNCTION_INFO_V1(Etouches_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if a geometry and the trajectory of a temporal network
- * point touch
- * @sqlfn etouches
+ * point ever intersect
+ * @sqlfn eIntersects()
  */
 Datum
 Etouches_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_geo_tnpoint(fcinfo, &geom_touches);
+  return EAspatialrel_geo_tnpoint(fcinfo, &ea_touches_tnpoint_geo, EVER);
+}
+
+PGDLLEXPORT Datum Atouches_geo_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Atouches_geo_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a geometry and the trajectory of a temporal network
+ * point always intersect
+ * @sqlfn aIntersects()
+ */
+Datum
+Atouches_geo_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_geo_tnpoint(fcinfo, &ea_touches_tnpoint_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Etouches_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -435,13 +779,27 @@ PG_FUNCTION_INFO_V1(Etouches_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if a network point and the trajectory of a temporal
- * network point touch
- * @sqlfn etouches
+ * network point ever intersect
+ * @sqlfn eIntersects()
  */
 Datum
 Etouches_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_npoint_tnpoint(fcinfo, &geom_touches);
+  return EAspatialrel_npoint_tnpoint(fcinfo, &ea_touches_tnpoint_npoint, EVER);
+}
+
+PGDLLEXPORT Datum Atouches_npoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Atouches_npoint_tnpoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if a network point and the trajectory of a temporal
+ * network point always intersect
+ * @sqlfn aIntersects()
+ */
+Datum
+Atouches_npoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_npoint_tnpoint(fcinfo, &ea_touches_tnpoint_npoint, ALWAYS);
 }
 
 PGDLLEXPORT Datum Etouches_tnpoint_geo(PG_FUNCTION_ARGS);
@@ -449,13 +807,27 @@ PG_FUNCTION_INFO_V1(Etouches_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectory of a temporal network point and a
- * geometry touch
- * @sqlfn etouches
+ * geometry ever intersect
+ * @sqlfn eIntersects()
  */
 Datum
 Etouches_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_tnpoint_geo(fcinfo, &geom_touches);
+  return EAspatialrel_tnpoint_geo(fcinfo, &ea_touches_tnpoint_geo, EVER);
+}
+
+PGDLLEXPORT Datum Atouches_tnpoint_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Atouches_tnpoint_geo);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if the trajectory of a temporal network point and a
+ * geometry always intersect
+ * @sqlfn aIntersects()
+ */
+Datum
+Atouches_tnpoint_geo(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_tnpoint_geo(fcinfo, &ea_touches_tnpoint_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Etouches_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -463,13 +835,28 @@ PG_FUNCTION_INFO_V1(Etouches_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if the trajectory of a temporal network point and a
- * network point touch
- * @sqlfn etouches
+ * network point ever intersect
+ * @sqlfn eIntersects()
  */
 Datum
 Etouches_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return Espatialrel_tnpoint_npoint(fcinfo, &geom_touches);
+  return EAspatialrel_tnpoint_npoint(fcinfo, &ea_touches_tnpoint_npoint, EVER);
+}
+
+PGDLLEXPORT Datum Atouches_tnpoint_npoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Atouches_tnpoint_npoint);
+/**
+ * @ingroup mobilitydb_temporal_spatial_rel_ever
+ * @brief Return true if the trajectory of a temporal network point and a
+ * network point always intersect
+ * @sqlfn aIntersects()
+ */
+Datum
+Atouches_tnpoint_npoint(PG_FUNCTION_ARGS)
+{
+  return EAspatialrel_tnpoint_npoint(fcinfo, &ea_touches_tnpoint_npoint,
+    ALWAYS);
 }
 
 /*****************************************************************************/

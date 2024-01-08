@@ -248,77 +248,20 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     double zsize = PG_GETARG_FLOAT8(3);
     Interval *duration = NULL;
     TimestampTz torigin = 0;
-    int64 tunits = 0;
     int i = 4;
     if (timesplit)
-    {
       duration = PG_GETARG_INTERVAL_P(i++);
-      ensure_valid_duration(duration);
-      tunits = interval_units(duration);
-    }
     GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
     bool bitmatrix = PG_GETARG_BOOL(i++);
 
-    /* Set bounding box */
-    STBox bounds;
-    temporal_set_bbox(temp, &bounds);
-    if (! timesplit)
-      /* Disallow T dimension for generating a spatial only grid */
-      MEOS_FLAGS_SET_T(bounds.flags, false);
-
-    /* Ensure parameter validity */
-    ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
-    ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
-    ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
-    ensure_not_empty(sorigin);
-    ensure_point_type(sorigin);
-    ensure_same_geodetic(temp->flags, sorigin->gflags);
-    int32 srid = bounds.srid;
-    int32 gs_srid = gserialized_get_srid(sorigin);
-    if (gs_srid != SRID_UNKNOWN)
-      ensure_same_srid(srid, gs_srid);
-    POINT3DZ pt;
-    memset(&pt, 0, sizeof(POINT3DZ));
-    hasz = MEOS_FLAGS_GET_Z(temp->flags);
-    if (hasz)
-    {
-      ensure_has_Z_gs(sorigin);
-      const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
-      pt.x = p3d->x;
-      pt.y = p3d->y;
-      pt.z = p3d->z;
-    }
-    else
-    {
-      const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
-      pt.x = p2d->x;
-      pt.y = p2d->y;
-    }
+    /* Initialize state and verify parameter validity */
+    int ntiles;
+    STboxGridState *state = tpoint_space_time_split_init(temp, xsize, ysize,
+      zsize, duration, sorigin, torigin, bitmatrix, &ntiles);
 
     /* Create function state */
-    state = stbox_tile_state_make(temp, &bounds, xsize, ysize, zsize, tunits,
-      pt, torigin);
-    /* If a bit matrix is used to speed up the process */
-    if (bitmatrix)
-    {
-      /* Create the bit matrix and set the tiles traversed by the temporal point */
-      int count[MAXDIMS];
-      memset(&count, 0, sizeof(count));
-      int ndims = 2;
-      /* We need to add 1 to take into account the last bucket for each dimension */
-      count[0] = (int) ((state->box.xmax - state->box.xmin) / state->xsize) + 1;
-      count[1] = (int) ((state->box.ymax - state->box.ymin) / state->ysize) + 1;
-      if (MEOS_FLAGS_GET_Z(state->box.flags))
-        count[ndims++] = (int) ((state->box.zmax - state->box.zmin) /
-          state->zsize) + 1;
-      if (state->tunits)
-        count[ndims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
-          DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
-      state->bm = bitmatrix_make(count, ndims);
-      tpoint_set_tiles(temp, state, state->bm);
-    }
     funcctx->user_fctx = state;
 
     /* Build a tuple description for a multidimensional grid tuple */
@@ -357,7 +300,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       /* Switch to memory context appropriate for multiple function calls */
       MemoryContext oldcontext =
         MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-      if (state->bm) pfree(state->bm);
+      if (state->bm)
+        pfree(state->bm);
       pfree(state);
       MemoryContextSwitchTo(oldcontext);
       SRF_RETURN_DONE(funcctx);

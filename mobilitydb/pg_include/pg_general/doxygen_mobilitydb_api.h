@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Definitions of the sections for the MobilityDB API
+ * @file
+ * @brief Sections for the documentation of the MobilityDB API
  */
 
 /*****************************************************************************
@@ -39,7 +40,7 @@
 
 /**
  * @defgroup mobilitydb_api MobilityDB API
- * @brief API of MobilityDB PostgreSQL extension.
+ * @brief API of the MobilityDB PostgreSQL extension.
  */
 
 /**
@@ -106,7 +107,7 @@
  * @brief Comparison functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_agg Aggregate functions
- * @ingroup libmeos_setspan
+ * @ingroup mobilitydb_setspan
  * @brief Aggregate functions for set and span types.
  */
 
@@ -217,9 +218,9 @@
  * @ingroup mobilitydb_temporal_comp
  * @brief Traditional comparison functions for temporal types.
  *
- * @defgroup mobilitydb_temporal_comp_ever Ever/always comparison functions
+ * @defgroup mobilitydb_temporal_comp_ever Ever and always comparison functions
  * @ingroup mobilitydb_temporal_comp
- * @brief Ever/always comparison functions for temporal types.
+ * @brief Ever and always comparison functions for temporal types.
  *
  * @defgroup mobilitydb_temporal_comp_temp Temporal comparison functions
  * @ingroup mobilitydb_temporal_comp
@@ -241,9 +242,9 @@
  * @ingroup mobilitydb_temporal_spatial
  * @brief Spatial relationship functions for temporal points.
  *
- * @defgroup mobilitydb_temporal_spatial_rel_ever Ever spatial relationship functions
+ * @defgroup mobilitydb_temporal_spatial_rel_ever Ever and always spatial relationship functions
  * @ingroup mobilitydb_temporal_spatial_rel
- * @brief Ever spatial relationship functions for temporal points.
+ * @brief Ever and always spatial relationship functions for temporal points.
  *
  * @defgroup mobilitydb_temporal_spatial_rel_temp Temporal spatial relationship functions
  * @ingroup mobilitydb_temporal_spatial_rel

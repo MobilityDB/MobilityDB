@@ -1,3 +1,54 @@
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %= tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?= tgeogpoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?<> tgeogpoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' %= tgeogpoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' %<> tgeogpoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+/* Errors */
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'SRID=5676;Point(1 1)@2000-01-01';
+ERROR:  Operation on mixed SRID
 SELECT geometry 'Point(1 1)' #= tgeompoint 'Point(1 1)@2000-01-01';
             ?column?            
 --------------------------------
@@ -482,150 +533,6 @@ SELECT tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-0
                                                                ?column?                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', true);
-           tpoint_teq           
---------------------------------
- t@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', true);
-                            tpoint_teq                            
-------------------------------------------------------------------
- {t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
-(1 row)
-
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', true);
-                              tpoint_teq                              
-----------------------------------------------------------------------
- {[t@Sat Jan 01 00:00:00 2000 PST], [t@Mon Jan 03 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', true);
-                              tpoint_teq                              
-----------------------------------------------------------------------
- {[t@Sat Jan 01 00:00:00 2000 PST], [t@Mon Jan 03 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', false);
- tpoint_teq 
-------------
- 
-(1 row)
-
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', false);
-            tpoint_teq            
-----------------------------------
- {f@Sun Jan 02 00:00:00 2000 PST}
-(1 row)
-
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', false);
-                             tpoint_teq                             
---------------------------------------------------------------------
- {(f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST)}
-(1 row)
-
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', false);
-                                                              tpoint_teq                                                              
---------------------------------------------------------------------------------------------------------------------------------------
- {(f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST), [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_teq(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', true);
-           tpoint_teq           
---------------------------------
- t@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', true);
-                            tpoint_teq                            
-------------------------------------------------------------------
- {t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', true);
-                              tpoint_teq                              
-----------------------------------------------------------------------
- {[t@Sat Jan 01 00:00:00 2000 PST], [t@Mon Jan 03 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', true);
-                              tpoint_teq                              
-----------------------------------------------------------------------
- {[t@Sat Jan 01 00:00:00 2000 PST], [t@Mon Jan 03 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_teq(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', false);
- tpoint_teq 
-------------
- 
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', false);
-            tpoint_teq            
-----------------------------------
- {f@Sun Jan 02 00:00:00 2000 PST}
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', false);
-                             tpoint_teq                             
---------------------------------------------------------------------
- {(f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST)}
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', false);
-                                                              tpoint_teq                                                              
---------------------------------------------------------------------------------------------------------------------------------------
- {(f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST), [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_teq(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', true);
-           tpoint_teq           
---------------------------------
- t@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', true);
-           tpoint_teq           
---------------------------------
- t@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01', true);
-           tpoint_teq           
---------------------------------
- t@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01', true);
-           tpoint_teq           
---------------------------------
- t@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_teq(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', false);
- tpoint_teq 
-------------
- 
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', false);
- tpoint_teq 
-------------
- 
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01', false);
- tpoint_teq 
-------------
- 
-(1 row)
-
-SELECT tpoint_teq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01', false);
- tpoint_teq 
-------------
- 
 (1 row)
 
 SELECT geography 'Point(1 1)' #= tgeogpoint 'Point(1.5 1.5)@2000-01-01';
@@ -1418,150 +1325,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
                                                                ?column?                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', true);
- tpoint_tne 
-------------
- 
-(1 row)
-
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', true);
-            tpoint_tne            
-----------------------------------
- {t@Sun Jan 02 00:00:00 2000 PST}
-(1 row)
-
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', true);
-                             tpoint_tne                             
---------------------------------------------------------------------
- {(t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST)}
-(1 row)
-
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', true);
-                                                              tpoint_tne                                                              
---------------------------------------------------------------------------------------------------------------------------------------
- {(t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST), [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', false);
-           tpoint_tne           
---------------------------------
- f@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', false);
-                            tpoint_tne                            
-------------------------------------------------------------------
- {f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
-(1 row)
-
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', false);
-                              tpoint_tne                              
-----------------------------------------------------------------------
- {[f@Sat Jan 01 00:00:00 2000 PST], [f@Mon Jan 03 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', false);
-                              tpoint_tne                              
-----------------------------------------------------------------------
- {[f@Sat Jan 01 00:00:00 2000 PST], [f@Mon Jan 03 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_tne(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', true);
- tpoint_tne 
-------------
- 
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', true);
-            tpoint_tne            
-----------------------------------
- {t@Sun Jan 02 00:00:00 2000 PST}
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', true);
-                             tpoint_tne                             
---------------------------------------------------------------------
- {(t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST)}
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', true);
-                                                              tpoint_tne                                                              
---------------------------------------------------------------------------------------------------------------------------------------
- {(t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST), [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_tne(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', false);
-           tpoint_tne           
---------------------------------
- f@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', false);
-                            tpoint_tne                            
-------------------------------------------------------------------
- {f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', false);
-                              tpoint_tne                              
-----------------------------------------------------------------------
- {[f@Sat Jan 01 00:00:00 2000 PST], [f@Mon Jan 03 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', false);
-                              tpoint_tne                              
-----------------------------------------------------------------------
- {[f@Sat Jan 01 00:00:00 2000 PST], [f@Mon Jan 03 00:00:00 2000 PST]}
-(1 row)
-
-SELECT tpoint_tne(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', true);
- tpoint_tne 
-------------
- 
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', true);
- tpoint_tne 
-------------
- 
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01', true);
- tpoint_tne 
-------------
- 
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01', true);
- tpoint_tne 
-------------
- 
-(1 row)
-
-SELECT tpoint_tne(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', false);
-           tpoint_tne           
---------------------------------
- f@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', false);
-           tpoint_tne           
---------------------------------
- f@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01', false);
-           tpoint_tne           
---------------------------------
- f@Sat Jan 01 00:00:00 2000 PST
-(1 row)
-
-SELECT tpoint_tne(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01', false);
-           tpoint_tne           
---------------------------------
- f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
 SELECT geography 'Point(1 1)' #<> tgeogpoint 'Point(1.5 1.5)@2000-01-01';

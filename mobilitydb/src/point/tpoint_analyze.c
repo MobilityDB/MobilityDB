@@ -309,6 +309,7 @@ nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box)
     nd_box->min[d] = (float4) gbox->mmin;
     nd_box->max[d] = (float4) gbox->mmax;
   }
+  return;
 }
 
 /**
@@ -946,6 +947,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   stats->stawidth = (int32) (total_width / notnull_cnt);
   stats->stadistinct = -1.0f;
   stats->stats_valid = true;
+  return;
 }
 
 /*****************************************************************************

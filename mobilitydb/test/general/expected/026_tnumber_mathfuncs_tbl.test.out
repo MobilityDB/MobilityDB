@@ -196,7 +196,7 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE radians(temp) IS NOT NULL;
     96
 (1 row)
 
-SELECT round(MAX(maxValue(derivative(temp)))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(maxValue(derivative(temp)))::numeric, 6) FROM tbl_tfloat WHERE interp(temp) = 'Linear';
   round   
 ----------
  1.426902

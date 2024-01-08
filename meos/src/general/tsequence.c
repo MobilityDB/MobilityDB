@@ -555,7 +555,8 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs, int count,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding box of a temporal sequence
+ * @brief Initialize the last argument with the bounding box of a temporal
+ * sequence
  * @param[in] seq Temporal sequence
  * @param[out] box Bounding box
  */
@@ -1805,14 +1806,15 @@ tsequence_merge_array1(const TSequence **sequences, int count,
     const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
     const TSequence *seq2 = sequences[i];
     const TInstant *inst2 = TSEQUENCE_INST_N(seq2, 0);
-    char *t1;
+    char *str1;
     if (inst1->t > inst2->t)
     {
-      char *t2;
-      t1 = pg_timestamptz_out(inst1->t);
-      t2 = pg_timestamptz_out(inst2->t);
+      char *str2;
+      str1 = pg_timestamptz_out(inst1->t);
+      str2 = pg_timestamptz_out(inst2->t);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The temporal values cannot overlap on time: %s, %s", t1, t2);
+        "The temporal values cannot overlap on time: %s, %s", str1, str2);
+      pfree(str1); pfree(str2);
       return NULL;
     }
     else if (inst1->t == inst2->t && seq1->period.upper_inc &&
@@ -1820,10 +1822,11 @@ tsequence_merge_array1(const TSequence **sequences, int count,
     {
       if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
       {
-        t1 = pg_timestamptz_out(inst1->t);
+        str1 = pg_timestamptz_out(inst1->t);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "The temporal values have different value at their common instant %s",
-          t1);
+          "The temporal values have different value at their common timestamp %s",
+          str1);
+        pfree(str1);
         return NULL;
       }
     }
@@ -1992,16 +1995,16 @@ tinstant_to_tsequence(const TInstant *inst, interpType interp)
 Temporal *
 tdiscseq_set_interp(const TSequence *seq, interpType interp)
 {
-  assert(seq);
-  assert(MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
+  assert(seq); assert(MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
   /* If the requested interpolation is discrete return a copy */
   if (interp == DISCRETE)
     return (Temporal *) tsequence_copy(seq);
 
+  const TInstant *inst;
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    inst = TSEQUENCE_INST_N(seq, 0);
     return (Temporal *) tsequence_make(&inst, 1, true, true, interp,
       NORMALIZE_NO);
   }
@@ -2010,7 +2013,7 @@ tdiscseq_set_interp(const TSequence *seq, interpType interp)
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    inst = TSEQUENCE_INST_N(seq, i);
     sequences[i] = tinstant_to_tsequence(inst, interp);
   }
   return (Temporal *) tsequenceset_make_free(sequences, seq->count,
@@ -2023,8 +2026,7 @@ tdiscseq_set_interp(const TSequence *seq, interpType interp)
 TSequence *
 tcontseq_to_discrete(const TSequence *seq)
 {
-  assert(seq);
-  assert(! MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
+  assert(seq); assert(! MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
   if (seq->count != 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -2157,8 +2159,7 @@ Temporal *
 tsequence_set_interp(const TSequence *seq, interpType interp)
 {
   assert(seq);
-  interpType seq_interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  if (seq_interp == DISCRETE)
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
     return tdiscseq_set_interp(seq, interp);
 
   if (interp == DISCRETE)
@@ -2363,7 +2364,7 @@ tnumberseq_valuespans(const TSequence *seq)
   Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
     span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);
-  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE, ORDERED);
   pfree(values);
   return result;
 }
@@ -2390,7 +2391,7 @@ tsequence_time(const TSequence *seq)
     span_set(inst->t, inst->t, true, true, T_TIMESTAMPTZ, T_TSTZSPAN,
       &periods[i]);
   }
-  return spanset_make_free(periods, seq->count, NORMALIZE_NO);
+  return spanset_make_free(periods, seq->count, NORMALIZE_NO, ORDERED);
 }
 
 /**
@@ -2525,7 +2526,8 @@ tsequence_duration(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the bounding period of a temporal sequence
+ * @brief Initialize the last argument with the time span of a temporal
+ * sequence
  * @param[in] seq Temporal sequence
  * @param[out] s Span
  */
@@ -2810,11 +2812,12 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Compute the base value of a temporal sequence at a timestamp.
+ * @brief Initialize the last argument with the value of a temporal sequence at
+ * a timestamptz.
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
  * @param[in] strict True if inclusive/exclusive bounds are taken into account
- * @param[out] result Base value
+ * @param[out] result Result
  * @result Return true if the timestamp is contained in the temporal sequence
  * @csqlfn #Temporal_value_at_timestamptz()
  */
@@ -3183,6 +3186,10 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  * This value is equal to the input base value up to the floating
  * point precision.
  * @param[out] t Timestamp
+ * @pre The value is not equal to the first or last instant. The reason is that
+ * the function is used in the lifting infrastructure for determining the
+ * crossings after testing whether the bounds of the segments are equal to the
+ * given value
  */
 bool
 tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
@@ -3395,312 +3402,6 @@ intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
   TInstant **inter1, TInstant **inter2)
 {
   return intersection_tsequence_tinstant(seq, inst, inter2, inter1);
-}
-
-/*****************************************************************************
- * Ever/always functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal sequence is ever equal to a base value.
- * @param[in] seq Temporal sequence
- * @param[in] value Value
- * @csqlfn #Temporal_ever_eq()
- */
-bool
-tsequence_ever_eq(const TSequence *seq, Datum value)
-{
-  assert(seq);
-  int i;
-  Datum value1;
-  meosType basetype = temptype_basetype(seq->temptype);
-
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
-    return false;
-
-  /* Step interpolation or instantaneous sequence */
-  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags) || seq->count == 1)
-  {
-    for (i = 0; i < seq->count; i++)
-    {
-      value1 = tinstant_value(TSEQUENCE_INST_N(seq, i));
-      if (datum_eq(value1, value, basetype))
-        return true;
-    }
-    return false;
-  }
-
-  /* Linear interpolation*/
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  value1 = tinstant_value(inst1);
-  bool lower_inc = seq->period.lower_inc;
-  for (i = 1; i < seq->count; i++)
-  {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_value(inst2);
-    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    /* Constant segment */
-    if (datum_eq(value1, value2, basetype) &&
-        datum_eq(value1, value, basetype))
-      return true;
-    /* Test bounds */
-    if (datum_eq(value1, value, basetype))
-    {
-      if (lower_inc) return true;
-    }
-    else if (datum_eq(value2, value, basetype))
-    {
-      if (upper_inc) return true;
-    }
-    /* Interpolation for continuous base type */
-    else if (tlinearsegm_intersection_value(inst1, inst2, value, basetype,
-      NULL, NULL))
-      return true;
-    inst1 = inst2;
-    value1 = value2;
-    lower_inc = true;
-  }
-  return false;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal sequence is always equal to a base value.
- * @param[in] seq Temporal sequence
- * @param[in] value Value
- * @csqlfn #Temporal_always_eq()
- */
-bool
-tsequence_always_eq(const TSequence *seq, Datum value)
-{
-  assert(seq);
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, ALWAYS))
-    return false;
-
-  /* The bounding box test above is enough to compute the answer for
-   * temporal numbers and points */
-  if (tnumber_type(seq->temptype))
-    return true;
-
-  meosType basetype = temptype_basetype(seq->temptype);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum valueinst = tinstant_value(TSEQUENCE_INST_N(seq, i));
-    if (datum_ne(valueinst, value, basetype))
-      return false;
-  }
-  return true;
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return true if the segment of a temporal sequence with linear
- * interpolation is ever less than or equal to a base value
- * (iterator function)
- * @param[in] value1,value2 Input base values
- * @param[in] basetype Type of the values
- * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
- * @param[in] value Base value
- */
-static bool
-tlinearseq_ever_le_iter(Datum value1, Datum value2, meosType basetype,
-  bool lower_inc, bool upper_inc, Datum value)
-{
-  /* Constant segment */
-  if (datum_eq(value1, value2, basetype))
-    return datum_le(value1, value, basetype);
-  /* Increasing segment */
-  if (datum_lt(value1, value2, basetype))
-    return datum_lt(value1, value, basetype) ||
-      (lower_inc && datum_eq(value1, value, basetype));
-  /* Decreasing segment */
-  return datum_lt(value2, value, basetype) ||
-    (upper_inc && datum_eq(value2, value, basetype));
-}
-
-/**
- * @brief Return true if the segment of a temporal sequence with linear
- * interpolation is always less than a base value (iterator function).
- * @param[in] value1,value2 Input base values
- * @param[in] basetype Type of the values
- * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
- * @param[in] value Base value
- */
-static bool
-tlinearseq_always_lt_iter(Datum value1, Datum value2, meosType basetype,
-  bool lower_inc, bool upper_inc, Datum value)
-{
-  /* Constant segment */
-  if (datum_eq(value1, value2, basetype))
-    return datum_lt(value1, value1, basetype);
-  /* Increasing segment */
-  if (datum_lt(value1, value2, basetype))
-    return datum_lt(value2, value, basetype) ||
-      (! upper_inc && datum_eq(value, value2, basetype));
-  /* Decreasing segment */
-  return datum_lt(value1, value, basetype) ||
-    (! lower_inc && datum_eq(value1, value, basetype));
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal sequence is ever less than a base value.
- * @param[in] seq Temporal sequence
- * @param[in] value Value
- * @csqlfn #Temporal_ever_lt()
- */
-bool
-tsequence_ever_lt(const TSequence *seq, Datum value)
-{
-  assert(seq);
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, EVER))
-    return false;
-
-  meosType basetype = temptype_basetype(seq->temptype);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum valueinst = tinstant_value(TSEQUENCE_INST_N(seq, i));
-    if (datum_lt(valueinst, value, basetype))
-      return true;
-  }
-  return false;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal sequence is ever less than or equal to a
- * base value
- * @param[in] seq Temporal sequence
- * @param[in] value Value
- * @csqlfn #Temporal_ever_le()
- */
-bool
-tsequence_ever_le(const TSequence *seq, Datum value)
-{
-  assert(seq);
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, EVER))
-    return false;
-
-  Datum value1;
-  int i;
-  meosType basetype = temptype_basetype(seq->temptype);
-
-  /* Step interpolation or instantaneous sequence */
-  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags) || seq->count == 1)
-  {
-    for (i = 0; i < seq->count; i++)
-    {
-      value1 = tinstant_value(TSEQUENCE_INST_N(seq, i));
-      if (datum_le(value1, value, basetype))
-        return true;
-    }
-    return false;
-  }
-
-  /* Linear interpolation */
-  value1 = tinstant_value(TSEQUENCE_INST_N(seq, 0));
-  bool lower_inc = seq->period.lower_inc;
-  for (i = 1; i < seq->count; i++)
-  {
-    Datum value2 = tinstant_value(TSEQUENCE_INST_N(seq, i));
-    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (tlinearseq_ever_le_iter(value1, value2, basetype, lower_inc, upper_inc,
-        value))
-      return true;
-    value1 = value2;
-    lower_inc = true;
-  }
-  return false;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal sequence is always less than a base value.
- * @param[in] seq Temporal sequence
- * @param[in] value Value
- * @csqlfn #Temporal_always_lt()
- */
-bool
-tsequence_always_lt(const TSequence *seq, Datum value)
-{
-  assert(seq);
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, ALWAYS))
-    return false;
-
-  Datum value1;
-  int i;
-  meosType basetype = temptype_basetype(seq->temptype);
-
-  /* Step interpolation or instantaneous sequence */
-  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags) || seq->count == 1)
-  {
-    for (i = 0; i < seq->count; i++)
-    {
-      value1 = tinstant_value(TSEQUENCE_INST_N(seq, i));
-      if (datum_ge(value1, value, basetype))
-        return false;
-    }
-    return true;
-  }
-
-  /* Linear interpolation */
-  value1 = tinstant_value(TSEQUENCE_INST_N(seq, 0));
-  bool lower_inc = seq->period.lower_inc;
-  for (i = 1; i < seq->count; i++)
-  {
-    Datum value2 = tinstant_value(TSEQUENCE_INST_N(seq, i));
-    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (! tlinearseq_always_lt_iter(value1, value2, basetype, lower_inc,
-        upper_inc, value))
-      return false;
-    value1 = value2;
-    lower_inc = true;
-  }
-  return true;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal sequence is always less than or equal to a
- * base value
- * @param[in] seq Temporal sequence
- * @param[in] value Value
- * @csqlfn #Temporal_always_le()
- */
-bool
-tsequence_always_le(const TSequence *seq, Datum value)
-{
-  assert(seq);
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, ALWAYS))
-    return false;
-
-  /* The bounding box test above is enough to compute
-   * the answer for temporal numbers */
-  if (tnumber_type(seq->temptype))
-    return true;
-
-  /* We are sure that the type has stewpwise interpolation since
-   * there are currenty no other continuous base type besides tfloat
-   * to which the always <= comparison applies */
-  assert(! MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  meosType basetype = temptype_basetype(seq->temptype);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum valueinst = tinstant_value(TSEQUENCE_INST_N(seq, i));
-    if (! datum_le(valueinst, value, basetype))
-      return false;
-  }
-  return true;
 }
 
 /*****************************************************************************
@@ -4607,11 +4308,11 @@ tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @brief Compute the base value of a temporal discrete sequence at a timestamp
- *
- * @note In order to be compatible with the corresponding functions for temporal
- * sequences that need to interpolate the value, it is necessary to return
- * a copy of the value
+ * @brief Initialize the last argument with the value of a temporal discrete
+ * sequence at a timestamptz
+ * @note In order to be compatible with the corresponding functions for 
+ * temporal sequences that need to interpolate the value, it is necessary to
+ * return a copy of the value
  */
 bool
 tdiscseq_value_at_timestamptz(const TSequence *seq, TimestampTz t, Datum *result)
@@ -5565,8 +5266,9 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
     {
       char *str = pg_timestamptz_out(instants[0]->t);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The temporal values have different value at their common instant %s",
+        "The temporal values have different value at their common timestamp %s",
         str);
+      pfree(str);
       return NULL;
     }
   }

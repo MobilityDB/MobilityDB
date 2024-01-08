@@ -115,30 +115,30 @@ spannode_init(SpanNode *nodebox, meosType spantype, meosType basetype)
   memset(nodebox, 0, sizeof(SpanNode));
   Datum min, max;
   assert(span_type(spantype));
-  if (spantype == T_TSTZSPAN)
+  switch (spantype)
   {
-    min = TimestampTzGetDatum(DT_NOBEGIN);
-    max = TimestampTzGetDatum(DT_NOEND);
-  }
-  else if (spantype == T_DATE)
-  {
-    min = DateADTGetDatum(DATEVAL_NOBEGIN);
-    max = DateADTGetDatum(DATEVAL_NOEND);
-  }
-  else if (spantype == T_INTSPAN)
-  {
-    min = Int32GetDatum(PG_INT32_MIN);
-    max = Int32GetDatum(PG_INT32_MAX);
-  }
-  else if (spantype == T_BIGINTSPAN)
-  {
-    min = Int64GetDatum(PG_INT64_MIN);
-    max = Int64GetDatum(PG_INT64_MAX);
-  }
-  else /* spantype == T_FLOATSPAN */
-  {
-    min = Float8GetDatum(-1 * DBL_MAX);
-    max = Float8GetDatum(DBL_MAX);
+    case T_TSTZSPAN:
+      min = TimestampTzGetDatum(DT_NOBEGIN);
+      max = TimestampTzGetDatum(DT_NOEND);
+      break;
+    case T_DATESPAN:
+      min = DateADTGetDatum(DATEVAL_NOBEGIN);
+      max = DateADTGetDatum(DATEVAL_NOEND);
+      break;
+    case T_INTSPAN:
+      min = Int32GetDatum(PG_INT32_MIN);
+      max = Int32GetDatum(PG_INT32_MAX);
+      break;
+    case T_BIGINTSPAN:
+      min = Int64GetDatum(PG_INT64_MIN);
+      max = Int64GetDatum(PG_INT64_MAX);
+      break;
+    case T_FLOATSPAN:
+      min = Float8GetDatum(-1 * DBL_MAX);
+      max = Float8GetDatum(DBL_MAX);
+      break;
+    default: /* Error */
+      elog(ERROR, "Unsupported span type for indexing: %d", spantype);
   }
   nodebox->left.lower = nodebox->left.upper = min;
   nodebox->right.lower = nodebox->right.upper = max;
@@ -327,42 +327,6 @@ right2D(const SpanNode *nodebox, const Span *query)
  */
 static bool
 overRight2D(const SpanNode *nodebox, const Span *query)
-{
-  return ovri_span_span(&nodebox->left, query);
-}
-
-/**
- * @brief Can any period from nodebox be before the query?
- */
-static bool
-before2D(const SpanNode *nodebox, const Span *query)
-{
-  return lf_span_span(&nodebox->right, query);
-}
-
-/**
- * @brief Can any period from nodebox be not after the query?
- */
-static bool
-overBefore2D(const SpanNode *nodebox, const Span *query)
-{
-  return ovlf_span_span(&nodebox->right, query);
-}
-
-/**
- * @brief Can any period from nodebox be after the query?
- */
-static bool
-after2D(const SpanNode *nodebox, const Span *query)
-{
-  return ri_span_span(&nodebox->left, query);
-}
-
-/**
- * @brief Can any period from nodebox does not extend before the query?
- */
-static bool
-overAfter2D(const SpanNode *nodebox, const Span *query)
 {
   return ovri_span_span(&nodebox->left, query);
 }
@@ -712,7 +676,7 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
-  int median = in->nTuples >> 1, i;
+  int i, median = in->nTuples >> 1;
 
   /* Sort the spans and determine the centroid */
   SortedSpan *sorted = palloc(sizeof(SortedSpan) * in->nTuples);
@@ -822,18 +786,9 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
           for (int j = 0; j < in->norderbys; j++)
             distances[j] = distance_span_nodespan(&orderbys[j], nodebox);
 
-          out->distances = palloc(sizeof(double *) * in->nNodes);
-          out->distances[0] = distances;
-
-          for (i = 1; i < in->nNodes; i++)
-          {
-            out->distances[i] = palloc(sizeof(double) * in->norderbys);
-            memcpy(out->distances[i], distances, sizeof(double) * in->norderbys);
-          }
+          pfree(orderbys);
         }
       }
-
-      // pfree(orderbys);
 
       PG_RETURN_VOID();
     }
@@ -859,8 +814,8 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
 
   /*
    * Switch memory context to allocate memory for new traversal values
-   * (next_nodespan) and pass these pieces of memory to further calls
-   * of this function.
+   * (next_nodespan) and pass these pieces of memory to further calls of
+   * this function
    */
   old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
@@ -871,8 +826,7 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
     if (idxtype == SPGIST_QUADTREE)
       spannode_quadtree_next(nodebox, centroid, node, &next_nodespan);
     else
-      spannode_kdtree_next(nodebox, centroid, node, in->level,
-        &next_nodespan);
+      spannode_kdtree_next(nodebox, centroid, node, in->level, &next_nodespan);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {
@@ -890,28 +844,20 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
           flag = contain2D(&next_nodespan, &queries[i]);
           break;
         case RTLeftStrategyNumber:
+        case RTBeforeStrategyNumber:
           flag = ! overRight2D(&next_nodespan, &queries[i]);
           break;
         case RTOverLeftStrategyNumber:
+        case RTOverBeforeStrategyNumber:
           flag = ! right2D(&next_nodespan, &queries[i]);
           break;
         case RTRightStrategyNumber:
+        case RTAfterStrategyNumber:
           flag = ! overLeft2D(&next_nodespan, &queries[i]);
           break;
         case RTOverRightStrategyNumber:
-          flag = ! left2D(&next_nodespan, &queries[i]);
-          break;
-        case RTBeforeStrategyNumber:
-          flag = ! overAfter2D(&next_nodespan, &queries[i]);
-          break;
-        case RTOverBeforeStrategyNumber:
-          flag = ! after2D(&next_nodespan, &queries[i]);
-          break;
-        case RTAfterStrategyNumber:
-          flag = ! overBefore2D(&next_nodespan, &queries[i]);
-          break;
         case RTOverAfterStrategyNumber:
-          flag = ! before2D(&next_nodespan, &queries[i]);
+          flag = ! left2D(&next_nodespan, &queries[i]);
           break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);
@@ -1007,10 +953,6 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
     /* Convert the query to a span and perform the test */
     span_spgist_get_span(&in->scankeys[i], &span);
-    /* All tests are lossy for temporal types */
-    if (temporal_type(in->scankeys[i].sk_subtype))
-      out->recheck = true;
-
     result = span_index_consistent_leaf(key, &span, strategy);
 
     /* If any check is failed, we have found our answer. */
@@ -1020,8 +962,8 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
   if (result && in->norderbys > 0)
   {
-    /* Recheck is necessary when computing distance with bounding boxes */
-    out->recheckDistances = true;
+    /* Recheck is not necessary when computing distance for span types */
+    out->recheckDistances = false;
     double *distances = palloc(sizeof(double) * in->norderbys);
     out->distances = distances;
     for (i = 0; i < in->norderbys; i++)
@@ -1030,8 +972,6 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       span_spgist_get_span(&in->orderbys[i], &span);
       distances[i] = dist_span_span(&span, key);
     }
-    /* Recheck is necessary when computing distance with bounding boxes */
-    out->recheckDistances = true;
   }
 
   PG_RETURN_BOOL(result);

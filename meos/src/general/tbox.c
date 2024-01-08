@@ -205,7 +205,8 @@ tbox_make(const Span *s, const Span *p)
 
 /**
  * @ingroup libmeos_internal_box_constructor
- * @brief Set a temporal box from a number span and a timestamptz span
+ * @brief Initialize the last argument with a temporal box constructed from a
+ * number span and a timestamptz span
  * @param[in] s Value span
  * @param[in] p Time span
  * @param[out] box Result
@@ -408,10 +409,11 @@ numspan_tstzspan_to_tbox(const Span *s, const Span *p)
 
 /**
  * @ingroup libmeos_internal_box_conversion
+ * @brief Initialize the last argument with a temporal box constructed from a
+ * number
  * @param[in] d Value
  * @param[in] basetype Type of the value
  * @param[out] box Result
- * @brief Set a temporal box from a number
  */
 void
 number_set_tbox(Datum d, meosType basetype, TBox *box)
@@ -444,7 +446,8 @@ number_to_tbox(Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a temporal box from an integer
+ * @brief Initialize the last argument with a temporal box constructed from an
+ * integer
  * @param[in] i Value
  * @param[out] box Result
  */
@@ -452,7 +455,8 @@ void
 int_set_tbox(int i, TBox *box)
 {
   assert(box);
-  return number_set_tbox(Int32GetDatum(i), T_INT4, box);
+  number_set_tbox(Int32GetDatum(i), T_INT4, box);
+  return;
 }
 
 /**
@@ -471,15 +475,17 @@ int_to_tbox(int i)
 
 /**
  * @ingroup libmeos_internal_box_conversion
+ * @brief Initialize the last argument with a temporal box constructed from a
+ * float
  * @param[in] d Value
  * @param[out] box Result
- * @brief Set a temporal box from a float
  */
 void
 float_set_tbox(double d, TBox *box)
 {
   assert(box);
-  return number_set_tbox(Float8GetDatum(d), T_FLOAT8, box);
+  number_set_tbox(Float8GetDatum(d), T_FLOAT8, box);
+  return;
 }
 
 /**
@@ -499,7 +505,8 @@ float_to_tbox(double d)
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a temporal box from a timestamptz
+ * @brief Initialize the last argument with a temporal box constructed from a
+ * timestamptz
  * @param[in] t Timestamp
  * @param[out] box Result
  */
@@ -530,7 +537,8 @@ timestamptz_to_tbox(TimestampTz t)
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a temporal box from a number set
+ * @brief Initialize the last argument with a temporal box constructed from a
+ * number set
  * @param[in] s Set
  * @param[out] box Result
  */
@@ -563,7 +571,8 @@ numset_to_tbox(const Set *s)
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a temporal box from a timestamptz set
+ * @brief Initialize the last argument with a temporal box constructed from a
+ * timestamptz set
  * @param[in] s Set
  * @param[out] box Result
  */
@@ -596,7 +605,8 @@ tstzset_to_tbox(const Set *s)
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a temporal box from a number span
+ * @brief Initialize the last argument with a temporal box constructed from a
+ * number span
  * @param[in] s Span
  * @param[out] box Result
  */
@@ -628,7 +638,8 @@ numspan_to_tbox(const Span *s)
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a temporal box from a timestamptz span
+ * @brief Initialize the last argument with a temporal box constructed from a
+ * timestamptz span
  * @param[in] s Span
  * @param[out] box Result
  */
@@ -662,7 +673,8 @@ tstzspan_to_tbox(const Span *s)
 #if MEOS
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a temporal box from a span set
+ * @brief Initialize the last argument with a temporal box constructed from a
+ * span set
  * @param[in] ss Span set
  * @param[out] box Result
  */
@@ -696,7 +708,8 @@ numspanset_to_tbox(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_internal_box_conversion
- * @brief Set a temporal box from a timestamptz span set
+ * @brief Initialize the last argument with a temporal box constructed from a
+ * timestamptz span set
  * @param[in] ss Span set
  * @param[out] box Result
  */
@@ -1001,7 +1014,8 @@ tbox_tmin_inc(const TBox *box, bool *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Compute the maximum T value of a temporal box
+ * @brief Initialize the last argument with the maximum T value of a temporal
+ * box
  * @param[in] box Box
  * @param[out] result Result
  * @csqlfn #Tbox_tmax()
@@ -1260,27 +1274,12 @@ tbox_round(const TBox *box, int maxdd)
   return result;
 }
 
-
 /*****************************************************************************
  * Topological operators
  *****************************************************************************/
 
 /**
- * @brief Set the ouput variables with the values of the flags of the boxes
- * @param[in] box1,box2 Input boxes
- * @param[out] hasx,hast Boolean variables
- */
-static void
-tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
-{
-  assert(box1); assert(box2); assert(hasx); assert(hast);
-  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  return;
-}
-
-/**
- * @brief Set the ouput variables with the values of the flags of the boxes
+ * @brief Initialize the ouput variables with the flag values of the boxes
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hast Boolean variables
  */
@@ -1582,8 +1581,8 @@ union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
 
 /**
  * @ingroup libmeos_internal_box_set
- * @brief Set a temporal box with the result of the intersection of the first
- * two temporal boxes
+ * @brief Initialize the the last argument with the result of the
+ * intersection of two temporal boxes
  * @param[in] box1,box2 Temporal boxes
  * @param[out] result Resulting box
  * @note This function is equivalent to @ref intersection_tbox_tbox without
@@ -1690,8 +1689,8 @@ tbox_cmp(const TBox *box1, const TBox *box2)
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
     return INT_MAX;
 
-  bool hasx, hast;
-  tbox_tbox_flags(box1, box2, &hasx, &hast);
+  bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
+  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   int cmp;
   if (hast)
   {

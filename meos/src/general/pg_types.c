@@ -937,7 +937,7 @@ pg_date_mi_int(DateADT d, int32 days)
 }
 
 /**
- * @brief Compute difference between two dates in days.
+ * @brief Return the difference between two dates.
  */
 Interval *
 pg_date_mi(DateADT d1, DateADT d2)
@@ -995,6 +995,7 @@ MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
       *time = -((((-*time) + TimeOffsets[typmod]) / TimeScales[typmod]) *
             TimeScales[typmod]);
   }
+  return;
 }
 
 /**
@@ -1143,6 +1144,7 @@ void
 MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 {
   (void) MEOSAdjustTimestampForTypmodError(time, typmod, NULL);
+  return;
 }
 
 /**
@@ -1539,6 +1541,7 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
       }
     }
   }
+  return;
 }
 
 /**
@@ -1983,7 +1986,7 @@ pg_interval_justify_hours(const Interval *span)
 
 /**
  * @ingroup libmeos_pg_types
- * @brief Compute the difference of two timestamps
+ * @brief Return the difference of two timestamps
  * @note PostgreSQL function: Datum timestamp_mi(PG_FUNCTION_ARGS)
  * The original code from PostgreSQL has `Timestamp` as arguments
  */

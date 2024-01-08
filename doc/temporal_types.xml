@@ -14,7 +14,7 @@
 	<sect1 id="temporal_types_introduction">
 		<title>Introduction</title>
 		<para>
-			MobilityDB provides six built-in temporal types, namely, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname> (the last two types restricted to 2D or 3D points with Z dimension).
+			MobilityDB provides six built-in temporal types, namely, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>integer</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname> (the last two types restricted to 2D or 3D points with Z dimension).
 		</para>
 
 		<para>
@@ -36,12 +36,12 @@ SELECT tfloat '17@2018-01-01 08:00:00';
 			A temporal value of <emphasis>sequence</emphasis> subtype (briefly, a <emphasis>sequence value</emphasis>) represents the evolution of the value during a sequence of time instants, where the values between these instants are interpolated using a discrete, step, or a linear function (see above). An example is as follows:
 			<programlisting language="sql" xml:space="preserve">
 -- Discrete interpolation
-SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}'
+SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}';
 -- Step interpolation
 SELECT tfloat 'Interp=Step;(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00,
-  15@2018-01-01 08:10:00]'
+  15@2018-01-01 08:10:00]';
 -- Linear interpolation
-SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]'
+SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 </programlisting>
 		</para>
 
@@ -74,14 +74,14 @@ SELECT tfloat '{[17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00],
 			Continuous sequence values are converted into <emphasis>normal form</emphasis> so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For step interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into normal form are as follows.
 			<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
--- [1@2001-01-01, 2@2001-01-03, 2@2001-01-05)
-SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
-  Point(1 1)@2001-01-01 08:10:00)';
+-- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)
+SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
+  Point(1 1)@2001-01-01 08:10:00)');
 -- [Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:10:00)
 SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
--- [1@2001-01-01, 3@2001-01-05]
-SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
-  Point(3 3)@2001-01-01 08:10:00]';
+-- [1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]
+SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
+  Point(3 3)@2001-01-01 08:10:00]');
 -- [Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]
 </programlisting>
 		</para>
@@ -134,11 +134,11 @@ CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 			</listitem>
 
 			<listitem>
-				<para>A <varname>tbox</varname> (temporal box) type for the <varname>tint</varname> and <varname>tfloat</varname> types, where the value and the time extents are defined, respectively, by a number span and a time span.</para>
+				<para>The <varname>tbox</varname> (temporal box) type for the <varname>tint</varname> and <varname>tfloat</varname> types, where the value and the time extents are defined, respectively, by a number span and a time span.</para>
 			</listitem>
 
 			<listitem>
-				<para>A <varname>stbox</varname> (spatiotemporal box) type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, where the spatial extent is defined in the X, Y, and Z dimensions, and the time extent by a time span.</para>
+				<para>The <varname>stbox</varname> (spatiotemporal box) type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, where the spatial extent is defined in the X, Y, and Z dimensions, and the time extent by a time span.</para>
 			</listitem>
 		</itemizedlist>
 
@@ -163,14 +163,14 @@ INSERT INTO Temperature VALUES
 -- Value at a timestamp
 SELECT RoomNo, valueAtTimestamp(Temp, '2001-01-01 08:10:00')
 FROM temperature;
--- 1001 |
+-- 1001 | 20
 -- 2001 | 22.5
 
 -- Restriction to a value
 SELECT DeptNo, atValue(NoEmps, 10)
 FROM Department;
 -- 10 | [10@2001-01-01, 10@2001-04-01)
--- 20 | NULL
+-- 20 |
 
 -- Restriction to a period
 SELECT DeptNo, atTime(NoEmps, tstzspan '[2001-01-01, 2001-04-01]')
@@ -182,7 +182,7 @@ FROM Department;
 SELECT DeptNo, NoEmps #&lt;= 10
 FROM Department;
 -- 10 | [t@2001-01-01, f@2001-04-01, f@2001-08-01)
--- 20 | [t@2001-04-02, t@2001-10-01)
+-- 20 | [t@2001-02-01, t@2001-10-01)
 
 -- Temporal aggregation
 SELECT tsum(NoEmps)
@@ -205,11 +205,11 @@ FROM Trips;
 -- 10 | POINT(2 0)
 -- 20 | POINT(1 1)
 
--- Restriction to a given value
-SELECT CarId, asText(atValue(Trip, 'Point(2 0)'))
+-- Restriction to a value
+SELECT CarId, asText(atValues(Trip, geometry 'Point(2 0)'))
 FROM Trips;
 -- 10 | {"[POINT(2 0)@2001-01-01 08:10:00+00]"}
--- 20 | NULL
+-- 20 | 
 
 -- Restriction to a period
 SELECT CarId, asText(atTime(Trip, tstzspan '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
@@ -221,8 +221,8 @@ FROM Trips;
 SELECT T1.CarId, T2.CarId, T1.Trip &lt;-&gt; T2.Trip
 FROM Trips T1, Trips T2
 WHERE T1.CarId &lt; T2.CarId;
-/* 10;20;{[1@2001-01-01 08:05:00+00, 1.4142135623731@2001-01-01 08:10:00+00,
-   1@2001-01-01 08:15:00+00)}
+/* 10 | 20 | {[1@2001-01-01 08:05:00+00, 1.4142135623731@2001-01-01 08:10:00+00,
+   1@2001-01-01 08:15:00+00)} */
 </programlisting>
 	</sect1>
 

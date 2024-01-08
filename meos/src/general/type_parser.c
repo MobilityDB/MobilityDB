@@ -606,7 +606,7 @@ spanset_parse(const char **str, meosType spansettype)
     span_parse(str, spantype, false, &spans[i]);
   }
   p_cbrace(str);
-  return spanset_make_free(spans, count, NORMALIZE);
+  return spanset_make_free(spans, count, NORMALIZE, ORDERED);
 }
 
 /*****************************************************************************/

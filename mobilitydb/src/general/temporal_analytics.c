@@ -43,6 +43,7 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
+#include "general/set.h"
 #include "general/span.h"
 #include "general/temporal.h"
 /* MobilityDB */
@@ -68,11 +69,27 @@ Timestamptz_tprecision(PG_FUNCTION_ARGS)
   PG_RETURN_TIMESTAMPTZ(timestamptz_tprecision(t, duration, origin));
 }
 
+PGDLLEXPORT Datum Tstzset_tprecision(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzset_tprecision);
+/**
+ * @ingroup libmeos_temporal_analytics_reduction
+ * @brief Return a tstzset value with the precision set to period buckets
+ * set falls
+ */
+Datum
+Tstzset_tprecision(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  PG_RETURN_SET_P(tstzset_tprecision(s, duration, origin));
+}
+
 PGDLLEXPORT Datum Tstzspan_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_tprecision);
 /**
  * @ingroup libmeos_temporal_analytics_reduction
- * @brief Return the initial timestamptz of the bucket in which a timestamptz
+ * @brief Return a tstzspan value with the precision set to period buckets
  * span falls
  */
 Datum
@@ -88,7 +105,7 @@ PGDLLEXPORT Datum Tstzspanset_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_tprecision);
 /**
  * @ingroup libmeos_temporal_analytics_reduction
- * @brief Generate a bucket in a bucket list for timestamptz span sets
+ * @brief Return a tstzspanset value with the precision set to period buckets
  */
 Datum
 Tstzspanset_tprecision(PG_FUNCTION_ARGS)

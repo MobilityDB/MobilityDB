@@ -83,8 +83,8 @@ ensure_span_isof_basetype(const Span *s, meosType basetype)
   if (s->basetype != basetype)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed span and base types: %d and %d",
-      s->spantype, basetype);
+      "Operation on mixed span and base types: %s and %s",
+      meostype_name(s->spantype), meostype_name(basetype));
     return false;
   }
   return true;
@@ -134,6 +134,7 @@ span_deserialize(const Span *s, SpanBound *lower, SpanBound *upper)
     upper->spantype = s->spantype;
     upper->basetype = s->basetype;
   }
+  return;
 }
 
 /**
@@ -677,7 +678,8 @@ tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
 
 /**
  * @ingroup libmeos_internal_setspan_constructor
- * @brief Set a span from the bounds.
+ * @brief Initialize the last argument to a span constructed from the other
+ * arguments
  * @param[in] lower,upper Bounds
  * @param[in] lower_inc,upper_inc True when the bounds are inclusive
  * @param[in] basetype Base type
@@ -769,7 +771,7 @@ span_copy(const Span *s)
 
 /**
  * @ingroup libmeos_internal_setspan_accessor
- * @brief Set the last argument to a span constructed from the value
+ * @brief Initialize the last argument to a span constructed from the value
  * @param[in] d Value
  * @param[in] basetype Type of the value
  * @param[out] s Result span
@@ -1074,20 +1076,70 @@ span_upper_inc(const Span *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
- * @brief Return the width of a span as a double.
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the width of a span.
  * @param[in] s Span
- * @return On error return -1.0
- * @csqlfn #Span_width()
+ * @return On error return -1
+ * @csqlfn #Numspan_width()
  */
-double
-span_width(const Span *s)
+Datum
+numspan_width(const Span *s)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s))
-    return -1.0;
+    return (Datum) -1;
   return distance_value_value(s->upper, s->lower, s->basetype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the width of an integer span
+ * @param[in] s Span
+ * @return On error return -1
+ * @csqlfn #Numspan_width()
+ */
+int
+intspan_width(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
+    return -1;
+  return Int32GetDatum(numspan_width(s));
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the width of an integer span
+ * @param[in] s Span
+ * @return On error return -1
+ * @csqlfn #Numspan_width()
+ */
+int64
+bigintspan_width(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
+    return -1;
+  return Int64GetDatum(numspan_width(s));
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the width of a float span
+ * @param[in] s Span
+ * @return On error return -1
+ * @csqlfn #Numspan_width()
+ */
+double
+floatspan_width(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
+    return -1.0;
+  return DatumGetFloat8(numspan_width(s));
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_accessor
@@ -1102,8 +1154,7 @@ datespan_duration(const Span *s)
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
     return NULL;
   Interval *result = palloc0(sizeof(Interval));
-  /* Date spans are canonicalized */
-  result->day = DateADTGetDatum(s->upper) - DateADTGetDatum(s->lower) - 1;
+  result->day = DateADTGetDatum(s->upper) - DateADTGetDatum(s->lower);
   return result;
 }
 
@@ -1128,7 +1179,8 @@ tstzspan_duration(const Span *s)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Set the precision of the float span to the number of decimal places.
+ * @brief Initialize the last argument to a float span with the precision set 
+ * to the number of decimal places
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
  * @param[out] result Result span
@@ -1239,7 +1291,8 @@ tstzspan_to_datespan(const Span *s)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Set the second span with the first one transformed to a float span
+ * @brief Initialize the second span with the first one transformed to a float
+ * span
  * @param[in] s1,s2 Spans
  */
 void
@@ -1254,7 +1307,7 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Set the second span with the first one transformed to a integer span
+ * @brief Initialize the second span with the first one transformed to an integer span
  * @param[in] s1,s2 Spans
  */
 void
@@ -1269,7 +1322,8 @@ floatspan_set_intspan(const Span *s1, Span *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Set the second span with the first one transformed to a timetstamptz span
+ * @brief Initialize the second span with the first one transformed to a
+ * timetstamptz span
  * @param[in] s1,s2 Spans
  */
 void
@@ -1287,7 +1341,8 @@ datespan_set_tstzspan(const Span *s1, Span *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Set the second span with the first one transformed to a date span
+ * @brief Initialize the second span with the first one transformed to a date
+ * span
  * @param[in] s1,s2 Spans
  */
 void
@@ -1476,8 +1531,13 @@ tstzspan_delta_scale_iter(Span *s, TimestampTz origin, TimestampTz delta,
 }
 
 /**
- * @brief Shift and/or scale a span by two values
- * @note Returns the delta and scale of the transformation
+ * @brief Return a number span shifted and/or scaled by two values
+ * @param[in] s Span
+ * @param[in] shift Value for shifting the bounds
+ * @param[in] width Width of the result
+ * @param[in] hasshift True when the shift argument is given
+ * @param[in] haswidth True when the width argument is given
+ * @param[out] delta,scale Delta and scale of the transformation
  */
 void
 numspan_shift_scale1(Span *s, Datum shift, Datum width, bool hasshift,
@@ -1518,7 +1578,7 @@ numspan_shift_scale1(Span *s, Datum shift, Datum width, bool hasshift,
 }
 
 /**
- * @brief Shift and/or scale a timestamptz span by two intervals.
+ * @brief Return a timestamptz span shifted and/or scaled by two intervals
  * @note Returns the delta and scale of the transformation
  */
 void
@@ -1545,7 +1605,7 @@ tstzspan_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Shift and/or scale a number span by two values
+ * @brief Return a number span shifted and/or scaled by two values
  * @param[in] s Span
  * @param[in] shift Value for shifting the bounds
  * @param[in] width Width of the result
@@ -1662,7 +1722,7 @@ datespan_shift_scale(const Span *s, int shift, int width, bool hasshift,
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Shift and/or scale a timestamptz span by two intervals.
+ * @brief Return a timestamptz span shifted and/or scaled by two intervals
  * @param[in] s Span
  * @param[in] shift Interval to shift the bounds, may be NULL
  * @param[in] duration Duation of the result, may be NULL
@@ -1695,7 +1755,7 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
 
 /**
  * @ingroup libmeos_internal_setspan_comp
- * @brief Return true if the two spans are equal.
+ * @brief Return true if the two spans are equal
  * @param[in] s1,s2 Sets
  */
 bool

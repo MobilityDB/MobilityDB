@@ -569,6 +569,7 @@ datumarr_sort(Datum *values, int count, meosType type)
 {
   qsort_arg(values, (size_t) count, sizeof(Datum),
     (qsort_arg_comparator) &datum_sort_cmp, &type);
+  return;
 }
 
 /**
@@ -579,6 +580,7 @@ timestamparr_sort(TimestampTz *times, int count)
 {
   qsort(times, (size_t) count, sizeof(TimestampTz),
     (qsort_comparator) &timestamp_sort_cmp);
+  return;
 }
 
 #if 0 /* Not used */
@@ -589,6 +591,7 @@ void
 double2arr_sort(double2 *doubles, int count)
 {
   qsort(doubles, count, sizeof(double2), (qsort_comparator) &double2_cmp);
+  return;
 }
 
 /**
@@ -598,6 +601,7 @@ void
 double3arr_sort(double3 *triples, int count)
 {
   qsort(triples, count, sizeof(double3), (qsort_comparator) &double3_cmp);
+  return;
 }
 #endif
 
@@ -609,6 +613,7 @@ spanarr_sort(Span *spans, int count)
 {
   qsort(spans, (size_t) count, sizeof(Span),
     (qsort_comparator) &span_cmp1);
+  return;
 }
 
 /**
@@ -619,6 +624,7 @@ tinstarr_sort(TInstant **instants, int count)
 {
   qsort(instants, (size_t) count, sizeof(TInstant *),
     (qsort_comparator) &tinstarr_sort_cmp);
+  return;
 }
 
 /**
@@ -629,11 +635,13 @@ tseqarr_sort(TSequence **sequences, int count)
 {
   qsort(sequences, (size_t) count, sizeof(TSequence *),
     (qsort_comparator) &tseqarr_sort_cmp);
+  return;
 }
 
 /*****************************************************************************
  * Remove duplicate functions
  * These functions assume that the array has been sorted before
+ * These functions pack the distinct values at the begining
  *****************************************************************************/
 
 /**
@@ -781,6 +789,7 @@ text_cmp(text *arg1, text *arg2, Oid collid __attribute__((unused)))
 void
 pfree_array(void **array, int count)
 {
+  assert(array);
   for (int i = 0; i < count; i++)
   {
     if (array[i])

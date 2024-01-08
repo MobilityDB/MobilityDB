@@ -2171,17 +2171,17 @@ minus_set_set(const Set *s1, const Set *s2)
 }
 
 /******************************************************************************
- * Distance functions returning a double
+ * Distance functions
  ******************************************************************************/
 
 /**
  * @ingroup libmeos_internal_setspan_dist
- * @brief Return the distance between a set and a value as a double
+ * @brief Return the distance between a set and a value
  * @param[in] s Set
  * @param[in] d Value
  * @param[in] basetype Type of the value
  */
-double
+Datum
 distance_set_value(const Set *s, Datum d, meosType basetype)
 {
   assert(s); assert(s->basetype == basetype);
@@ -2193,36 +2193,36 @@ distance_set_value(const Set *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a set and an integer as a double
+ * @brief Return the distance between a set and an integer
  * @param[in] s Set
  * @param[in] i Value
- * @result On error return -1.0
+ * @result On error return -1
  * @csqlfn #Distance_set_value()
  */
-double
+int
 distance_set_int(const Set *s, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
-    return -1.0;
-  return distance_set_value(s, Int32GetDatum(i), T_INT4);
+    return -1;
+  return DatumGetInt32(distance_set_value(s, Int32GetDatum(i), T_INT4));
 }
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a set and a big integer as a double
+ * @brief Return the distance between a set and a big integer
  * @param[in] s Set
  * @param[in] i Value
  * @result On error return -1.0
  * @csqlfn #Distance_set_value()
  */
-double
+int64
 distance_set_bigint(const Set *s, int64 i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
-    return -1.0;
-  return distance_set_value(s, Int64GetDatum(i), T_INT8);
+    return -1;
+  return DatumGetInt64(distance_set_value(s, Int64GetDatum(i), T_INT8));
 }
 
 /**
@@ -2239,24 +2239,24 @@ distance_set_float(const Set *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return -1.0;
-  return distance_set_value(s, Float8GetDatum(d), T_FLOAT8);
+  return DatumGetFloat8(distance_set_value(s, Float8GetDatum(d), T_FLOAT8));
 }
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance in seconds between a set and a date as a double
+ * @brief Return the distance in days between a set and a date
  * @param[in] s Set
  * @param[in] d Value
  * @result On error return -1.0
  * @csqlfn #Distance_set_value()
  */
-double
+int
 distance_set_date(const Set *s, DateADT d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
-    return -1.0;
-  return distance_set_value(s, DateADTGetDatum(d), T_DATE);
+    return -1;
+  return DatumGetInt32(distance_set_value(s, DateADTGetDatum(d), T_INT4));
 }
 
 /**
@@ -2281,10 +2281,10 @@ distance_set_timestamptz(const Set *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_internal_setspan_dist
- * @brief Return the distance between two sets as a double
+ * @brief Return the distance between two sets
  * @param[in] s1,s2 Sets
  */
-double
+Datum
 dist_set_set(const Set *s1, const Set *s2)
 {
   assert(s1); assert(s2); assert(s1->settype == s2->settype);
@@ -2295,20 +2295,112 @@ dist_set_set(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
- * @brief Return the distance between two sets as a double
+ * @ingroup libmeos_internal_setspan_dist
+ * @brief Return the distance between two sets
  * @param[in] s1,s2 Sets
  * @result On error return -1.0
  * @csqlfn #Distance_set_set()
  */
-double
+Datum
 distance_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
-    return -1.0;
+    return (Datum) -1;
   return dist_set_set(s1, s2);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between two integer sets
+ * @param[in] s1,s2 Sets
+ * @result On error return -1
+ * @csqlfn #Distance_set_set()
+ */
+int
+distance_intset_intset(const Set *s1, const Set *s2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_set_isof_basetype(s1, T_INT4) ||
+      ! ensure_set_isof_basetype(s2, T_INT4))
+    return -1;
+  return distance_set_set(s1, s2);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between two big integer sets
+ * @param[in] s1,s2 Sets
+ * @result On error return -1
+ * @csqlfn #Distance_set_set()
+ */
+int64
+distance_bigintset_bigintset(const Set *s1, const Set *s2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_set_isof_basetype(s1, T_INT8) ||
+      ! ensure_set_isof_basetype(s2, T_INT8))
+    return -1;
+  return distance_set_set(s1, s2);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between two float sets
+ * @param[in] s1,s2 Sets
+ * @result On error return -1.0
+ * @csqlfn #Distance_set_set()
+ */
+double
+distance_floatset_floatset(const Set *s1, const Set *s2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+     ! ensure_set_isof_basetype(s1, T_FLOAT8) ||
+     ! ensure_set_isof_basetype(s2, T_FLOAT8))
+    return -1.0;
+  return distance_set_set(s1, s2);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance in days between two date sets
+ * @param[in] s1,s2 Sets
+ * @result On error return -1
+ * @csqlfn #Distance_set_set()
+ */
+int
+distance_dateset_dateset(const Set *s1, const Set *s2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_set_isof_basetype(s1, T_DATE) ||
+      ! ensure_set_isof_basetype(s2, T_DATE))
+    return -1;
+  return distance_set_set(s1, s2);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance in seconds between two timestamptz sets
+ * @param[in] s1,s2 Sets
+ * @result On error return -1.0
+ * @csqlfn #Distance_set_set()
+ */
+double
+distance_tstzset_tstzset(const Set *s1, const Set *s2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
+      ! ensure_set_isof_basetype(s1, T_TIMESTAMPTZ) ||
+      ! ensure_set_isof_basetype(s2, T_TIMESTAMPTZ))
+    return -1.0;
+  return distance_set_set(s1, s2);
+}
+#endif /* MEOS */
 
 /******************************************************************************/

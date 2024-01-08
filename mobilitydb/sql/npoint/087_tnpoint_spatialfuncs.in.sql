@@ -88,7 +88,7 @@ CREATE FUNCTION minusStbox(tnpoint, stbox)
  * Equals
  *****************************************************************************/
 
-CREATE FUNCTION equals(npoint, npoint)
+CREATE FUNCTION same(npoint, npoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Npoint_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

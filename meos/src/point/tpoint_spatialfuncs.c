@@ -49,6 +49,7 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/lifting.h"
+#include "general/temporal_compops.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
@@ -781,7 +782,7 @@ point_get_z(Datum point)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
- * @brief Get one of the coordinates of a temporal point as a temporal float.
+ * @brief Return one of the coordinates of a temporal point as a temporal float
  * @param[in] temp Temporal point
  * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
  */
@@ -811,6 +812,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
   return tfunc_temporal(temp, &lfinfo);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Get one of the X coordinates of a temporal point as a temporal float.
@@ -846,6 +848,7 @@ tpoint_get_z(const Temporal *temp)
 {
   return tpoint_get_coord(temp, 2);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Return true if a point is in a segment (2D, 3D, or geodetic).
@@ -856,6 +859,8 @@ tpoint_get_z(const Temporal *temp)
  * than the square of the distance between A and B.
  * https://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment
  *****************************************************************************/
+
+#if 0 /* not used */
 /**
  * @brief Return true if point p is in the segment defined by A and B (2D)
  * @note The test of p = A or p = B MUST BE done in the calling function
@@ -936,253 +941,7 @@ point_on_segment(Datum start, Datum end, Datum point)
   const POINT2D *p = DATUM_POINT2D_P(point);
   return point2d_on_segment(p, p1, p2);
 }
-
-/*****************************************************************************
- * Ever/always equal comparison operators
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal instant point is ever equal to a point
- * @param[in] inst Temporal instant
- * @param[in] value Value
- * @pre The validity of the parameters is verified in function #tpoint_ever_eq
- * @csqlfn #Tpoint_ever_eq()
- */
-bool
-tpointinst_ever_eq(const TInstant *inst, Datum value)
-{
-  assert(inst);
-  assert(tgeo_type(inst->temptype));
-  Datum value1 = tinstant_value(inst);
-  return datum_point_eq(value1, value);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal sequence point is ever equal to a point
- * @pre The validity of the parameters is verified in function #tpoint_ever_eq
- * @param[in] seq Temporal sequence
- * @param[in] value Value
- * @csqlfn #Tpoint_ever_eq()
- */
-bool
-tpointseq_ever_eq(const TSequence *seq, Datum value)
-{
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-    return tpointinst_ever_eq(TSEQUENCE_INST_N(seq, 0), value);
-  
-  assert(seq);
-  assert(tgeo_type(seq->temptype));
-  int i;
-  Datum value1;
-
-  assert(seq);
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
-    return false;
-
-  /* Step interpolation */
-  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
-  {
-    for (i = 0; i < seq->count; i++)
-    {
-      value1 = tinstant_value(TSEQUENCE_INST_N(seq, i));
-      if (datum_point_eq(value1, value))
-        return true;
-    }
-    return false;
-  }
-
-  /* Linear interpolation*/
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  value1 = tinstant_value(inst1);
-  bool lower_inc = seq->period.lower_inc;
-  for (i = 1; i < seq->count; i++)
-  {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_value(inst2);
-    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    /* Constant segment */
-    if (datum_point_eq(value1, value2) && datum_point_eq(value1, value))
-      return true;
-    /* Test bounds */
-    if (datum_point_eq(value1, value))
-    {
-      if (lower_inc) return true;
-    }
-    else if (datum_point_eq(value2, value))
-    {
-      if (upper_inc) return true;
-    }
-    /* Test point on segment */
-    else if (point_on_segment(value1, value2, value))
-      return true;
-    value1 = value2;
-    lower_inc = true;
-  }
-  return false;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal sequence set point is ever equal to a point
- * @param[in] ss Temporal sequence set
- * @param[in] value Value
- * @pre The validity of the parameters is verified in function #tpoint_ever_eq
- * @csqlfn #Tpoint_ever_eq()
- */
-bool
-tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
-{
-  /* Singleton sequence set */
-  if (ss->count == 1)
-    return tpointseq_ever_eq(TSEQUENCESET_SEQ_N(ss, 0), value);
-  
-  assert(ss);
-  assert(tgeo_type(ss->temptype));
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *) ss, value, EVER))
-    return false;
-
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    if (tpointseq_ever_eq(seq, value))
-      return true;
-  }
-  return false;
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal point is ever equal to a point.
- * @param[in] temp Temporal value
- * @param[in] gs Geometry
- * @see #tpointinst_ever_eq
- * @see #tpointseq_ever_eq
- * @see #tpointseqset_ever_eq
- */
-bool
-tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_point_type(gs) ||
-      ! ensure_same_dimensionality_tpoint_gs(temp, gs))
-    return false;
-
-  Datum value = PointerGetDatum(gs);
-  bool result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tpointinst_ever_eq((TInstant *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
-    result = tpointseq_ever_eq((TSequence *) temp, value);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tpointseqset_ever_eq((TSequenceSet *) temp, value);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal instant point is always equal to a point.
- * @pre The validity of the parameters is verified in function #tpoint_always_eq
- * @param[in] inst Temporal instant
- * @param[in] value Value
- * @csqlfn #Tpoint_always_eq()
- */
-bool
-tpointinst_always_eq(const TInstant *inst, Datum value)
-{
-  assert(inst);
-  assert(tgeo_type(inst->temptype));
-  return tpointinst_ever_eq(inst, value);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal sequence point is always equal to a point.
- * @pre The validity of the parameters is verified in function #tpoint_always_eq
- * @param[in] seq Temporal sequence
- * @param[in] value Value
- * @csqlfn #Tpoint_always_eq()
- */
-bool
-tpointseq_always_eq(const TSequence *seq, Datum value)
-{
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-    return tpointinst_always_eq(TSEQUENCE_INST_N(seq, 0), value);
-
-  assert(seq);
-  assert(tgeo_type(seq->temptype));
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, ALWAYS))
-    return false;
-
-  /* The bounding box test above is enough to compute the answer */
-  return true;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_comp_ever
- * @brief Return true if a temporal sequence set point is always equal to a point.
- * @param[in] ss Temporal sequence set
- * @param[in] value Value
- * @pre The validity of the parameters is verified in function #tpoint_always_eq
- * @csqlfn #Tpoint_always_eq()
- */
-bool
-tpointseqset_always_eq(const TSequenceSet *ss, Datum value)
-{
-  /* Singleton sequence set */
-  if (ss->count == 1)
-    return tpointseq_ever_eq(TSEQUENCESET_SEQ_N(ss, 0), value);
-
-  assert(ss);
-  assert(tgeo_type(ss->temptype));
-  /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *)ss, value, ALWAYS))
-    return false;
-
-  /* The bounding box test above is enough to compute the answer */
-  return true;
-}
-
-/**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal point is always equal to a point.
- * @param[in] temp Temporal point
- * @param[in] gs Geometry
- * @see #tpointinst_always_eq
- * @see #tpointseq_always_eq
- * @see #tpointseqset_always_eq
- * @csqlfn #Tpoint_always_eq()
- */
-bool
-tpoint_always_eq(const Temporal *temp, const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_point_type(gs) ||
-      ! ensure_same_dimensionality_tpoint_gs(temp, gs))
-    return false;
-
-  Datum value = PointerGetDatum(gs);
-  bool result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tpointinst_always_eq((TInstant *) temp, value);
-  else if (temp->subtype == TSEQUENCE)
-    result = tpointseq_always_eq((TSequence *) temp, value);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tpointseqset_always_eq((TSequenceSet *) temp, value);
-  return result;
-}
+#endif /* not used */
 
 /*****************************************************************************
  * Functions derived from PostGIS to increase floating-point precision
@@ -1379,6 +1138,7 @@ interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
     p->x = rad2deg(longitude_radians_normalize(g.lon));
     p->y = rad2deg(latitude_radians_normalize(g.lat));
   }
+  return;
 }
 
 /*****************************************************************************
@@ -1779,6 +1539,7 @@ lwpointarr_sort(LWPOINT **points, int count)
 {
   qsort(points, (size_t) count, sizeof(LWPOINT *),
     (qsort_comparator) &lwpoint_sort_cmp);
+  return;
 }
 
 /**
@@ -1800,15 +1561,15 @@ lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
 }
 
 /**
- * @brief Compute a trajectory from a set of points. The result is either a
- * linestring or a multipoint depending on whether the interpolation is
- * step/discrete or linear.
- * @note The function does not remove duplicate points, that is, repeated
- * points in a multipoint or consecutive equal points in a line string. This
- * should be done in the calling function.
+ * @brief Return a trajectory from a set of points
+ * 
+ * The result is either a linestring or a multipoint depending on whether
+ * the interpolation is step/discrete or linear.
  * @param[in] points Array of points
  * @param[in] count Number of elements in the input array
  * @param[in] interp Interpolation
+ * @note The function does not remove duplicate points, that is, repeated
+ * points in a multipoint or consecutive equal points in a line string
  */
 LWGEOM *
 lwpointarr_make_trajectory(LWGEOM **points, int count, interpType interp)
@@ -1827,7 +1588,7 @@ lwpointarr_make_trajectory(LWGEOM **points, int count, interpType interp)
 }
 
 /**
- * @brief Compute the trajectory from two geometry points
+ * @brief Return the line connecting two geometry points
  * @param[in] value1,value2 Points
  */
 LWLINE *
@@ -1854,7 +1615,7 @@ lwline_make(Datum value1, Datum value2)
 /*****************************************************************************/
 
 /**
- * @brief Compute the trajectory of a temporal discrete sequence point
+ * @brief Return the trajectory of a temporal discrete sequence point
  * @param[in] seq Temporal value
  * @note Notice that this function does not remove duplicate points
  * @pre The sequence is not instantaneous
@@ -2309,7 +2070,8 @@ pt_force_geodetic(LWPOINT *point)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Convert a temporal point from/to a geometry/geography point
+ * @brief Convert a temporal point instant from/to a temporal
+ * geometry/geography point
  * @param[in] inst Temporal instant point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2347,7 +2109,8 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Convert a temporal point from/to a geometry/geography point
+ * @brief Convert a temporal point sequence from/to a temporal
+ * geometry/geography point
  * @param[in] seq Temporal sequence point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2370,7 +2133,8 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Convert a temporal point from/to a geometry/geography point
+ * @brief Convert a temporal point sequence set from/to a temporal
+ * geometry/geography point
  * @param[in] ss Temporal sequence set point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2392,7 +2156,7 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
 
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Convert a temporal point to a geometry/geography point.
+ * @brief Convert a temporal point from/to a temporal geometry/geography point
  * @param[in] temp Temporal point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2421,6 +2185,7 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Convert a temporal geometry point to a temporal geography point.
@@ -2451,6 +2216,7 @@ tgeogpoint_to_tgeompoint(const Temporal *temp)
     return NULL;
   return tgeompoint_tgeogpoint(temp, GEOG_TO_GEOM);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Convert a temporal point into a PostGIS geometry/geography where the M
@@ -3465,6 +3231,7 @@ point_grid(Datum value, bool hasz, const gridspec *grid, POINT4D *p)
     p->y = rint((p->y - grid->ipy) / grid->ysize) * grid->ysize + grid->ipy;
   if (hasz && grid->zsize > 0)
     p->z = rint((p->z - grid->ipz) / grid->zsize) * grid->zsize + grid->ipz;
+  return;
 }
 
 /**
@@ -3854,14 +3621,15 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
  *****************************************************************************/
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of the n-th point in a point
+ * array to a number of decimal places
  */
 static void
-round_point(POINTARRAY *points, uint32_t i, Datum size, bool hasz, bool hasm)
+round_point(POINTARRAY *points, uint32_t n, Datum size, bool hasz, bool hasm)
 {
   /* N.B. lwpoint->point can be of 2, 3, or 4 dimensions depending on
    * the values of the arguments hasz and hasm !!! */
-  POINT4D *pt = (POINT4D *) getPoint_internal(points, i);
+  POINT4D *pt = (POINT4D *) getPoint_internal(points, n);
   pt->x = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->x), size));
   pt->y = DatumGetFloat8(datum_round_float(Float8GetDatum(pt->y), size));
   if (hasz && hasm)
@@ -3878,7 +3646,7 @@ round_point(POINTARRAY *points, uint32_t i, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a point with the coordinates set to a number of decimal places
  */
 static Datum
 datum_round_point(GSERIALIZED *gs, Datum size)
@@ -3894,7 +3662,8 @@ datum_round_point(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a line to the number of
+ * decimal places
  */
 static void
 round_linestring(LWLINE *line, Datum size, bool hasz, bool hasm)
@@ -3906,7 +3675,7 @@ round_linestring(LWLINE *line, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a line with the coordinates set to a number of decimal places
  */
 static Datum
 datum_round_linestring(GSERIALIZED *gs, Datum size)
@@ -3922,7 +3691,8 @@ datum_round_linestring(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a triangle to a number of
+ * decimal places
  */
 static void
 round_triangle(LWTRIANGLE *triangle, Datum size, bool hasz, bool hasm)
@@ -3934,7 +3704,8 @@ round_triangle(LWTRIANGLE *triangle, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a triangle with the precision of the coordinates set to a
+ * number of decimal places
  */
 static Datum
 datum_round_triangle(GSERIALIZED *gs, Datum size)
@@ -3950,7 +3721,8 @@ datum_round_triangle(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a circular string to a number
+ * of decimal places
  */
 static void
 round_circularstring(LWCIRCSTRING *circstring, Datum size, bool hasz,
@@ -3963,7 +3735,8 @@ round_circularstring(LWCIRCSTRING *circstring, Datum size, bool hasz,
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a circular string with the precision of the coordinates set to
+ * a number of decimal places
  */
 static Datum
 datum_round_circularstring(GSERIALIZED *gs, Datum size)
@@ -3979,7 +3752,8 @@ datum_round_circularstring(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a polygon to a number of
+ * decimal places
  */
 static void
 round_polygon(LWPOLY *poly, Datum size, bool hasz, bool hasm)
@@ -3996,7 +3770,8 @@ round_polygon(LWPOLY *poly, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Reuturn a polygon with the precision of the coordinates set to a
+ * number of decimal places
  */
 static Datum
 datum_round_polygon(GSERIALIZED *gs, Datum size)
@@ -4012,7 +3787,8 @@ datum_round_polygon(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a multipoint to a number of
+ * decimal places
  */
 static void
 round_multipoint(LWMPOINT *mpoint, Datum size, bool hasz, bool hasm)
@@ -4027,7 +3803,8 @@ round_multipoint(LWMPOINT *mpoint, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a multipoint with the precision of the coordinates set to a
+ * number of decimal places
  */
 static Datum
 datum_round_multipoint(GSERIALIZED *gs, Datum size)
@@ -4043,7 +3820,8 @@ datum_round_multipoint(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a multilinestring to a
+ * number of decimal places
  */
 static void
 round_multilinestring(LWMLINE *mline, Datum size, bool hasz, bool hasm)
@@ -4060,7 +3838,8 @@ round_multilinestring(LWMLINE *mline, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a multilinestring with the precision of the coordinates set to
+ * a number of decimal places
  */
 static Datum
 datum_round_multilinestring(GSERIALIZED *gs, Datum size)
@@ -4076,7 +3855,8 @@ datum_round_multilinestring(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a multipolygon to a number of
+ * decimal places
  */
 static void
 round_multipolygon(LWMPOLY *mpoly, Datum size, bool hasz, bool hasm)
@@ -4091,7 +3871,8 @@ round_multipolygon(LWMPOLY *mpoly, Datum size, bool hasz, bool hasm)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Return a multipolygon with the precision of the coordinates set to a
+ * number of decimal places
  */
 static Datum
 datum_round_multipolygon(GSERIALIZED *gs, Datum size)
@@ -4107,7 +3888,8 @@ datum_round_multipolygon(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates of a geometry collection to a
+ * number of decimal places
  */
 static Datum
 datum_round_geometrycollection(GSERIALIZED *gs, Datum size)
@@ -4149,7 +3931,8 @@ datum_round_geometrycollection(GSERIALIZED *gs, Datum size)
 }
 
 /**
- * @brief Set the precision of the coordinates to the number of decimal places.
+ * @brief Return a geometry with the precision of the coordinates set to a
+ * number of decimal places
  * @note Currently not all geometry types are allowed
  */
 Datum
@@ -4178,15 +3961,14 @@ datum_round_geo(Datum value, Datum size)
     return datum_round_multipolygon(gs, size);
   if (type == COLLECTIONTYPE)
     return datum_round_geometrycollection(gs, size);
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Unsupported geometry type");
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Unsupported geometry type");
   return PointerGetDatum(NULL);
 }
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Set the precision of the coordinates of a temporal point to a
- * number of decimal places.
+ * @brief Return a temporal point with the precision of the coordinates set to
+ * a number of decimal places
  * @param[in] temp Temporal point
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Tpoint_round()
@@ -4214,8 +3996,8 @@ tpoint_round(const Temporal *temp, int maxdd)
 
 /**
  * @ingroup meos_temporal_transf
- * @brief Set the precision of the coordinates of an array of temporal point to
- * a number of decimal places.
+ * @brief Return an array of temporal poinst with the precision of the
+ * coordinates set to a number of decimal places
  * @param[in] temparr Array of temporal points
  * @param[in] count Number of elements in the array
  * @param[in] maxdd Maximum number of decimal digits
@@ -4494,8 +4276,7 @@ tpoint_convex_hull(const Temporal *temp)
 TSequence *
 tpointseq_speed(const TSequence *seq)
 {
-  assert(seq);
-  assert(tgeo_type(seq->temptype));
+  assert(seq); assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
   /* Instantaneous sequence */
@@ -4537,8 +4318,7 @@ tpointseq_speed(const TSequence *seq)
 TSequenceSet *
 tpointseqset_speed(const TSequenceSet *ss)
 {
-  assert(ss);
-  assert(tgeo_type(ss->temptype));
+  assert(ss); assert(tgeo_type(ss->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int nseqs = 0;
@@ -4563,14 +4343,14 @@ Temporal *
 tpoint_speed(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
+      ! ensure_linear_interp(temp->flags))
     return NULL;
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    ;
-  else if (temp->subtype == TSEQUENCE)
+  /* Temporal instants does not have linear interpolation */
+  if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_speed((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_speed((TSequenceSet *) temp);
@@ -4616,7 +4396,7 @@ tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
 
 /**
  * @ingroup libmeos_internal_temporal_agg
- * @brief Return the time-weighed centroid of a temporal geometry point.
+ * @brief Return the time-weighed centroid of a temporal geometry point sequence
  * @param[in] seq Temporal sequence
  * @csqlfn #Tpoint_twcentroid()
  */
@@ -4642,7 +4422,8 @@ tpointseq_twcentroid(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_agg
- * @brief Return the time-weighed centroid of a temporal geometry point.
+ * @brief Return the time-weighed centroid of a temporal geometry point
+ * sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tpoint_twcentroid()
  */
@@ -5017,7 +4798,7 @@ alpha(const POINT2D *p1, const POINT2D *p2)
 }
 
 /**
- * @brief Compute the bearing between two geometry points
+ * @brief Return the bearing between two geometry points
  */
 static Datum
 geom_bearing(Datum point1, Datum point2)
@@ -5042,7 +4823,7 @@ geom_bearing(Datum point1, Datum point2)
 }
 
 /**
- * @brief Compute the bearing between two geography points
+ * @brief Return the bearing between two geography points
  * @note Derived from https://gist.github.com/jeromer/2005586
  * @note In PostGIS, for geodetic coordinates, X is longitude and Y is latitude
  * The formulae used is the following:
@@ -5296,13 +5077,14 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
     return NULL;
 
   datum_func2 func = get_bearing_fn(temp1->flags);
+  /* Fill the lifted structure */
+  meosType basetype = temptype_basetype(temp1->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
   lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
-  lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
+  lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);

@@ -326,6 +326,7 @@ extern bool ensure_valid_interp(meosType temptype, interpType interp);
 extern bool ensure_continuous(const Temporal *temp);
 extern bool ensure_same_interp(const Temporal *temp1, const Temporal *temp2);
 extern bool ensure_same_continuous_interp(int16 flags1, int16 flags2);
+extern bool ensure_linear_interp(int16 flags);
 extern bool ensure_nonlinear_interp(int16 flags);
 extern bool ensure_common_dimension(int16 flags1, int16 flags2);
 extern bool ensure_temporal_isof_type(const Temporal *temp, meosType type);
@@ -365,10 +366,8 @@ extern char *mobilitydb_full_version(void);
 
 /* Ever/always equal operators */
 
-extern bool temporal_bbox_ev_al_eq(const Temporal *temp, Datum value,
-  bool ever);
-extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value,
-  bool ever);
+extern bool ea_eq_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
+extern bool ea_lt_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
 
 /* Restriction functions */
 

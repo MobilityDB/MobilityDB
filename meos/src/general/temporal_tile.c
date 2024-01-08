@@ -162,9 +162,8 @@ span_bucket_state_make(const Span *s, Datum size, Datum origin)
   state->basetype = s->basetype;
   state->size = size;
   state->origin = origin;
-  /* intspans are in canonical form so their upper bound is exclusive */
-  Datum upper = (s->basetype == T_INT4) ? /** xx **/
-    Int32GetDatum(DatumGetInt32(s->upper) - 1) : s->upper;
+  /* Account for canonicalized spans */
+  Datum upper = span_decr_bound(s->upper, s->basetype);
   state->minvalue = state->value =
     datum_bucket(s->lower, size, origin, state->basetype);
   state->maxvalue = datum_bucket(upper, size, origin, state->basetype);
@@ -541,8 +540,7 @@ tbox_tile_state_make(const TBox *box, Datum vsize, const Interval *duration,
 {
   assert(box);
   int64 tunits = duration ? interval_units(duration) : 0;
-  double size = (box->span.basetype == T_INT4) ? /** xx **/
-    (double) DatumGetInt32(vsize) : DatumGetFloat8(vsize);
+  double size = datum_double(vsize, box->span.basetype);
   assert(size > 0 || tunits > 0);
   TboxGridState *state = palloc0(sizeof(TboxGridState));
 
@@ -595,8 +593,7 @@ tbox_tile_get(Datum value, TimestampTz t, Datum vsize, int64 tunits,
   Span span, period;
   memset(&span, 0, sizeof(Span));
   memset(&period, 0, sizeof(Span));
-  double size = (box->span.basetype == T_INT4) ? /** xx **/
-    (double) DatumGetInt32(vsize) : DatumGetFloat8(vsize);
+  double size = datum_double(vsize, basetype);
   meosType spantype = basetype_spantype(basetype);
   if (size)
     span_set(xmin, xmax, true, false, basetype, spantype, &span);
@@ -665,8 +662,7 @@ tbox_tile_list(const TBox *box, Datum vsize, const Interval *duration,
   int nrows = 1, ncols = 1;
   Datum start_bucket, end_bucket;
   /* Determine the number of value buckets */
-  double size = (box->span.basetype == T_INT4) ? /** xx **/
-    (double) DatumGetInt32(vsize) : DatumGetFloat8(vsize);
+  double size = datum_double(vsize, box->span.basetype);
   if (size)
     nrows = span_no_buckets(&box->span, vsize, vorigin, &start_bucket,
       &end_bucket);
@@ -1192,14 +1188,14 @@ tnumberdiscseq_value_split(const TSequence *seq, Datum start_bucket,
   /* General case */
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count * count);
   /* palloc0 to initialize the counters to 0 */
-  int *numinsts = palloc0(sizeof(int) * count);
+  int *ninsts = palloc0(sizeof(int) * count);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     value = tinstant_value(inst);
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     int bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
-    int inst_no = numinsts[bucket_no]++;
+    int inst_no = ninsts[bucket_no]++;
     instants[bucket_no * seq->count + inst_no] = inst;
   }
   /* Assemble the result for each value bucket */
@@ -1209,16 +1205,16 @@ tnumberdiscseq_value_split(const TSequence *seq, Datum start_bucket,
   bucket_value = start_bucket;
   for (int i = 0; i < count; i++)
   {
-    if (numinsts[i] > 0)
+    if (ninsts[i] > 0)
     {
-      result[nfrags] = tsequence_make(&instants[i * seq->count], numinsts[i],
+      result[nfrags] = tsequence_make(&instants[i * seq->count], ninsts[i],
         true, true, DISCRETE, NORMALIZE_NO);
       values[nfrags++] = bucket_value;
     }
     bucket_value = datum_add(bucket_value, size, basetype);
   }
   pfree(instants);
-  pfree(numinsts);
+  pfree(ninsts);
   *buckets = values;
   *newcount = nfrags;
   return result;
@@ -1234,13 +1230,13 @@ tnumberdiscseq_value_split(const TSequence *seq, Datum start_bucket,
  * @param[in] size Size of the value buckets
  * @param[in] count Number of buckets
  * @param[in,out] result Array containing the fragments of each bucket
- * @param[in,out] numseqs Number of fragments for each bucket
+ * @param[in,out] nseqs Number of fragments for each bucket
  * @param[in] numcols Number of columns in the 2D pointer array. It can be
  *    seq->count for sequences or ss->totalcount for sequence sets
  */
 static void
 tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
-  Datum size, int count, TSequence **result, int *numseqs, int numcols)
+  Datum size, int count, TSequence **result, int *nseqs, int numcols)
 {
   assert(! MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   meosType basetype = temptype_basetype(seq->temptype);
@@ -1253,7 +1249,7 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
     value = tinstant_value(TSEQUENCE_INST_N(seq, 0));
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
-    seq_no = numseqs[bucket_no]++;
+    seq_no = nseqs[bucket_no]++;
     result[bucket_no * numcols + seq_no] = tsequence_copy(seq);
     return;
   }
@@ -1267,7 +1263,7 @@ for (int i = 1; i < seq->count; i++)
     value = tinstant_value(inst1);
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
-    seq_no = numseqs[bucket_no]++;
+    seq_no = nseqs[bucket_no]++;
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     bool lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
     TInstant *bounds[2];
@@ -1291,7 +1287,7 @@ for (int i = 1; i < seq->count; i++)
     value = tinstant_value(inst1);
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
-    seq_no = numseqs[bucket_no]++;
+    seq_no = nseqs[bucket_no]++;
     result[bucket_no * numcols + seq_no] = tinstant_to_tsequence(inst1, STEP);
   }
   pfree_array((void **) tofree, nfree);
@@ -1308,13 +1304,13 @@ for (int i = 1; i < seq->count; i++)
  * @param[in] size Size of the value buckets
  * @param[in] count Number of buckets
  * @param[in,out] result Array containing the fragments of each bucket
- * @param[in,out] numseqs Number of fragments for each bucket
+ * @param[in,out] nseqs Number of fragments for each bucket
  * @param[in] numcols Number of columns in the 2D pointer array. It can be
  *    seq->count for sequences or ss->totalcount for sequence sets
  */
 static void
 tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
-  Datum size, int count, TSequence **result, int *numseqs, int numcols)
+  Datum size, int count, TSequence **result, int *nseqs, int numcols)
 {
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   meosType basetype = temptype_basetype(seq->temptype);
@@ -1329,7 +1325,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
     value1 = tinstant_value(TSEQUENCE_INST_N(seq, 0));
     bucket_value1 = datum_bucket(value1, size, start_bucket, basetype);
     bucket_no1 = bucket_position(bucket_value1, size, start_bucket, basetype);
-    seq_no = numseqs[bucket_no1]++;
+    seq_no = nseqs[bucket_no1]++;
     result[bucket_no1 * numcols + seq_no] = tsequence_copy(seq);
     return;
   }
@@ -1446,7 +1442,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
       /* We cannot add to last bucket if last instant has exclusive bound */
       if (nfrags == 1 && ! upper_inc1)
         break;
-      seq_no = numseqs[j]++;
+      seq_no = nseqs[j]++;
       result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
         nfrags, (nfrags > 1) ? lower_inc1 : true, (nfrags > 1) ? upper_inc1 : true,
         LINEAR, NORMALIZE_NO);
@@ -1498,13 +1494,13 @@ tnumbercontseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count);
   /* palloc0 to initialize the counters to 0 */
-  int *numseqs = palloc0(sizeof(int) * count);
+  int *nseqs = palloc0(sizeof(int) * count);
   if (interp == LINEAR)
     tnumberseq_linear_value_split(seq, start_bucket, size, count, sequences,
-      numseqs, seq->count);
+      nseqs, seq->count);
   else
     tnumberseq_step_value_split(seq, start_bucket, size, count, sequences,
-      numseqs, seq->count);
+      nseqs, seq->count);
   /* Assemble the result for each value bucket */
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
   Datum *values = palloc(sizeof(Datum) * count);
@@ -1512,16 +1508,16 @@ tnumbercontseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int nfrags = 0;
   for (int i = 0; i < count; i++)
   {
-    if (numseqs[i] > 0)
+    if (nseqs[i] > 0)
     {
       result[nfrags] = tsequenceset_make((const TSequence **)(&sequences[seq->count * i]),
-        numseqs[i], NORMALIZE);
+        nseqs[i], NORMALIZE);
       values[nfrags++] = bucket_value;
     }
     bucket_value = datum_add(bucket_value, size, basetype);
   }
   pfree(sequences);
-  pfree(numseqs);
+  pfree(nseqs);
   *buckets = values;
   *newcount = nfrags;
   return result;}
@@ -1553,16 +1549,16 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
   meosType basetype = temptype_basetype(ss->temptype);
   TSequence **bucketseqs = palloc(sizeof(TSequence *) * ss->totalcount * count);
   /* palloc0 to initialize the counters to 0 */
-  int *numseqs = palloc0(sizeof(int) * count);
+  int *nseqs = palloc0(sizeof(int) * count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
       tnumberseq_linear_value_split(seq, start_bucket, size, count, bucketseqs,
-        numseqs, ss->totalcount);
+        nseqs, ss->totalcount);
     else
       tnumberseq_step_value_split(seq, start_bucket, size, count, bucketseqs,
-        numseqs, ss->totalcount);
+        nseqs, ss->totalcount);
   }
   /* Assemble the result for each value bucket */
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
@@ -1571,16 +1567,16 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
   int nfrags = 0;
   for (int i = 0; i < count; i++)
   {
-    if (numseqs[i] > 0)
+    if (nseqs[i] > 0)
     {
       result[nfrags] = tsequenceset_make((const TSequence **)(&bucketseqs[i * ss->totalcount]),
-        numseqs[i], NORMALIZE);
+        nseqs[i], NORMALIZE);
       values[nfrags++] = bucket_value;
     }
     bucket_value = datum_add(bucket_value, size, basetype);
   }
   pfree(bucketseqs);
-  pfree(numseqs);
+  pfree(nseqs);
   *buckets = values;
   *newcount = nfrags;
   return result;
