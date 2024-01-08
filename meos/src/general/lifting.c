@@ -1560,13 +1560,9 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
               (TInstant *) temp1, (TSequence *) temp2, lfinfo) :
             (Temporal *) tfunc_tinstant_tcontseq(
               (TInstant *) temp1, (TSequence *) temp2, lfinfo);
-        case TSEQUENCESET:
+        default: /* TSEQUENCESET */
           return (Temporal *) tfunc_tinstant_tsequenceset(
             (TInstant *) temp1, (TSequenceSet *) temp2, lfinfo);
-        default:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-            "Unexpected temporal subtype: %d", temp2->subtype);
-          return NULL;
       }
     }
     case TSEQUENCE:
@@ -1594,16 +1590,12 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
           else /* interp1 != DISCRETE && interp2 = DISCRETE */
             return (Temporal *) tfunc_tcontseq_tcontseq(seq1, seq2, lfinfo);
         }
-        case TSEQUENCESET:
+        default: /* TSEQUENCESET */
           return MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
             (Temporal *) tfunc_tdiscseq_tsequenceset(
               (TSequence *) temp1, (TSequenceSet *) temp2, lfinfo) :
             (Temporal *) tfunc_tcontseq_tsequenceset(
               (TSequence *) temp1, (TSequenceSet *) temp2, lfinfo);
-        default:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-            "Unexpected temporal subtype: %d", temp2->subtype);
-          return NULL;
       }
     }
     case TSEQUENCESET:
@@ -1619,19 +1611,11 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
               (TSequenceSet *) temp1, (TSequence *) temp2, lfinfo) :
             (Temporal *) tfunc_tsequenceset_tcontseq(
               (TSequenceSet *) temp1, (TSequence *) temp2, lfinfo);
-        case TSEQUENCESET:
+        default: /* TSEQUENCESET */
           return (Temporal *) tfunc_tsequenceset_tsequenceset(
               (TSequenceSet *) temp1, (TSequenceSet *) temp2, lfinfo);
-        default:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-            "Unexpected temporal subtype: %d", temp2->subtype);
-          return NULL;
       }
     }
-    default:
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Unexpected temporal subtype: %d", temp1->subtype);
-      return NULL;
   }
 }
 
@@ -1833,12 +1817,8 @@ eafunc_temporal_base(const Temporal *temp, Datum value,
       return eafunc_tinstant_base((TInstant *) temp, value, lfinfo);
     case TSEQUENCE:
       return eafunc_tsequence_base((TSequence *) temp, value, lfinfo);
-    case TSEQUENCESET:
+    default: /* TSEQUENCESET */
       return eafunc_tsequenceset_base((TSequenceSet *) temp, value, lfinfo);
-    default:
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Unexpected temporal subtype: %d", temp->subtype);
-      return -1;
   }
 }
 
@@ -2392,13 +2372,9 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
               (TSequence *) temp2, lfinfo) :
             eafunc_tinstant_tcontseq((TInstant *) temp1,
               (TSequence *) temp2, lfinfo);
-        case TSEQUENCESET:
+        default: /* TSEQUENCESET */
           return eafunc_tinstant_tsequenceset((TInstant *) temp1,
             (TSequenceSet *) temp2, lfinfo);
-        default:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-            "Unexpected temporal subtype: %d", temp2->subtype);
-          return -1;
       }
     }
     case TSEQUENCE:
@@ -2428,16 +2404,12 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
             return eafunc_tcontseq_tcontseq((TSequence *) temp1,
               (TSequence *) temp2, lfinfo);
         }
-        case TSEQUENCESET:
+        default: /* TSEQUENCESET */
           return MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
             eafunc_tdiscseq_tsequenceset((TSequence *) temp1,
               (TSequenceSet *) temp2, lfinfo) :
             eafunc_tsequence_tsequenceset((TSequence *) temp1,
               (TSequenceSet *) temp2, lfinfo);
-        default:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-            "Unexpected temporal subtype: %d", temp2->subtype);
-          return -1;
       }
     }
     case TSEQUENCESET:
@@ -2453,19 +2425,11 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
               (TSequence *) temp2, lfinfo) :
             eafunc_tsequenceset_tcontseq((TSequenceSet *) temp1,
               (TSequence *) temp2, lfinfo);
-        case TSEQUENCESET:
+        default: /* TSEQUENCESET */
           return eafunc_tsequenceset_tsequenceset((TSequenceSet *) temp1,
             (TSequenceSet *) temp2, lfinfo);
-        default:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-            "Unexpected temporal subtype: %d", temp2->subtype);
-          return -1;
       }
     }
-    default:
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Unexpected temporal subtype: %d", temp1->subtype);
-      return -1;
   }
 }
 
