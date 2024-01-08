@@ -1096,24 +1096,27 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
 
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
+  switch (temp->subtype)
   {
-    /* Default interpolation depending on the base type */
-    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
-    TSequence *seq = tinstant_to_tsequence((const TInstant *) temp, interp);
-    result = (Temporal *) tsequence_append_tinstant(seq, inst, maxdist, maxt,
-      expand);
-    pfree(seq);
+    case TINSTANT:
+    {
+      /* Default interpolation depending on the base type */
+      interpType interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ?
+        LINEAR : STEP;
+      TSequence *seq = tinstant_to_tsequence((const TInstant *) temp, interp);
+      Temporal *result = (Temporal *) tsequence_append_tinstant(seq, inst,
+        maxdist, maxt, expand);
+      pfree(seq);
+      return result;
+    }
+    case TSEQUENCE:
+      return (Temporal *) tsequence_append_tinstant((TSequence *) temp,
+        inst, maxdist, maxt, expand);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_append_tinstant((TSequenceSet *) temp,
+        inst, maxdist, maxt, expand);
   }
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_append_tinstant((TSequence *) temp,
-      inst, maxdist, maxt, expand);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_append_tinstant((TSequenceSet *) temp,
-      inst, maxdist, maxt, expand);
-  return result;
 }
 
 /**

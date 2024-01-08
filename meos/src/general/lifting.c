@@ -1543,13 +1543,15 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   if (! over_span_span(&s1, &s2))
     return NULL;
 
-  assert(temptype_subtype(temp1->subtype));
-  assert(temptype_subtype(temp2->subtype));
-  switch (temp1->subtype)
+  tempSubtype subtype1 = temp1->subtype;
+  tempSubtype subtype2 = temp2->subtype;
+  assert(temptype_subtype(subtype1));
+  assert(temptype_subtype(subtype2));
+  switch (subtype1)
   {
     case TINSTANT:
     {
-      switch (temp2->subtype)
+      switch (subtype2)
       {
         case TINSTANT:
           return (Temporal *) tfunc_tinstant_tinstant(
@@ -1569,7 +1571,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     {
       TSequence *seq1 = (TSequence *) temp1;
       interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
-      switch (temp2->subtype)
+      switch (subtype2)
       {
         case TINSTANT:
           return (interp1 == DISCRETE) ?
@@ -1581,14 +1583,20 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
         {
           TSequence *seq2 = (TSequence *) temp2;
           interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
-          if (interp1 == DISCRETE && interp2 == DISCRETE)
-            return (Temporal *) tfunc_tdiscseq_tdiscseq(seq1, seq2, lfinfo);
-          else if (interp1 == DISCRETE && interp2 != DISCRETE)
-            return (Temporal *) tfunc_tdiscseq_tcontseq(seq1, seq2, lfinfo);
-          else if (interp1 != DISCRETE && interp2 == DISCRETE)
-            return (Temporal *) tfunc_tcontseq_tdiscseq(seq1, seq2, lfinfo);
-          else /* interp1 != DISCRETE && interp2 = DISCRETE */
-            return (Temporal *) tfunc_tcontseq_tcontseq(seq1, seq2, lfinfo);
+          if (interp1 == DISCRETE)
+          {
+            if (interp2 == DISCRETE)
+              return (Temporal *) tfunc_tdiscseq_tdiscseq(seq1, seq2, lfinfo);
+            else /* interp2 != DISCRETE */
+              return (Temporal *) tfunc_tdiscseq_tcontseq(seq1, seq2, lfinfo);
+           }
+         else /* interp1 != DISCRETE */
+         {
+           if (interp2 == DISCRETE)
+              return (Temporal *) tfunc_tcontseq_tdiscseq(seq1, seq2, lfinfo);
+            else /* interp2 = DISCRETE */
+              return (Temporal *) tfunc_tcontseq_tcontseq(seq1, seq2, lfinfo);
+         }
         }
         default: /* TSEQUENCESET */
           return MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
@@ -1600,7 +1608,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     }
     default: /* TSEQUENCESET */
     {
-      switch (temp2->subtype)
+      switch (subtype2)
       {
         case TINSTANT:
           return (Temporal *) tfunc_tsequenceset_tinstant(
@@ -1828,9 +1836,6 @@ eafunc_temporal_base(const Temporal *temp, Datum value,
  * @brief Synchronize the temporal values and apply to them a lifted function
  * @param[in] inst1,inst2 Temporal values
  * @param[in] lfinfo Information about the lifted function
- * @note This function is called by other functions besides the dispatch
- * function #eafunc_temporal_temporal and thus the overlapping test is
- * repeated
  */
 static int
 eafunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
@@ -1893,7 +1898,9 @@ eafunc_tcontseq_tinstant(const TSequence *seq, const TInstant *inst,
   tsequence_value_at_timestamptz(seq, inst->t, true, &value1);
   Datum value2 = tinstant_value(inst);
   /* Result is the same for both EVER and ALWAYS */
-  return DatumGetBool(tfunc_base_base(value1, value2, lfinfo)) ? 1 : 0;
+  bool result = DatumGetBool(tfunc_base_base(value1, value2, lfinfo)) ? 1 : 0;
+  DATUM_FREE(value1, temptype_basetype(seq->temptype));
+  return result;
 }
 
 /**
@@ -1946,15 +1953,23 @@ eafunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
  * @brief Synchronize the temporal values and apply to them a lifted function
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
- * @note This function is called by other functions besides the dispatch
- * function eafunc_temporal_temporal and thus the bounding period test is
- * repeated
  */
 static int
 eafunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   LiftedFunctionInfo *lfinfo)
 {
   assert(seq1); assert(seq2); assert(seq1->temptype == seq2->temptype);
+  /* We need to verify that the sequences intersect in time in addition 
+   * to the bounding period test done in the dispatch function
+   * #eafunc_temporal_temporal to return -1 if they do not intersect in time
+   */
+  SpanSet *s1 = tsequence_time(seq1);
+  SpanSet *s2 = tsequence_time(seq2);
+  bool found = overlaps_spanset_spanset(s1, s2);
+  pfree(s1); pfree(s2);
+  if (! found)
+      return -1;
+
   int i = 0, j = 0;
   const TInstant *inst1 = TSEQUENCE_INST_N(seq1, i);
   const TInstant *inst2 = TSEQUENCE_INST_N(seq2, j);
@@ -1984,6 +1999,9 @@ eafunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
  * @brief Synchronize the temporal values and apply to them a lifted function
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
+ * @note The bounding period test in the dispatch function
+ * #eafunc_temporal_temporal ensures that the sequences are not disjoint and
+ * thus we are sure that we do not need to return -1 in this function
  */
 static int
 eafunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
@@ -2000,6 +2018,7 @@ eafunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
       tsequence_value_at_timestamptz(seq1, inst->t, true, &value1);
       Datum value2 = tinstant_value(inst);
       bool res = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
+      DATUM_FREE(value1, temptype_basetype(seq1->temptype));
       if (lfinfo->ever && res)
         return 1;
       else if (! lfinfo->ever && ! res)
@@ -2028,6 +2047,9 @@ eafunc_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
  * @brief Synchronize the temporal values and apply to them a lifted function
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
+ * @note The bounding period test in the dispatch function
+ * #eafunc_temporal_temporal ensures that the sequences are not disjoint and
+ * thus we are sure that we do not need to return -1 in this function
  */
 static int
 eafunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
@@ -2087,6 +2109,9 @@ eafunc_tdiscseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
+ * @note The bounding period test in the dispatch function
+ * #eafunc_temporal_temporal ensures that the sequences are not disjoint and
+ * thus we are sure that we do not need to return -1 in this function
  */
 static int
 eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
@@ -2237,7 +2262,10 @@ eafunc_tcontseq_tcontseq(const TSequence *seq1,
     Datum value1, value2;
     tsequence_value_at_timestamptz(seq1, inter.lower, true, &value1);
     tsequence_value_at_timestamptz(seq2, inter.lower, true, &value2);
-    return DatumGetBool(tfunc_base_base(value1, value2, lfinfo)) ? 1 : 0;
+    int result = DatumGetBool(tfunc_base_base(value1, value2, lfinfo)) ? 1 : 0;
+    DATUM_FREE(value1, temptype_basetype(seq1->temptype));
+    DATUM_FREE(value2, temptype_basetype(seq2->temptype));
+    return result;
   }
   /* All ever/always functions currently available, that is, comparisons
    * (=, <, ...) and spatial relationship (contains, intersects, ...), are
@@ -2245,7 +2273,8 @@ eafunc_tcontseq_tcontseq(const TSequence *seq1,
    * must be added to take account of the remaining cases
    */
   assert(lfinfo->discont);
-  return eafunc_tcontseq_tcontseq_discfn(seq1, seq2, lfinfo, &inter);
+  int result = eafunc_tcontseq_tcontseq_discfn(seq1, seq2, lfinfo, &inter);
+  return result;
 }
 
 /*****************************************************************************/
@@ -2254,6 +2283,9 @@ eafunc_tcontseq_tcontseq(const TSequence *seq1,
  * @brief Synchronize the temporal values and apply to them the function
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
+ * @note The bounding period test in the dispatch function
+ * #eafunc_temporal_temporal ensures that the sequences are not disjoint and
+ * thus we are sure that we do not need to return -1 in this function
  */
 static int
 eafunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
@@ -2305,6 +2337,17 @@ eafunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
   const TSequenceSet *ss2, LiftedFunctionInfo *lfinfo)
 {
   assert(ss1); assert(ss2); assert(ss1->temptype == ss2->temptype);
+  /* We need to verify that the sequence sets intersect in time in addition 
+   * to the bounding period test done in the dispatch function
+   * #eafunc_temporal_temporal to return -1 if they do not intersect in time
+   */
+  SpanSet *s1 = tsequenceset_time(ss1);
+  SpanSet *s2 = tsequenceset_time(ss2);
+  bool found = overlaps_spanset_spanset(s1, s2);
+  pfree(s1); pfree(s2);
+  if (! found)
+      return -1;
+
   int i = 0, j = 0;
   while (i < ss1->count && j < ss2->count)
   {
@@ -2357,11 +2400,11 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 
   assert(temptype_subtype(temp1->subtype));
   assert(temptype_subtype(temp2->subtype));
-  switch (temp1->subtype)
+  switch ((tempSubtype) temp1->subtype)
   {
     case TINSTANT:
     {
-      switch (temp2->subtype)
+      switch ((tempSubtype) temp2->subtype)
       {
         case TINSTANT:
           return eafunc_tinstant_tinstant((TInstant *) temp1,
@@ -2379,7 +2422,7 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     }
     case TSEQUENCE:
     {
-      switch (temp2->subtype)
+      switch ((tempSubtype) temp2->subtype)
       {
         case TINSTANT:
           return  MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
@@ -2391,18 +2434,24 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
         {
           interpType interp1 = MEOS_FLAGS_GET_INTERP(temp1->flags);
           interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
-          if (interp1 == DISCRETE && interp2 == DISCRETE )
-            return eafunc_tdiscseq_tdiscseq((TSequence *) temp1,
-              (TSequence *) temp2, lfinfo);
-          else if (interp1 == DISCRETE && interp2 != DISCRETE)
-            return eafunc_tdiscseq_tcontseq((TSequence *) temp1,
-              (TSequence *) temp2, lfinfo);
-          else if (interp1 != DISCRETE && interp2 == DISCRETE)
-            return eafunc_tcontseq_tdiscseq((TSequence *) temp1,
-              (TSequence *) temp2, lfinfo);
-          else /* interp1 != DISCRETE && interp2 != DISCRETE */
-            return eafunc_tcontseq_tcontseq((TSequence *) temp1,
-              (TSequence *) temp2, lfinfo);
+          if (interp1 == DISCRETE)
+          {
+            if (interp2 == DISCRETE )
+              return eafunc_tdiscseq_tdiscseq((TSequence *) temp1,
+                (TSequence *) temp2, lfinfo);
+            else /* interp2 != DISCRETE */
+              return eafunc_tdiscseq_tcontseq((TSequence *) temp1,
+                (TSequence *) temp2, lfinfo);
+          }
+          else /* interp1 != DISCRETE */
+          {
+            if (interp2 == DISCRETE)
+              return eafunc_tcontseq_tdiscseq((TSequence *) temp1,
+                (TSequence *) temp2, lfinfo);
+            else /* interp2 != DISCRETE */
+              return eafunc_tcontseq_tcontseq((TSequence *) temp1,
+                (TSequence *) temp2, lfinfo);
+          }
         }
         default: /* TSEQUENCESET */
           return MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
@@ -2414,7 +2463,7 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     }
     default: /* TSEQUENCESET */
     {
-      switch (temp2->subtype)
+      switch ((tempSubtype) temp2->subtype)
       {
         case TINSTANT:
           return eafunc_tsequenceset_tinstant((TSequenceSet *) temp1,

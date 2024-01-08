@@ -145,12 +145,13 @@ typedef struct
   int16  flags;         /**< flags */
 } STBox;
 
+#define ANYTEMPSUBTYPE 0
+
 /**
  * @brief Enumeration that defines the temporal subtypes used in MEOS
  */
 typedef enum
 {
-  ANYTEMPSUBTYPE =   0,  /**< Any temporal subtype */
   TINSTANT =         1,  /**< Temporal instant subtype */
   TSEQUENCE =        2,  /**< Temporal sequence subtype */
   TSEQUENCESET =     3,  /**< Temporal sequence set subtype */

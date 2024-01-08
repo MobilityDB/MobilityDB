@@ -59,12 +59,12 @@
  */
 static Datum
 EAcomp_base_temporal(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, Datum))
+  bool (*func)(Datum, const Temporal *))
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   meosType basetype = temptype_basetype(temp->temptype);
-  bool result = func(temp, value);
+  bool result = func(value, temp);
   DATUM_FREE_IF_COPY(value, basetype, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -120,7 +120,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_base_temporal);
 Datum
 Ever_eq_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &ever_eq_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &ever_eq_base_temporal);
 }
 
 PGDLLEXPORT Datum Ever_eq_temporal_base(PG_FUNCTION_ARGS);
@@ -148,7 +148,7 @@ PG_FUNCTION_INFO_V1(Always_eq_base_temporal);
 Datum
 Always_eq_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &always_eq_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &always_eq_base_temporal);
 }
 
 PGDLLEXPORT Datum Always_eq_temporal_base(PG_FUNCTION_ARGS);
@@ -176,7 +176,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_base_temporal);
 Datum
 Ever_ne_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &ever_ne_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &ever_ne_base_temporal);
 }
 
 PGDLLEXPORT Datum Ever_ne_temporal_base(PG_FUNCTION_ARGS);
@@ -204,7 +204,7 @@ PG_FUNCTION_INFO_V1(Always_ne_base_temporal);
 Datum
 Always_ne_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &always_ne_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &always_ne_base_temporal);
 }
 
 PGDLLEXPORT Datum Always_ne_temporal_base(PG_FUNCTION_ARGS);
@@ -234,7 +234,7 @@ PG_FUNCTION_INFO_V1(Ever_lt_base_temporal);
 Datum
 Ever_lt_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &ever_lt_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &ever_lt_base_temporal);
 }
 
 PGDLLEXPORT Datum Ever_lt_temporal_base(PG_FUNCTION_ARGS);
@@ -262,7 +262,7 @@ PG_FUNCTION_INFO_V1(Always_lt_base_temporal);
 Datum
 Always_lt_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &always_lt_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &always_lt_base_temporal);
 }
 
 PGDLLEXPORT Datum Always_lt_temporal_base(PG_FUNCTION_ARGS);
@@ -291,7 +291,7 @@ PG_FUNCTION_INFO_V1(Ever_le_base_temporal);
 Datum
 Ever_le_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &ever_le_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &ever_le_base_temporal);
 }
 
 PGDLLEXPORT Datum Ever_le_temporal_base(PG_FUNCTION_ARGS);
@@ -321,7 +321,7 @@ PG_FUNCTION_INFO_V1(Always_le_base_temporal);
 Datum
 Always_le_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &always_le_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &always_le_base_temporal);
 }
 
 PGDLLEXPORT Datum Always_le_temporal_base(PG_FUNCTION_ARGS);
@@ -350,7 +350,7 @@ PG_FUNCTION_INFO_V1(Ever_gt_base_temporal);
 Datum
 Ever_gt_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &ever_gt_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &ever_gt_base_temporal);
 }
 
 PGDLLEXPORT Datum Ever_gt_temporal_base(PG_FUNCTION_ARGS);
@@ -378,7 +378,7 @@ PG_FUNCTION_INFO_V1(Always_gt_base_temporal);
 Datum
 Always_gt_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &always_gt_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &always_gt_base_temporal);
 }
 
 PGDLLEXPORT Datum Always_gt_temporal_base(PG_FUNCTION_ARGS);
@@ -407,7 +407,7 @@ PG_FUNCTION_INFO_V1(Ever_ge_base_temporal);
 Datum
 Ever_ge_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &ever_ge_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &ever_ge_base_temporal);
 }
 
 PGDLLEXPORT Datum Ever_ge_temporal_base(PG_FUNCTION_ARGS);
@@ -437,7 +437,7 @@ PG_FUNCTION_INFO_V1(Always_ge_base_temporal);
 Datum
 Always_ge_base_temporal(PG_FUNCTION_ARGS)
 {
-  return EAcomp_base_temporal(fcinfo, &always_ge_temporal_base);
+  return EAcomp_base_temporal(fcinfo, &always_ge_base_temporal);
 }
 
 PGDLLEXPORT Datum Always_ge_temporal_base(PG_FUNCTION_ARGS);

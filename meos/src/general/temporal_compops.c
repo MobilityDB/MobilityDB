@@ -58,8 +58,43 @@
  *****************************************************************************/
 
 /**
+ * @brief Return true if a base value and a temporal value ever/always satisfy
+ * a comparison
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @param[in] ever True to compute the ever semantics, false for always
+ * @param[in] func Comparison function
+ */
+int
+eacomp_base_temporal(Datum value, const Temporal *temp, 
+  Datum (*func)(Datum, Datum, meosType), bool ever)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) func))
+    return -1;
+
+  /* Fill the lifted structure */
+  meosType basetype = temptype_basetype(temp->temptype);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 0;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = basetype;
+  lfinfo.argtype[1] = basetype;
+  lfinfo.restype = T_BOOL;
+  lfinfo.reslinear = false;
+  lfinfo.invert = INVERT; 
+  lfinfo.discont = DISCONTINUOUS; /* Comparisons are always discontinuous */
+  lfinfo.ever = ever;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return eafunc_temporal_base(temp, value, &lfinfo);
+}
+
+/**
  * @brief Return true if a temporal value and a base value ever/always satisfy
- * the comparison
+ * a comparison
  * @param[in] temp Temporal value
  * @param[in] value Value
  * @param[in] ever True to compute the ever semantics, false for always
@@ -93,7 +128,7 @@ eacomp_temporal_base(const Temporal *temp, Datum value,
 }
 
 /**
- * @brief Return true if the temporal values ever/always satisfy the comparison
+ * @brief Return true if the temporal values ever/always satisfy a comparison
  * @param[in] temp1,temp2 Temporal values
  * @param[in] func Comparison function
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -211,6 +246,88 @@ ever_ge_temporal_base(const Temporal *temp, Datum value)
 
 /**
  * @ingroup libmeos_internal_temporal_comp_ever
+ * @brief Return true if a temporal value is ever equal to a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_eq_base_temporal()
+ */
+bool
+ever_eq_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_eq, EVER);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_ever
+ * @brief Return true if a temporal value is ever different to a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_ne_base_temporal()
+ */
+bool
+ever_ne_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_ne, EVER);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_ever
+ * @brief Return true if a temporal value is ever less than a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_lt_base_temporal()
+ */
+bool
+ever_lt_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_lt, EVER);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_ever
+ * @brief Return true if a temporal value is ever less than or equal to a base
+ * value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_le_base_temporal()
+ */
+bool
+ever_le_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_le, EVER);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_ever
+ * @brief Return true if a temporal value is ever greater than a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_gt_base_temporal()
+ */
+bool
+ever_gt_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_gt, EVER);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_ever
+ * @brief Return true if a temporal value is ever greater than or equal to a
+ * base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_ge_base_temporal()
+ */
+bool
+ever_ge_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_ge, EVER);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always equal to a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
@@ -287,6 +404,88 @@ bool
 always_ge_temporal_base(const Temporal *temp, Datum value)
 {
   return eacomp_temporal_base(temp, value, &datum2_ge, ALWAYS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_always
+ * @brief Return true if a temporal value is always equal to a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_eq_base_temporal()
+ */
+bool
+always_eq_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_eq, ALWAYS);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_always
+ * @brief Return true if a temporal value is always different to a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_ne_base_temporal()
+ */
+bool
+always_ne_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_ne, ALWAYS);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_always
+ * @brief Return true if a temporal value is always less than a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_lt_base_temporal()
+ */
+bool
+always_lt_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_lt, ALWAYS);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_always
+ * @brief Return true if a temporal value is always less than or equal to a base
+ * value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_le_base_temporal()
+ */
+bool
+always_le_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_le, ALWAYS);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_always
+ * @brief Return true if a temporal value is always greater than a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_gt_base_temporal()
+ */
+bool
+always_gt_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_gt, ALWAYS);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_comp_always
+ * @brief Return true if a temporal value is always greater than or equal to a
+ * base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_ge_base_temporal()
+ */
+bool
+always_ge_base_temporal(Datum value, const Temporal *temp)
+{
+  return eacomp_base_temporal(value, temp, &datum2_ge, ALWAYS);
 }
 
 /*****************************************************************************/

@@ -1317,55 +1317,60 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
   Temporal *result;
   assert(temptype_subtype(sync1->subtype));
-  if (sync1->subtype == TINSTANT)
+  switch (sync1->subtype)
   {
-    Datum value1 = tinstant_value((TInstant *) sync1);
-    Datum value2 = tinstant_value((TInstant *) sync2);
-    result = (Temporal *) tinstant_make(func(value1, value2,
-      Float8GetDatum(dist)), T_TBOOL, ((TInstant *) sync1)->t);
-  }
-  else if (sync1->subtype == TSEQUENCE)
-  {
-    interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
-    interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
-    if (interp1 == LINEAR || interp2 == LINEAR)
-      result = (Temporal *) tdwithin_tpointseq_tpointseq((TSequence *) sync1,
-        (TSequence *) sync2, dist, func);
-    else
+    case TINSTANT:
     {
-      /* Both sequences have either discrete or step interpolation */
-      LiftedFunctionInfo lfinfo;
-      memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-      lfinfo.func = (varfunc) func;
-      lfinfo.numparam = 1;
-      lfinfo.param[0] = Float8GetDatum(dist);
-      lfinfo.restype = T_TBOOL;
-      if (interp1 == DISCRETE)
-        result = (Temporal *) tfunc_tdiscseq_tdiscseq((TSequence *) sync1,
-          (TSequence *) sync2, &lfinfo);
-      else /* interp1 == STEP && interp2 == STEP */
-        result = tfunc_tcontseq_tcontseq((TSequence *) sync1,
-          (TSequence *) sync2, &lfinfo);
+      Datum value1 = tinstant_value((TInstant *) sync1);
+      Datum value2 = tinstant_value((TInstant *) sync2);
+      result = (Temporal *) tinstant_make(func(value1, value2,
+        Float8GetDatum(dist)), T_TBOOL, ((TInstant *) sync1)->t);
+      break;
     }
-  }
-  else /* sync1->subtype == TSEQUENCESET */
-  {
-    interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
-    interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
-    if (interp1 == LINEAR || interp2 == LINEAR)
-      result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
-        (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
-    else
+    case TSEQUENCE:
     {
-      /* Both sequence sets have step interpolation */
-      LiftedFunctionInfo lfinfo;
-      memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-      lfinfo.func = (varfunc) func;
-      lfinfo.numparam = 1;
-      lfinfo.param[0] = Float8GetDatum(dist);
-      lfinfo.restype = T_TBOOL;
-      result = (Temporal *) tfunc_tsequenceset_tsequenceset(
-        (TSequenceSet *) sync1, (TSequenceSet *) sync2, &lfinfo);
+      interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
+      interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
+      if (interp1 == LINEAR || interp2 == LINEAR)
+        result = (Temporal *) tdwithin_tpointseq_tpointseq((TSequence *) sync1,
+          (TSequence *) sync2, dist, func);
+      else
+      {
+        /* Both sequences have either discrete or step interpolation */
+        LiftedFunctionInfo lfinfo;
+        memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+        lfinfo.func = (varfunc) func;
+        lfinfo.numparam = 1;
+        lfinfo.param[0] = Float8GetDatum(dist);
+        lfinfo.restype = T_TBOOL;
+        if (interp1 == DISCRETE)
+          result = (Temporal *) tfunc_tdiscseq_tdiscseq((TSequence *) sync1,
+            (TSequence *) sync2, &lfinfo);
+        else /* interp1 == STEP && interp2 == STEP */
+          result = tfunc_tcontseq_tcontseq((TSequence *) sync1,
+            (TSequence *) sync2, &lfinfo);
+      }
+      break;
+    }
+    default: /* TSEQUENCESET */
+    {
+      interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
+      interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
+      if (interp1 == LINEAR || interp2 == LINEAR)
+        result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
+          (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
+      else
+      {
+        /* Both sequence sets have step interpolation */
+        LiftedFunctionInfo lfinfo;
+        memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+        lfinfo.func = (varfunc) func;
+        lfinfo.numparam = 1;
+        lfinfo.param[0] = Float8GetDatum(dist);
+        lfinfo.restype = T_TBOOL;
+        result = (Temporal *) tfunc_tsequenceset_tsequenceset(
+          (TSequenceSet *) sync1, (TSequenceSet *) sync2, &lfinfo);
+      }
     }
   }
   /* Restrict the result to the Boolean value in the fourth argument if any */
