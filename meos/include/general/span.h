@@ -109,10 +109,12 @@ extern size_t span_to_wkb_size(const Span *s);
 extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
 
 extern int mi_span_span(const Span *s1, const Span *s2, Span *result);
-extern int mi_span_value(const Span *s, Datum d, meosType basetype,
-  Span *result);
+extern int mi_span_value(const Span *s, Datum value, Span *result);
 
 extern double dist_double_value_value(Datum l, Datum r, meosType type);
+
+extern bool span_eq1(const Span *s1, const Span *s2);
+extern int span_cmp1(const Span *s1, const Span *s2);
 
 /*****************************************************************************/
 

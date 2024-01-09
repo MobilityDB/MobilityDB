@@ -65,6 +65,18 @@
 			<para><varname>dates</varname> representa cualquier tipo de tiempo con granularidad <varname>date</varname>, a saber <varname>date</varname>, <varname>dateset</varname>, <varname>datespan</varname> o <varname>datespanset</varname>,</para>
 		</listitem>
 		<listitem>
+			<para><varname>numset</varname> representa cualquier tipo de conjunto numérico, como <varname>intset</varname> o <varname>floatset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>numspans</varname> representa cualquier tipo de rango o conjunto de rangos numérico, como <varname>intspan</varname> o <varname>floatspanset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>numbers</varname> representa cualquier tipo de conjunto o de rango numérico, como <varname>integer</varname>, <varname>intset</varname>, <varname>intspan</varname> o <varname>intspanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>dates</varname> representa cualquier tipo de tiempo con granularidad <varname>date</varname>, a saber <varname>date</varname>, <varname>dateset</varname>, <varname>datespan</varname> o <varname>datespanset</varname>,</para>
+		</listitem>
+		<listitem>
 			<para><varname>times</varname> representa cualquier tipo de tiempo con granularidad <varname>timestamptz</varname>, a saber <varname>timestamptz</varname>, <varname>tstzset</varname>, <varname>tstzspan</varname> o <varname>tstzspanset</varname>,</para>
 		</listitem>
 		<listitem>
@@ -465,6 +477,17 @@ SELECT lower(intspanset '{[1,2],[4,5]}');
 --  1
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
+SELECT lower(tstzspan '[2001-01-01, 2001-01-05)');
+-- 2001-01-01
+SELECT upper(intspanset '{[1,2],[4,5]}');
+--  6
+SELECT lower(tstzspan '[2001-01-01, 2001-01-05)');
+-- 2001-01-01
+SELECT lower(intspanset '{[1,2],[4,5]}');
+--  1
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+>>>>>>> Improve documentation
 SELECT upper(floatspan '[20.5, 25.3)');
 -- 25.3
 SELECT upper(tstzspan '[2001-01-01, 2001-01-05)');
@@ -485,6 +508,10 @@ SELECT lower_inc(intspanset '{[1,2],[4,5]}');
 -- true
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
+SELECT lower_inc(tstzspan '[2001-01-01, 2001-01-05)');
+-- true
+SELECT upper_inc(intspanset '{[1,2],[4,5]}');
+-- false
 SELECT upper(floatspan '[20.5, 25.3]');
 -- true
 SELECT upper_inc(tstzspan '[2001-01-01, 2001-01-05)');
@@ -1160,6 +1187,36 @@ SELECT tstzspan '[2001-01-03, 2001-01-05)' &gt;= tstzspan '[2001-01-03, 2001-01-
 		</itemizedlist>
 
 		<itemizedlist>
+			<listitem id="setspan_tcount">
+				<indexterm><primary><varname>tcount</varname></primary></indexterm>
+				<para>Conteo temporal</para>
+				<para><varname>tcount(times) → {tint_seq,tint_seqset}</varname></para>
+				<para><varname>tcount(times,interval,timestamptz) → {tint_seq,tint_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+WITH times(ts) AS (
+  SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' UNION
+  SELECT tstzset '{2001-01-02, 2001-01-04, 2001-01-06}' UNION
+  SELECT tstzset '{2001-01-01, 2001-01-02}'
+)
+SELECT tcount(ts) FROM times;
+-- {2@2001-01-01, 2@2001-01-02, 1@2001-01-03, 1@2001-01-04, 1@2001-01-05, 1@2001-01-06}
+WITH periods(ps) AS (
+  SELECT tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}' UNION
+  SELECT tstzspanset '{[2001-01-01, 2001-01-04), [2001-01-05, 2001-01-06)}' UNION
+  SELECT tstzspanset '{[2001-01-02, 2001-01-06)}'
+)
+SELECT tcount(ps) FROM tstzspans;
+-- {[2@2001-01-01, 3@2001-01-03, 1@2001-01-04, 2@2001-01-05, 2@2001-01-06)}
+WITH periods(ps) AS (
+  SELECT tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}' UNION
+  SELECT tstzspanset '{[2001-01-01, 2001-01-04), [2001-01-05, 2001-01-06)}' UNION
+  SELECT tstzspanset '{[2001-01-02, 2001-01-06)}'
+)
+SELECT tcount(ps, '2 days', '2001-01-01') FROM periods;
+-- {[3@2001-01-01, 2@2001-01-05, 2@2001-01-07)}
+</programlisting>
+			</listitem>
+
 			<listitem id="setspan_extent">
 				<indexterm><primary><varname>extent</varname></primary></indexterm>
 				<para>Rango o período delimitador</para>
@@ -1212,7 +1269,7 @@ SELECT tunion(ps) FROM periods;
 -- {[2001-01-01, 2001-01-04], [2001-01-05, 2001-01-06], [2001-01-07, 2001-01-08]}
 </programlisting>
 			</listitem>
-  
+
 			<listitem id="setspan_tcount">
 				<indexterm><primary><varname>tcount</varname></primary></indexterm>
 				<para>Conteo temporal</para>

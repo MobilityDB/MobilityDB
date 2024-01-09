@@ -330,12 +330,13 @@ extern bool ensure_linear_interp(int16 flags);
 extern bool ensure_nonlinear_interp(int16 flags);
 extern bool ensure_common_dimension(int16 flags1, int16 flags2);
 extern bool ensure_temporal_isof_type(const Temporal *temp, meosType type);
+extern bool ensure_temporal_isof_basetype(const Temporal *temp,
+  meosType basetype);
 extern bool ensure_temporal_isof_subtype(const Temporal *temp,
   tempSubtype type);
 extern bool ensure_same_temporal_type(const Temporal *temp1,
   const Temporal *temp2);
-extern bool ensure_same_temporal_basetype(const Temporal *temp,
-  meosType basetype);
+
 extern bool ensure_valid_tnumber_span(const Temporal *temp, const Span *s);
 extern bool ensure_valid_tnumber_spanset(const Temporal *temp,
   const SpanSet *ss);

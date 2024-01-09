@@ -379,11 +379,10 @@ Shortestline_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  GSERIALIZED *result;
-  bool found = shortestline_tnpoint_geo(temp, geo, &result);
+  GSERIALIZED *result = shortestline_tnpoint_geo(temp, geo);
   PG_FREE_IF_COPY(geo, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
@@ -401,11 +400,10 @@ Shortestline_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
-  GSERIALIZED *result;
-  bool found = shortestline_tnpoint_geo(temp, geo, &result);
+  GSERIALIZED *result = shortestline_tnpoint_geo(temp, geo);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
@@ -461,11 +459,10 @@ Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  GSERIALIZED *result;
-  bool found = shortestline_tnpoint_tnpoint(temp1, temp2, &result);
+  GSERIALIZED *result = shortestline_tnpoint_tnpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }

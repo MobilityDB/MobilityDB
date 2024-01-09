@@ -112,7 +112,7 @@ Set_union_transfn(PG_FUNCTION_ARGS)
     state = (ArrayBuildState *) PG_GETARG_POINTER(0);
 
   /* skip NULLs */
-  if (! PG_ARGISNULL(1) )
+  if (! PG_ARGISNULL(1))
   {
     Set *set = PG_GETARG_SET_P(1);
     Datum *values = set_values(set);

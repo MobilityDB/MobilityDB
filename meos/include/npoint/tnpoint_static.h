@@ -48,10 +48,13 @@ extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
 extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
 extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 
-/* Input/Output functions */
+/* Input/output functions */
 
 extern Npoint *npoint_in(const char *str, bool end);
 extern char *npoint_out(const Npoint *np, int maxdd);
+
+extern Nsegment *nsegment_in(const char *str);
+extern char *nsegment_out(const Nsegment *ns, int maxdd);
 
 /* Constructor functions */
 
@@ -64,11 +67,6 @@ extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
 
 extern Nsegment *npoint_to_nsegment(const Npoint *np);
 
-/* Input/output functions */
-
-extern Nsegment *nsegment_in(const char *str);
-extern char *nsegment_out(const Nsegment *ns, int maxdd);
-
 /* Accessor functions */
 
 extern int64 npoint_route(const Npoint *np);
@@ -76,6 +74,13 @@ extern double npoint_position(const Npoint *np);
 extern int64 nsegment_route(const Nsegment *ns);
 extern double nsegment_start_position(const Nsegment *ns);
 extern double nsegment_end_position(const Nsegment *ns);
+
+/* Transformation functions */
+
+extern Datum datum_npoint_round(Datum npoint, Datum size);
+extern Npoint *npoint_round(const Npoint *np, Datum size);
+extern Nsegment *nsegment_round(const Nsegment *ns, Datum size);
+extern Set *npointset_round(const Set *s, Datum prec);
 
 /* Conversions between network and Euclidean space */
 

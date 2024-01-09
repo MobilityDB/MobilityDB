@@ -29,9 +29,9 @@
 
 /**
  * @file
- * @brief Ever spatial relationships for temporal network points.
+ * @brief Ever/always spatial relationships for temporal network points
  *
- * These relationships compute the ever spatial relationship between the
+ * These relationships compute the ever/always spatial relationship between the
  * arguments and return a Boolean. These functions may be used for filtering
  * purposes before applying the corresponding temporal spatial relationship.
  *
@@ -103,7 +103,6 @@ ea_spatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return true if a geometry ever/always contains a temporal network
  * point
  * @param[in] gs Geometry
@@ -124,7 +123,6 @@ ea_contains_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return true if a network point ever/always contains a temporal
  * network point
  * @param[in] np Network point
@@ -148,7 +146,6 @@ ea_contains_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool ever)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return true if a geometry and a temporal network point are
  * ever/always disjoint
  * @param[in] temp Temporal network point
@@ -169,7 +166,6 @@ ea_disjoint_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return true if a network point and a temporal network point are
  * ever/always disjoint
  * @param[in] temp Temporal network point
@@ -193,7 +189,6 @@ ea_disjoint_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return true if a geometry and a temporal network point ever/always 
  * intersect
  * @param[in] temp Temporal network point
@@ -215,7 +210,6 @@ ea_intersects_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return true if a network point and a temporal network point
  * ever/always intersect
  * @param[in] temp Temporal network point
@@ -239,7 +233,6 @@ ea_intersects_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return true if a geometry and a temporal network point ever/always 
  * touch
  * @param[in] temp Temporal network point
@@ -260,7 +253,6 @@ ea_touches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
  * @brief Return true if a temporal network point and a network point
  * ever/always touch
  * @param[in] temp Temporal network point
@@ -286,7 +278,6 @@ ea_touches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
 /**
  * @brief Generic spatial relationships for a temporal network point and a
  * geometry
- *
  * @param[in] temp Temporal network point
  * @param[in] gs Geometry
  * @param[in] dist Distance
@@ -309,7 +300,6 @@ ea_dwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @brief Generic spatial relationships for a temporal network point and a
  * geometry
- *
  * @param[in] temp Temporal network point
  * @param[in] np Network point
  * @param[in] dist Distance

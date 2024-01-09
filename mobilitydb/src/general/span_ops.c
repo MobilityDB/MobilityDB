@@ -58,9 +58,8 @@ Datum
 Contains_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PG_RETURN_BOOL(contains_span_value(s, d, basetype));
+  Datum value = PG_GETARG_DATUM(1);
+  PG_RETURN_BOOL(contains_span_value(s, value));
 }
 
 PGDLLEXPORT Datum Contains_span_span(PG_FUNCTION_ARGS);
@@ -94,10 +93,9 @@ PG_FUNCTION_INFO_V1(Contained_value_span);
 Datum
 Contained_value_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_BOOL(contained_value_span(d, basetype, s));
+  PG_RETURN_BOOL(contained_value_span(value, s));
 }
 
 PGDLLEXPORT Datum Contained_span_span(PG_FUNCTION_ARGS);
@@ -151,10 +149,9 @@ PG_FUNCTION_INFO_V1(Adjacent_value_span);
 Datum
 Adjacent_value_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_BOOL(adjacent_span_value(s, d, basetype));
+  PG_RETURN_BOOL(adjacent_span_value(s, value));
 }
 
 PGDLLEXPORT Datum Adjacent_span_value(PG_FUNCTION_ARGS);
@@ -169,9 +166,8 @@ Datum
 Adjacent_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PG_RETURN_BOOL(adjacent_span_value(s, d, basetype));
+  Datum value = PG_GETARG_DATUM(1);
+  PG_RETURN_BOOL(adjacent_span_value(s, value));
 }
 
 PGDLLEXPORT Datum Adjacent_span_span(PG_FUNCTION_ARGS);
@@ -205,10 +201,9 @@ PG_FUNCTION_INFO_V1(Left_value_span);
 Datum
 Left_value_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_BOOL(left_value_span(d, basetype, s));
+  PG_RETURN_BOOL(left_value_span(value, s));
 }
 
 PGDLLEXPORT Datum Left_span_value(PG_FUNCTION_ARGS);
@@ -223,9 +218,8 @@ Datum
 Left_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PG_RETURN_BOOL(left_span_value(s, d, basetype));
+  Datum value = PG_GETARG_DATUM(1);
+  PG_RETURN_BOOL(left_span_value(s, value));
 }
 
 PGDLLEXPORT Datum Left_span_span(PG_FUNCTION_ARGS);
@@ -259,10 +253,9 @@ PG_FUNCTION_INFO_V1(Right_value_span);
 Datum
 Right_value_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_BOOL(right_value_span(d, basetype, s));
+  PG_RETURN_BOOL(right_value_span(value, s));
 }
 
 PGDLLEXPORT Datum Right_span_value(PG_FUNCTION_ARGS);
@@ -277,9 +270,8 @@ Datum
 Right_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PG_RETURN_BOOL(right_span_value(s, d, basetype));
+  Datum value = PG_GETARG_DATUM(1);
+  PG_RETURN_BOOL(right_span_value(s, value));
 }
 
 PGDLLEXPORT Datum Right_span_span(PG_FUNCTION_ARGS);
@@ -313,10 +305,9 @@ PG_FUNCTION_INFO_V1(Overleft_value_span);
 Datum
 Overleft_value_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_BOOL(overleft_value_span(d, basetype, s));
+  PG_RETURN_BOOL(overleft_value_span(value, s));
 }
 
 PGDLLEXPORT Datum Overleft_span_value(PG_FUNCTION_ARGS);
@@ -331,9 +322,8 @@ Datum
 Overleft_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PG_RETURN_BOOL(overleft_span_value(s, d, basetype));
+  Datum value = PG_GETARG_DATUM(1);
+  PG_RETURN_BOOL(overleft_span_value(s, value));
 }
 
 PGDLLEXPORT Datum Overleft_span_span(PG_FUNCTION_ARGS);
@@ -368,10 +358,9 @@ PG_FUNCTION_INFO_V1(Overright_value_span);
 Datum
 Overright_value_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_BOOL(overright_value_span(d, basetype, s));
+  PG_RETURN_BOOL(overright_value_span(value, s));
 }
 
 PGDLLEXPORT Datum Overright_span_value(PG_FUNCTION_ARGS);
@@ -386,9 +375,8 @@ Datum
 Overright_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PG_RETURN_BOOL(overright_span_value(s, d, basetype));
+  Datum value = PG_GETARG_DATUM(1);
+  PG_RETURN_BOOL(overright_span_value(s, value));
 }
 
 PGDLLEXPORT Datum Overright_span_span(PG_FUNCTION_ARGS);
@@ -423,10 +411,9 @@ PG_FUNCTION_INFO_V1(Union_value_span);
 Datum
 Union_value_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_SPANSET_P(union_span_value(s, d, basetype));
+  PG_RETURN_SPANSET_P(union_value_span(value, s));
 }
 
 PGDLLEXPORT Datum Union_span_value(PG_FUNCTION_ARGS);
@@ -441,9 +428,8 @@ Datum
 Union_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PG_RETURN_SPANSET_P(union_span_value(s, d, basetype));
+  Datum value = PG_GETARG_DATUM(1);
+  PG_RETURN_SPANSET_P(union_span_value(s, value));
 }
 
 PGDLLEXPORT Datum Union_span_span(PG_FUNCTION_ARGS);
@@ -477,10 +463,9 @@ PG_FUNCTION_INFO_V1(Intersection_value_span);
 Datum
 Intersection_value_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Span *result = intersection_span_value(s, d, basetype);
+  Span *result = intersection_value_span(value, s);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SPAN_P(result);
@@ -498,9 +483,8 @@ Datum
 Intersection_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Span *result = intersection_span_value(s, d, basetype);
+  Datum value = PG_GETARG_DATUM(1);
+  Span *result = intersection_span_value(s, value);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SPAN_P(result);
@@ -540,10 +524,9 @@ PG_FUNCTION_INFO_V1(Minus_value_span);
 Datum
 Minus_value_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  SpanSet *result = minus_value_span(d, basetype, s);
+  SpanSet *result = minus_value_span(value, s);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SPANSET_P(result);
@@ -561,9 +544,8 @@ Datum
 Minus_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  SpanSet *result = minus_span_value(s, d, basetype);
+  Datum value = PG_GETARG_DATUM(1);
+  SpanSet *result = minus_span_value(s, value);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SPANSET_P(result);
@@ -604,10 +586,10 @@ PG_FUNCTION_INFO_V1(Distance_value_value);
 Datum
 Distance_value_value(PG_FUNCTION_ARGS)
 {
-  Datum d1 = PG_GETARG_DATUM(0);
-  Datum d2 = PG_GETARG_DATUM(1);
+  Datum value1 = PG_GETARG_DATUM(0);
+  Datum value2 = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_DATUM(distance_value_value(d1, d2, basetype));
+  PG_RETURN_DATUM(distance_value_value(value1, value2, basetype));
 }
 
 PGDLLEXPORT Datum Distance_value_span(PG_FUNCTION_ARGS);
@@ -621,10 +603,9 @@ PG_FUNCTION_INFO_V1(Distance_value_span);
 Datum
 Distance_value_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_DATUM(distance_span_value(s, d, basetype));
+  PG_RETURN_DATUM(distance_span_value(s, value));
 }
 
 PGDLLEXPORT Datum Distance_span_value(PG_FUNCTION_ARGS);
@@ -639,9 +620,8 @@ Datum
 Distance_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PG_RETURN_DATUM(distance_span_value(s, d, basetype));
+  Datum value = PG_GETARG_DATUM(1);
+  PG_RETURN_DATUM(distance_span_value(s, value));
 }
 
 PGDLLEXPORT Datum Distance_span_span(PG_FUNCTION_ARGS);

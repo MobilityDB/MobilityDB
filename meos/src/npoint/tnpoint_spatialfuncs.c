@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal network points.
+ * @brief Spatial functions for temporal network points
  */
 
 #include "npoint/tnpoint_spatialfuncs.h"
@@ -40,7 +40,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/type_util.h"
-#include "point/pgis_call.h"
+#include "point/pgis_types.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -129,7 +129,7 @@ tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  *****************************************************************************/
 
 /**
- * @brief Return the SRID of a temporal network point of subtype instant.
+ * @brief Return the SRID of a temporal network point of subtype instant
  */
 int
 tnpointinst_srid(const TInstant *inst)
@@ -147,15 +147,16 @@ tnpointinst_srid(const TInstant *inst)
 int
 tnpoint_srid(const Temporal *temp)
 {
-  int result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tnpointinst_srid((const TInstant *) temp);
-  else if (temp->subtype == TSEQUENCE)
-    result = tpointseq_srid((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tpointseqset_srid((TSequenceSet *) temp);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return tnpointinst_srid((const TInstant *) temp);
+    case TSEQUENCE:
+      return tpointseq_srid((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return tpointseqset_srid((TSequenceSet *) temp);
+  }
 }
 
 /*****************************************************************************
@@ -174,10 +175,7 @@ tnpointseq_discstep_npoints(const TSequence *seq, int *count)
 {
   Npoint **result = palloc(sizeof(Npoint *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    result[i] = DatumGetNpointP(tinstant_value(inst));
-  }
+    result[i] = DatumGetNpointP(tinstant_value(TSEQUENCE_INST_N(seq, i)));
   *count = seq->count;
   return result;
 }
@@ -197,10 +195,8 @@ tnpointseqset_step_npoints(const TSequenceSet *ss, int *count)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
-    {
-      const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      result[npoints++] = DatumGetNpointP(tinstant_value(inst));
-    }
+      result[npoints++] = DatumGetNpointP(
+        tinstant_value(TSEQUENCE_INST_N(seq, j)));
   }
   *count = npoints;
   return result;
@@ -212,7 +208,7 @@ tnpointseqset_step_npoints(const TSequenceSet *ss, int *count)
  *****************************************************************************/
 
 /**
- * @brief Return the geometry covered by a temporal network point.
+ * @brief Return the geometry covered by a temporal network point
  * @param[in] inst Temporal network point
  */
 GSERIALIZED *
@@ -223,7 +219,7 @@ tnpointinst_geom(const TInstant *inst)
 }
 
 /**
- * @brief Return the geometry covered by a temporal network point.
+ * @brief Return the geometry covered by a temporal network point
  * @param[in] seq Temporal network point
  */
 GSERIALIZED *
@@ -252,7 +248,7 @@ tnpointseq_geom(const TSequence *seq)
 }
 
 /**
- * @brief Return the geometry covered by a temporal network point.
+ * @brief Return the geometry covered by a temporal network point
  * @param[in] ss Temporal network point
  */
 GSERIALIZED *
@@ -280,21 +276,22 @@ tnpointseqset_geom(const TSequenceSet *ss)
 }
 
 /**
- * @brief Return the geometry covered by a temporal network point.
+ * @brief Return the geometry covered by a temporal network point
  * @param[in] temp Temporal network point
  */
 GSERIALIZED *
 tnpoint_geom(const Temporal *temp)
 {
-  GSERIALIZED *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tnpointinst_geom((TInstant *) temp);
-  else if (temp->subtype == TSEQUENCE)
-    result = tnpointseq_geom((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tnpointseqset_geom((TSequenceSet *) temp);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return tnpointinst_geom((TInstant *) temp);
+    case TSEQUENCE:
+      return tnpointseq_geom((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return tnpointseqset_geom((TSequenceSet *) temp);
+  }
 }
 
 /**
@@ -311,11 +308,11 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
 
   GSERIALIZED *traj;
   if (np1->pos < np2->pos)
-    traj = gserialized_line_substring(line, np1->pos, np2->pos);
+    traj = linestring_substring(line, np1->pos, np2->pos);
   else /* np1->pos >= np2->pos */
   {
-    GSERIALIZED *traj2 = gserialized_line_substring(line, np2->pos, np1->pos);
-    traj = gserialized_reverse(traj2);
+    GSERIALIZED *traj2 = linestring_substring(line, np2->pos, np1->pos);
+    traj = geo_reverse(traj2);
     pfree(traj2);
   }
   pfree(line);
@@ -328,9 +325,9 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
 
 /**
  * @brief Return true if two network points are spatially equal
- * 
- * Two network points may be have different rid but represent the same
- * spatial point at the intersection of the two rids
+ * @details Two network points may be have different route identifier but
+ * represent the same spatial point at the intersection of the two route
+ * identifiers
  */
 bool
 npoint_same(const Npoint *np1, const Npoint *np2)
@@ -381,10 +378,7 @@ tnpointseqset_length(const TSequenceSet *ss)
 {
   double result = 0;
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    result += tnpointseq_length(seq);
-  }
+    result += tnpointseq_length(TSEQUENCESET_SEQ_N(ss, i));
   return result;
 }
 
@@ -394,37 +388,32 @@ tnpointseqset_length(const TSequenceSet *ss)
 double
 tnpoint_length(const Temporal *temp)
 {
-  double result = 0.0;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    ;
+  if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return 0.0;
   else if (temp->subtype == TSEQUENCE)
-    result = tnpointseq_length((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tnpointseqset_length((TSequenceSet *) temp);
-  return result;
+    return tnpointseq_length((TSequence *) temp);
+  else /* TSEQUENCESET */
+    return tnpointseqset_length((TSequenceSet *) temp);
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Return the cumulative length traversed by a temporal point.
- * @pre The sequence has linear interpolation
+ * @brief Return the cumulative length traversed by a temporal point
  * @csqlfn #Tnpoint_cumulative_length()
+ * @pre The sequence has linear interpolation
  */
 static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
-  assert(seq);
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  const TInstant *inst1;
+  assert(seq); assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst1 = TSEQUENCE_INST_N(seq, 0);
     TInstant *inst = tinstant_make(Float8GetDatum(prevlength), T_TFLOAT,
-      inst1->t);
+      TSEQUENCE_INST_N(seq, 0)->t);
     TSequence *result = tinstant_to_tsequence(inst, LINEAR);
     pfree(inst);
     return result;
@@ -432,7 +421,7 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  inst1 = TSEQUENCE_INST_N(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Npoint *np1 = DatumGetNpointP(tinstant_value(inst1));
   double rlength = route_length(np1->rid);
   double length = prevlength;
@@ -475,15 +464,13 @@ tnpointseqset_cumulative_length(const TSequenceSet *ss)
 Temporal *
 tnpoint_cumulative_length(const Temporal *temp)
 {
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    result = temporal_from_base_temp(Float8GetDatum(0.0), T_TFLOAT, temp);
+  if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return temporal_from_base_temp(Float8GetDatum(0.0), T_TFLOAT, temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnpointseqset_cumulative_length((TSequenceSet *) temp);
-  return result;
+    return (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
+  else /* TSEQUENCESET */
+    return (Temporal *) tnpointseqset_cumulative_length((TSequenceSet *) temp);
 }
 
 /*****************************************************************************
@@ -540,10 +527,9 @@ tnpointseqset_speed(const TSequenceSet *ss)
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    TSequence *seq1 = tnpointseq_speed(seq);
-    if (seq1 != NULL)
-      sequences[nseqs++] = seq1;
+    TSequence *seq = tnpointseq_speed(TSEQUENCESET_SEQ_N(ss, i));
+    if (seq != NULL)
+      sequences[nseqs++] = seq;
   }
   /* The resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, nseqs, STEP);
@@ -561,14 +547,16 @@ tnpoint_speed(const Temporal *temp)
       ! ensure_linear_interp(temp->flags))
     return NULL;
 
-  Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  /* Temporal instants does not have linear interpolation */
-  if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnpointseq_speed((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnpointseqset_speed((TSequenceSet *) temp);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return NULL;
+    case TSEQUENCE:
+      return (Temporal *) tnpointseq_speed((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tnpointseqset_speed((TSequenceSet *) temp);
+  }
 }
 
 /*****************************************************************************
@@ -611,15 +599,15 @@ tnpointsegm_azimuth_iter(const TInstant *inst1, const TInstant *inst2,
 
 /* Find all vertices in the segment */
   GSERIALIZED *traj = DatumGetGserializedP(tnpointseqsegm_trajectory(np1, np2));
-  int countVertices = gserialized_numpoints_linestring(traj);
+  int countVertices = linestring_numpoints(traj);
   TInstant **result = palloc(sizeof(TInstant *) * countVertices);
-  GSERIALIZED *vertex1 = gserialized_pointn_linestring(traj, 1); /* 1-based */
+  GSERIALIZED *vertex1 = linestring_point_n(traj, 1); /* 1-based */
   double azimuth;
   TimestampTz time = inst1->t;
   for (int i = 0; i < countVertices - 1; i++)
   {
-    GSERIALIZED *vertex2 = gserialized_pointn_linestring(traj, i + 2); /* 1-based */
-    double fraction = gserialized_line_locate_point(traj, vertex2);
+    GSERIALIZED *vertex2 = linestring_point_n(traj, i + 2); /* 1-based */
+    double fraction = linestring_locate_point(traj, vertex2);
     assert(! datum_point_eq(PointerGetDatum(vertex1),
       PointerGetDatum(vertex2)));
     gserialized_azimuth(vertex1, vertex2, &azimuth);
@@ -735,10 +723,7 @@ tnpointseqset_azimuth(const TSequenceSet *ss)
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    nseqs += tnpointseq_azimuth_iter(seq, &sequences[nseqs]);
-  }
+    nseqs += tnpointseq_azimuth_iter(TSEQUENCESET_SEQ_N(ss, i), &sequences[nseqs]);
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, nseqs, STEP);
 }
@@ -749,15 +734,13 @@ tnpointseqset_azimuth(const TSequenceSet *ss)
 Temporal *
 tnpoint_azimuth(const Temporal *temp)
 {
-  Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    ;
+  if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return NULL;
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnpointseq_azimuth((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnpointseqset_azimuth((TSequenceSet *) temp);
-  return result;
+    return (Temporal *) tnpointseq_azimuth((TSequence *) temp);
+  else /* TSEQUENCESET */
+    return (Temporal *) tnpointseqset_azimuth((TSequenceSet *) temp);
 }
 
 /*****************************************************************************
@@ -800,6 +783,27 @@ tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
     pfree(ss);
   }
   pfree(tempgeom);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Restrict a temporal network point to (the complement of) a
+ * spatiotemporal box
+ * @sqlfn Tnpoint_at_stbox()
+ */
+Temporal *
+tnpoint_restrict_stbox(Temporal *temp, STBox *box, bool atfunc)
+{
+  Temporal *tgeom = tnpoint_tgeompoint(temp);
+  Temporal *tgeomres = tpoint_restrict_stbox(tgeom, box, BORDER_INC, atfunc);
+  Temporal *result = NULL;
+  if (tgeomres)
+  {
+    result = tgeompoint_tnpoint(tgeomres);
+    pfree(tgeomres);
+  }
   return result;
 }
 

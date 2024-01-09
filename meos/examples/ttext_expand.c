@@ -31,11 +31,11 @@
  * @brief A simple program that generates a given number of ttext instants,
  * appends the instant into a sequence set where each sequence of the sequence
  * set has a fixed number of instants defined by a compiler constant.
- * The program outputs the number of sequences and, for the last sequence, 
+ * The program outputs the number of sequences and, for the last sequence,
  * the number of instants and the last value.
  *
  * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence. 
+ * instants will appear in the final sequence.
  *
  * The program can be build as follows
  * @code
@@ -114,13 +114,13 @@ int main(void)
     memset(value, i % 2 == 0 ? 'A' : 'B', len);
     value[len] = '\0';
     text *txt = cstring2text(value);
-    t = pg_timestamp_pl_interval(t, onehour);
+    t = add_timestamptz_interval(t, onehour);
     TInstant *inst = ttextinst_make(txt, t);
     free(value); free(txt);
     /* Test whether it is the first instant read */
     if (! seq)
       /* Create an expandable temporal sequence that can store 64 instants
-       * and store the first instant. Notice that we do not use 
+       * and store the first instant. Notice that we do not use
        * MAX_INSTANTS_SEQ to illustrate the #tsequence_compact function */
       seq = tsequence_make_exp((const TInstant **) &inst, 1, 64,
         true, true, STEP, false);

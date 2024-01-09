@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
- * for temporal numbers.
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees,
+ * ...) for temporal numbers
  */
 
 #include "general/tnumber_mathfuncs.h"
@@ -45,7 +45,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal addition of an integer and a temporal integer
  * @param[in] i Value
  * @param[in] temp Temporal value
@@ -56,14 +56,14 @@ add_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, ADD,
     &datum_add, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal addition of a float and a temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
@@ -74,14 +74,14 @@ add_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, ADD,
     &datum_add, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal addition of a temporal integer and an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
@@ -92,14 +92,14 @@ add_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, ADD,
     &datum_add, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal addition of a temporal float and a float
  * @param[in] temp Temporal value
  * @param[in] d Value
@@ -110,14 +110,14 @@ add_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, ADD,
     &datum_add, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal addition of the temporal numbers
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Add_tnumber_tnumber()
@@ -138,7 +138,7 @@ add_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal subtraction of an integer and a temporal integer
  * @param[in] i Value
  * @param[in] temp Temporal value
@@ -149,14 +149,14 @@ sub_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, SUB,
     &datum_sub, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal subtraction of a float and a temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
@@ -167,14 +167,14 @@ sub_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, SUB,
     &datum_sub, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal subtraction of a temporal integer and an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
@@ -185,14 +185,14 @@ sub_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, SUB,
     &datum_sub, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal subtraction of a temporal float and a float
  * @param[in] temp Temporal value
  * @param[in] d Value
@@ -203,14 +203,14 @@ sub_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, SUB,
     &datum_sub, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal subtraction of the temporal numbers
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Sub_tnumber_tnumber()
@@ -231,8 +231,9 @@ sub_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_math
- * @brief Return the temporal multiplication of an integer and a temporal integer
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal multiplication of an integer and a temporal
+ * integer
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Mult_number_tnumber()
@@ -242,14 +243,14 @@ mult_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, MULT,
     &datum_mult, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal multiplication of a float and a temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
@@ -260,15 +261,16 @@ mult_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, MULT,
     &datum_mult, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_math
- * @brief Return the temporal multiplication of a temporal integer and an integer
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal multiplication of a temporal integer and an
+ * integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Mult_tnumber_number()
@@ -278,14 +280,14 @@ mult_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, MULT,
     &datum_mult, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal multiplication of a temporal float and a float
  * @param[in] temp Temporal value
  * @param[in] d Value
@@ -296,14 +298,14 @@ mult_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, MULT,
     &datum_mult, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal multiplication of the temporal numbers
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Mult_tnumber_tnumber()
@@ -325,7 +327,7 @@ mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal division of an integer and a temporal integer
  * @param[in] i Value
  * @param[in] temp Temporal value
@@ -336,14 +338,14 @@ div_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, DIV,
     &datum_div, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal division of a float and a temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
@@ -354,14 +356,14 @@ div_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, DIV,
     &datum_div, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal division of a temporal integer and an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
@@ -371,14 +373,14 @@ div_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, DIV,
     &datum_div, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal division of a temporal float and a float
  * @param[in] temp Temporal value
  * @param[in] d Value
@@ -389,14 +391,14 @@ div_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, DIV,
     &datum_div, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the temporal division of the temporal numbers
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Div_tnumber_tnumber()

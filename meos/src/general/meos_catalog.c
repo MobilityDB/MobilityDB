@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Create a cache of metadata information about temporal types and
- * span types in global arrays.
+ * span types in global arrays
  */
 
 #include "general/meos_catalog.h"
@@ -58,7 +58,7 @@
 
 /**
  * @brief Global array containing the type names corresponding to the
- * enumeration meosType defined in file meos_catalog.h.
+ * enumeration meosType defined in file `meos_catalog.h`
  */
 const char *_MEOSTYPE_NAMES[] =
 {
@@ -118,7 +118,7 @@ const char *_MEOSTYPE_NAMES[] =
 
 /**
  * @brief Global array containing the operator names corresponding to the
- * enumeration meosOper defined in file meos_catalog.h
+ * enumeration meosOper defined in file `meos_catalog.h`
  */
 const char *_MEOSOPER_NAMES[] =
 {
@@ -186,7 +186,7 @@ static char *_TEMPSUBTYPE_NAMES[] =
 /**
 
  * @brief Global array containing the interpolation names corresponding to the
- * enumeration interpType defined in file meos_catalog.h.
+ * enumeration interpType defined in file `meos_catalog.h`
  * @note The names are in lowercase since they are used in error messages
  */
 char * _INTERPTYPE_NAMES[] =
@@ -200,25 +200,7 @@ char * _INTERPTYPE_NAMES[] =
 /*****************************************************************************/
 
 /**
- * @brief Global array that keeps type information for the temporal types
- */
-temptype_catalog_struct _TEMPTYPE_CATALOG[] =
-{
-  /* temptype    basetype */
-  {T_TDOUBLE2,   T_DOUBLE2},
-  {T_TDOUBLE3,   T_DOUBLE3},
-  {T_TDOUBLE4,   T_DOUBLE4},
-  {T_TBOOL,      T_BOOL},
-  {T_TINT,       T_INT4},
-  {T_TFLOAT,     T_FLOAT8},
-  {T_TTEXT,      T_TEXT},
-  {T_TGEOMPOINT, T_GEOMETRY},
-  {T_TGEOGPOINT, T_GEOGRAPHY},
-  {T_TNPOINT,    T_NPOINT},
-};
-
-/**
- * @brief Global array that keeps type information for the set types defined
+ * @brief Global array that keeps type information for the defined set types
  */
 settype_catalog_struct _SETTYPE_CATALOG[] =
 {
@@ -235,7 +217,7 @@ settype_catalog_struct _SETTYPE_CATALOG[] =
 };
 
 /**
- * @brief Global array that keeps type information for the span types defined
+ * @brief Global array that keeps type information for the defined span types
  */
 spantype_catalog_struct _SPANTYPE_CATALOG[] =
 {
@@ -248,7 +230,7 @@ spantype_catalog_struct _SPANTYPE_CATALOG[] =
 };
 
 /**
- * @brief Global array that keeps type information for the span set types defined
+ * @brief Global array that keeps type information for the defined span set types
  */
 spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
 {
@@ -258,6 +240,24 @@ spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
   {T_FLOATSPANSET,  T_FLOATSPAN},
   {T_DATESPANSET,   T_DATESPAN},
   {T_TSTZSPANSET,   T_TSTZSPAN},
+};
+
+/**
+ * @brief Global array that keeps type information for the defined temporal types
+ */
+temptype_catalog_struct _TEMPTYPE_CATALOG[] =
+{
+  /* temptype    basetype */
+  {T_TDOUBLE2,   T_DOUBLE2},
+  {T_TDOUBLE3,   T_DOUBLE3},
+  {T_TDOUBLE4,   T_DOUBLE4},
+  {T_TBOOL,      T_BOOL},
+  {T_TINT,       T_INT4},
+  {T_TFLOAT,     T_FLOAT8},
+  {T_TTEXT,      T_TEXT},
+  {T_TGEOMPOINT, T_GEOMETRY},
+  {T_TGEOGPOINT, T_GEOGRAPHY},
+  {T_TNPOINT,    T_NPOINT},
 };
 
 /*****************************************************************************/
@@ -340,7 +340,7 @@ tempsubtype_from_string(const char *str, int16 *subtype)
 #if DEBUG_BUILD
 /**
  * @brief Ensure that the subtype of a temporal value is valid
- * @note Used for the dispatch functions
+ * @note The function is used for the dispatch functions for temporal types
  */
 bool
 temptype_subtype(tempSubtype subtype)
@@ -352,7 +352,7 @@ temptype_subtype(tempSubtype subtype)
 
 /**
  * @brief Ensure that the subtype of a temporal value is valid
- * @note Used for the the analyze and selectivity functions
+ * @note The function is used for the the analyze and selectivity functions
  */
 bool
 temptype_subtype_all(tempSubtype subtype)
@@ -560,6 +560,7 @@ spantype_spansettype(meosType type)
 
 /*****************************************************************************/
 
+#if 0 /* not used */
 /**
  * @brief Determine whether the type is an internal MobilityDB type
  */
@@ -571,11 +572,12 @@ meostype_internal(meosType type)
     return true;
   return false;
 }
+#endif /* not used */
 
 #ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a base type of one of the template types,
- * that is, Set, Span, SpanSet, and Temporal
+ * that is, @p Set, @p Span, @p SpanSet, and @p Temporal
  * @note This function is only used in the asserts
  */
 bool
@@ -593,7 +595,7 @@ meos_basetype(meosType type)
 #endif
 
 /**
- * @brief Return true if the values of the base type are passed by value.
+ * @brief Return true if the values of the base type are passed by value
  */
 bool
 basetype_byvalue(meosType type)
@@ -606,7 +608,7 @@ basetype_byvalue(meosType type)
 }
 
 /**
- * @brief Return true if the values of the base type are of variable length.
+ * @brief Return true if the values of the base type are of variable length
  */
 bool
 basetype_varlength(meosType type)
@@ -1063,7 +1065,7 @@ ensure_timespanset_type(meosType type)
 /*****************************************************************************/
 
 /**
- * @brief Return true if the type is an EXTERNAL temporal type
+ * @brief Return true if the type is an @b external temporal type
  * @note Function used in particular in the indexes
  */
 bool
@@ -1225,9 +1227,9 @@ tnumber_spansettype(meosType type)
 
 /**
  * @brief Return true if the type is a spatiotemporal type
- * @note This function is used for features common to all spatiotemporal types,
- * in particular, all of them use the same bounding box STBox. Therefore it is
- * used for the indexes and selectivity functions
+ * @details This function is used for features common to all spatiotemporal 
+ * types, in particular, all of them use the same bounding box @ STBox.
+ * Therefore, it is used for the indexes and selectivity functions.
  */
 bool
 tspatial_type(meosType type)
@@ -1259,8 +1261,8 @@ ensure_tspatial_type(meosType type)
 
 /**
  * @brief Return true if the type is a base type of a spatiotemporal type
- * @note This function is used for features common to all spatiotemporal types,
- * in particular, all of them use the same bounding box STBox
+ * @details This function is used for features common to all spatiotemporal 
+ * types, in particular, all of them use the same bounding box @p STBox
  */
 bool
 tspatial_basetype(meosType type)

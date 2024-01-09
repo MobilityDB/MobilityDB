@@ -29,14 +29,14 @@
 
 /**
  * @file
- * @brief Bounding box operators for temporal types.
+ * @brief Bounding box operators for temporal types
  *
  * The bounding box of temporal values are
- * - a `Period` for temporal Booleans
- * - a `TBox` for temporal integers and floats, where the *x* coordinate is for
- *   the value dimension and the *t* coordinate is for the time dimension.
- * The following operators are defined: `overlaps`, `contains`, `contained`,
- * `same`, and `adjacent`.
+ * - a @p Span for temporal Booleans
+ * - a @p TBox for temporal integers and floats, where the @p x coordinate is 
+ *   for the value dimension and the @p t coordinate is for the time dimension.
+ * The following operators are defined: @p overlaps, @p contains, @p contained,
+ * @p same, and @p adjacent.
  *
  * The operators consider as many dimensions as they are shared in both
  * arguments: only the value dimension, only the time dimension, or both
@@ -53,6 +53,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/span.h"
 #include "general/type_util.h"
 #include "point/tpoint_boxops.h"
 #if NPOINT
@@ -135,7 +136,7 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
  * is less than, equal, or greater than the second one
  * @param[in] box1,box2 Bounding boxes
  * @param[in] temptype Temporal type
- * @return On error return INT_MAX
+ * @return On error return @p INT_MAX
  */
 int
 temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
@@ -175,7 +176,7 @@ temporal_bbox_size(meosType temptype)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_accessor
+ * @ingroup meos_internal_temporal_accessor
  * @brief Initialize the last argument with the bounding box of a temporal
  * instant
  * @param[in] inst Temporal value
@@ -184,7 +185,7 @@ temporal_bbox_size(meosType temptype)
 void
 tinstant_set_bbox(const TInstant *inst, void *box)
 {
-  assert(temporal_type(inst->temptype));
+  assert(inst); assert(temporal_type(inst->temptype)); assert(box);
   if (talpha_type(inst->temptype))
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, T_TSTZSPAN, (Span *) box);
@@ -212,6 +213,40 @@ tinstant_set_bbox(const TInstant *inst, void *box)
       "Unknown temporal type for bounding box function: %d", inst->temptype);
   return;
 }
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Initialize the last argument with the bounding box of a temporal
+ * sequence
+ * @param[in] seq Temporal sequence
+ * @param[out] box Bounding box
+ */
+void
+tsequence_set_bbox(const TSequence *seq, void *box)
+{
+  assert(seq); assert(box);
+  memset(box, 0, seq->bboxsize);
+  memcpy(box, TSEQUENCE_BBOX_PTR(seq), seq->bboxsize);
+  return;
+}
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Initialize the last argument with the bounding box of a temporal
+ * sequence set
+ * @param[in] ss Temporal sequence set
+ * @param[out] box Bounding box
+ */
+void
+tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
+{
+  assert(ss); assert(box);
+  memset(box, 0, ss->bboxsize);
+  memcpy(box, TSEQUENCESET_BBOX_PTR(ss), ss->bboxsize);
+  return;
+}
+
+/*****************************************************************************/
 
 /**
  * @brief Set a temporal box from an array of temporal number instants
@@ -333,7 +368,9 @@ tnumberseq_expand_tbox(TSequence *seq, const TInstant *inst)
 }
 
 /**
- * @brief Expand the bounding box of a temporal sequence with an additional instant
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Expand the bounding box of a temporal sequence with an additional
+ * instant
  * @param[inout] seq Temporal sequence
  * @param[in] inst Temporal instant
  */
@@ -360,6 +397,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 }
 
 /**
+ * @ingroup meos_internal_temporal_bbox
  * @brief Expand the bounding box of a temporal sequence set with an additional
  * sequence
  * @param[inout] ss Temporal sequence set
@@ -494,8 +532,7 @@ boxop_temporal_tstzspan(const Temporal *temp, const Span *s,
 {
   Span s1;
   temporal_set_tstzspan(temp, &s1);
-  bool result = invert ? func(s, &s1) : func(&s1, s);
-  return result;
+  return invert ? func(s, &s1) : func(&s1, s);
 
 }
 
@@ -509,8 +546,7 @@ boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Span s1, s2;
   temporal_set_tstzspan(temp1, &s1);
   temporal_set_tstzspan(temp2, &s2);
-  bool result = func(&s1, &s2);
-  return result;
+  return func(&s1, &s2);
 }
 
 /*****************************************************************************
@@ -526,8 +562,7 @@ boxop_tnumber_numspan(const Temporal *temp, const Span *s,
 {
   Span s1;
   tnumber_set_span(temp, &s1);
-  bool result = invert ? func(s, &s1) : func(&s1, s);
-  return result;
+  return invert ? func(s, &s1) : func(&s1, s);
 }
 
 /**
@@ -540,8 +575,7 @@ boxop_tnumber_tbox(const Temporal *temp, const TBox *box,
 {
   TBox box1;
   temporal_set_bbox(temp, &box1);
-  bool result = invert ? func(box, &box1) : func(&box1, box);
-  return result;
+  return invert ? func(box, &box1) : func(&box1, box);
 }
 
 /**
@@ -554,8 +588,7 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   TBox box1, box2;
   temporal_set_bbox(temp1, &box1);
   temporal_set_bbox(temp2, &box2);
-  bool result = func(&box1, &box2);
-  return result;
+  return func(&box1, &box2);
 }
 
 /*****************************************************************************/

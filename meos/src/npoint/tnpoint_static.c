@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Network-based static point and segment types.
+ * @brief Network-based static point and segment types
  *
  * Several functions are commented out since they are not currently used.
  * They are kept if needed in the future.
@@ -41,15 +41,17 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <libpq/pqformat.h>
 #include <executor/spi.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
-#include "point/pgis_call.h"
+#include "point/pgis_types.h"
 #include "point/tpoint.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -96,11 +98,76 @@ get_srid_ways()
   return srid_ways;
 }
 
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a network point with the precision of the position set to a
+ * number of decimal places
+ * @note Funcion used by the lifting infrastructure
+ */
+Datum
+datum_npoint_round(Datum npoint, Datum size)
+{
+  /* Set precision of position */
+  Npoint *np = (Npoint *) DatumGetPointer(npoint);
+  Npoint *result = npoint_round(np, size);
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Return a network point with the precision of the position set to a
+ * number of decimal places
+ */
+Npoint *
+npoint_round(const Npoint *np, Datum size)
+{
+  /* Set precision of position */
+  double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
+  Npoint *result = npoint_make(np->rid, pos);
+  return result;
+}
+
+/**
+ * @brief Return a network segment with the precision of the positions set to a
+ * number of decimal places
+ */
+Nsegment *
+nsegment_round(const Nsegment *ns, Datum size)
+{
+  /* Set precision of positions */
+  double pos1 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos1),
+    size));
+  double pos2 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos2),
+    size));
+  Nsegment *result = nsegment_make(ns->rid, pos1, pos2);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a network point set with the precision of the positions set
+ * to a number of decimal places
+ * @csqlfn #Npointset_round()
+ */
+Set *
+npointset_round(const Set *s, Datum prec)
+{
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = datum_npoint_round(SET_VAL_N(s, i), prec);
+  Set *result = set_make_free(values, s->count, s->basetype, ORDERED);
+  return result;
+}
+
 /*****************************************************************************/
 
 /**
  * @brief Convert an array of network points into a geometry
- * @pre The number of network points is greater than 1
+ * @param[in] points Array of network points
+ * @param[in] count Number of elements in the input array
+ * @pre The argument @p count is greater than 1
  */
 GSERIALIZED *
 npointarr_geom(Npoint **points, int count)
@@ -126,7 +193,9 @@ npointarr_geom(Npoint **points, int count)
 
 /**
  * @brief Convert an array of network segments into a geometry
- * @pre The number of network segments is greater than 1
+ * @param[in] segments Array of network segments
+ * @param[in] count Number of elements in the input array
+ * @pre The argument @p count is greater than 1
  */
 GSERIALIZED *
 nsegmentarr_geom(Nsegment **segments, int count)
@@ -137,15 +206,15 @@ nsegmentarr_geom(Nsegment **segments, int count)
   {
     GSERIALIZED *line = route_geom(segments[i]->rid);
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
-      geoms[i] = gserialized_copy(line);
+      geoms[i] = geo_copy(line);
     else if (segments[i]->pos1 == segments[i]->pos2)
-      geoms[i] = gserialized_line_interpolate_point(line, segments[i]->pos1, 0);
+      geoms[i] = linestring_line_interpolate_point(line, segments[i]->pos1, 0);
     else
-      geoms[i] = gserialized_line_substring(line, segments[i]->pos1,
+      geoms[i] = linestring_substring(line, segments[i]->pos1,
         segments[i]->pos2);
     pfree(line);
   }
-  GSERIALIZED *result = gserialized_array_union(geoms, count);
+  GSERIALIZED *result = geometry_array_union(geoms, count);
   pfree_array((void **) geoms, count);
   return result;
 }
@@ -192,7 +261,7 @@ nsegmentarr_sort(Nsegment **segments, int count)
 }
 
 /**
- * @brief Normalize the array of temporal segments
+ * @brief Normalize an array of temporal segments
  */
 Nsegment **
 nsegmentarr_normalize(Nsegment **segments, int *count)
@@ -224,7 +293,7 @@ nsegmentarr_normalize(Nsegment **segments, int *count)
 
 #if 0 /* not used */
 /**
- * @brief Remove duplicates from an array of npoints
+ * @brief Remove duplicates from an array of network points
  */
 int
 npoint_remove_duplicates(Npoint **values, int count)
@@ -243,7 +312,7 @@ npoint_remove_duplicates(Npoint **values, int count)
  *****************************************************************************/
 
 /**
- * @brief Return a network point from its string representation.
+ * @brief Return a network point from its string representation
  */
 Npoint *
 npoint_in(const char *str, bool end)
@@ -272,7 +341,7 @@ npoint_out(const Npoint *np, int maxdd)
 /*****************************************************************************/
 
 /**
- * @brief Return a network point from its string representation.
+ * @brief Return a network point from its string representation
  */
 Nsegment *
 nsegment_in(const char *str)
@@ -281,7 +350,7 @@ nsegment_in(const char *str)
 }
 
 /**
- * @brief Output function for network segments
+ * @brief Return the string representation of a network segment
  */
 char *
 nsegment_out(const Nsegment *ns, int maxdd)
@@ -304,7 +373,7 @@ nsegment_out(const Nsegment *ns, int maxdd)
  *****************************************************************************/
 
 /**
- * @brief Construct a network segment from the arguments
+ * @brief Return a network point from a route identifier and a position
  */
 Npoint *
 npoint_make(int64 rid, double pos)
@@ -316,7 +385,8 @@ npoint_make(int64 rid, double pos)
 }
 
 /**
- * @brief Set a network segment from the arguments.
+ * @brief Initialize the last argument with a network point constructed from
+ * a route identifier and a position
  */
 void
 npoint_set(int64 rid, double pos, Npoint *np)
@@ -342,7 +412,7 @@ npoint_set(int64 rid, double pos, Npoint *np)
 }
 
 /**
- * @brief Construct a network segment from the arguments
+ * @brief Return a network segment from a route identifier and two positions
  */
 Nsegment *
 nsegment_make(int64 rid, double pos1, double pos2)
@@ -354,7 +424,8 @@ nsegment_make(int64 rid, double pos1, double pos2)
 }
 
 /**
- * @brief Set a network segment from the arguments.
+ * @brief Initialize the last argument with a network segment constructed from
+ * a route identifier and two positions
  */
 void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
@@ -382,7 +453,7 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
  *****************************************************************************/
 
 /**
- * @brief Convert a network point as a network segment
+ * @brief Convert a network point to a network segment
  */
 Nsegment *
 npoint_to_nsegment(const Npoint *np)
@@ -395,7 +466,7 @@ npoint_to_nsegment(const Npoint *np)
  *****************************************************************************/
 
 /**
- * @brief Return the route of the network point
+ * @brief Return the route of a network point
  */
 int64
 npoint_route(const Npoint *np)
@@ -404,7 +475,7 @@ npoint_route(const Npoint *np)
 }
 
 /**
- * @brief Return the position of the network point
+ * @brief Return the position of a network point
  */
 double
 npoint_position(const Npoint *np)
@@ -413,7 +484,7 @@ npoint_position(const Npoint *np)
 }
 
 /**
- * @brief Return the route of the network segment
+ * @brief Return the route of a network segment
  */
 int64
 nsegment_route(const Nsegment *ns)
@@ -422,7 +493,7 @@ nsegment_route(const Nsegment *ns)
 }
 
 /**
- * @brief Return the start position of the network segment
+ * @brief Return the start position of a network segment
  */
 double
 nsegment_start_position(const Nsegment *ns)
@@ -431,7 +502,7 @@ nsegment_start_position(const Nsegment *ns)
 }
 
 /**
- * @brief Return the end position of the network segment
+ * @brief Return the end position of a network segment
  */
 double
 nsegment_end_position(const Nsegment *ns)
@@ -444,7 +515,8 @@ nsegment_end_position(const Nsegment *ns)
  *****************************************************************************/
 
 /**
- * @brief Return true if the edge table contains a route with the route identifier
+ * @brief Return true if the edge table contains a route with the route
+ * identifier
  */
 bool
 route_exists(int64 rid)
@@ -501,7 +573,7 @@ route_length(int64 rid)
 /**
  * @brief Access the edge table to get the route geometry from corresponding
  * route identifier
- * @return On error return NULL
+ * @return On error return @p NULL
  */
 GSERIALIZED *
 route_geom(int64 rid)
@@ -545,8 +617,8 @@ route_geom(int64 rid)
 
 #if 0 /* not used */
 /**
- * @brief Access edge table to get the rid from corresponding geometry
- * @return On error return INT_MAX
+ * @brief Access the edge table to get the rid from a geometry
+ * @return On error return @p LONG_MAX
  */
 int64
 rid_from_geom(Datum geom)
@@ -571,7 +643,7 @@ rid_from_geom(Datum geom)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot get route identifier from geometry point");
-    return INT_MAX;
+    return LONG_MAX;
   }
 
   return result;
@@ -579,19 +651,19 @@ rid_from_geom(Datum geom)
 #endif
 
 /**
- * @brief Transforms the network point into a geometry
+ * @brief Transform a network point into a geometry
  */
 GSERIALIZED *
 npoint_geom(const Npoint *np)
 {
   GSERIALIZED *line = route_geom(np->rid);
-  GSERIALIZED *result = gserialized_line_interpolate_point(line, np->pos, 0);
+  GSERIALIZED *result = linestring_line_interpolate_point(line, np->pos, 0);
   pfree(line);
   return result;
 }
 
 /**
- * @brief Transforms the geometry into a network point
+ * @brief Transform a geometry into a network point
  */
 Npoint *
 geom_npoint(const GSERIALIZED *gs)
@@ -638,7 +710,7 @@ geom_npoint(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Transforms the network segment into a geometry
+ * @brief Transform a network segment into a geometry
  */
 GSERIALIZED *
 nsegment_geom(const Nsegment *ns)
@@ -646,16 +718,16 @@ nsegment_geom(const Nsegment *ns)
   GSERIALIZED *line = route_geom(ns->rid);
   GSERIALIZED *result;
   if (fabs(ns->pos1 - ns->pos2) < MEOS_EPSILON)
-    result = gserialized_line_interpolate_point(line, ns->pos1, 0);
+    result = linestring_line_interpolate_point(line, ns->pos1, 0);
   else
-    result = gserialized_line_substring(line, ns->pos1, ns->pos2);
+    result = linestring_substring(line, ns->pos1, ns->pos2);
   pfree(line);
   return result;
 }
 
 /**
- * @brief Transforms the geometry into a network segment
- * @return On error return NULL
+ * @brief Transform a geometry into a network segment
+ * @return On error return @p NULL
  */
 Nsegment *
 geom_nsegment(const GSERIALIZED *gs)
@@ -683,12 +755,12 @@ geom_nsegment(const GSERIALIZED *gs)
   }
   else /* geomtype == LINETYPE */
   {
-    int numpoints = gserialized_numpoints_linestring(gs);
+    int numpoints = linestring_numpoints(gs);
     points = palloc0(sizeof(Npoint *) * numpoints);
     for (int i = 0; i < numpoints; i++)
     {
       /* The composing points are from 1 to numcount */
-      GSERIALIZED *point = gserialized_pointn_linestring(gs, i + 1);
+      GSERIALIZED *point = linestring_point_n(gs, i + 1);
       np = geom_npoint(point);
       if (np != NULL)
         points[npoints++] = np;
@@ -723,7 +795,7 @@ geom_nsegment(const GSERIALIZED *gs)
  *****************************************************************************/
 
 /**
- * @brief Return the SRID of the network point
+ * @brief Return the SRID of a network point
  */
 int
 npoint_srid(const Npoint *np)
@@ -735,7 +807,7 @@ npoint_srid(const Npoint *np)
 }
 
 /**
- * @brief Return the SRID of the network segment.
+ * @brief Return the SRID of a network segment
  */
 int
 nsegment_srid(const Nsegment *ns)
@@ -842,7 +914,8 @@ nsegment_eq(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @brief Return true if the first network segment is not equal to the second one
+ * @brief Return true if the first network segment is not equal to the second
+ * one
  */
 bool
 nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
@@ -896,7 +969,8 @@ nsegment_le(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @brief Return true if the first network segment is greater than the second one
+ * @brief Return true if the first network segment is greater than the second
+ * one
  */
 bool
 nsegment_gt(const Nsegment *ns1, const Nsegment *ns2)
@@ -923,7 +997,7 @@ nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
  *****************************************************************************/
 
 /**
- * @brief Return the 32-bit hash value of a network point.
+ * @brief Return the 32-bit hash value of a network point
  */
 uint32
 npoint_hash(const Npoint *np)
@@ -940,7 +1014,7 @@ npoint_hash(const Npoint *np)
 }
 
 /**
- * @brief Return the 32-bit hash value of a network point.
+ * @brief Return the 32-bit hash value of a network point
  */
 uint64
 npoint_hash_extended(const Npoint *np, uint64 seed)

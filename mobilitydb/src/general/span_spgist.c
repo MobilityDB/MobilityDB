@@ -355,9 +355,9 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
   meosType type = oid_type(scankey->sk_subtype);
   if (span_basetype(type))
   {
-    Datum d = scankey->sk_argument;
+    Datum value = scankey->sk_argument;
     meosType spantype = basetype_spantype(type);
-    span_set(d, d, true, true, type, spantype, result);
+    span_set(value, value, true, true, type, spantype, result);
   }
   else if (set_type(type))
   {

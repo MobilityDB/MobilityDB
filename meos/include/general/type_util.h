@@ -43,6 +43,12 @@
 
 /*****************************************************************************/
 
+/** Symbolic constants for the *_to_arr() functions */
+#define FREE_ALL        true
+#define FREE            false
+
+/*****************************************************************************/
+
 /* Miscellaneous functions */
 
 extern Datum datum_copy(Datum value, meosType typid);

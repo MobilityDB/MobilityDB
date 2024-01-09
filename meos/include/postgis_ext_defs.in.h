@@ -396,7 +396,7 @@ LWTIN;
 extern LWPOINT *lwpoint_make(int32_t srid, int hasz, int hasm, const POINT4D *p);
 
 extern LWGEOM *lwgeom_from_gserialized(const GSERIALIZED *g);
-extern GSERIALIZED *gserialized_from_lwgeom(LWGEOM *geom, size_t *size);
+extern GSERIALIZED *geo_from_lwgeom(LWGEOM *geom, size_t *size);
 
 extern int32_t lwgeom_get_srid(const LWGEOM *geom);
 

@@ -54,7 +54,7 @@ PGDLLEXPORT Datum Set_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_from_wkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Input a set from its Well-Known Binary (WKB) representation
+ * @brief Return a set from its Well-Known Binary (WKB) representation
  * @sqlfn intsetFromBinary(), floatsetFromWKB(), ...
  */
 Datum
@@ -71,7 +71,7 @@ PGDLLEXPORT Datum Set_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_from_hexwkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Input a set from its hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return a set from its hex-encoded ASCII Well-Known Binary (HexWKB)
  * representation
  * @sqlfn intsetFromHexWKB(), floatsetFromHexWKB(), ...
  */
@@ -90,7 +90,7 @@ PGDLLEXPORT Datum Span_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_from_wkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Input a span from its Well-Known Binary (WKB) representation
+ * @brief Return a span from its Well-Known Binary (WKB) representation
  * @sqlfn intspanFromBinary(), floatspanFromBinary(), ...
  */
 Datum
@@ -107,7 +107,7 @@ PGDLLEXPORT Datum Span_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_from_hexwkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Input a span from its hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return a span from its hex-encoded ASCII Well-Known Binary (HexWKB)
  * representation
  * @sqlfn intspanFromHexWKB(), floatspanFromHexWKB(), ...
  */
@@ -126,7 +126,7 @@ PGDLLEXPORT Datum Spanset_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_from_wkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Input a span set from its Well-Known Binary (WKB) representation
+ * @brief Return a span set from its Well-Known Binary (WKB) representation
  * @sqlfn instspansetFromBinary(), floatspansetFromBinary(), ...
  */
 Datum
@@ -143,7 +143,7 @@ PGDLLEXPORT Datum Spanset_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_from_hexwkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Input a span set from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a span set from its hex-encoded ASCII Well-Known Binary
  * (HexWKB) representation
  * @sqlfn intspansetFromHexWKB(), floatspansetFromHexWKB(), ...
  */
@@ -166,7 +166,7 @@ PGDLLEXPORT Datum Tbox_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_from_wkb);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Input a temporal box from its Well-Known Binary (WKB) representation
+ * @brief Return a temporal box from its Well-Known Binary (WKB) representation
  * @sqlfn tboxFromBinary()
  */
 Datum
@@ -183,7 +183,7 @@ PGDLLEXPORT Datum Tbox_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_from_hexwkb);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Input a temporal box from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a temporal box from its hex-encoded ASCII Well-Known Binary
  * (HexWKB) representation
  * @sqlfn tboxFromHexWKB()
  */
@@ -202,7 +202,7 @@ PGDLLEXPORT Datum Stbox_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_from_wkb);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Input a spatiotemporal box from its Well-Known Binary (WKB)
+ * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
  * representation
  * @sqlfn stboxFromBinary()
  */
@@ -220,7 +220,7 @@ PGDLLEXPORT Datum Stbox_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_from_hexwkb);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Input a spatiotemporal box from its hex-encoded ASCII Well-Known
+ * @brief Return a spatiotemporal box from its hex-encoded ASCII Well-Known
  * Binary (HexWKB) representation
  * @sqlfn stboxFromHexWKB()
  */
@@ -243,7 +243,7 @@ PGDLLEXPORT Datum Temporal_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_from_wkb);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input a temporal value from its Well-Known Binary (WKB)
+ * @brief Return a temporal value from its Well-Known Binary (WKB)
  * representation
  * @sqlfn tintFromBinary(), tfloatFromBinary(), ...
  */
@@ -261,7 +261,7 @@ PGDLLEXPORT Datum Temporal_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_from_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input a temporal value from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a temporal value from its hex-encoded ASCII Well-Known Binary
  * (HexWKB) representation
  * @sqlfn tintFromHexWKB(), tfloatFromHexWKB(), ...
  */
@@ -280,7 +280,7 @@ PGDLLEXPORT Datum Temporal_from_mfjson(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_from_mfjson);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input a temporal value from its Moving-Features JSON (MF-JSON)
+ * @brief Return a temporal value from its Moving-Features JSON (MF-JSON)
  * representation
  * @sqlfn tintFromMFJSON(), tfloatFromMFJSON(), ...
  */

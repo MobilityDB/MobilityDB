@@ -84,7 +84,7 @@ void
 _PG_init(void)
 {
   /* elog(WARNING, "This is MobilityDB."); */
-  temporalgeom_init();
+  mobilitydb_init();
   return;
 }
 
@@ -404,10 +404,7 @@ tsequence_write(const TSequence *seq, StringInfo buf)
   pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
   pq_sendbyte(buf, (uint8) MEOS_FLAGS_GET_INTERP(seq->flags));
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    tinstant_write(inst, buf);
-  }
+    tinstant_write(TSEQUENCE_INST_N(seq, i), buf);
   return;
 }
 
@@ -536,7 +533,7 @@ PGDLLEXPORT Datum Tinstant_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tinstant_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal instant from the arguments
+ * @brief Return a temporal instant from a value and a timestamptz
  * @sqlfn tint_inst(), tfloat_inst(), ...
  */
 Datum
@@ -552,7 +549,7 @@ PGDLLEXPORT Datum Tsequence_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequence_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence from an array of temporal instants
+ * @brief Return a temporal sequence from an array of temporal instants
  * @sqlfn tint_seq(), tfloat_seq(), ...
  */
 Datum
@@ -575,7 +572,7 @@ Tsequence_constructor(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
     upper_inc = PG_GETARG_BOOL(3);
   int count;
-  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
+  TInstant **instants = (TInstant **) temparr_extract(array, &count);
   TSequence *result = tsequence_make((const TInstant **) instants, count,
     lower_inc, upper_inc, interp, NORMALIZE);
   pfree(instants);
@@ -587,7 +584,7 @@ PGDLLEXPORT Datum Tsequenceset_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequenceset_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set from an array of temporal sequences
+ * @brief Return a temporal sequence set from an array of temporal sequences
  * @sqlfn tint_seqset(), tfloat_seqset(), ...
  */
 Datum
@@ -596,7 +593,7 @@ Tsequenceset_constructor(PG_FUNCTION_ARGS)
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_not_empty_array(array);
   int count;
-  TSequence **sequences = (TSequence **) temporalarr_extract(array, &count);
+  TSequence **sequences = (TSequence **) temparr_extract(array, &count);
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
     count, NORMALIZE);
   pfree(sequences);
@@ -608,7 +605,7 @@ PGDLLEXPORT Datum Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequenceset_constructor_gaps);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set from an array of temporal instants
+ * @brief Return a temporal sequence set from an array of temporal instants
  * accounting for potential gaps
  * @note The SQL function is not strict
  * @sqlfn tint_seqset_gaps(), tfloat_seqset_gaps(), ...
@@ -641,7 +638,7 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   /* Extract the array of instants */
   int count;
-  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
+  TInstant **instants = (TInstant **) temparr_extract(array, &count);
   TSequenceSet *result = tsequenceset_make_gaps((const TInstant **) instants,
     count, interp, maxt, maxdist);
   pfree(instants);
@@ -655,7 +652,7 @@ PGDLLEXPORT Datum Tsequence_from_base_tstzset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequence_from_base_tstzset);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal discrete sequence from a base value and a
+ * @brief Return a temporal discrete sequence from a base value and a
  * timestamptz set
  * @sqlfn tint_discseq(), tfloat_discseq(), ...
  */
@@ -674,7 +671,7 @@ PGDLLEXPORT Datum Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequence_from_base_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence from a base value and a timestamptz span
+ * @brief Return a temporal sequence from a base value and a timestamptz span
  * @sqlfn tint_seq(), tfloat_seq(), ...
  */
 Datum
@@ -691,7 +688,7 @@ Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS)
     interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
-  PG_RETURN_TSEQUENCE_P(tsequence_from_base_tstzspan(value, temptype, s, 
+  PG_RETURN_TSEQUENCE_P(tsequence_from_base_tstzspan(value, temptype, s,
     interp));
 }
 
@@ -699,7 +696,7 @@ PGDLLEXPORT Datum Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tsequenceset_from_base_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set from a base value and a
+ * @brief Return a temporal sequence set from a base value and a
  * timestamptz set
  * @sqlfn tint_seqset(), tfloat_seqset(), ...
  */
@@ -1156,9 +1153,8 @@ Temporal_sequences(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   TSequence **sequences = temporal_sequences(temp, &count);
-  ArrayType *result = temporalarr_to_array((const Temporal **) sequences,
-    count);
-  pfree_array((void **) sequences, count);
+  ArrayType *result = temparr_to_array((Temporal **) sequences, count,
+    FREE_ALL);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -1176,9 +1172,8 @@ Temporal_segments(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   TSequence **segments = temporal_segments(temp, &count);
-  ArrayType *result = temporalarr_to_array((const Temporal **) segments,
-    count);
-  pfree_array((void **) segments, count);
+  ArrayType *result = temparr_to_array((Temporal **) segments, count,
+    FREE_ALL);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -1296,9 +1291,7 @@ Temporal_instants(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   const TInstant **instants = temporal_instants(temp, &count);
-  ArrayType *result = temporalarr_to_array((const Temporal **) instants,
-    count);
-  pfree(instants);
+  ArrayType *result = temparr_to_array((Temporal **) instants, count, FREE);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -1384,124 +1377,108 @@ Temporal_timestamps(PG_FUNCTION_ARGS)
   int count;
   TimestampTz *times = temporal_timestamps(temp, &count);
   ArrayType *result = tstzarr_to_array(times, count);
-  pfree(times);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-/*****************************************************************************
- * Unnest function
- *****************************************************************************/
+/*****************************************************************************/
 
+PGDLLEXPORT Datum Temporal_stops(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_stops);
 /**
- * @brief Create the initial state that persists across multiple calls of the
- * function
- * @param[in] temp Temporal value
- */
-TempUnnestState *
-temporal_unnest_state_make(const Temporal *temp)
-{
-  TempUnnestState *state = palloc0(sizeof(TempUnnestState));
-  int count;
-  Datum *values = temporal_values(temp, &count);
-  /* Fill in state */
-  state->done = false;
-  state->i = 0;
-  state->count = count;
-  state->values = values;
-  state->temp = temporal_cp(temp);
-  return state;
-}
-
-/**
- * @brief Increment the current state to the next unnest value
- * @param[in] state State to increment
- */
-void
-temporal_unnest_state_next(TempUnnestState *state)
-{
-  if (!state || state->done)
-    return;
-  /* Move to the next bucket */
-  state->i++;
-  if (state->i == state->count)
-    state->done = true;
-  return;
-}
-
-PGDLLEXPORT Datum Temporal_unnest(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_unnest);
-/**
- * @ingroup mobilitydb_temporal_transf
- * @brief Return the list of values and associated span sets of a temporal value
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the constant segments of a temporal value
+ * @sqlfn stops()
  */
 Datum
-Temporal_unnest(PG_FUNCTION_ARGS)
+Temporal_stops(PG_FUNCTION_ARGS)
 {
-  FuncCallContext *funcctx;
-  TempUnnestState *state;
-  bool isnull[2] = {0,0}; /* needed to say no value is null */
-  Datum tuple_arr[2]; /* used to construct the composite return value */
-  HeapTuple tuple;
-  Datum result; /* the actual composite return value */
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double maxdist = PG_GETARG_FLOAT8(1);
+  Interval *minduration = PG_GETARG_INTERVAL_P(2);
+  /* Store fcinfo into a global variable */
+  /* Needed for the distance function for temporal geography points */
+  store_fcinfo(fcinfo);
+  TSequenceSet *result = temporal_stops(temp, maxdist, minduration);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TSEQUENCESET_P(result);
+}
 
-  /* If the function is being called for the first time */
-  if (SRF_IS_FIRSTCALL())
-  {
-    /* Initialize the FuncCallContext */
-    funcctx = SRF_FIRSTCALL_INIT();
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext =
-      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-    /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-    ensure_nonlinear_interp(temp->flags);
-    /* Create function state */
-    funcctx->user_fctx = temporal_unnest_state_make(temp);
-    /* Build a tuple description for the function output */
-    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
-    BlessTupleDesc(funcctx->tuple_desc);
-    MemoryContextSwitchTo(oldcontext);
-  }
+/*****************************************************************************/
 
-  /* Stuff done on every call of the function */
-  funcctx = SRF_PERCALL_SETUP();
-  /* Get state */
-  state = funcctx->user_fctx;
-  /* Stop when we've used up all buckets */
-  if (state->done)
-  {
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext =
-      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-    // pfree(state->values);
-    // pfree(state->temp);
-    pfree(state);
-    MemoryContextSwitchTo(oldcontext);
-    SRF_RETURN_DONE(funcctx);
-  }
-
-  /* Get value */
-  tuple_arr[0] = state->values[state->i];
-  /* Get span set */
-  Temporal *rest = temporal_restrict_value(state->temp,
-    state->values[state->i], REST_AT);
-  if (!rest)
-    elog(ERROR, "Unexpected error with temporal value %s",
-      temporal_out(state->temp, OUT_DEFAULT_DECIMAL_DIGITS));
-  tuple_arr[1] = PointerGetDatum(temporal_time(rest));
-  pfree(rest);
-  /* Advance state */
-  temporal_unnest_state_next(state);
-  /* Form tuple and return */
-  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-  result = HeapTupleGetDatum(tuple);
-  SRF_RETURN_NEXT(funcctx, result);
+PGDLLEXPORT Datum Temporal_value_at_timestamptz(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_value_at_timestamptz);
+/**
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the base value of a temporal value at a timestamptz
+ * @sqlfn valueAtTimestamp()
+ */
+Datum
+Temporal_value_at_timestamptz(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  Datum result;
+  bool found = temporal_value_at_timestamptz(temp, t, true, &result);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+PGDLLEXPORT Datum Tfloat_round(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_round);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return a temporal float with the values set to a number of decimal
+ * places
+ * @sqlfn round()
+ */
+Datum
+Tfloat_round(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int size = PG_GETARG_INT32(1);
+  Temporal *result = tfloat_round(temp, size);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tfloatarr_round(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloatarr_round);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return an array of temporal floats with the precision of the values
+ * set to a number of decimal places
+ * @sqlfn asText()
+ */
+Datum
+Tfloatarr_round(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  /* Return NULL on empty array */
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
+  int maxdd = PG_GETARG_INT32(1);
+
+  Temporal **temparr = temparr_extract(array, &count);
+  Temporal **resarr = tfloatarr_round((const Temporal **) temparr, count,
+    maxdd);
+  ArrayType *result = temparr_to_array(resarr, count, FREE_ALL);
+  pfree(temparr);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
 
 PGDLLEXPORT Datum Temporal_to_tinstant(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_to_tinstant);
@@ -1699,6 +1676,114 @@ Temporal_shift_scale_time(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+/*****************************************************************************/
+
+/**
+ * @brief Create the initial state that persists across multiple calls of the
+ * function
+ * @param[in] temp Temporal value
+ */
+TempUnnestState *
+temporal_unnest_state_make(const Temporal *temp)
+{
+  TempUnnestState *state = palloc0(sizeof(TempUnnestState));
+  int count;
+  Datum *values = temporal_values(temp, &count);
+  /* Fill in state */
+  state->done = false;
+  state->i = 0;
+  state->count = count;
+  state->values = values;
+  state->temp = temporal_cp(temp);
+  return state;
+}
+
+/**
+ * @brief Increment the current state to the next unnest value
+ * @param[in] state State to increment
+ */
+void
+temporal_unnest_state_next(TempUnnestState *state)
+{
+  if (!state || state->done)
+    return;
+  /* Move to the next bucket */
+  state->i++;
+  if (state->i == state->count)
+    state->done = true;
+  return;
+}
+
+PGDLLEXPORT Datum Temporal_unnest(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_unnest);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return the list of values and associated span sets of a temporal value
+ */
+Datum
+Temporal_unnest(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+  TempUnnestState *state;
+  bool isnull[2] = {0,0}; /* needed to say no value is null */
+  Datum tuple_arr[2]; /* used to construct the composite return value */
+  HeapTuple tuple;
+  Datum result; /* the actual composite return value */
+
+  /* If the function is being called for the first time */
+  if (SRF_IS_FIRSTCALL())
+  {
+    /* Initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    /* Get input parameters */
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+    ensure_nonlinear_interp(temp->flags);
+    /* Create function state */
+    funcctx->user_fctx = temporal_unnest_state_make(temp);
+    /* Build a tuple description for the function output */
+    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldcontext);
+  }
+
+  /* Stuff done on every call of the function */
+  funcctx = SRF_PERCALL_SETUP();
+  /* Get state */
+  state = funcctx->user_fctx;
+  /* Stop when we've used up all buckets */
+  if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    // pfree(state->values);
+    // pfree(state->temp);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
+    SRF_RETURN_DONE(funcctx);
+  }
+
+  /* Get value */
+  tuple_arr[0] = state->values[state->i];
+  /* Get span set */
+  Temporal *rest = temporal_restrict_value(state->temp,
+    state->values[state->i], REST_AT);
+  if (!rest)
+    elog(ERROR, "Unexpected error with temporal value %s",
+      temporal_out(state->temp, OUT_DEFAULT_DECIMAL_DIGITS));
+  tuple_arr[1] = PointerGetDatum(temporal_time(rest));
+  pfree(rest);
+  /* Advance state */
+  temporal_unnest_state_next(state);
+  /* Form tuple and return */
+  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+  result = HeapTupleGetDatum(tuple);
+  SRF_RETURN_NEXT(funcctx, result);
+}
+
 /*****************************************************************************
  * Append and merge functions
  *****************************************************************************/
@@ -1774,7 +1859,7 @@ Temporal_merge_array(PG_FUNCTION_ARGS)
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_not_empty_array(array);
   int count;
-  Temporal **temparr = temporalarr_extract(array, &count);
+  Temporal **temparr = temparr_extract(array, &count);
   Temporal *result = temporal_merge_array(temparr, count);
   pfree(temparr);
   PG_FREE_IF_COPY(array, 0);
@@ -1968,6 +2053,22 @@ Tnumber_minus_spanset(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * @brief Generic function for restricting a temporal value to its 
+ * minimum/maximum base value
+ * @sqlfn atMin(), minusMin(), atMax(), minusMax(),
+ */
+Datum
+Temporal_restrict_minmax(FunctionCallInfo fcinfo, bool min, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = temporal_restrict_minmax(temp, min, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Temporal_at_min(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_min);
 /**
@@ -1978,12 +2079,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_min);
 Datum
 Temporal_at_min(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_restrict_minmax(temp, GET_MIN, REST_AT);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Temporal_restrict_minmax(fcinfo, GET_MIN, REST_AT);
 }
 
 PGDLLEXPORT Datum Temporal_minus_min(PG_FUNCTION_ARGS);
@@ -1996,12 +2092,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_min);
 Datum
 Temporal_minus_min(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_restrict_minmax(temp, GET_MIN, REST_MINUS);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Temporal_restrict_minmax(fcinfo, GET_MIN, REST_MINUS);
 }
 
 PGDLLEXPORT Datum Temporal_at_max(PG_FUNCTION_ARGS);
@@ -2014,11 +2105,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_max);
 Datum
 Temporal_at_max(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_AT);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Temporal_restrict_minmax(fcinfo, GET_MAX, REST_AT);
 }
 
 PGDLLEXPORT Datum Temporal_minus_max(PG_FUNCTION_ARGS);
@@ -2031,11 +2118,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_max);
 Datum
 Temporal_minus_max(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Temporal_restrict_minmax(fcinfo, GET_MAX, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -2127,27 +2210,22 @@ Temporal_minus_timestamptz(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Temporal_value_at_timestamptz(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_value_at_timestamptz);
 /**
- * @ingroup mobilitydb_temporal_accessor
- * @brief Return the base value of a temporal value at a timestamptz
- * @sqlfn valueAtTimestamp()
+ * @brief Restrict a temporal value to a timestamptz set
+ * @sqlfn atTime()
  */
 Datum
-Temporal_value_at_timestamptz(PG_FUNCTION_ARGS)
+Temporal_restrict_tstzset(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Datum result;
-  bool found = temporal_value_at_timestamptz(temp, t, true, &result);
+  Set *s = PG_GETARG_SET_P(1);
+  Temporal *result = temporal_restrict_tstzset(temp, s, atfunc);
   PG_FREE_IF_COPY(temp, 0);
-  if (! found)
+  PG_FREE_IF_COPY(s, 1);
+  if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
-
-/*****************************************************************************/
 
 PGDLLEXPORT Datum Temporal_at_tstzset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_tstzset);
@@ -2159,14 +2237,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_tstzset);
 Datum
 Temporal_at_tstzset(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  Temporal *result = temporal_restrict_tstzset(temp, s, REST_AT);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(s, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Temporal_restrict_tstzset(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Temporal_minus_tstzset(PG_FUNCTION_ARGS);
@@ -2179,14 +2250,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_tstzset);
 Datum
 Temporal_minus_tstzset(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  Temporal *result = temporal_restrict_tstzset(temp, s, REST_MINUS);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(s, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Temporal_restrict_tstzset(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -2234,6 +2298,23 @@ Temporal_minus_tstzspan(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * @brief Restrict a temporal value to a timestamptz span set
+ * @sqlfn atTime()
+ */
+Datum
+Temporal_restrict_tstzspanset(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(ss, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Temporal_at_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_tstzspanset);
 /**
@@ -2244,14 +2325,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_tstzspanset);
 Datum
 Temporal_at_tstzspanset(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Temporal_restrict_tstzspanset(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Temporal_minus_tstzspanset(PG_FUNCTION_ARGS);
@@ -2264,14 +2338,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_tstzspanset);
 Datum
 Temporal_minus_tstzspanset(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Temporal_restrict_tstzspanset(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************
@@ -2396,31 +2463,6 @@ Temporal_delete_tstzspanset(PG_FUNCTION_ARGS)
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
-}
-
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Temporal_stops(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_stops);
-/**
- * @ingroup mobilitydb_temporal_transf
- * @brief Return the constant segments of a temporal value
- * @sqlfn stops()
- */
-Datum
-Temporal_stops(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double maxdist = PG_GETARG_FLOAT8(1);
-  Interval *minduration = PG_GETARG_INTERVAL_P(2);
-  /* Store fcinfo into a global variable */
-  /* Needed for the distance function for temporal geography points */
-  store_fcinfo(fcinfo);
-  TSequenceSet *result = temporal_stops(temp, maxdist, minduration);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TSEQUENCESET_P(result);
 }
 
 /*****************************************************************************

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief General aggregate functions for temporal types.
+ * @brief General aggregate functions for temporal types
  */
 
 #include "general/temporal_aggfuncs.h"
@@ -47,7 +47,7 @@
  *****************************************************************************/
 
 /**
- * @brief Extend the temporal instant value by the time interval
+ * @brief Extend a temporal instant by a time interval
  * @param[in] inst Temporal value
  * @param[in] interv Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -58,7 +58,7 @@ tinstant_extend(const TInstant *inst, const Interval *interv,
   TSequence **result)
 {
   TInstant *instants[2];
-  TimestampTz upper = pg_timestamp_pl_interval(inst->t, interv);
+  TimestampTz upper = add_timestamptz_interval(inst->t, interv);
   instants[0] = (TInstant *) inst;
   instants[1] = tinstant_make(tinstant_value(inst), inst->temptype, upper);
   result[0] = tsequence_make((const TInstant **) instants, 2, true, true,
@@ -68,7 +68,7 @@ tinstant_extend(const TInstant *inst, const Interval *interv,
 }
 
 /**
- * @brief Extend the temporal discrete sequence value by the time interval
+ * @brief Extend a temporal discrete sequence by a time interval
  * @param[in] seq Temporal value
  * @param[in] interv Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -79,15 +79,12 @@ tdiscseq_extend(const TSequence *seq, const Interval *interv,
   TSequence **result)
 {
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    tinstant_extend(inst, interv, &result[i]);
-  }
+    tinstant_extend(TSEQUENCE_INST_N(seq, i), interv, &result[i]);
   return seq->count;
 }
 
 /**
- * @brief Extend the temporal sequence value by the time interval
+ * @brief Extend a temporal sequence by a time interval
  * @param[in] seq Temporal value
  * @param[in] interv Interval
  * @param[in] min True if the calling function is min, max otherwise.
@@ -116,7 +113,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
     /* Step interpolation or constant segment */
     if (interp != LINEAR || datum_eq(value1, value2, basetype))
     {
-      TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interv);
+      TimestampTz upper = add_timestamptz_interval(inst2->t, interv);
       instants[0] = (TInstant *) inst1;
       instants[1] = tinstant_make(value1, inst1->temptype, upper);
       result[i] = tsequence_make((const TInstant **) instants, 2,
@@ -130,9 +127,9 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
       if ((datum_lt(value1, value2, basetype) && min) ||
         (datum_gt(value1, value2, basetype) && ! min))
       {
-        /* Extend the start value for the duration of the window */
-        TimestampTz lower = pg_timestamp_pl_interval(inst1->t, interv);
-        TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interv);
+        /* Extend a start value for the duration of the window */
+        TimestampTz lower = add_timestamptz_interval(inst1->t, interv);
+        TimestampTz upper = add_timestamptz_interval(inst2->t, interv);
         instants[0] = inst1;
         instants[1] = tinstant_make(value1, inst1->temptype, lower);
         instants[2] = tinstant_make(value2, inst1->temptype, upper);
@@ -142,8 +139,8 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
       }
       else
       {
-        /* Extend the end value for the duration of the window */
-        TimestampTz upper = pg_timestamp_pl_interval(seq->period.upper,
+        /* Extend a end value for the duration of the window */
+        TimestampTz upper = add_timestamptz_interval(seq->period.upper,
           interv);
         instants[0] = inst1;
         instants[1] = inst2;
@@ -161,7 +158,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
 }
 
 /**
- * @brief Extend the temporal sequence set value by the time interval
+ * @brief Extend a temporal sequence set by a time interval
  * @param[in] ss Temporal value
  * @param[in] interv Interval
  * @param[in] min True if the calling function is min, max otherwise.
@@ -175,15 +172,12 @@ tsequenceset_extend(const TSequenceSet *ss, const Interval *interv, bool min,
 {
   int k = 0;
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tcontseq_extend(seq, interv, min, &result[k]);
-  }
+    k += tcontseq_extend(TSEQUENCESET_SEQ_N(ss, i), interv, min, &result[k]);
   return k;
 }
 
 /**
- * @brief Extend the temporal value by the time interval
+ * @brief Extend a temporal value by a time interval
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @param[in] min True if the calling function is min, max otherwise
@@ -195,25 +189,30 @@ temporal_extend(const Temporal *temp, const Interval *interv, bool min,
 {
   TSequence **result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
+  switch (temp->subtype)
   {
-    TInstant *inst = (TInstant *) temp;
-    result = palloc(sizeof(TSequence *));
-    *count = tinstant_extend(inst, interv, result);
-  }
-  else if (temp->subtype == TSEQUENCE)
-  {
-    TSequence *seq = (TSequence *) temp;
-    result = palloc(sizeof(TSequence *) * seq->count);
-    *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
-      tdiscseq_extend(seq, interv, result) :
-      tcontseq_extend(seq, interv, min, result);
-  }
-  else /* temp->subtype == TSEQUENCESET */
-  {
-    TSequenceSet *ss = (TSequenceSet *) temp;
-    result = palloc(sizeof(TSequence *) * ss->totalcount);
-    *count = tsequenceset_extend(ss, interv, min, result);
+    case TINSTANT:
+    {
+      TInstant *inst = (TInstant *) temp;
+      result = palloc(sizeof(TSequence *));
+      *count = tinstant_extend(inst, interv, result);
+      break;
+    }
+    case TSEQUENCE:
+    {
+      TSequence *seq = (TSequence *) temp;
+      result = palloc(sizeof(TSequence *) * seq->count);
+      *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
+        tdiscseq_extend(seq, interv, result) :
+        tcontseq_extend(seq, interv, min, result);
+      break;
+    }
+    default: /* TSEQUENCESET */
+    {
+      TSequenceSet *ss = (TSequenceSet *) temp;
+      result = palloc(sizeof(TSequence *) * ss->totalcount);
+      *count = tsequenceset_extend(ss, interv, min, result);
+    }
   }
   return result;
 }
@@ -224,15 +223,15 @@ temporal_extend(const Temporal *temp, const Interval *interv, bool min,
  *****************************************************************************/
 
 /**
- * @brief Construct a sequence with a value 1 by extending the two bounds by
- * the time interval (iterator function)
+ * @brief Return a sequence with a value 1 by extending the two bounds by
+ * a time interval (iterator function)
  */
 static TSequence *
 tinstant_transform_wcount_iter(TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc, const Interval *interv)
 {
   TInstant *instants[2];
-  TimestampTz upper1 = pg_timestamp_pl_interval(upper, interv);
+  TimestampTz upper1 = add_timestamptz_interval(upper, interv);
   instants[0] = tinstant_make(Int32GetDatum(1), T_TINT, lower);
   instants[1] = tinstant_make(Int32GetDatum(1), T_TINT, upper1);
   TSequence *result = tsequence_make((const TInstant **) instants, 2,
@@ -242,7 +241,7 @@ tinstant_transform_wcount_iter(TimestampTz lower, TimestampTz upper,
 }
 
 /**
- * @brief Transform the temporal number instant value by the time interval
+ * @brief Transform a temporal number instant by a time interval
  * @param[in] inst Temporal value
  * @param[in] interv Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -258,7 +257,7 @@ tinstant_transform_wcount(const TInstant *inst, const Interval *interv,
 }
 
 /**
- * @brief Transform the temporal number discrete sequence value by the time
+ * @brief Transform a temporal number discrete sequence by a time
  * interval
  * @param[in] seq Temporal value
  * @param[in] interv Interval
@@ -270,15 +269,12 @@ tdiscseq_transform_wcount(const TSequence *seq, const Interval *interv,
   TSequence **result)
 {
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    tinstant_transform_wcount(inst, interv, &result[i]);
-  }
+    tinstant_transform_wcount(TSEQUENCE_INST_N(seq, i), interv, &result[i]);
   return seq->count;
 }
 
 /**
- * @brief Transform the temporal number sequence value by the time interval
+ * @brief Transform a temporal number sequence by a time interval
  * @param[in] seq Temporal value
  * @param[in] interv Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -307,7 +303,7 @@ tcontseq_transform_wcount(const TSequence *seq, const Interval *interv,
 }
 
 /**
- * @brief Transform the temporal number sequence set value by the time interval
+ * @brief Transform a temporal number sequence set by a time interval
  * @param[in] ss Temporal value
  * @param[in] interv Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -319,15 +315,13 @@ tsequenceset_transform_wcount(const TSequenceSet *ss, const Interval *interv,
 {
   int k = 0;
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tcontseq_transform_wcount(seq, interv, &result[k]);
-  }
+    k += tcontseq_transform_wcount(TSEQUENCESET_SEQ_N(ss, i), interv,
+      &result[k]);
   return k;
 }
 
 /**
- * @brief Transform the temporal number by the time interval
+ * @brief Transform a temporal number by a time interval
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @param[out] count Number of elements in the output array
@@ -338,25 +332,30 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interv,
 {
   assert(temptype_subtype(temp->subtype));
   TSequence **result;
-  if (temp->subtype == TINSTANT)
+  switch (temp->subtype)
   {
-    TInstant *inst = (TInstant *) temp;
-    result = palloc(sizeof(TSequence *));
-    *count = tinstant_transform_wcount(inst, interv, result);
-  }
-  else if (temp->subtype == TSEQUENCE)
-  {
-    TSequence *seq = (TSequence *) temp;
-    result = palloc(sizeof(TSequence *) * seq->count);
-    *count = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-      tdiscseq_transform_wcount(seq, interv, result) :
-      tcontseq_transform_wcount(seq, interv, result);
-  }
-  else /* temp->subtype == TSEQUENCESET */
-  {
-    TSequenceSet *ss = (TSequenceSet *) temp;
-    result = palloc(sizeof(TSequence *) * ss->totalcount);
-    *count = tsequenceset_transform_wcount(ss, interv, result);
+    case TINSTANT:
+    {
+      TInstant *inst = (TInstant *) temp;
+      result = palloc(sizeof(TSequence *));
+      *count = tinstant_transform_wcount(inst, interv, result);
+      break;
+    }
+    case TSEQUENCE:
+    {
+      TSequence *seq = (TSequence *) temp;
+      result = palloc(sizeof(TSequence *) * seq->count);
+      *count = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
+        tdiscseq_transform_wcount(seq, interv, result) :
+        tcontseq_transform_wcount(seq, interv, result);
+      break;
+    }
+    default: /* TSEQUENCESET */
+    {
+      TSequenceSet *ss = (TSequenceSet *) temp;
+      result = palloc(sizeof(TSequence *) * ss->totalcount);
+      *count = tsequenceset_transform_wcount(ss, interv, result);
+    }
   }
   return result;
 }
@@ -364,8 +363,8 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interv,
 /*****************************************************************************/
 
 /**
- * @brief Transform the temporal number into a temporal double and extend it
- * by the time interval
+ * @brief Transform a temporal number into a temporal double and extend it
+ * by a time interval
  * @param[in] inst Temporal value
  * @param[in] interv Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -384,7 +383,7 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interv,
     value = DatumGetFloat8(tinstant_value(inst));
   double2 dvalue;
   double2_set(value, 1, &dvalue);
-  TimestampTz upper = pg_timestamp_pl_interval(inst->t, interv);
+  TimestampTz upper = add_timestamptz_interval(inst->t, interv);
   TInstant *instants[2];
   instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst->t);
   instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
@@ -395,8 +394,8 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interv,
 }
 
 /**
- * @brief Transform the temporal number into a temporal double and extend it
- * by the time interval
+ * @brief Transform a temporal number into a temporal double and extend it
+ * by a time interval
  * @param[in] seq Temporal value
  * @param[in] interv Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -407,17 +406,13 @@ tnumberdiscseq_transform_wavg(const TSequence *seq, const Interval *interv,
   TSequence **result)
 {
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    tnumberinst_transform_wavg(inst, interv, &result[i]);
-  }
+    tnumberinst_transform_wavg(TSEQUENCE_INST_N(seq, i), interv, &result[i]);
   return seq->count;
 }
 
 /**
- * @brief Transform the temporal integer sequence value into a temporal double
+ * @brief Transform a temporal integer sequence into a temporal double
  * and extend it by a time interval
- *
  * @param[in] seq Temporal value
  * @param[in] interv Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -449,7 +444,7 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interv,
     double value = DatumGetInt32(tinstant_value(inst1));
     double2 dvalue;
     double2_set(value, 1, &dvalue);
-    TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interv);
+    TimestampTz upper = add_timestamptz_interval(inst2->t, interv);
     instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst1->t);
     instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
     result[i] = tsequence_make((const TInstant **) instants, 2, lower_inc,
@@ -462,9 +457,8 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interv,
 }
 
 /**
-* Transform the temporal integer sequence set value into a temporal double and extend
- * it by a time interval
- *
+ * @brief Transform a temporal integer sequence set into a temporal double and
+ * extend it by a time interval
  * @param[in] ss Temporal value
  * @param[in] interv Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -477,15 +471,12 @@ tintseqset_transform_wavg(const TSequenceSet *ss, const Interval *interv,
 {
   int k = 0;
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tintseq_transform_wavg(seq, interv, &result[k]);
-  }
+    k += tintseq_transform_wavg(TSEQUENCESET_SEQ_N(ss, i), interv, &result[k]);
   return k;
 }
 
 /**
- * @brief Transform the temporal integer sequence set value into a temporal
+ * @brief Transform a temporal integer sequence set into a temporal
  * double and extend it by a time interval
  * @param[in] temp Temporal value
  * @param[in] interv Interval
@@ -498,25 +489,30 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interv,
 {
   TSequence **result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
+  switch (temp->subtype)
   {
-    TInstant *inst = (TInstant *) temp;
-    result = palloc(sizeof(TSequence *));
-    *count = tnumberinst_transform_wavg(inst, interv, result);
-  }
-  else if (temp->subtype == TSEQUENCE)
-  {
-    TSequence *seq = (TSequence *) temp;
-    result = palloc(sizeof(TSequence *) * seq->count);
-    *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
-      tnumberdiscseq_transform_wavg(seq, interv, result) :
-      tintseq_transform_wavg(seq, interv, result);
-  }
-  else /* temp->subtype == TSEQUENCESET */
-  {
-    TSequenceSet *ss = (TSequenceSet *) temp;
-    result = palloc(sizeof(TSequence *) * ss->totalcount);
-    *count = tintseqset_transform_wavg(ss, interv, result);
+    case TINSTANT:
+    {
+      TInstant *inst = (TInstant *) temp;
+      result = palloc(sizeof(TSequence *));
+      *count = tnumberinst_transform_wavg(inst, interv, result);
+      break;
+    }
+    case TSEQUENCE:
+    {
+      TSequence *seq = (TSequence *) temp;
+      result = palloc(sizeof(TSequence *) * seq->count);
+      *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
+        tnumberdiscseq_transform_wavg(seq, interv, result) :
+        tintseq_transform_wavg(seq, interv, result);
+      break;
+    }
+    default: /* TSEQUENCESET */
+    {
+      TSequenceSet *ss = (TSequenceSet *) temp;
+      result = palloc(sizeof(TSequence *) * ss->totalcount);
+      *count = tintseqset_transform_wavg(ss, interv, result);
+    }
   }
   return result;
 }
@@ -577,8 +573,8 @@ temporal_wagg_transform_transfn(SkipList *state, const Temporal *temp,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal minimum of temporal values.
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal values
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value
  * @param[in] interv Interval
@@ -599,8 +595,8 @@ tint_wmin_transfn(SkipList *state, const Temporal *temp,
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal minimum of temporal values.
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal values
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value
  * @param[in] interv Interval
@@ -621,8 +617,8 @@ tfloat_wmin_transfn(SkipList *state, const Temporal *temp,
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal maximum of temporal values.
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal values
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value
  * @param[in] interv Interval
@@ -643,8 +639,8 @@ tint_wmax_transfn(SkipList *state, const Temporal *temp,
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal maximum of temporal values.
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal values
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value
  * @param[in] interv Interval
@@ -665,8 +661,8 @@ tfloat_wmax_transfn(SkipList *state, const Temporal *temp,
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal sum of temporal values.
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal sum of temporal values
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value
  * @param[in] interv Interval
@@ -687,8 +683,8 @@ tint_wsum_transfn(SkipList *state, const Temporal *temp,
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal sum of temporal values.
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal sum of temporal values
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value
  * @param[in] interv Interval
@@ -709,8 +705,8 @@ tfloat_wsum_transfn(SkipList *state, const Temporal *temp,
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal average of temporal numbers.
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal average of temporal numbers
  * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value
  * @param[in] interv Interval

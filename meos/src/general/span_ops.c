@@ -111,21 +111,20 @@ span_max_value(Datum l, Datum r, meosType type)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_topo
+ * @ingroup meos_internal_setspan_topo
  * @brief Return true if a span contains a value
  * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 bool
-contains_span_value(const Span *s, Datum d, meosType basetype)
+contains_span_value(const Span *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
-  int cmp = datum_cmp(s->lower, d, basetype);
+  assert(s);
+  int cmp = datum_cmp(s->lower, value, s->basetype);
   if (cmp > 0 || (cmp == 0 && ! s->lower_inc))
     return false;
 
-  cmp = datum_cmp(s->upper, d, basetype);
+  cmp = datum_cmp(s->upper, value, s->basetype);
   if (cmp < 0 || (cmp == 0 && ! s->upper_inc))
     return false;
 
@@ -134,7 +133,7 @@ contains_span_value(const Span *s, Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a span contains an integer
  * @param[in] s Span
  * @param[in] i Value
@@ -146,11 +145,11 @@ contains_span_int(const Span *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return contains_span_value(s, Int32GetDatum(i), T_INT4);
+  return contains_span_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a span contains a big integer
  * @param[in] s Span
  * @param[in] i Value
@@ -162,11 +161,11 @@ contains_span_bigint(const Span *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return contains_span_value(s, Int64GetDatum(i), T_INT8);
+  return contains_span_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a span contains a float
  * @param[in] s Span
  * @param[in] d Value
@@ -178,11 +177,11 @@ contains_span_float(const Span *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return contains_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return contains_span_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a span contains a date
  * @param[in] s Span
  * @param[in] d Value
@@ -194,12 +193,12 @@ contains_span_date(const Span *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return contains_span_value(s, DateADTGetDatum(d), T_DATE);
+  return contains_span_value(s, DateADTGetDatum(d));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a span contains a timestamptz
  * @param[in] s Span
  * @param[in] t Value
@@ -212,13 +211,13 @@ contains_span_timestamptz(const Span *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return contains_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return contains_span_value(s, TimestampTzGetDatum(t));
 }
 
 /**
- * @ingroup libmeos_internal_setspan_topo
- * @param[in] s1,s2 Spans
+ * @ingroup meos_internal_setspan_topo
  * @brief Return true if the first span contains the second one
+ * @param[in] s1,s2 Spans
  */
 bool
 cont_span_span(const Span *s1, const Span *s2)
@@ -234,7 +233,7 @@ cont_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if the first span contains the second one
  * @param[in] s1,s2 Spans
  * @csqlfn #Contains_span_span()
@@ -254,21 +253,20 @@ contains_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_topo
+ * @ingroup meos_internal_setspan_topo
  * @brief Return true if a value is contained in a span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Span
  */
 bool
-contained_value_span(Datum d, meosType basetype, const Span *s)
+contained_value_span(Datum value, const Span *s)
 {
-  return contains_span_value(s, d, basetype);
+  return contains_span_value(s, value);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if an integer is contained in a span
  * @param[in] i Value
  * @param[in] s Span
@@ -280,11 +278,11 @@ contained_int_span(int i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return contains_span_value(s, Int32GetDatum(i), T_INT4);
+  return contains_span_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a big integer is contained in a span
  * @param[in] i Value
  * @param[in] s Span
@@ -296,11 +294,11 @@ contained_bigint_span(int64 i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return contains_span_value(s, Int64GetDatum(i), T_INT8);
+  return contains_span_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a float is contained in a span
  * @param[in] d Value
  * @param[in] s Span
@@ -312,11 +310,11 @@ contained_float_span(double d, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return contains_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return contains_span_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a date is contained in a span
  * @param[in] d Value
  * @param[in] s Span
@@ -328,11 +326,11 @@ contained_date_span(DateADT d, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return contains_span_value(s, DateADTGetDatum(d), T_DATE);
+  return contains_span_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a timestamp is contained in a span
  * @param[in] t Value
  * @param[in] s Span
@@ -345,12 +343,12 @@ contained_timestamptz_span(TimestampTz t, const Span *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return contains_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return contains_span_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if the first span is contained in the second one
  * @param[in] s1,s2 Spans
  * @csqlfn #Contained_value_span()
@@ -366,7 +364,7 @@ contained_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_topo
+ * @ingroup meos_internal_setspan_topo
  * @brief Return true if two spans overlap
  * @param[in] s1,s2 Spans
  */
@@ -384,7 +382,7 @@ over_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if two spans overlap
  * @param[in] s1,s2 Spans
  * @csqlfn #Overlaps_span_span()
@@ -400,13 +398,13 @@ overlaps_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_topo
+ * @ingroup meos_internal_setspan_topo
  * @brief Return true if two spans overlap or are adjacent
  * @param[in] s1,s2 Spans
  * @note This function is used for avoiding normalization in span operations
  */
 bool
-over_adj_span_span(const Span *s1, const Span *s2)
+ovadj_span_span(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
   int cmp1 = datum_cmp(s1->lower, s2->upper, s1->basetype);
@@ -423,25 +421,24 @@ over_adj_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_topo
+ * @ingroup meos_internal_setspan_topo
  * @brief Return true if a span and a value are adjacent
  * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @csqlfn #Adjacent_span_value()
  */
 bool
-adjacent_span_value(const Span *s, Datum d, meosType basetype)
+adjacent_span_value(const Span *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   Span s1;
-  span_set(d, d, true, true, basetype, s->spantype, &s1);
+  span_set(value, value, true, true, s->basetype, s->spantype, &s1);
   return adj_span_span(s, &s1);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a span and an integer are adjacent
  * @param[in] s Span
  * @param[in] i Value
@@ -453,11 +450,11 @@ adjacent_span_int(const Span *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return adjacent_span_value(s, Int32GetDatum(i), T_INT4);
+  return adjacent_span_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a span and a big integer are adjacent
  * @param[in] s Span
  * @param[in] i Value
@@ -469,11 +466,11 @@ adjacent_span_bigint(const Span *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return adjacent_span_value(s, Int64GetDatum(i), T_INT8);
+  return adjacent_span_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a span and a float are adjacent
  * @param[in] s Span
  * @param[in] d Value
@@ -485,11 +482,11 @@ adjacent_span_float(const Span *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return adjacent_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return adjacent_span_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a span and a date are adjacent
  * @param[in] s Span
  * @param[in] d Value
@@ -501,11 +498,11 @@ adjacent_span_date(const Span *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return adjacent_span_value(s, DateADTGetDatum(d), T_DATE);
+  return adjacent_span_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a span and a timestamptz are adjacent
  * @param[in] s Span
  * @param[in] t Value
@@ -518,14 +515,14 @@ adjacent_span_timestamptz(const Span *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return adjacent_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return adjacent_span_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_topo
- * @param[in] s1,s2 Spans
+ * @ingroup meos_internal_setspan_topo
  * @brief Return true if two spans are adjacent
+ * @param[in] s1,s2 Spans
  */
 bool
 adj_span_span(const Span *s1, const Span *s2)
@@ -543,7 +540,7 @@ adj_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if two spans are adjacent
  * @param[in] s1,s2 Spans
  * @csqlfn #Adjacent_span_span()
@@ -563,23 +560,22 @@ adjacent_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a value is to the left of a span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Span
  */
 bool
-left_value_span(Datum d, meosType basetype, const Span *s)
+left_value_span(Datum value, const Span *s)
 {
-  assert(s); assert(s->basetype == basetype);
-  int cmp = datum_cmp(d, s->lower, basetype);
+  assert(s);
+  int cmp = datum_cmp(value, s->lower, s->basetype);
   return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if an integer is to the left of a span
  * @param[in] i Value
  * @param[in] s Span
@@ -591,11 +587,11 @@ left_int_span(int i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return left_value_span(Int32GetDatum(i), T_INT4, s);
+  return left_value_span(Int32GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a big integer is to the left of a span
  * @param[in] i Value
  * @param[in] s Span
@@ -607,11 +603,11 @@ left_bigint_span(int64 i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return left_value_span(Int64GetDatum(i), T_INT8, s);
+  return left_value_span(Int64GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a float is to the left of a span
  * @param[in] d Value
  * @param[in] s Span
@@ -623,11 +619,11 @@ left_float_span(double d, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return left_value_span(Float8GetDatum(d), T_FLOAT8, s);
+  return left_value_span(Float8GetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a date is before a span
  * @param[in] d Value
  * @param[in] s Span
@@ -639,11 +635,11 @@ before_date_span(DateADT d, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return left_value_span(DateADTGetDatum(d), T_DATE, s);
+  return left_value_span(DateADTGetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a timestamptz is before a span
  * @param[in] t Value
  * @param[in] s Span
@@ -656,28 +652,27 @@ before_timestamptz_span(TimestampTz t, const Span *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
+  return left_value_span(TimestampTzGetDatum(t), s);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a span is to the left of a value
  * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 bool
-left_span_value(const Span *s, Datum d, meosType basetype)
+left_span_value(const Span *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
-  int cmp = datum_cmp(s->upper, d, basetype);
+  assert(s);
+  int cmp = datum_cmp(s->upper, value, s->basetype);
   return (cmp < 0 || (cmp == 0 && ! s->upper_inc));
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is to the left of an integer
  * @param[in] s Span
  * @param[in] i Value
@@ -689,11 +684,11 @@ left_span_int(const Span *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return left_span_value(s, Int32GetDatum(i), T_INT4);
+  return left_span_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is to the left of a big integer
  * @param[in] s Span
  * @param[in] i Value
@@ -705,11 +700,11 @@ left_span_bigint(const Span *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return left_span_value(s, Int64GetDatum(i), T_INT8);
+  return left_span_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is to the left of a float
  * @param[in] s Span
  * @param[in] d Value
@@ -721,11 +716,11 @@ left_span_float(const Span *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return left_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return left_span_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is before a date
  * @param[in] s Span
  * @param[in] d Value
@@ -737,10 +732,10 @@ before_span_date(const Span *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return left_span_value(s, DateADTGetDatum(d), T_DATE);
+  return left_span_value(s, DateADTGetDatum(d));
 }
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is before a timestamptz
  * @param[in] s Span
  * @param[in] t Value
@@ -753,12 +748,12 @@ before_span_timestamptz(const Span *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return left_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return left_span_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if the first span is to the left of the second one
  * @param[in] s1,s2 Spans
  */
@@ -771,7 +766,7 @@ lf_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if the first span is to the left of the second one
  * @param[in] s1,s2 Spans
  * @csqlfn #Left_span_span()
@@ -787,14 +782,14 @@ left_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if the first span is to the left and not adjacent to the
  * second one
  * @param[in] s1,s2 Spans
  * @note This function is used for avoiding normalization in span operations
  */
 bool
-left_notadj_span_span(const Span *s1, const Span *s2)
+lfnadj_span_span(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
   int cmp = datum_cmp(s1->upper, s2->lower, s1->basetype);
@@ -806,21 +801,20 @@ left_notadj_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a value is to the right of a span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Span
  */
 bool
-right_value_span(Datum d, meosType basetype, const Span *s)
+right_value_span(Datum value, const Span *s)
 {
-  return left_span_value(s, d, basetype);
+  return left_span_value(s, value);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if an integer is to the right of a span
  * @param[in] i Value
  * @param[in] s Span
@@ -832,11 +826,11 @@ right_int_span(int i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return left_span_value(s, DatumGetInt32(i), T_INT4);
+  return left_span_value(s, DatumGetInt32(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a big integer is to the right of a span
  * @param[in] i Value
  * @param[in] s Span
@@ -848,11 +842,11 @@ right_bigint_span(int64 i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return left_span_value(s, DatumGetInt64(i), T_INT8);
+  return left_span_value(s, DatumGetInt64(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a float is to the right of a span
  * @param[in] d Value
  * @param[in] s Span
@@ -864,11 +858,11 @@ right_float_span(double d, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return left_span_value(s, DatumGetFloat8(d), T_FLOAT8);
+  return left_span_value(s, DatumGetFloat8(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a date is after a span
  * @param[in] d Value
  * @param[in] s Span
@@ -880,11 +874,11 @@ after_date_span(DateADT d, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return left_span_value(s, DatumGetDateADT(d), T_DATE);
+  return left_span_value(s, DatumGetDateADT(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a timestamptz is after a span
  * @param[in] t Value
  * @param[in] s Span
@@ -897,26 +891,25 @@ after_timestamptz_span(TimestampTz t, const Span *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return left_span_value(s, DatumGetTimestampTz(t), T_TIMESTAMPTZ);
+  return left_span_value(s, DatumGetTimestampTz(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a span is to the right of a value
  * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 bool
-right_span_value(const Span *s, Datum d, meosType basetype)
+right_span_value(const Span *s, Datum value)
 {
-  return left_value_span(d, basetype, s);
+  return left_value_span(value, s);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is to the right of an integer
  * @param[in] s Span
  * @param[in] i Value
@@ -928,11 +921,11 @@ right_span_int(const Span *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return left_value_span(DatumGetInt32(i), T_INT4, s);
+  return left_value_span(DatumGetInt32(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is to the right of a big integer
  * @param[in] s Span
  * @param[in] i Value
@@ -944,11 +937,11 @@ right_span_bigint(const Span *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return left_value_span(DatumGetInt64(i), T_INT8, s);
+  return left_value_span(DatumGetInt64(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is to the right of a float
  * @param[in] s Span
  * @param[in] d Value
@@ -960,11 +953,11 @@ right_span_float(const Span *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return left_value_span(DatumGetFloat8(d), T_FLOAT8, s);
+  return left_value_span(DatumGetFloat8(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is after a date
  * @param[in] s Span
  * @param[in] d Value
@@ -976,11 +969,11 @@ after_span_date(const Span *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return left_value_span(DatumGetDateADT(d), T_DATE, s);
+  return left_value_span(DatumGetDateADT(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is after a timestamptz
  * @param[in] s Span
  * @param[in] t Value
@@ -993,12 +986,12 @@ after_span_timestamptz(const Span *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return left_value_span(DatumGetTimestampTz(t), T_TIMESTAMPTZ, s);
+  return left_value_span(DatumGetTimestampTz(t), s);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if the first span is to right the of the second one
  * @param[in] s1,s2 Spans
  */
@@ -1009,7 +1002,7 @@ ri_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if the first span is to right the of the second one
  * @param[in] s1,s2 Spans
  * @csqlfn #Right_span_span()
@@ -1025,23 +1018,22 @@ right_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a value does not extend to the right of a span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Span
  */
 bool
-overleft_value_span(Datum d, meosType basetype, const Span *s)
+overleft_value_span(Datum value, const Span *s)
 {
-  assert(s); assert(s->basetype == basetype);
-  int cmp = datum_cmp(d, s->upper, basetype);
+  assert(s);
+  int cmp = datum_cmp(value, s->upper, s->basetype);
   return (cmp < 0 || (cmp == 0 && s->upper_inc));
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if an integer does not extend to the right of a span
  * @param[in] i Value
  * @param[in] s Span
@@ -1053,11 +1045,11 @@ overleft_int_span(int i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return overleft_value_span(Int32GetDatum(i), T_INT4, s);
+  return overleft_value_span(Int32GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a big integer does not extend to the right of a span
  * @param[in] i Value
  * @param[in] s Span
@@ -1069,11 +1061,11 @@ overleft_bigint_span(int64 i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return overleft_value_span(Int64GetDatum(i), T_INT8, s);
+  return overleft_value_span(Int64GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a float does not extend to the right of a span
  * @param[in] d Value
  * @param[in] s Span
@@ -1085,11 +1077,11 @@ overleft_float_span(double d, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return overleft_value_span(Float8GetDatum(d), T_FLOAT8, s);
+  return overleft_value_span(Float8GetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a date is not after a span
  * @param[in] d Value
  * @param[in] s Span
@@ -1101,11 +1093,11 @@ overbefore_date_span(DateADT d, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return overleft_value_span(DateADTGetDatum(d), T_DATE, s);
+  return overleft_value_span(DateADTGetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a timestamptz is not after a span
  * @param[in] t Value
  * @param[in] s Span
@@ -1118,31 +1110,30 @@ overbefore_timestamptz_span(TimestampTz t, const Span *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
+  return overleft_value_span(TimestampTzGetDatum(t), s);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a span does not extend to the right of a value
  * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 bool
-overleft_span_value(const Span *s, Datum d, meosType basetype)
+overleft_span_value(const Span *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   /* Integer spans are canonicalized and thus their upper bound is exclusive.
-   * Therefore, we cannot simply check that s->upper <= d */
+   * Therefore, we cannot simply check that s->upper <= value */
   Span s1;
-  span_set(d, d, true, true, basetype, s->spantype, &s1);
+  span_set(value, value, true, true, s->basetype, s->spantype, &s1);
   return ovlf_span_span(s, &s1);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span does not extend to the right of an integer
  * @param[in] s Span
  * @param[in] i Value
@@ -1154,11 +1145,11 @@ overleft_span_int(const Span *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return overleft_span_value(s, Int32GetDatum(i), T_INT4);
+  return overleft_span_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span does not extend to the right of a big integer
  * @param[in] s Span
  * @param[in] i Value
@@ -1170,11 +1161,11 @@ overleft_span_bigint(const Span *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return overleft_span_value(s, Int64GetDatum(i), T_INT8);
+  return overleft_span_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span does not extend to the right of a float
  * @param[in] s Span
  * @param[in] d Value
@@ -1186,11 +1177,11 @@ overleft_span_float(const Span *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return overleft_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return overleft_span_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is not after a date
  * @param[in] s Span
  * @param[in] d Value
@@ -1202,11 +1193,11 @@ overbefore_span_date(const Span *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return overleft_span_value(s, DateADTGetDatum(d), T_DATE);
+  return overleft_span_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is not after a timestamptz
  * @param[in] s Span
  * @param[in] t Value
@@ -1219,12 +1210,12 @@ overbefore_span_timestamptz(const Span *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return overleft_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return overleft_span_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if the first span does not extend to the right of the
  * second one
  * @param[in] s1,s2 Spans
@@ -1238,7 +1229,7 @@ ovlf_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if the first span does not extend to the right of the
  * second one
  * @param[in] s1,s2 Spans
@@ -1259,23 +1250,22 @@ overleft_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a value does not extend to the left of a span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Span
  */
 bool
-overright_value_span(Datum d, meosType basetype, const Span *s)
+overright_value_span(Datum value, const Span *s)
 {
-  assert(s); assert(s->basetype == basetype);
-  int cmp = datum_cmp(s->lower, d, basetype);
+  assert(s);
+  int cmp = datum_cmp(s->lower, value, s->basetype);
   return (cmp < 0 || (cmp == 0 && s->lower_inc));
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if an integer does not extend to the left of a span
  * @param[in] i Value
  * @param[in] s Span
@@ -1287,11 +1277,11 @@ overright_int_span(int i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return overright_value_span(Int32GetDatum(i), T_INT4, s);
+  return overright_value_span(Int32GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a big integer does not extend to the left of a span
  * @param[in] i Value
  * @param[in] s Span
@@ -1303,11 +1293,11 @@ overright_bigint_span(int64 i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return overright_value_span(Int64GetDatum(i), T_INT8, s);
+  return overright_value_span(Int64GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a float does not extend to the left of a span
  * @param[in] d Value
  * @param[in] s Span
@@ -1319,11 +1309,11 @@ overright_float_span(double d, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return overright_value_span(Float8GetDatum(d), T_FLOAT8, s);
+  return overright_value_span(Float8GetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a date is not before a span
  * @param[in] d Value
  * @param[in] s Span
@@ -1335,11 +1325,11 @@ overafter_date_span(DateADT d, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return overright_value_span(DateADTGetDatum(d), T_DATE, s);
+  return overright_value_span(DateADTGetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a timestamptz is not before a span
  * @param[in] t Value
  * @param[in] s Span
@@ -1352,27 +1342,26 @@ overafter_timestamptz_span(TimestampTz t, const Span *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
+  return overright_value_span(TimestampTzGetDatum(t), s);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a span does not extend to the left of a value
  * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 bool
-overright_span_value(const Span *s, Datum d, meosType basetype)
+overright_span_value(const Span *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
-  return datum_le(d, s->lower, basetype);
+  assert(s);
+  return datum_le(value, s->lower, s->basetype);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span does not extend to the left of an integer
  * @param[in] s Span
  * @param[in] i Value
@@ -1384,11 +1373,11 @@ overright_span_int(const Span *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return false;
-  return overright_span_value(s, Int32GetDatum(i), T_INT4);
+  return overright_span_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span does not extend to the left of a big integer
  * @param[in] s Span
  * @param[in] i Value
@@ -1400,11 +1389,11 @@ overright_span_bigint(const Span *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) ||! ensure_span_isof_basetype(s, T_INT8))
     return false;
-  return overright_span_value(s, Int64GetDatum(i), T_INT8);
+  return overright_span_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span does not extend to the left of a float
  * @param[in] s Span
  * @param[in] d Value
@@ -1416,11 +1405,11 @@ overright_span_float(const Span *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return false;
-  return overright_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return overright_span_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is not before a date
  * @param[in] s Span
  * @param[in] d Value
@@ -1432,11 +1421,11 @@ overafter_span_date(const Span *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return false;
-  return overright_span_value(s, DateADTGetDatum(d), T_DATE);
+  return overright_span_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a span is not before a timestamptz
  * @param[in] s Span
  * @param[in] t Value
@@ -1449,12 +1438,12 @@ overafter_span_timestamptz(const Span *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return overright_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return overright_span_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if the first span does not extend to the left of the
  * second one
  * @param[in] s1,s2 Spans
@@ -1468,7 +1457,7 @@ ovri_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if the first span does not extend to the left of the
  * second one
  * @param[in] s1,s2 Spans
@@ -1489,7 +1478,7 @@ overright_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Initialize the last argument with the bounding box union of two spans
  * @param[in] s1,s2 Spans
  * @param[out] result Resulting span
@@ -1506,7 +1495,7 @@ bbox_union_span_span(const Span *s1, const Span *s2, Span *result)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Return the bounding union of two spans
  * @param[in] s1,s2 Spans
  * @note The result of the function is always a span even if the spans do not
@@ -1524,25 +1513,36 @@ super_union_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Return the union of a span and a value
  * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @csqlfn #Union_span_value()
  */
 SpanSet *
-union_span_value(const Span *s, Datum d, meosType basetype)
+union_span_value(const Span *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   Span s1;
-  span_set(d, d, true, true, basetype, s->spantype, &s1);
+  span_set(value, value, true, true, s->basetype, s->spantype, &s1);
   return union_span_span(s, &s1);
 }
 
-#if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_internal_setspan_set
+ * @brief Return the union of a value and a span
+ * @param[in] s Span
+ * @param[in] value Value
+ */
+SpanSet *
+union_value_span(Datum value, const Span *s)
+{
+  return union_span_value(s, value);
+}
+
+#if MEOS  
+/**
+ * @ingroup meos_setspan_set
  * @brief Return the union of a span and an integer
  * @param[in] s Span
  * @param[in] i Value
@@ -1554,11 +1554,24 @@ union_span_int(const Span *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return NULL;
-  return union_span_value(s, Int32GetDatum(i), T_INT4);
+  return union_span_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
+ * @brief Return the union of an integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Union_value_span()
+ */
+SpanSet *
+union_int_span(int i, const Span *s)
+{
+  return union_span_int(s, i);
+}
+
+/**
+ * @ingroup meos_setspan_set
  * @brief Return the union of a span and a big integer
  * @param[in] s Span
  * @param[in] i Value
@@ -1570,11 +1583,24 @@ union_span_bigint(const Span *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return NULL;
-  return union_span_value(s, Int64GetDatum(i), T_INT8);
+  return union_span_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a big integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Union_value_span()
+ */
+SpanSet *
+union_bigint_span(const Span *s, int64 i)
+{
+  return union_span_bigint(s, i);
+}
+
+/**
+ * @ingroup meos_setspan_set
  * @brief Return the union of a span and a float
  * @param[in] s Span
  * @param[in] d Value
@@ -1586,11 +1612,24 @@ union_span_float(const Span *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return NULL;
-  return union_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return union_span_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a float and a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Union_value_span()
+ */
+SpanSet *
+union_float_span(const Span *s, double d)
+{
+  return union_span_float(s, d);
+}
+
+/**
+ * @ingroup meos_setspan_set
  * @brief Return the union of a span and a date
  * @param[in] s Span
  * @param[in] d Value
@@ -1602,10 +1641,24 @@ union_span_date(const Span *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return NULL;
-  return union_span_value(s, DateADTGetDatum(d), T_DATE);
+  return union_span_value(s, DateADTGetDatum(d));
 }
+
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a date and a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Union_value_span()
+ */
+SpanSet *
+union_date_span(const Span *s, DateADT d)
+{
+  return union_span_date(s, d);
+}
+
+/**
+ * @ingroup meos_setspan_set
  * @brief Return the union of a span and a timestamptz
  * @param[in] s Span
  * @param[in] t Value
@@ -1618,12 +1671,25 @@ union_span_timestamptz(const Span *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return NULL;
-  return union_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return union_span_value(s, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a timestamptz and a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Union_value_span()
+ */
+SpanSet *
+union_timestamptz_span(TimestampTz t, const Span *s)
+{
+  return union_span_timestamptz(s, t);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the union of two spans
  * @param[in] s1,s2 Spans
  * @csqlfn #Union_span_span()
@@ -1637,7 +1703,7 @@ union_span_span(const Span *s1, const Span *s2)
     return NULL;
 
   /* If the spans overlap */
-  if (over_adj_span_span(s1, s2))
+  if (ovadj_span_span(s1, s2))
   {
     /* Compute the union of the overlapping spans */
     Span s;
@@ -1665,24 +1731,36 @@ union_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_set
- * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @ingroup meos_internal_setspan_set
  * @brief Return the intersection of a span and a value
+ * @param[in] s Span
+ * @param[in] value Value
  */
 Span *
-intersection_span_value(const Span *s, Datum d, meosType basetype)
+intersection_span_value(const Span *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
-  if (! contains_span_value(s, d, basetype))
+  assert(s);
+  if (! contains_span_value(s, value))
     return NULL;
-  return value_to_span(d, basetype);
+  return value_to_span(value, s->basetype);
 }
+
+/**
+ * @ingroup meos_internal_setspan_set
+ * @brief Return the union of a value and a span
+ * @param[in] value Value
+ * @param[in] s Span
+ */
+Span *
+intersection_value_span(Datum value, const Span *s)
+{
+  return intersection_span_value(s, value);
+}
+
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a span and an integer
  * @param[in] s Span
  * @param[in] i Value
@@ -1694,11 +1772,11 @@ intersection_span_int(const Span *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return NULL;
-  return intersection_span_value(s, Int32GetDatum(i), T_INT4);
+  return intersection_span_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a span and a big integer
  * @param[in] s Span
  * @param[in] i Value
@@ -1710,11 +1788,11 @@ intersection_span_bigint(const Span *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return NULL;
-  return intersection_span_value(s, Int64GetDatum(i), T_INT8);
+  return intersection_span_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a span and a float
  * @param[in] s Span
  * @param[in] d Value
@@ -1726,11 +1804,11 @@ intersection_span_float(const Span *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return NULL;
-  return intersection_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return intersection_span_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a span and a date
  * @param[in] s Span
  * @param[in] d Value
@@ -1742,10 +1820,10 @@ intersection_span_date(const Span *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return NULL;
-  return intersection_span_value(s, DateADTGetDatum(d), T_DATE);
+  return intersection_span_value(s, DateADTGetDatum(d));
 }
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a span and a timestamptz
  * @param[in] s Span
  * @param[in] t Value
@@ -1758,12 +1836,12 @@ intersection_span_timestamptz(const Span *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return NULL;
-  return intersection_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return intersection_span_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Initialize the last argument with the intersection of two spans 
  * @param[in] s1,s2 Spans
  * @param[out] result Resulting span
@@ -1790,7 +1868,7 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of two spans
  * @param[in] s1,s2 Spans
  * @csqlfn #Intersection_span_span()
@@ -1813,24 +1891,23 @@ intersection_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Return the difference of a value and a span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Span
  */
 SpanSet *
-minus_value_span(Datum d, meosType basetype, const Span *s)
+minus_value_span(Datum value, const Span *s)
 {
-  assert(s); assert(s->basetype == basetype);
-  if (contains_span_value(s, d, basetype))
+  assert(s);
+  if (contains_span_value(s, value))
     return NULL;
-  return value_to_spanset(d, basetype);
+  return value_to_spanset(value, s->basetype);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of an integer and a span
  * @param[in] i Value
  * @param[in] s Span
@@ -1842,11 +1919,11 @@ minus_int_span(int i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return NULL;
-  return minus_value_span(Int32GetDatum(i), T_INT4, s);
+  return minus_value_span(Int32GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a big integer and a span
  * @param[in] i Value
  * @param[in] s Span
@@ -1858,11 +1935,11 @@ minus_bigint_span(int64 i, const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return NULL;
-  return minus_value_span(Int64GetDatum(i), T_INT8, s);
+  return minus_value_span(Int64GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a float and a span
  * @param[in] d Value
  * @param[in] s Span
@@ -1875,11 +1952,11 @@ minus_float_span(double d, const Span *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_FLOAT8))
     return NULL;
-  return minus_value_span(Float8GetDatum(d), T_FLOAT8, s);
+  return minus_value_span(Float8GetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a date and a span
  * @param[in] d Value
  * @param[in] s Span
@@ -1892,11 +1969,11 @@ minus_date_span(DateADT d, const Span *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_DATE))
     return NULL;
-  return minus_value_span(DateADTGetDatum(d), T_DATE, s);
+  return minus_value_span(DateADTGetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a timestamptz and a span
  * @param[in] t Value
  * @param[in] s Span
@@ -1909,7 +1986,7 @@ minus_timestamptz_span(TimestampTz t, const Span *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return NULL;
-  return minus_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
+  return minus_value_span(TimestampTzGetDatum(t), s);
 }
 #endif /* MEOS */
 
@@ -1917,16 +1994,15 @@ minus_timestamptz_span(TimestampTz t, const Span *s)
  * @brief Initialize the last argument with the difference of a span and a
  * value
  * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[out] result Resulting span
  */
 int
-mi_span_value(const Span *s, Datum d, meosType basetype, Span *result)
+mi_span_value(const Span *s, Datum value, Span *result)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   /* The span does not contain the value */
-  if (! contains_span_value(s, d, basetype))
+  if (! contains_span_value(s, value))
   {
     result[0] = *s;
     return 1;
@@ -1934,43 +2010,44 @@ mi_span_value(const Span *s, Datum d, meosType basetype, Span *result)
 
   /* Account for canonicalized spans */
   Datum upper = span_decr_bound(s->upper, s->basetype);
-  bool lowereq = datum_eq(s->lower, d, basetype);
-  bool uppereq = datum_eq(upper, d, basetype);
+  bool lowereq = datum_eq(s->lower, value, s->basetype);
+  bool uppereq = datum_eq(upper, value, s->basetype);
   /* The span is equal to the value */
   if (lowereq && uppereq)
     return 0;
   /* The value is equal to a bound */
   if (lowereq)
   {
-    span_set(s->lower, s->upper, false, s->upper_inc, basetype, s->spantype,
+    span_set(s->lower, s->upper, false, s->upper_inc, s->basetype, s->spantype,
       &result[0]);
     return 1;
   }
   if (uppereq)
   {
-    span_set(s->lower, upper, s->lower_inc, false, basetype, s->spantype,
+    span_set(s->lower, upper, s->lower_inc, false, s->basetype, s->spantype,
       &result[0]);
     return 1;
   }
   /* The span is split into two */
-  span_set(s->lower, d, s->lower_inc, false, basetype, s->spantype, &result[0]);
-  span_set(d, s->upper, false, s->upper_inc, basetype, s->spantype, &result[1]);
+  span_set(s->lower, value, s->lower_inc, false, s->basetype, s->spantype,
+    &result[0]);
+  span_set(value, s->upper, false, s->upper_inc, s->basetype, s->spantype,
+    &result[1]);
   return 2;
 }
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Return the difference of a span and a value
  * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 SpanSet *
-minus_span_value(const Span *s, Datum d, meosType basetype)
+minus_span_value(const Span *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   Span spans[2];
-  int count = mi_span_value(s, d, basetype, spans);
+  int count = mi_span_value(s, value, spans);
   if (count == 0)
     return NULL;
   return spanset_make_exp(spans, count, count, NORMALIZE_NO, ORDERED);
@@ -1978,7 +2055,7 @@ minus_span_value(const Span *s, Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a span and an integer
  * @param[in] s Span
  * @param[in] i Value
@@ -1990,11 +2067,11 @@ minus_span_int(const Span *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return NULL;
-  return minus_span_value(s, Int32GetDatum(i), T_INT4);
+  return minus_span_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a span and a big integer
  * @param[in] s Span
  * @param[in] i Value
@@ -2006,11 +2083,11 @@ minus_span_bigint(const Span *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return NULL;
-  return minus_span_value(s, Int64GetDatum(i), T_INT8);
+  return minus_span_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a span and a float
  * @param[in] s Span
  * @param[in] d Value
@@ -2022,11 +2099,11 @@ minus_span_float(const Span *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return NULL;
-  return minus_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return minus_span_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a span and a date
  * @param[in] s Span
  * @param[in] d Value
@@ -2038,10 +2115,10 @@ minus_span_date(const Span *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return NULL;
-  return minus_span_value(s, DateADTGetDatum(d), T_DATE);
+  return minus_span_value(s, DateADTGetDatum(d));
 }
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a span and a timestamptz
  * @param[in] s Span
  * @param[in] t Value
@@ -2054,12 +2131,12 @@ minus_span_timestamptz(const Span *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return NULL;
-  return minus_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return minus_span_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Initialize the last argument with the difference of two spans
  * @param[in] s1,s2 Spans
  * @param[out] result Result
@@ -2068,6 +2145,7 @@ minus_span_timestamptz(const Span *s, TimestampTz t)
 int
 mi_span_span(const Span *s1, const Span *s2, Span *result)
 {
+  assert(s1); assert(s2); assert(result);
   /* Result is a span
    * s1         |----|
    * s2  |----|   or    |----|
@@ -2129,7 +2207,7 @@ mi_span_span(const Span *s1, const Span *s2, Span *result)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of two spans
  * @param[in] s1,s2 Spans
  * @csqlfn #Minus_span_span()
@@ -2187,7 +2265,7 @@ dist_double_value_value(Datum l, Datum r, meosType type)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_dist
+ * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two values
  * @param[in] l,r Values
  * @param[in] type Type of the values
@@ -2221,38 +2299,37 @@ distance_value_value(Datum l, Datum r, meosType type)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_dist
+ * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between a span and a value as a double
  * @param[in] s Span
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 Datum
-distance_span_value(const Span *s, Datum d, meosType basetype)
+distance_span_value(const Span *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   /* If the span contains the value return 0 */
-  if (contains_span_value(s, d, basetype))
+  if (contains_span_value(s, value))
     return (Datum) 0;
 
   /* If the span is to the right of the value return the distance
    * between the value and the lower bound of the span
-   *     d   [---- s ----] */
-  if (right_span_value(s, d, basetype))
-    return distance_value_value(d, s->lower, basetype);
+   *     value   [---- s ----] */
+  if (right_span_value(s, value))
+    return distance_value_value(value, s->lower, s->basetype);
 
   /* Account for canonicalized spans */
   Datum upper = span_decr_bound(s->upper, s->basetype);
 
   /* If the span is to the left of the value return the distance
    * between the upper bound of the span and value
-   *     [---- s ----]   d */
-  return distance_value_value(upper, d, basetype);
+   *     [---- s ----]   value */
+  return distance_value_value(upper, value, s->basetype);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between a span and an integer as a double
  * @param[in] s Span
  * @param[in] i Value
@@ -2265,11 +2342,11 @@ distance_span_int(const Span *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
     return -1;
-  return distance_span_value(s, Int32GetDatum(i), T_INT4);
+  return distance_span_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between a span and a big integer as a double
  * @param[in] s Span
  * @param[in] i Value
@@ -2282,11 +2359,11 @@ distance_span_bigint(const Span *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
     return -1;
-  return distance_span_value(s, Int64GetDatum(i), T_INT8);
+  return distance_span_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between a span and a float
  * @param[in] s Span
  * @param[in] d Value
@@ -2299,11 +2376,11 @@ distance_span_float(const Span *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
     return -1.0;
-  return distance_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return distance_span_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance in days between a span and a date as a double
  * @param[in] s Span
  * @param[in] d Value
@@ -2316,11 +2393,11 @@ distance_span_date(const Span *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
     return -1;
-  return distance_span_value(s, DateADTGetDatum(d), T_DATE);
+  return distance_span_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance in seconds between a span and a timestamptz as a
  * double
  * @param[in] s Span
@@ -2335,20 +2412,19 @@ distance_span_timestamptz(const Span *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return -1.0;
-  return distance_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return distance_span_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_dist
- * @param[in] s1,s2 Spans
+ * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two spans as a double
+ * @param[in] s1,s2 Spans
  */
 Datum
 dist_span_span(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-
   /* If the spans intersect return 0 */
   if (over_span_span(s1, s2))
     return (Datum) 0;
@@ -2370,7 +2446,7 @@ dist_span_span(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_dist
+ * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two spans as a double
  * @param[in] s1,s2 Spans
  * @return On error return -1
@@ -2379,16 +2455,13 @@ dist_span_span(const Span *s1, const Span *s2)
 Datum
 distance_span_span(const Span *s1, const Span *s2)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_span_type(s1, s2))
-    return (Datum) -1;
+  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
   return dist_span_span(s1, s2);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between two integer spans
  * @param[in] s1,s2 Spans
  * @return On error return -1
@@ -2406,7 +2479,7 @@ distance_intspan_intspan(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between two big integer spans
  * @param[in] s1,s2 Spans
  * @return On error return -1
@@ -2424,7 +2497,7 @@ distance_bigintspan_bigintspan(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between two float spans
  * @param[in] s1,s2 Spans
  * @return On error return -1.0
@@ -2442,7 +2515,7 @@ distance_floatspan_floatspan(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between two date spans
  * @param[in] s1,s2 Spans
  * @return On error return -1
@@ -2460,7 +2533,7 @@ distance_datespan_datespan(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance in seconds between two timestamptz spans
  * @param[in] s1,s2 Spans
  * @return On error return -1.0

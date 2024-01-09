@@ -99,7 +99,7 @@ int main(void)
       printf("*");
       fflush(stdout);
     }
-    t = pg_timestamp_pl_interval(t, oneday);
+    t = add_timestamptz_interval(t, oneday);
     char *time_str = pg_timestamptz_out(t);
     int value = i % 2 + 1;
 #if GEODETIC == true

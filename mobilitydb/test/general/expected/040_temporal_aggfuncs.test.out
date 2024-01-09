@@ -1,3 +1,24 @@
+SELECT merge(inst) FROM (VALUES
+(tfloat '1@2000-01-01'),(tfloat '2@2000-01-02')) t(inst);
+                              merge                               
+------------------------------------------------------------------
+ {1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT merge(seq) FROM (VALUES
+(tfloat '[1@2000-01-01]'),(tfloat '[2@2000-01-02]')) t(seq);
+                                merge                                 
+----------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST], [2@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+/* Errors */
+SELECT merge(inst) FROM (VALUES
+(tfloat '1@2000-01-01'),(tfloat '2@2000-01-01')) t(inst);
+ERROR:  The temporal values have different value at their common timestamp Sat Jan 01 00:00:00 2000 PST
+SELECT merge(seq) FROM (VALUES
+(tfloat '[1@2000-01-01]'),(tfloat '[2@2000-01-01]')) t(seq);
+ERROR:  The temporal values have different value at their common timestamp Sat Jan 01 00:00:00 2000 PST
 SELECT tand(temp) FROM (VALUES
 (NULL::tbool),(NULL::tbool)) t(temp);
  tand 

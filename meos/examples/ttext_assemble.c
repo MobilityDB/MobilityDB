@@ -86,7 +86,7 @@ int main(void)
     memset(value, i % 2 == 0 ? 'A' : 'B', len);
     value[len] = '\0';
     text *txt = cstring2text(value);
-    t = pg_timestamp_pl_interval(t, oneday);
+    t = add_timestamptz_interval(t, oneday);
     instants[i] = ttextinst_make(txt, t);
     free(value); free(txt);
   }

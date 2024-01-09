@@ -89,7 +89,7 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     char *space_str = spacesplit ?
-      gserialized_as_ewkt(space_buckets[i], 3) : "";
+      geo_as_ewkt(space_buckets[i], 3) : "";
     char *time_str = timesplit ? pg_timestamptz_out(time_buckets[i]) : "";
     char *temp_str = tpoint_as_ewkt(result[i], 3);
     sprintf(output_buffer, "%s%s%s%s%s\n", space_str, spacesplit ? ", " : "",

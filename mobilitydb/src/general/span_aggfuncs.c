@@ -106,9 +106,9 @@ Spanbase_extent_transfn(PG_FUNCTION_ARGS)
   Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   if (PG_ARGISNULL(1))
     PG_RETURN_SPAN_P(s);
-  Datum d = PG_GETARG_DATUM(1);
+  Datum value = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PG_RETURN_SPAN_P(spanbase_extent_transfn(s, d, basetype));
+  PG_RETURN_SPAN_P(spanbase_extent_transfn(s, value, basetype));
 }
 
 PGDLLEXPORT Datum Set_extent_transfn(PG_FUNCTION_ARGS);

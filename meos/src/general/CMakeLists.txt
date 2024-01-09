@@ -20,6 +20,8 @@ add_library(general OBJECT
   temporal_analytics.c
   temporal_boxops.c
   temporal_compops.c
+  temporal_modif.c
+  temporal_restrict.c
   temporal_tile.c
   temporal_waggfuncs.c
   tinstant.c

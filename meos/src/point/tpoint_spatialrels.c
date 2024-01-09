@@ -29,19 +29,19 @@
 
 /**
  * @file
- * @brief Ever/always spatial relationships for temporal points.
+ * @brief Ever/always spatial relationships for temporal points
  *
  * These relationships compute the ever/always spatial relationship between the
  * arguments and return a Boolean. These functions may be used for filtering
  * purposes before applying the corresponding temporal spatial relationship.
  *
- * The following relationships are supported for geometries: `contains`,
- * `disjoint`, `intersects`, `touches`, and `dwithin`.
+ * The following relationships are supported for geometries: contains,
+ * disjoint, intersects, touches, and dwithin.
  *
- * The following relationships are supported for geographies: `disjoint`,
- * `intersects`, `dwithin`.
+ * The following relationships are supported for geographies: disjoint,
+ * intersects, dwithin.
  *
- * Only `disjoint`, `dwithin`, and `intersects` are supported for 3D geometries.
+ * Only disjoint, dwithin, and intersects are supported for 3D geometries.
  */
 
 #include "point/tpoint_spatialrels.h"
@@ -52,7 +52,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
-#include "point/pgis_call.h"
+#include "point/pgis_types.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
 
@@ -66,18 +66,17 @@ extern Datum pgis_intersects2d(Datum geom1, Datum geom2);
  *****************************************************************************/
 
 /**
- * @brief Call the PostGIS function ST_Contains with the 2 arguments
+ * @brief Return a Datum true if the first geometry contains the second one
  */
 Datum
 geom_contains(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geometry_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), CONTAINS));
 }
 
 /**
- * @brief Call the PostGIS function ST_Intersects with the 2 arguments
- * and negate the result
+ * @brief Return a Datum true if two geometries are disjoint in 2D
  */
 Datum
 geom_disjoint2d(Datum geom1, Datum geom2)
@@ -86,8 +85,7 @@ geom_disjoint2d(Datum geom1, Datum geom2)
 }
 
 /**
- * @brief Call the PostGIS function ST_Intersects3D with the 2 arguments
- * and negates the result
+ * @brief Return a Datum true if two geometries are disjoint in 3D
  */
 Datum
 geom_disjoint3d(Datum geom1, Datum geom2)
@@ -96,7 +94,7 @@ geom_disjoint3d(Datum geom1, Datum geom2)
 }
 
 /**
- * @brief Call the PostGIS function ST_Intersects for geographies with the 2 arguments
+ * @brief Return a Datum true if two geographies are disjoint
  */
 Datum
 geog_disjoint(Datum geog1, Datum geog2)
@@ -105,13 +103,13 @@ geog_disjoint(Datum geog1, Datum geog2)
 }
 
 /**
- * @brief Call the PostGIS function ST_Intersects with the 2 arguments
+ * @brief Return a Datum true if two geometries intersect in 2D
  */
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
 #if MEOS
-  return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geometry_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), INTERSECTS));
 #else
   return pgis_intersects2d(geom1, geom2);
@@ -119,135 +117,127 @@ geom_intersects2d(Datum geom1, Datum geom2)
 }
 
 /**
- * @brief Call the PostGIS function ST_3DIntersects with the 2 arguments
+ * @brief Return a Datum true if two geometries intersect in 3D
  */
 Datum
 geom_intersects3d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(gserialized_3Dintersects(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geometry_3Dintersects(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
 /**
- * @brief Call the PostGIS function ST_Intersects for geographies with the 2 arguments
+ * @brief Return a Datum true if two geographies intersect
  */
 Datum
 geog_intersects(Datum geog1, Datum geog2)
 {
-  return BoolGetDatum(gserialized_geog_dwithin(DatumGetGserializedP(geog1),
+  return BoolGetDatum(pgis_geography_dwithin(DatumGetGserializedP(geog1),
     DatumGetGserializedP(geog2), 0.0, true));
 }
 
 #if 0 /* not used */
 /**
- * @brief Call the PostGIS function ST_Touches with the 2 arguments
+ * @brief Return a Datum true if two geometries touch
  */
 Datum
 geom_touches(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(gserialized_spatialrel(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geometry_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), TOUCHES));
 }
 #endif /* not used */
 
 /**
- * @brief Call the PostGIS function ST_DWithin with the 3 arguments
+ * @brief Return a Datum true if two 2D geometries are within a distance
  */
 Datum
 geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 {
-  return BoolGetDatum(gserialized_dwithin(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geometry_dwithin2d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
 }
 
 /**
- * @brief Call the PostGIS function ST_3DDWithin with the 3 arguments
+ * @brief Return a Datum true if two 3D geometries are within a distance
  */
 Datum
 geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 {
-  return BoolGetDatum(gserialized_dwithin3d(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geometry_dwithin3d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
 }
 
 /**
- * @brief Call the PostGIS function ST_DWithin for geographies with the 3 arguments
+ * @brief Return a Datum true if two geographies are within a distance
  */
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
-  return BoolGetDatum(gserialized_geog_dwithin(DatumGetGserializedP(geog1),
+  return BoolGetDatum(pgis_geography_dwithin(DatumGetGserializedP(geog1),
     DatumGetGserializedP(geog2), DatumGetFloat8(dist), true));
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Select the appropriate disjoint function for a MobilityDB type and a
- * GSERIALIZED. We need two parameters to cope with mixed 2D/3D arguments
+ * @brief Select the appropriate disjoint function 
+ * @note We need two parameters to cope with mixed 2D/3D arguments
  */
 datum_func2
 get_disjoint_fn_gs(int16 flags1, uint8_t flags2)
 {
-  datum_func2 result;
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    result = &geog_disjoint;
+    return &geog_disjoint;
   else
     /* 3D only if both arguments are 3D */
-    result = MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
+    return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
       &geom_disjoint3d : &geom_disjoint2d;
-  return result;
 }
 
 /**
- * @brief Select the appropriate intersect function for a MobilityDB type and a
- * GSERIALIZED. We need two parameters to cope with mixed 2D/3D arguments
+ * @brief Select the appropriate intersect function
+ * @note We need two parameters to cope with mixed 2D/3D arguments
  */
 datum_func2
 get_intersects_fn_gs(int16 flags1, uint8_t flags2)
 {
-  datum_func2 result;
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    result = &geog_intersects;
+    return &geog_intersects;
   else
     /* 3D only if both arguments are 3D */
-    result = MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
+    return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
       &geom_intersects3d : &geom_intersects2d;
-  return result;
 }
 
 /**
- * @brief Select the appropriate dwithin function for two MobilityDB types.
- * We need two parameters to cope with mixed 2D/3D arguments
+ * @brief Select the appropriate dwithin function
+ * @note We need two parameters to cope with mixed 2D/3D arguments
  */
 datum_func3
 get_dwithin_fn(int16 flags1, int16 flags2)
 {
-  datum_func3 result;
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    result = &geog_dwithin;
+    return &geog_dwithin;
   else
     /* 3D only if both arguments are 3D */
-    result = MEOS_FLAGS_GET_Z(flags1) && MEOS_FLAGS_GET_Z(flags2) ?
+    return MEOS_FLAGS_GET_Z(flags1) && MEOS_FLAGS_GET_Z(flags2) ?
       &geom_dwithin3d : &geom_dwithin2d;
-  return result;
 }
 
 /**
- * @brief Select the appropriate dwithin function for a MobilityDB type and a
- * GSERIALIZED. We need two parameters to cope with mixed 2D/3D arguments
+ * @brief Select the appropriate dwithin function
+ * @note We need two parameters to cope with mixed 2D/3D arguments
  */
 static datum_func3
 get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
 {
-  datum_func3 result;
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    result = &geog_dwithin;
+    return &geog_dwithin;
   else
     /* 3D only if both arguments are 3D */
-    result = MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
+    return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
       &geom_dwithin3d : &geom_dwithin2d;
-  return result;
 }
 
 /*****************************************************************************
@@ -266,14 +256,14 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  * @return On error return -1
  */
 static int
-spatialrel_tpoint_traj_geo(const Temporal *temp, const GSERIALIZED *gs, 
+spatialrel_tpoint_traj_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum param, Datum (*func)(Datum, ...), int numparam, bool invert)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-    
+
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
   Datum traj = PointerGetDatum(tpoint_trajectory(temp));
@@ -289,8 +279,8 @@ spatialrel_tpoint_traj_geo(const Temporal *temp, const GSERIALIZED *gs,
 /*****************************************************************************/
 
 /**
- * @brief Return true if the temporal points ever/always satisfy the spatial
- * relationship.
+ * @brief Return true if two temporal points ever/always satisfy a spatial
+ * relationship
  * @param[in] temp1,temp2 Temporal points
  * @param[in] func Spatial relationship
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -321,8 +311,7 @@ ea_spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.ever = ever;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  int result = eafunc_temporal_temporal(temp1, temp2, &lfinfo);
-  return result;
+  return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 /*****************************************************************************
@@ -330,9 +319,9 @@ ea_spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
- * @brief Return 1 if a geometry ever contains a temporal point,
- * 0 if not, and -1 on error or if the geometry is empty.
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return 1 if a geometry ever contains a temporal point, 0 if not, and
+ * -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal point
  * @note The function does not accept 3D or geography since it is based on the
@@ -351,14 +340,15 @@ econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
       ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags))
     return -1;
   GSERIALIZED *traj = tpoint_trajectory(temp);
-  bool result = gserialized_relate_pattern(gs, traj, "T********");
+  bool result = geo_relate_pattern(gs, traj, "T********");
+  pfree(traj);
   return result ? 1 : 0;
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry always contains a temporal point,
- * 0 if not, and -1 on error or if the geometry is empty.
+ * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal point
  * @note The function tests whether the trajectory is contained in the geometry.
@@ -374,8 +364,9 @@ acontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
       ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags))
     return -1;
   GSERIALIZED *traj = tpoint_trajectory(temp);
-  bool result = DatumGetBool(geom_contains(PointerGetDatum(gs), 
+  bool result = DatumGetBool(geom_contains(PointerGetDatum(gs),
     PointerGetDatum(traj)));
+  pfree(traj);
   return result ? 1 : 0;
 }
 
@@ -406,14 +397,13 @@ ea_disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 bool
-ea_disjoint_tpointseq_geo(const TSequence *seq, Datum geo, 
+ea_disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
   Datum (*func)(Datum, ...), bool ever)
 {
   bool ret_loop = ever ? true : false;
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    bool res = DatumGetBool(func(tinstant_value(inst), geo));
+    bool res = DatumGetBool(func(tinstant_value(TSEQUENCE_INST_N(seq, i)), geo));
     if ((ever && res) || (! ever && ! res))
       return ret_loop;
   }
@@ -435,8 +425,8 @@ ea_disjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
   bool ret_loop = ever ? true : false;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    bool res = ea_disjoint_tpointseq_geo(seq, geo, func, ever);
+    bool res = ea_disjoint_tpointseq_geo(TSEQUENCESET_SEQ_N(ss, i), geo, func,
+      ever);
     if ((ever && res) || (! ever && ! res))
       return ret_loop;
   }
@@ -444,9 +434,9 @@ ea_disjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_rel_ever
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point and a geometry are ever disjoint,
- * 0 if not, and -1 on error or if the geometry is empty.
+ * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -462,22 +452,27 @@ ea_disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, gs->gflags);
   bool result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = ea_disjoint_tpointinst_geo((TInstant *) temp, PointerGetDatum(gs),
-      func);
-  else if (temp->subtype == TSEQUENCE)
-    result = ea_disjoint_tpointseq_geo((TSequence *) temp, PointerGetDatum(gs),
-      func, ever);
-  else /* temp->subtype == TSEQUENCESET */
-    result = ea_disjoint_tpointseqset_geo((TSequenceSet *) temp,
-      PointerGetDatum(gs), func, ever);
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      result = ea_disjoint_tpointinst_geo((TInstant *) temp, PointerGetDatum(gs),
+        func);
+      break;
+    case TSEQUENCE:
+      result = ea_disjoint_tpointseq_geo((TSequence *) temp, PointerGetDatum(gs),
+        func, ever);
+      break;
+    default: /* TSEQUENCESET */
+      result = ea_disjoint_tpointseqset_geo((TSequenceSet *) temp,
+        PointerGetDatum(gs), func, ever);
+  }
   return result ? Int32GetDatum(1) : Int32GetDatum(0);
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point and a geometry are ever disjoint,
- * 0 if not, and -1 on error or if the geometry is empty.
+ * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @csqlfn #Edisjoint_tpoint_geo()
@@ -489,12 +484,12 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point and a geometry are always disjoint,
- * 0 if not, and -1 on error or if the geometry is empty.
+ * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @csqlfn #Edisjoint_tpoint_geo()
+ * @csqlfn #Adisjoint_tpoint_geo()
  */
 int
 adisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -502,8 +497,9 @@ adisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   return DatumGetInt32(ea_disjoint_tpoint_geo(temp, gs, ALWAYS));
 }
 
+#if MEOS
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if the temporal points are ever disjoint, 0 if not, and
  * -1 on error or if the temporal points do not intersect in time
  * @param[in] temp1,temp2 Temporal points
@@ -518,11 +514,11 @@ edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if the temporal points are always disjoint, 0 if not, and
  * -1 on error or if the temporal points do not intersect in time
  * @param[in] temp1,temp2 Temporal points
- * @csqlfn #Edisjoint_tpoint_tpoint()
+ * @csqlfn #Adisjoint_tpoint_tpoint()
  */
 int
 adisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -531,15 +527,16 @@ adisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
     ea_spatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_nsame, ALWAYS) :
     ea_spatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_ne, ALWAYS);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Ever/always intersects (for both geometry and geography)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry and a temporal point ever intersect,
- * 0 if not, and -1 on error or if the geometry is empty.
+ * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @csqlfn #Eintersects_tpoint_geo()
@@ -552,15 +549,14 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     return -1;
 
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
-  int result = spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL,
+  return spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL,
     (varfunc) func, 2, INVERT_NO);
-  return result;
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry and a temporal point always intersect,
- * 0 if not, and -1 on error or if the geometry is empty.
+ * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @csqlfn #Aintersects_tpoint_geo()
@@ -573,7 +569,7 @@ aintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if the temporal points ever intersect, 0 if not, and
  * -1 on error or if the temporal points do not intersect in time
  * @param[in] temp1,temp2 Temporal points
@@ -588,7 +584,7 @@ eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if the temporal points always intersect, 0 if not, and
  * -1 on error or if the temporal points do not intersect in time
  * @param[in] temp1,temp2 Temporal points
@@ -610,7 +606,7 @@ aintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point and a geometry ever touch, 0 if not, and
  * -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
@@ -630,7 +626,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   varfunc func = (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
     (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
   GSERIALIZED *traj = tpoint_trajectory(temp);
-  GSERIALIZED *gsbound = gserialized_boundary(gs);
+  GSERIALIZED *gsbound = geometry_boundary(gs);
   bool result = false;
   if (gsbound && ! gserialized_is_empty(gsbound))
     result = func(PointerGetDatum(gsbound), PointerGetDatum(traj));
@@ -638,22 +634,21 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   // else if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
   // {
     // /* The geometry is a point or a multipoint -> the boundary is empty */
-    // GSERIALIZED *tempbound = gserialized_boundary(traj);
+    // GSERIALIZED *tempbound = geometry_boundary(traj);
     // if (tempbound)
     // {
       // result = func(PointerGetDatum(tempbound), PointerGetDatum(gs));
       // pfree(tempbound);
     // }
   // }
-  pfree(traj);
-  pfree(gsbound);
+  pfree(traj); pfree(gsbound);
   return result ? 1 : 0;
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
- * @brief Return 1 if a temporal point and a geometry always touch, 0 if not, and
- * -1 on error or if the geometry is empty
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return 1 if a temporal point and a geometry always touch, 0 if not,
+ * and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @csqlfn #Atouches_tpoint_geo()
@@ -668,7 +663,7 @@ atouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
-  GSERIALIZED *gsbound = gserialized_boundary(gs);
+  GSERIALIZED *gsbound = geometry_boundary(gs);
   bool result = false;
   if (gsbound && ! gserialized_is_empty(gsbound))
   {
@@ -688,7 +683,7 @@ atouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry and a temporal point are ever within the
  * given distance, 0 if not, -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
@@ -706,13 +701,12 @@ edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
     return -1;
 
   datum_func3 func = get_dwithin_fn_gs(temp->flags, gs->gflags);
-  int result = spatialrel_tpoint_traj_geo(temp, gs, Float8GetDatum(dist),
+  return spatialrel_tpoint_traj_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) func, 3, INVERT_NO);
-  return result;
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
+ * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a geometry and a temporal point are always within a
  * distance, 0 if not, -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
@@ -732,7 +726,7 @@ adwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
-  GSERIALIZED *buffer = gserialized_buffer(gs, dist, "");
+  GSERIALIZED *buffer = geometry_buffer(gs, dist, "");
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
   int result = spatialrel_tpoint_traj_geo(temp, buffer, Float8GetDatum(dist),
     (varfunc) func, 3, INVERT_NO);
@@ -761,7 +755,7 @@ ea_dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * @brief Return true if the temporal points are ever within a distance
+ * @brief Return true if two temporal points are ever within a distance
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -776,9 +770,8 @@ ea_dwithin_tpointseq_tpointseq_discstep(const TSequence *seq1,
   bool ret_loop = ever ? true : false;
   for (int i = 0; i < seq1->count; i++)
   {
-    const TInstant *inst1 = TSEQUENCE_INST_N(seq1, i);
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq2, i);
-    bool res = ea_dwithin_tpointinst_tpointinst(inst1, inst2, dist, func);
+    bool res = ea_dwithin_tpointinst_tpointinst(TSEQUENCE_INST_N(seq1, i),
+      TSEQUENCE_INST_N(seq2, i), dist, func);
     if ((ever && res) || (! ever && ! res))
       return ret_loop;
   }
@@ -786,7 +779,7 @@ ea_dwithin_tpointseq_tpointseq_discstep(const TSequence *seq1,
 }
 
 /**
- * @brief Return true if the temporal points are ever within a distance
+ * @brief Return true if two temporal points are ever within a distance
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -794,7 +787,7 @@ ea_dwithin_tpointseq_tpointseq_discstep(const TSequence *seq1,
  * @pre The temporal points are synchronized
  */
 static bool
-ea_dwithin_tpointseq_tpointseq_cont(const TSequence *seq1, 
+ea_dwithin_tpointseq_tpointseq_cont(const TSequence *seq1,
   const TSequence *seq2, double dist, datum_func3 func, bool ever)
 {
   assert(seq1); assert(seq2);
@@ -858,7 +851,7 @@ ea_dwithin_tpointseq_tpointseq_cont(const TSequence *seq1,
 }
 
 /**
- * @brief Return true if the temporal points are ever within a distance
+ * @brief Return true if two temporal points are ever within a distance
  * @param[in] ss1,ss2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -889,7 +882,7 @@ ea_dwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
 /*****************************************************************************/
 
 /**
- * @brief Return 1 if the temporal points are ever within a distance,
+ * @brief Return 1 if two temporal points are ever within a distance,
  * 0 if not, -1 if the temporal points do not intersect on time
  * @pre The temporal points are synchronized
  */
@@ -898,27 +891,28 @@ ea_dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
   double dist, bool ever)
 {
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
-  bool result;
   assert(temptype_subtype(sync1->subtype));
-  if (sync1->subtype == TINSTANT)
-    result = ea_dwithin_tpointinst_tpointinst((TInstant *) sync1,
-      (TInstant *) sync2, dist, func);
-  else if (sync1->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_LINEAR_INTERP(sync1->flags) ||
-        MEOS_FLAGS_LINEAR_INTERP(sync2->flags) ?
-      ea_dwithin_tpointseq_tpointseq_cont((TSequence *) sync1,
-        (TSequence *) sync2, dist, func, ever) :
-      ea_dwithin_tpointseq_tpointseq_discstep((TSequence *) sync1,
-        (TSequence *) sync2, dist, func, ever);
-  else /* sync1->subtype == TSEQUENCESET */
-    result = ea_dwithin_tpointseqset_tpointseqset((TSequenceSet *) sync1,
-      (TSequenceSet *) sync2, dist, func, ever);
-  return result;
+  switch (sync1->subtype)
+  {
+    case TINSTANT:
+      return ea_dwithin_tpointinst_tpointinst((TInstant *) sync1,
+        (TInstant *) sync2, dist, func);
+    case TSEQUENCE:
+      return MEOS_FLAGS_LINEAR_INTERP(sync1->flags) ||
+          MEOS_FLAGS_LINEAR_INTERP(sync2->flags) ?
+        ea_dwithin_tpointseq_tpointseq_cont((TSequence *) sync1,
+          (TSequence *) sync2, dist, func, ever) :
+        ea_dwithin_tpointseq_tpointseq_discstep((TSequence *) sync1,
+          (TSequence *) sync2, dist, func, ever);
+    default: /* TSEQUENCESET */
+      return ea_dwithin_tpointseqset_tpointseqset((TSequenceSet *) sync1,
+        (TSequenceSet *) sync2, dist, func, ever);
+  }
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_rel_ever
- * @brief Return 1 if the temporal points are ever within a distance,
+ * @ingroup meos_internal_temporal_spatial_rel_ever
+ * @brief Return 1 if two temporal points are ever within a distance,
  * 0 if not, -1 on error or if the temporal points do not intersect on time
  * @param[in] temp1,temp2 Temporal points
  * @param[in] dist Distance
@@ -930,8 +924,7 @@ ea_dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   double dist, bool ever)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_valid_tpoint_tpoint(temp1, temp2) ||
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
@@ -948,8 +941,8 @@ ea_dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
- * @brief Return 1 if the temporal points are ever within a distance,
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return 1 if two temporal points are ever within a distance,
  * 0 if not, -1 on error or if the temporal points do not intersect on time
  * @param[in] temp1,temp2 Temporal points
  * @param[in] dist Distance
@@ -959,12 +952,15 @@ int
 edwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+    return -1;
   return ea_dwithin_tpoint_tpoint(temp1, temp2, dist, EVER);
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel_ever
- * @brief Return 1 if the temporal points are always within a distance,
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return 1 if two temporal points are always within a distance,
  * 0 if not, -1 on error or if the temporal points do not intersect on time
  * @param[in] temp1,temp2 Temporal points
  * @param[in] dist Distance
@@ -974,8 +970,10 @@ int
 adwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+    return -1;
   return ea_dwithin_tpoint_tpoint(temp1, temp2, dist, ALWAYS);
 }
-
 
 /*****************************************************************************/

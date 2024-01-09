@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions manipulating skiplists.
+ * @brief Functions manipulating skiplists
  * @note See the description of skip lists in Wikipedia
  * https://en.wikipedia.org/wiki/Skip_list
  * Note also that according to
@@ -75,7 +75,8 @@
 #define SKIPLIST_INITIAL_FREELIST 32
 
 /**
- * @brief Enumeration for the relative position of a given element into a skiplist
+ * @brief Enumeration for the relative position of a given element into a
+ * skiplist
  */
 typedef enum
 {
@@ -143,7 +144,7 @@ random_level()
 
 /**
  * @brief Return the position to store an additional element in the skiplist
- * @return On error return INT_MAX
+ * @return On error return @p INT_MAX
  */
 static int
 skiplist_alloc(SkipList *list)
@@ -218,7 +219,7 @@ skiplist_delete(SkipList *list, int cur)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup meos_internal_temporal_agg
  * @brief Free the skiplist
  * @param[in] list Skiplist
  */
@@ -304,7 +305,6 @@ skiplist_print(const SkipList *list)
 
 /**
  * @brief Reads the state value from the buffer
- *
  * @param[in] state State
  * @param[in] data Structure containing the data
  * @param[in] size Size of the structure
@@ -351,7 +351,6 @@ skiplist_tailval(SkipList *list)
 
 /**
  * @brief Constructs a skiplist from the array of values values
- *
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  */
@@ -409,9 +408,9 @@ skiplist_make(void **values, int count)
 static RelativeTimePos
 pos_span_timestamptz(const Span *s, TimestampTz t)
 {
-  if (left_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
+  if (left_span_value(s, TimestampTzGetDatum(t)))
     return BEFORE;
-  if (right_span_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
+  if (right_span_value(s, TimestampTzGetDatum(t)))
     return AFTER;
   return DURING;
 }
@@ -458,7 +457,8 @@ skiplist_elempos(const SkipList *list, Span *s, int cur)
  * @param[in,out] list Skiplist
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
- * @param[in] func Function used when aggregating temporal values
+ * @param[in] func Function used when aggregating temporal values, may be NULL
+ * for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments when
  * aggregating temporal value
  */

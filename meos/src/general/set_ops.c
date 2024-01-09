@@ -85,12 +85,12 @@ bbox_contains_set_set(const Set *s1, const Set *s2)
  * @brief Return true if the bounding box of the first set contains the value
  */
 bool
-bbox_contains_set_value(const Set *s, Datum d, meosType basetype)
+bbox_contains_set_value(const Set *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   Datum min = SET_VAL_N(s, MINIDX);
   Datum max = SET_VAL_N(s, s->MAXIDX);
-  if (datum_le(min, d, basetype) && datum_le(d, max, basetype))
+  if (datum_le(min, value, s->basetype) && datum_le(value, max, s->basetype))
     return true;
   return false;
 }
@@ -120,41 +120,41 @@ setop_set_set(const Set *s1, const Set *s2, SetOper op)
     count = s1->count;
   Datum *values = palloc(sizeof(Datum) * count);
   int i = 0, j = 0, nvals = 0;
-  Datum d1 = SET_VAL_N(s1, 0);
-  Datum d2 = SET_VAL_N(s2, 0);
+  Datum value1 = SET_VAL_N(s1, 0);
+  Datum value2 = SET_VAL_N(s2, 0);
   meosType basetype = s1->basetype;
   while (i < s1->count && j < s2->count)
   {
-    int cmp = datum_cmp(d1, d2, basetype);
+    int cmp = datum_cmp(value1, value2, basetype);
     if (cmp == 0)
     {
       if (op == UNION || op == INTER)
-        values[nvals++] = d1;
+        values[nvals++] = value1;
       i++; j++;
       if (i == s1->count || j == s2->count)
         break;
-      d1 = SET_VAL_N(s1, i);
-      d2 = SET_VAL_N(s2, j);
+      value1 = SET_VAL_N(s1, i);
+      value2 = SET_VAL_N(s2, j);
     }
     else if (cmp < 0)
     {
       if (op == UNION || op == MINUS)
-        values[nvals++] = d1;
+        values[nvals++] = value1;
       i++;
       if (i == s1->count)
         break;
       else
-        d1 = SET_VAL_N(s1, i);
+        value1 = SET_VAL_N(s1, i);
     }
     else
     {
       if (op == UNION)
-        values[nvals++] = d2;
+        values[nvals++] = value2;
       j++;
       if (j == s2->count)
         break;
       else
-        d2 = SET_VAL_N(s2, j);
+        value2 = SET_VAL_N(s2, j);
     }
   }
   if (op == UNION || op == MINUS)
@@ -175,26 +175,25 @@ setop_set_set(const Set *s1, const Set *s2, SetOper op)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_topo
+ * @ingroup meos_internal_setspan_topo
  * @brief Return true if a set contains a value
  * @param[in] s Set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 bool
-contains_set_value(const Set *s, Datum d, meosType basetype)
+contains_set_value(const Set *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   /* Bounding box test */
-  if (! bbox_contains_set_value(s, d, basetype))
+  if (! bbox_contains_set_value(s, value))
     return false;
   int loc;
-  return set_find_value(s, d, &loc);
+  return set_find_value(s, value, &loc);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a set contains an integer
  * @param[in] s Set
  * @param[in] i Value
@@ -206,11 +205,11 @@ contains_set_int(const Set *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return contains_set_value(s, Int32GetDatum(i), T_INT4);
+  return contains_set_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a set contains a big integer
  * @param[in] s Set
  * @param[in] i Value
@@ -222,11 +221,11 @@ contains_set_bigint(const Set *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return contains_set_value(s, Int64GetDatum(i), T_INT8);
+  return contains_set_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a set contains a float
  * @param[in] s Set
  * @param[in] d Value
@@ -238,11 +237,11 @@ contains_set_float(const Set *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return contains_set_value(s, Float8GetDatum(d), T_FLOAT8);
+  return contains_set_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a set contains a text
  * @param[in] s Set
  * @param[in] txt Value
@@ -255,11 +254,11 @@ contains_set_text(const Set *s, text *txt)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return contains_set_value(s, PointerGetDatum(txt), T_TEXT);
+  return contains_set_value(s, PointerGetDatum(txt));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a set contains a date
  * @param[in] s Set
  * @param[in] d Value
@@ -271,11 +270,11 @@ contains_set_date(const Set *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return contains_set_value(s, DateADTGetDatum(d), T_DATE);
+  return contains_set_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a set contains a timestamptz
  * @param[in] s Set
  * @param[in] t Value
@@ -288,11 +287,11 @@ contains_set_timestamptz(const Set *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return contains_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return contains_set_value(s, TimestampTzGetDatum(t));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a set contains a geometry/geography
  * @param[in] s Set
  * @param[in] gs Value
@@ -306,15 +305,12 @@ contains_set_geo(const Set *s, GSERIALIZED *gs)
       ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs) )
     return false;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_set_isof_basetype(s, geotype))
-    return false;
-  return contains_set_value(s, PointerGetDatum(gs), geotype);
+  return contains_set_value(s, PointerGetDatum(gs));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if the first set contains the second one
  * @param[in] s1,s2 Sets
  * @csqlfn #Contains_set_set()
@@ -334,9 +330,7 @@ contains_set_set(const Set *s1, const Set *s2)
   int i = 0, j = 0;
   while (j < s2->count)
   {
-    Datum d1 = SET_VAL_N(s1, i);
-    Datum d2 = SET_VAL_N(s2, j);
-    int cmp = datum_cmp(d1, d2, s1->basetype);
+    int cmp = datum_cmp(SET_VAL_N(s1, i), SET_VAL_N(s2, j), s1->basetype);
     if (cmp == 0)
     {
       i++; j++;
@@ -354,21 +348,20 @@ contains_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_topo
+ * @ingroup meos_internal_setspan_topo
  * @brief Return true if a value is contained in a set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Set
  */
 bool
-contained_value_set(Datum d, meosType basetype, const Set *s)
+contained_value_set(Datum value, const Set *s)
 {
-  return contains_set_value(s, d, basetype);
+  return contains_set_value(s, value);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if an integer is contained in a set
  * @param[in] i Value
  * @param[in] s Set
@@ -380,11 +373,11 @@ contained_int_set(int i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return contained_value_set(Int32GetDatum(i), T_INT4, s);
+  return contained_value_set(Int32GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a big integer is contained in a set
  * @param[in] i Value
  * @param[in] s Set
@@ -396,11 +389,11 @@ contained_bigint_set(int64 i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return contained_value_set(Int64GetDatum(i), T_INT8, s);
+  return contained_value_set(Int64GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a float is contained in a set
  * @param[in] d Value
  * @param[in] s Set
@@ -412,11 +405,11 @@ contained_float_set(double d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return contained_value_set(Float8GetDatum(d), T_FLOAT8, s);
+  return contained_value_set(Float8GetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a text is contained in a set
  * @param[in] txt Value
  * @param[in] s Set
@@ -429,11 +422,11 @@ contained_text_set(text *txt, const Set *s)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return contained_value_set(PointerGetDatum(txt), T_TEXT, s);
+  return contained_value_set(PointerGetDatum(txt), s);
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a date is contained in a set
  * @param[in] d Value
  * @param[in] s Set
@@ -445,11 +438,11 @@ contained_date_set(DateADT d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return contains_set_value(s, DateADTGetDatum(d), T_DATE);
+  return contains_set_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a timestamptz is contained in a set
  * @param[in] t Value
  * @param[in] s Set
@@ -462,11 +455,11 @@ contained_timestamptz_set(TimestampTz t, const Set *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return contains_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return contains_set_value(s, TimestampTzGetDatum(t));
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if a geometry/geography is contained in a set
  * @param[in] gs Value
  * @param[in] s Set
@@ -480,15 +473,12 @@ contained_geo_set(GSERIALIZED *gs, const Set *s)
       ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs))
     return false;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_set_isof_basetype(s, geotype))
-    return false;
-  return contained_value_set(PointerGetDatum(gs), geotype, s);
+  return contained_value_set(PointerGetDatum(gs), s);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if the first set is contained in the second one
  * @param[in] s1,s2 Sets
  * @csqlfn #Contained_set_set()
@@ -504,7 +494,7 @@ contained_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup meos_setspan_topo
  * @brief Return true if two sets overlap
  * @param[in] s1,s2 Sets
  * @csqlfn #Overlaps_set_set()
@@ -524,9 +514,7 @@ overlaps_set_set(const Set *s1, const Set *s2)
   int i = 0, j = 0;
   while (i < s1->count && j < s2->count)
   {
-    Datum d1 = SET_VAL_N(s1, i);
-    Datum d2 = SET_VAL_N(s2, j);
-    int cmp = datum_cmp(d1, d2, s1->basetype);
+    int cmp = datum_cmp(SET_VAL_N(s1, i), SET_VAL_N(s2, j), s1->basetype);
     if (cmp == 0)
       return true;
     if (cmp < 0)
@@ -542,23 +530,21 @@ overlaps_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a value is to the left of a set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Set
  */
 bool
-left_value_set(Datum d, meosType basetype, const Set *s)
+left_value_set(Datum value, const Set *s)
 {
-  assert(s); assert(s->basetype == basetype);
-  Datum d1 = SET_VAL_N(s, MINIDX);
-  return datum_lt(d, d1, basetype);
+  assert(s);
+  return datum_lt(value, SET_VAL_N(s, MINIDX), s->basetype);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if an integer is to the left of a set
  * @param[in] i Value
  * @param[in] s Set
@@ -570,11 +556,11 @@ left_int_set(int i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return left_value_set(Int32GetDatum(i), T_INT4, s);
+  return left_value_set(Int32GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a big integer is to the left of a set
  * @param[in] i Value
  * @param[in] s Set
@@ -586,11 +572,11 @@ left_bigint_set(int64 i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return left_value_set(Int64GetDatum(i), T_INT8, s);
+  return left_value_set(Int64GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a float is to the left of a set
  * @param[in] d Value
  * @param[in] s Set
@@ -602,11 +588,11 @@ left_float_set(double d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return left_value_set(Float8GetDatum(d), T_FLOAT8, s);
+  return left_value_set(Float8GetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a text is to the left of a set
  * @param[in] txt Value
  * @param[in] s Set
@@ -619,11 +605,11 @@ left_text_set(text *txt, const Set *s)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return left_value_set(PointerGetDatum(txt), T_TEXT, s);
+  return left_value_set(PointerGetDatum(txt), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a date is before a set
  * @param[in] d Value
  * @param[in] s Set
@@ -635,11 +621,11 @@ before_date_set(DateADT d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return left_value_set(DateADTGetDatum(d), T_DATE, s);
+  return left_value_set(DateADTGetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a timestamptz is before a set
  * @param[in] t Value
  * @param[in] s Set
@@ -652,28 +638,26 @@ before_timestamptz_set(TimestampTz t, const Set *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return left_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
+  return left_value_set(TimestampTzGetDatum(t), s);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a set is to the left of a value
  * @param[in] s Set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 bool
-left_set_value(const Set *s, Datum d, meosType basetype)
+left_set_value(const Set *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
-  Datum d1 = SET_VAL_N(s, s->MAXIDX);
-  return datum_lt(d1, d, basetype);
+  assert(s);
+  return datum_lt(SET_VAL_N(s, s->MAXIDX), value, s->basetype);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is to the left of an integer
  * @param[in] s Set
  * @param[in] i Value
@@ -685,11 +669,11 @@ left_set_int(const Set *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return left_set_value(s, Int32GetDatum(i), T_INT4);
+  return left_set_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is to the left of a big integer
  * @param[in] s Set
  * @param[in] i Value
@@ -701,11 +685,11 @@ left_set_bigint(const Set *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return left_set_value(s, Int64GetDatum(i), T_INT8);
+  return left_set_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is to the left of a float
  * @param[in] s Set
  * @param[in] d Value
@@ -717,11 +701,11 @@ left_set_float(const Set *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return left_set_value(s, Float8GetDatum(d), T_FLOAT8);
+  return left_set_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is to the left of a text
  * @param[in] s Set
  * @param[in] txt Value
@@ -734,11 +718,11 @@ left_set_text(const Set *s, text *txt)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return left_set_value(s, PointerGetDatum(txt), T_TEXT);
+  return left_set_value(s, PointerGetDatum(txt));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is before a date
  * @param[in] s Set
  * @param[in] d Value
@@ -750,11 +734,11 @@ before_set_date(const Set *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return left_set_value(s, DateADTGetDatum(d), T_DATE);
+  return left_set_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is before a timestamptz
  * @param[in] s Set
  * @param[in] t Value
@@ -767,12 +751,12 @@ before_set_timestamptz(const Set *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return left_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return left_set_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if the first set is to the left of the second one
  * @param[in] s1,s2 Sets
  * @csqlfn #Left_set_set()
@@ -784,9 +768,8 @@ left_set_set(const Set *s1, const Set *s2)
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
     return false;
-  Datum d1 = SET_VAL_N(s1, s1->count - 1);
-  Datum d2 = SET_VAL_N(s2, 0);
-  return (datum_lt(d1, d2, s1->basetype));
+  return (datum_lt(SET_VAL_N(s1, s1->count - 1), SET_VAL_N(s2, 0),
+    s1->basetype));
 }
 
 /*****************************************************************************
@@ -794,21 +777,20 @@ left_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a value is to the right of a set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Set
  */
 bool
-right_value_set(Datum d, meosType basetype, const Set *s)
+right_value_set(Datum value, const Set *s)
 {
-  return left_set_value(s, d, basetype);
+  return left_set_value(s, value);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if an integer is to the right of a set
  * @param[in] i Value
  * @param[in] s Set
@@ -820,11 +802,11 @@ right_int_set(int i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return left_set_value(s, Int32GetDatum(i), T_INT4);
+  return left_set_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a big integer is to the right of a set
  * @param[in] i Value
  * @param[in] s Set
@@ -836,11 +818,11 @@ right_bigint_set(int64 i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return left_set_value(s, Int64GetDatum(i), T_INT8);
+  return left_set_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a float is to the right of a set
  * @param[in] d Value
  * @param[in] s Set
@@ -852,11 +834,11 @@ right_float_set(double d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return left_set_value(s, Float8GetDatum(d), T_FLOAT8);
+  return left_set_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a text is to the right of a set
  * @param[in] txt Value
  * @param[in] s Set
@@ -869,11 +851,11 @@ right_text_set(text *txt, const Set *s)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return left_set_value(s, PointerGetDatum(txt), T_TEXT);
+  return left_set_value(s, PointerGetDatum(txt));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a date is after a set
  * @param[in] d Value
  * @param[in] s Set
@@ -885,10 +867,10 @@ after_date_set(DateADT d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return left_set_value(s, DateADTGetDatum(d), T_DATE);
+  return left_set_value(s, DateADTGetDatum(d));
 }
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a timestamptz is after a set
  * @param[in] t Value
  * @param[in] s Set
@@ -901,26 +883,25 @@ after_timestamptz_set(TimestampTz t, const Set *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return left_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return left_set_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a set is to the right of a value
  * @param[in] s Set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 bool
-right_set_value(const Set *s, Datum d, meosType basetype)
+right_set_value(const Set *s, Datum value)
 {
-  return left_value_set(d, basetype, s);
+  return left_value_set(value, s);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is to the right of an integer
  * @param[in] s Set
  * @param[in] i Value
@@ -932,11 +913,11 @@ right_set_int(const Set *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return left_value_set(Int32GetDatum(i), T_INT4, s);
+  return left_value_set(Int32GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is to the right of a big integer
  * @param[in] s Set
  * @param[in] i Value
@@ -948,11 +929,11 @@ right_set_bigint(const Set *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return left_value_set(Int64GetDatum(i), T_INT8, s);
+  return left_value_set(Int64GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is to the right of a float
  * @param[in] s Set
  * @param[in] d Value
@@ -964,11 +945,11 @@ right_set_float(const Set *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return left_value_set(Float8GetDatum(d), T_FLOAT8, s);
+  return left_value_set(Float8GetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is to the right of a text
  * @param[in] s Set
  * @param[in] txt Value
@@ -981,11 +962,11 @@ right_set_text(const Set *s, text *txt)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return left_value_set(PointerGetDatum(txt), T_TEXT, s);
+  return left_value_set(PointerGetDatum(txt), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is after a date
  * @param[in] s Set
  * @param[in] d Value
@@ -997,11 +978,11 @@ after_set_date(const Set *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return left_value_set(DateADTGetDatum(d), T_DATE, s);
+  return left_value_set(DateADTGetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is after a timestamptz
  * @param[in] s Set
  * @param[in] t Value
@@ -1014,12 +995,12 @@ after_set_timestamptz(const Set *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return left_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
+  return left_value_set(TimestampTzGetDatum(t), s);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if the first set is to the right of the second one
  * @param[in] s1,s2 Sets
  * @csqlfn #Right_set_set()
@@ -1035,23 +1016,21 @@ right_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a value does not extend to the right of a set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Set
  */
 bool
-overleft_value_set(Datum d, meosType basetype, const Set *s)
+overleft_value_set(Datum value, const Set *s)
 {
-  assert(s); assert(s->basetype == basetype);
-  Datum d1 = SET_VAL_N(s, s->MAXIDX);
-  return datum_le(d, d1, basetype);
+  assert(s);
+  return datum_le(value, SET_VAL_N(s, s->MAXIDX), s->basetype);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if an integer does not extend to the right of a set
  * @param[in] i Value
  * @param[in] s Set
@@ -1063,11 +1042,11 @@ overleft_int_set(int i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return overleft_value_set(Int32GetDatum(i), T_INT4, s);
+  return overleft_value_set(Int32GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a big integer does not extend to the right of a set
  * @param[in] i Value
  * @param[in] s Set
@@ -1079,11 +1058,11 @@ overleft_bigint_set(int64 i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return overleft_value_set(Int64GetDatum(i), T_INT8, s);
+  return overleft_value_set(Int64GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a float does not extend to the right of a set
  * @param[in] d Value
  * @param[in] s Set
@@ -1095,11 +1074,11 @@ overleft_float_set(double d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return overleft_value_set(Float8GetDatum(d), T_FLOAT8, s);
+  return overleft_value_set(Float8GetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a text does not extend to the right of a set
  * @param[in] txt Value
  * @param[in] s Set
@@ -1112,11 +1091,11 @@ overleft_text_set(text *txt, const Set *s)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return overleft_value_set(PointerGetDatum(txt), T_TEXT, s);
+  return overleft_value_set(PointerGetDatum(txt), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a date is not after a set
  * @param[in] d Value
  * @param[in] s Set
@@ -1128,11 +1107,11 @@ overbefore_date_set(DateADT d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return overleft_value_set(DateADTGetDatum(d), T_DATE, s);
+  return overleft_value_set(DateADTGetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a timestamptz is not after a set
  * @csqlfn #Overleft_value_set()
  * @param[in] t Value
@@ -1145,28 +1124,26 @@ overbefore_timestamptz_set(TimestampTz t, const Set *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return overleft_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
+  return overleft_value_set(TimestampTzGetDatum(t), s);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a set does not extend to the right of a value
  * @param[in] s Set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 bool
-overleft_set_value(const Set *s, Datum d, meosType basetype)
+overleft_set_value(const Set *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
-  Datum d1 = SET_VAL_N(s, s->MAXIDX);
-  return datum_le(d1, d, basetype);
+  assert(s);
+  return datum_le(SET_VAL_N(s, s->MAXIDX), value, s->basetype);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set does not extend to the right of an integer
  * @param[in] s Set
  * @param[in] i Value
@@ -1178,11 +1155,11 @@ overleft_set_int(const Set *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return overleft_set_value(s, Int32GetDatum(i), T_INT4);
+  return overleft_set_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set does not extend to the right of a big integer
  * @param[in] s Set
  * @param[in] i Value
@@ -1194,11 +1171,11 @@ overleft_set_bigint(const Set *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return overleft_set_value(s, Int64GetDatum(i), T_INT8);
+  return overleft_set_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set does not extend to the right of a float
  * @param[in] s Set
  * @param[in] d Value
@@ -1210,11 +1187,11 @@ overleft_set_float(const Set *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return overleft_set_value(s, Float8GetDatum(d), T_FLOAT8);
+  return overleft_set_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set does not extend to the right of a text
  * @param[in] s Set
  * @param[in] txt Value
@@ -1227,11 +1204,11 @@ overleft_set_text(const Set *s, text *txt)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return overleft_set_value(s, PointerGetDatum(txt), T_TEXT);
+  return overleft_set_value(s, PointerGetDatum(txt));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is not after a date
  * @param[in] s Set
  * @param[in] d Value
@@ -1243,11 +1220,11 @@ overbefore_set_date(const Set *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return overleft_set_value(s, DateADTGetDatum(d), T_DATE);
+  return overleft_set_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is not after a timestamptz
  * @param[in] s Set
  * @param[in] t Value
@@ -1260,12 +1237,12 @@ overbefore_set_timestamptz(const Set *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return overleft_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return overleft_set_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if the first set does not extend to the right of
  * the second one
  * @param[in] s1,s2 Sets
@@ -1287,23 +1264,21 @@ overleft_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a value does not extend to the the left of a set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Set
  */
 bool
-overright_value_set(Datum d, meosType basetype, const Set *s)
+overright_value_set(Datum value, const Set *s)
 {
-  assert(s); assert(s->basetype == basetype);
-  Datum d1 = SET_VAL_N(s, MINIDX);
-  return datum_ge(d, d1, basetype);
+  assert(s);
+  return datum_ge(value, SET_VAL_N(s, MINIDX), s->basetype);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if an integer does not extend to the the left of a set
  * @param[in] i Value
  * @param[in] s Set
@@ -1315,11 +1290,11 @@ overright_int_set(int i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return overright_value_set(Int32GetDatum(i), T_INT4, s);
+  return overright_value_set(Int32GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a big integer does not extend to the the left of a set
  * @param[in] i Value
  * @param[in] s Set
@@ -1331,11 +1306,11 @@ overright_bigint_set(int64 i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return overright_value_set(Int64GetDatum(i), T_INT8, s);
+  return overright_value_set(Int64GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a float does not extend to the left of a set
  * @param[in] d Value
  * @param[in] s Set
@@ -1347,11 +1322,11 @@ overright_float_set(double d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return overright_value_set(Float8GetDatum(d), T_FLOAT8, s);
+  return overright_value_set(Float8GetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a text does not extend to the left of a set
  * @param[in] txt Value
  * @param[in] s Set
@@ -1364,11 +1339,11 @@ overright_text_set(text *txt, const Set *s)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return overright_set_value(s, PointerGetDatum(txt), T_TEXT);
+  return overright_set_value(s, PointerGetDatum(txt));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a date is not before a set
  * @param[in] d Value
  * @param[in] s Set
@@ -1380,11 +1355,11 @@ overafter_date_set(DateADT d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return overright_value_set(DateADTGetDatum(d), T_DATE, s);
+  return overright_value_set(DateADTGetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a timestamptz is not before a set
  * @param[in] t Value
  * @param[in] s Set
@@ -1397,28 +1372,26 @@ overafter_timestamptz_set(TimestampTz t, const Set *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return overright_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
+  return overright_value_set(TimestampTzGetDatum(t), s);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup meos_internal_setspan_pos
  * @brief Return true if a set does not extend to the left of a value
  * @param[in] s Set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 bool
-overright_set_value(const Set *s, Datum d, meosType basetype)
+overright_set_value(const Set *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
-  Datum d1 = SET_VAL_N(s, MINIDX);
-  return datum_ge(d1, d, basetype);
+  assert(s);
+  return datum_ge(SET_VAL_N(s, MINIDX), value, s->basetype);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set does not extend to the left of an integer
  * @param[in] s Set
  * @param[in] i Value
@@ -1430,11 +1403,11 @@ overright_set_int(const Set *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return overright_set_value(s, Int32GetDatum(i), T_INT4);
+  return overright_set_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set does not extend to the left of a big integer
  * @param[in] s Set
  * @param[in] i Value
@@ -1446,11 +1419,11 @@ overright_set_bigint(const Set *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return overright_set_value(s, Int64GetDatum(i), T_INT8);
+  return overright_set_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set does not extend to the left of a float
  * @param[in] s Set
  * @param[in] d Value
@@ -1462,11 +1435,11 @@ overright_set_float(const Set *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return overright_set_value(s, Float8GetDatum(d), T_FLOAT8);
+  return overright_set_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set does not extend to the left of a text
  * @param[in] s Set
  * @param[in] txt Value
@@ -1479,11 +1452,11 @@ overright_set_text(const Set *s, text *txt)
   if (! ensure_not_null((void *) s) ||  ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return overright_set_value(s, PointerGetDatum(txt), T_TEXT);
+  return overright_set_value(s, PointerGetDatum(txt));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is not before a date
  * @param[in] s Set
  * @param[in] d Value
@@ -1495,11 +1468,11 @@ overafter_set_date(const Set *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return overright_set_value(s, DateADTGetDatum(d), T_DATE);
+  return overright_set_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if a set is not before a timestamptz
  * @param[in] s Set
  * @param[in] t Value
@@ -1512,12 +1485,12 @@ overafter_set_timestamptz(const Set *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return overright_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return overright_set_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup meos_setspan_pos
  * @brief Return true if the first set does not extend to the left of the
  * second one
  * @param[in] s1,s2 Sets
@@ -1538,43 +1511,54 @@ overright_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Return the union of a set and a value
  * @param[in] s Set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 Set *
-union_set_value(const Set *s, Datum d, meosType basetype)
+union_set_value(const Set *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   Datum *values = palloc(sizeof(Datum *) * (s->count + 1));
   int nvals = 0;
   bool found = false;
   for (int i = 0; i < s->count; i++)
   {
-    Datum d1 = SET_VAL_N(s, i);
+    Datum value1 = SET_VAL_N(s, i);
     if (! found)
     {
-      int cmp = datum_cmp(d, d1, basetype);
+      int cmp = datum_cmp(value, value1, s->basetype);
       if (cmp < 0)
       {
-        values[nvals++] = d;
+        values[nvals++] = value;
         found = true;
       }
       else if (cmp == 0)
         found = true;
     }
-    values[nvals++] = d1;
+    values[nvals++] = value1;
   }
   if (! found)
-    values[nvals++] = d;
-  return set_make_free(values, nvals, basetype, ORDERED);
+    values[nvals++] = value;
+  return set_make_free(values, nvals, s->basetype, ORDERED);
+}
+
+/**
+ * @ingroup meos_internal_setspan_set
+ * @brief Return the union of a value and a set
+ * @param[in] value Value
+ * @param[in] s Set
+ */
+Set *
+union_value_set(Datum value, const Set *s)
+{
+  return union_set_value(s, value);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the union of a set and an integer
  * @param[in] s Set
  * @param[in] i Value
@@ -1586,11 +1570,11 @@ union_set_int(const Set *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return NULL;
-  return union_set_value(s, Int32GetDatum(i), T_INT4);
+  return union_set_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the union of a set and a big integer
  * @param[in] s Set
  * @param[in] i Value
@@ -1602,11 +1586,11 @@ union_set_bigint(const Set *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return NULL;
-  return union_set_value(s, Int64GetDatum(i), T_INT8);
+  return union_set_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the union of a set and a float
  * @param[in] s Set
  * @param[in] d Value
@@ -1618,11 +1602,11 @@ union_set_float(const Set *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return NULL;
-  return union_set_value(s, Float8GetDatum(d), T_FLOAT8);
+  return union_set_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the union of a set and a text
  * @param[in] s Set
  * @param[in] txt Value
@@ -1635,11 +1619,11 @@ union_set_text(const Set *s, const text *txt)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return NULL;
-  return union_set_value(s, PointerGetDatum(txt), T_TEXT);
+  return union_set_value(s, PointerGetDatum(txt));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the union of a set and a date
  * @param[in] s Set
  * @param[in] d Value
@@ -1651,11 +1635,11 @@ union_set_date(const Set *s, const DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return NULL;
-  return union_set_value(s, DateADTGetDatum(d), T_DATE);
+  return union_set_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the union of a set and a timestamptz
  * @param[in] s Set
  * @param[in] t Value
@@ -1668,11 +1652,11 @@ union_set_timestamptz(const Set *s, const TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return NULL;
-  return union_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return union_set_value(s, TimestampTzGetDatum(t));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the union of a set and a geometry/geography
  * @param[in] s Set
  * @param[in] gs Value
@@ -1686,15 +1670,131 @@ union_set_geo(const Set *s, const GSERIALIZED *gs)
       ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs))
     return NULL;
+  return union_set_value(s, PointerGetDatum(gs));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of an integer and a set
+ * @param[in] s Set
+ * @param[in] i Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_int_set(int i, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
+    return NULL;
+  return union_set_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a big integer and a set
+ * @param[in] s Set
+ * @param[in] i Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_bigint_set(int64 i, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
+    return NULL;
+  return union_set_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a float and a set
+ * @param[in] s Set
+ * @param[in] d Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_float_set(double d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
+    return NULL;
+  return union_set_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a text and a set
+ * @param[in] s Set
+ * @param[in] txt Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_text_set(const text *txt, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_set_isof_basetype(s, T_TEXT))
+    return NULL;
+  return union_set_value(s, PointerGetDatum(txt));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a date and a set
+ * @param[in] s Set
+ * @param[in] d Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_date_set(const DateADT d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return NULL;
+  return union_set_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a timestamptz and a set
+ * @param[in] s Set
+ * @param[in] t Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_timestamptz_set(const TimestampTz t, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
+    return NULL;
+  return union_set_value(s, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a geometry/geography and a set
+ * @param[in] s Set
+ * @param[in] gs Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_geo_set(const GSERIALIZED *gs, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
+      ! ensure_point_type(gs))
+    return NULL;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
   if (! ensure_set_isof_basetype(s, geotype))
     return NULL;
-  return union_set_value(s, PointerGetDatum(gs), geotype);
+  return union_set_value(s, PointerGetDatum(gs));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the union of two sets
  * @param[in] s1,s2 Set
  * @csqlfn #Union_set_set()
@@ -1714,24 +1814,35 @@ union_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Return the intersection of a set and a value
  * @param[in] s Set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 Set *
-intersection_set_value(const Set *s, Datum d, meosType basetype)
+intersection_set_value(const Set *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
-  if (! contains_set_value(s, d, basetype))
+  assert(s);
+  if (! contains_set_value(s, value))
     return NULL;
-  return value_to_set(d, basetype);
+  return value_to_set(value, s->basetype);
+}
+
+/**
+ * @ingroup meos_internal_setspan_set
+ * @brief Return the union of a value and a set
+ * @param[in] value Value
+ * @param[in] s Set
+ */
+Set *
+intersection_value_set(Datum value, const Set *s)
+{
+  return intersection_set_value(s, value);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a set and an integer
  * @param[in] s Set
  * @param[in] i Value
@@ -1743,11 +1854,11 @@ intersection_set_int(const Set *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return intersection_set_value(s, Int32GetDatum(i), T_INT4);
+  return intersection_set_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a set and a big integer
  * @param[in] s Set
  * @param[in] i Value
@@ -1759,11 +1870,11 @@ intersection_set_bigint(const Set *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return intersection_set_value(s, Int64GetDatum(i), T_INT8);
+  return intersection_set_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a set and a float
  * @param[in] s Set
  * @param[in] d Value
@@ -1775,11 +1886,11 @@ intersection_set_float(const Set *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return intersection_set_value(s, Float8GetDatum(d), T_FLOAT8);
+  return intersection_set_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a set and a text
  * @param[in] s Set
  * @param[in] txt Value
@@ -1792,11 +1903,11 @@ intersection_set_text(const Set *s, const text *txt)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
        ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return intersection_set_value(s, PointerGetDatum(txt), T_TEXT);
+  return intersection_set_value(s, PointerGetDatum(txt));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a set and a date
  * @param[in] s Set
  * @param[in] d Value
@@ -1808,10 +1919,10 @@ intersection_set_date(const Set *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return intersection_set_value(s, DateADTGetDatum(d), T_DATE);
+  return intersection_set_value(s, DateADTGetDatum(d));
 }
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a set and a timestamptz
  * @param[in] s Set
  * @param[in] t Value
@@ -1824,11 +1935,11 @@ intersection_set_timestamptz(const Set *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return intersection_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return intersection_set_value(s, TimestampTzGetDatum(t));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a set and a geometry/geography
  * @param[in] s Set
  * @param[in] gs Value
@@ -1845,12 +1956,128 @@ intersection_set_geo(const Set *s, const GSERIALIZED *gs)
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
   if (! ensure_set_isof_basetype(s, geotype))
     return false;
-  return intersection_set_value(s, PointerGetDatum(gs), geotype);
+  return intersection_set_value(s, PointerGetDatum(gs));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of an integer and a set
+ * @param[in] s Set
+ * @param[in] i Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+intersection_int_set(int i, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
+    return NULL;
+  return intersection_set_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a big integer and a set
+ * @param[in] s Set
+ * @param[in] i Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+intersection_bigint_set(int64 i, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
+    return NULL;
+  return intersection_set_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a float and a set
+ * @param[in] s Set
+ * @param[in] d Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+intersection_float_set(double d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
+    return NULL;
+  return intersection_set_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a text and a set
+ * @param[in] s Set
+ * @param[in] txt Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+intersection_text_set(const text *txt, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_set_isof_basetype(s, T_TEXT))
+    return NULL;
+  return intersection_set_value(s, PointerGetDatum(txt));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a date and a set
+ * @param[in] s Set
+ * @param[in] d Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+intersection_date_set(const DateADT d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return NULL;
+  return intersection_set_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a timestamptz and a set
+ * @param[in] s Set
+ * @param[in] t Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+intersection_timestamptz_set(const TimestampTz t, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
+    return NULL;
+  return intersection_set_value(s, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a geometry/geography and a set
+ * @param[in] s Set
+ * @param[in] gs Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+intersection_geo_set(const GSERIALIZED *gs, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
+      ! ensure_point_type(gs))
+    return NULL;
+  return intersection_set_value(s, PointerGetDatum(gs));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of two sets
  * @param[in] s1,s2 Sets
  * @csqlfn #Intersection_set_set()
@@ -1871,24 +2098,23 @@ intersection_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Return the difference of a value and a set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  * @param[in] s Set
  */
 Set *
-minus_value_set(Datum d, meosType basetype, const Set *s)
+minus_value_set(Datum value, const Set *s)
 {
-  assert(s); assert(s->basetype == basetype);
-  if (contains_set_value(s, d, basetype))
+  assert(s);
+  if (contains_set_value(s, value))
     return NULL;
-  return value_to_set(d, basetype);
+  return value_to_set(value, s->basetype);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of an integer and a set
  * @param[in] i Value
  * @param[in] s Set
@@ -1900,11 +2126,11 @@ minus_int_set(int i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return false;
-  return minus_value_set(Int32GetDatum(i), T_INT4, s);
+  return minus_value_set(Int32GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a big integer and a set
  * @param[in] i Value
  * @param[in] s Set
@@ -1916,11 +2142,11 @@ minus_bigint_set(int64 i, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return false;
-  return minus_value_set(Int64GetDatum(i), T_INT8, s);
+  return minus_value_set(Int64GetDatum(i), s);
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a float and a set
  * @param[in] d Value
  * @param[in] s Set
@@ -1932,11 +2158,11 @@ minus_float_set(double d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return false;
-  return minus_value_set(Float8GetDatum(d), T_FLOAT8, s);
+  return minus_value_set(Float8GetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a text and a set
  * @param[in] txt Value
  * @param[in] s Set
@@ -1949,11 +2175,11 @@ minus_text_set(const text *txt, const Set *s)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return false;
-  return minus_value_set(PointerGetDatum(txt), T_TEXT, s);
+  return minus_value_set(PointerGetDatum(txt), s);
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a date and a set
  * @param[in] d Value
  * @param[in] s Set
@@ -1965,11 +2191,11 @@ minus_date_set(DateADT d, const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return false;
-  return minus_value_set(DateADTGetDatum(d), T_DATE, s);
+  return minus_value_set(DateADTGetDatum(d), s);
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a timestamptz and a set 
  * @param[in] t Value
  * @param[in] s Set
@@ -1982,11 +2208,11 @@ minus_timestamptz_set(TimestampTz t, const Set *s)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return false;
-  return minus_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
+  return minus_value_set(TimestampTzGetDatum(t), s);
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a geo and a set 
  * @param[in] gs Value
  * @param[in] s Set
@@ -2000,42 +2226,38 @@ minus_geo_set(const GSERIALIZED *gs, const Set *s)
       ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) || 
       ! ensure_point_type(gs) )
     return false;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_set_isof_basetype(s, geotype))
-    return false;
-  return minus_value_set(PointerGetDatum(gs), geotype, s);
+  return minus_value_set(PointerGetDatum(gs), s);
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup meos_internal_setspan_set
  * @brief Return the difference of a set and a value
  * @param[in] s Set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 Set *
-minus_set_value(const Set *s, Datum d, meosType basetype)
+minus_set_value(const Set *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   /* Bounding box test */
-  if (! bbox_contains_set_value(s, d, basetype))
+  if (! bbox_contains_set_value(s, value))
     return set_cp(s);
 
   Datum *values = palloc(sizeof(TimestampTz) * s->count);
   int nvals = 0;
   for (int i = 0; i < s->count; i++)
   {
-    Datum d1 = SET_VAL_N(s, i);
-    if (datum_ne(d, d1, basetype))
-      values[nvals++] = d1;
+    Datum value1 = SET_VAL_N(s, i);
+    if (datum_ne(value, value1, s->basetype))
+      values[nvals++] = value1;
   }
-  return set_make_free(values, nvals, basetype, ORDERED);
+  return set_make_free(values, nvals, s->basetype, ORDERED);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a set and an integer
  * @param[in] s Set
  * @param[in] i Value
@@ -2047,11 +2269,11 @@ minus_set_int(const Set *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return NULL;
-  return minus_set_value(s, Int32GetDatum(i), T_INT4);
+  return minus_set_value(s, Int32GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a set and a big integer
  * @param[in] s Set
  * @param[in] i Value
@@ -2063,11 +2285,11 @@ minus_set_bigint(const Set *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return NULL;
-  return minus_set_value(s, Int64GetDatum(i), T_INT8);
+  return minus_set_value(s, Int64GetDatum(i));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a set and a float
  * @param[in] s Set
  * @param[in] d Value
@@ -2079,11 +2301,11 @@ minus_set_float(const Set *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return NULL;
-  return minus_set_value(s, Float8GetDatum(d), T_FLOAT8);
+  return minus_set_value(s, Float8GetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a set and a text
  * @param[in] s Set
  * @param[in] txt Value
@@ -2096,11 +2318,11 @@ minus_set_text(const Set *s, const text *txt)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_basetype(s, T_TEXT))
     return NULL;
-  return minus_set_value(s, PointerGetDatum(txt), T_TEXT);
+  return minus_set_value(s, PointerGetDatum(txt));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a set and a date
  * @param[in] s Set
  * @param[in] d Value
@@ -2112,11 +2334,11 @@ minus_set_date(const Set *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return NULL;
-  return minus_set_value(s, DateADTGetDatum(d), T_DATE);
+  return minus_set_value(s, DateADTGetDatum(d));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a set and a timestamptz
  * @param[in] s Set
  * @param[in] t Value
@@ -2129,11 +2351,11 @@ minus_set_timestamptz(const Set *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return NULL;
-  return minus_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return minus_set_value(s, TimestampTzGetDatum(t));
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of a set and a geometry/geography
  * @param[in] s Set
  * @param[in] gs Value
@@ -2150,12 +2372,12 @@ minus_set_geo(const Set *s, const GSERIALIZED *gs)
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
   if (! ensure_set_isof_basetype(s, geotype))
     return NULL;
-  return minus_set_value(s, PointerGetDatum(gs), geotype);
+  return minus_set_value(s, PointerGetDatum(gs));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup meos_setspan_set
  * @brief Return the difference of two sets
  * @param[in] s1,s2 Sets
  * @csqlfn #Minus_set_set()
@@ -2175,24 +2397,23 @@ minus_set_set(const Set *s1, const Set *s2)
  ******************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_dist
+ * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between a set and a value
  * @param[in] s Set
- * @param[in] d Value
- * @param[in] basetype Type of the value
+ * @param[in] value Value
  */
 Datum
-distance_set_value(const Set *s, Datum d, meosType basetype)
+distance_set_value(const Set *s, Datum value)
 {
-  assert(s); assert(s->basetype == basetype);
+  assert(s);
   Span s1;
   set_set_span(s, &s1);
-  return distance_span_value(&s1, d, basetype);
+  return distance_span_value(&s1, value);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between a set and an integer
  * @param[in] s Set
  * @param[in] i Value
@@ -2205,11 +2426,11 @@ distance_set_int(const Set *s, int i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
     return -1;
-  return DatumGetInt32(distance_set_value(s, Int32GetDatum(i), T_INT4));
+  return DatumGetInt32(distance_set_value(s, Int32GetDatum(i)));
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between a set and a big integer
  * @param[in] s Set
  * @param[in] i Value
@@ -2222,11 +2443,11 @@ distance_set_bigint(const Set *s, int64 i)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
     return -1;
-  return DatumGetInt64(distance_set_value(s, Int64GetDatum(i), T_INT8));
+  return DatumGetInt64(distance_set_value(s, Int64GetDatum(i)));
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between a set and a float
  * @param[in] s Set
  * @param[in] d Value
@@ -2239,11 +2460,11 @@ distance_set_float(const Set *s, double d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
     return -1.0;
-  return DatumGetFloat8(distance_set_value(s, Float8GetDatum(d), T_FLOAT8));
+  return DatumGetFloat8(distance_set_value(s, Float8GetDatum(d)));
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance in days between a set and a date
  * @param[in] s Set
  * @param[in] d Value
@@ -2256,11 +2477,11 @@ distance_set_date(const Set *s, DateADT d)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
     return -1;
-  return DatumGetInt32(distance_set_value(s, DateADTGetDatum(d), T_INT4));
+  return DatumGetInt32(distance_set_value(s, DateADTGetDatum(d)));
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance in seconds between a set and a timestamptz as a
  * double
  * @param[in] s Set
@@ -2275,12 +2496,12 @@ distance_set_timestamptz(const Set *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return -1.0;
-  return distance_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return distance_set_value(s, TimestampTzGetDatum(t));
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_dist
+ * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two sets
  * @param[in] s1,s2 Sets
  */
@@ -2295,7 +2516,7 @@ dist_set_set(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_dist
+ * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two sets
  * @param[in] s1,s2 Sets
  * @result On error return -1.0
@@ -2304,16 +2525,13 @@ dist_set_set(const Set *s1, const Set *s2)
 Datum
 distance_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
-    return (Datum) -1;
+  assert(s1); assert(s2); assert(s1->settype == s2->settype);
   return dist_set_set(s1, s2);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between two integer sets
  * @param[in] s1,s2 Sets
  * @result On error return -1
@@ -2331,7 +2549,7 @@ distance_intset_intset(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between two big integer sets
  * @param[in] s1,s2 Sets
  * @result On error return -1
@@ -2349,7 +2567,7 @@ distance_bigintset_bigintset(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance between two float sets
  * @param[in] s1,s2 Sets
  * @result On error return -1.0
@@ -2367,7 +2585,7 @@ distance_floatset_floatset(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance in days between two date sets
  * @param[in] s1,s2 Sets
  * @result On error return -1
@@ -2385,7 +2603,7 @@ distance_dateset_dateset(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup meos_setspan_dist
  * @brief Return the distance in seconds between two timestamptz sets
  * @param[in] s1,s2 Sets
  * @result On error return -1.0

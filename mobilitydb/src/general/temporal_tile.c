@@ -92,6 +92,9 @@ Timestamptz_bucket(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * @brief Return the bucket list of a span
+ */
 Datum
 Span_bucket_list(FunctionCallInfo fcinfo, bool valuelist)
 {
@@ -317,21 +320,15 @@ PG_FUNCTION_INFO_V1(Tbox_tile);
 Datum
 Tbox_tile(PG_FUNCTION_ARGS)
 {
-  double value = PG_GETARG_FLOAT8(0);
+  Datum value = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  double xsize = PG_GETARG_FLOAT8(2);
-  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+  Datum vsize = PG_GETARG_DATUM(2);
   Interval *duration = PG_GETARG_INTERVAL_P(3);
-  ensure_valid_duration(duration);
-  int64 tunits = interval_units(duration);
-  double xorigin = PG_GETARG_FLOAT8(4);
+  Datum vorigin = PG_GETARG_DATUM(4);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
-  double value_bucket = float_bucket(value, xsize, xorigin);
-  TimestampTz time_bucket = timestamptz_bucket(t, duration, torigin);
-  TBox *result = palloc(sizeof(TBox));
-  tbox_tile_get(Float8GetDatum(value_bucket), time_bucket,
-    Float8GetDatum(xsize), tunits, T_FLOAT8, result);
-  PG_RETURN_TBOX_P(result);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  PG_RETURN_TBOX_P(tbox_tile(value, t, vsize, duration, vorigin, torigin,
+    basetype));
 }
 
 /*****************************************************************************

@@ -31,6 +31,18 @@
 -- Ever/always equal 
 -------------------------------------------------------------------------------
 
+SELECT geometry 'Point(1 1)' ?= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1)' ?<> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1)' %= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1)' %<> tgeompoint 'Point(1 1)@2000-01-01';
+
+SELECT geography 'Point(1 1)' ?= tgeogpoint 'Point(1 1)@2000-01-01';
+SELECT geography 'Point(1 1)' ?<> tgeogpoint 'Point(1 1)@2000-01-01';
+SELECT geography 'Point(1 1)' %= tgeogpoint 'Point(1 1)@2000-01-01';
+SELECT geography 'Point(1 1)' %<> tgeogpoint 'Point(1 1)@2000-01-01';
+
+-------------------------------------------------------------------------------
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' %= tgeompoint 'Point(1 1)@2000-01-01';
@@ -43,6 +55,40 @@ SELECT tgeogpoint 'Point(1 1)@2000-01-01' %<> tgeogpoint 'Point(1 1)@2000-01-01'
 
 /* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'SRID=5676;Point(1 1)@2000-01-01';
+
+-------------------------------------------------------------------------------
+
+-- Test index support function for ever/always equal and intersects<Time>
+
+CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);
+CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING gist(temp);
+
+-- EXPLAIN ANALYZE
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= geography 'Point(1.5 1.5)';
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= geography 'Point(1.5 1.5)';
+
+DROP INDEX tbl_tgeompoint_rtree_idx;
+DROP INDEX tbl_tgeogpoint_rtree_idx;
+
+-------------------------------------------------------------------------------
+
+-- Test index support function for ever/always equal and intersects<Time>
+
+CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING spgist(temp);
+CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING spgist(temp);
+
+-- EXPLAIN ANALYZE
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= geography 'Point(1.5 1.5)';
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= geography 'Point(1.5 1.5)';
+
+DROP INDEX tbl_tgeompoint_quadtree_idx;
+DROP INDEX tbl_tgeogpoint_quadtree_idx;
 
 -------------------------------------------------------------------------------
 -- Temporal equal

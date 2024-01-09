@@ -30,8 +30,8 @@
 
 /**
  * @file
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees,...)
- * for temporal numbers.
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees,
+ * ...) for temporal numbers
  */
 
 #include "general/tnumber_mathfuncs.h"
@@ -94,12 +94,12 @@ datum_radians(Datum value)
 
 /**
  * @brief Find the single timestamptz at which the operation of two temporal
- * number segments is at a local minimum/maximum. The function supposes that
- * the instants are synchronized, that is, start1->t = start2->t and
- * end1->t = end2->t. The function only return an intersection at the middle,
- * that is, it returns false if the timestamp found is not at a bound.
- *
- @note This function is called only when both sequences are linear.
+ * number segments is at a local minimum/maximum
+ * @details The function supposes that the instants are synchronized, that is,
+ * `start1->t = start2->t` and `end1->t = end2->t`.
+ * The function only return an intersection at the middle, that is, it
+ * it returns false if the timestamp found is not at a bound
+ * @note This function is called only when both sequences are linear
  */
 static bool
 tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
@@ -133,9 +133,8 @@ tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
 
 /**
  * @brief Find the single timestamptz at which the operation of two temporal
- * number segments is at a local minimum/maximum.
- *
- @note This function is called only when both sequences are linear.
+ * number segments is at a local minimum/maximum
+ * @note This function is called only when both sequences are linear.
  */
 static bool
 tnumber_arithop_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
@@ -156,10 +155,9 @@ tnumber_arithop_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * @brief Find the single timestamptz at which the multiplication of two temporal
- * number segments is at a local minimum/maximum.
- *
- @note This function is called only when both sequences are linear.
+ * @brief Find the single timestamptz at which the multiplication of two
+ * temporal number segments is at a local minimum/maximum
+ * @note This function is called only when both sequences are linear.
  */
 bool
 tnumber_mult_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
@@ -171,9 +169,8 @@ tnumber_mult_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
 
 /**
  * @brief Find the single timestamptz at which the division of two temporal
- * number segments is at a local minimum/maximum.
- *
- @note This function is called only when both sequences are linear.
+ * number segments is at a local minimum/maximum
+ * @note This function is called only when both sequences are linear.
  */
 bool
 tnumber_div_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
@@ -301,7 +298,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_math
+ * @ingroup meos_internal_temporal_math
  * @brief Return the absolute value of a temporal number instant
  * @param[in] inst Temporal instant
  * @csqlfn #Tnumber_abs()
@@ -309,8 +306,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 TInstant *
 tnumberinst_abs(const TInstant *inst)
 {
-  assert(inst);
-  assert(tnumber_type(inst->temptype));
+  assert(inst); assert(tnumber_type(inst->temptype));
   meosType basetype = temptype_basetype(inst->temptype);
   assert(tnumber_basetype(basetype));
   Datum value = tinstant_value(inst);
@@ -328,15 +324,11 @@ tnumberinst_abs(const TInstant *inst)
 static TSequence *
 tnumberseq_iter_abs(const TSequence *seq)
 {
-  assert(seq);
-  assert(tnumber_type(seq->temptype));
+  assert(seq); assert(tnumber_type(seq->temptype));
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    instants[i] = tnumberinst_abs(inst);
-  }
+    instants[i] = tnumberinst_abs(TSEQUENCE_INST_N(seq, i));
   return tsequence_make_free(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
 }
@@ -395,7 +387,7 @@ tnumberseq_linear_abs(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_math
+ * @ingroup meos_internal_temporal_math
  * @brief Return the absolute value of a temporal number sequence
  * @param[in] seq Temporal sequence
  * @csqlfn #Tnumber_abs()
@@ -403,14 +395,13 @@ tnumberseq_linear_abs(const TSequence *seq)
 TSequence *
 tnumberseq_abs(const TSequence *seq)
 {
-  assert(seq);
-  assert(tnumber_type(seq->temptype));
+  assert(seq); assert(tnumber_type(seq->temptype));
   return MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
     tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
 }
 
 /**
- * @ingroup libmeos_internal_temporal_math
+ * @ingroup meos_internal_temporal_math
  * @brief Return the absolute value of a temporal number sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tnumber_abs()
@@ -418,8 +409,7 @@ tnumberseq_abs(const TSequence *seq)
 TSequenceSet *
 tnumberseqset_abs(const TSequenceSet *ss)
 {
-  assert(ss);
-  assert(tnumber_type(ss->temptype));
+  assert(ss); assert(tnumber_type(ss->temptype));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
@@ -431,7 +421,7 @@ tnumberseqset_abs(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the absolute value of a temporal number
  * @param[in] temp Temporal value
  * @csqlfn #Tnumber_abs()
@@ -444,15 +434,16 @@ tnumber_abs(const Temporal *temp)
       ! ensure_tnumber_type(temp->temptype))
     return NULL;
 
-  Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tnumberinst_abs((TInstant *) temp);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnumberseq_abs((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnumberseqset_abs((TSequenceSet *) temp);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tnumberinst_abs((TInstant *) temp);
+    case TSEQUENCE:
+      return (Temporal *) tnumberseq_abs((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tnumberseqset_abs((TSequenceSet *) temp);
+  }
 }
 
 /*****************************************************************************
@@ -465,24 +456,21 @@ tnumber_abs(const Temporal *temp)
 static Datum
 delta_value(Datum value1, Datum value2, meosType basetype)
 {
-  Datum result;
   assert(basetype == T_INT4 || basetype == T_FLOAT8);
   if (basetype == T_INT4)
-    result = Int32GetDatum(DatumGetInt32(value2) - DatumGetInt32(value1));
+    return Int32GetDatum(DatumGetInt32(value2) - DatumGetInt32(value1));
   else /* basetype == T_FLOAT8 */
-    result = Float8GetDatum(DatumGetFloat8(value2) - DatumGetFloat8(value1));
-  return result;
+    return Float8GetDatum(DatumGetFloat8(value2) - DatumGetFloat8(value1));
 }
 
 /**
- * @ingroup libmeos_internal_temporal_math
+ * @ingroup meos_internal_temporal_math
  * @brief Return the delta value of a temporal number sequence
  */
 TSequence *
 tnumberseq_delta_value(const TSequence *seq)
 {
-  assert(seq);
-  assert(tnumber_type(seq->temptype));
+  assert(seq); assert(tnumber_type(seq->temptype));
   /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
@@ -511,15 +499,14 @@ tnumberseq_delta_value(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_math
+ * @ingroup meos_internal_temporal_math
  * @brief Return the delta value of a temporal number sequence set
  * @param[in] ss Temporal sequence set
  */
 TSequenceSet *
 tnumberseqset_delta_value(const TSequenceSet *ss)
 {
-  assert(ss);
-  assert(tnumber_type(ss->temptype));
+  assert(ss); assert(tnumber_type(ss->temptype));
   TSequence *delta;
   /* Singleton sequence set */
   if (ss->count == 1)
@@ -535,8 +522,7 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    delta = tnumberseq_delta_value(seq);
+    delta = tnumberseq_delta_value(TSEQUENCESET_SEQ_N(ss, i));
     if (delta)
       sequences[nseqs++] = delta;
   }
@@ -545,7 +531,7 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the delta value of a temporal number
  * @param[in] temp Temporal value
  * @csqlfn #Tnumber_delta_value()
@@ -558,15 +544,16 @@ tnumber_delta_value(const Temporal *temp)
       ! ensure_tnumber_type(temp->temptype))
     return NULL;
 
-  Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    ;
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnumberseq_delta_value((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnumberseqset_delta_value((TSequenceSet *) temp);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return NULL;
+    case TSEQUENCE:
+      return (Temporal *) tnumberseq_delta_value((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tnumberseqset_delta_value((TSequenceSet *) temp);
+  }
 }
 
 /*****************************************************************************
@@ -587,7 +574,7 @@ angular_difference(Datum degrees1, Datum degrees2)
 }
 
 /**
- * @brief Return the temporal angular difference of a temporal number.
+ * @brief Return the temporal angular difference of a temporal number
  */
 static int
 tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
@@ -617,7 +604,7 @@ tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_math
+ * @ingroup meos_internal_temporal_math
  * @brief Return the temporal angular difference of a temporal number sequence
  * @param[in] seq Temporal sequence
  */
@@ -638,7 +625,7 @@ tnumberseq_angular_difference(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_math
+ * @ingroup meos_internal_temporal_math
  * @brief Return the angular difference of a temporal number sequence set
  * @param[in] ss Temporal sequence set
  */
@@ -654,18 +641,16 @@ tnumberseqset_angular_difference(const TSequenceSet *ss)
   TInstant **instants = palloc(sizeof(TSequence *) * ss->totalcount);
   int ninsts = 0;
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    ninsts += tnumberseq_angular_difference_iter(seq, &instants[ninsts]);
-  }
+    ninsts += tnumberseq_angular_difference_iter(TSEQUENCESET_SEQ_N(ss, i),
+      &instants[ninsts]);
   /* Resulting sequence has discrete interpolation */
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
     NORMALIZE);
 }
 
 /**
- * @ingroup libmeos_temporal_math
- * @brief Return the angular difference of a temporal number.
+ * @ingroup meos_temporal_math
+ * @brief Return the angular difference of a temporal number
  * @param[in] temp Temporal value
  * @csqlfn #Tpoint_angular_difference()
  */
@@ -677,15 +662,16 @@ tnumber_angular_difference(const Temporal *temp)
       ! ensure_tnumber_type(temp->temptype))
     return NULL;
 
-  Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    ;
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnumberseq_angular_difference((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnumberseqset_angular_difference((TSequenceSet *) temp);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return NULL;
+    case TSEQUENCE:
+      return (Temporal *) tnumberseq_angular_difference((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tnumberseqset_angular_difference((TSequenceSet *) temp);
+  }
 }
 
 /*****************************************************************************
@@ -693,7 +679,7 @@ tnumber_angular_difference(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Convert a temporal number from radians to degrees
  * @param[in] temp Temporal value
  * @param[in] normalize True when the result is normalized
@@ -718,12 +704,11 @@ tfloat_degrees(const Temporal *temp, bool normalize)
   lfinfo.restype = T_TFLOAT;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
+  return tfunc_temporal(temp, &lfinfo);
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Convert a temporal number from degrees to radians
  * @param[in] temp Temporal value
  * @csqlfn #Tfloat_radians()
@@ -754,7 +739,7 @@ tfloat_radians(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_math
+ * @ingroup meos_internal_temporal_math
  * @brief Return the derivative of a temporal float sequence
  * @param[in] seq Temporal sequence
  * @csqlfn #Tfloat_derivative()
@@ -764,7 +749,6 @@ tfloatseq_derivative(const TSequence *seq)
 {
   assert(seq); assert(seq->temptype == T_TFLOAT);
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-
   /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
@@ -798,7 +782,7 @@ tfloatseq_derivative(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_math
+ * @ingroup meos_internal_temporal_math
  * @brief Return the derivative of a temporal float sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tfloat_derivative()
@@ -806,8 +790,7 @@ tfloatseq_derivative(const TSequence *seq)
 TSequenceSet *
 tfloatseqset_derivative(const TSequenceSet *ss)
 {
-  assert(ss);
-  assert(ss->temptype == T_TFLOAT);
+  assert(ss); assert(ss->temptype == T_TFLOAT);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
@@ -821,7 +804,7 @@ tfloatseqset_derivative(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup meos_temporal_math
  * @brief Return the derivative of a temporal number
  * @param[in] temp Temporal value
  * @see #tfloatseq_derivative()
@@ -837,14 +820,16 @@ tfloat_derivative(const Temporal *temp)
       ! ensure_linear_interp(temp->flags))
     return NULL;
 
-  Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  /* Temporal instants does not have linear interpolation */
-  if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tfloatseq_derivative((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tfloatseqset_derivative((TSequenceSet *) temp);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return NULL;
+    case TSEQUENCE:
+      return (Temporal *) tfloatseq_derivative((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tfloatseqset_derivative((TSequenceSet *) temp);
+  }
 }
 
 /*****************************************************************************/

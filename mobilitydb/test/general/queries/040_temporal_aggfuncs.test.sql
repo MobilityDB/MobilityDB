@@ -27,6 +27,19 @@
 --
 -------------------------------------------------------------------------------
 
+SELECT merge(inst) FROM (VALUES
+(tfloat '1@2000-01-01'),(tfloat '2@2000-01-02')) t(inst);
+SELECT merge(seq) FROM (VALUES
+(tfloat '[1@2000-01-01]'),(tfloat '[2@2000-01-02]')) t(seq);
+
+/* Errors */
+SELECT merge(inst) FROM (VALUES
+(tfloat '1@2000-01-01'),(tfloat '2@2000-01-01')) t(inst);
+SELECT merge(seq) FROM (VALUES
+(tfloat '[1@2000-01-01]'),(tfloat '[2@2000-01-01]')) t(seq);
+
+-------------------------------------------------------------------------------
+
 SELECT tand(temp) FROM (VALUES
 (NULL::tbool),(NULL::tbool)) t(temp);
 SELECT tand(temp) FROM (VALUES

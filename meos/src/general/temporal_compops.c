@@ -104,10 +104,7 @@ int
 eacomp_temporal_base(const Temporal *temp, Datum value,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) func))
-    return -1;
-
+  assert(temp); assert(func);
   /* Fill the lifted structure */
   meosType basetype = temptype_basetype(temp->temptype);
   LiftedFunctionInfo lfinfo;
@@ -137,11 +134,7 @@ int
 eacomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
-    return -1;
-
+  assert(temp1); assert(temp2); assert(func);
   /* Fill the lifted structure */
   meosType basetype = temptype_basetype(temp1->temptype);
   LiftedFunctionInfo lfinfo;
@@ -163,7 +156,7 @@ eacomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever equal to a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
@@ -176,7 +169,7 @@ ever_eq_temporal_base(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever different to a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
@@ -189,7 +182,7 @@ ever_ne_temporal_base(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
@@ -202,7 +195,7 @@ ever_lt_temporal_base(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than or equal to a base
  * value
  * @param[in] temp Temporal value
@@ -216,7 +209,7 @@ ever_le_temporal_base(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
@@ -229,7 +222,7 @@ ever_gt_temporal_base(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than or equal to a
  * base value
  * @param[in] temp Temporal value
@@ -245,7 +238,7 @@ ever_ge_temporal_base(const Temporal *temp, Datum value)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever equal to a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
@@ -258,7 +251,7 @@ ever_eq_base_temporal(Datum value, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever different to a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
@@ -271,7 +264,7 @@ ever_ne_base_temporal(Datum value, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
@@ -284,7 +277,7 @@ ever_lt_base_temporal(Datum value, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever less than or equal to a base
  * value
  * @param[in] value Value
@@ -298,7 +291,7 @@ ever_le_base_temporal(Datum value, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
@@ -311,7 +304,7 @@ ever_gt_base_temporal(Datum value, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is ever greater than or equal to a
  * base value
  * @param[in] value Value
@@ -327,7 +320,7 @@ ever_ge_base_temporal(Datum value, const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always equal to a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
@@ -340,7 +333,7 @@ always_eq_temporal_base(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always different from a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
@@ -353,7 +346,7 @@ always_ne_temporal_base(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always less than a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
@@ -366,7 +359,7 @@ always_lt_temporal_base(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always less than or equal to a
  * base value
  * @param[in] temp Temporal value
@@ -380,7 +373,7 @@ always_le_temporal_base(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
@@ -393,7 +386,7 @@ always_gt_temporal_base(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_ever
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than or equal to a
  * base value
  * @param[in] temp Temporal value
@@ -409,7 +402,7 @@ always_ge_temporal_base(const Temporal *temp, Datum value)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_comp_always
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always equal to a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
@@ -422,7 +415,7 @@ always_eq_base_temporal(Datum value, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_always
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always different to a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
@@ -435,7 +428,7 @@ always_ne_base_temporal(Datum value, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_always
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always less than a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
@@ -448,7 +441,7 @@ always_lt_base_temporal(Datum value, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_always
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always less than or equal to a base
  * value
  * @param[in] value Value
@@ -462,7 +455,7 @@ always_le_base_temporal(Datum value, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_always
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
@@ -475,7 +468,7 @@ always_gt_base_temporal(Datum value, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_always
+ * @ingroup meos_internal_temporal_comp_ever
  * @brief Return true if a temporal value is always greater than or equal to a
  * base value
  * @param[in] value Value
@@ -491,7 +484,7 @@ always_ge_base_temporal(Datum value, const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if two temporal values are ever equal
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Ever_eq_temporal_temporal()
@@ -503,7 +496,7 @@ ever_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if two temporal values are ever different
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Ever_ne_temporal_temporal()
@@ -515,7 +508,7 @@ ever_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if the first temporal boolean is ever less than the
  * second one
  * @param[in] temp1,temp2 Temporal values
@@ -528,7 +521,7 @@ ever_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if the first temporal boolean is ever less than or
  * equal to the second one
  * @param[in] temp1,temp2 Temporal values
@@ -541,7 +534,7 @@ ever_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if the first temporal boolean is ever greater than the
  * second one
  * @param[in] temp1,temp2 Temporal values
@@ -554,7 +547,7 @@ ever_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if the first temporal value is ever greater than or
  * equal to the second one
  * @param[in] temp1,temp2 Temporal values
@@ -569,7 +562,7 @@ ever_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if two temporal values are always equal
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Always_eq_temporal_temporal()
@@ -581,7 +574,7 @@ always_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if two temporal values are always different
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Always_ne_temporal_temporal()
@@ -593,7 +586,7 @@ always_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if the first temporal value is always less than the
  * second one
  * @param[in] temp1,temp2 Temporal values
@@ -606,7 +599,7 @@ always_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if the first temporal value is always less than or
  * equal to the second one
  * @param[in] temp1,temp2 Temporal values
@@ -619,7 +612,7 @@ always_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if the first temporal value is always greater than the
  * second one
  * @param[in] temp1,temp2 Temporal values
@@ -632,7 +625,7 @@ always_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if the first temporal value is always greater than or
  * equal to the second one
  * @param[in] temp1,temp2 Temporal values
@@ -649,8 +642,8 @@ always_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_comp_temp
- * @brief Return the temporal comparison of a temporal value and a base value.
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
  * @param[in] func Function used for the comparison
@@ -660,10 +653,7 @@ Temporal *
 tcomp_temporal_base(const Temporal *temp, Datum value,
   Datum (*func)(Datum, Datum, meosType), bool invert)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) func))
-    return NULL;
-
+  assert(temp); assert(func);
   /* Fill the lifted structure */
   meosType basetype = temptype_basetype(temp->temptype);
   LiftedFunctionInfo lfinfo;
@@ -682,8 +672,8 @@ tcomp_temporal_base(const Temporal *temp, Datum value,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_comp_temp
- * @brief Return the temporal comparison of the temporal values.
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of the temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[in] func Function used for the comparison
  */
@@ -691,11 +681,7 @@ Temporal *
 tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType))
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) || 
-      ! ensure_not_null((void *) func))
-    return NULL;
-
+  assert(temp1); assert(temp2); assert(func);
   /* Fill the lifted structure */
   meosType basetype = temptype_basetype(temp1->temptype);
   LiftedFunctionInfo lfinfo;
@@ -715,3 +701,161 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @csqlfn #Teq_temporal_base()
+ */
+bool
+teq_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_eq, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @csqlfn #Tne_temporal_base()
+ */
+bool
+tne_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_ne, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @csqlfn #Tlt_temporal_base()
+ */
+bool
+tlt_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_lt, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base
+ * value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @csqlfn #Tle_temporal_base()
+ */
+bool
+tle_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_le, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @csqlfn #Tgt_temporal_base()
+ */
+bool
+tgt_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_gt, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @csqlfn #Tge_temporal_base()
+ */
+bool
+tge_temporal_base(const Temporal *temp, Datum value)
+{
+  return tcomp_temporal_base(temp, value, &datum2_ge, INVERT_NO);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return the temporal equal comparison of two temporal values
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Teq_temporal_temporal()
+ */
+Temporal *
+teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
+{
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return the temporal different comparison of two temporal values
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tne_temporal_temporal()
+ */
+Temporal *
+tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
+{
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return the temporal less than comparison of two temporal values
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tlt_temporal_temporal()
+ */
+Temporal *
+tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
+{
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return the temporal less than or equal to comparison of two temporal
+ * values
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tle_temporal_temporal()
+ */
+Temporal *
+tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
+{
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return the temporal greater than comparison of two temporal values
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tgt_temporal_temporal()
+ */
+Temporal *
+tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
+{
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return the temporal greater than or equal to comparison of two
+ * temporal values
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tge_temporal_temporal()
+ */
+Temporal *
+tge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
+{
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
+}
+
+/*****************************************************************************/
+

@@ -61,7 +61,7 @@ PGDLLEXPORT Datum Npoint_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a network point to a spatiotemporal box 
+ * @brief Convert a network point to a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p ::
  */
@@ -76,7 +76,7 @@ PGDLLEXPORT Datum Nsegment_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a network segment to a spatiotemporal box 
+ * @brief Convert a network segment to a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p ::
  */
@@ -112,7 +112,7 @@ PGDLLEXPORT Datum Npoint_timestamptz_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_timestamptz_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a network point and a timestamptz to a spatiotemporal box
+ * @brief Return a network point and a timestamptz to a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p
  */
@@ -121,15 +121,14 @@ Npoint_timestamptz_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  STBox *result = npoint_timestamptz_to_stbox(np, t);
-  PG_RETURN_STBOX_P(result);
+  PG_RETURN_STBOX_P(npoint_timestamptz_to_stbox(np, t));
 }
 
 PGDLLEXPORT Datum Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_tstzspan_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a network point and a timestamptz span to a spatiotemporal
+ * @brief Return a network point and a timestamptz span to a spatiotemporal
  * box
  * @sqlfn stbox()
  * @sqlop @p
@@ -139,8 +138,7 @@ Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  STBox *result = npoint_tstzspan_to_stbox(np, s);
-  PG_RETURN_STBOX_P(result);
+  PG_RETURN_STBOX_P(npoint_tstzspan_to_stbox(np, s));
 }
 
 /*****************************************************************************/

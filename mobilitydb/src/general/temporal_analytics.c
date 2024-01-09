@@ -56,7 +56,7 @@
 PGDLLEXPORT Datum Timestamptz_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamptz_tprecision);
 /**
- * @ingroup libmeos_temporal_analytics_reduction
+ * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Return the initial timestamptz of the bucket in which a timestamptz
  * falls
  */
@@ -72,7 +72,7 @@ Timestamptz_tprecision(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tstzset_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_tprecision);
 /**
- * @ingroup libmeos_temporal_analytics_reduction
+ * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Return a tstzset value with the precision set to period buckets
  * set falls
  */
@@ -88,7 +88,7 @@ Tstzset_tprecision(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tstzspan_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_tprecision);
 /**
- * @ingroup libmeos_temporal_analytics_reduction
+ * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Return a tstzspan value with the precision set to period buckets
  * span falls
  */
@@ -104,7 +104,7 @@ Tstzspan_tprecision(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tstzspanset_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_tprecision);
 /**
- * @ingroup libmeos_temporal_analytics_reduction
+ * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Return a tstzspanset value with the precision set to period buckets
  */
 Datum

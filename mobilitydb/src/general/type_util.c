@@ -215,7 +215,7 @@ spanarr_extract(ArrayType *array, int *count)
  * @brief Extract a C array from a PostgreSQL array containing temporal values
  */
 Temporal **
-temporalarr_extract(ArrayType *array, int *count)
+temparr_extract(ArrayType *array, int *count)
 {
   Temporal **result;
   deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result,
@@ -247,14 +247,14 @@ datumarr_to_array(Datum *values, int count, meosType type)
  * @brief Convert a C array of timestamps into a PostgreSQL array
  */
 ArrayType *
-int64arr_to_array(const int64 *longints, int count)
+int64arr_to_array(int64 *values, int count)
 {
   assert(count > 0);
-  Datum *values = palloc(sizeof(Datum) * count);
+  Datum *dvalues = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
-    values[i] = Int64GetDatum(longints[i]);
-  ArrayType *result = construct_array(values, count, INT8OID, 8, true, 'd');
-  pfree(values);
+    dvalues[i] = Int64GetDatum(values[i]);
+  ArrayType *result = construct_array(dvalues, count, INT8OID, 8, true, 'd');
+  pfree(dvalues); pfree(values);
   return result;
 }
 
@@ -262,14 +262,14 @@ int64arr_to_array(const int64 *longints, int count)
  * @brief Convert a C array of dates into a PostgreSQL array
  */
 ArrayType *
-datearr_to_array(const DateADT *dates, int count)
+datearr_to_array(DateADT *dates, int count)
 {
   assert(count > 0);
   Datum *values = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
     values[i] = DateADTGetDatum(dates[i]);
   ArrayType *result = construct_array(values, count, DATEOID, 4, true, 'i');
-  pfree(values);
+  pfree(values); pfree(dates);
   return result;
 }
 
@@ -277,11 +277,12 @@ datearr_to_array(const DateADT *dates, int count)
  * @brief Convert a C array of timestamps into a PostgreSQL array
  */
 ArrayType *
-tstzarr_to_array(const TimestampTz *times, int count)
+tstzarr_to_array(TimestampTz *times, int count)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID,
     8, true, 'd');
+  pfree(times);
   return result;
 }
 
@@ -294,6 +295,7 @@ spanarr_to_array(Span **spans, int count)
   assert(count > 0);
   ArrayType *result = construct_array((Datum *) spans, count,
     type_oid(spans[0]->spantype), sizeof(Span), false, 'd');
+  pfree(spans);
   return result;
 }
 
@@ -309,6 +311,8 @@ strarr_to_textarray(char **strarr, int count)
     textarr[i] = cstring2text(strarr[i]);
   ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
     false, 'i');
+  for (int i = 0; i < count; i++)
+    pfree(strarr[i]);
   return result;
 }
 
@@ -316,12 +320,18 @@ strarr_to_textarray(char **strarr, int count)
  * @brief Convert a C array of temporal values into a PostgreSQL array
  */
 ArrayType *
-temporalarr_to_array(const Temporal **temporalarr, int count)
+temparr_to_array(Temporal **temparr, int count, bool free_all)
 {
   assert(count > 0);
-  Oid temptypid = type_oid(temporalarr[0]->temptype);
-  ArrayType *result = construct_array((Datum *) temporalarr, count, temptypid,
-    -1, false, 'd');
+  Oid temptypid = type_oid(temparr[0]->temptype);
+  ArrayType *result = construct_array((Datum *) temparr, count, temptypid, -1,
+    false, 'd');
+  if (free_all)
+  {
+    for (int i = 0; i < count; i++)
+      pfree(temparr[i]);
+  }
+  pfree(temparr);
   return result;
 }
 
@@ -346,7 +356,7 @@ stboxarr_to_array(STBox *boxarr, int count)
  *****************************************************************************/
 
 /**
- * @brief Construct a range value from given arguments
+ * @brief Return a range value from given arguments
  */
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
@@ -383,7 +393,7 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
 
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
- * @brief Construct a range value from given arguments
+ * @brief Return a range value from given arguments
  */
 MultirangeType *
 multirange_make(const SpanSet *ss)

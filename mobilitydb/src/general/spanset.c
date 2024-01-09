@@ -138,7 +138,7 @@ PGDLLEXPORT Datum Spanset_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_constructor);
 /**
  * @ingroup mobilitydb_setspan_constructor
- * @brief Construct a span set from an array of spans
+ * @brief Return a span set from an array of spans
  * @sqlfn spanset()
  */
 Datum
@@ -167,9 +167,9 @@ PG_FUNCTION_INFO_V1(Value_to_spanset);
 Datum
 Value_to_spanset(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_SPANSET_P(value_to_spanset(d, basetype));
+  PG_RETURN_SPANSET_P(value_to_spanset(value, basetype));
 }
 
 PGDLLEXPORT Datum Set_to_spanset(PG_FUNCTION_ARGS);
@@ -311,7 +311,7 @@ PGDLLEXPORT Datum Spanset_to_multirange(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_to_multirange);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a span set to a multirange 
+ * @brief Convert a span set to a multirange
  * @sqlfn int4range(), tstzrange()
  * @sqlop @p ::
  */
@@ -323,7 +323,7 @@ Spanset_to_multirange(PG_FUNCTION_ARGS)
     ss->spantype == T_TSTZSPAN);
   MultirangeType *result = multirange_make(ss);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_MULTIRANGE_P(result);
 }
 
 PGDLLEXPORT Datum Multirange_to_spanset(PG_FUNCTION_ARGS);
@@ -570,7 +570,6 @@ Datespanset_dates(PG_FUNCTION_ARGS)
   int count;
   DateADT *dates = datespanset_dates(ss, &count);
   ArrayType *result = datearr_to_array(dates, count);
-  pfree(dates);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -657,7 +656,6 @@ Tstzspanset_timestamps(PG_FUNCTION_ARGS)
   int count;
   TimestampTz *times = tstzspanset_timestamps(ss, &count);
   ArrayType *result = tstzarr_to_array(times, count);
-  pfree(times);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -741,8 +739,7 @@ Spanset_spans(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   const Span **spans = spanset_spans(ss);
-  ArrayType *result = spanarr_to_array(spans, ss->count);
-  pfree(spans);
+  ArrayType *result = spanarr_to_array((Span **) spans, ss->count);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -750,7 +747,7 @@ Spanset_spans(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Transformation functions
  *
- * Since in PostgreSQL the type date is defined as follows 
+ * Since in PostgreSQL the type date is defined as follows
  *   typedef int32 DateADT;
  * the functions #Numspan_shift, #Numspan_scale, and #Numspan_shift_scale are
  * also used for datespans and datespansets

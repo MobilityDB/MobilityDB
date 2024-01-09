@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief General functions for temporal points.
+ * @brief General functions for temporal points
  */
 
 #include "point/tpoint.h"
@@ -50,10 +50,12 @@
  *****************************************************************************/
 
 /**
- * @brief Copy a GSERIALIZED. This function is not available anymore in PostGIS 3
+ * @brief Copy a geometry
+ * @note The @p gserialized_copy function is not available anymore in
+ * PostGIS 3
  */
 GSERIALIZED *
-gserialized_copy(const GSERIALIZED *g)
+geo_copy(const GSERIALIZED *g)
 {
   assert(g);
   GSERIALIZED *result = palloc(VARSIZE(g));
@@ -66,7 +68,7 @@ gserialized_copy(const GSERIALIZED *g)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_conversion
+ * @ingroup meos_box_conversion
  * @brief Return the bounding box of a temporal point
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_to_stbox()
@@ -88,9 +90,9 @@ tpoint_to_stbox(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
- * @brief Return the bounding box of a geometry expanded on the
- * spatial dimension
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return the bounding box of a geometry expanded on the spatial
+ * dimension
  * @param[in] gs Geometry
  * @param[in] d Value
  * @csqlfn #Geo_expand_space()
@@ -108,12 +110,12 @@ geo_expand_space(const GSERIALIZED *gs, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
- * @brief Return the bounding box of a temporal point expanded on the
- * spatial dimension
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return the bounding box of a temporal point expanded on the spatial
+ * dimension
  * @param[in] temp Temporal point
  * @param[in] d Value
- * @return On error return NULL
+ * @return On error return @p NULL
  * @csqlfn #Tpoint_expand_space()
  */
 STBox *

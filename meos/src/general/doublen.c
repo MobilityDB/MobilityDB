@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Internal types used in particular for computing the average and
- * centroid temporal aggregates.
+ * centroid temporal aggregates
  *
  * The `double2`, `double3`, and `double4` types are base types composed,
  * respectively, of two, three, and four `double` values. The `tdouble2`,
@@ -81,8 +81,7 @@ double2_out(const double2 *d, int maxdd)
   char *bstr = float8_out(d->b, maxdd);
   char *result = palloc(strlen(astr) + strlen(bstr) + 4);
   sprintf(result, "(%s,%s)", astr, bstr);
-  pfree(astr);
-  pfree(bstr);
+  pfree(astr); pfree(bstr);
   return result;
 }
 #endif /* MEOS */
@@ -167,9 +166,7 @@ double3_out(const double3 *d, int maxdd)
   char *cstr = float8_out(d->c, maxdd);
   char *result = palloc(strlen(astr) + strlen(bstr) + strlen(cstr) + 5);
   sprintf(result, "(%s,%s,%s)", astr, bstr, cstr);
-  pfree(astr);
-  pfree(bstr);
-  pfree(cstr);
+  pfree(astr); pfree(bstr); pfree(cstr);
   return result;
 }
 #endif /* MEOS */
@@ -262,10 +259,7 @@ double4_out(const double4 *d, int maxdd)
   char *result = palloc(strlen(astr) + strlen(bstr) + strlen(cstr) +
     strlen(dstr) + 6);
   sprintf(result, "(%s,%s,%s,%s)", astr, bstr, cstr, dstr);
-  pfree(astr);
-  pfree(bstr);
-  pfree(cstr);
-  pfree(dstr);
+  pfree(astr); pfree(bstr); pfree(cstr); pfree(dstr);
   return result;
 }
 #endif /* MEOS */
@@ -310,8 +304,8 @@ double4_eq(const double4 *d1, const double4 *d2)
 
 #if 0 /* not used */
 /**
- * @brief Return -1, 0, or 1 depending on whether the first double4
- * is less than, equal, or greater than the second one
+ * @brief Return -1, 0, or 1 depending on whether the first double4 is less
+ * than, equal, or greater than the second one
  */
 int
 double4_cmp(const double4 *d1, const double4 *d2)

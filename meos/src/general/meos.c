@@ -142,15 +142,15 @@ split_to_stringlist(const char *s, const char *delim, _stringlist **listhead)
 /***************************************************************************
  * Definitions derived from variable.c
  ***************************************************************************/
- 
+
 /*
  * DATESTYLE, DATEORDER, INTERVALSTYLE
  */
 
 /**
- * @brief Global array containing the datestyle strings 
+ * @brief Global array containing the datestyle strings
  */
-char * _datestyle_strings[] =
+char * _DATESTYLE_STRINGS[] =
 {
   [USE_POSTGRES_DATES] = "Postgres",
   [USE_ISO_DATES] = "ISO",
@@ -160,9 +160,9 @@ char * _datestyle_strings[] =
 };
 
 /**
- * @brief Global array containing the dateorder strings 
+ * @brief Global array containing the dateorder strings
  */
-char * _dateorder_strings[] =
+char * _DATEORDER_STRINGS[] =
 {
   [DATEORDER_YMD] = "YMD",
   [DATEORDER_DMY] = "DMY",
@@ -170,9 +170,9 @@ char * _dateorder_strings[] =
 };
 
 /**
- * @brief Global array containing the intervalstyle string 
+ * @brief Global array containing the intervalstyle string
  */
-char * _intervalstyle_string[] =
+char * _INTERVALSTYLE_STRINGS[] =
 {
   [INTSTYLE_POSTGRES] = "postgres",
   [INTSTYLE_POSTGRES_VERBOSE] = "postgres_verbose",
@@ -181,34 +181,34 @@ char * _intervalstyle_string[] =
 };
 
 /**
- * @brief Return the string representation of the dateorder 
+ * @brief Return the string representation of the dateorder
  */
 const char *
 datestyle_string(int datestyle)
 {
-  return _datestyle_strings[datestyle];
+  return _DATESTYLE_STRINGS[datestyle];
 }
 
 /**
- * @brief Return the string representation of the dateorder 
+ * @brief Return the string representation of the dateorder
  */
 const char *
 dateorder_string(int dateorder)
 {
-  return _dateorder_strings[dateorder];
+  return _DATEORDER_STRINGS[dateorder];
 }
 
 /**
- * @brief Return the string representation of the intervalstyle 
+ * @brief Return the string representation of the intervalstyle
  */
 const char *
 intervalstyle_string(int intervalstyle)
 {
-  return _intervalstyle_string[intervalstyle];
+  return _INTERVALSTYLE_STRINGS[intervalstyle];
 }
 
 /***************************************************************************/
- 
+
 /**
  * @brief Check a datestyle string
  */
@@ -347,7 +347,7 @@ check_datestyle(char **newval, void **extra)
   myextra = (int *) palloc(2 * sizeof(int));
   if (!myextra)
     return false;
-  
+
   myextra[0] = newDateStyle;
   myextra[1] = newDateOrder;
   *extra = (void *) myextra;
@@ -363,7 +363,7 @@ meos_set_datestyle(char *newval, void *extra)
 {
   if (! check_datestyle(&newval, &extra))
     return false;
-    
+
   int *myextra = (int *) extra;
   DateStyle = myextra[0];
   DateOrder = myextra[1];
@@ -379,13 +379,13 @@ meos_get_datestyle(void)
   char *result = palloc(32);
   if (! result)
     return NULL;
-  sprintf(result, "%s, %s", datestyle_string(DateStyle), 
+  sprintf(result, "%s, %s", datestyle_string(DateStyle),
     dateorder_string(DateStyle));
   return result;
 }
 
 /***************************************************************************/
- 
+
 /**
  * @brief Check an IntervalStyle string
  */
@@ -422,7 +422,7 @@ meos_set_intervalstyle(char *newval, int extra)
 {
   if (! check_intervalstyle(newval, &extra))
     return false;
-    
+
   IntervalStyle = extra;
   return true;
 }

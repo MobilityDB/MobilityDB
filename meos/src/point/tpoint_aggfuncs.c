@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate functions for temporal points.
+ * @brief Aggregate functions for temporal points
  *
  * The only functions currently provided are extent and temporal centroid.
  */
@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * @brief Check the validity of the temporal point values for aggregation
+ * @brief Check the validity of two temporal points for aggregation
  */
 bool
 ensure_geoaggstate(const SkipList *state, int32_t srid, bool hasz)
@@ -76,7 +76,7 @@ ensure_geoaggstate(const SkipList *state, int32_t srid, bool hasz)
 }
 
 /**
- * @brief Check the validity of the temporal point values for aggregation
+ * @brief Check the validity of two temporal points for aggregation
  */
 bool
 ensure_geoaggstate_state(const SkipList *state1, const SkipList *state2)
@@ -92,49 +92,44 @@ ensure_geoaggstate_state(const SkipList *state1, const SkipList *state2)
 /*****************************************************************************/
 
 /**
- * @brief Transform a temporal point value of instant type into a temporal
- * double3/double4 value for performing temporal centroid aggregation
+ * @brief Transform a temporal point instant into a temporal @p double3 of
+ * @p double4 for performing temporal centroid aggregation
  */
 static TInstant *
 tpointinst_transform_tcentroid(const TInstant *inst)
 {
-  TInstant *result;
   if (MEOS_FLAGS_GET_Z(inst->flags))
   {
     const POINT3DZ *point = DATUM_POINT3DZ_P(tinstant_value(inst));
     double4 dvalue;
     double4_set(point->x, point->y, point->z, 1, &dvalue);
-    result = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE4, inst->t);
+    return tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE4, inst->t);
   }
   else
   {
     const POINT2D *point = DATUM_POINT2D_P(tinstant_value(inst));
     double3 dvalue;
     double3_set(point->x, point->y, 1, &dvalue);
-    result = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE3, inst->t);
+    return tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE3, inst->t);
   }
-  return result;
 }
 
 /**
  * @brief Transform a temporal point discrete sequence into a temporal
- * double3/double4 value for performing temporal centroid aggregation
+ * @p double3 or @p double4 for performing temporal centroid aggregation
  */
 static TInstant **
 tpointdiscseq_transform_tcentroid(const TSequence *seq)
 {
   TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    result[i] = tpointinst_transform_tcentroid(inst);
-  }
+    result[i] = tpointinst_transform_tcentroid(TSEQUENCE_INST_N(seq, i));
   return result;
 }
 
 /**
- * @brief Transform a temporal point value of sequence type into a temporal
- * double3/double4 value for performing temporal centroid aggregation
+ * @brief Transform a temporal point sequence into a temporal
+ * @p double3 or @p double4 for performing temporal centroid aggregation
  */
 static TSequence *
 tpointcontseq_transform_tcentroid(const TSequence *seq)
@@ -145,54 +140,56 @@ tpointcontseq_transform_tcentroid(const TSequence *seq)
 }
 
 /**
- * @brief Transform a temporal point value of sequence set type into a temporal
- * double3/double4 value for performing temporal centroid aggregation
+ * @brief Transform a temporal point sequence set into a temporal
+ * @p double3 or @p double4 for performing temporal centroid aggregation
  */
 static TSequence **
 tpointseqset_transform_tcentroid(const TSequenceSet *ss)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    result[i] = tpointcontseq_transform_tcentroid(seq);
-  }
+    result[i] = tpointcontseq_transform_tcentroid(TSEQUENCESET_SEQ_N(ss, i));
   return result;
 }
 
 /**
- * @brief Transform a temporal point value for performing temporal centroid aggregation
+ * @brief Transform a temporal point for performing temporal centroid
+ * aggregation
  */
 Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
   Temporal **result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
+  switch (temp->subtype)
   {
-    result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *) tpointinst_transform_tcentroid((TInstant *) temp);
-    *count = 1;
-  }
-  else if (temp->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
-    {
-      result = (Temporal **) tpointdiscseq_transform_tcentroid((TSequence *) temp);
-      *count = ((TSequence *) temp)->count;
-    }
-    else
+    case TINSTANT:
     {
       result = palloc(sizeof(Temporal *));
-      result[0] = (Temporal *) tpointcontseq_transform_tcentroid((TSequence *) temp);
+      result[0] = (Temporal *) tpointinst_transform_tcentroid((TInstant *) temp);
       *count = 1;
+      break;
     }
-
-  }
-  else /* temp->subtype == TSEQUENCESET */
-  {
-    result = (Temporal **) tpointseqset_transform_tcentroid((TSequenceSet *) temp);
-    *count = ((TSequenceSet *) temp)->count;
+    case TSEQUENCE:
+    {
+      if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
+      {
+        result = (Temporal **) tpointdiscseq_transform_tcentroid((TSequence *) temp);
+        *count = ((TSequence *) temp)->count;
+      }
+      else
+      {
+        result = palloc(sizeof(Temporal *));
+        result[0] = (Temporal *) tpointcontseq_transform_tcentroid((TSequence *) temp);
+        *count = 1;
+      }
+      break;
+    }
+    default: /* TSEQUENCESET */
+    {
+      result = (Temporal **) tpointseqset_transform_tcentroid((TSequenceSet *) temp);
+      *count = ((TSequenceSet *) temp)->count;
+    }
   }
   assert(result != NULL);
   return result;
@@ -201,9 +198,9 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup meos_temporal_agg
  * @brief Transition function for temporal centroid aggregation of temporal
- * point values
+ * points
  * @param[in] state Current aggregate value
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_tcentroid_transfn()
@@ -246,8 +243,9 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal extent aggregation of temporal point values
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal extent aggregation of temporal
+ * points
  * @param[in] box Current aggregate value
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_extent_transfn()
@@ -277,7 +275,7 @@ tpoint_extent_transfn(STBox *box, const Temporal *temp)
       ! ensure_same_dimensionality(temp->flags, box->flags) ||
       ! ensure_same_geodetic(temp->flags, box->flags))
     return NULL;
-    
+
   temporal_set_bbox(temp, result);
   stbox_expand(box, result);
   return result;
@@ -320,8 +318,8 @@ doublen_to_point(const TInstant *inst, int srid)
 
 /**
  * @brief Final function for temporal centroid aggregation of temporal point
- * value with instant type
- * @param[in] instants Temporal values
+ * instants
+ * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  * @param[in] srid SRID of the values
  */
@@ -342,7 +340,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
 
 /**
  * @brief Final function for temporal centroid aggregation of temporal point
- * values with sequence type
+ * sequences
  * @param[in] sequences Temporal values
  * @param[in] count Number of elements in the array
  * @param[in] srid SRID of the values
@@ -366,16 +364,14 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
       seq->period.lower_inc, seq->period.upper_inc,
       MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   }
-  TSequenceSet *result = tsequenceset_make_free(newsequences, count, NORMALIZE);
-  return result;
+  return tsequenceset_make_free(newsequences, count, NORMALIZE);
 }
 
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Final function for temporal centroid aggregation of temporal point
- * values
+ * @ingroup meos_temporal_agg
+ * @brief Final function for temporal centroid aggregation of temporal points
  * @param[in] state Current aggregate value
  * @csqlfn #Tpoint_tcentroid_finalfn()
  */

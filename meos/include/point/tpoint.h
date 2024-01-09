@@ -74,8 +74,8 @@
 
 /* General functions */
 
-extern void temporalgeom_init(void);
-extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
+extern void mobilitydb_init(void);
+extern GSERIALIZED * geo_copy(const GSERIALIZED *g);
 
 /* Temporal comparisons */
 

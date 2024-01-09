@@ -138,7 +138,7 @@ PGDLLEXPORT Datum Set_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_constructor);
 /**
  * @ingroup mobilitydb_setspan_constructor
- * @brief Construct a set from an array of base values
+ * @brief Return a set from an array of values
  * @sqlfn set()
  */
 Datum

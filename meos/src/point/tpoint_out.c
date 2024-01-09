@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Output of temporal points in WKT, EWKT, and MF-JSON format.
+ * @brief Output of temporal points in WKT, EWKT, and MF-JSON format
  */
 
 #include "point/tpoint_out.h"
@@ -48,8 +48,8 @@
  *****************************************************************************/
 
 /**
- * @brief Output a geometry in Well-Known Text (WKT) format.
- * @note The parameter `type` is not needed for temporal points
+ * @brief Output a geometry in the Well-Known Text (WKT) representation
+ * @note The parameter @p type is not needed for temporal points
  */
 char *
 wkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
@@ -60,15 +60,14 @@ wkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
   char *wkt = lwgeom_to_wkt(geom, WKT_ISO, maxdd, &len);
   char *result = palloc(len);
   strcpy(result, wkt);
-  lwgeom_free(geom);
-  pfree(wkt);
+  lwgeom_free(geom); pfree(wkt);
   return result;
 }
 
 /**
- * @brief Output a geometry in Extended Well-Known Text (EWKT) format, that is,
- * in WKT format prefixed with the SRID.
- * @note The parameter `type` is not needed for temporal points
+ * @brief Output a geometry in the Extended Well-Known Text (EWKT)
+ * representation, that is, in WKT representation prefixed with the SRID
+ * @note The parameter @p type is not needed for temporal points
  */
 char *
 ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
@@ -79,14 +78,13 @@ ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
   char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, maxdd, &len);
   char *result = palloc(len);
   strcpy(result, wkt);
-  lwgeom_free(geom);
-  pfree(wkt);
+  lwgeom_free(geom); pfree(wkt);
   return result;
 }
 
 /**
- * @ingroup libmeos_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal point.
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal point
  * @param[in] temp Temporal point
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Tpoint_as_text()
@@ -99,21 +97,22 @@ tpoint_as_text(const Temporal *temp, int maxdd)
       ! ensure_not_negative(maxdd))
     return NULL;
 
-  char *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tinstant_to_string((TInstant *) temp, maxdd, &wkt_out);
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_to_string((TSequence *) temp, maxdd, false, &wkt_out);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *) temp, maxdd, &wkt_out);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return tinstant_to_string((TInstant *) temp, maxdd, &wkt_out);
+    case TSEQUENCE:
+      return tsequence_to_string((TSequence *) temp, maxdd, false, &wkt_out);
+    default: /* TSEQUENCESET */
+      return tsequenceset_to_string((TSequenceSet *) temp, maxdd, &wkt_out);
+  }
 }
 
 /**
- * @ingroup libmeos_temporal_inout
- * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
- * point.
+ * @ingroup meos_temporal_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * temporal point
  * @param[in] temp Temporal point
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Tpoint_as_ewkt()
@@ -144,9 +143,9 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
- * representation of a geometry/geography array.
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of a geometry/geography array
  * @param[in] geoarr Array of geometries/geographies
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
@@ -170,9 +169,9 @@ geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
- * representation of a temporal point array
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of an array of temporal points
  * @param[in] temparr Array of temporal points
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output

@@ -29,11 +29,11 @@
 
 /**
  * @file
- * @brief Bounding box operators for temporal network points.
+ * @brief Bounding box operators for temporal network points
  *
- * These operators test the bounding boxes of temporal npoints, which are
- * STBox boxes. The following operators are defined:
- *    overlaps, contains, contained, same
+ * These operators test the bounding boxes of temporal network points, which
+ * are @p STBox boxes. The following operators are defined:
+ *    @p overlaps, @p contains, @p contained, @p same
  * The operators consider as many dimensions as they are shared in both
  * arguments: only the space dimension, only the time dimension, or both
  * the space and the time dimensions.
@@ -44,7 +44,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/pgis_call.h"
+#include "point/pgis_types.h"
 #include "npoint/tnpoint_static.h"
 
 /*****************************************************************************
@@ -53,7 +53,7 @@
 
 /**
  * @brief Initialize the spatiotemporal box in the last argument from the
- * network point value.
+ * network point value
  * @param[in] np Network point
  * @param[out] box Spatiotemporal box
  */
@@ -67,7 +67,7 @@ npoint_set_stbox(const Npoint *np, STBox *box)
 }
 
 /**
- * @brief Convert a network point to a spatiotemporal box.
+ * @brief Convert a network point to a spatiotemporal box
  */
 STBox *
 npoint_to_stbox(const Npoint *np)
@@ -157,7 +157,7 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
 
   GSERIALIZED *line = route_geom(rid);
   GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
-    gserialized_line_substring(line, posmin, posmax);
+    linestring_substring(line, posmin, posmax);
   geo_set_stbox(gs, box);
   span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
@@ -208,7 +208,7 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
     double posmax = Min(np1->pos, np2->pos);
     GSERIALIZED *line = route_geom(rid);
     GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
-      gserialized_line_substring(line, posmin, posmax);
+      linestring_substring(line, posmin, posmax);
     geo_set_stbox(gs, &box);
     span_set(TimestampTzGetDatum(last->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box.period);

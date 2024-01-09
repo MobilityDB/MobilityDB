@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Ever/always and temporal comparison operators.
+ * @brief Ever/always and temporal comparison operators
  */
 
 #include "general/temporal_compops.h"
@@ -45,8 +45,78 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal boolean is ever equal to a boolean.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a boolean is ever equal to a temporal boolean
+ * @param[in] b Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_eq_base_temporal()
+ */
+bool
+ever_eq_bool_tbool(bool b, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return false;
+  return ever_eq_temporal_base(temp, BoolGetDatum(b));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if an integer is ever equal to a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_eq_base_temporal()
+ */
+bool
+ever_eq_int_tint(int i, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return false;
+  return ever_eq_temporal_base(temp, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a float is ever equal to a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_eq_base_temporal()
+ */
+bool
+ever_eq_float_tfloat(double d, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return false;
+  return ever_eq_temporal_base(temp, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a text is ever equal to a temporal text
+ * @param[in] txt Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_eq_base_temporal()
+ */
+bool
+ever_eq_text_ttext(const text *txt, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
+    return false;
+  return ever_eq_temporal_base(temp, PointerGetDatum(txt));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal boolean is ever equal to a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Ever_eq_temporal_base()
@@ -62,8 +132,8 @@ ever_eq_tbool_bool(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is ever equal to an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is ever equal to an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_eq_temporal_base()
@@ -79,8 +149,8 @@ ever_eq_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is ever equal to a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is ever equal to a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_eq_temporal_base()
@@ -96,8 +166,8 @@ ever_eq_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is ever equal to a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is ever equal to a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_eq_temporal_base()
@@ -115,8 +185,78 @@ ever_eq_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal boolean is always equal to a boolean.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a boolean is always equal to a temporal boolean
+ * @param[in] b Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_eq_base_temporal()
+ */
+bool
+always_eq_bool_tbool(bool b, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return false;
+  return always_eq_temporal_base(temp, BoolGetDatum(b));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if an integer is always equal to a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_eq_base_temporal()
+ */
+bool
+always_eq_int_tint(int i, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return false;
+  return always_eq_temporal_base(temp, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a float is always equal to a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_eq_base_temporal()
+ */
+bool
+always_eq_float_tfloat(double d, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return false;
+  return always_eq_temporal_base(temp, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a text is always equal to a temporal text
+ * @param[in] txt Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_eq_base_temporal()
+ */
+bool
+always_eq_text_ttext(const text *txt, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
+    return false;
+  return always_eq_temporal_base(temp, PointerGetDatum(txt));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal boolean is always equal to a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Always_eq_temporal_base()
@@ -132,8 +272,8 @@ always_eq_tbool_bool(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is always equal to an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is always equal to an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_eq_temporal_base()
@@ -149,8 +289,8 @@ always_eq_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is always equal to a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is always equal to a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_eq_temporal_base()
@@ -166,8 +306,8 @@ always_eq_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is always equal to a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is always equal to a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_eq_temporal_base()
@@ -185,8 +325,78 @@ always_eq_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal boolean is ever different from a boolean.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a boolean is ever different from a temporal boolean
+ * @param[in] b Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_ne_base_temporal()
+ */
+bool
+ever_ne_bool_tbool(bool b, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return false;
+  return ever_ne_temporal_base(temp, BoolGetDatum(b));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if an integer is ever different from a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_ne_base_temporal()
+ */
+bool
+ever_ne_int_tint(int i, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return false;
+  return ever_ne_temporal_base(temp, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a float is ever different from a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_ne_base_temporal()
+ */
+bool
+ever_ne_float_tfloat(double d, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return false;
+  return ever_ne_temporal_base(temp, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a text is ever different from a temporal text
+ * @param[in] txt Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_ne_base_temporal()
+ */
+bool
+ever_ne_text_ttext(const text *txt, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
+    return false;
+  return ever_ne_temporal_base(temp, PointerGetDatum(txt));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal boolean is ever different from a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Ever_ne_temporal_base()
@@ -202,8 +412,8 @@ ever_ne_tbool_bool(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is ever different from an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is ever different from an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_ne_temporal_base()
@@ -219,8 +429,8 @@ ever_ne_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is ever different from a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is ever different from a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_ne_temporal_base()
@@ -236,8 +446,8 @@ ever_ne_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is ever different from a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is ever different from a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_ne_temporal_base()
@@ -255,8 +465,78 @@ ever_ne_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal boolean is always different from a boolean.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a boolean is always different from a temporal boolean
+ * @param[in] b Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_ne_base_temporal()
+ */
+bool
+always_ne_bool_tbool(bool b, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return false;
+  return always_ne_temporal_base(temp, BoolGetDatum(b));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if an integer is always different from a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_ne_base_temporal()
+ */
+bool
+always_ne_int_tint(int i, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return false;
+  return always_ne_temporal_base(temp, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a float is always different from a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_ne_base_temporal()
+ */
+bool
+always_ne_float_tfloat(double d, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return false;
+  return always_ne_temporal_base(temp, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a text is always different from a temporal text
+ * @param[in] txt Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_ne_base_temporal()
+ */
+bool
+always_ne_text_ttext(const text *txt, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
+    return false;
+  return always_ne_temporal_base(temp, PointerGetDatum(txt));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal boolean is always different from a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Always_ne_temporal_base()
@@ -272,8 +552,8 @@ always_ne_tbool_bool(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is always different from an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is always different from an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_ne_temporal_base()
@@ -289,8 +569,8 @@ always_ne_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is always different from a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is always different from a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_ne_temporal_base()
@@ -306,8 +586,8 @@ always_ne_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is always different from a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is always different from a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_ne_temporal_base()
@@ -325,8 +605,8 @@ always_ne_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is ever less than an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is ever less than an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_lt_temporal_base()
@@ -342,8 +622,8 @@ ever_lt_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is ever less than a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is ever less than a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_lt_temporal_base()
@@ -359,8 +639,8 @@ ever_lt_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is ever less than a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is ever less than a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_lt_temporal_base()
@@ -378,8 +658,8 @@ ever_lt_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is always less than an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is always less than an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_lt_temporal_base()
@@ -395,8 +675,8 @@ always_lt_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is always less than  a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is always less than a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_lt_temporal_base()
@@ -412,8 +692,8 @@ always_lt_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is always less than  a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is always less than a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_lt_temporal_base()
@@ -431,8 +711,9 @@ always_lt_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is ever less than or equal to an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is ever less than or equal to an
+ * integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_le_temporal_base()
@@ -448,8 +729,8 @@ ever_le_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is ever less than or equal to a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is ever less than or equal to a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_le_temporal_base()
@@ -465,8 +746,8 @@ ever_le_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is ever less than or equal to a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is ever less than or equal to a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_le_temporal_base()
@@ -484,8 +765,9 @@ ever_le_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is always less than or equal to an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is always less than or equal to an
+ * integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_le_temporal_base()
@@ -501,8 +783,9 @@ always_le_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is always less than or equal to a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is always less than or equal to a
+ * float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_le_temporal_base()
@@ -518,8 +801,8 @@ always_le_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is always less than or equal to a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is always less than or equal to a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_le_temporal_base()
@@ -537,8 +820,8 @@ always_le_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is ever less than an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is ever less than an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_lt_temporal_base()
@@ -554,8 +837,8 @@ ever_gt_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is ever less than a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is ever less than a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_lt_temporal_base()
@@ -571,8 +854,8 @@ ever_gt_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is ever less than a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is ever less than a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_lt_temporal_base()
@@ -590,8 +873,8 @@ ever_gt_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is always less than an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is always less than an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_lt_temporal_base()
@@ -607,8 +890,8 @@ always_gt_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is always less than  a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is always less than a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_lt_temporal_base()
@@ -624,8 +907,8 @@ always_gt_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is always less than  a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is always less than a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_lt_temporal_base()
@@ -643,8 +926,9 @@ always_gt_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is ever less than or equal to an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is ever less than or equal to an
+ * integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_le_temporal_base()
@@ -660,8 +944,8 @@ ever_ge_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is ever less than or equal to a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is ever less than or equal to a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_le_temporal_base()
@@ -677,8 +961,8 @@ ever_ge_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is ever less than or equal to a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is ever less than or equal to a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_le_temporal_base()
@@ -696,8 +980,9 @@ ever_ge_ttext_text(const Temporal *temp, const text *txt)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal integer is always less than or equal to an integer.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is always less than or equal to an
+ * integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_le_temporal_base()
@@ -713,8 +998,9 @@ always_ge_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal float is always less than or equal to a float.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal float is always less than or equal to a
+ * float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_le_temporal_base()
@@ -730,8 +1016,8 @@ always_ge_tfloat_float(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_comp_ever
- * @brief Return true if a temporal text is always less than or equal to a text.
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal text is always less than or equal to a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_le_temporal_base()
@@ -751,8 +1037,25 @@ always_ge_ttext_text(const Temporal *temp, const text *txt)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of a temporal boolean and a boolean.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a boolean and a temporal boolean
+ * @param[in] b Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Teq_base_temporal()
+ */
+Temporal *
+teq_bool_tbool(bool b, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return NULL;
+  return tcomp_temporal_base(temp, BoolGetDatum(b), &datum2_eq, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a temporal boolean and a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Teq_temporal_base()
@@ -762,14 +1065,31 @@ teq_tbool_bool(const Temporal *temp, bool b)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_BOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return tcomp_temporal_base(temp, BoolGetDatum(b), &datum2_eq, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of a temporal integer and an integer.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of an integer and a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Teq_base_temporal()
+ */
+Temporal *
+teq_int_tint(int i, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+  return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_eq, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a temporal integer and an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Teq_temporal_base()
@@ -779,14 +1099,31 @@ teq_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_eq, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of a temporal float and a float.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a float and a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Teq_base_temporal()
+ */
+Temporal *
+teq_float_tfloat(double d, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_eq, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a temporal float and a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Teq_temporal_base()
@@ -795,15 +1132,32 @@ Temporal *
 teq_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || 
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_eq, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of a temporal text and a text.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a text and a temporal text
+ * @param[in] txt Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Teq_base_temporal()
+ */
+Temporal *
+teq_text_ttext(const text *txt, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
+    return NULL;
+  return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_eq, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a temporal text and a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Teq_temporal_base()
@@ -813,42 +1167,9 @@ teq_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_eq, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of a temporal point and a point.
- * @param[in] temp Temporal value
- * @param[in] gs Value
- * @csqlfn #Teq_temporal_base()
- */
-Temporal *
-teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return NULL;
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), &datum2_eq, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of the temporal values.
- * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Teq_temporal_temporal()
- */
-Temporal *
-teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
 }
 
 /*****************************************************************************
@@ -856,8 +1177,25 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal inequality of a temporal boolean and a boolean.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of a boolean and a temporal boolean
+ * @param[in] b Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Tne_base_temporal()
+ */
+Temporal *
+tne_bool_tbool(bool b, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return NULL;
+  return tcomp_temporal_base(temp, BoolGetDatum(b), &datum2_ne, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of a temporal boolean and a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Tne_temporal_base()
@@ -867,14 +1205,31 @@ tne_tbool_bool(const Temporal *temp, bool b)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_BOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return tcomp_temporal_base(temp, BoolGetDatum(b), &datum2_ne, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal inequality of a temporal integer and an integer.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of an integer and a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Tne_base_temporal()
+ */
+Temporal *
+tne_int_tint(int i, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+  return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_ne, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of a temporal integer and an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Tne_temporal_base()
@@ -884,14 +1239,31 @@ tne_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_ne, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal inequality of a temporal float and a float.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of a float and a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Tne_base_temporal()
+ */
+Temporal *
+tne_float_tfloat(double d, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_ne, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of a temporal float and a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Tne_temporal_base()
@@ -901,14 +1273,31 @@ tne_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_ne, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal inequality of a temporal text and a text.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of a text and a temporal text
+ * @param[in] txt Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Tne_base_temporal()
+ */
+Temporal *
+tne_text_ttext(const text *txt, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
+    return NULL;
+  return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_ne, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of a temporal text and a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Tne_temporal_base()
@@ -918,42 +1307,9 @@ tne_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_ne, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal equality of a temporal point and a point.
- * @param[in] temp Temporal value
- * @param[in] gs Value
- * @csqlfn #Tne_temporal_base()
- */
-Temporal *
-tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return NULL;
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), &datum2_ne, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal inequality of the temporal values.
- * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Tne_temporal_temporal()
- */
-Temporal *
-tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
 }
 
 /*****************************************************************************
@@ -961,8 +1317,8 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal less than of an integer and a temporal integer.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of an integer and a temporal integer
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Tlt_base_temporal()
@@ -972,14 +1328,14 @@ tlt_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_lt, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal less than of a float and a temporal float.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of a float and a temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Tlt_base_temporal()
@@ -989,14 +1345,14 @@ tlt_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_lt, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal less than of a text and a temporal text.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of a text and a temporal text
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Tlt_base_temporal()
@@ -1006,14 +1362,14 @@ tlt_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_lt, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal less than of a temporal integer and an integer.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of a temporal integer and an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Tlt_temporal_base()
@@ -1023,14 +1379,14 @@ tlt_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_lt, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal less than of a temporal float and a float.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of a temporal float and a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Tlt_temporal_base()
@@ -1040,14 +1396,14 @@ tlt_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_lt, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal less than of a temporal text and a text.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of a temporal text and a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Tlt_temporal_base()
@@ -1057,25 +1413,9 @@ tlt_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_lt, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal less than of the temporal values.
- * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Tlt_temporal_temporal()
- */
-Temporal *
-tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
 }
 
 /*****************************************************************************
@@ -1083,9 +1423,9 @@ tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of an integer and a
- * temporal integer.
+ * temporal integer
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Tle_base_temporal()
@@ -1095,15 +1435,15 @@ tle_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_le, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of a float and a temporal
- * float.
+ * float
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Tle_base_temporal()
@@ -1113,15 +1453,15 @@ tle_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_le, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less or equal to than of a text and a temporal
- * text.
+ * text
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Tle_base_temporal()
@@ -1131,15 +1471,15 @@ tle_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_le, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of a temporal integer and
- * an integer.
+ * an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Tle_temporal_base()
@@ -1149,15 +1489,15 @@ tle_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_le, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of a temporal float and a
- * float.
+ * float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Tle_temporal_base()
@@ -1167,15 +1507,15 @@ tle_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_le, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of a temporal text and a
- * text.
+ * text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Tle_temporal_base()
@@ -1185,25 +1525,9 @@ tle_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_le, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal less than or equal to of the temporal values.
- * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Tle_temporal_temporal()
- */
-Temporal *
-tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
 }
 
 /*****************************************************************************
@@ -1211,8 +1535,8 @@ tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal greater than of an integer and a temporal integer.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of an integer and a temporal integer
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Tgt_base_temporal()
@@ -1222,14 +1546,14 @@ tgt_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_gt, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal greater than of a float and a temporal float.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of a float and a temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Tgt_base_temporal()
@@ -1239,14 +1563,14 @@ tgt_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_gt, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal greater than of a text and a temporal text.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of a text and a temporal text
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Tgt_base_temporal()
@@ -1256,14 +1580,14 @@ tgt_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_gt, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal greater than of a temporal integer and an integer.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of a temporal integer and an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Tgt_temporal_base()
@@ -1273,14 +1597,14 @@ tgt_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_gt, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal greater than of a temporal float and a float.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of a temporal float and a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Tgt_temporal_base()
@@ -1290,14 +1614,14 @@ tgt_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_gt, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal greater than of a temporal text and a text.
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of a temporal text and a text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Tgt_temporal_base()
@@ -1307,25 +1631,9 @@ tgt_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_gt, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal greater than of the temporal values.
- * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Tgt_temporal_temporal()
- */
-Temporal *
-tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
 }
 
 /*****************************************************************************
@@ -1333,9 +1641,9 @@ tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of an integer and a
- * temporal integer.
+ * temporal integer
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Tge_base_temporal()
@@ -1345,15 +1653,15 @@ tge_int_tint(int i, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_ge, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a float and a
- * temporal float.
+ * temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Tge_base_temporal()
@@ -1363,15 +1671,15 @@ tge_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_ge, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a text and a temporal
- * text.
+ * text
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Tge_base_temporal()
@@ -1381,15 +1689,15 @@ tge_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_ge, INVERT);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a temporal integer
- * and an integer.
+ * and an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Tge_temporal_base()
@@ -1399,15 +1707,15 @@ tge_tint_int(const Temporal *temp, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_INT4))
+      ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return tcomp_temporal_base(temp, Int32GetDatum(i), &datum2_ge, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a temporal float and
- * a float.
+ * a float
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Tge_temporal_base()
@@ -1417,15 +1725,15 @@ tge_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_same_temporal_basetype(temp, T_FLOAT8))
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_ge, INVERT_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a temporal text and a
- * text.
+ * text
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Tge_temporal_base()
@@ -1435,25 +1743,9 @@ tge_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_same_temporal_basetype(temp, T_TEXT))
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_ge, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_comp_temp
- * @brief Return the temporal greater than or equal of the temporal values.
- * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Tge_temporal_temporal()
- */
-Temporal *
-tge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
 }
 
 /*****************************************************************************/
