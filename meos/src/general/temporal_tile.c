@@ -74,12 +74,11 @@ span_no_buckets(const Span *s, Datum size, Datum origin, Datum *start_bucket,
   Datum end_value = datum_add(s->upper, size, s->basetype);
   *start_bucket = datum_bucket(start_value, size, origin, s->basetype);
   *end_bucket = datum_bucket(end_value, size, origin, s->basetype);
-  int result = (s->basetype == T_INT4) ? /** xx **/
+  return (s->basetype == T_INT4) ? /** xx **/
       (DatumGetInt32(*end_bucket) - DatumGetInt32(*start_bucket)) /
         DatumGetInt32(size) :
       (int) floor((DatumGetFloat8(*end_bucket) -
         DatumGetFloat8(*start_bucket)) /  DatumGetFloat8(size));
-  return result;
 }
 
 /**
@@ -731,6 +730,18 @@ tfloatbox_tile_list(const TBox *box, double vsize, const Interval *duration,
 }
 #endif /* MEOS */
 
+/**
+ * @ingroup meos_internal_temporal_analytics_tile
+ * @brief Return the tile from the arguments
+ * @param[in] value Value
+ * @param[in] t Timestamp
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the buckets
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[in] basetype Type of the values
+ * @csqlfn #Tbox_tile()
+ */
 TBox *
 tbox_tile(Datum value, TimestampTz t, Datum vsize, Interval *duration,
   Datum vorigin, TimestampTz torigin, meosType basetype)
@@ -745,6 +756,17 @@ tbox_tile(Datum value, TimestampTz t, Datum vsize, Interval *duration,
   return result;
 }
 
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the tile from the arguments
+ * @param[in] value Value
+ * @param[in] t Timestamp
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the buckets
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @csqlfn #Tbox_tile()
+ */
 TBox *
 tintbox_tile(int value, TimestampTz t, int vsize, Interval *duration,
   int vorigin, TimestampTz torigin)
@@ -753,6 +775,17 @@ tintbox_tile(int value, TimestampTz t, int vsize, Interval *duration,
     Int32GetDatum(vorigin), torigin, T_INT4);
 }
 
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the tile from the arguments
+ * @param[in] value Value
+ * @param[in] t Timestamp
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the buckets
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @csqlfn #Tbox_tile()
+ */
 TBox *
 tfloatbox_tile(double value, TimestampTz t, double vsize, Interval *duration,
   double vorigin, TimestampTz torigin)
@@ -908,7 +941,7 @@ tsequence_time_split_iter(const TSequence *seq, TimestampTz start,
         {
           /* The last two values of sequences with step interpolation and
            * exclusive upper bound must be equal */
-          Datum value = tinstant_value(instants[ninsts - 1]);
+          Datum value = tinstant_val(instants[ninsts - 1]);
           tofree[nfree] = tinstant_make(value, seq->temptype, upper);
         }
         instants[ninsts++] = tofree[nfree++];
@@ -1178,7 +1211,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
   Datum **buckets, int *newcount)
 {
   assert(inst); assert(buckets); assert(newcount);
-  Datum value = tinstant_value(inst);
+  Datum value = tinstant_val(inst);
   meosType basetype = temptype_basetype(inst->temptype);
   TInstant **result = palloc(sizeof(TInstant *));
   Datum *values = palloc(sizeof(Datum));
@@ -1216,7 +1249,7 @@ tnumberdiscseq_value_split(const TSequence *seq, Datum start_bucket,
     result = palloc(sizeof(TSequence *));
     values = palloc(sizeof(Datum));
     result[0] = tsequence_copy(seq);
-    value = tinstant_value(TSEQUENCE_INST_N(seq, 0));
+    value = tinstant_val(TSEQUENCE_INST_N(seq, 0));
     values[0] = datum_bucket(value, size, start_bucket, basetype);
     *buckets = values;
     *newcount = 1;
@@ -1230,7 +1263,7 @@ tnumberdiscseq_value_split(const TSequence *seq, Datum start_bucket,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    value = tinstant_value(inst);
+    value = tinstant_val(inst);
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     int bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     int inst_no = ninsts[bucket_no]++;
@@ -1284,7 +1317,7 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    value = tinstant_value(TSEQUENCE_INST_N(seq, 0));
+    value = tinstant_val(TSEQUENCE_INST_N(seq, 0));
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     seq_no = nseqs[bucket_no]++;
@@ -1298,7 +1331,7 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
 for (int i = 1; i < seq->count; i++)
   {
-    value = tinstant_value(inst1);
+    value = tinstant_val(inst1);
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     seq_no = nseqs[bucket_no]++;
@@ -1322,7 +1355,7 @@ for (int i = 1; i < seq->count; i++)
   if (seq->period.upper_inc)
   {
     inst1 = TSEQUENCE_INST_N(seq, seq->count - 1);
-    value = tinstant_value(inst1);
+    value = tinstant_val(inst1);
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     seq_no = nseqs[bucket_no]++;
@@ -1360,7 +1393,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    value1 = tinstant_value(TSEQUENCE_INST_N(seq, 0));
+    value1 = tinstant_val(TSEQUENCE_INST_N(seq, 0));
     bucket_value1 = datum_bucket(value1, size, start_bucket, basetype);
     bucket_no1 = bucket_position(bucket_value1, size, start_bucket, basetype);
     seq_no = nseqs[bucket_no1]++;
@@ -1372,14 +1405,14 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
   TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * count);
   int nfree = 0;   /* counter for the instants to free */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  value1 = tinstant_value(inst1);
+  value1 = tinstant_val(inst1);
   bucket_value1 = datum_bucket(value1, size, start_bucket, basetype);
   bucket_no1 = bucket_position(bucket_value1, size, start_bucket, basetype);
   /* For each segment */
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_value(inst2);
+    Datum value2 = tinstant_val(inst2);
     Datum bucket_value2 = datum_bucket(value2, size, start_bucket, basetype);
     int bucket_no2 = bucket_position(bucket_value2, size, start_bucket, basetype);
 
@@ -1522,7 +1555,7 @@ tnumbercontseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
     TSequenceSet **result = palloc(sizeof(TSequenceSet *));
     Datum *values = palloc(sizeof(Datum));
     result[0] = tsequence_to_tsequenceset(seq);
-    Datum value = tinstant_value(TSEQUENCE_INST_N(seq, 0));
+    Datum value = tinstant_val(TSEQUENCE_INST_N(seq, 0));
     values[0] = datum_bucket(value, size, start_bucket, basetype);
     *buckets = values;
     *newcount = 1;
@@ -1558,7 +1591,8 @@ tnumbercontseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   pfree(nseqs);
   *buckets = values;
   *newcount = nfrags;
-  return result;}
+  return result;
+}
 
 /*****************************************************************************/
 

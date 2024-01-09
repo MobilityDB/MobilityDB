@@ -45,13 +45,17 @@
 
 /*****************************************************************************/
 
+extern int eacomp_base_temporal(Datum value, const Temporal *temp,
+  Datum (*func)(Datum, Datum, meosType), bool ever);
 extern int eacomp_temporal_base(const Temporal *temp, Datum value,
   Datum (*func)(Datum, Datum, meosType), bool ever);
 extern int eacomp_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, Datum (*func)(Datum, Datum, meosType), bool ever);
 
+extern Temporal *tcomp_base_temporal(Datum value, const Temporal *temp,
+  Datum (*func)(Datum, Datum, meosType));
 extern Temporal *tcomp_temporal_base(const Temporal *temp, Datum value,
-  Datum (*func)(Datum, Datum, meosType), bool invert);
+  Datum (*func)(Datum, Datum, meosType));
 extern Temporal *tcomp_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, Datum (*func)(Datum, Datum, meosType));
 

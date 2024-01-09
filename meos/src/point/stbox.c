@@ -955,7 +955,7 @@ tstzspanset_to_stbox(const SpanSet *ss)
 /**
  * @ingroup meos_box_accessor
  * @brief Return true if a spatiotemporal box has value dimension
- * @param[out] box Spatiotemporal box
+ * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_hasx()
  */
 bool
@@ -970,7 +970,7 @@ stbox_hasx(const STBox *box)
 /**
  * @ingroup meos_box_accessor
  * @brief Return true if a spatiotemporal box has Z dimension
- * @param[out] box Spatiotemporal box
+ * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_hasz()
  */
 bool
@@ -985,7 +985,7 @@ stbox_hasz(const STBox *box)
 /**
  * @ingroup meos_box_accessor
  * @brief Return true if a spatiotemporal box has time dimension
- * @param[out] box Spatiotemporal box
+ * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_hast()
  */
 bool
@@ -1000,7 +1000,7 @@ stbox_hast(const STBox *box)
 /**
  * @ingroup meos_box_accessor
  * @brief Return true if a spatiotemporal box is geodetic
- * @param[out] box Spatiotemporal box
+ * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_isgeodetic()
  */
 bool
@@ -1014,9 +1014,11 @@ stbox_isgeodetic(const STBox *box)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the minimum X value of a spatiotemporal box
+ * @brief Return in the last argument the minimum X value of a spatiotemporal
+ * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Stbox_xmin()
  */
 bool
@@ -1034,9 +1036,11 @@ stbox_xmin(const STBox *box, double *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the maximum X value of a spatiotemporal box
+ * @brief Return in the last argument the maximum X value of a spatiotemporal
+ * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Stbox_xmax()
  */
 bool
@@ -1054,9 +1058,11 @@ stbox_xmax(const STBox *box, double *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the minimum Y value of a spatiotemporal box
+ * @brief Return in the last argument the minimum Y value of a spatiotemporal
+ * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Stbox_ymin()
  */
 bool
@@ -1074,9 +1080,11 @@ stbox_ymin(const STBox *box, double *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the maximum Y value of a spatiotemporal box
+ * @brief Return in the last argument the maximum Y value of a spatiotemporal
+ * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Stbox_ymax()
  */
 bool
@@ -1094,9 +1102,11 @@ stbox_ymax(const STBox *box, double *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the minimum Z value of a spatiotemporal box
+ * @brief Return in the last argument the minimum Z value of a spatiotemporal
+ * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Stbox_zmin()
  */
 bool
@@ -1114,9 +1124,11 @@ stbox_zmin(const STBox *box, double *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the maximum Z value of a spatiotemporal box
+ * @brief Return in the last argument the maximum Z value of a spatiotemporal
+ * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Stbox_zmax()
  */
 bool
@@ -1134,9 +1146,11 @@ stbox_zmax(const STBox *box, double *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the minimum timestamptz of a spatiotemporal box
+ * @brief Return in the last argument the minimum T value of a spatiotemporal
+ * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Stbox_tmin()
  */
 bool
@@ -1154,10 +1168,11 @@ stbox_tmin(const STBox *box, TimestampTz *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return true if the minimum timestamptz of a spatiotemporal box is
- * inclusive
+ * @brief Return in the last argument whether the maximum T value of a
+ * spatiotemporal box is inclusive
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Stbox_tmin_inc()
  */
 bool
@@ -1175,10 +1190,11 @@ stbox_tmin_inc(const STBox *box, bool *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Initialize the last argument with the maximum timestamptz of a
- * spatiotemporal box
+ * @brief Return in the last argument the maximum T value of a spatiotemporal
+ * box
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Stbox_tmax()
  */
 bool
@@ -1196,10 +1212,11 @@ stbox_tmax(const STBox *box, TimestampTz *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return true if the maximum timestamptz of a spatiotemporal box is
- * inclusive
+ * @brief Return in the last argument whether the maximum T value of a
+ * spatiotemporal box is inclusive
  * @param[in] box Spatiotemporal box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Stbox_tmax_inc()
  */
 bool
@@ -1988,9 +2005,9 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
 
 /**
  * @ingroup meos_box_transf
- * @brief Split a spatiotemporal box with respect to its space bounds in four
- * quadrants/octants
- * @details 
+ * @brief Return a spatiotemporal box split with respect to its space bounds
+ * in four quadrants (2D) or eight octants (3D)
+ * @details
  * The quadrants/octants are numbered as follows
  * @code
  *   (front)        (back if has Z dimension)

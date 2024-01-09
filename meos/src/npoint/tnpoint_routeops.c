@@ -147,8 +147,7 @@ contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  bool result = contains_set_value(routes, Int64GetDatum(np->rid));
-  return result;
+  return contains_set_value(routes, Int64GetDatum(np->rid));
 }
 
 /**
