@@ -1357,65 +1357,63 @@ spanset_num_spans(const SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return a pointer to the the start span of a span set
+ * @brief Return a copy to the the start span of a span set
  * @param[in] ss Span set
  * @return On error return @p NULL
  * @csqlfn #Spanset_start_span()
  */
-const Span *
+Span *
 spanset_start_span(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
-  return SPANSET_SP_N(ss, 0);
+  return span_cp(SPANSET_SP_N(ss, 0));
 }
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return a pointer to the end span of a span set
+ * @brief Return a copy of the end span of a span set
  * @param[in] ss Span set
  * @return On error return @p NULL
  * @csqlfn #Spanset_end_span()
  */
-const Span *
+Span *
 spanset_end_span(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
-  return SPANSET_SP_N(ss, ss->count - 1);
+  return span_cp(SPANSET_SP_N(ss, ss->count - 1));
 }
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return a pointer to the n-th span of a span set
+ * @brief Return a copy of the n-th span of a span set
  * @param[in] ss Span set
  * @param[in] i Index
  * @csqlfn #Spanset_span_n()
  */
-const Span *
+Span *
 spanset_span_n(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
 
-  const Span *result = NULL;
   if (i >= 1 && i <= ss->count)
-    result = SPANSET_SP_N(ss, i - 1);
-  return result;
+    return span_cp(SPANSET_SP_N(ss, i - 1));
+  return NULL;
 }
 
 /**
- * @ingroup meos_setspan_accessor
- * @brief Return the array of spans of a span set
+ * @ingroup meos_internal_setspan_accessor
+ * @brief Return an array of pointers to the spans of a span set
  * @param[in] ss Span set
  * @return On error return @p NULL
- * @csqlfn #Spanset_spans()
  */
 const Span **
-spanset_spans(const SpanSet *ss)
+spanset_spans_p(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
@@ -1426,6 +1424,28 @@ spanset_spans(const SpanSet *ss)
     spans[i] = SPANSET_SP_N(ss, i);
   return spans;
 }
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return an array copies of the spans of a span set
+ * @param[in] ss Span set
+ * @return On error return @p NULL
+ * @csqlfn #Spanset_spans()
+ */
+Span **
+spanset_spans(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss))
+    return NULL;
+
+  Span **spans = palloc(sizeof(Span *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    spans[i] = span_cp(SPANSET_SP_N(ss, i));
+  return spans;
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Transformation functions

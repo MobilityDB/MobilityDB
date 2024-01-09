@@ -249,15 +249,14 @@ always_ne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return the temporal comparison of a temporal point and a point
+ * @brief Return the temporal comparison of a point and a temporal point
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @param[in] func Comparison function
- * @param[in] invert True if the arguments should be inverted
  */
 static Temporal *
-tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, meosType), bool invert)
+tcomp_point_tpoint(const GSERIALIZED *gs, const Temporal *temp,
+  Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
@@ -265,7 +264,26 @@ tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
       ! ensure_point_type(gs) ||
       ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return NULL;
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), func, invert);
+  return tcomp_base_temporal(PointerGetDatum(gs), temp, func);
+}
+
+/**
+ * @brief Return the temporal comparison of a temporal point and a point
+ * @param[in] temp Temporal value
+ * @param[in] gs Geometry
+ * @param[in] func Comparison function
+ */
+static Temporal *
+tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
+  Datum (*func)(Datum, Datum, meosType))
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_point_type(gs) ||
+      ! ensure_same_dimensionality_tpoint_gs(temp, gs))
+    return NULL;
+  return tcomp_temporal_base(temp, PointerGetDatum(gs), func);
 }
 
 /**
@@ -298,20 +316,20 @@ tcomp_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 Temporal *
 teq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return tcomp_tpoint_point(temp, gs, &datum2_eq, INVERT);
+  return tcomp_point_tpoint(gs, temp, &datum2_eq);
 }
 
 /**
  * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal inequality of a point and a temporal point
- * @param[in] temp Temporal point
  * @param[in] gs Point
- * @csqlfn #Tne_tpoint_point()
+ * @param[in] temp Temporal point
+ * @csqlfn #Tne_point_tpoint()
  */
 Temporal *
 tne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return tcomp_tpoint_point(temp, gs, &datum2_ne, INVERT);
+  return tcomp_point_tpoint(gs, temp, &datum2_ne);
 }
 
 /*****************************************************************************/
@@ -326,7 +344,7 @@ tne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 Temporal *
 teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tcomp_tpoint_point(temp, gs, &datum2_eq, INVERT_NO);
+  return tcomp_tpoint_point(temp, gs, &datum2_eq);
 }
 
 /**
@@ -339,7 +357,7 @@ teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tcomp_tpoint_point(temp, gs, &datum2_ne, INVERT_NO);
+  return tcomp_tpoint_point(temp, gs, &datum2_ne);
 }
 
 /*****************************************************************************/

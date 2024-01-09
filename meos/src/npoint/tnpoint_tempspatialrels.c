@@ -66,8 +66,7 @@ tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(tempgeom, gs, tinter, restr,
      atvalue);
-  pfree(tempgeom);
-  pfree(gs);
+  pfree(tempgeom); pfree(gs);
   return result;
 }
 
@@ -158,8 +157,7 @@ ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
   GSERIALIZED *gs = npoint_geom(np);
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = ttouches_tpoint_geo(tempgeom, gs, restr, atvalue);
-  pfree(tempgeom);
-  pfree(gs);
+  pfree(tempgeom); pfree(gs);
   return result;
 }
 
@@ -246,8 +244,7 @@ tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, double dist,
   Temporal *tempgeom2 = tnpoint_tgeompoint(sync2);
   Temporal *result = tdwithin_tpoint_tpoint1(tempgeom1, tempgeom2, dist, restr,
     atvalue);
-  pfree(sync1); pfree(sync2);
-  pfree(tempgeom1); pfree(tempgeom2);
+  pfree(sync1); pfree(sync2); pfree(tempgeom1); pfree(tempgeom2);
   return result;
 }
 

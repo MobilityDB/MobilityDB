@@ -1195,14 +1195,15 @@ set_num_values(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_accessor
- * @brief Return the start value of a set
+ * @brief Return (a copy of) the start value of a set
  * @param[in] s Set
  */
 Datum
 set_start_value(const Set *s)
 {
   assert(s);
-  return SET_VAL_N(s, 0);
+  return MEOS_FLAGS_GET_BYVAL(s->flags) ? SET_VAL_N(s, 0) :
+    datum_copy(SET_VAL_N(s, 0), s->basetype);
 }
 
 #if MEOS
@@ -1256,7 +1257,7 @@ floatset_start_value(const Set *s)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return the start value of a text set
+ * @brief Return a copy of the start value of a text set
  * @param[in] s Set
  * @return On error return @p NULL
  * @csqlfn #Set_start_value()
@@ -1267,7 +1268,7 @@ textset_start_value(const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
-  return DatumGetTextP(SET_VAL_N(s, 0));
+  return DatumGetTextP(datum_copy(SET_VAL_N(s, 0), s->basetype));
 }
 
 /**
@@ -1304,7 +1305,7 @@ tstzset_start_value(const Set *s)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return the start value of a geo set
+ * @brief Return a copy of the start value of a geo set
  * @param[in] s Set
  * @return On error return @p NULL
  * @csqlfn #Set_start_value()
@@ -1315,20 +1316,21 @@ geoset_start_value(const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
-  return DatumGetGserializedP(SET_VAL_N(s, 0));
+  return DatumGetGserializedP(datum_copy(SET_VAL_N(s, 0), s->basetype));
 }
 #endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_accessor
- * @brief Return the end value of a set
+ * @brief Return (a copy of) the end value of a set
  * @param[in] s Set
  */
 Datum
 set_end_value(const Set *s)
 {
   assert(s);
-  return SET_VAL_N(s, s->count - 1);
+  return MEOS_FLAGS_GET_BYVAL(s->flags) ? SET_VAL_N(s, s->count - 1) :
+    datum_copy(SET_VAL_N(s, s->count - 1), s->basetype);
 }
 
 #if MEOS
@@ -1382,7 +1384,7 @@ floatset_end_value(const Set *s)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return the end value of a text set
+ * @brief Return a copy of the end value of a text set
  * @param[in] s Set
  * @return On error return @p NULL
  * @csqlfn #Set_end_value()
@@ -1393,7 +1395,7 @@ textset_end_value(const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
-  return DatumGetTextP(SET_VAL_N(s, s->count - 1));
+  return DatumGetTextP(datum_copy(SET_VAL_N(s, s->count - 1), s->basetype));
 }
 
 /**
@@ -1430,7 +1432,7 @@ tstzset_end_value(const Set *s)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return the end value of a geo set
+ * @brief Return a copy of the end value of a geo set
  * @param[in] s Set
  * @return On error return @p NULL
  * @csqlfn #Set_end_value()
@@ -1441,13 +1443,14 @@ geoset_end_value(const Set *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
-  return DatumGetGserializedP(SET_VAL_N(s, s->count - 1));
+  return DatumGetGserializedP(datum_copy(SET_VAL_N(s, s->count - 1),
+    s->basetype));
 }
 #endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a set
+ * @brief Initialize the last argument to (a copy of) the n-th value of a set
  * @param[in] s Set
  * @param[in] n Number
  * @param[out] result Value
@@ -1461,7 +1464,8 @@ set_value_n(const Set *s, int n, Datum *result)
   assert(s); assert(result);
   if (n < 1 || n > s->count)
     return false;
-  *result = SET_VAL_N(s, n - 1);
+  *result = MEOS_FLAGS_GET_BYVAL(s->flags) ? SET_VAL_N(s, n - 1) :
+    datum_copy(SET_VAL_N(s, n - 1), s->basetype);
   return true;
 }
 
@@ -1531,7 +1535,7 @@ floatset_value_n(const Set *s, int n, double *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a text set
+ * @brief Initialize the last argument to a copy of the n-th value of a text set
  * @param[in] s Text set
  * @param[in] n Number
  * @param[out] result Value
@@ -1546,7 +1550,7 @@ textset_value_n(const Set *s, int n, text **result)
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_set_isof_type(s, T_TEXTSET) || n < 1 || n > s->count)
     return false;
-  *result = DatumGetTextP(SET_VAL_N(s, n - 1));
+  *result = DatumGetTextP(datum_copy(SET_VAL_N(s, n - 1), s->basetype));
   return true;
 }
 
@@ -1594,7 +1598,7 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a geo set
+ * @brief Initialize the last argument to a copy of the n-th value of a geo set
  * @param[in] s Geo set
  * @param[in] n Number
  * @param[out] result Value
@@ -1607,16 +1611,32 @@ geoset_value_n(const Set *s, int n, GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_geoset_type(s->settype) ||n < 1 || n > s->count)
+      ! ensure_geoset_type(s->settype) || n < 1 || n > s->count)
     return false;
-  *result = DatumGetGserializedP(SET_VAL_N(s, n - 1));
+  *result = DatumGetGserializedP(datum_copy(SET_VAL_N(s, n - 1), s->basetype));
   return true;
 }
 #endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_accessor
- * @brief Return the array of values of a set
+ * @brief Return the array of (pointers to the) values of a set
+ * @param[in] s Set
+ * @csqlfn #Set_values()
+ */
+Datum *
+set_vals(const Set *s)
+{
+  assert(s);
+  Datum *result = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = SET_VAL_N(s, i);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_setspan_accessor
+ * @brief Return the array of (copies of) values of a set
  * @param[in] s Set
  * @csqlfn #Set_values()
  */
@@ -1625,8 +1645,10 @@ set_values(const Set *s)
 {
   assert(s);
   Datum *result = palloc(sizeof(Datum) * s->count);
+  bool byval = MEOS_FLAGS_GET_BYVAL(s->flags);
   for (int i = 0; i < s->count; i++)
-    result[i] = SET_VAL_N(s, i);
+    result[i] = byval ? SET_VAL_N(s, i) : datum_copy(SET_VAL_N(s, i),
+      s->basetype);
   return result;
 }
 
@@ -1693,7 +1715,7 @@ floatset_values(const Set *s)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return the array of values of a text set
+ * @brief Return the array of copies of the values of a text set
  * @param[in] s Set
  * @return On error return @p NULL
  * @csqlfn #Set_values()
@@ -1707,7 +1729,7 @@ textset_values(const Set *s)
 
   text **result = palloc(sizeof(text *) * s->count);
   for (int i = 0; i < s->count; i++)
-    result[i] = DatumGetTextP(SET_VAL_N(s, i));
+    result[i] = DatumGetTextP(datum_copy(SET_VAL_N(s, i), s->basetype));
   return result;
 }
 
@@ -1753,7 +1775,7 @@ tstzset_values(const Set *s)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return the array of values of a geo set
+ * @brief Return the array of copies of the values of a geo set
  * @param[in] s Set
  * @return On error return @p NULL
  * @csqlfn #Set_values()
@@ -1767,7 +1789,7 @@ geoset_values(const Set *s)
 
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * s->count);
   for (int i = 0; i < s->count; i++)
-    result[i] = DatumGetGserializedP(SET_VAL_N(s, i));
+    result[i] = DatumGetGserializedP(datum_copy(SET_VAL_N(s, i), s->basetype));
   return result;
 }
 #endif /* MEOS */

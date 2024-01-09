@@ -461,7 +461,8 @@ datum_copy(Datum value, meosType basetype)
     return value;
   /* For types passed by reference */
   int typlen = basetype_length(basetype);
-  size_t value_size = (typlen != -1) ? (size_t) typlen : VARSIZE(value);
+  size_t value_size = (typlen != -1) ? (size_t) typlen : 
+    VARSIZE(DatumGetPointer(value));
   void *result = palloc(value_size);
   memcpy(result, DatumGetPointer(value), value_size);
   return PointerGetDatum(result);
@@ -765,21 +766,35 @@ varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
 
 /**
  * @brief Comparison function for text values
- * @note Function copied from PostgreSQL since it is not exported
+ * @note Function copied from PostgreSQL since it is declared static
  */
 int
-text_cmp(text *arg1, text *arg2, Oid collid __attribute__((unused)))
+text_cmp(const text *txt1, const text *txt2, Oid collid __attribute__((unused)))
 {
-  char *a1p, *a2p;
+  char *t1p, *t2p;
   int len1, len2;
 
-  a1p = VARDATA_ANY(arg1);
-  a2p = VARDATA_ANY(arg2);
+  t1p = VARDATA_ANY(txt1);
+  t2p = VARDATA_ANY(txt2);
 
-  len1 = (int) VARSIZE_ANY_EXHDR(arg1);
-  len2 = (int) VARSIZE_ANY_EXHDR(arg2);
+  len1 = (int) VARSIZE_ANY_EXHDR(txt1);
+  len2 = (int) VARSIZE_ANY_EXHDR(txt2);
 
-  return varstr_cmp(a1p, len1, a2p, len2, collid);
+  return varstr_cmp(t1p, len1, t2p, len2, collid);
+}
+
+/**
+ * @brief Copy a geometry
+ * @note The @p gserialized_copy function is not available anymore in
+ * PostGIS 3
+ */
+text *
+text_copy(const text *txt)
+{
+  assert(txt);
+  text *result = palloc(VARSIZE(txt));
+  memcpy(result, txt, VARSIZE(txt));
+  return result;
 }
 
 /*****************************************************************************

@@ -193,7 +193,7 @@ tinstant_set_bbox(const TInstant *inst, void *box)
   {
     meosType basetype = temptype_basetype(inst->temptype);
     meosType spantype = basetype_spantype(basetype);
-    Datum value = tinstant_value(inst);
+      Datum value = tinstant_val(inst);
     Datum time = TimestampTzGetDatum(inst->t);
     TBox *tbox = (TBox *) box;
     memset(tbox, 0, sizeof(TBox));
@@ -272,12 +272,12 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, bool lower_inc,
     lower_inc1 = upper_inc1 = true;
   }
   /* Compute the value span */
-  Datum min = tinstant_value(instants[0]);
+  Datum min = tinstant_val(instants[0]);
   Datum max = min;
   bool min_inc = lower_inc1, max_inc = lower_inc1;
   for (int i = 1; i < count; i++)
   {
-    Datum value = tinstant_value(instants[i]);
+    Datum value = tinstant_val(instants[i]);
     int min_cmp = datum_cmp(value, min, basetype);
     int max_cmp = datum_cmp(value, max, basetype);
     if (min_cmp <= 0)
@@ -379,7 +379,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 {
   assert(temporal_type(seq->temptype));
   if (talpha_type(seq->temptype))
-    span_set(TimestampTzGetDatum((TSEQUENCE_INST_N(seq, 0))->t),
+    span_set(TimestampTzGetDatum(TSEQUENCE_INST_N(seq, 0)->t),
       TimestampTzGetDatum(inst->t), seq->period.lower_inc, true, T_TIMESTAMPTZ,
       T_TSTZSPAN, (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))

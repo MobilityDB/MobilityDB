@@ -116,7 +116,7 @@ tpointinst_restrict_geom_time_iter(const TInstant *inst, const GSERIALIZED *gs,
     return ! atfunc;
 
   /* Restrict to the Z dimension */
-  Datum value = tinstant_value(inst);
+  Datum value = tinstant_val(inst);
   if (zspan)
   {
     const POINT3DZ *p = DATUM_POINT3DZ_P(value);
@@ -234,7 +234,7 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
       {
         /* Continue the last instant of the sequence until the time of inst2
          * projected to the period (if any) */
-        Datum value = tinstant_value(instants[ninsts - 1]);
+        Datum value = tinstant_val(instants[ninsts - 1]);
         bool tofree = false;
         bool upper_inc = false;
         if (period)
@@ -322,8 +322,8 @@ static bool
 tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
   const TInstant *inst2, Datum value, TimestampTz *t)
 {
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
+  Datum value1 = tinstant_val(inst1);
+  Datum value2 = tinstant_val(inst2);
   /* Is the lower bound the answer? */
   bool result = true;
   if (datum_point_eq(value1, value))
@@ -408,7 +408,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
   /* If the sequence is stationary the whole sequence intersects with the
    * geometry since gsinter is not empty */
   if (seq->count == 2 &&
-    datum_point_eq(tinstant_value(start), tinstant_value(end)))
+    datum_point_eq(tinstant_val(start), tinstant_val(end)))
   {
     result = palloc(sizeof(Span));
     result[0] = seq->period;
@@ -1176,7 +1176,7 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
     return ! atfunc;
 
   /* Restrict to the XY(Z) dimension */
-  Datum value = tinstant_value(inst);
+  Datum value = tinstant_val(inst);
   /* Get the input point */
   double x, y, z = 0.0;
   if (hasz)
@@ -1307,7 +1307,7 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
       {
         /* Continue the last instant of the sequence until the time of inst2
          * projected to the time dimension (if any) */
-        Datum value = tinstant_value(instants[ninsts - 1]);
+        Datum value = tinstant_val(instants[ninsts - 1]);
         bool tofree = false;
         bool upper_inc = false;
         if (hast)
@@ -1411,7 +1411,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TInstant **tofree = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  GSERIALIZED *p1 = DatumGetGserializedP(tinstant_value(inst1));
+  GSERIALIZED *p1 = DatumGetGserializedP(tinstant_val(inst1));
   bool lower_inc = seq->period.lower_inc;
   bool upper_inc;
   int ninsts = 0, nseqs = 0, nfree = 0;
@@ -1419,7 +1419,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    GSERIALIZED *p2 = DatumGetGserializedP(tinstant_value(inst2));
+    GSERIALIZED *p2 = DatumGetGserializedP(tinstant_val(inst2));
     GSERIALIZED *p3, *p4;
     bool makeseq = false;
     if (gspoint_eq(p1, p2))

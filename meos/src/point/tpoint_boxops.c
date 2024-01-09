@@ -70,7 +70,7 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
 void
 tpointinst_set_stbox(const TInstant *inst, STBox *box)
 {
-  GSERIALIZED *point = DatumGetGserializedP(tinstant_value(inst));
+  GSERIALIZED *point = DatumGetGserializedP(tinstant_val(inst));
   geo_set_stbox(point, box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
@@ -96,7 +96,7 @@ tpointinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(instants[0]->flags);
   for (int i = 1; i < count; i++)
   {
-    GSERIALIZED *point = DatumGetGserializedP(tinstant_value(instants[i]));
+    GSERIALIZED *point = DatumGetGserializedP(tinstant_val(instants[i]));
     double x, y, z;
     point_get_coords(point, hasz, &x, &y, &z);
     box->xmin = Min(box->xmin, x);

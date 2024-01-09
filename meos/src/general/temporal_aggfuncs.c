@@ -196,7 +196,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     {
       if (func != NULL)
         result[count++] = tinstant_make(
-          func(tinstant_value(inst1), tinstant_value(inst2)), inst1->temptype,
+          func(tinstant_val(inst1), tinstant_val(inst2)), inst1->temptype,
           inst1->t);
       else
       {
@@ -332,7 +332,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     const TInstant *inst2 = TSEQUENCE_INST_N(syncseq2, i);
     if (func != NULL)
       instants[i] = tinstant_make(
-        func(tinstant_value(inst1), tinstant_value(inst2)), seq1->temptype,
+        func(tinstant_val(inst1), tinstant_val(inst2)), seq1->temptype,
         inst1->t);
     else
     {
@@ -511,7 +511,7 @@ SkipList *
 tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
 {
   assert(seq);
-  const TInstant **instants = tsequence_instants(seq);
+  const TInstant **instants = tsequence_insts(seq);
   SkipList *result;
   if (! state)
     result = skiplist_make((void **) instants, seq->count);
@@ -561,7 +561,7 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
   datum_func2 func, bool crossings)
 {
   assert(ss);
-  const TSequence **sequences = tsequenceset_sequences_p(ss);
+  const TSequence **sequences = tsequenceset_seqs(ss);
   SkipList *result;
   if (! state)
     result = skiplist_make((void **) sequences, ss->count);
@@ -641,8 +641,9 @@ temporal_tagg_finalfn(SkipList *state)
 {
   if (! state || state->length == 0)
     return NULL;
-  /* A copy of the values is needed for switching from aggregate context */
-  Temporal **values = skiplist_temporal_values(state);
+  /* A copy of the values is needed for switching from aggregate context,
+   * for this reason the #skiplist_values cannot be used */
+  Temporal **values = (Temporal **) skiplist_temporal_values(state);
   Temporal *result = NULL;
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
@@ -1085,7 +1086,7 @@ tdiscseq_transform_tcount(const TSequence *seq)
   Datum datum_one = Int32GetDatum(1);
   for (int i = 0; i < seq->count; i++)
   {
-    TimestampTz t = (TSEQUENCE_INST_N(seq, i))->t;
+    TimestampTz t = TSEQUENCE_INST_N(seq, i)->t;
     result[i] = tinstant_make(datum_one, T_TINT, t);
   }
   return result;
@@ -1358,7 +1359,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
   for (int i = 0; i < count; i++)
   {
     TInstant *inst = instants[i];
-    double2 *value = (double2 *) DatumGetPointer(tinstant_value(inst));
+    double2 *value = (double2 *) DatumGetPointer(tinstant_val(inst));
     double tavg = value->a / value->b;
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
@@ -1381,7 +1382,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      double2 *value2 = (double2 *) DatumGetPointer(tinstant_value(inst));
+      double2 *value2 = (double2 *) DatumGetPointer(tinstant_val(inst));
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }

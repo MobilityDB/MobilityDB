@@ -115,7 +115,7 @@ Set_union_transfn(PG_FUNCTION_ARGS)
   if (! PG_ARGISNULL(1))
   {
     Set *set = PG_GETARG_SET_P(1);
-    Datum *values = set_values(set);
+    Datum *values = set_vals(set);
     for (int i = 0; i < set->count; i++)
       accumArrayResult(state, values[i], false, baseoid, aggContext);
     pfree(values);

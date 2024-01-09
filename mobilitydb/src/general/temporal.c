@@ -362,7 +362,7 @@ tinstant_write(const TInstant *inst, StringInfo buf)
 {
   meosType basetype = temptype_basetype(inst->temptype);
   bytea *bt = call_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
-  bytea *bv = call_send(basetype, tinstant_value(inst));
+  bytea *bv = call_send(basetype, tinstant_val(inst));
   pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
   pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ);
   pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
@@ -824,9 +824,8 @@ Datum
 Temporal_subtype(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *str = temporal_subtype(temp);
+  const char *str = temporal_subtype(temp);
   text *result = cstring2text(str);
-  pfree(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -842,9 +841,8 @@ Datum
 Temporal_interp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *str = temporal_interp(temp);
+  const char *str = temporal_interp(temp);
   text *result = cstring2text(str);
-  pfree(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -877,7 +875,7 @@ Tinstant_value(PG_FUNCTION_ARGS)
   /* Ensure validity of arguments */
   ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT);
 
-  Datum result = tinstant_value_copy(inst);
+  Datum result = tinstant_value(inst);
   PG_FREE_IF_COPY(inst, 0);
   PG_RETURN_DATUM(result);
 }
@@ -894,7 +892,7 @@ Temporal_valueset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  Datum *values = temporal_values(temp, &count);
+  Datum *values = temporal_vals(temp, &count);
   meosType basetype = temptype_basetype(temp->temptype);
   /* Currently, there is no boolset type */
   if (temp->temptype == T_TBOOL)
@@ -1000,7 +998,7 @@ Datum
 Temporal_min_instant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = tinstant_copy(temporal_min_instant(temp));
+  TInstant *result = temporal_min_instant(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }
@@ -1016,7 +1014,7 @@ Datum
 Temporal_max_instant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = tinstant_copy(temporal_max_instant(temp));
+  TInstant *result = temporal_max_instant(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }
@@ -1152,9 +1150,8 @@ Temporal_sequences(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  TSequence **sequences = temporal_sequences(temp, &count);
-  ArrayType *result = temparr_to_array((Temporal **) sequences, count,
-    FREE_ALL);
+  const TSequence **sequences = temporal_seqs(temp, &count);
+  ArrayType *result = temparr_to_array((Temporal **) sequences, count, FREE);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -1221,7 +1218,7 @@ Datum
 Temporal_upper_inc(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bool result = temporal_upper_inc(temp) == 1 ? true : false;
+  bool result = (temporal_upper_inc(temp) == 1) ? true : false;
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
@@ -1237,7 +1234,7 @@ Datum
 Temporal_start_instant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = tinstant_copy(temporal_start_instant(temp));
+  TInstant *result = temporal_start_instant(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }
@@ -1253,7 +1250,7 @@ Datum
 Temporal_end_instant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = tinstant_copy(temporal_end_instant(temp));
+  TInstant *result = temporal_end_instant(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }
@@ -1270,8 +1267,7 @@ Temporal_instant_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
-  const TInstant *inst = temporal_instant_n(temp, n);
-  TInstant *result = (inst == NULL) ? NULL : tinstant_copy(inst);
+  TInstant *result = temporal_instant_n(temp, n);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -1290,7 +1286,7 @@ Temporal_instants(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  const TInstant **instants = temporal_instants(temp, &count);
+  const TInstant **instants = temporal_insts(temp, &count);
   ArrayType *result = temparr_to_array((Temporal **) instants, count, FREE);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);

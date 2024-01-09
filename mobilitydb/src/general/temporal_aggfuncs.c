@@ -166,10 +166,10 @@ Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
-  Set *ts = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   store_fcinfo(fcinfo);
-  state = tstzset_tcount_transfn(state, ts);
-  PG_FREE_IF_COPY(ts, 1);
+  state = tstzset_tcount_transfn(state, s);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_SKIPLIST_P(state);
 }
 

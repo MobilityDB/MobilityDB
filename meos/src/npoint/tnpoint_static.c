@@ -125,8 +125,7 @@ npoint_round(const Npoint *np, Datum size)
 {
   /* Set precision of position */
   double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
-  Npoint *result = npoint_make(np->rid, pos);
-  return result;
+  return npoint_make(np->rid, pos);
 }
 
 /**
@@ -141,8 +140,7 @@ nsegment_round(const Nsegment *ns, Datum size)
     size));
   double pos2 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos2),
     size));
-  Nsegment *result = nsegment_make(ns->rid, pos1, pos2);
-  return result;
+  return nsegment_make(ns->rid, pos1, pos2);
 }
 
 /**
@@ -157,8 +155,7 @@ npointset_round(const Set *s, Datum prec)
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = datum_npoint_round(SET_VAL_N(s, i), prec);
-  Set *result = set_make_free(values, s->count, s->basetype, ORDERED);
-  return result;
+  return set_make_free(values, s->count, s->basetype, ORDERED);
 }
 
 /*****************************************************************************/

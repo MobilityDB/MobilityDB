@@ -143,7 +143,7 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter,
   Datum (*func)(Datum, Datum))
 {
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  bool result = DatumGetBool(func(tinstant_value(inst), geom));
+  bool result = DatumGetBool(func(tinstant_val(inst), geom));
   /* For disjoint we need to invert the result */
   if (! tinter)
     result = ! result;
@@ -167,7 +167,7 @@ tinterrel_tpointseq_discstep_geom(const TSequence *seq, Datum geom,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    bool result = DatumGetBool(func(tinstant_value(inst), geom));
+    bool result = DatumGetBool(func(tinstant_val(inst), geom));
     /* For disjoint we need to invert the result */
     if (! tinter)
       result = ! result;
@@ -229,7 +229,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   /* If the trajectory is a point the result is true due to the
    * non-empty intersection test above */
   if (seq->count == 2 &&
-    datum_point_eq(tinstant_value(start), tinstant_value(end)))
+    datum_point_eq(tinstant_val(start), tinstant_val(end)))
   {
     result = palloc(sizeof(TSequence *));
     result[0] = tsequence_from_base_tstzspan(datum_yes, T_TBOOL, &seq->period,
@@ -884,8 +884,8 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
   const TInstant *start2 = TSEQUENCE_INST_N(seq2, 0);
   if (seq1->count == 1)
   {
-    TInstant *inst = tinstant_make(func(tinstant_value(start1),
-      tinstant_value(start2), dist), T_TBOOL, start1->t);
+    TInstant *inst = tinstant_make(func(tinstant_val(start1),
+      tinstant_val(start2), dist), T_TBOOL, start1->t);
     result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return 1;
@@ -895,8 +895,8 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
-  Datum sv1 = tinstant_value(start1);
-  Datum sv2 = tinstant_value(start2);
+  Datum sv1 = tinstant_val(start1);
+  Datum sv2 = tinstant_val(start2);
   TimestampTz lower = start1->t;
   bool lower_inc = seq1->period.lower_inc;
   const Datum datum_true = BoolGetDatum(true);
@@ -912,8 +912,8 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
     /* Each iteration of the for loop adds between one and three sequences */
     const TInstant *end1 = TSEQUENCE_INST_N(seq1, i);
     const TInstant *end2 = TSEQUENCE_INST_N(seq2, i);
-    Datum ev1 = tinstant_value(end1);
-    Datum ev2 = tinstant_value(end2);
+    Datum ev1 = tinstant_val(end1);
+    Datum ev2 = tinstant_val(end2);
     TimestampTz upper = end1->t;
     bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 
@@ -1019,7 +1019,7 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
   datum_func3 func, TSequence **result)
 {
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
-  Datum startvalue = tinstant_value(start);
+  Datum startvalue = tinstant_val(start);
   if (seq->count == 1)
   {
     TInstant *inst = tinstant_make(func(startvalue, point, dist), T_TBOOL,
@@ -1046,7 +1046,7 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
   {
     /* Each iteration of the for loop adds between one and three sequences */
     const TInstant *end = TSEQUENCE_INST_N(seq, i);
-    Datum endvalue = tinstant_value(end);
+    Datum endvalue = tinstant_val(end);
     TimestampTz upper = end->t;
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
 
@@ -1259,7 +1259,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   {
     case TINSTANT:
     {
-      Datum value = tinstant_value((TInstant *) temp);
+      Datum value = tinstant_val((TInstant *) temp);
       result = (Temporal *) tinstant_make(func(value, PointerGetDatum(gs),
         Float8GetDatum(dist)), T_TBOOL, ((TInstant *) temp)->t);
       break;
@@ -1317,8 +1317,8 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
   {
     case TINSTANT:
     {
-      Datum value1 = tinstant_value((TInstant *) sync1);
-      Datum value2 = tinstant_value((TInstant *) sync2);
+      Datum value1 = tinstant_val((TInstant *) sync1);
+      Datum value2 = tinstant_val((TInstant *) sync2);
       result = (Temporal *) tinstant_make(func(value1, value2,
         Float8GetDatum(dist)), T_TBOOL, ((TInstant *) sync1)->t);
       break;

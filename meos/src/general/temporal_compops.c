@@ -650,8 +650,8 @@ always_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @param[in] invert True if the arguments of the function should be inverted
  */
 Temporal *
-tcomp_temporal_base(const Temporal *temp, Datum value,
-  Datum (*func)(Datum, Datum, meosType), bool invert)
+tcomp_base_temporal(Datum value, const Temporal *temp,
+  Datum (*func)(Datum, Datum, meosType))
 {
   assert(temp); assert(func);
   /* Fill the lifted structure */
@@ -664,7 +664,37 @@ tcomp_temporal_base(const Temporal *temp, Datum value,
   lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
-  lfinfo.invert = invert;
+  lfinfo.invert = INVERT;
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal_base(temp, value, &lfinfo);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
+ * @param[in] func Function used for the comparison
+ * @param[in] invert True if the arguments of the function should be inverted
+ */
+Temporal *
+tcomp_temporal_base(const Temporal *temp, Datum value,
+  Datum (*func)(Datum, Datum, meosType))
+{
+  assert(temp); assert(func);
+  /* Fill the lifted structure */
+  meosType basetype = temptype_basetype(temp->temptype);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 0;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
+  lfinfo.restype = T_TBOOL;
+  lfinfo.reslinear = false;
+  lfinfo.invert = INVERT_NO;
   lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
@@ -707,12 +737,93 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * @brief Return the temporal comparison of a temporal value and a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
+ * @csqlfn #Teq_base_temporal()
+ */
+bool
+teq_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_eq);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Tne_base_temporal()
+ */
+bool
+tne_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_ne);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Tlt_base_temporal()
+ */
+bool
+tlt_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_lt);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base
+ * value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Tle_base_temporal()
+ */
+bool
+tle_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_le);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Tgt_base_temporal()
+ */
+bool
+tgt_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_gt);
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] value Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Tge_base_temporal()
+ */
+bool
+tge_base_temporal(Datum value, const Temporal *temp)
+{
+  return tcomp_base_temporal(value, temp, &datum2_ge);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_comp_temp
+ * @brief Return the temporal comparison of a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value
  * @csqlfn #Teq_temporal_base()
  */
 bool
 teq_temporal_base(const Temporal *temp, Datum value)
 {
-  return tcomp_temporal_base(temp, value, &datum2_eq, INVERT_NO);
+  return tcomp_temporal_base(temp, value, &datum2_eq);
 }
 
 /**
@@ -725,7 +836,7 @@ teq_temporal_base(const Temporal *temp, Datum value)
 bool
 tne_temporal_base(const Temporal *temp, Datum value)
 {
-  return tcomp_temporal_base(temp, value, &datum2_ne, INVERT_NO);
+  return tcomp_temporal_base(temp, value, &datum2_ne);
 }
 
 /**
@@ -738,7 +849,7 @@ tne_temporal_base(const Temporal *temp, Datum value)
 bool
 tlt_temporal_base(const Temporal *temp, Datum value)
 {
-  return tcomp_temporal_base(temp, value, &datum2_lt, INVERT_NO);
+  return tcomp_temporal_base(temp, value, &datum2_lt);
 }
 
 /**
@@ -752,7 +863,7 @@ tlt_temporal_base(const Temporal *temp, Datum value)
 bool
 tle_temporal_base(const Temporal *temp, Datum value)
 {
-  return tcomp_temporal_base(temp, value, &datum2_le, INVERT_NO);
+  return tcomp_temporal_base(temp, value, &datum2_le);
 }
 
 /**
@@ -765,7 +876,7 @@ tle_temporal_base(const Temporal *temp, Datum value)
 bool
 tgt_temporal_base(const Temporal *temp, Datum value)
 {
-  return tcomp_temporal_base(temp, value, &datum2_gt, INVERT_NO);
+  return tcomp_temporal_base(temp, value, &datum2_gt);
 }
 
 /**
@@ -778,7 +889,7 @@ tgt_temporal_base(const Temporal *temp, Datum value)
 bool
 tge_temporal_base(const Temporal *temp, Datum value)
 {
-  return tcomp_temporal_base(temp, value, &datum2_ge, INVERT_NO);
+  return tcomp_temporal_base(temp, value, &datum2_ge);
 }
 
 /*****************************************************************************/

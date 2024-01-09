@@ -56,11 +56,11 @@
  */
 static Datum
 EAcomp_point_tpoint(FunctionCallInfo fcinfo,
-  int (*func)(const Temporal *, const GSERIALIZED *))
+  int (*func)(const GSERIALIZED *, const Temporal *))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = func(temp, gs);
+  int result = func(gs, temp);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
@@ -118,7 +118,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_point_tpoint);
 Datum
 Ever_eq_point_tpoint(PG_FUNCTION_ARGS)
 {
-  return EAcomp_point_tpoint(fcinfo, &ever_eq_tpoint_point);
+  return EAcomp_point_tpoint(fcinfo, &ever_eq_point_tpoint);
 }
 
 PGDLLEXPORT Datum Always_eq_point_tpoint(PG_FUNCTION_ARGS);
@@ -131,7 +131,7 @@ PG_FUNCTION_INFO_V1(Always_eq_point_tpoint);
 Datum
 Always_eq_point_tpoint(PG_FUNCTION_ARGS)
 {
-  return EAcomp_point_tpoint(fcinfo, &always_eq_tpoint_point);
+  return EAcomp_point_tpoint(fcinfo, &always_eq_point_tpoint);
 }
 
 PGDLLEXPORT Datum Ever_ne_point_tpoint(PG_FUNCTION_ARGS);
@@ -144,7 +144,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_point_tpoint);
 Datum
 Ever_ne_point_tpoint(PG_FUNCTION_ARGS)
 {
-  return EAcomp_point_tpoint(fcinfo, &always_ne_tpoint_point);
+  return EAcomp_point_tpoint(fcinfo, &always_ne_point_tpoint);
 }
 
 PGDLLEXPORT Datum Always_ne_point_tpoint(PG_FUNCTION_ARGS);
@@ -157,7 +157,7 @@ PG_FUNCTION_INFO_V1(Always_ne_point_tpoint);
 Datum
 Always_ne_point_tpoint(PG_FUNCTION_ARGS)
 {
-  return EAcomp_point_tpoint(fcinfo, &always_ne_tpoint_point);
+  return EAcomp_point_tpoint(fcinfo, &always_ne_point_tpoint);
 }
 
 /*****************************************************************************/

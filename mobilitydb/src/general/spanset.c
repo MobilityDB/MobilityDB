@@ -382,7 +382,7 @@ Datum
 Spanset_lower(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum result = datum_copy(spanset_lower(ss), ss->basetype);
+  Datum result = spanset_lower(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_DATUM(result);
 }
@@ -398,7 +398,7 @@ Datum
 Spanset_upper(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum result = datum_copy(spanset_upper(ss), ss->basetype);
+  Datum result = spanset_upper(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_DATUM(result);
 }
@@ -681,13 +681,13 @@ PG_FUNCTION_INFO_V1(Spanset_start_span);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the start span of a span set
- * @sqlfn startSpan(), startPeriod()
+ * @sqlfn startSpan()
  */
 Datum
 Spanset_start_span(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *result = span_cp(spanset_start_span(ss));
+  Span *result = spanset_start_span(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPAN_P(result);
 }
@@ -697,13 +697,13 @@ PG_FUNCTION_INFO_V1(Spanset_end_span);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the end span of a span set
- * @sqlfn endSpan(), endPeriod()
+ * @sqlfn endSpan()
  */
 Datum
 Spanset_end_span(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *result = span_cp(spanset_end_span(ss));
+  Span *result = spanset_end_span(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPAN_P(result);
 }
@@ -720,11 +720,11 @@ Spanset_span_n(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int i = PG_GETARG_INT32(1); /* Assume 1-based */
-  const Span *result = spanset_span_n(ss, i);
+  Span *result = spanset_span_n(ss, i);
   PG_FREE_IF_COPY(ss, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_SPAN_P(span_cp(result));
+  PG_RETURN_SPAN_P(result);
 }
 
 PGDLLEXPORT Datum Spanset_spans(PG_FUNCTION_ARGS);
@@ -738,8 +738,8 @@ Datum
 Spanset_spans(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  const Span **spans = spanset_spans(ss);
-  ArrayType *result = spanarr_to_array((Span **) spans, ss->count);
+  const Span **spans = spanset_spans_p(ss);
+  ArrayType *result = spanarr_to_array(spans, ss->count);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }

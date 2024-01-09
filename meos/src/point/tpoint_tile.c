@@ -792,7 +792,7 @@ tpointinst_get_coords_eps(const TInstant *inst, bool hasz, bool hast,
 {
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
-  datum_point4d(tinstant_value(inst), &p);
+  datum_point4d(tinstant_val(inst), &p);
   double x = float_bucket(p.x, state->xsize, state->box.xmin);
   double y = float_bucket(p.y, state->ysize, state->box.ymin);
   double z = 0;

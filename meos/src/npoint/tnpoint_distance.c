@@ -221,8 +221,7 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
   Temporal *dist = distance_tnpoint_tnpoint(temp1, temp2);
   if (dist == NULL)
     return -1;
-  double result = DatumGetFloat8(temporal_min_value(dist));
-  return result;
+  return DatumGetFloat8(temporal_min_value(dist));
 }
 
 /*****************************************************************************
