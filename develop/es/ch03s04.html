@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 Manual de usuario"><link rel="up" href="ch03.html" title="Capítulo 3. Tipos de cuadro delimitador"><link rel="prev" href="ch03s03.html" title="Conversiones de tipo"><link rel="next" href="ch03s05.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 3. Tipos de cuadro delimitador</th><td width="20%" align="right"> <a accesskey="n" href="ch03s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="box_types_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="hasX"></a><a class="indexterm" name="idm1608"></a><a class="indexterm" name="idm1611"></a><a class="indexterm" name="idm1614"></a><p>¿Tiene dimensión X/Z/T?</p><p><code class="varname">hasX(box) → boolean</code></p><p><code class="varname">hasZ(stbox) → boolean</code></p><p><code class="varname">hasT(box) → boolean</code></p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accesores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 Manual de usuario"><link rel="up" href="ch03.html" title="Capítulo 3. Tipos de cuadro delimitador"><link rel="prev" href="ch03s03.html" title="Conversiones de tipo"><link rel="next" href="ch03s05.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accesores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 3. Tipos de cuadro delimitador</th><td width="20%" align="right"> <a accesskey="n" href="ch03s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="box_types_accessors"></a>Accesores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="hasX"></a><a class="indexterm" name="idm1628"></a><a class="indexterm" name="idm1631"></a><a class="indexterm" name="idm1634"></a><p>¿Tiene dimensión X/Z/T?</p><p><code class="varname">hasX(box) → boolean</code></p><p><code class="varname">hasZ(stbox) → boolean</code></p><p><code class="varname">hasT(box) → boolean</code></p><pre class="programlisting">
 SELECT hasX(tbox 'TBOX T([2001-01-01,2001-01-03))');
 -- false
 SELECT hasX(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
@@ -9,12 +9,12 @@ SELECT hasT(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03])');
 -- true
 SELECT hasT(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- false
-</pre></li><li class="listitem"><a name="isGeodetic"></a><a class="indexterm" name="idm1626"></a><p>¿Es geodética?</p><p><code class="varname">isGeodetic(stbox) → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="isGeodetic"></a><a class="indexterm" name="idm1646"></a><p>¿Es geodética?</p><p><code class="varname">isGeodetic(stbox) → boolean</code></p><pre class="programlisting">
 SELECT isGeodetic(stbox 'GEODSTBOX Z((1.0,1.0,0.0),(3.0,3.0,1.0))');
 -- true
 SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])');
 -- false
-</pre></li><li class="listitem"><a name="Xmin"></a><a class="indexterm" name="idm1634"></a><a class="indexterm" name="idm1637"></a><a class="indexterm" name="idm1640"></a><a class="indexterm" name="idm1643"></a><p>Obtener el valor mínimo de X/Y/Z/T</p><p><code class="varname">Xmin(box) → float</code></p><p><code class="varname">Ymin(stbox) → float</code></p><p><code class="varname">Zmin(stbox) → float</code></p><p><code class="varname">Tmin(box) → timestamptz</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="Xmin"></a><a class="indexterm" name="idm1654"></a><a class="indexterm" name="idm1657"></a><a class="indexterm" name="idm1660"></a><a class="indexterm" name="idm1663"></a><p>Obtener el valor mínimo de X/Y/Z/T</p><p><code class="varname">Xmin(box) → float</code></p><p><code class="varname">Ymin(stbox) → float</code></p><p><code class="varname">Zmin(stbox) → float</code></p><p><code class="varname">Tmin(box) → timestamptz</code></p><pre class="programlisting">
 SELECT Xmin(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- 1
 SELECT Ymin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
@@ -23,7 +23,7 @@ SELECT Zmin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 3
 SELECT Tmin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-01
-</pre></li><li class="listitem"><a name="Xmax"></a><a class="indexterm" name="idm1657"></a><a class="indexterm" name="idm1660"></a><a class="indexterm" name="idm1663"></a><a class="indexterm" name="idm1666"></a><p>Obtener el valor máximo de X/Y/Z/T</p><p><code class="varname">Xmax(box) → float</code></p><p><code class="varname">Ymax(stbox) → float</code></p><p><code class="varname">Zmax(stbox) → float</code></p><p><code class="varname">Tmax(box) → timestamptz</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="Xmax"></a><a class="indexterm" name="idm1677"></a><a class="indexterm" name="idm1680"></a><a class="indexterm" name="idm1683"></a><a class="indexterm" name="idm1686"></a><p>Obtener el valor máximo de X/Y/Z/T</p><p><code class="varname">Xmax(box) → float</code></p><p><code class="varname">Ymax(stbox) → float</code></p><p><code class="varname">Zmax(stbox) → float</code></p><p><code class="varname">Tmax(box) → timestamptz</code></p><pre class="programlisting">
 SELECT Xmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- 3
 SELECT Ymax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
@@ -32,12 +32,12 @@ SELECT Zmax(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 6
 SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-03
-</pre></li><li class="listitem"><a name="Xmin_inc"></a><a class="indexterm" name="idm1680"></a><a class="indexterm" name="idm1683"></a><p>Es el mínimo valor X/T inclusivo?</p><p><code class="varname">Xmin_inc(tbox) → bool</code></p><p><code class="varname">Tmin_inc(box) → bool</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="Xmin_inc"></a><a class="indexterm" name="idm1700"></a><a class="indexterm" name="idm1703"></a><p>Es el mínimo valor X/T inclusivo?</p><p><code class="varname">Xmin_inc(tbox) → bool</code></p><p><code class="varname">Tmin_inc(box) → bool</code></p><pre class="programlisting">
 SELECT Xmin_inc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
 SELECT Tmin_inc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- true
-</pre></li><li class="listitem"><a name="Xmax_inc"></a><a class="indexterm" name="idm1693"></a><a class="indexterm" name="idm1696"></a><p>Es el máximo valor X/T inclusivo?</p><p><code class="varname">Xmax_inc(tbox) → bool</code></p><p><code class="varname">Tmax_inc(box) → bool</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="Xmax_inc"></a><a class="indexterm" name="idm1713"></a><a class="indexterm" name="idm1716"></a><p>Es el máximo valor X/T inclusivo?</p><p><code class="varname">Xmax_inc(tbox) → bool</code></p><p><code class="varname">Tmax_inc(box) → bool</code></p><pre class="programlisting">
 SELECT Xmax_inc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
 SELECT Tmax_inc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
