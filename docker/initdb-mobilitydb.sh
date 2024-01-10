@@ -16,6 +16,8 @@ EOSQL
 for DB in template_mobilitydb "$POSTGRES_DB"; do
   echo "Loading mobilitydb extensions into $DB"
   "${psql[@]}" --dbname="$DB" <<-'EOSQL'
-    CREATE EXTENSION IF NOT EXISTS mobilitydb CASCADE;
+    CREATE EXTENSION IF NOT EXISTS postgis;
+    SELECT geometry 'Point(0 0)';
+    CREATE EXTENSION IF NOT EXISTS mobilitydb;
 EOSQL
 done

@@ -6,8 +6,6 @@ FROM postgis/postgis:$POSTGRES_VERSION-$POSTGIS_VERSION
 # Configuration Parameters
 LABEL maintainer="MobilityDB Project - https://github.com/MobilityDB/MobilityDB"
 
-ENV MOBILITYDB_VERSION $MOBDB_VERSION
-
 # Fix the Release file expired problem
 RUN printf "Acquire::Check-Valid-Until \"false\";\nAcquire::Check-Date \"false\";" | cat > /etc/apt/apt.conf.d/10no--check-valid-until
 
@@ -39,7 +37,6 @@ RUN apt-get update \
   && cmake .. \
   && make -j"$(nproc)" \
   && make install \
-  && rm /docker-entrypoint-initdb.d/10_postgis.sh \
   && cp ../docker/initdb-mobilitydb.sh /docker-entrypoint-initdb.d/11_mobilitydb.sh \
   && cd / \
   && rm -rf /usr/local/src/MobilityDB \
