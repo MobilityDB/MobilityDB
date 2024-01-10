@@ -40,7 +40,7 @@ RUN apt-get update \
   && make -j"$(nproc)" \
   && make install \
   && rm /docker-entrypoint-initdb.d/10_postgis.sh \
-  && cp ../docker/initdb-mobilitydb.sh /docker-entrypoint-initdb.d/mobilitydb.sh \
+  && cp ../docker/initdb-mobilitydb.sh /docker-entrypoint-initdb.d/11_mobilitydb.sh \
   && cd / \
   && rm -rf /usr/local/src/MobilityDB \
   && apt-get purge -y --auto-remove \
