@@ -15,7 +15,7 @@ EOSQL
 # Load mobilitydb into both template_database and $POSTGRES_DB
 # Since $POSTGRES_DB already has postgis, we must use
 # LOAD 'postgis-3.so' to be able to create the mobilitydb extension
-# (the share_preload_libraries setting above has not taken effect yet)
+# (the shared_preload_libraries setting above has not taken effect yet)
 for DB in template_mobilitydb "$POSTGRES_DB"; do
   echo "Loading mobilitydb extensions into $DB"
   "${psql[@]}" --dbname="$DB" <<-'EOSQL'
