@@ -53,7 +53,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * temporal point overlap
  * @param[in] box Spatiotemporal box
@@ -67,7 +67,7 @@ overlaps_stbox_tpoint(const STBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of a temporal point and a
  * spatiotemporal box overlap
  * @param[in] temp Temporal point
@@ -81,7 +81,7 @@ overlaps_tpoint_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the spatiotemporal boxes of two temporal points
  * overlap
  * @param[in] temp1,temp2 Temporal points
@@ -98,7 +98,7 @@ overlaps_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a spatiotemporal box contains the one of a temporal
  * point
  * @param[in] box Spatiotemporal box
@@ -112,7 +112,7 @@ contains_stbox_tpoint(const STBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of a temporal point contains a
  * spatiotemporal box
  * @param[in] temp Temporal point
@@ -126,7 +126,7 @@ contains_tpoint_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of the first temporal point
  * contains the one of the second temporal point
  * @param[in] temp1,temp2 Temporal points
@@ -143,7 +143,7 @@ contains_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a spatiotemporal box is contained in the
  * spatiotemporal box of a temporal point
  * @param[in] box Spatiotemporal box
@@ -157,7 +157,7 @@ contained_stbox_tpoint(const STBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of a temporal point is
  * contained in the spatiotemporal box
  * @param[in] temp Temporal point
@@ -171,7 +171,7 @@ contained_tpoint_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of the first temporal point is
  * contained in the one of the second temporal point
  * @param[in] temp1,temp2 Temporal points
@@ -188,7 +188,7 @@ contained_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * temporal point are equal in the common dimensions
  * @param[in] box Spatiotemporal box
@@ -202,7 +202,7 @@ same_stbox_tpoint(const STBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of a temporal point and a
  * spatiotemporal box are equal in the common dimensions
  * @param[in] temp Temporal point
@@ -216,7 +216,7 @@ same_tpoint_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the spatiotemporal boxes of two temporal points are
  * equal in the common dimensions
  * @param[in] temp1,temp2 Temporal points
@@ -233,7 +233,7 @@ same_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * temporal point are adjacent
  * @param[in] box Spatiotemporal box
@@ -247,7 +247,7 @@ adjacent_stbox_tpoint(const STBox *box, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the spatiotemporal box of a temporal point and a
  * spatiotemporal box are adjacent
  * @param[in] temp Temporal point
@@ -261,7 +261,7 @@ adjacent_tpoint_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup meos_temporal_topo
+ * @ingroup meos_temporal_bbox_topo
  * @brief Return true if the spatiotemporal boxes of two temporal points are
  * adjacent
  * @param[in] temp1,temp2 Temporal points

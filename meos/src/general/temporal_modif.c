@@ -249,7 +249,7 @@ temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 /**
  * @ingroup meos_temporal_modif
  * @brief Delete a timestamp set from a temporal value connecting the instants
- * before and after the given timestamp (if any)
+ * before and after the given timestamp, if any
  * @param[in] temp Temporal value
  * @param[in] s Timestamp set
  * @param[in] connect True when the instants before and after the timestamp

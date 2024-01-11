@@ -87,6 +87,10 @@ extern int32 pg_strtoint32(const char *s);
   extern int pg_ulltoa_n(uint64 l, char *a);
 #endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
+/* To avoid including varlena.h */
+extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
+  Oid collid);
+
 /*****************************************************************************
  * Functions adapted from bool.c
  *****************************************************************************/
@@ -1260,6 +1264,7 @@ pg_timestamptz_in(const char *str, int32 typmod)
 
 #if ! MEOS
 /**
+ * @ingroup meos_pg_types
  * @brief Convert a timestamp with timezone to a string.
  * @return On error return @p NULL
  * @note PostgreSQL function: @p timestamptz_out(PG_FUNCTION_ARGS)
@@ -1305,9 +1310,9 @@ timestamp_out_common(TimestampTz t, bool withtz)
  * @note PostgreSQL function: @p timestamptz_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_timestamptz_out(TimestampTz dt)
+pg_timestamptz_out(TimestampTz t)
 {
-  return timestamp_out_common(dt, true);
+  return timestamp_out_common(t, true);
 }
 
 /**
@@ -1316,9 +1321,9 @@ pg_timestamptz_out(TimestampTz dt)
  * @note PostgreSQL function: @p timestamp_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_timestamp_out(Timestamp dt)
+pg_timestamp_out(Timestamp t)
 {
-  return timestamp_out_common((Timestamp) dt, false);
+  return timestamp_out_common((Timestamp) t, false);
 }
 #endif /* MEOS */
 
@@ -1823,7 +1828,7 @@ add_interval_interval(const Interval *interv1, const Interval *interv2)
 /**
  * @ingroup meos_pg_types
  * @brief Return the addition of a timestamp and an interval
- * @details Note that interval has provisions for qualitative year/month and 
+ * @details Note that interval has provisions for qualitative year/month and
  * day units, so try to do the right thing with them.
  * To add a month, increment the month, and use the same day of month.
  * Then, if the next month has fewer days, set the day of month
@@ -2048,6 +2053,110 @@ pg_interval_cmp(const Interval *interval1, const Interval *interval2)
   INT128 span1 = interval_cmp_value(interval1);
   INT128 span2 = interval_cmp_value(interval2);
   return int128_compare(span1, span2);
+}
+
+/*****************************************************************************
+ * Text and binary string functions
+ *****************************************************************************/
+
+/**
+ * @brief Convert a C binary string into a bytea
+ */
+bytea *
+bstring2bytea(const uint8_t *wkb, size_t size)
+{
+  bytea *result = palloc(size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, size);
+  SET_VARSIZE(result, size + VARHDRSZ);
+  return result;
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return a C string converted to a text
+ * @param[in] str String
+ * @note We don't include `<utils/builtins.h>` to avoid collisions with
+ * `json-c/json.h`
+ * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
+ */
+text *
+cstring2text(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+
+  size_t len = strlen(str);
+  text *result = palloc(len + VARHDRSZ);
+  SET_VARSIZE(result, len + VARHDRSZ);
+  memcpy(VARDATA(result), str, len);
+  return result;
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return a text converted to a C string
+ * @param[in] txt Text
+ * @note We don't include @p <utils/builtins.h> to avoid collisions with
+ * @p json-c/json.h
+ * @note Function taken from PostGIS file @p lwgeom_in_geojson.c
+ */
+char *
+text2cstring(const text *txt)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) txt))
+    return NULL;
+
+  size_t size = VARSIZE_ANY_EXHDR(txt);
+  char *str = palloc(size + 1);
+  memcpy(str, VARDATA(txt), size);
+  str[size] = '\0';
+  return str;
+}
+
+#if MEOS
+/* Simplified version of the function in varlena.c where LC_COLLATE is C */
+int
+varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
+  Oid collid __attribute__((unused)))
+{
+  int result = memcmp(arg1, arg2, Min(len1, len2));
+  if ((result == 0) && (len1 != len2))
+    result = (len1 < len2) ? -1 : 1;
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Comparison function for text values
+ * @param[in] txt1,txt2 Text values
+ * @param[in] collid Collation
+ * @note Function copied from PostgreSQL since it is declared static
+ */
+int
+text_cmp(const text *txt1, const text *txt2, Oid collid __attribute__((unused)))
+{
+  char *t1p = VARDATA_ANY(txt1);
+  char *t2p = VARDATA_ANY(txt2);
+  int len1 = (int) VARSIZE_ANY_EXHDR(txt1);
+  int len2 = (int) VARSIZE_ANY_EXHDR(txt2);
+  return varstr_cmp(t1p, len1, t2p, len2, collid);
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Copy a text value
+ * @param[in] txt Text
+ */
+text *
+text_copy(const text *txt)
+{
+  assert(txt);
+  text *result = palloc(VARSIZE(txt));
+  memcpy(result, txt, VARSIZE(txt));
+  return result;
 }
 
 /*****************************************************************************

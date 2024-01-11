@@ -51,46 +51,8 @@
 #include "general/type_util.h"
 
 /*****************************************************************************
- * Generic functions on datums
+ * General functions on datums
  *****************************************************************************/
-
-/**
- * @brief Convert a number from radians to degrees
- */
-double
-float_degrees(double value, bool normalize)
-{
-  double result = float8_div(value, RADIANS_PER_DEGREE);
-  if (normalize)
-  {
-    /* The value would be in the range (-360, 360) */
-    result = fmod(result, 360.0);
-    if (result < 0)
-      result += 360.0; /* The value would be in the range [0, 360) */
-  }
-  return result;
-}
-
-/**
- * @brief Convert a number from radians to degrees
- */
-static Datum
-datum_degrees(Datum value, Datum normalize)
-{
-  return Float8GetDatum(float_degrees(DatumGetFloat8(value),
-    DatumGetBool(normalize)));
-}
-
-/**
- * @brief Convert a number from degrees to radians
- */
-static Datum
-datum_radians(Datum value)
-{
-  return Float8GetDatum(float8_mul(DatumGetFloat8(value), RADIANS_PER_DEGREE));
-}
-
-/*****************************************************************************/
 
 /**
  * @brief Find the single timestamptz at which the operation of two temporal
@@ -672,66 +634,6 @@ tnumber_angular_difference(const Temporal *temp)
     default: /* TSEQUENCESET */
       return (Temporal *) tnumberseqset_angular_difference((TSequenceSet *) temp);
   }
-}
-
-/*****************************************************************************
- * Miscellaneous temporal functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_temporal_math
- * @brief Convert a temporal number from radians to degrees
- * @param[in] temp Temporal value
- * @param[in] normalize True when the result is normalized
- * @csqlfn #Tfloat_degrees()
- */
-Temporal *
-tfloat_degrees(const Temporal *temp, bool normalize)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_degrees;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = BoolGetDatum(normalize);
-  lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal(temp, &lfinfo);
-}
-
-/**
- * @ingroup meos_temporal_math
- * @brief Convert a temporal number from degrees to radians
- * @param[in] temp Temporal value
- * @csqlfn #Tfloat_radians()
- */
-Temporal *
-tfloat_radians(const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_radians;
-  lfinfo.numparam = 0;
-  lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal(temp, &lfinfo);
 }
 
 /*****************************************************************************

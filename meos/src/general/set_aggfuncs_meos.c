@@ -164,6 +164,7 @@ set_append_value_exp(Set *set, Datum value)
  * @brief Transition function for set union aggregate of values
  * @param[in,out] state Current aggregate state
  * @param[in] value Value
+ * @param[in] basetype Type of the value
  */
 Set *
 value_union_transfn(Set *state, Datum value, meosType basetype)

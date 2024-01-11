@@ -809,9 +809,10 @@ tbox_hast(const TBox *box)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the minimum X value of a temporal box
+ * @brief Return in the last argument the minimum X value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Tbox_xmin()
  */
 bool
@@ -826,6 +827,14 @@ tbox_xmin(const TBox *box, double *result)
 }
 
 #if MEOS
+/**
+ * @ingroup meos_box_accessor
+ * @brief Return in the last argument the minimum X value of a temporal box
+ * @param[in] box Box
+ * @param[out] result Result
+ * @return On error return false, otherwise return true
+ * @csqlfn #Tbox_xmin()
+ */
 bool
 tboxint_xmin(const TBox *box, int *result)
 {
@@ -838,6 +847,14 @@ tboxint_xmin(const TBox *box, int *result)
   return true;
 }
 
+/**
+ * @ingroup meos_box_accessor
+ * @brief Return in the last argument the minimum X value of a temporal box
+ * @param[in] box Box
+ * @param[out] result Result
+ * @return On error return false, otherwise return true
+ * @csqlfn #Tbox_xmin()
+ */
 bool
 tboxfloat_xmin(const TBox *box, double *result)
 {
@@ -853,9 +870,11 @@ tboxfloat_xmin(const TBox *box, double *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return true if the minimum X value of a temporal box is inclusive
+ * @brief Return in the last argument whether the minimum X value of a temporal
+ * box is inclusive
  * @param[in] box Box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Tbox_xmin_inc()
  */
 bool
@@ -871,9 +890,10 @@ tbox_xmin_inc(const TBox *box, bool *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the maximum X value of a temporal box
+ * @brief Return in the last argument the maximum X value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Tbox_xmax()
  */
 bool
@@ -894,9 +914,10 @@ tbox_xmax(const TBox *box, double *result)
 #if MEOS
 /**
  * @ingroup meos_box_accessor
- * @brief Return the maximum X value of a temporal box
+ * @brief Return in the last argument the maximum X value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Tbox_xmax()
  */
 bool
@@ -913,9 +934,10 @@ tboxint_xmax(const TBox *box, int *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the maximum X value of a temporal box
+ * @brief Return in the last argument the maximum X value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Tbox_xmax()
  */
 bool
@@ -933,9 +955,11 @@ tboxfloat_xmax(const TBox *box, double *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return true if the maximum X value of a temporal box is inclusive
+ * @brief Return in the last argument whether the maximum X value of a temporal
+ * box is inclusive
  * @param[in] box Box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Tbox_xmax_inc()
  */
 bool
@@ -951,9 +975,10 @@ tbox_xmax_inc(const TBox *box, bool *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the minimum T value of a temporal box
+ * @brief Return in the last argument the minimum T value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Tbox_tmin()
  */
 bool
@@ -969,9 +994,11 @@ tbox_tmin(const TBox *box, TimestampTz *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return true if the minimum T value of a temporal box is inclusive
+ * @brief Return in the last argument whether the minimum T value of a temporal
+ * box is inclusive
  * @param[in] box Box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Tbox_tmin_inc()
  */
 bool
@@ -987,10 +1014,10 @@ tbox_tmin_inc(const TBox *box, bool *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Initialize the last argument with the maximum T value of a temporal
- * box
+ * @brief Return in the last argument the maximum T value of a temporal box
  * @param[in] box Box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Tbox_tmax()
  */
 bool
@@ -1006,9 +1033,11 @@ tbox_tmax(const TBox *box, TimestampTz *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return true if the maximum T value of a temporal box is inclusive
+ * @brief Return in the last argument whether the maximum T value of a temporal
+ * box is inclusive
  * @param[in] box Box
  * @param[out] result Result
+ * @return On error return false, otherwise return true
  * @csqlfn #Tbox_tmax_inc()
  */
 bool

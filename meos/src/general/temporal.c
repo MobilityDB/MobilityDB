@@ -1257,7 +1257,7 @@ tnumber_to_span(const Temporal *temp)
 #if MEOS
 /**
  * @ingroup meos_box_conversion
- * @brief Return the bounding box of a temporal number
+ * @brief Convert a temporal number to a temporal box
  * @param[in] temp Temporal value
  * @csqlfn #Tnumber_to_tbox()
  */
@@ -1362,6 +1362,104 @@ tfloatarr_round(const Temporal **temparr, int count, int maxdd)
   for (int i = 0; i < count; i++)
     result[i] = tfloat_round(temparr[i], maxdd);
   return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a float value converted from radians to degrees
+ * @param[in] value Value
+ * @param[in] normalize True when the result is normalized
+ * @csqlfn #Float_degrees()
+ */
+double
+float_degrees(double value, bool normalize)
+{
+  double result = float8_div(value, RADIANS_PER_DEGREE);
+  if (normalize)
+  {
+    /* The value would be in the range (-360, 360) */
+    result = fmod(result, 360.0);
+    if (result < 0)
+      result += 360.0; /* The value would be in the range [0, 360) */
+  }
+  return result;
+}
+
+/**
+ * @brief Convert a number from radians to degrees
+ */
+static Datum
+datum_degrees(Datum value, Datum normalize)
+{
+  return Float8GetDatum(float_degrees(DatumGetFloat8(value),
+    DatumGetBool(normalize)));
+}
+
+/**
+ * @brief Convert a number from degrees to radians
+ */
+static Datum
+datum_radians(Datum value)
+{
+  return Float8GetDatum(float8_mul(DatumGetFloat8(value), RADIANS_PER_DEGREE));
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal number transformed from radians to degrees
+ * @param[in] temp Temporal value
+ * @param[in] normalize True when the result is normalized
+ * @csqlfn #Tfloat_degrees()
+ */
+Temporal *
+tfloat_degrees(const Temporal *temp, bool normalize)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_degrees;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = BoolGetDatum(normalize);
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal number transformed from degrees to radians
+ * @param[in] temp Temporal value
+ * @csqlfn #Tfloat_radians()
+ */
+Temporal *
+tfloat_radians(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_radians;
+  lfinfo.numparam = 0;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
 }
 
 /*****************************************************************************/
@@ -2480,7 +2578,7 @@ ttext_max_value(const Temporal *temp)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return a pointer to the instant with minimum base value of a 
+ * @brief Return a pointer to the instant with minimum base value of a
  * value
  * @details Function used, e.g., for computing the shortest line between two
  * temporal points from their temporal distance
@@ -2676,7 +2774,7 @@ temporal_sequence_n(const Temporal *temp, int n)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return an array of pointers to the sequences of a temporal sequence
  * (set)
  * @param[in] temp Temporal value
@@ -2971,7 +3069,7 @@ temporal_insts(const Temporal *temp, int *count)
 
 #if MEOS
 /**
- * @ingroup meos_internal_temporal_accessor
+ * @ingroup meos_temporal_accessor
  * @brief Return a copy of the distinct instants of a temporal value
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
@@ -3227,7 +3325,7 @@ tfloatseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the subsequences where the temporal value stays within
  * an area with a given maximum size for at least the specified duration
  * @param[in] seq Temporal sequence
@@ -3251,7 +3349,7 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the subsequences where the temporal value stays within
  * an area with a given maximum size for at least the specified duration
  * @param[in] ss Temporal sequence set
@@ -3326,7 +3424,7 @@ temporal_stops(const Temporal *temp, double maxdist,
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_agg
+ * @ingroup meos_temporal_accessor
  * @brief Return the integral (area under the curve) of a temporal number
  * @param[in] temp Temporal value
  * @return On error return -1.0
@@ -3352,7 +3450,7 @@ tnumber_integral(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_agg
+ * @ingroup meos_temporal_accessor
  * @brief Return the time-weighted average of a temporal number
  * @param[in] temp Temporal value
  * @return On error return @p DBL_MAX

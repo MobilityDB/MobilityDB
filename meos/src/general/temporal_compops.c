@@ -66,7 +66,7 @@
  * @param[in] func Comparison function
  */
 int
-eacomp_base_temporal(Datum value, const Temporal *temp, 
+eacomp_base_temporal(Datum value, const Temporal *temp,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   /* Ensure validity of the arguments */
@@ -84,7 +84,7 @@ eacomp_base_temporal(Datum value, const Temporal *temp,
   lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
-  lfinfo.invert = INVERT; 
+  lfinfo.invert = INVERT;
   lfinfo.discont = DISCONTINUOUS; /* Comparisons are always discontinuous */
   lfinfo.ever = ever;
   lfinfo.tpfunc_base = NULL;
@@ -116,7 +116,7 @@ eacomp_temporal_base(const Temporal *temp, Datum value,
   lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
-  lfinfo.invert = INVERT_NO; 
+  lfinfo.invert = INVERT_NO;
   lfinfo.discont = DISCONTINUOUS; /* Comparisons are always discontinuous */
   lfinfo.ever = ever;
   lfinfo.tpfunc_base = NULL;
@@ -145,7 +145,7 @@ eacomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
-  lfinfo.invert = INVERT_NO; 
+  lfinfo.invert = INVERT_NO;
   lfinfo.discont = DISCONTINUOUS; /* Comparisons are always discontinuous */
   lfinfo.ever = ever;
   lfinfo.tpfunc_base = NULL;
@@ -647,7 +647,6 @@ always_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal value
  * @param[in] value Value
  * @param[in] func Function used for the comparison
- * @param[in] invert True if the arguments of the function should be inverted
  */
 Temporal *
 tcomp_base_temporal(Datum value, const Temporal *temp,
@@ -677,7 +676,6 @@ tcomp_base_temporal(Datum value, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] value Value
  * @param[in] func Function used for the comparison
- * @param[in] invert True if the arguments of the function should be inverted
  */
 Temporal *
 tcomp_temporal_base(const Temporal *temp, Datum value,
@@ -895,7 +893,7 @@ tge_temporal_base(const Temporal *temp, Datum value)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal equal comparison of two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Teq_temporal_temporal()
@@ -907,7 +905,7 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal different comparison of two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Tne_temporal_temporal()
@@ -919,7 +917,7 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than comparison of two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Tlt_temporal_temporal()
@@ -931,7 +929,7 @@ tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than or equal to comparison of two temporal
  * values
  * @param[in] temp1,temp2 Temporal values
@@ -944,7 +942,7 @@ tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than comparison of two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Tgt_temporal_temporal()
@@ -956,7 +954,7 @@ tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to comparison of two
  * temporal values
  * @param[in] temp1,temp2 Temporal values

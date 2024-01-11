@@ -144,7 +144,6 @@ nsegment_round(const Nsegment *ns, Datum size)
 }
 
 /**
- * @ingroup meos_setspan_transf
  * @brief Return a network point set with the precision of the positions set
  * to a number of decimal places
  * @csqlfn #Npointset_round()

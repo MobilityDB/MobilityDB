@@ -309,6 +309,7 @@ extern Datum *set_vals(const Set *s);
 extern Datum *set_values(const Set *s);
 extern Datum spanset_lower(const SpanSet *ss);
 extern int spanset_mem_size(const SpanSet *ss);
+extern const Span **spanset_spans_p(const SpanSet *ss);
 extern Datum spanset_upper(const SpanSet *ss);
 extern void value_set_span(Datum value, meosType basetype, Span *s);
 
@@ -450,6 +451,7 @@ extern void tbox_set(const Span *s, const Span *p, TBox *box);
 /* Conversion functions for box types */
 
 extern STBox *box3d_to_stbox(const BOX3D *box);
+extern STBox *gbox_to_stbox(const GBOX *box);
 extern void float_set_tbox(double d, TBox *box);
 extern STBox *gbox_to_stbox(const GBOX *box);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
@@ -604,6 +606,7 @@ extern Datum temporal_min_value(const Temporal *temp);
 extern const TSequence **temporal_seqs(const Temporal *temp, int *count);
 extern void temporal_set_bbox(const Temporal *temp, void *box);
 extern void temporal_set_tstzspan(const Temporal *temp, Span *s);
+extern const TSequence **temporal_seqs(const Temporal *temp, int *count);
 extern Datum temporal_start_value (const Temporal *temp);
 extern Datum *temporal_vals(const Temporal *temp, int *count);
 extern Datum *temporal_values(const Temporal *temp, int *count);

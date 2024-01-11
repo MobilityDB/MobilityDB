@@ -808,7 +808,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
 #if MEOS
 /**
  * @ingroup meos_temporal_spatial_accessor
- * @brief Get one of the X coordinates of a temporal point as a temporal float
+ * @brief Return the X coordinates of a temporal point as a temporal float
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_get_x()
  */
@@ -822,7 +822,7 @@ tpoint_get_x(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_spatial_accessor
- * @brief Get one of the Y coordinates of a temporal point as a temporal float
+ * @brief Return the Y coordinates of a temporal point as a temporal float
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_get_y()
  */
@@ -836,7 +836,7 @@ tpoint_get_y(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_spatial_accessor
- * @brief Get one of the Z coordinates of a temporal point as a temporal float
+ * @brief Return the Z coordinates of a temporal point as a temporal float
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_get_z()
  */
@@ -2517,7 +2517,7 @@ tpointseq_cont_to_geomeas_segm(const TSequence *seq, const TSequence *meas)
   /* Instantaneous sequence */
   if (seq->count == 1)
     /* Result is a point */
-    return tpointinst_to_geomeas(TSEQUENCE_INST_N(seq, 0), 
+    return tpointinst_to_geomeas(TSEQUENCE_INST_N(seq, 0),
       meas ? TSEQUENCE_INST_N(meas, 0) : NULL);
 
   /* General case */
@@ -2806,7 +2806,7 @@ ensure_valid_trajectory(const LWGEOM *geom, bool hasz, bool discrete)
 
 /**
  * @brief Convert the PostGIS trajectory geometry/geography where the M
- * coordinates encode the timestamps in Unix epoch into a temporal point 
+ * coordinates encode the timestamps in Unix epoch into a temporal point
  * discrete sequence
  */
 static TSequence *
@@ -4025,7 +4025,7 @@ tpointarr_round(const Temporal **temparr, int count, int maxdd)
  *****************************************************************************/
 
 /**
- * @brief Return the length traversed by a temporal geometry point sequence 
+ * @brief Return the length traversed by a temporal geometry point sequence
  * @pre The temporal point has linear interpolation
  */
 static double
@@ -4388,7 +4388,7 @@ tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
 }
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_internal_temporal_spatial_accessor
  * @brief Return the time-weighed centroid of a temporal geometry point
  * sequence
  * @param[in] seq Temporal sequence
@@ -4414,7 +4414,7 @@ tpointseq_twcentroid(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_internal_temporal_spatial_accessor
  * @brief Return the time-weighed centroid of a temporal geometry point
  * sequence set
  * @param[in] ss Temporal sequence set
@@ -4450,7 +4450,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_agg
+ * @ingroup meos_temporal_spatial_accessor
  * @brief Return the time-weighed centroid of a temporal geometry point
  * @param[in] temp Temporal point
  * @return On error return @p NULL
@@ -5378,7 +5378,7 @@ parseg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
 
 /**
  * @brief Determines the side of segment P where Q lies
- * @details 
+ * @details
  * - Return -1  if point Q is left of segment P
  * - Return  1  if point Q is right of segment P
  * - Return  0  if point Q in on segment P

@@ -214,6 +214,18 @@
  * @ingroup meos_temporal_comp
  * @brief Temporal comparison functions for temporal types
  *
+ * @defgroup meos_temporal_bbox Bounding box functions
+ * @ingroup meos_temporal
+ * @brief Bounding box functions for temporal types
+ *
+ * @defgroup meos_temporal_bbox_topo Topological functions
+ * @ingroup meos_temporal_bbox
+ * @brief Topological functions for temporal types
+ *
+ * @defgroup meos_temporal_bbox_pos Position functions
+ * @ingroup meos_temporal_bbox
+ * @brief Position functions for temporal types
+ *
  * @defgroup meos_temporal_bool Boolean functions
  * @ingroup meos_temporal
  * @brief Boolean functions for temporal types

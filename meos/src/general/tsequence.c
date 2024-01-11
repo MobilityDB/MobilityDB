@@ -287,7 +287,7 @@ tinstarr_normalize(const TInstant **instants, interpType interp, int count,
 
 /**
  * @brief Test whether two sequences can be joined during normalization
- * @details 
+ * @details
  * The input sequences must ordered and either (1) are non-overlapping, or
  * (2) share the same last/first instant in the case we are merging temporal
  * sequences.
@@ -428,7 +428,7 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
  * @details If the timestamp is contained in a temporal sequence, the index of
  * the segment containing the timestamp is returned in the output parameter.
  * Otherwise, return -1.
- * 
+ *
  * For example, given a value composed of 3 sequences and a timestamp,
  * the value returned in the output parameter is as follows:
  * @code
@@ -473,11 +473,11 @@ tcontseq_find_timestamptz(const TSequence *seq, TimestampTz t)
 /**
  * @brief Return the index of a timestamp in a temporal discrete sequence
  * value using binary search
- * @details 
+ * @details
  * If the timestamp is contained in the temporal discrete sequence, the index
  * of the composing instant is returned in the output parameter. Otherwise,
  * return -1.
- * 
+ *
  * For example, given a value composed of 3 instants and a timestamp,
  * the value returned in the output parameter is as follows:
  * @code
@@ -517,8 +517,8 @@ tdiscseq_find_timestamptz(const TSequence *seq, TimestampTz t)
 /**
  * @brief Convert an array of arrays of temporal sequences into an array of
  * temporal sequences
- * @details This function is called by all the functions in which the number of 
- * output sequences cannot be determined in advance, typically when each 
+ * @details This function is called by all the functions in which the number of
+ * output sequences cannot be determined in advance, typically when each
  * segment of the input sequence can produce an arbitrary number of output
  * sequences, as in the case of @p tcontains.
  * @param[in] sequences Array of array of temporal sequences
@@ -925,9 +925,9 @@ bbox_expand(const void *box1, void *box2, meosType temptype)
 
 /**
  * @brief Ensure that all temporal instants of the array are valid
- * @details For this, the instants must have increasing timestamp (or may be 
- * equal if the merge parameter is true), and if they are temporal points, have 
- * the same SRID and the same dimensionality. If the bounding box output 
+ * @details For this, the instants must have increasing timestamp (or may be
+ * equal if the merge parameter is true), and if they are temporal points, have
+ * the same SRID and the same dimensionality. If the bounding box output
  * argument is not NULL, the bounding box of the resulting sequence is computed
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
@@ -1904,6 +1904,7 @@ tsequence_time(const TSequence *seq)
  * @details The function does not take into account whether the instant is at
  * an exclusive bound or not.
  * @param[in] seq Temporal sequence
+ * @param[in] func Function used for the comparison
  */
 const TInstant *
 tsequence_minmax_inst(const TSequence *seq,
@@ -1932,7 +1933,7 @@ tsequence_minmax_inst(const TSequence *seq,
  * @details The function does not take into account whether the instant is at
  * an exclusive bound or not.
  * @param[in] seq Temporal sequence
- * @note The function is used, e.g., for computing the shortest line between 
+ * @note The function is used, e.g., for computing the shortest line between
  * two temporal points from their temporal distance
  * @csqlfn #Temporal_min_instant()
  */

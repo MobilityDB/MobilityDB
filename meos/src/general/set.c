@@ -119,8 +119,8 @@ ensure_same_set_type(const Set *s1, const Set *s2)
 
 /**
  * @brief Return the location of a value in a set using binary search
- * @details If the value is found, the index of the value is returned in the 
- * output parameter. Otherwise, return a number encoding whether it is before, 
+ * @details If the value is found, the index of the value is returned in the
+ * output parameter. Otherwise, return a number encoding whether it is before,
  * between two values, or after the set.
  * For example, given a set composed of 3 values and a parameter
  * value, the result of the function is as follows:
@@ -618,8 +618,8 @@ SET_VAL_N(const Set *s, int index)
  * @ingroup meos_internal_setspan_constructor
  * @brief Return a set from an array of values enabling the data structure
  * to expand
- * @details The memory structure depends on whether the value is passed by 
- * value or by reference. For example, the memory structure of a set with two 
+ * @details The memory structure depends on whether the value is passed by
+ * value or by reference. For example, the memory structure of a set with two
  * values passed by value and passed by reference are, respectively, as follows
  *
  * @code
@@ -1114,7 +1114,7 @@ geo_to_set(GSERIALIZED *gs)
 #endif /* MEOS */
 
 /**
- * @ingroup meos_internal_setspan_accessor
+ * @ingroup meos_internal_setspan_conversion
  * @brief Initialize the last argument to the bounding span of a set
  * @param[in] s Set
  * @param[in] sp Span
@@ -1130,7 +1130,7 @@ set_set_span(const Set *s, Span *sp)
 }
 
 /**
- * @ingroup meos_internal_setspan_accessor
+ * @ingroup meos_internal_setspan_conversion
  * @brief Return the bounding span of a set
  * @param[in] s Set
  */
@@ -1144,8 +1144,8 @@ set_span(const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_accessor
- * @brief Return the bounding span of a set
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Convert a set into a span
  * @param[in] s Set
  * @csqlfn #Set_to_span()
  */
@@ -1156,6 +1156,90 @@ set_to_span(const Set *s)
   if (! ensure_not_null((void *) s) || ! ensure_set_spantype(s->settype))
     return NULL;
   return set_span(s);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert an integer set into a float set
+ * @param[in] s Set
+ * @csqlfn #Intset_to_floatset()
+ */
+Set *
+intset_to_floatset(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_type(s, T_INTSET))
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
+  /* All distinct integers will yield distinct floats */
+  return set_make_free(values, s->count, T_FLOAT8, ORDERED);
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a float set into an integer set
+ * @param[in] s Set
+ * @csqlfn #Floatset_to_intset()
+ */
+Set *
+floatset_to_intset(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_type(s, T_FLOATSET))
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
+  /* Two distinct floats can yield the same integer */
+  return set_make_free(values, s->count, T_INT4, ORDERED_NO);
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a date set into a timestamptz set
+ * @param[in] s Set
+ * @csqlfn #Dateset_to_tstzset()
+ */
+Set *
+dateset_to_tstzset(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_type(s, T_DATESET))
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(
+      SET_VAL_N(s, i))));
+  /* All distinct dates will yield distinct timestamptz */
+  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDERED);
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a timestamptz set into a date set
+ * @param[in] s Set
+ * @csqlfn #Tstzset_to_dateset()
+ */
+Set *
+tstzset_to_dateset(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_type(s, T_TSTZSET))
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = DateADTGetDatum(timestamptz_to_date(DatumGetTimestampTz(
+      SET_VAL_N(s, i))));
+  /* Two distinct timestamptz can yield the same date */
+  return set_make_free(values, s->count, T_DATE, ORDERED_NO);
 }
 
 /*****************************************************************************
@@ -1918,7 +2002,7 @@ geoset_round(const Set *s, int maxdd)
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Convert the text set to lowercase
+ * @brief Return the text set transformed to lowercase
  * @param[in] s Set
  * @csqlfn #Textset_lower()
  */
@@ -1937,7 +2021,7 @@ textset_lower(const Set *s)
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Convert the text set to uppercase
+ * @brief Return the text set transformed to uppercase
  * @param[in] s Set
  * @csqlfn #Textset_upper()
  */
@@ -2146,90 +2230,6 @@ tstzset_shift_scale(const Set *s, const Interval *shift,
     }
   }
   return result;
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_set_transf
- * @brief Transform an integer set into a float set
- * @param[in] s Set
- * @csqlfn #Intset_to_floatset()
- */
-Set *
-intset_to_floatset(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_INTSET))
-    return NULL;
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
-  /* All distinct integers will yield distinct floats */
-  return set_make_free(values, s->count, T_FLOAT8, ORDERED);
-}
-
-/**
- * @ingroup meos_set_transf
- * @brief Transform a float set into an integer set
- * @param[in] s Set
- * @csqlfn #Floatset_to_intset()
- */
-Set *
-floatset_to_intset(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_FLOATSET))
-    return NULL;
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
-  /* Two distinct floats can yield the same integer */
-  return set_make_free(values, s->count, T_INT4, ORDERED_NO);
-}
-
-/**
- * @ingroup meos_set_transf
- * @brief Transform a date set into a timestamptz set
- * @param[in] s Set
- * @csqlfn #Dateset_to_tstzset()
- */
-Set *
-dateset_to_tstzset(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_DATESET))
-    return NULL;
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(
-      SET_VAL_N(s, i))));
-  /* All distinct dates will yield distinct timestamptz */
-  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDERED);
-}
-
-/**
- * @ingroup meos_set_transf
- * @brief Transform a timestamptz set ininto a date set
- * @param[in] s Set
- * @csqlfn #Tstzset_to_dateset()
- */
-Set *
-tstzset_to_dateset(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_TSTZSET))
-    return NULL;
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = DateADTGetDatum(timestamptz_to_date(DatumGetTimestampTz(
-      SET_VAL_N(s, i))));
-  /* Two distinct timestamptz can yield the same date */
-  return set_make_free(values, s->count, T_DATE, ORDERED_NO);
 }
 
 /*****************************************************************************

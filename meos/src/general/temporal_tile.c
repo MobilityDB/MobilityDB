@@ -730,6 +730,18 @@ tfloatbox_tile_list(const TBox *box, double vsize, const Interval *duration,
 }
 #endif /* MEOS */
 
+/**
+ * @ingroup meos_internal_temporal_analytics_tile
+ * @brief Return the tile from the arguments
+ * @param[in] value Value
+ * @param[in] t Timestamp
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the buckets
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[in] basetype Type of the values
+ * @csqlfn #Tbox_tile()
+ */
 TBox *
 tbox_tile(Datum value, TimestampTz t, Datum vsize, Interval *duration,
   Datum vorigin, TimestampTz torigin, meosType basetype)
@@ -744,6 +756,17 @@ tbox_tile(Datum value, TimestampTz t, Datum vsize, Interval *duration,
   return result;
 }
 
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the tile from the arguments
+ * @param[in] value Value
+ * @param[in] t Timestamp
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the buckets
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @csqlfn #Tbox_tile()
+ */
 TBox *
 tintbox_tile(int value, TimestampTz t, int vsize, Interval *duration,
   int vorigin, TimestampTz torigin)
@@ -752,6 +775,17 @@ tintbox_tile(int value, TimestampTz t, int vsize, Interval *duration,
     Int32GetDatum(vorigin), torigin, T_INT4);
 }
 
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the tile from the arguments
+ * @param[in] value Value
+ * @param[in] t Timestamp
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the buckets
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @csqlfn #Tbox_tile()
+ */
 TBox *
 tfloatbox_tile(double value, TimestampTz t, double vsize, Interval *duration,
   double vorigin, TimestampTz torigin)
