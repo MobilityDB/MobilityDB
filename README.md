@@ -159,16 +159,22 @@ psql mobility -c "CREATE EXTENSION MobilityDB"
 Docker Container
 -----------------
 
-Docker containers with MobilityDB and all its dependencies are available [here](https://github.com/MobilityDB/MobilityDB-docker). These images are based on the official [Postgres](https://github.com/docker-library/postgres) and [Postgis](https://github.com/postgis/docker-postgis) docker images, please refer to them for more information.
+Docker images with MobilityDB and all its dependencies are available [here](https://hub.docker.com/r/mobilitydb/mobilitydb). These images are based on the official [Postgres](https://github.com/docker-library/postgres) and [Postgis](https://github.com/postgis/docker-postgis) docker images, please refer to them for more information.
 
 If you have docker installed in your system you can run:
 ```bash
 docker pull mobilitydb/mobilitydb
 docker volume create mobilitydb_data
-docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql mobilitydb/mobilitydb
-psql -h localhost -p 25432 -d mobilitydb -U docker
+docker run --name mobilitydb -e POSTGRES_PASSWORD=mysecretpassword \
+  -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql -d mobilitydb/mobilitydb
+psql -h localhost -p 25432 -U postgres
 ```
-The first command is to download the latest most up-to-date image of MobilityDB. The second command creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. The third command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb). The fourth command is to connect to the database using psql.
+The first command is to download the latest most up-to-date image of MobilityDB. The second command creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. The third command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = postgres, db = postgres, pw=*mysecretpassword*). The fourth command is to connect to the database using psql.
+
+Note that you can define the environment variable PGPASSWORD to avoid an interactive pw prompt.
+```bash
+PGPASSWORD=mysecretpassword psql -h localhost -p 25432 -U postgres
+```
 
 Issues
 ------
