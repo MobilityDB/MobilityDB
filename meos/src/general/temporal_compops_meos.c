@@ -1604,6 +1604,76 @@ teq_ttext_text(const Temporal *temp, const text *txt)
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_eq);
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of two temporal booleans
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Teq_temporal_temporal()
+ */
+Temporal *
+teq_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TBOOL))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of two temporal integers
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Teq_temporal_temporal()
+ */
+Temporal *
+teq_tint_tint(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TINT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of two temporal floats
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Teq_temporal_temporal()
+ */
+Temporal *
+teq_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TFLOAT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of two temporal texts
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Teq_temporal_temporal()
+ */
+Temporal *
+teq_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TTEXT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
+}
+
 /*****************************************************************************
  * Temporal ne
  *****************************************************************************/
@@ -1746,6 +1816,76 @@ tne_ttext_text(const Temporal *temp, const text *txt)
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_ne);
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of two temporal booleans
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tne_temporal_temporal()
+ */
+Temporal *
+tne_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TBOOL))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of two temporal integers
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tne_temporal_temporal()
+ */
+Temporal *
+tne_tint_tint(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TINT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of two temporal floats
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tne_temporal_temporal()
+ */
+Temporal *
+tne_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TFLOAT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of two temporal texts
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tne_temporal_temporal()
+ */
+Temporal *
+tne_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TTEXT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
+}
+
 /*****************************************************************************
  * Temporal lt
  *****************************************************************************/
@@ -1852,6 +1992,76 @@ tlt_ttext_text(const Temporal *temp, const text *txt)
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_lt);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of two temporal booleans
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tlt_temporal_temporal()
+ */
+Temporal *
+tlt_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TBOOL))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of two temporal integers
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tlt_temporal_temporal()
+ */
+Temporal *
+tlt_tint_tint(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TINT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of two temporal floats
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tlt_temporal_temporal()
+ */
+Temporal *
+tlt_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TFLOAT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than of two temporal texts
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tlt_temporal_temporal()
+ */
+Temporal *
+tlt_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TTEXT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
 }
 
 /*****************************************************************************
@@ -1968,6 +2178,76 @@ tle_ttext_text(const Temporal *temp, const text *txt)
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_le);
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than or equal to of two temporal booleans
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tle_temporal_temporal()
+ */
+Temporal *
+tle_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TBOOL))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than or equal to of two temporal integers
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tle_temporal_temporal()
+ */
+Temporal *
+tle_tint_tint(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TINT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than or equal to of two temporal floats
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tle_temporal_temporal()
+ */
+Temporal *
+tle_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TFLOAT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal less than or equal to of two temporal texts
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tle_temporal_temporal()
+ */
+Temporal *
+tle_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TTEXT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
+}
+
 /*****************************************************************************
  * Temporal gt
  *****************************************************************************/
@@ -2074,6 +2354,76 @@ tgt_ttext_text(const Temporal *temp, const text *txt)
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_gt);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of two temporal booleans
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tgt_temporal_temporal()
+ */
+Temporal *
+tgt_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TBOOL))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of two temporal integers
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tgt_temporal_temporal()
+ */
+Temporal *
+tgt_tint_tint(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TINT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of two temporal floats
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tgt_temporal_temporal()
+ */
+Temporal *
+tgt_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TFLOAT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than of two temporal texts
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tgt_temporal_temporal()
+ */
+Temporal *
+tgt_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TTEXT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
 }
 
 /*****************************************************************************
@@ -2188,6 +2538,76 @@ tge_ttext_text(const Temporal *temp, const text *txt)
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_ge);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than or equal to of two temporal booleans
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tge_temporal_temporal()
+ */
+Temporal *
+tge_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TBOOL))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than or equal to of two temporal integers
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tge_temporal_temporal()
+ */
+Temporal *
+tge_tint_tint(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TINT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than or equal to of two temporal floats
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tge_temporal_temporal()
+ */
+Temporal *
+tge_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TFLOAT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
+}
+
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal greater than or equal to of two temporal texts
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Tge_temporal_temporal()
+ */
+Temporal *
+tge_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TTEXT))
+    return NULL;
+  return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
 }
 
 /*****************************************************************************/

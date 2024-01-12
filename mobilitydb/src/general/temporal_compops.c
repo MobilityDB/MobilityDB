@@ -61,7 +61,7 @@
  */
 static Datum
 EAcomp_base_temporal(FunctionCallInfo fcinfo,
-  bool (*func)(Datum, const Temporal *))
+  int (*func)(Datum, const Temporal *))
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -69,8 +69,7 @@ EAcomp_base_temporal(FunctionCallInfo fcinfo,
   int result = func(value, temp);
   DATUM_FREE_IF_COPY(value, basetype, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
+  /* Function func never return -1 since the calling SQL functions are STRICT */
   PG_RETURN_BOOL(result);}
 
 /**
@@ -80,7 +79,7 @@ EAcomp_base_temporal(FunctionCallInfo fcinfo,
  */
 static Datum
 EAcomp_temporal_base(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, Datum))
+  int (*func)(const Temporal *, Datum))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
@@ -88,8 +87,7 @@ EAcomp_temporal_base(FunctionCallInfo fcinfo,
   int result = func(temp, value);
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, basetype, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
+  /* Function func never return -1 since the calling SQL functions are STRICT */
   PG_RETURN_BOOL(result);}
 
 /**
