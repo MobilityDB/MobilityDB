@@ -1113,51 +1113,6 @@ geo_to_set(GSERIALIZED *gs)
 }
 #endif /* MEOS */
 
-/**
- * @ingroup meos_internal_setspan_conversion
- * @brief Initialize the last argument to the bounding span of a set
- * @param[in] s Set
- * @param[in] sp Span
- */
-void
-set_set_span(const Set *s, Span *sp)
-{
-  assert(s); assert(sp);
-  meosType spantype = basetype_spantype(s->basetype);
-  span_set(SET_VAL_N(s, MINIDX), SET_VAL_N(s, s->MAXIDX), true, true,
-    s->basetype, spantype, sp);
-  return;
-}
-
-/**
- * @ingroup meos_internal_setspan_conversion
- * @brief Return the bounding span of a set
- * @param[in] s Set
- */
-Span *
-set_span(const Set *s)
-{
-  assert(s); assert(set_spantype(s->settype));
-  Span *result = palloc(sizeof(Span));
-  set_set_span(s, result);
-  return result;
-}
-
-/**
- * @ingroup meos_internal_setspan_conversion
- * @brief Convert a set into a span
- * @param[in] s Set
- * @csqlfn #Set_to_span()
- */
-Span *
-set_to_span(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_spantype(s->settype))
-    return NULL;
-  return set_span(s);
-}
-
 /*****************************************************************************/
 
 /**

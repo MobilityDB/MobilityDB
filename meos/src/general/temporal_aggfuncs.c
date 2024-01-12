@@ -106,7 +106,7 @@ datum_max_float8(Datum l, Datum r)
  Datum
 datum_min_text(Datum l, Datum r)
 {
-  return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0 ? l : r;
+  return text_cmp(DatumGetTextP(l), DatumGetTextP(r)) < 0 ? l : r;
 }
 
 /**
@@ -115,7 +115,7 @@ datum_min_text(Datum l, Datum r)
 Datum
 datum_max_text(Datum l, Datum r)
 {
-  return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) > 0 ? l : r;
+  return text_cmp(DatumGetTextP(l), DatumGetTextP(r)) > 0 ? l : r;
 }
 
 /**

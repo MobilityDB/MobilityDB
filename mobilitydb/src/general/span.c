@@ -46,6 +46,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/span.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
@@ -166,6 +167,22 @@ Value_to_span(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(0);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_SPAN_P(value_to_span(value, basetype));
+}
+
+PGDLLEXPORT Datum Set_to_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_to_span);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Convert a set to a span
+ * @sqlfn span()
+ */
+Datum
+Set_to_span(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Span *result = set_span(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SPAN_P(result);
 }
 
 PGDLLEXPORT Datum Intspan_to_floatspan(PG_FUNCTION_ARGS);

@@ -177,22 +177,6 @@ Value_to_set(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(value_to_set(d, basetype));
 }
 
-PGDLLEXPORT Datum Set_to_span(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Set_to_span);
-/**
- * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a set to a span
- * @sqlfn span()
- */
-Datum
-Set_to_span(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  Span *result = set_to_span(s);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_SPAN_P(result);
-}
-
 PGDLLEXPORT Datum Intset_to_floatset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intset_to_floatset);
 /**

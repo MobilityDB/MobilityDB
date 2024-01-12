@@ -384,7 +384,7 @@ extern char *pg_timestamp_out(Timestamp t);
 extern TimestampTz pg_timestamptz_in(const char *str, int32 typmod);
 extern char *pg_timestamptz_out(TimestampTz t);
 extern char *text2cstring(const text *txt);
-extern int text_cmp(const text *txt1, const text *txt2, Oid collid);
+extern int text_cmp(const text *txt1, const text *txt2);
 extern text *text_copy(const text *txt);
 extern char *text_out(const text *txt);
 extern DateADT timestamptz_to_date(TimestampTz t);

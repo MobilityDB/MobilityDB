@@ -288,7 +288,18 @@ extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool o
 
 /* Conversion functions for set and span types */
 
+extern Span *datespan_tstzspan(const Span *s);
+extern SpanSet *datespanset_tstzspanset(const SpanSet *ss);
+extern Span *intspan_floatspan(const Span *s);
+extern SpanSet *intspanset_floatspanset(const SpanSet *ss);
+extern Span *floatspan_intspan(const Span *s);
+extern SpanSet *floatspanset_intspanset(const SpanSet *ss);
+extern Span *set_span(const Set *s);
+extern SpanSet *set_spanset(const Set *s);
 extern SpanSet *span_spanset(const Span *s);
+extern Span *tstzspan_datespan(const Span *s);
+extern SpanSet *tstzspanset_datespanset(const SpanSet *ss);
+extern void value_set_span(Datum value, meosType basetype, Span *s);
 extern Set *value_to_set(Datum d, meosType basetype);
 extern Span *value_to_span(Datum d, meosType basetype);
 extern SpanSet *value_to_spanset(Datum d, meosType basetype);
@@ -309,9 +320,8 @@ extern Datum *set_vals(const Set *s);
 extern Datum *set_values(const Set *s);
 extern Datum spanset_lower(const SpanSet *ss);
 extern int spanset_mem_size(const SpanSet *ss);
-extern const Span **spanset_spans_p(const SpanSet *ss);
+extern const Span **spanset_sps(const SpanSet *ss);
 extern Datum spanset_upper(const SpanSet *ss);
-extern void value_set_span(Datum value, meosType basetype, Span *s);
 
 /*****************************************************************************/
 

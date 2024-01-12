@@ -183,7 +183,7 @@ Datum
 Set_to_spanset(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  SpanSet *result = set_to_spanset(s);
+  SpanSet *result = set_spanset(s);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SPANSET_P(result);
 }
@@ -738,7 +738,7 @@ Datum
 Spanset_spans(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  const Span **spans = spanset_spans_p(ss);
+  const Span **spans = spanset_sps(ss);
   ArrayType *result = spanarr_to_array(spans, ss->count);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_ARRAYTYPE_P(result);

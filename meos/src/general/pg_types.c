@@ -2132,17 +2132,18 @@ varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
  * @ingroup meos_pg_types
  * @brief Comparison function for text values
  * @param[in] txt1,txt2 Text values
- * @param[in] collid Collation
- * @note Function copied from PostgreSQL since it is declared static
+ * @note Function derived from PostgreSQL since it is declared static. Notice 
+ * that the third attribute collid of the original function has been removed
+ * while waiting for a proper localization management
  */
 int
-text_cmp(const text *txt1, const text *txt2, Oid collid __attribute__((unused)))
+text_cmp(const text *txt1, const text *txt2)
 {
   char *t1p = VARDATA_ANY(txt1);
   char *t2p = VARDATA_ANY(txt2);
   int len1 = (int) VARSIZE_ANY_EXHDR(txt1);
   int len2 = (int) VARSIZE_ANY_EXHDR(txt2);
-  return varstr_cmp(t1p, len1, t2p, len2, collid);
+  return varstr_cmp(t1p, len1, t2p, len2, DEFAULT_COLLATION_OID);
 }
 
 /**

@@ -87,7 +87,7 @@ datum_cmp(Datum l, Datum r, meosType type)
     case T_FLOAT8:
       return float8_cmp_internal(DatumGetFloat8(l), DatumGetFloat8(r));
     case T_TEXT:
-      return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
+      return text_cmp(DatumGetTextP(l), DatumGetTextP(r));
 #if 0 /* not used */
     case T_DOUBLE2:
       return double2_cmp(DatumGetDouble2P(l), DatumGetDouble2P(r));
@@ -170,8 +170,7 @@ datum_eq(Datum l, Datum r, meosType type)
     case T_FLOAT8:
       return float8_eq(DatumGetFloat8(l), DatumGetFloat8(r));
     case T_TEXT:
-      return text_cmp(DatumGetTextP(l), DatumGetTextP(r),
-        DEFAULT_COLLATION_OID) == 0;
+      return text_cmp(DatumGetTextP(l), DatumGetTextP(r)) == 0;
     case T_DOUBLE2:
       return double2_eq(DatumGetDouble2P(l), DatumGetDouble2P(r));
     case T_DOUBLE3:
