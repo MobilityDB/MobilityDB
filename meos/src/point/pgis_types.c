@@ -291,7 +291,6 @@ box3d_to_lwgeom(BOX3D *box)
   }
 
   lwgeom_set_srid(result, box->srid);
-
   return result;
 }
 
@@ -430,7 +429,6 @@ GSERIALIZED *
 geometry_boundary(const GSERIALIZED *gs)
 {
   /* Empty.Boundary() == Empty, but of other dimension, so can't shortcut */
-
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   LWGEOM *lwresult = lwgeom_boundary(geom);
   if (! lwresult)
@@ -440,10 +438,7 @@ geometry_boundary(const GSERIALIZED *gs)
   }
 
   GSERIALIZED *result = geo_serialize(lwresult);
-
-  lwgeom_free(geom);
-  lwgeom_free(lwresult);
-
+  lwgeom_free(geom); lwgeom_free(lwresult);
   return result;
 }
 
@@ -455,7 +450,6 @@ GSERIALIZED *
 geo_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
-
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   LWGEOM *line = lwgeom_closest_line(geom1, geom2);
@@ -463,9 +457,7 @@ geo_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return NULL;
 
   GSERIALIZED *result = geo_serialize(line);
-  lwgeom_free(line);
-  lwgeom_free(geom1);
-  lwgeom_free(geom2);
+  lwgeom_free(line); lwgeom_free(geom1); lwgeom_free(geom2);
   return result;
 }
 
@@ -485,9 +477,7 @@ geometry_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return NULL;
 
   GSERIALIZED *result = geo_serialize(line);
-  lwgeom_free(line);
-  lwgeom_free(geom1);
-  lwgeom_free(geom2);
+  lwgeom_free(line); lwgeom_free(geom1); lwgeom_free(geom2);
   return result;
 }
 
@@ -600,8 +590,7 @@ geo_reverse(const GSERIALIZED *gs)
 {
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwgeom_reverse_in_place(geom);
-  GSERIALIZED *result = geo_serialize(geom);
-  return result;
+  return geo_serialize(geom);
 }
 
 /**
@@ -760,10 +749,7 @@ POSTGIS2GEOS(const GSERIALIZED *gs)
 GSERIALIZED *
 GEOS2POSTGIS(GEOSGeom geom, char want3d)
 {
-  LWGEOM *lwgeom;
-  GSERIALIZED *result;
-
-  lwgeom = GEOS2LWGEOM(geom, want3d);
+  LWGEOM *lwgeom = GEOS2LWGEOM(geom, want3d);
   if (! lwgeom)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -771,11 +757,10 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
     return NULL;
   }
 
-  if (lwgeom_needs_bbox(lwgeom)) lwgeom_add_bbox(lwgeom);
-
-  result = geo_serialize(lwgeom);
+  if (lwgeom_needs_bbox(lwgeom))
+    lwgeom_add_bbox(lwgeom);
+  GSERIALIZED *result = geo_serialize(lwgeom);
   lwgeom_free(lwgeom);
-
   return result;
 }
 
@@ -807,13 +792,10 @@ meos_call_geos2(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 
   char result = func(geos1, geos2);
 
-  GEOSGeom_destroy(geos1);
-  GEOSGeom_destroy(geos2);
-
+  GEOSGeom_destroy(geos1); GEOSGeom_destroy(geos2);
   if (result == 2)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "GEOS returned error");
-
   return result;
 }
 
@@ -943,9 +925,7 @@ geometry_intersection(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   geom2 = lwgeom_from_gserialized(gs2);
   lwresult = lwgeom_intersection_prec(geom1, geom2, prec);
   result = geo_serialize(lwresult);
-  lwgeom_free(geom1);
-  lwgeom_free(geom2);
-  lwgeom_free(lwresult);
+  lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(lwresult);
   return result;
 }
 
@@ -1059,7 +1039,6 @@ geometry_array_union(GSERIALIZED **gsarr, int nelems)
   if (! result)
     /* Union returned a NULL geometry */
     return NULL;
-
   return result;
 }
 
@@ -1120,14 +1099,12 @@ geometry_convex_hull(const GSERIALIZED *gs)
 
   GSERIALIZED *result = geo_serialize(lwout);
   lwgeom_free(lwout);
-
   if (!result)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "GEOS convexhull() threw an error !");
     return NULL;
   }
-
   return result;
 }
 
@@ -1171,7 +1148,6 @@ geometry_buffer(const GSERIALIZED *gs, double size, char *params)
 
   GEOSBufferParams *bufferparams;
   GEOSGeometry *g1, *g3 = NULL;
-  GSERIALIZED *result;
   LWGEOM *lwg;
   int quadsegs = 8; /* the default */
   int singleside = 0; /* the default */
@@ -1346,16 +1322,14 @@ geometry_buffer(const GSERIALIZED *gs, double size, char *params)
 
   GEOSSetSRID(g3, gserialized_get_srid(gs));
 
-  result = GEOS2POSTGIS(g3, gserialized_has_z(gs));
+  GSERIALIZED *result = GEOS2POSTGIS(g3, gserialized_has_z(gs));
   GEOSGeom_destroy(g3);
-
   if (! result)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "GEOS buffer() threw an error (result postgis geometry formation)!");
     return NULL; /* never get here */
   }
-
   return result;
 }
 
@@ -2040,7 +2014,6 @@ geo_from_geojson(const char *geojson)
   lwgeom_set_srid(geom, srid);
   GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
-
   return result;
 }
 
@@ -2373,39 +2346,34 @@ GSERIALIZED *
 linestring_line_interpolate_point(GSERIALIZED *gs, double distance_fraction,
   char repeat)
 {
-  GSERIALIZED *result;
-  int32_t srid = gserialized_get_srid(gs);
-  LWLINE* lwline;
-  LWGEOM* lwresult;
-  POINTARRAY* opa;
-
   if (distance_fraction < 0 || distance_fraction > 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Second argument is not within [0,1]");
     return NULL;
   }
-
-  if ( gserialized_get_type(gs) != LINETYPE )
+  if (gserialized_get_type(gs) != LINETYPE)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "First argument is not a line");
     return NULL;
   }
 
-  lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
-  opa = lwline_interpolate_points(lwline, distance_fraction, repeat);
+  LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
+  POINTARRAY *opa = lwline_interpolate_points(lwline, distance_fraction,
+   repeat);
 
   lwgeom_free(lwline_as_lwgeom(lwline));
 
+  LWGEOM *lwresult;
+  int32_t srid = gserialized_get_srid(gs);
   if (opa->npoints <= 1)
     lwresult = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
   else
     lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
 
-  result = geo_serialize(lwresult);
+  GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(lwresult);
-
   return result;
 }
 
@@ -2416,37 +2384,32 @@ linestring_line_interpolate_point(GSERIALIZED *gs, double distance_fraction,
 GSERIALIZED *
 linestring_substring(GSERIALIZED *geom, double from, double to)
 {
-  LWGEOM *olwgeom;
-  POINTARRAY *opa;
-  GSERIALIZED *ret;
-  uint8_t type = (uint8_t) gserialized_get_type(geom);
-
-  if ( from < 0 || from > 1 )
+  if (from < 0 || from > 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Second argument is not within [0,1]");
     return NULL;
   }
-
-  if ( to < 0 || to > 1 )
+  if (to < 0 || to > 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Third argument is not within [0,1]");
     return NULL;
   }
-
-  if ( from > to )
+  if (from > to)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Second argument must be smaller then the third one");
     return NULL;
   }
 
-  if ( type == LINETYPE )
+  LWGEOM *olwgeom;
+  POINTARRAY *opa;
+  uint8_t type = (uint8_t) gserialized_get_type(geom);
+  if (type == LINETYPE)
   {
     LWLINE *iline = lwgeom_as_lwline(lwgeom_from_gserialized(geom));
-
-    if ( lwgeom_is_empty((LWGEOM*)iline) )
+    if (lwgeom_is_empty((LWGEOM *) iline))
     {
       /* TODO return empty line */
       lwline_release(iline);
@@ -2454,25 +2417,18 @@ linestring_substring(GSERIALIZED *geom, double from, double to)
     }
 
     POINTARRAY *ipa = iline->points;
-
     opa = ptarray_substring(ipa, from, to, 0);
-
-    if ( opa->npoints == 1 ) /* Point returned */
+    if (opa->npoints == 1) /* Point returned */
       olwgeom = (LWGEOM *)lwpoint_construct(iline->srid, NULL, opa);
     else
       olwgeom = (LWGEOM *)lwline_construct(iline->srid, NULL, opa);
-
   }
-  else if ( type == MULTILINETYPE )
+  else if (type == MULTILINETYPE)
   {
-    LWMLINE *iline;
     uint32_t i = 0, g = 0;
     int homogeneous = LW_TRUE;
-    LWGEOM **geoms = NULL;
     double length = 0.0, sublength = 0.0, maxprop = 0.0;
-
-    iline = lwgeom_as_lwmline(lwgeom_from_gserialized(geom));
-
+    LWMLINE *iline = lwgeom_as_lwmline(lwgeom_from_gserialized(geom));
     if ( lwgeom_is_empty((LWGEOM*)iline) )
     {
       /* TODO return empty collection */
@@ -2481,14 +2437,14 @@ linestring_substring(GSERIALIZED *geom, double from, double to)
     }
 
     /* Calculate the total length of the mline */
-    for ( i = 0; i < iline->ngeoms; i++ )
+    for (i = 0; i < iline->ngeoms; i++)
     {
       LWLINE *subline = (LWLINE*)iline->geoms[i];
       if ( subline->points && subline->points->npoints > 1 )
         length += ptarray_length_2d(subline->points);
     }
 
-    geoms = lwalloc(sizeof(LWGEOM*) * iline->ngeoms);
+    LWGEOM **geoms = lwalloc(sizeof(LWGEOM*) * iline->ngeoms);
 
     /* Slice each sub-geometry of the multiline */
     for ( i = 0; i < iline->ngeoms; i++ )
@@ -2509,21 +2465,21 @@ linestring_substring(GSERIALIZED *geom, double from, double to)
       if ( from > maxprop || to < minprop )
         continue;
 
-      if ( from <= minprop )
+      if (from <= minprop)
         subfrom = 0.0;
-      if ( to >= maxprop )
+      if (to >= maxprop)
         subto = 1.0;
 
-      if ( from > minprop && from <= maxprop )
+      if (from > minprop && from <= maxprop)
         subfrom = (from - minprop) / (maxprop - minprop);
 
-      if ( to < maxprop && to >= minprop )
+      if (to < maxprop && to >= minprop)
         subto = (to - minprop) / (maxprop - minprop);
 
       opa = ptarray_substring(subline->points, subfrom, subto, 0);
-      if ( opa && opa->npoints > 0 )
+      if (opa && opa->npoints > 0)
       {
-        if ( opa->npoints == 1 ) /* Point returned */
+        if (opa->npoints == 1) /* Point returned */
         {
           geoms[g] = (LWGEOM *)lwpoint_construct(SRID_UNKNOWN, NULL, opa);
           homogeneous = LW_FALSE;
@@ -2540,7 +2496,7 @@ linestring_substring(GSERIALIZED *geom, double from, double to)
     if (!  homogeneous )
       type = COLLECTIONTYPE;
 
-    olwgeom = (LWGEOM*)lwcollection_construct(type, iline->srid, NULL, g, geoms);
+    olwgeom = (LWGEOM *) lwcollection_construct(type, iline->srid, NULL, g, geoms);
   }
   else
   {
@@ -2549,9 +2505,9 @@ linestring_substring(GSERIALIZED *geom, double from, double to)
     return NULL;
   }
 
-  ret = geo_serialize(olwgeom);
+  GSERIALIZED *result = geo_serialize(olwgeom);
   lwgeom_free(olwgeom);
-  return ret;
+  return result;
 }
 
 /*****************************************************************************

@@ -385,7 +385,7 @@ bool
 ea_disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
   Datum (*func)(Datum, ...))
 {
-  return DatumGetBool(func(tinstant_value(inst), geo));
+  return DatumGetBool(func(tinstant_val(inst), geo));
 }
 
 /**
@@ -403,7 +403,7 @@ ea_disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
   bool ret_loop = ever ? true : false;
   for (int i = 0; i < seq->count; i++)
   {
-    bool res = DatumGetBool(func(tinstant_value(TSEQUENCE_INST_N(seq, i)), geo));
+    bool res = DatumGetBool(func(tinstant_val(TSEQUENCE_INST_N(seq, i)), geo));
     if ((ever && res) || (! ever && ! res))
       return ret_loop;
   }
@@ -748,8 +748,8 @@ ea_dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
   double dist, datum_func3 func)
 {
   assert(inst1); assert(inst2);
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
+  Datum value1 = tinstant_val(inst1);
+  Datum value2 = tinstant_val(inst2);
   /* Result is the same for both EVER and ALWAYS */
   return DatumGetBool(func(value1, value2, Float8GetDatum(dist)));
 }
@@ -802,8 +802,8 @@ ea_dwithin_tpointseq_tpointseq_cont(const TSequence *seq1,
 
   start1 = TSEQUENCE_INST_N(seq1, 0);
   start2 = TSEQUENCE_INST_N(seq2, 0);
-  Datum sv1 = tinstant_value(start1);
-  Datum sv2 = tinstant_value(start2);
+  Datum sv1 = tinstant_val(start1);
+  Datum sv2 = tinstant_val(start2);
 
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
@@ -815,8 +815,8 @@ ea_dwithin_tpointseq_tpointseq_cont(const TSequence *seq1,
   {
     const TInstant *end1 = TSEQUENCE_INST_N(seq1, i);
     const TInstant *end2 = TSEQUENCE_INST_N(seq2, i);
-    Datum ev1 = tinstant_value(end1);
-    Datum ev2 = tinstant_value(end2);
+    Datum ev1 = tinstant_val(end1);
+    Datum ev2 = tinstant_val(end2);
     TimestampTz upper = end1->t;
     bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 

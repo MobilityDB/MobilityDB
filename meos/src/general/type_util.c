@@ -56,9 +56,6 @@
   #include "npoint/tnpoint_parser.h"
 #endif
 
-/* To avoid including varlena.h */
-extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2, Oid collid);
-
 /*****************************************************************************
  * Comparison functions on datums
  *****************************************************************************/
@@ -90,7 +87,7 @@ datum_cmp(Datum l, Datum r, meosType type)
     case T_FLOAT8:
       return float8_cmp_internal(DatumGetFloat8(l), DatumGetFloat8(r));
     case T_TEXT:
-      return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
+      return text_cmp(DatumGetTextP(l), DatumGetTextP(r));
 #if 0 /* not used */
     case T_DOUBLE2:
       return double2_cmp(DatumGetDouble2P(l), DatumGetDouble2P(r));
@@ -173,8 +170,7 @@ datum_eq(Datum l, Datum r, meosType type)
     case T_FLOAT8:
       return float8_eq(DatumGetFloat8(l), DatumGetFloat8(r));
     case T_TEXT:
-      return text_cmp(DatumGetTextP(l), DatumGetTextP(r),
-        DEFAULT_COLLATION_OID) == 0;
+      return text_cmp(DatumGetTextP(l), DatumGetTextP(r)) == 0;
     case T_DOUBLE2:
       return double2_eq(DatumGetDouble2P(l), DatumGetDouble2P(r));
     case T_DOUBLE3:
@@ -461,7 +457,8 @@ datum_copy(Datum value, meosType basetype)
     return value;
   /* For types passed by reference */
   int typlen = basetype_length(basetype);
-  size_t value_size = (typlen != -1) ? (size_t) typlen : VARSIZE(value);
+  size_t value_size = (typlen != -1) ? (size_t) typlen :
+    VARSIZE(DatumGetPointer(value));
   void *result = palloc(value_size);
   memcpy(result, DatumGetPointer(value), value_size);
   return PointerGetDatum(result);
@@ -688,98 +685,6 @@ tinstarr_remove_duplicates(const TInstant **instants, int count)
     if (! tinstant_eq(instants[newcount], instants[i]))
       instants[++ newcount] = instants[i];
   return newcount + 1;
-}
-
-/*****************************************************************************
- * Text and binary string functions
- *****************************************************************************/
-
-/**
- * @brief Convert a C binary string into a bytea
- */
-bytea *
-bstring2bytea(const uint8_t *wkb, size_t size)
-{
-  bytea *result = palloc(size + VARHDRSZ);
-  memcpy(VARDATA(result), wkb, size);
-  SET_VARSIZE(result, size + VARHDRSZ);
-  return result;
-}
-
-/**
- * @ingroup meos_pg_types
- * @brief Return a C string converted to a text
- * @param[in] str String
- * @note We don't include `<utils/builtins.h>` to avoid collisions with
- * `json-c/json.h`
- * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
- */
-text *
-cstring2text(const char *str)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
-
-  size_t len = strlen(str);
-  text *result = palloc(len + VARHDRSZ);
-  SET_VARSIZE(result, len + VARHDRSZ);
-  memcpy(VARDATA(result), str, len);
-  return result;
-}
-
-/**
- * @ingroup meos_pg_types
- * @brief Return a text converted to a C string
- * @param[in] txt Text
- * @note We don't include @p <utils/builtins.h> to avoid collisions with
- * @p json-c/json.h
- * @note Function taken from PostGIS file @p lwgeom_in_geojson.c
- */
-char *
-text2cstring(const text *txt)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) txt))
-    return NULL;
-
-  size_t size = VARSIZE_ANY_EXHDR(txt);
-  char *str = palloc(size + 1);
-  memcpy(str, VARDATA(txt), size);
-  str[size] = '\0';
-  return str;
-}
-
-#if MEOS
-/* Simplified version of the function in varlena.c where LC_COLLATE is C */
-int
-varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
-  Oid collid __attribute__((unused)))
-{
-  int result = memcmp(arg1, arg2, Min(len1, len2));
-  if ((result == 0) && (len1 != len2))
-    result = (len1 < len2) ? -1 : 1;
-  return result;
-}
-#endif /* MEOS */
-
-/**
- * @brief Comparison function for text values
- * @note Function copied from PostgreSQL since it is not exported
- */
-int
-text_cmp(text *arg1, text *arg2, Oid collid __attribute__((unused)))
-{
-  char *a1p, *a2p;
-  int len1, len2;
-
-  a1p = VARDATA_ANY(arg1);
-  a2p = VARDATA_ANY(arg2);
-
-  len1 = (int) VARSIZE_ANY_EXHDR(arg1);
-  len2 = (int) VARSIZE_ANY_EXHDR(arg2);
-
-  return varstr_cmp(a1p, len1, a2p, len2, collid);
 }
 
 /*****************************************************************************

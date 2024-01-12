@@ -129,7 +129,7 @@ datum_transform(Datum value, Datum srid)
 TInstant *
 tpointinst_transform(const TInstant *inst, int srid)
 {
-  Datum geo = datum_transform(tinstant_value(inst), Int32GetDatum(srid));
+  Datum geo = datum_transform(tinstant_val(inst), Int32GetDatum(srid));
   TInstant *result = tinstant_make(geo, inst->temptype, inst->t);
   pfree(DatumGetPointer(geo));
   return result;
@@ -204,7 +204,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
     maxcount = Max(maxcount, seq->count);
     for (int j = 0; j < seq->count; j++)
     {
-      Datum value = tinstant_value(TSEQUENCE_INST_N(seq, j));
+      Datum value = tinstant_val(TSEQUENCE_INST_N(seq, j));
       GSERIALIZED *gsvalue = DatumGetGserializedP(value);
       points[npoints++] = lwgeom_from_gserialized(gsvalue);
     }

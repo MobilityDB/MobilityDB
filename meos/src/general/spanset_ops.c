@@ -1693,6 +1693,91 @@ union_value_spanset(Datum value, const SpanSet *ss)
  * @csqlfn #Union_spanset_value()
  */
 SpanSet *
+union_int_spanset(int i, SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_INT4))
+    return NULL;
+  return union_spanset_value(ss, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a span set and a big integer
+ * @param[in] ss Span set
+ * @param[in] i Value
+ * @csqlfn #Union_spanset_value()
+ */
+SpanSet *
+union_bigint_spanset(int64 i, SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_INT8))
+    return NULL;
+  return union_spanset_value(ss, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a span set and a float
+ * @param[in] ss Span set
+ * @param[in] d Value
+ * @csqlfn #Union_spanset_value()
+ */
+SpanSet *
+union_float_spanset(double d, SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
+    return NULL;
+  return union_spanset_value(ss, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a span set and a date
+ * @param[in] ss Span set
+ * @param[in] d Value
+ * @csqlfn #Union_spanset_value()
+ */
+SpanSet *
+union_date_spanset(DateADT d, SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_DATE))
+    return NULL;
+  return union_spanset_value(ss, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a span set and a timestamptz
+ * @param[in] ss Span set
+ * @param[in] t Value
+ * @csqlfn #Union_spanset_value()
+ */
+SpanSet *
+union_timestamptz_spanset(TimestampTz t, SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
+    return NULL;
+  return union_spanset_value(ss, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a span set and an integer
+ * @param[in] ss Span set
+ * @param[in] i Value
+ * @csqlfn #Union_spanset_value()
+ */
+SpanSet *
 union_spanset_int(const SpanSet *ss, int i)
 {
   /* Ensure validity of the arguments */
@@ -1982,7 +2067,7 @@ intersection_value_spanset(Datum value, const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup meos_setspan_set
- * @brief Return the intersection of a span set and an integer 
+ * @brief Return the intersection of a span set and an integer
  * @param[in] ss Span set
  * @param[in] i Value
  * @csqlfn #Intersection_spanset_value()
@@ -1999,7 +2084,7 @@ intersection_spanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup meos_setspan_set
- * @brief Return the intersection of a span set and a big integer 
+ * @brief Return the intersection of a span set and a big integer
  * @param[in] ss Span set
  * @param[in] i Value
  * @csqlfn #Intersection_spanset_value()
@@ -2700,7 +2785,7 @@ int
 distance_intspanset_intspan(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) || 
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_spanset_isof_basetype(ss, T_INT4) ||
       ! ensure_span_isof_basetype(s, T_INT4))
     return -1;
@@ -2719,7 +2804,7 @@ int64
 distance_bigintspanset_bigintspan(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) || 
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_spanset_isof_basetype(ss, T_INT8) ||
       ! ensure_span_isof_basetype(s, T_INT8))
     return -1;
@@ -2738,7 +2823,7 @@ double
 distance_floatspanset_floatspan(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) || 
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_spanset_isof_basetype(ss, T_FLOAT8) ||
       ! ensure_span_isof_basetype(s, T_FLOAT8))
     return -1.0;
@@ -2757,7 +2842,7 @@ int
 distance_datespanset_datespan(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) || 
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
      ! ensure_spanset_isof_basetype(ss, T_DATE) ||
      ! ensure_span_isof_basetype(s, T_DATE))
     return -1;
@@ -2777,7 +2862,7 @@ double
 distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) || 
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ) ||
       ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
     return -1.0;
@@ -2811,7 +2896,7 @@ int
 distance_intspanset_intspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) || 
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_spanset_isof_basetype(ss1, T_INT4) ||
       ! ensure_spanset_isof_basetype(ss2, T_INT4))
     return -1;
@@ -2829,7 +2914,7 @@ int64
 distance_bigintspanset_bigintspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) || 
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_spanset_isof_basetype(ss1, T_INT8) ||
       ! ensure_spanset_isof_basetype(ss2, T_INT8))
     return -1;
@@ -2847,7 +2932,7 @@ double
 distance_floatspanset_floatspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) || 
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_spanset_isof_basetype(ss1, T_FLOAT8) ||
       ! ensure_spanset_isof_basetype(ss2, T_FLOAT8))
     return -1.0;
@@ -2865,7 +2950,7 @@ int
 distance_datespanset_datespanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) || 
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
      ! ensure_spanset_isof_basetype(ss1, T_DATE) ||
      ! ensure_spanset_isof_basetype(ss2, T_DATE))
     return -1;
@@ -2883,7 +2968,7 @@ double
 distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) || 
+  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_spanset_isof_basetype(ss1, T_TIMESTAMPTZ) ||
       ! ensure_spanset_isof_basetype(ss2, T_TIMESTAMPTZ))
     return -1.0;

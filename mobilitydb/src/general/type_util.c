@@ -290,7 +290,7 @@ tstzarr_to_array(TimestampTz *times, int count)
  * @brief Convert a C array of spans into a PostgreSQL array
  */
 ArrayType *
-spanarr_to_array(Span **spans, int count)
+spanarr_to_array(const Span **spans, int count)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *) spans, count,

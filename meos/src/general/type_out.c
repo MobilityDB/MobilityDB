@@ -180,7 +180,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   ptr += sprintf(ptr, "[");
   if (MEOS_FLAGS_GET_Z(inst->flags))
   {
-    const POINT3DZ *pt = DATUM_POINT3DZ_P(tinstant_value(inst));
+    const POINT3DZ *pt = DATUM_POINT3DZ_P(tinstant_val(inst));
     ptr += lwprint_double(pt->x, precision, ptr);
     ptr += sprintf(ptr, ",");
     ptr += lwprint_double(pt->y, precision, ptr);
@@ -189,7 +189,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   }
   else
   {
-    const POINT2D *pt = DATUM_POINT2D_P(tinstant_value(inst));
+    const POINT2D *pt = DATUM_POINT2D_P(tinstant_val(inst));
     ptr += lwprint_double(pt->x, precision, ptr);
     ptr += sprintf(ptr, ",");
     ptr += lwprint_double(pt->y, precision, ptr);
@@ -535,7 +535,7 @@ static size_t
 tinstant_mfjson_size(const TInstant *inst, bool isgeo, bool hasz,
   int precision, const bboxunion *bbox, char *srs)
 {
-  Datum value = tinstant_value(inst);
+  Datum value = tinstant_val(inst);
   size_t size = isgeo ? coordinates_mfjson_size(1, hasz, precision) :
     temporal_basevalue_mfjson_size(value, inst->temptype, precision);
   size += datetimes_mfjson_size(1);
@@ -561,7 +561,7 @@ tinstant_mfjson_buf(const TInstant *inst, bool isgeo, bool hasz,
   if (bbox) ptr += bbox_mfjson_buf(inst->temptype, ptr, bbox, hasz, precision);
   ptr += sprintf(ptr, "\"%s\":[", isgeo ? "coordinates" : "values");
   ptr += isgeo ? coordinates_mfjson_buf(ptr, inst, precision) :
-    temporal_basevalue_mfjson_buf(ptr, tinstant_value(inst), inst->temptype,
+    temporal_basevalue_mfjson_buf(ptr, tinstant_val(inst), inst->temptype,
       precision);
   ptr += sprintf(ptr, "],\"datetimes\":[");
   ptr += datetimes_mfjson_buf(ptr, inst->t);
@@ -686,7 +686,7 @@ tsequence_mfjson_size(const TSequence *seq, bool isgeo, bool hasz,
   {
     for (int i = 0; i < seq->count; i++)
     {
-      Datum value = tinstant_value(TSEQUENCE_INST_N(seq, i));
+      Datum value = tinstant_val(TSEQUENCE_INST_N(seq, i));
       size += temporal_basevalue_mfjson_size(value, seq->temptype, precision) +
         sizeof(",");
     }
@@ -720,7 +720,7 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
     if (i) ptr += sprintf(ptr, ",");
     inst = TSEQUENCE_INST_N(seq, i);
     ptr += isgeo ? coordinates_mfjson_buf(ptr, inst, precision) :
-      temporal_basevalue_mfjson_buf(ptr, tinstant_value(inst), inst->temptype,
+      temporal_basevalue_mfjson_buf(ptr, tinstant_val(inst), inst->temptype,
       precision);
   }
   ptr += sprintf(ptr, "],\"datetimes\":[");
@@ -860,7 +860,7 @@ tsequenceset_mfjson_size(const TSequenceSet *ss, bool isgeo, bool hasz,
       const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
       for (int j = 0; j < seq->count; j++)
       {
-        Datum value = tinstant_value(TSEQUENCE_INST_N(seq, j));
+        Datum value = tinstant_val(TSEQUENCE_INST_N(seq, j));
         size += temporal_basevalue_mfjson_size(value, seq->temptype, precision) +
           sizeof(",");
       }
@@ -898,7 +898,7 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
       if (j) ptr += sprintf(ptr, ",");
       inst = TSEQUENCE_INST_N(seq, j);
       ptr += isgeo ? coordinates_mfjson_buf(ptr, inst, precision) :
-        temporal_basevalue_mfjson_buf(ptr, tinstant_value(inst),
+        temporal_basevalue_mfjson_buf(ptr, tinstant_val(inst),
           inst->temptype, precision);
     }
     ptr += sprintf(ptr, "],\"datetimes\":[");
@@ -1332,7 +1332,7 @@ tinstarr_to_wkb_size(const TInstant **instants, int count)
   meosType basetype = temptype_basetype(instants[0]->temptype);
   for (int i = 0; i < count; i++)
   {
-    Datum value = tinstant_value(instants[i]);
+    Datum value = tinstant_val(instants[i]);
     result += temporal_basetype_to_wkb_size(value, basetype,
       instants[i]->flags);
   }
@@ -1388,7 +1388,7 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
     size += MEOS_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
   size += MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE;
-  const TInstant **instants = tsequence_instants(seq);
+  const TInstant **instants = tsequence_insts(seq);
   /* Include the TInstant array */
   size += tinstarr_to_wkb_size(instants, seq->count);
   pfree(instants);
@@ -1413,7 +1413,7 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
   /* For each sequence include the number of instants and the period bounds flag */
   size += ss->count * (MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE);
   /* Include all the instants of all the sequences */
-  const TInstant **instants = tsequenceset_instants(ss);
+  const TInstant **instants = tsequenceset_insts(ss);
   size += tinstarr_to_wkb_size(instants, ss->totalcount);
   pfree(instants);
   return size;
@@ -2170,7 +2170,7 @@ static uint8_t *
 tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
   uint8_t variant)
 {
-  Datum value = tinstant_value(inst);
+  Datum value = tinstant_val(inst);
   meosType basetype = temptype_basetype(inst->temptype);
   assert(temporal_basetype(basetype));
   buf = basevalue_to_wkb_buf(value, basetype, inst->flags, buf, variant);

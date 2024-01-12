@@ -51,46 +51,8 @@
 #include "general/type_util.h"
 
 /*****************************************************************************
- * Generic functions on datums
+ * General functions on datums
  *****************************************************************************/
-
-/**
- * @brief Convert a number from radians to degrees
- */
-double
-float_degrees(double value, bool normalize)
-{
-  double result = float8_div(value, RADIANS_PER_DEGREE);
-  if (normalize)
-  {
-    /* The value would be in the range (-360, 360) */
-    result = fmod(result, 360.0);
-    if (result < 0)
-      result += 360.0; /* The value would be in the range [0, 360) */
-  }
-  return result;
-}
-
-/**
- * @brief Convert a number from radians to degrees
- */
-static Datum
-datum_degrees(Datum value, Datum normalize)
-{
-  return Float8GetDatum(float_degrees(DatumGetFloat8(value),
-    DatumGetBool(normalize)));
-}
-
-/**
- * @brief Convert a number from degrees to radians
- */
-static Datum
-datum_radians(Datum value)
-{
-  return Float8GetDatum(float8_mul(DatumGetFloat8(value), RADIANS_PER_DEGREE));
-}
-
-/*****************************************************************************/
 
 /**
  * @brief Find the single timestamptz at which the operation of two temporal
@@ -309,7 +271,7 @@ tnumberinst_abs(const TInstant *inst)
   assert(inst); assert(tnumber_type(inst->temptype));
   meosType basetype = temptype_basetype(inst->temptype);
   assert(tnumber_basetype(basetype));
-  Datum value = tinstant_value(inst);
+  Datum value = tinstant_val(inst);
   Datum absvalue;
   if (basetype == T_INT4)
     absvalue = Int32GetDatum(abs(DatumGetInt32(value)));
@@ -358,14 +320,14 @@ tnumberseq_linear_abs(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
   inst1 = TSEQUENCE_INST_N(seq, 0);
   instants[0] = tnumberinst_abs(inst1);
-  Datum value1 = tinstant_value(inst1);
+  Datum value1 = tinstant_val(inst1);
   double dvalue1 = datum_double(value1, basetype);
   int ninsts = 1;
   Datum dzero = (basetype == T_INT4) ? Int32GetDatum(0) : Float8GetDatum(0);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_value(inst2);
+    Datum value2 = tinstant_val(inst2);
     double dvalue2 = datum_double(value2, basetype);
     /* Add the instant when the segment has value equal to zero */
     if ((dvalue1 < 0 && dvalue2 > 0) || (dvalue1 > 0 && dvalue2 < 0))
@@ -479,13 +441,13 @@ tnumberseq_delta_value(const TSequence *seq)
   /* We are sure that there are at least 2 instants */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_value(inst1);
+  Datum value1 = tinstant_val(inst1);
   meosType basetype = temptype_basetype(seq->temptype);
   Datum delta = 0; /* make compiler quiet */
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_value(inst2);
+    Datum value2 = tinstant_val(inst2);
     delta = delta_value(value1, value2, basetype);
     instants[i - 1] = tinstant_make(delta, seq->temptype, inst1->t);
     inst1 = inst2;
@@ -585,7 +547,7 @@ tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
 
   /* General case */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_value(inst1);
+  Datum value1 = tinstant_val(inst1);
   Datum angdiff = Float8GetDatum(0);
   int ninsts = 0;
   if (seq->period.lower_inc)
@@ -593,7 +555,7 @@ tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_value(inst2);
+    Datum value2 = tinstant_val(inst2);
     angdiff = angular_difference(value1, value2);
     if (i != seq->count - 1 || seq->period.upper_inc)
       result[ninsts++] = tinstant_make(angdiff, seq->temptype, inst2->t);
@@ -675,66 +637,6 @@ tnumber_angular_difference(const Temporal *temp)
 }
 
 /*****************************************************************************
- * Miscellaneous temporal functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_temporal_math
- * @brief Convert a temporal number from radians to degrees
- * @param[in] temp Temporal value
- * @param[in] normalize True when the result is normalized
- * @csqlfn #Tfloat_degrees()
- */
-Temporal *
-tfloat_degrees(const Temporal *temp, bool normalize)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_degrees;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = BoolGetDatum(normalize);
-  lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal(temp, &lfinfo);
-}
-
-/**
- * @ingroup meos_temporal_math
- * @brief Convert a temporal number from degrees to radians
- * @param[in] temp Temporal value
- * @csqlfn #Tfloat_radians()
- */
-Temporal *
-tfloat_radians(const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_radians;
-  lfinfo.numparam = 0;
-  lfinfo.args = true;
-  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal(temp, &lfinfo);
-}
-
-/*****************************************************************************
  * Derivative functions
  *****************************************************************************/
 
@@ -757,13 +659,13 @@ tfloatseq_derivative(const TSequence *seq)
   meosType basetype = temptype_basetype(seq->temptype);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_value(inst1);
+  Datum value1 = tinstant_val(inst1);
   double dvalue1 = datum_double(value1, basetype);
   double derivative = 0.0; /* make compiler quiet */
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    Datum value2 = tinstant_value(inst2);
+    Datum value2 = tinstant_val(inst2);
     double dvalue2 = datum_double(value2, basetype);
     derivative = datum_eq(value1, value2, basetype) ? 0.0 :
       (dvalue1 - dvalue2) / ((double)(inst2->t - inst1->t) / 1000000);

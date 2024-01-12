@@ -259,15 +259,15 @@ tinstarr_normalize(const TInstant **instants, interpType interp, int count,
   TInstant **result = palloc(sizeof(TInstant *) * count);
   /* Remove redundant instants */
   TInstant *inst1 = (TInstant *) instants[0];
-  Datum value1 = tinstant_value(inst1);
+  Datum value1 = tinstant_val(inst1);
   TInstant *inst2 = (TInstant *) instants[1];
-  Datum value2 = tinstant_value(inst2);
+  Datum value2 = tinstant_val(inst2);
   result[0] = inst1;
   int ninsts = 1;
   for (int i = 2; i < count; i++)
   {
     TInstant *inst3 = (TInstant *) instants[i];
-    Datum value3 = tinstant_value(inst3);
+    Datum value3 = tinstant_val(inst3);
     if (tsequence_norm_test(value1, value2, value3, basetype, interp, inst1->t,
       inst2->t, inst3->t))
     {
@@ -287,7 +287,7 @@ tinstarr_normalize(const TInstant **instants, interpType interp, int count,
 
 /**
  * @brief Test whether two sequences can be joined during normalization
- * @details 
+ * @details
  * The input sequences must ordered and either (1) are non-overlapping, or
  * (2) share the same last/first instant in the case we are merging temporal
  * sequences.
@@ -307,14 +307,14 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool result = false;
   TInstant *last2 = (seq1->count == 1 || interp == DISCRETE) ? NULL :
     (TInstant *) TSEQUENCE_INST_N(seq1, seq1->count - 2);
-  Datum last2value = ! last2 ? 0 : tinstant_value(last2);
+  Datum last2value = ! last2 ? 0 : tinstant_val(last2);
   TInstant *last1 = (TInstant *) TSEQUENCE_INST_N(seq1, seq1->count - 1);
-  Datum last1value = tinstant_value(last1);
+  Datum last1value = tinstant_val(last1);
   TInstant *first1 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
-  Datum first1value = tinstant_value(first1);
+  Datum first1value = tinstant_val(first1);
   TInstant *first2 = (seq2->count == 1 || interp == DISCRETE) ? NULL :
     (TInstant *) TSEQUENCE_INST_N(seq2, 1);
-  Datum first2value = ! first2 ? 0 : tinstant_value(first2);
+  Datum first2value = ! first2 ? 0 : tinstant_val(first2);
   bool eq_last2_last1 = ! last2 ? false :
     datum_eq(last2value, last1value, basetype);
   bool eq_last1_first1 = datum_eq(last1value, first1value, basetype);
@@ -428,7 +428,7 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
  * @details If the timestamp is contained in a temporal sequence, the index of
  * the segment containing the timestamp is returned in the output parameter.
  * Otherwise, return -1.
- * 
+ *
  * For example, given a value composed of 3 sequences and a timestamp,
  * the value returned in the output parameter is as follows:
  * @code
@@ -473,11 +473,11 @@ tcontseq_find_timestamptz(const TSequence *seq, TimestampTz t)
 /**
  * @brief Return the index of a timestamp in a temporal discrete sequence
  * value using binary search
- * @details 
+ * @details
  * If the timestamp is contained in the temporal discrete sequence, the index
  * of the composing instant is returned in the output parameter. Otherwise,
  * return -1.
- * 
+ *
  * For example, given a value composed of 3 instants and a timestamp,
  * the value returned in the output parameter is as follows:
  * @code
@@ -503,7 +503,7 @@ tdiscseq_find_timestamptz(const TSequence *seq, TimestampTz t)
   while (first <= last)
   {
     int middle = (first + last) / 2;
-    int cmp = timestamptz_cmp_internal((TSEQUENCE_INST_N(seq, middle))->t, t);
+    int cmp = timestamptz_cmp_internal(TSEQUENCE_INST_N(seq, middle)->t, t);
     if (cmp == 0)
       return middle;
     if (cmp > 0)
@@ -517,8 +517,8 @@ tdiscseq_find_timestamptz(const TSequence *seq, TimestampTz t)
 /**
  * @brief Convert an array of arrays of temporal sequences into an array of
  * temporal sequences
- * @details This function is called by all the functions in which the number of 
- * output sequences cannot be determined in advance, typically when each 
+ * @details This function is called by all the functions in which the number of
+ * output sequences cannot be determined in advance, typically when each
  * segment of the input sequence can produce an arbitrary number of output
  * sequences, as in the case of @p tcontains.
  * @param[in] sequences Array of array of temporal sequences
@@ -891,7 +891,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
     return false;
   }
   if (merge && inst1->t == inst2->t &&
-    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
+    ! datum_eq(tinstant_val(inst1), tinstant_val(inst2),
         temptype_basetype(inst1->temptype)))
   {
     char *t1 = pg_timestamptz_out(inst1->t);
@@ -925,9 +925,9 @@ bbox_expand(const void *box1, void *box2, meosType temptype)
 
 /**
  * @brief Ensure that all temporal instants of the array are valid
- * @details For this, the instants must have increasing timestamp (or may be 
- * equal if the merge parameter is true), and if they are temporal points, have 
- * the same SRID and the same dimensionality. If the bounding box output 
+ * @details For this, the instants must have increasing timestamp (or may be
+ * equal if the merge parameter is true), and if they are temporal points, have
+ * the same SRID and the same dimensionality. If the bounding box output
  * argument is not NULL, the bounding box of the resulting sequence is computed
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
@@ -983,8 +983,8 @@ ensure_valid_tinstarr_common(const TInstant **instants, int count,
   }
   meosType basetype = temptype_basetype(instants[0]->temptype);
   if (interp == STEP && count > 1 && ! upper_inc &&
-    datum_ne(tinstant_value(instants[count - 1]),
-      tinstant_value(instants[count - 2]), basetype))
+    datum_ne(tinstant_val(instants[count - 1]),
+      tinstant_val(instants[count - 2]), basetype))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Invalid end value for temporal sequence with step interpolation");
@@ -1556,8 +1556,8 @@ tcontseq_to_step(const TSequence *seq)
   meosType basetype = temptype_basetype(seq->temptype);
   if ((seq->count > 2) ||
       (seq->count == 2 && ! datum_eq(
-        tinstant_value(TSEQUENCE_INST_N(seq, 0)),
-        tinstant_value(TSEQUENCE_INST_N(seq, 1)), basetype)))
+        tinstant_val(TSEQUENCE_INST_N(seq, 0)),
+        tinstant_val(TSEQUENCE_INST_N(seq, 1)), basetype)))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot transform input value to step interpolation");
@@ -1591,7 +1591,7 @@ tstepseq_to_linear_iter(const TSequence *seq, TSequence **result)
   }
 
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_value(inst1);
+  Datum value1 = tinstant_val(inst1);
   const TInstant *inst2 = NULL; /* keep compiler quiet */
   Datum value2;
   bool lower_inc = seq->period.lower_inc;
@@ -1600,7 +1600,7 @@ tstepseq_to_linear_iter(const TSequence *seq, TSequence **result)
   for (int i = 1; i < seq->count; i++)
   {
     inst2 = TSEQUENCE_INST_N(seq, i);
-    value2 = tinstant_value(inst2);
+    value2 = tinstant_val(inst2);
     TInstant *instants[2];
     instants[0] = (TInstant *) inst1;
     instants[1] = tinstant_make(value1, seq->temptype, inst2->t);
@@ -1615,8 +1615,8 @@ tstepseq_to_linear_iter(const TSequence *seq, TSequence **result)
   }
   if (seq->period.upper_inc)
   {
-    value1 = tinstant_value(TSEQUENCE_INST_N(seq, seq->count - 2));
-    value2 = tinstant_value(inst2);
+    value1 = tinstant_val(TSEQUENCE_INST_N(seq, seq->count - 2));
+    value2 = tinstant_val(inst2);
     if (datum_ne(value1, value2, basetype))
       result[nseqs++] = tinstant_to_tsequence(inst2, LINEAR);
   }
@@ -1690,7 +1690,7 @@ tnumberseq_shift_scale_value_iter(TSequence *seq, Datum origin, Datum delta,
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
-    Datum value = tinstant_value(inst);
+    Datum value = tinstant_val(inst);
     /* The default value when there is not shift is 0 */
     if (hasdelta)
     {
@@ -1815,19 +1815,20 @@ tsequence_shift_scale_time(const TSequence *seq, const Interval *shift,
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the array of distinct values of a temporal sequence
+ * @brief Return the array of (pointer to the) distinct values of a temporal
+ * sequence
  * @param[in] seq Temporal sequence
  * @param[out] count Number of values in the resulting array
  * @result Array of values
  * @csqlfn #Temporal_valueset()
  */
 Datum *
-tsequence_values(const TSequence *seq, int *count)
+tsequence_vals(const TSequence *seq, int *count)
 {
   assert(seq); assert(count);
   Datum *result = palloc(sizeof(Datum *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    result[i] = tinstant_value(TSEQUENCE_INST_N(seq, i));
+    result[i] = tinstant_val(TSEQUENCE_INST_N(seq, i));
   if (seq->count > 1)
   {
     meosType basetype = temptype_basetype(seq->temptype);
@@ -1864,7 +1865,7 @@ tnumberseq_valuespans(const TSequence *seq)
   int count;
   meosType basetype = temptype_basetype(seq->temptype);
   meosType spantype = basetype_spantype(basetype);
-  Datum *values = tsequence_values(seq, &count);
+  Datum *values = tsequence_vals(seq, &count);
   Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
     span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);
@@ -1891,34 +1892,32 @@ tsequence_time(const TSequence *seq)
   Span *periods = palloc(sizeof(Span) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    TimestampTz t = (TSEQUENCE_INST_N(seq, i))->t;
+    TimestampTz t = TSEQUENCE_INST_N(seq, i)->t;
     span_set(t, t, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &periods[i]);
   }
   return spanset_make_free(periods, seq->count, NORMALIZE_NO, ORDERED);
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
- * @brief Return a pointer to the instant with minimum base value of a
- * temporal sequence
- * @details The function does not take into account whether the instant is at an
- * exclusive bound or not.
+ * @brief Return a pointer to the instant with minimum base value of a temporal
+ * sequence
+ * @details The function does not take into account whether the instant is at
+ * an exclusive bound or not.
  * @param[in] seq Temporal sequence
- * @note The function is used, e.g., for computing the shortest line between 
- * two temporal points from their temporal distance
- * @csqlfn #Temporal_min_instant()
+ * @param[in] func Function used for the comparison
  */
 const TInstant *
-tsequence_min_instant(const TSequence *seq)
+tsequence_minmax_inst(const TSequence *seq,
+  bool (*func)(Datum, Datum, meosType))
 {
   assert(seq);
-  Datum min = tinstant_value(TSEQUENCE_INST_N(seq, 0));
+  Datum min = tinstant_val(TSEQUENCE_INST_N(seq, 0));
   int idx = 0;
   meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
-    Datum value = tinstant_value(TSEQUENCE_INST_N(seq, i));
-    if (datum_lt(value, min, basetype))
+    Datum value = tinstant_val(TSEQUENCE_INST_N(seq, i));
+    if (func(value, min, basetype))
     {
       min = value;
       idx = i;
@@ -1929,40 +1928,44 @@ tsequence_min_instant(const TSequence *seq)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return a pointer to the instant with minimum base value of a
- * temporal sequence
+ * @brief Return a pointer to the instant with minimum base value of a temporal
+ * sequence
+ * @details The function does not take into account whether the instant is at
+ * an exclusive bound or not.
+ * @param[in] seq Temporal sequence
+ * @note The function is used, e.g., for computing the shortest line between
+ * two temporal points from their temporal distance
+ * @csqlfn #Temporal_min_instant()
+ */
+const TInstant *
+tsequence_min_inst(const TSequence *seq)
+{
+  return tsequence_minmax_inst(seq, &datum_lt);
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return a pointer to the instant with minimum base value of a temporal
+ * sequence
  * @details The function does not take into account whether the instant is at
  * an exclusive bound or not.
  * @param[in] seq Temporal sequence
  * @csqlfn #Temporal_max_instant()
  */
 const TInstant *
-tsequence_max_instant(const TSequence *seq)
+tsequence_max_inst(const TSequence *seq)
 {
-  assert(seq);
-  Datum max = tinstant_value(TSEQUENCE_INST_N(seq, 0));
-  int idx = 0;
-  meosType basetype = temptype_basetype(seq->temptype);
-  for (int i = 1; i < seq->count; i++)
-  {
-    Datum value = tinstant_value(TSEQUENCE_INST_N(seq, i));
-    if (datum_gt(value, max, basetype))
-    {
-      max = value;
-      idx = i;
-    }
-  }
-  return TSEQUENCE_INST_N(seq, idx);
+  return tsequence_minmax_inst(seq, &datum_gt);
 }
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the minimum base value of a temporal sequence
+ * @brief Return (a pointer to) the minimum base value of a temporal sequence
  * @param[in] seq Temporal sequence
  * @csqlfn #Temporal_min_value()
  */
 Datum
-tsequence_min_value(const TSequence *seq)
+tsequence_min_val(const TSequence *seq)
 {
   assert(seq);
   if (tnumber_type(seq->temptype))
@@ -1972,10 +1975,10 @@ tsequence_min_value(const TSequence *seq)
   }
 
   meosType basetype = temptype_basetype(seq->temptype);
-  Datum result = tinstant_value(TSEQUENCE_INST_N(seq, 0));
+  Datum result = tinstant_val(TSEQUENCE_INST_N(seq, 0));
   for (int i = 1; i < seq->count; i++)
   {
-    Datum value = tinstant_value(TSEQUENCE_INST_N(seq, i));
+    Datum value = tinstant_val(TSEQUENCE_INST_N(seq, i));
     if (datum_lt(value, result, basetype))
       result = value;
   }
@@ -1984,12 +1987,12 @@ tsequence_min_value(const TSequence *seq)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the maximum base value of a temporal sequence
+ * @brief Return (a pointer to) the maximum base value of a temporal sequence
  * @param[in] seq Temporal sequence
  * @csqlfn #Temporal_max_value()
  */
 Datum
-tsequence_max_value(const TSequence *seq)
+tsequence_max_val(const TSequence *seq)
 {
   assert(seq);
   if (tnumber_type(seq->temptype))
@@ -2004,10 +2007,10 @@ tsequence_max_value(const TSequence *seq)
   }
 
   meosType basetype = temptype_basetype(seq->temptype);
-  Datum result = tinstant_value(TSEQUENCE_INST_N(seq, 0));
+  Datum result = tinstant_val(TSEQUENCE_INST_N(seq, 0));
   for (int i = 1; i < seq->count; i++)
   {
-    Datum value = tinstant_value(TSEQUENCE_INST_N(seq, i));
+    Datum value = tinstant_val(TSEQUENCE_INST_N(seq, i));
     if (datum_gt(value, result, basetype))
       result = value;
   }
@@ -2044,17 +2047,18 @@ tsequence_set_tstzspan(const TSequence *seq, Span *s)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the singleton array of sequences of a temporal sequence
+ * @brief Return a singleton array of pointers to the sequence of a temporal
+ * sequence
  * @param[in] seq Temporal sequence
  * @param[out] count Number of elements in the output array
  * @csqlfn #Temporal_sequences()
  */
-TSequence **
-tsequence_sequences(const TSequence *seq, int *count)
+const TSequence **
+tsequence_seqs(const TSequence *seq, int *count)
 {
   assert(seq); assert(count);
-  TSequence **result = palloc(sizeof(TSequence *));
-  result[0] = tsequence_copy(seq);
+  const TSequence **result = palloc(sizeof(TSequence *));
+  result[0] = seq;
   *count = 1;
   return result;
 }
@@ -2092,10 +2096,10 @@ tsequence_segments_iter(const TSequence *seq, TSequence **result)
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq, i);
     instants[0] = inst1;
     instants[1] = (interp == LINEAR) ? inst2 :
-      tinstant_make(tinstant_value(inst1), seq->temptype, inst2->t);
+      tinstant_make(tinstant_val(inst1), seq->temptype, inst2->t);
     bool upper_inc;
     if (i == seq->count - 1 && (interp == LINEAR ||
-      datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype)))
+      datum_eq(tinstant_val(inst1), tinstant_val(inst2), basetype)))
       upper_inc = seq->period.upper_inc;
     else
       upper_inc = false;
@@ -2109,7 +2113,7 @@ tsequence_segments_iter(const TSequence *seq, TSequence **result)
   {
     inst1 = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 2);
-    if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
+    if (! datum_eq(tinstant_val(inst1), tinstant_val(inst2), basetype))
       result[nseqs++] = tinstant_to_tsequence(inst1, interp);
   }
   return nseqs;
@@ -2146,14 +2150,14 @@ tsequence_segments(const TSequence *seq, int *count)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the array of distinct instants of a temporal sequence
+ * @brief Return the array of pointers to distinct instants of a temporal
+ * sequence
  * @param[in] seq Temporal sequence
  * @note By definition, all instants of a sequence are distinct. This not the
- * case for temporal sequence sets (see #tsequenceset_instants).
- * @csqlfn #Temporal_instants()
+ * case for temporal sequence sets (see #tsequenceset_insts).
  */
 const TInstant **
-tsequence_instants(const TSequence *seq)
+tsequence_insts(const TSequence *seq)
 {
   assert(seq);
   const TInstant **result = palloc(sizeof(TInstant *) * seq->count);
@@ -2172,7 +2176,7 @@ TimestampTz
 tsequence_start_timestamptz(const TSequence *seq)
 {
   assert(seq);
-  return (TSEQUENCE_INST_N(seq, 0))->t;
+  return TSEQUENCE_INST_N(seq, 0)->t;
 }
 
 /**
@@ -2185,7 +2189,7 @@ TimestampTz
 tsequence_end_timestamptz(const TSequence *seq)
 {
   assert(seq);
-  return (TSEQUENCE_INST_N(seq, seq->count - 1))->t;
+  return TSEQUENCE_INST_N(seq, seq->count - 1)->t;
 }
 
 /**
@@ -2200,7 +2204,7 @@ tsequence_timestamps_iter(const TSequence *seq, TimestampTz *times)
 {
   assert(seq); assert(times);
   for (int i = 0; i < seq->count; i++)
-    times[i] = (TSEQUENCE_INST_N(seq, i))->t;
+    times[i] = TSEQUENCE_INST_N(seq, i)->t;
   return seq->count;
 }
 
@@ -2236,16 +2240,16 @@ Datum
 tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   interpType interp, TimestampTz t)
 {
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
+  Datum value1 = tinstant_val(inst1);
+  Datum value2 = tinstant_val(inst2);
   /* Constant segment or t is equal to lower bound or step interpolation */
   if (datum_eq(value1, value2, temptype_basetype(inst1->temptype)) ||
     inst1->t == t || (interp != LINEAR && t < inst2->t))
-    return tinstant_value_copy(inst1);
+    return tinstant_value(inst1);
 
   /* t is equal to upper bound */
   if (inst2->t == t)
-    return tinstant_value_copy(inst2);
+    return tinstant_value(inst2);
 
   /* Interpolation for types with linear interpolation */
   long double duration1 = (long double) (t - inst1->t);
@@ -2334,13 +2338,13 @@ tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
     /* Instantaneous sequence or t is at lower bound */
     if (inst->t == t)
     {
-      *result = tinstant_value_copy(inst);
+      *result = tinstant_value(inst);
       return true;
     }
     inst = TSEQUENCE_INST_N(seq, seq->count - 1);
     if (inst->t == t)
     {
-      *result = tinstant_value_copy(inst);
+      *result = tinstant_value(inst);
       return true;
     }
   }
@@ -2352,7 +2356,7 @@ tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    *result = tinstant_value_copy(TSEQUENCE_INST_N(seq, 0));
+    *result = tinstant_value(TSEQUENCE_INST_N(seq, 0));
     return true;
   }
 
@@ -2360,7 +2364,7 @@ tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
   int n = tcontseq_find_timestamptz(seq, t);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, n);
   if (t == inst1->t)
-    *result = tinstant_value_copy(inst1);
+    *result = tinstant_value(inst1);
   else
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, n + 1);
@@ -2487,18 +2491,18 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   /* The last two values of sequences with step interpolation and
      exclusive upper bound must be equal */
   if (! inter.upper_inc && ninsts > 1 && (interp1 != LINEAR) &&
-      datum_ne(tinstant_value(instants1[ninsts - 2]),
-        tinstant_value(instants1[ninsts - 1]), basetype1))
+      datum_ne(tinstant_val(instants1[ninsts - 2]),
+        tinstant_val(instants1[ninsts - 1]), basetype1))
   {
-    instants1[ninsts - 1] = tinstant_make(tinstant_value(instants1[ninsts - 2]),
+    instants1[ninsts - 1] = tinstant_make(tinstant_val(instants1[ninsts - 2]),
       instants1[ninsts - 1]->temptype, instants1[ninsts - 1]->t);
     tofree[nfree++] = instants1[ninsts - 1];
   }
   if (! inter.upper_inc && ninsts > 1 && (interp2 != LINEAR) &&
-      datum_ne(tinstant_value(instants2[ninsts - 2]),
-        tinstant_value(instants2[ninsts - 1]), basetype2))
+      datum_ne(tinstant_val(instants2[ninsts - 2]),
+        tinstant_val(instants2[ninsts - 1]), basetype2))
   {
-    instants2[ninsts - 1] = tinstant_make(tinstant_value(instants2[ninsts - 2]),
+    instants2[ninsts - 1] = tinstant_make(tinstant_val(instants2[ninsts - 2]),
       instants2[ninsts - 1]->temptype, instants2[ninsts - 1]->t);
     tofree[nfree++] = instants2[ninsts - 1];
   }
@@ -2650,8 +2654,8 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 {
   assert(inst1->temptype == T_TFLOAT);
   assert(inst2->temptype == T_TFLOAT);
-  double dvalue1 = DatumGetFloat8(tinstant_value(inst1));
-  double dvalue2 = DatumGetFloat8(tinstant_value(inst2));
+  double dvalue1 = DatumGetFloat8(tinstant_val(inst1));
+  double dvalue2 = DatumGetFloat8(tinstant_val(inst2));
   double dvalue = datum_double(value, basetype);
   double min = Min(dvalue1, dvalue2);
   double max = Max(dvalue1, dvalue2);
@@ -2696,8 +2700,8 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 {
   assert(temptype_basetype(inst1->temptype) == basetype);
   assert(temptype_basetype(inst2->temptype) == basetype);
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
+  Datum value1 = tinstant_val(inst1);
+  Datum value2 = tinstant_val(inst2);
   if (datum_eq(value, value1, basetype) ||
       datum_eq(value, value2, basetype))
     return false;
@@ -2836,7 +2840,7 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
   meosType basetype2 = temptype_basetype(start2->temptype);
   if (interp1 != LINEAR)
   {
-    value = tinstant_value(start1);
+    value = tinstant_val(start1);
     if (inter1 != NULL)
       *inter1 = value;
     result = tlinearsegm_intersection_value(start2, end2, value, basetype1,
@@ -2844,7 +2848,7 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
   }
   else if (interp2 != LINEAR)
   {
-    value = tinstant_value(start2);
+    value = tinstant_val(start2);
     if (inter2 != NULL)
       *inter2 = value;
     result = tlinearsegm_intersection_value(start1, end1, value, basetype2,
@@ -2926,16 +2930,16 @@ tnumberseq_integral(const TSequence *seq)
     if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
     {
       /* Linear interpolation */
-      double min = Min(DatumGetFloat8(tinstant_value(inst1)),
-        DatumGetFloat8(tinstant_value(inst2)));
-      double max = Max(DatumGetFloat8(tinstant_value(inst1)),
-        DatumGetFloat8(tinstant_value(inst2)));
+      double min = Min(DatumGetFloat8(tinstant_val(inst1)),
+        DatumGetFloat8(tinstant_val(inst2)));
+      double max = Max(DatumGetFloat8(tinstant_val(inst1)),
+        DatumGetFloat8(tinstant_val(inst2)));
       result += (max + min) * (double) (inst2->t - inst1->t) / 2.0;
     }
     else
     {
       /* Step interpolation */
-      result += datum_double(tinstant_value(inst1),
+      result += datum_double(tinstant_val(inst1),
         temptype_basetype(inst1->temptype)) * (double) (inst2->t - inst1->t);
     }
     inst1 = inst2;
@@ -2958,7 +2962,7 @@ tnumberdiscseq_twavg(const TSequence *seq)
   meosType basetype = temptype_basetype(seq->temptype);
   double result = 0.0;
   for (int i = 0; i < seq->count; i++)
-    result += datum_double(tinstant_value(TSEQUENCE_INST_N(seq, i)), basetype);
+    result += datum_double(tinstant_val(TSEQUENCE_INST_N(seq, i)), basetype);
   return result / seq->count;
 }
 
@@ -2974,7 +2978,7 @@ tnumbercontseq_twavg(const TSequence *seq)
     DatumGetTimestampTz(seq->period.lower));
   if (duration == 0.0)
     /* Instantaneous sequence */
-    return datum_double(tinstant_value(TSEQUENCE_INST_N(seq, 0)),
+    return datum_double(tinstant_val(TSEQUENCE_INST_N(seq, 0)),
       temptype_basetype(seq->temptype));
   else
     return tnumberseq_integral(seq) / duration;

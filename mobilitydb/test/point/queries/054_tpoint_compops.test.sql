@@ -36,6 +36,9 @@ SELECT geometry 'Point(1 1)' ?<> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT geometry 'Point(1 1)' %= tgeompoint 'Point(1 1)@2000-01-01';
 SELECT geometry 'Point(1 1)' %<> tgeompoint 'Point(1 1)@2000-01-01';
 
+--NULL
+SELECT geometry 'Polygon empty' ?= tgeompoint 'Point(1 1)@2000-01-01';
+
 SELECT geography 'Point(1 1)' ?= tgeogpoint 'Point(1 1)@2000-01-01';
 SELECT geography 'Point(1 1)' ?<> tgeogpoint 'Point(1 1)@2000-01-01';
 SELECT geography 'Point(1 1)' %= tgeogpoint 'Point(1 1)@2000-01-01';

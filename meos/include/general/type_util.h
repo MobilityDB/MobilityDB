@@ -87,7 +87,6 @@ extern int tinstarr_remove_duplicates(const TInstant **instants, int count);
 
 /* Text functions */
 
-extern int text_cmp(text *arg1, text *arg2, Oid collid);
 
 /* Arithmetic functions */
 
