@@ -310,10 +310,7 @@ tnumberseq_linear_abs(const TSequence *seq)
   if (seq->count == 1)
   {
     inst1 = TSEQUENCE_INST_N(seq, 0);
-    TInstant *inst2 = tnumberinst_abs(inst1);
-    TSequence *result = tinstant_to_tsequence(inst2, LINEAR);
-    pfree(inst2);
-    return result;
+    return tinstant_to_tsequence_free(tnumberinst_abs(inst1), LINEAR);
   }
 
   /* General case */
@@ -474,9 +471,7 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
   if (ss->count == 1)
   {
     delta = tnumberseq_delta_value(TSEQUENCESET_SEQ_N(ss, 0));
-    TSequenceSet *result = tsequence_to_tsequenceset(delta);
-    pfree(delta);
-    return result;
+    return tsequence_to_tsequenceset_free(delta);
   }
 
   /* General case */

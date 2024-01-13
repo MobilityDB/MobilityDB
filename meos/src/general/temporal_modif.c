@@ -797,9 +797,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
     Temporal *temp = tcontseq_insert(seq1, seq2);
     if (temp->subtype == TSEQUENCESET)
       return (TSequenceSet *) temp;
-    result = tsequence_to_tsequenceset((TSequence *) temp);
-    pfree(temp);
-    return result;
+    return tsequence_to_tsequenceset_free((TSequence *) temp);
   }
 
   /* If one sequence set is before the other one add the potential gap between
@@ -816,8 +814,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         1 : 2;
       TSequence *seq = tsequence_make(instants, count, true, true, interp,
         NORMALIZE_NO);
-      TSequenceSet *gap = tsequence_to_tsequenceset(seq);
-      pfree(seq);
+      TSequenceSet *gap = tsequence_to_tsequenceset_free(seq);
       const TSequenceSet *seqsets[] = {ss1, gap, ss2};
       return tsequenceset_merge_array(seqsets, 3);
     }
@@ -959,14 +956,10 @@ tsequenceset_delete_timestamptz(const TSequenceSet *ss, TimestampTz t)
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    TSequenceSet *result = NULL;
     seq = tcontseq_delete_timestamptz(TSEQUENCESET_SEQ_N(ss, 0), t);
     if (seq)
-    {
-      result = tsequence_to_tsequenceset(seq);
-      pfree(seq);
-    }
-    return result;
+      return tsequence_to_tsequenceset_free(seq);
+    return NULL;
   }
 
   /* General case */
@@ -1009,14 +1002,10 @@ tsequenceset_delete_tstzset(const TSequenceSet *ss, const Set *s)
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    TSequenceSet *result = NULL;
     seq = tcontseq_delete_tstzset(TSEQUENCESET_SEQ_N(ss, 0), s);
     if (seq)
-    {
-      result = tsequence_to_tsequenceset(seq);
-      pfree(seq);
-    }
-    return result;
+      return tsequence_to_tsequenceset_free(seq);
+    return NULL;
   }
 
   /* General case */
@@ -1064,7 +1053,6 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
     return tsequenceset_copy(ss);
 
   TSequence *seq;
-  TSequenceSet *result = NULL;
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
 
   /* Singleton sequence set */
@@ -1073,10 +1061,9 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
     seq = tcontseq_delete_tstzspanset(TSEQUENCESET_SEQ_N(ss, 0), ps);
     if (seq)
     {
-      result = tsequence_to_tsequenceset(seq);
-      pfree(seq);
+      return tsequence_to_tsequenceset_free(seq);
     }
-    return result;
+    return NULL;
   }
 
   /* General case */
@@ -1126,7 +1113,8 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
   int newcount;
   TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences,
     nseqs, &newcount);
-  result = tsequenceset_make_free(normseqs, newcount, NORMALIZE_NO);
+  TSequenceSet *result = tsequenceset_make_free(normseqs, newcount,
+    NORMALIZE_NO);
   pfree_array((void **) tofree, nfree); pfree(minus);
   return result;
 }

@@ -68,7 +68,7 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 			<itemizedlist>
 				<listitem id="box_asText">
 					<indexterm><primary><varname>asText</varname></primary></indexterm>
-					<para>Get the Well-Known Text (WKT) representation</para>
+					<para>Return the Well-Known Text (WKT) representation</para>
 					<para><varname>asText(box,maxdecdigits=15) → text</varname></para>
 					<para>The <varname>maxdecdigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
 					<programlisting language="sql" xml:space="preserve">
@@ -81,7 +81,7 @@ SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 
 				<listitem id="box_asBinary">
 					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-					<para>Get the Well-Known Binary (WKB) representation</para>
+					<para>Return the Well-Known Binary (WKB) representation</para>
 					<para><varname>asBinary(box,endian text='') → bytea</varname></para>
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting language="sql" xml:space="preserve">
@@ -96,7 +96,7 @@ SELECT asBinary(stbox 'STBOX X((1,1),(2,2))');
 
 				<listitem id="box_asHexWKB">
 					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
-					<para>Get the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
+					<para>Return the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
 					<para><varname>asHexWKB(box,endian text='') → text</varname></para>
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting language="sql" xml:space="preserve">
@@ -293,7 +293,7 @@ SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan
 
 			<listitem id="stbox_convert_from">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convert another type to an <varname>stbox</varname></para>  
+				<para>Convert another type to an <varname>stbox</varname></para>
 				<para><varname>{box2d,box3d,geo,time,tpoint}::stbox</varname></para>
 				<para><varname>stbox({box2d,box3d,geo,time,tpoint}) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -351,7 +351,7 @@ SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])
 				<indexterm><primary><varname>Ymin</varname></primary></indexterm>
 				<indexterm><primary><varname>Zmin</varname></primary></indexterm>
 				<indexterm><primary><varname>Tmin</varname></primary></indexterm>
-				<para>Get the minimum X/Y/Z/T value</para>
+				<para>Return the minimum X/Y/Z/T value</para>
 				<para><varname>Xmin(box) → float</varname></para>
 				<para><varname>Ymin(stbox) → float</varname></para>
 				<para><varname>Zmin(stbox) → float</varname></para>
@@ -374,7 +374,7 @@ SELECT Tmin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<indexterm><primary><varname>Ymax</varname></primary></indexterm>
 				<indexterm><primary><varname>Zmax</varname></primary></indexterm>
 				<indexterm><primary><varname>Tmax</varname></primary></indexterm>
-				<para>Get the maximum X/Y/Z/T value</para>
+				<para>Return the maximum X/Y/Z/T value</para>
 				<para><varname>Xmax(box) → float</varname></para>
 				<para><varname>Ymax(stbox) → float</varname></para>
 				<para><varname>Zmax(stbox) → float</varname></para>
@@ -488,7 +488,7 @@ SELECT shiftScaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])
 
 			<listitem id="getSpace">
 				<indexterm><primary><varname>getSpace</varname></primary></indexterm>
-				<para>Get the spatial dimension of the bounding box, removing the temporal dimension if any</para>
+				<para>Return the spatial dimension of the bounding box, removing the temporal dimension if any</para>
 				<para><varname>getSpace(stbox) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
@@ -559,7 +559,7 @@ SELECT round(stbox 'STBOX XT(((1.12345, 1.12345),(2.12345, 2.12345)),
 		<itemizedlist>
 			<listitem id="stbox_SRID">
 				<indexterm><primary><varname>SRID</varname></primary></indexterm>
-				<para>Get the spatial reference identifier</para>
+				<para>Return the spatial reference identifier</para>
 				<para><varname>SRID(stbox) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
@@ -600,7 +600,7 @@ SELECT round(transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
 WITH test(box, pipeline) AS (
   SELECT stbox 'SRID=4326;GEODSTBOX Z((-0.1275,50.846667,100),(4.3525,51.507222,100))',
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
-SELECT asEWKT(transformPipeline(transformPipeline(box, pipeline, 4326), 
+SELECT asEWKT(transformPipeline(transformPipeline(box, pipeline, 4326),
   pipeline, 4326, false), 6)
 FROM test;
 -- SRID=4326;GEODSTBOX Z((-0.1275,50.846667,100),(4.3525,51.507222,100))

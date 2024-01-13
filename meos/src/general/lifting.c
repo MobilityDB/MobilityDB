@@ -308,8 +308,7 @@ TInstant *
 tfunc_tinstant_base(const TInstant *inst, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-  Datum value1 = tinstant_val(inst);
-  Datum resvalue = tfunc_base_base(value1, value, lfinfo);
+  Datum resvalue = tfunc_base_base(tinstant_val(inst), value, lfinfo);
   return tinstant_make_free(resvalue, lfinfo->restype, inst->t);
 }
 
@@ -405,8 +404,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
   if (seq->count == 1)
   {
     instants[0] = tinstant_make_free(startresult, lfinfo->restype, start->t);
-    result[0] = tinstant_to_tsequence(instants[0], STEP);
-    pfree(instants[0]);
+    result[0] = tinstant_to_tsequence_free(instants[0], STEP);
     return 1;
   }
 
@@ -1321,10 +1319,9 @@ tfunc_tcontseq_tcontseq_dispatch(const TSequence *seq1, const TSequence *seq2,
     Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
     TInstant *inst = tinstant_make_free(resvalue, lfinfo->restype, inter.lower);
     interpType interp = lfinfo->reslinear ? LINEAR : STEP;
-    result[0] = tinstant_to_tsequence(inst, interp);
+    result[0] = tinstant_to_tsequence_free(inst, interp);
     DATUM_FREE(value1, temptype_basetype(seq1->temptype));
     DATUM_FREE(value2, temptype_basetype(seq2->temptype));
-    pfree(inst);
     return 1;
   }
 

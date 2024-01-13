@@ -1105,9 +1105,7 @@ tcontseq_transform_tcount(const TSequence *seq)
   if (seq->count == 1)
   {
     TInstant *inst = tinstant_make(datum_one, T_TINT, t);
-    result = tinstant_to_tsequence(inst, STEP);
-    pfree(inst);
-    return result;
+    return tinstant_to_tsequence_free(inst, STEP);
   }
 
   TInstant *instants[2];

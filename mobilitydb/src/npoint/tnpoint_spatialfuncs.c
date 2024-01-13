@@ -210,7 +210,8 @@ Tnpoint_azimuth(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Restrict a temporal network point to (the complement of) a geometry
+ * @brief Return a temporal network point restricted to (the complement of) a
+ * geometry
  */
 static Datum
 Tnpoint_restrict_geom_time(FunctionCallInfo fcinfo, bool atfunc,
@@ -237,7 +238,7 @@ PGDLLEXPORT Datum Tnpoint_at_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_at_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal network point to a geometry
+ * @brief Return a temporal network point restricted to a geometry
  * @sqlfn atGeometry()
  */
 Datum
@@ -250,7 +251,8 @@ PGDLLEXPORT Datum Tnpoint_at_geom_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_at_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal network point to a geometry and a time value
+ * @brief Return a temporal network point restricted to a geometry and a time
+ * value
  * @sqlfn atGeometryTime()
  */
 Datum
@@ -263,7 +265,8 @@ PGDLLEXPORT Datum Tnpoint_minus_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_minus_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal network point to the complement of a geometry
+ * @brief Return a temporal network point restricted to the complement of a
+ * geometry
  * @sqlfn minusGeometry()
  */
 Datum
@@ -276,7 +279,8 @@ PGDLLEXPORT Datum Tnpoint_minus_geom_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_minus_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal network point to the complement of a geometry
+ * @brief Return a temporal network point restricted to the complement of a
+ * geometry
  * @sqlfn minusGeometry()
  */
 Datum
@@ -291,7 +295,7 @@ PGDLLEXPORT Datum Tnpoint_at_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_at_stbox);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal network point to a spatiotemporal box
+ * @brief Return a temporal network point restricted to a spatiotemporal box
  * @sqlfn atStbox()
  */
 Datum
@@ -310,7 +314,7 @@ PGDLLEXPORT Datum Tnpoint_minus_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_minus_stbox);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal network point to the complement of a
+ * @brief Return a temporal network point restricted to the complement of a
  * spatiotemporal box
  * @sqlfn minusStbox()
  */

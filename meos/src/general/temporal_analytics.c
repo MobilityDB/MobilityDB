@@ -1585,8 +1585,8 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
 }
 
 /**
- * @brief Simplify a temporal sequence set float/point using a single-pass
- * Douglas-Peucker line simplification algorithm
+ * @brief Return a temporal sequence set float/point simplified using a
+ * single-pass Douglas-Peucker line simplification algorithm
  * @param[in] ss Temporal point
  * @param[in] dist Distance
  * @param[in] syncdist True when computing the Synchronized Euclidean
@@ -1606,8 +1606,8 @@ tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
 
 /**
  * @ingroup meos_temporal_analytics_simplify
- * @brief Simplify a temporal float/point using a single-pass Douglas-Peucker
- * line simplification algorithm
+ * @brief Return a temporal float/point simplified using a single-pass
+ * Douglas-Peucker line simplification algorithm
  * @param[in] temp Temporal value
  * @param[in] dist Distance in the units of the values for temporal floats or
  * the units of the coordinate system for temporal points.
@@ -1662,7 +1662,7 @@ int_cmp(const void *a, const void *b)
 #define DP_STACK_SIZE 256
 
 /**
- * @brief Simplify a temporal sequence set float/point using the
+ * @brief Return a temporal sequence set float/point simplified using the
  * Douglas-Peucker line simplification algorithm
  */
 static TSequence *
@@ -1738,7 +1738,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
 }
 
 /**
- * @brief Simplify a temporal sequence set float/point using the
+ * @brief Return a temporal sequence set float/point simplified using the
  * Douglas-Peucker line simplification algorithm
  * @param[in] ss Temporal point
  * @param[in] dist Distance
@@ -1759,8 +1759,8 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
 
 /**
  * @ingroup meos_temporal_analytics_simplify
- * @brief Simplify a temporal float/point using the Douglas-Peucker line
- * simplification algorithm
+ * @brief Return a temporal float/point simplified using the Douglas-Peucker
+ * line simplification algorithm
  * @param[in] temp Temporal value
  * @param[in] dist Distance in the units of the values for temporal floats or
  * the units of the coordinate system for temporal points.

@@ -286,7 +286,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
 /**
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry
  * (iterator function)
- * @details The function splits the temporal point in an array of fragments 
+ * @details The function splits the temporal point in an array of fragments
  * that are simple (that is, not self-intersecting) and loops for each
  * fragment.
  * @param[in] seq Temporal point
@@ -306,9 +306,8 @@ tinterrel_tpointcontseq_geom_iter(const TSequence *seq, Datum geom,
     TInstant *inst = tinterrel_tpointinst_geom(TSEQUENCE_INST_N(seq, 0),
       geom, tinter, func);
     TSequence **result = palloc(sizeof(TSequence *));
-    result[0] = tinstant_to_tsequence(inst, STEP);
+    result[0] = tinstant_to_tsequence_free(inst, STEP);
     *count = 1;
-    pfree(inst);
     return result;
   }
 
@@ -332,7 +331,7 @@ tinterrel_tpointcontseq_geom_iter(const TSequence *seq, Datum geom,
 
 /**
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry
- * @details The function splits the temporal point in an array of temporal 
+ * @details The function splits the temporal point in an array of temporal
  * point sequences that are simple (that is, not self-intersecting) and loops
  * for each piece.
  * @param[in] seq Temporal point
@@ -522,7 +521,7 @@ tinterrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   if (! ensure_valid_tpoint_tpoint(temp1, temp2))
     return NULL;
 
-  Temporal *result = tinter ? 
+  Temporal *result = tinter ?
     tcomp_temporal_temporal(temp1, temp2, &datum2_eq) :
     tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
   /* Restrict the result to the Boolean value in the last argument if any */
@@ -886,8 +885,7 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
   {
     TInstant *inst = tinstant_make(func(tinstant_val(start1),
       tinstant_val(start2), dist), T_TBOOL, start1->t);
-    result[0] = tinstant_to_tsequence(inst, STEP);
-    pfree(inst);
+    result[0] = tinstant_to_tsequence_free(inst, STEP);
     return 1;
   }
 
@@ -1024,8 +1022,7 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
   {
     TInstant *inst = tinstant_make(func(startvalue, point, dist), T_TBOOL,
       start->t);
-    result[0] = tinstant_to_tsequence(inst, STEP);
-    pfree(inst);
+    result[0] = tinstant_to_tsequence_free(inst, STEP);
     return 1;
   }
 

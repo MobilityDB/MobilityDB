@@ -378,9 +378,7 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
   {
     TInstant *inst = tinstant_make(Float8GetDatum(prevlength), T_TFLOAT,
       TSEQUENCE_INST_N(seq, 0)->t);
-    TSequence *result = tinstant_to_tsequence(inst, LINEAR);
-    pfree(inst);
-    return result;
+    return tinstant_to_tsequence_free(inst, LINEAR);
   }
 
   /* General case */
@@ -712,7 +710,8 @@ tnpoint_azimuth(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @brief Restrict a temporal network point to (the complement of) a geometry
+ * @brief Return a temporal network point restricted to (the complement of) a
+ * geometry
  */
 Temporal *
 tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
@@ -753,7 +752,7 @@ tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal network point to (the complement of) a
+ * @brief Return a temporal network point restricted to (the complement of) a
  * spatiotemporal box
  * @sqlfn Tnpoint_at_stbox()
  */

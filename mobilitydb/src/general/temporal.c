@@ -1868,8 +1868,8 @@ Temporal_merge_array(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Restrict a temporal value to (the complement of) an array of base
- * values
+ * @brief Return a temporal value restricted to (the complement of) an array of
+ * base values
  */
 static Datum
 Temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
@@ -1889,7 +1889,7 @@ PGDLLEXPORT Datum Temporal_at_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_value);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to a base value
+ * @brief Return a temporal value restricted to a base value
  * @sqlfn atValue()
  */
 Datum
@@ -1902,7 +1902,7 @@ PGDLLEXPORT Datum Temporal_minus_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_value);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of a base value
+ * @brief Return a temporal value restricted to the complement of a base value
  * @sqlfn minusValue()
  */
 Datum
@@ -1914,8 +1914,8 @@ Temporal_minus_value(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal value to (the complement of) an array of base
- * values
+ * @brief Return a temporal value restricted to (the complement of) an array of
+ * base values
  */
 static Datum
 Temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
@@ -1939,7 +1939,7 @@ PGDLLEXPORT Datum Temporal_at_values(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_values);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to an array of base values
+ * @brief Return a temporal value restricted to an array of base values
  * @sqlfn atValues()
  */
 Datum
@@ -1952,8 +1952,8 @@ PGDLLEXPORT Datum Temporal_minus_values(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_values);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of an array of base
- * values
+ * @brief Return a temporal value restricted to the complement of an array of
+ * base values
  * @sqlfn minusValues()
  */
 Datum
@@ -1980,7 +1980,7 @@ PGDLLEXPORT Datum Tnumber_at_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_at_span);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to a span of base values
+ * @brief Return a temporal value restricted to a span of base values
  * @sqlfn atSpan()
  */
 Datum
@@ -1993,7 +1993,8 @@ PGDLLEXPORT Datum Tnumber_minus_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_minus_span);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of a span of base values
+ * @brief Return a temporal value restricted to the complement of a span of
+ * base values
  * @sqlfn minusSpan()
  */
 Datum
@@ -2005,8 +2006,8 @@ Tnumber_minus_span(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal value to (the complement of) a span set of base
- * values
+ * @brief Return a temporal value restricted to (the complement of) a span set
+ * of base values
  */
 static Datum
 Tnumber_restrict_spanset(FunctionCallInfo fcinfo, bool atfunc)
@@ -2025,7 +2026,7 @@ PGDLLEXPORT Datum Tnumber_at_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_at_spanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to a span set of base values
+ * @brief Return a temporal value restricted to a span set of base values
  * @sqlfn atSpanset()
  */
 Datum
@@ -2038,8 +2039,8 @@ PGDLLEXPORT Datum Tnumber_minus_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_minus_spanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of a span set of base
- * values
+ * @brief Return a temporal value restricted to the complement of a span set of
+ * base values
  * @sqlfn minusSpanset()
  */
 Datum
@@ -2070,7 +2071,7 @@ PGDLLEXPORT Datum Temporal_at_min(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_min);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to its minimum base value
+ * @brief Return a temporal value restricted to its minimum base value
  * @sqlfn atMin()
  */
 Datum
@@ -2083,7 +2084,8 @@ PGDLLEXPORT Datum Temporal_minus_min(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_min);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of its minimum base value
+ * @brief Return a temporal value restricted to the complement of its minimum
+ * base value
  * @sqlfn minusMin()
  */
 Datum
@@ -2096,7 +2098,7 @@ PGDLLEXPORT Datum Temporal_at_max(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_max);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to its maximum base value
+ * @brief Return a temporal value restricted to its maximum base value
  * @sqlfn atMax()
  */
 Datum
@@ -2109,7 +2111,8 @@ PGDLLEXPORT Datum Temporal_minus_max(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_max);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of its maximum base value
+ * @brief Return a temporal value restricted to the complement of its maximum
+ * base value
  * @sqlfn minusMax()
  */
 Datum
@@ -2121,7 +2124,8 @@ Temporal_minus_max(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal value to (the complement of) a temporal box
+ * @brief Return a temporal value restricted to (the complement of) a temporal
+ * box
   */
 static Datum
 Tnumber_restrict_tbox(FunctionCallInfo fcinfo, bool atfunc)
@@ -2140,7 +2144,7 @@ PGDLLEXPORT Datum Tnumber_at_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_at_tbox);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to a temporal box
+ * @brief Return a temporal value restricted to a temporal box
  * @sqlfn atTbox()
  */
 Datum
@@ -2153,7 +2157,8 @@ PGDLLEXPORT Datum Tnumber_minus_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_minus_tbox);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of a temporal box
+ * @brief Return a temporal value restricted to the complement of a temporal
+ * box
  * @sqlfn minusTbox()
  */
 Datum
@@ -2165,7 +2170,8 @@ Tnumber_minus_tbox(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal value to (the complement of) a timestamptz
+ * @brief Return a temporal value restricted to (the complement of) a
+ * timestamptz
  */
 static Datum
 Temporal_restrict_timestamptz(FunctionCallInfo fcinfo, bool atfunc)
@@ -2183,7 +2189,7 @@ PGDLLEXPORT Datum Temporal_at_timestamptz(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_timestamptz);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to a timestamptz
+ * @brief Return a temporal value restricted to a timestamptz
  * @sqlfn atTime()
  */
 Datum
@@ -2196,7 +2202,7 @@ PGDLLEXPORT Datum Temporal_minus_timestamptz(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_timestamptz);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of a timestamptz
+ * @brief Return a temporal value restricted to the complement of a timestamptz
  * @sqlfn minusTime()
  */
 Datum
@@ -2208,7 +2214,7 @@ Temporal_minus_timestamptz(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal value to a timestamptz set
+ * @brief Return a temporal value restricted to a timestamptz set
  * @sqlfn atTime()
  */
 Datum
@@ -2228,7 +2234,7 @@ PGDLLEXPORT Datum Temporal_at_tstzset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_tstzset);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to a timestamptz set
+ * @brief Return a temporal value restricted to a timestamptz set
  * @sqlfn atTime()
  */
 Datum
@@ -2241,7 +2247,8 @@ PGDLLEXPORT Datum Temporal_minus_tstzset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_tstzset);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of a timestamptz set
+ * @brief Return a temporal value restricted to the complement of a timestamptz
+ * set
  * @sqlfn minusTime()
  */
 Datum
@@ -2253,7 +2260,8 @@ Temporal_minus_tstzset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal value to (the complement of) a timestamptz span
+ * @brief Return a temporal value restricted to (the complement of) a
+ * timestamptz span
  */
 static Datum
 Temporal_restrict_tstzspan(FunctionCallInfo fcinfo, bool atfunc)
@@ -2271,7 +2279,7 @@ PGDLLEXPORT Datum Temporal_at_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to a timestamptz span
+ * @brief Return a temporal value restricted to a timestamptz span
  * @sqlfn atTime()
  */
 Datum
@@ -2284,7 +2292,8 @@ PGDLLEXPORT Datum Temporal_minus_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of a timestamptz span
+ * @brief Return a temporal value restricted to the complement of a timestamptz
+ * span
  * @sqlfn minusTime()
  */
 Datum
@@ -2296,7 +2305,7 @@ Temporal_minus_tstzspan(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal value to a timestamptz span set
+ * @brief Return a temporal value restricted to a timestamptz span set
  * @sqlfn atTime()
  */
 Datum
@@ -2316,7 +2325,7 @@ PGDLLEXPORT Datum Temporal_at_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to a timestamptz span set
+ * @brief Return a temporal value restricted to a timestamptz span set
  * @sqlfn atTime()
  */
 Datum
@@ -2329,7 +2338,7 @@ PGDLLEXPORT Datum Temporal_minus_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_tstzspanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal value to the complement of a span set
+ * @brief Return a temporal value restricted to the complement of a span set
  * @sqlfn minusTime()
  */
 Datum
