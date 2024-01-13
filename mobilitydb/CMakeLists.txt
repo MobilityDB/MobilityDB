@@ -70,6 +70,8 @@ add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 # GSL (GNU Scientific Library) (used for skiplists)
 find_package(GSL REQUIRED)
 include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
+message(STATUS "GSL_VERSION: ${GSL_VERSION}")
+add_definitions(-DGSL_VERSION_STRING="${GSL_VERSION}")
 
 # Proj reprojection library
 find_package(PROJ REQUIRED)

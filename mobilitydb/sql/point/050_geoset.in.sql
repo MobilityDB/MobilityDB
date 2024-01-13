@@ -259,6 +259,7 @@ CREATE FUNCTION SRID(geogset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Geoset_get_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION setSRID(geomset, integer)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Geoset_set_srid'
@@ -266,6 +267,26 @@ CREATE FUNCTION setSRID(geomset, integer)
 CREATE FUNCTION setSRID(geogset, integer)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Geoset_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transform(geomset, integer)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Geoset_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transform(geogset, integer)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Geoset_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transformPipeline(geomset, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Geoset_transform_pipeline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transformPipeline(geogset, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Geoset_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

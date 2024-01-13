@@ -1479,7 +1479,8 @@ overright_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup meos_internal_setspan_set
- * @brief Initialize the last argument with the bounding box union of two spans
+ * @brief Return the last argument initialized with the bounding box union of
+ * two spans
  * @param[in] s1,s2 Spans
  * @param[out] result Resulting span
  * @note The result of the function is always a span even if the spans do not
@@ -1842,7 +1843,8 @@ intersection_span_timestamptz(const Span *s, TimestampTz t)
 
 /**
  * @ingroup meos_internal_setspan_set
- * @brief Initialize the last argument with the intersection of two spans 
+ * @brief Return the last argument initialized with the intersection of two
+ * spans 
  * @param[in] s1,s2 Spans
  * @param[out] result Resulting span
  * @note This function is equivalent to #intersection_span_span without
@@ -1991,8 +1993,8 @@ minus_timestamptz_span(TimestampTz t, const Span *s)
 #endif /* MEOS */
 
 /**
- * @brief Initialize the last argument with the difference of a span and a
- * value
+ * @brief Return the last argument initialized with the difference of a span
+ * and a value
  * @param[in] s Span
  * @param[in] value Value
  * @param[out] result Resulting span
@@ -2137,7 +2139,7 @@ minus_span_timestamptz(const Span *s, TimestampTz t)
 
 /**
  * @ingroup meos_internal_setspan_set
- * @brief Initialize the last argument with the difference of two spans
+ * @brief Return the last argument initialized with the difference of two spans
  * @param[in] s1,s2 Spans
  * @param[out] result Result
  * @return Number of the elements in the output array

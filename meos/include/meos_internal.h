@@ -340,7 +340,7 @@ extern Span *numspan_shift_scale(const Span *s, Datum shift, Datum width, bool h
 extern SpanSet *numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern Set *set_compact(const Set *s);
 extern void span_expand(const Span *s1, Span *s2);
-extern SpanSet *spanset_compact(SpanSet *ss);
+extern SpanSet *spanset_compact(const SpanSet *ss);
 extern void tstzspan_set_datespan(const Span *s1, Span *s2);
 
 /*****************************************************************************
@@ -586,6 +586,7 @@ extern Temporal *temporal_cp(const Temporal *temp);
 extern Temporal *temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, meosType temptype, TimestampTz t);
+extern TInstant *tinstant_make_free(Datum value, meosType temptype, TimestampTz t);
 extern TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32 srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *tsequence_copy(const TSequence *seq);
 extern TSequence *tsequence_from_base_tstzset(Datum value, meosType temptype, const Set *ss);

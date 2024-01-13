@@ -105,7 +105,7 @@ datum_point4d(Datum value, POINT4D *p)
  * are sure that their SRID, Z, and GEODETIC are equal
  */
 bool
-gspoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   if (FLAGS_GET_Z(gs1->gflags))
   {
@@ -128,7 +128,7 @@ gspoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * are sure that their SRID, Z, and GEODETIC are equal
  */
 bool
-gspoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   if (FLAGS_GET_Z(gs1->gflags))
   {
@@ -150,66 +150,66 @@ gspoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @brief Return true if the points are equal
  */
 bool
-datum_point_eq(Datum geopoint1, Datum geopoint2)
+datum_point_eq(Datum point1, Datum point2)
 {
-  const GSERIALIZED *gs1 = DatumGetGserializedP(geopoint1);
-  const GSERIALIZED *gs2 = DatumGetGserializedP(geopoint2);
+  const GSERIALIZED *gs1 = DatumGetGserializedP(point1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(point2);
   if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
       FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags) ||
       FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
     return false;
-  return gspoint_eq(gs1, gs2);
+  return geopoint_eq(gs1, gs2);
 }
 
 /**
  * @brief Return true if the points are equal
  */
 bool
-datum_point_same(Datum geopoint1, Datum geopoint2)
+datum_point_same(Datum point1, Datum point2)
 {
-  const GSERIALIZED *gs1 = DatumGetGserializedP(geopoint1);
-  const GSERIALIZED *gs2 = DatumGetGserializedP(geopoint2);
+  const GSERIALIZED *gs1 = DatumGetGserializedP(point1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(point2);
   if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
       FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags) ||
       FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
     return false;
-  return gspoint_same(gs1, gs2);
+  return geopoint_same(gs1, gs2);
 }
 
 /**
  * @brief Return true if the points are equal
  */
 Datum
-datum2_point_eq(Datum geopoint1, Datum geopoint2)
+datum2_point_eq(Datum point1, Datum point2)
 {
-  return BoolGetDatum(datum_point_eq(geopoint1, geopoint2));
+  return BoolGetDatum(datum_point_eq(point1, point2));
 }
 
 /**
  * @brief Return true if the points are equal
  */
 Datum
-datum2_point_ne(Datum geopoint1, Datum geopoint2)
+datum2_point_ne(Datum point1, Datum point2)
 {
-  return BoolGetDatum(! datum_point_eq(geopoint1, geopoint2));
+  return BoolGetDatum(! datum_point_eq(point1, point2));
 }
 
 /**
  * @brief Return true if the points are equal
  */
 Datum
-datum2_point_same(Datum geopoint1, Datum geopoint2)
+datum2_point_same(Datum point1, Datum point2)
 {
-  return BoolGetDatum(datum_point_same(geopoint1, geopoint2));
+  return BoolGetDatum(datum_point_same(point1, point2));
 }
 
 /**
  * @brief Return true if the points are equal
  */
 Datum
-datum2_point_nsame(Datum geopoint1, Datum geopoint2)
+datum2_point_nsame(Datum point1, Datum point2)
 {
-  return BoolGetDatum(! datum_point_same(geopoint1, geopoint2));
+  return BoolGetDatum(! datum_point_same(point1, point2));
 }
 
 /**
@@ -217,7 +217,7 @@ datum2_point_nsame(Datum geopoint1, Datum geopoint2)
  * @pre It is supposed that the flags such as Z and geodetic have been
  * set up before by the calling function
  */
-GSERIALIZED *
+GSERIALIZED * 
 geo_serialize(const LWGEOM *geom)
 {
   size_t size;
@@ -364,6 +364,21 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Operation on mixed planar and geodetic coordinates");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that the two spatial "objects" have the same SRID
+ */
+bool
+ensure_srid_known(int32_t srid)
+{
+  if (srid == SRID_UNKNOWN)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The SRID cannot be unknown");
     return false;
   }
   return true;
@@ -1153,14 +1168,14 @@ interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
  * @brief Return a point created from the arguments
  */
 GSERIALIZED *
-gspoint_make(double x, double y, double z, bool hasz, bool geodetic,
+geopoint_make(double x, double y, double z, bool hasz, bool geodetic,
   int32 srid)
 {
   LWPOINT *point = hasz ?
     lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
   FLAGS_SET_GEODETIC(point->flags, geodetic);
   GSERIALIZED *result = geo_serialize((LWGEOM *) point);
-  lwpoint_free(point);
+  // We CANNOT lwpoint_free(point);
   return result;
 }
 
@@ -1194,7 +1209,7 @@ geosegm_interpolate_point(Datum start, Datum end, long double ratio)
     p.m = 0.0;
   }
 
-  Datum result = PointerGetDatum(gspoint_make(p.x, p.y, p.z, hasz, geodetic,
+  Datum result = PointerGetDatum(geopoint_make(p.x, p.y, p.z, hasz, geodetic,
     srid));
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(start));
   return result;
@@ -3209,8 +3224,8 @@ tpoint_affine(const Temporal *temp, const AFFINE *a)
  *****************************************************************************/
 
 /**
- * @brief Initialize the last argument with a temporal point snapped to a grid
- * specification
+ * @brief Return the last argument initialized with a temporal point snapped to
+ * a grid specification
  */
 static void
 point_grid(Datum value, bool hasz, const gridspec *grid, POINT4D *p)
@@ -4406,7 +4421,7 @@ tpointseq_twcentroid(const TSequence *seq)
   double twavgx = tnumberseq_twavg(seqx);
   double twavgy = tnumberseq_twavg(seqy);
   double twavgz = (hasz) ? tnumberseq_twavg(seqz) : 0.0;
-  GSERIALIZED *result = gspoint_make(twavgx, twavgy, twavgz, hasz, false, srid);
+  GSERIALIZED *result = geopoint_make(twavgx, twavgy, twavgz, hasz, false, srid);
   pfree(seqx); pfree(seqy);
   if (hasz)
     pfree(seqz);
@@ -4442,7 +4457,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
   double twavgx = tnumberseqset_twavg(ssx);
   double twavgy = tnumberseqset_twavg(ssy);
   double twavgz = hasz ? tnumberseqset_twavg(ssz) : 0;
-  GSERIALIZED *result = gspoint_make(twavgx, twavgy, twavgz, hasz, false, srid);
+  GSERIALIZED *result = geopoint_make(twavgx, twavgy, twavgz, hasz, false, srid);
   pfree(ssx); pfree(ssy);
   if (hasz)
     pfree(ssz);
@@ -4879,8 +4894,8 @@ tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
     geographic_point_init(p->x, 89.999999, &(e1.start));
     geographic_point_init(p->x, -89.999999, &(e1.end));
     edge_intersection(&e, &e1, &inter);
-    proj = PointerGetDatum(gspoint_make(rad2deg(inter.lon), rad2deg(inter.lat),
-      0, false, true, tpointinst_srid(start)));
+    proj = PointerGetDatum(geopoint_make(rad2deg(inter.lon),
+      rad2deg(inter.lat), 0, false, true, tpointinst_srid(start)));
     fraction = geosegm_locate_point(dstart, dend, proj, NULL);
   }
   else

@@ -204,9 +204,7 @@ TInstant *
 tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
 {
   Datum resvalue = tfunc_base(tinstant_val(inst), lfinfo);
-  TInstant *result = tinstant_make(resvalue, lfinfo->restype, inst->t);
-  DATUM_FREE(resvalue, temptype_basetype(lfinfo->restype));
-  return result;
+  return tinstant_make_free(resvalue, lfinfo->restype, inst->t);
 }
 
 /**
@@ -308,10 +306,9 @@ TInstant *
 tfunc_tinstant_base(const TInstant *inst, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-  Datum resvalue = tfunc_base_base(tinstant_val(inst), value, lfinfo);
-  TInstant *result = tinstant_make(resvalue, lfinfo->restype, inst->t);
-  DATUM_FREE(resvalue, temptype_basetype(lfinfo->restype));
-  return result;
+  Datum value1 = tinstant_val(inst);
+  Datum resvalue = tfunc_base_base(value1, value, lfinfo);
+  return tinstant_make_free(resvalue, lfinfo->restype, inst->t);
 }
 
 /**
@@ -349,7 +346,6 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_val(inst1);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  meosType resbasetype = temptype_basetype(lfinfo->restype);
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the loop adds between one and two instants */
@@ -365,8 +361,8 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
       lfinfo->tpfunc_base(inst1, inst2, value, lfinfo->argtype[1],
         &intervalue, &intertime))
     {
-      instants[ninsts++] = tinstant_make(intervalue, lfinfo->restype, intertime);
-      DATUM_FREE(intervalue, resbasetype);
+      instants[ninsts++] = tinstant_make_free(intervalue, lfinfo->restype,
+        intertime);
     }
     inst1 = inst2;
     value1 = value2;

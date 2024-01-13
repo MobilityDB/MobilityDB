@@ -1122,7 +1122,7 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i ++)
   {
-    Datum point = PointerGetDatum(gspoint_make(xcoords[i], ycoords[i],
+    Datum point = PointerGetDatum(geopoint_make(xcoords[i], ycoords[i],
       hasz ? zcoords[i] : 0.0, hasz, geodetic, srid));
     instants[i] = tinstant_make(point, geodetic ? T_TGEOGPOINT : T_TGEOMPOINT,
       times[i]);
@@ -1379,7 +1379,7 @@ tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
 
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Return a copy of a temporal sequence with no additional free space
+ * @brief Return a copy of a temporal sequence without any extra storage space
  * @param[in] seq Temporal sequence
  */
 TSequence *
@@ -1414,7 +1414,8 @@ tsequence_compact(const TSequence *seq)
 #if MEOS
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Restart a temporal sequence by keeping only the last n instants
+ * @brief Rturn a temporal sequence restarted by keeping only the last n
+ * instants
  * @param[in,out] seq Temporal sequence
  * @param[in] count Number of instants to keep
  */
@@ -2031,7 +2032,7 @@ tsequence_duration(const TSequence *seq)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the time span of a temporal
+ * @brief Return the last argument initialized with the time span of a temporal
  * sequence
  * @param[in] seq Temporal sequence
  * @param[out] s Span
@@ -2316,8 +2317,8 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the value of a temporal sequence at
- * a timestamptz
+ * @brief Return the last argument initialized with the value of a temporal
+ * sequence at a timestamptz
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
  * @param[in] strict True if inclusive/exclusive bounds are taken into account

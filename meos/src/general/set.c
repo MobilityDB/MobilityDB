@@ -356,16 +356,36 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
+  /* Get the SRID if it is a geo set  */
+  int32 srid;
+  char str1[20];
+  str1[0] = '\0';
+  outfunc value_out1 = value_out;
+  if (geoset_type(s->settype) && value_out == ewkt_out)
+  {
+    srid = geoset_srid(s);
+    if (srid > 0)
+      sprintf(str1, "SRID=%d;", srid);
+    /* Since the SRID is output at the begining it is not output for the
+     * elements */
+    value_out1 = wkt_out;
+  }
+
   char **strings = palloc(sizeof(char *) * s->count);
   size_t outlen = 0;
   for (int i = 0; i < s->count; i++)
   {
-    strings[i] = value_out(SET_VAL_N(s, i), s->basetype, maxdd);
+    strings[i] = value_out1(SET_VAL_N(s, i), s->basetype, maxdd);
     outlen += strlen(strings[i]) + 1;
   }
   bool quotes = set_basetype_quotes(s->basetype);
-  return stringarr_to_string(strings, s->count, outlen, "", '{', '}', quotes,
-    SPACES);
+  char *str2 = stringarr_to_string(strings, s->count, outlen, "", '{', '}',
+    quotes, SPACES);
+  char *result = palloc(strlen(str1) + strlen(str2) + 1);
+  strcpy(result, str1);
+  strcat(result, str2);
+  pfree(str2);
+  return result;
 }
 
 /**
@@ -1557,7 +1577,8 @@ geoset_end_value(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_accessor
- * @brief Initialize the last argument to (a copy of) the n-th value of a set
+ * @brief Return the last argument initialized to (a copy of) the n-th value of
+ * a set
  * @param[in] s Set
  * @param[in] n Number
  * @param[out] result Value
@@ -1579,7 +1600,8 @@ set_value_n(const Set *s, int n, Datum *result)
 #if MEOS
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of an integer set
+ * @brief Return the last argument initialized to the n-th value of an integer
+ * set
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -1600,7 +1622,8 @@ intset_value_n(const Set *s, int n, int *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a big integer set
+ * @brief Return the last argument initialized to the n-th value of a big
+ * integer set
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -1621,7 +1644,7 @@ bigintset_value_n(const Set *s, int n, int64 *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a float set
+ * @brief Return the last argument initialized to the n-th value of a float set
  * @param[in] s Float set
  * @param[in] n Number
  * @param[out] result Value
@@ -1642,7 +1665,8 @@ floatset_value_n(const Set *s, int n, double *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to a copy of the n-th value of a text set
+ * @brief Return the last argument initialized to a copy of the n-th value of a
+ * text set
  * @param[in] s Text set
  * @param[in] n Number
  * @param[out] result Value
@@ -1663,7 +1687,7 @@ textset_value_n(const Set *s, int n, text **result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a date set
+ * @brief Return the last argument initialized to the n-th value of a date set
  * @param[in] s Date set
  * @param[in] n Number
  * @param[out] result Date
@@ -1684,7 +1708,8 @@ dateset_value_n(const Set *s, int n, DateADT *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a timestamptz set
+ * @brief Return the last argument initialized to the n-th value of a
+ * timestamptz set
  * @param[in] s Timestamptz set
  * @param[in] n Number
  * @param[out] result Timestamptz
@@ -1705,7 +1730,8 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to a copy of the n-th value of a geo set
+ * @brief Return the last argument initialized to a copy of the n-th value of a
+ * geo set
  * @param[in] s Geo set
  * @param[in] n Number
  * @param[out] result Value
@@ -1958,7 +1984,7 @@ geoset_set_srid(const Set *s, int32 srid)
 #if MEOS
 /**
  * @ingroup meos_internal_setspan_transf
- * @brief Return a copy of a set ordered, without duplicates, and with no
+ * @brief Return a copy of a set ordered, without duplicates, and without any
  * additional free space
  * @param[in] s Set
  */

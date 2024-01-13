@@ -204,8 +204,8 @@ tbox_make(const Span *s, const Span *p)
 
 /**
  * @ingroup meos_internal_box_constructor
- * @brief Initialize the last argument with a temporal box constructed from a
- * number span and a timestamptz span
+ * @brief Return the last argument initialized with a temporal box constructed
+ * from a number span and a timestamptz span
  * @param[in] s Value span
  * @param[in] p Time span
  * @param[out] box Result
@@ -407,8 +407,8 @@ numspan_tstzspan_to_tbox(const Span *s, const Span *p)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a temporal box constructed from a
- * number
+ * @brief Return the last argument initialized with a temporal box constructed
+ * from a number
  * @param[in] value Value
  * @param[in] basetype Type of the value
  * @param[out] box Result
@@ -444,8 +444,8 @@ number_to_tbox(Datum value, meosType basetype)
 #if MEOS
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a temporal box constructed from an
- * integer
+ * @brief Return the last argument initialized with a temporal box constructed
+ * from an integer
  * @param[in] i Value
  * @param[out] box Result
  */
@@ -473,8 +473,8 @@ int_to_tbox(int i)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a temporal box constructed from a
- * float
+ * @brief Return the last argument initialized with a temporal box constructed
+ * from a float
  * @param[in] d Value
  * @param[out] box Result
  */
@@ -503,8 +503,8 @@ float_to_tbox(double d)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a temporal box constructed from a
- * timestamptz
+ * @brief Return the last argument initialized with a temporal box constructed
+ * from a timestamptz
  * @param[in] t Timestamp
  * @param[out] box Result
  */
@@ -535,8 +535,8 @@ timestamptz_to_tbox(TimestampTz t)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a temporal box constructed from a
- * number set
+ * @brief Return the last argument initialized with a temporal box constructed
+ * from a number set
  * @param[in] s Set
  * @param[out] box Result
  */
@@ -552,8 +552,8 @@ numset_set_tbox(const Set *s, TBox *box)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a temporal box constructed from a
- * timestamptz set
+ * @brief Return the last argument initialized with a temporal box constructed
+ * from a timestamptz set
  * @param[in] s Set
  * @param[out] box Result
  */
@@ -596,8 +596,8 @@ set_to_tbox(const Set *s)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a temporal box constructed from a
- * number span
+ * @brief Return the last argument initialized with a temporal box constructed
+ * from a number span
  * @param[in] s Span
  * @param[out] box Result
  */
@@ -611,8 +611,8 @@ numspan_set_tbox(const Span *s, TBox *box)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a temporal box constructed from a
- * timestamptz span
+ * @brief Return the last argument initialized with a temporal box
+ * constructed from a timestamptz span
  * @param[in] s Span
  * @param[out] box Result
  */
@@ -655,8 +655,8 @@ span_to_tbox(const Span *s)
 #if MEOS
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a temporal box constructed from a
- * span set
+ * @brief Return the last argument initialized with a temporal box constructed
+ * from a span set
  * @param[in] ss Span set
  * @param[out] box Result
  */
@@ -670,8 +670,8 @@ numspanset_set_tbox(const SpanSet *ss, TBox *box)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a temporal box constructed from a
- * timestamptz span set
+ * @brief Return the last argument initialized with a temporal box constructed
+ * from a timestamptz span set
  * @param[in] ss Span set
  * @param[out] box Result
  */
@@ -1279,7 +1279,8 @@ tbox_round(const TBox *box, int maxdd)
  *****************************************************************************/
 
 /**
- * @brief Initialize the ouput variables with the flag values of the boxes
+ * @brief Return the ouput variables initialized  with the flag values of the
+ * boxes
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hast Boolean variables
  */
@@ -1580,8 +1581,8 @@ union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
 
 /**
  * @ingroup meos_internal_box_set
- * @brief Initialize the last argument with the result of the intersection
- * of two temporal boxes
+ * @brief Return the last argument initialized with the result of the
+ * intersection of two temporal boxes
  * @param[in] box1,box2 Temporal boxes
  * @param[out] result Resulting box
  * @note This function is equivalent to @ref intersection_tbox_tbox without

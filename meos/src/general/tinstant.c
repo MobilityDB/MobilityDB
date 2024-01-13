@@ -92,11 +92,12 @@ tinstant_value(const TInstant *inst)
     return inst->value;
   /* For base types passed by reference */
   meosType basetype = temptype_basetype(inst->temptype);
-  return datum_copy((Datum) &inst->value, basetype);
+  return datum_copy(PointerGetDatum(&inst->value), basetype);
 }
 
 /**
- * @brief Initialize the value and the timestamp of a temporal instant
+ * @brief Return the first argument initialized with the value and the
+ * timestamptz
  * @param[in,out] inst Temporal instant to be modified
  * @param[in] value Value
  * @param[in] t Timestamp
@@ -282,8 +283,8 @@ tinstant_out(const TInstant *inst, int maxdd)
  * the end of the struct upon creation.
  *
  * @param[in] value Value
- * @param[in] t Timestamp
  * @param[in] temptype Temporal type
+ * @param[in] t Timestamp
  */
 TInstant *
 tinstant_make(Datum value, meosType temptype, TimestampTz t)
@@ -330,6 +331,21 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
     MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
     PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
   }
+  return result;
+}
+
+/**
+ * @brief Return a temporal instant created from the values
+ * and free the base value after the creation
+ * @param[in] value Values
+ * @param[in] temptype Temporal type
+ * @param[in] t Timestamp
+ */
+TInstant *
+tinstant_make_free(Datum value, meosType temptype, TimestampTz t)
+{
+  TInstant *result = tinstant_make(value, temptype, t);
+  DATUM_FREE(value,temptype_basetype(temptype));
   return result;
 }
 
@@ -478,7 +494,8 @@ tinstant_time(const TInstant *inst)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the time span of a temporal instant
+ * @brief Return the last argument initialized with the time span of a temporal
+ * instant
  * @param[in] inst Temporal instant
  * @param[out] s Result
  */
@@ -529,8 +546,8 @@ tinstant_insts(const TInstant *inst, int *count)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the value of a temporal instant at
- * a timestamptz
+ * @brief Return the last argument initialized with the value of a temporal
+ * instant at a timestamptz
  * @param[in] inst Temporal instant
  * @param[in] t Timestamp
  * @param[out] result Result

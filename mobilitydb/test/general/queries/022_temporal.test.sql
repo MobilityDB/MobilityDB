@@ -2071,6 +2071,9 @@ SELECT atTBox(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-
 -- NULL
 SELECT atTbox(tfloat '[1@2000-01-01, 2@2000-01-02)', tbox 'TBOXFLOAT XT([2,2],[2000-01-02,2000-01-02])');
 
+/* Errors */
+SELECT atTbox(tfloat '[1@2001-01-01, 5@2001-01-05]', tbox 'TBOXINT X([1,2])');
+
 SELECT minusTBox(tint '1@2000-01-01', tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])');
 SELECT minusTBox(tint '{1@2000-01-01}', tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])');
 SELECT minusTBox(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])');

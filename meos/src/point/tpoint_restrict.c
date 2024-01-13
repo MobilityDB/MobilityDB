@@ -64,9 +64,9 @@ static Datum
 point_force2d(Datum point, Datum srid)
 {
   const POINT2D *p = DATUM_POINT2D_P(point);
-  GSERIALIZED *gs = gspoint_make(p->x, p->y, 0.0, false, false,
+  GSERIALIZED *result = geopoint_make(p->x, p->y, 0.0, false, false,
     DatumGetInt32(srid));
-  return PointerGetDatum(gs);
+  return PointerGetDatum(result);
 }
 
 /**
@@ -1062,7 +1062,7 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
   bool *p3_inc, bool *p4_inc)
 {
   assert(MEOS_FLAGS_GET_X(box->flags));
-  assert(! gspoint_eq(point1, point2));
+  assert(! geopoint_eq(point1, point2));
   assert(! hasz || (MEOS_FLAGS_GET_Z(box->flags) &&
     (bool) FLAGS_GET_Z(point1->gflags) && (bool) FLAGS_GET_Z(point2->gflags)));
 
@@ -1146,8 +1146,8 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
           *p3_inc = ! max_code1;
           *p4_inc = ! max_code2;
         }
-        *point3 = gspoint_make(x1, y1, z1, hasz, false, srid);
-        *point4 = gspoint_make(x2, y2, z2, hasz, false, srid);
+        *point3 = geopoint_make(x1, y1, z1, hasz, false, srid);
+        *point4 = geopoint_make(x2, y2, z2, hasz, false, srid);
 
         return true;
       }
@@ -1422,7 +1422,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     GSERIALIZED *p2 = DatumGetGserializedP(tinstant_val(inst2));
     GSERIALIZED *p3, *p4;
     bool makeseq = false;
-    if (gspoint_eq(p1, p2))
+    if (geopoint_eq(p1, p2))
     {
       /* Constant segment */
       if (tpointinst_restrict_stbox_iter(inst1, box, border_inc, REST_AT))
@@ -1473,7 +1473,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           TInstant *inst1_2d = (TInstant *) tpoint_force2d((Temporal *) inst1);
           TInstant *inst2_2d = (TInstant *) tpoint_force2d((Temporal *) inst2);
           tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d3, &t1);
-          if (gspoint_eq(p3, p4))
+          if (geopoint_eq(p3, p4))
             t2 = t1;
           else
             tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d4, &t2);
@@ -1482,7 +1482,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         else
         {
           tpointsegm_timestamp_at_value1_iter(inst1, inst2, d3, &t1);
-          if (gspoint_eq(p3, p4))
+          if (geopoint_eq(p3, p4))
             t2 = t1;
           else
             tpointsegm_timestamp_at_value1_iter(inst1, inst2, d4, &t2);
@@ -1510,7 +1510,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           if (t2 != inst2->t)
           {
             inter2 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t2);
-            if (! free1 || ! gspoint_eq(DatumGetGserializedP(inter1),
+            if (! free1 || ! geopoint_eq(DatumGetGserializedP(inter1),
                   DatumGetGserializedP(inter2)))
             {
               instants[ninsts] = tinstant_make(inter2, inst1->temptype, t2);

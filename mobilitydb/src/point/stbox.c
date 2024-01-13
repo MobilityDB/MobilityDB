@@ -836,67 +836,6 @@ Stbox_set_srid(PG_FUNCTION_ARGS)
   PG_RETURN_STBOX_P(stbox_set_srid(box, srid));
 }
 
-/**
- * @brief Transform a spatiotemporal box into another spatial reference system
- */
-static STBox *
-stbox_transform(const STBox *box, int32 srid)
-{
-  /* Ensure validity of the arguments */
-  ensure_not_null((void *) box); ensure_has_X_stbox(box);
-
-  STBox *result = stbox_cp(box);
-  result->srid = DatumGetInt32(srid);
-  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
-  Datum min = PointerGetDatum(gspoint_make(box->xmin, box->ymin, box->zmin,
-    hasz, geodetic, box->srid));
-  Datum max = PointerGetDatum(gspoint_make(box->xmax, box->ymax, box->zmax,
-    hasz, geodetic, box->srid));
-  Datum min1 = datum_transform(min, srid);
-  Datum max1 = datum_transform(max, srid);
-  if (hasz)
-  {
-    const POINT3DZ *ptmin1 = DATUM_POINT3DZ_P(min1);
-    const POINT3DZ *ptmax1 = DATUM_POINT3DZ_P(max1);
-    result->xmin = ptmin1->x;
-    result->ymin = ptmin1->y;
-    result->zmin = ptmin1->z;
-    result->xmax = ptmax1->x;
-    result->ymax = ptmax1->y;
-    result->zmax = ptmax1->z;
-  }
-  else
-  {
-    const POINT2D *ptmin1 = DATUM_POINT2D_P(min1);
-    const POINT2D *ptmax1 = DATUM_POINT2D_P(max1);
-    result->xmin = ptmin1->x;
-    result->ymin = ptmin1->y;
-    result->xmax = ptmax1->x;
-    result->ymax = ptmax1->y;
-  }
-  pfree(DatumGetPointer(min)); pfree(DatumGetPointer(max));
-  pfree(DatumGetPointer(min1)); pfree(DatumGetPointer(max1));
-  return result;
-}
-
-PGDLLEXPORT Datum Stbox_transform(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_transform);
-/**
- * @ingroup mobilitydb_box_transf
- * @brief Return a spatiotemporal box with the coordinates transformed to an SRID
- * @sqlfn transform()
- */
-Datum
-Stbox_transform(PG_FUNCTION_ARGS)
-{
-  STBox *box = PG_GETARG_STBOX_P(0);
-  int32 srid = PG_GETARG_INT32(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  PG_RETURN_STBOX_P(stbox_transform(box, srid));
-}
-
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/

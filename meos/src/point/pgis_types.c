@@ -594,8 +594,8 @@ geo_reverse(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Initialize the last argument with the azimuth of a segment defined by
- * two points
+ * @brief Return the last argument initialized with the azimuth of a segment
+ * defined by two points
  * @return Return false on exception (same point)
  */
 bool
@@ -1729,7 +1729,7 @@ geo_out(const GSERIALIZED *gs)
   return result;
 }
 
-#if MEOS
+#if MEOS || DEBUG_BUILD
 /**
  * @brief Return a geometry/geography from its WKT representation (and
  * optionally a SRID)
@@ -2072,8 +2072,7 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision, char *srs)
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *txt = lwgeom_to_geojson(geom, srs, precision, output_bbox);
   char *result = pstrdup(VARDATA(txt));
-  lwgeom_free(geom);
-  pfree(txt);
+  lwgeom_free(geom); pfree(txt);
   return result;
 }
 #endif /* MEOS */

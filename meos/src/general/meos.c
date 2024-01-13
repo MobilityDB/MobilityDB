@@ -36,6 +36,8 @@
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
+/* Proj */
+#include <proj.h>
 /* MEOS */
 #include <meos.h>
 // #include <meos_internal.h>
@@ -69,11 +71,15 @@
 #define INTSTYLE_SQL_STANDARD      2
 #define INTSTYLE_ISO_8601          3
 
-/* Default definitions taken from globals.c */
+/* Global variables with default definitions taken from globals.c */
 
 int DateStyle = USE_ISO_DATES;
 int DateOrder = DATEORDER_MDY;
 int IntervalStyle = INTSTYLE_POSTGRES;
+
+/* Global variables keeping Proj context */
+
+PJ_CONTEXT *_PJ_CONTEXT;
 
 /***************************************************************************
  * Definitions taken from pg_regress.h/c
@@ -448,8 +454,10 @@ meos_get_intervalstyle(void)
 void
 meos_initialize(const char *tz_str, error_handler_fn err_handler)
 {
-  meos_initialize_timezone(tz_str);
   meos_initialize_error_handler(err_handler);
+  meos_initialize_timezone(tz_str);
+  /* Initialize PROJ */
+  _PJ_CONTEXT = proj_context_create();
   return;
 }
 
@@ -460,6 +468,8 @@ void
 meos_finalize(void)
 {
   meos_finalize_timezone();
+  /* Finalize PROJ */
+  proj_context_destroy(_PJ_CONTEXT);
   return;
 }
 

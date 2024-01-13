@@ -1244,9 +1244,9 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
     return NULL;
   /* One argument is null, return a copy of the other temporal */
   if (! temp1)
-    return temporal_copy(temp2);
+    return temporal_cp(temp2);
   if (! temp2)
-    return temporal_copy(temp1);
+    return temporal_cp(temp1);
 
   /* Ensure validity of the arguments */
   if (! ensure_same_temporal_type(temp1, temp2) ||

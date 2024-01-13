@@ -317,8 +317,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     /* Form tuple and return */
     int i = 0;
     hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
-    tuple_arr[i++] = PointerGetDatum(gspoint_make(box.xmin, box.ymin, box.zmin,
-      hasz, false, box.srid));
+    tuple_arr[i++] = PointerGetDatum(geopoint_make(box.xmin, box.ymin,
+      box.zmin, hasz, false, box.srid));
     if (timesplit)
       tuple_arr[i++] = box.period.lower;
     tuple_arr[i++] = PointerGetDatum(atstbox);

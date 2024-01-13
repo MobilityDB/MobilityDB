@@ -932,7 +932,7 @@ tsequenceset_duration(const TSequenceSet *ss, bool boundspan)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the time span of a temporal
+ * @brief Return the last argument initialized with the time span of a temporal
  * sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] s Span
@@ -1136,8 +1136,8 @@ tsequenceset_num_timestamps(const TSequenceSet *ss)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the n-th distinct timestamptz of a
- * temporal sequence set
+ * @brief Return the last argument initialized with the n-th distinct
+ * timestamptz of a temporal sequence set
  * @param[in] ss Temporal sequence set
  * @param[in] n Number
  * @param[out] result Timestamps
@@ -1214,8 +1214,8 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the value of a temporal sequence
- * set at a timestamptz
+ * @brief Return the last argument initialized with the value of a temporal
+ * sequence set at a timestamptz
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
  * @param[in] strict True if exclusive bounds are taken into account
@@ -1275,7 +1275,8 @@ tsequenceset_value_at_timestamptz(const TSequenceSet *ss, TimestampTz t,
 
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Return a copy of a temporal sequence set without any extra space
+ * @brief Return a copy of a temporal sequence set without any extra storage
+ * space
  * @param[in] ss Temporal sequence set
  * @note We cannot simply test whether `s->count == ss->maxcount` since
  * there could be extra space allocated for the (variable-length) sequences
@@ -1293,7 +1294,8 @@ tsequenceset_compact(const TSequenceSet *ss)
 #if MEOS
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Restart a temporal sequence set by keeping only the last n sequences
+ * @brief Return a temporal sequence set restared by keeping only the last n
+ * sequences
  * @param[in] ss Temporal sequence set
  * @param[out] count Number of sequences kept
  */

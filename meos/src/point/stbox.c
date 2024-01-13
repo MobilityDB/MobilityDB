@@ -278,8 +278,8 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 
 /**
  * @ingroup meos_internal_box_constructor
- * @brief Initialize the last argument with a spatiotemporal box constructed
- * from the other arguments
+ * @brief Return the last argument initialized with a spatiotemporal box
+ * constructed from the other arguments
  * @param[in] hasx True if the values for the spatial dimension are givne
  * @param[in] hasz True if there is a Z dimension
  * @param[in] geodetic True if geodetic
@@ -416,7 +416,7 @@ geo_tstzspan_to_stbox(const GSERIALIZED *gs, const Span *s)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a @p GBOX contructed from a
+ * @brief Return the last argument initialized with a @p GBOX contructed from a
  * spatiotemporal box
  * @param[in] box Spatiotemporal box
  * @param[out] gbox GBOX
@@ -445,8 +445,8 @@ stbox_set_gbox(const STBox *box, GBOX *gbox)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a @p BOX3D contructed from a
- * spatiotemporal box
+ * @brief Return the last argument initialized with a @p BOX3D contructed from
+ * a spatiotemporal box
  * @param[in] box Spatiotemporal box
  * @param[out] box3d BOX3D
  */
@@ -592,7 +592,8 @@ stbox_to_tstzspan(const STBox *box)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with the bounding box of a spatial set
+ * @brief Return the last argument initialized with the bounding box of a
+ * spatial set
  * @param[in] s Set
  * @param[out] box Spatiotemporal box
  */
@@ -707,8 +708,8 @@ point_get_coords(const GSERIALIZED *point, bool hasz, double *x, double *y,
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a spatiotemporal box constructed
- * from a geometry/geography
+ * @brief return the last argument initialized with a spatiotemporal box
+ * constructed from a geometry/geography
  * @param[in] gs Geometry/geography
  * @param[out] box Spatiotemporal box
  */
@@ -785,8 +786,8 @@ geo_to_stbox(const GSERIALIZED *gs)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a spatiotemporal box constructed
- * from an array of geometries/geographies
+ * @brief Return the last argument initialized with a spatiotemporal box
+ * constructed from an array of geometries/geographies
  * @param[in] values Values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -807,8 +808,8 @@ geoarr_set_stbox(const Datum *values, int count, STBox *box)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a spatiotemporal box constructed
- * from a timestamptz
+ * @brief Return the last argument initialized with a spatiotemporal box
+ * constructed from a timestamptz
  * @param[in] t Timestamp
  * @param[out] box Spatiotemporal box
  */
@@ -840,8 +841,8 @@ timestamptz_to_stbox(TimestampTz t)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a spatiotemporal box constructed
- * from a timestamptz set
+ * @brief Return the last argument initialized with a spatiotemporal box
+ * constructed from a timestamptz set
  * @param[in] s Set
  * @param[out] box Spatiotemporal box
  */
@@ -875,8 +876,8 @@ tstzset_to_stbox(const Set *s)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a spatiotemporal box constructed
- * from a timestamptz span
+ * @brief Return the last argument initialized with a spatiotemporal box
+ * constructed from a timestamptz span
  * @param[in] s Span
  * @param[out] box Spatiotemporal box
  */
@@ -910,8 +911,8 @@ tstzspan_to_stbox(const Span *s)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Initialize the last argument with a spatiotemporal box constructed
- * from a timestamptz span set
+ * @brief Return the last argument initialized with a spatiotemporal box
+ * constructed from a timestamptz span set
  * @param[in] ss Span set
  * @param[out] box Spatiotemporal box
  */
@@ -1410,7 +1411,8 @@ stbox_round(const STBox *box, int maxdd)
  *****************************************************************************/
 
 /**
- * @brief Initialize the ouput variables with the flag values of the boxes
+ * @brief Return the ouput variables initialized with the flag values of two
+ * boxes
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hasz,hast,geodetic Boolean variables
  */
@@ -1919,8 +1921,8 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
 
 /**
  * @ingroup meos_internal_box_set
- * @brief Initialize the last argument with the result of the intersection of
- * two spatiotemporal boxes
+ * @brief Return the last argument initialized with the intersection of two
+ * spatiotemporal boxes
  * @param[in] box1,box2 Spatiotemporal boxes
  * @param[out] result Result
  * @note This function is equivalent to @ref intersection_stbox_stbox without

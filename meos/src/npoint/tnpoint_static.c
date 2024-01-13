@@ -381,8 +381,8 @@ npoint_make(int64 rid, double pos)
 }
 
 /**
- * @brief Initialize the last argument with a network point constructed from
- * a route identifier and a position
+ * @brief Return the last argument initialized with a network point constructed
+ * from a route identifier and a position
  */
 void
 npoint_set(int64 rid, double pos, Npoint *np)
@@ -420,8 +420,8 @@ nsegment_make(int64 rid, double pos1, double pos2)
 }
 
 /**
- * @brief Initialize the last argument with a network segment constructed from
- * a route identifier and two positions
+ * @brief Return the last argument initialized with a network segment
+ * constructed from a route identifier and two positions
  */
 void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)

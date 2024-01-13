@@ -470,12 +470,38 @@ Set *
 set_parse(const char **str, meosType settype)
 {
   const char *type_str = "set";
+  int set_srid = 0;
+  p_whitespace(str);
+  
+  /* Starts with "SRID=". The SRID specification must be gobbled. We cannot use 
+   * the atoi() function because this requires a string terminated by '\0' 
+   * and we cannot modify the string. */
+  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
+  {
+    if (! ensure_geoset_type(settype))
+      return NULL;
+    /* Move str to the start of the number part */
+    *str += 5;
+    int delim = 0;
+    set_srid = 0;
+    /* Delimiter will be either ',' or ';' depending on whether interpolation
+       is given after */
+    while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
+    {
+      set_srid = set_srid * 10 + (*str)[delim] - '0';
+      delim++;
+    }
+    /* Set str to the start of the temporal point */
+    *str += delim + 1;
+  }
+  /* For the second pass we start after the SRID=xxx;{ including the '{' */
+  const char *bak = *str + 1;
+
   if (! ensure_obrace(str, type_str))
     return NULL;
   meosType basetype = settype_basetype(settype);
 
   /* First parsing */
-  const char *bak = *str;
   Datum d;
   if (! elem_parse(str, basetype, &d))
     return NULL;
@@ -499,6 +525,11 @@ set_parse(const char **str, meosType settype)
     elem_parse(str, basetype, &values[i]);
   }
   p_cbrace(str);
+  if (set_srid != SRID_UNKNOWN)
+  {
+    for (int i = 0; i < count; i++)
+      gserialized_set_srid(DatumGetGserializedP(values[i]), set_srid);
+  }
   return set_make_free(values, count, basetype, ORDERED_NO);
 }
 

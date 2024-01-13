@@ -177,8 +177,8 @@ temporal_bbox_size(meosType temptype)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the bounding box of a temporal
- * instant
+ * @brief Return the last argument initialized with the bounding box of a
+ * temporal instant
  * @param[in] inst Temporal value
  * @param[out] box Result
  */
@@ -216,8 +216,8 @@ tinstant_set_bbox(const TInstant *inst, void *box)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Initialize the last argument with the bounding box of a temporal
- * sequence
+ * @brief Return the last argument initialized with the bounding box of a
+ * temporal sequence
  * @param[in] seq Temporal sequence
  * @param[out] box Bounding box
  */
@@ -232,8 +232,8 @@ tsequence_set_bbox(const TSequence *seq, void *box)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Initialize the last argument with the bounding box of a temporal
- * sequence set
+ * @brief Return the last argument initialized with the bounding box of a
+ * temporal sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] box Bounding box
  */
@@ -423,8 +423,8 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
 }
 
 /**
- * @brief Initialize the timestamptz span in the last argument from an array of
- * temporal sequence values
+ * @brief Return the last argument initialized with the timestamptz span of an
+ * array of temporal sequences
  * @param[in] sequences Temporal instants
  * @param[in] count Number of elements in the array
  * @param[out] s Result
@@ -440,8 +440,8 @@ tseqarr_set_tstzspan(const TSequence **sequences, int count, Span *s)
 }
 
 /**
- * @brief Initialize the temporal box in the last argument from an array of
- * temporal number sequence values
+ * @brief Return the last argument initialized with the temporal box of an
+ * array of temporal number sequences
  * @param[in] box Box
  * @param[in] sequences Temporal instants
  * @param[in] count Number of elements in the array
@@ -459,8 +459,8 @@ tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBox *box)
 }
 
 /**
- * @brief Initialize the last argument with the bounding box from an array of
- * temporal sequence values
+ * @brief Return the last argument initialized with the bounding box from an
+ * array of temporal sequences
  */
 void
 tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)

@@ -110,159 +110,97 @@ Tpoint_set_srid(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Functions for transformatin spatial reference systems
+ *****************************************************************************/
 
+PGDLLEXPORT Datum Geoset_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geoset_transform);
 /**
- * @brief Call the PostGIS transform function. We need to use the fcinfo cached
- * in the external functions tpoint_transform
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a geo set with the coordinates transformed to an SRID
+ * @sqlfn transform()
  */
 Datum
-datum_transform(Datum value, Datum srid)
+Geoset_transform(PG_FUNCTION_ARGS)
 {
-  return CallerFInfoFunctionCall2(transform, (fetch_fcinfo())->flinfo,
-    InvalidOid, value, srid);
+  Set *s = PG_GETARG_SET_P(0);
+  int32 srid = PG_GETARG_INT32(1);
+  Set *result = geoset_transform(s, srid);
+  PG_FREE_IF_COPY(s, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
 }
 
+PGDLLEXPORT Datum Geoset_transform_pipeline(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geoset_transform_pipeline);
 /**
- * @brief Transform a temporal point into another spatial reference system
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a geo set transformed to another spatial reference
+ * system using a transformation pipeline
+ * @sqlfn transformPipeline()
  */
-TInstant *
-tpointinst_transform(const TInstant *inst, int srid)
+Datum
+Geoset_transform_pipeline(PG_FUNCTION_ARGS)
 {
-  Datum geo = datum_transform(tinstant_val(inst), Int32GetDatum(srid));
-  TInstant *result = tinstant_make(geo, inst->temptype, inst->t);
-  pfree(DatumGetPointer(geo));
-  return result;
+  Set *s = PG_GETARG_SET_P(0);
+  text *pipelinetxt = PG_GETARG_TEXT_P(1);
+  int srid = PG_GETARG_INT32(2);
+  bool is_forward = PG_GETARG_BOOL(3);
+  char *pipelinestr = text2cstring(pipelinetxt);
+  Set *result = geoset_transform_pipeline(s, pipelinestr, srid, is_forward);
+  pfree(pipelinestr);
+  PG_FREE_IF_COPY(s, 0);
+  PG_FREE_IF_COPY(pipelinetxt, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
 }
 
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Stbox_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_transform);
 /**
- * @brief Transform a temporal point into another spatial reference system
+ * @ingroup mobilitydb_box_transf
+ * @brief Return a spatiotemporal box with the coordinates transformed to an SRID
+ * @sqlfn transform()
  */
-TSequence *
-tpointseq_transform(const TSequence *seq, int srid)
+Datum
+Stbox_transform(PG_FUNCTION_ARGS)
 {
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    TInstant *inst = tpointinst_transform(TSEQUENCE_INST_N(seq, 0), srid);
-    TSequence *result = tinstant_to_tsequence(inst, interp);
-    pfree(inst);
-    return result;
-  }
-
-  /* General case */
-  /* Call the discrete sequence function even for continuous sequences
-   * to obtain a Multipoint that is sent to PostGIS for transformion */
-  Datum multipoint = PointerGetDatum(tpointdiscseq_trajectory(seq));
-  Datum transf = datum_transform(multipoint, srid);
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
-  LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum point = PointerGetDatum(
-      geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    instants[i] = tinstant_make(point, inst->temptype, inst->t);
-    pfree(DatumGetPointer(point));
-  }
-  PG_FREE_IF_COPY_P(gs, DatumGetPointer(transf));
-  pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
-  lwmpoint_free(lwmpoint);
-
-  return tsequence_make_free(instants, seq->count, true, true, interp,
-    NORMALIZE_NO);
+  STBox *box = PG_GETARG_STBOX_P(0);
+  int32 srid = PG_GETARG_INT32(1);
+  STBox *result = stbox_transform(box, srid);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_STBOX_P(result);
 }
 
+PGDLLEXPORT Datum Stbox_transform_pipeline(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_transform_pipeline);
 /**
- * @brief Transform a temporal point into another spatial reference system
- * @note In order to do a SINGLE call to the PostGIS transform function we do
- * not iterate through the sequences and call the transform for the sequence
+ * @ingroup mobilitydb_box_transf
+ * @brief Return a spatiotemporal box transformed to another spatial reference
+ * system using a transformation pipeline
+ * @sqlfn transformPipeline()
  */
-TSequenceSet *
-tpointseqset_transform(const TSequenceSet *ss, int srid)
+Datum
+Stbox_transform_pipeline(PG_FUNCTION_ARGS)
 {
-  /* Singleton sequence set */
-  if (ss->count == 1)
-  {
-    TSequence *seq1 = tpointseq_transform(TSEQUENCESET_SEQ_N(ss, 0), srid);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
-    pfree(seq1);
-    return result;
-  }
-
-  /* General case */
-  int npoints = 0;
-  const TSequence *seq;
-  LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
-  int maxcount = -1; /* number of instants of the longest sequence */
-  for (int i = 0; i < ss->count; i++)
-  {
-    seq = TSEQUENCESET_SEQ_N(ss, i);
-    maxcount = Max(maxcount, seq->count);
-    for (int j = 0; j < seq->count; j++)
-    {
-      Datum value = tinstant_val(TSEQUENCE_INST_N(seq, j));
-      GSERIALIZED *gsvalue = DatumGetGserializedP(value);
-      points[npoints++] = lwgeom_from_gserialized(gsvalue);
-    }
-  }
-  /* Last parameter set to STEP to force the function to return multipoint */
-  LWGEOM *geom = lwpointarr_make_trajectory(points, ss->totalcount, STEP);
-  Datum multipoint = PointerGetDatum(geo_serialize(geom));
-  lwgeom_free(geom);
-  Datum transf = datum_transform(multipoint, srid);
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
-  LWMPOINT *mpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  TInstant **instants = palloc(sizeof(TInstant *) * maxcount);
-  interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
-  npoints = 0;
-  for (int i = 0; i < ss->count; i++)
-  {
-    seq = TSEQUENCESET_SEQ_N(ss, i);
-    for (int j = 0; j < seq->count; j++)
-    {
-      GSERIALIZED *point = geo_serialize((LWGEOM *)
-        (mpoint->geoms[npoints++]));
-      const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      instants[j] = tinstant_make(PointerGetDatum(point), inst->temptype,
-        inst->t);
-      pfree(point);
-    }
-    sequences[i] = tsequence_make((const TInstant **) instants, seq->count,
-      seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO);
-    for (int j = 0; j < seq->count; j++)
-      pfree(instants[j]);
-  }
-  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
-    NORMALIZE_NO);
-  pfree(instants);
-  PG_FREE_IF_COPY_P(gs, DatumGetPointer(transf));
-  pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
-  lwmpoint_free(mpoint);
-  return result;
+  STBox *box = PG_GETARG_STBOX_P(0);
+  text *pipelinetxt = PG_GETARG_TEXT_P(1);
+  int srid = PG_GETARG_INT32(2);
+  bool is_forward = PG_GETARG_BOOL(3);
+  char *pipelinestr = text2cstring(pipelinetxt);
+  STBox *result = stbox_transform_pipeline(box, pipelinestr, srid, is_forward);
+  pfree(pipelinestr);
+  PG_FREE_IF_COPY(pipelinetxt, 1);
+  PG_RETURN_STBOX_P(result);
 }
 
-/**
- * @brief Transform a temporal point into another spatial reference system
- */
-Temporal *
-tpoint_transform(const Temporal *temp, int srid)
-{
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return (Temporal *) tpointinst_transform((TInstant *) temp, srid);
-    case TSEQUENCE:
-      return  (Temporal *) tpointseq_transform((TSequence *) temp, srid);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tpointseqset_transform((TSequenceSet *) temp, srid);
-  }
-}
+/*****************************************************************************/
 
 PGDLLEXPORT Datum Tpoint_transform(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_transform);
@@ -277,10 +215,32 @@ Tpoint_transform(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int srid = PG_GETARG_INT32(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = tpoint_transform(temp, srid);
   PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpoint_transform_pipeline(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_transform_pipeline);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf
+ * @brief Return a temporal point transformed to another spatial reference
+ * system using a transformation pipeline
+ * @sqlfn transformPipeline()
+ */
+Datum
+Tpoint_transform_pipeline(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  text *pipelinetxt = PG_GETARG_TEXT_P(1);
+  int srid = PG_GETARG_INT32(2);
+  bool is_forward = PG_GETARG_BOOL(3);
+  char *pipelinestr = text2cstring(pipelinetxt);
+  Temporal *result = tpoint_transform_pipeline(temp, pipelinestr, srid,
+    is_forward);
+  pfree(pipelinestr);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(pipelinetxt, 1);
   PG_RETURN_TEMPORAL_P(result);
 }
 

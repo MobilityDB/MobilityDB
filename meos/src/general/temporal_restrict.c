@@ -427,8 +427,8 @@ temporal_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Initialize the last argument with the base value of a temporal value
- * at a timestamptz
+ * @brief Return the last argument initialized with the base value of a
+ * temporal value at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
@@ -1771,8 +1771,8 @@ tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @brief Initialize the last argument with the value of a temporal discrete
- * sequence at a timestamptz
+ * @brief Return the last argument initialized with the value of a temporal
+ * discrete sequence at a timestamptz
  * @note In order to be compatible with the corresponding functions for
  * temporal sequences that need to interpolate the value, it is necessary to
  * return a copy of the value.

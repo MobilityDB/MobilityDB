@@ -676,8 +676,8 @@ tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
 
 /**
  * @ingroup meos_internal_setspan_constructor
- * @brief Initialize the last argument to a span constructed from the other
- * arguments
+ * @brief Return the last argument initialized to a span constructed from the
+ * other arguments
  * @param[in] lower,upper Bounds
  * @param[in] lower_inc,upper_inc True when the bounds are inclusive
  * @param[in] basetype Base type
@@ -769,7 +769,8 @@ span_copy(const Span *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Initialize the last argument to a span constructed from the value
+ * @brief Return the last argument initialized to a span constructed from the
+ * value
  * @param[in] value Value
  * @param[in] basetype Type of the value
  * @param[out] s Result span
@@ -879,7 +880,7 @@ timestamptz_to_span(TimestampTz t)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Initialize the last argument to the bounding span of a set
+ * @brief Return the last argument initialized to the bounding span of a set
  * @param[in] s Set
  * @param[in] sp Span
  */
@@ -924,8 +925,8 @@ set_to_span(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Initialize the second span with the first one transformed to a float
- * span
+ * @brief Return the second span initialized with the first one transformed to
+ * a float span
  * @param[in] s1,s2 Spans
  */
 void
@@ -969,8 +970,8 @@ intspan_to_floatspan(const Span *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Initialize the second span with the first one transformed to an
- * integer span
+ * @brief Return the second span initialized with the first one transformed to
+ * an integer span
  * @param[in] s1,s2 Spans
  */
 void
@@ -1015,8 +1016,8 @@ floatspan_to_intspan(const Span *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Initialize the second span with the first one transformed to a
- * timetstamptz span
+ * @brief Return the second span initialized with the first one transformed to
+ * a timetstamptz span
  * @param[in] s1,s2 Spans
  */
 void
@@ -1065,8 +1066,8 @@ datespan_to_tstzspan(const Span *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Initialize the second span with the first one transformed to a date
- * span
+ * @brief Return the last span initialized with the first one transformed to a
+ * date span
  * @param[in] s1,s2 Spans
  */
 void
@@ -1420,8 +1421,8 @@ tstzspan_duration(const Span *s)
 
 /**
  * @ingroup meos_internal_setspan_transf
- * @brief Initialize the last argument to a float span with the precision se
- * to the number of decimal places
+ * @brief Return the last argument initialized to a float span with the
+ * precision set to the number of decimal places
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
  * @param[out] result Result span
@@ -1462,7 +1463,7 @@ floatspan_round(const Span *s, int maxdd)
 
 /**
  * @ingroup meos_internal_setspan_transf
- * @brief Expand the second span with the first one
+ * @brief Return the second span expanded with the first one
  * @param[in] s1,s2 Spans
  */
 void

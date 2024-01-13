@@ -1274,7 +1274,7 @@ datespanset_end_date(const SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th date of a span set
+ * @brief Return the last argument initialized to the n-th date of a span set
  * @param[in] ss Span set
  * @param[in] n Number
  * @param[out] result Date
@@ -1411,7 +1411,8 @@ tstzspanset_end_timestamptz(const SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument with the n-th timestamptz of a span set
+ * @brief Return the last argument initialized with the n-th timestamptz of a
+ * span set
  * @param[in] ss Span set
  * @param[in] n Number
  * @param[out] result Timestamptz
@@ -1617,11 +1618,11 @@ spanset_spans(const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup meos_internal_setspan_transf
- * @brief Transition function for set aggregate of values
+ * @brief Return a copy of a span set without any extra storage space
  * @param[in] ss Span set
  */
 SpanSet *
-spanset_compact(SpanSet *ss)
+spanset_compact(const SpanSet *ss)
 {
   assert(ss);
   /* Create the final value reusing the array of spans in the span set */

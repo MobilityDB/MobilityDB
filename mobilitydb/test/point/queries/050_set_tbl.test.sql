@@ -108,9 +108,6 @@ SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
 SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
 SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
 
-SELECT SRID(geomset '{"SRID=5676;Point(1 1)", "SRID=5676;Point(2 2)"}');
-SELECT asEWKT(setSRID(geomset '{"Point(0 0)", "Point(1 1)"}', 5676));
-
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions
 
