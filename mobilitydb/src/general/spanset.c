@@ -199,7 +199,7 @@ Datum
 Span_to_spanset(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_SPANSET_P(span_to_spanset(s));
+  PG_RETURN_SPANSET_P(span_spanset(s));
 }
 
 /**

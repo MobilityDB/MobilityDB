@@ -1116,6 +1116,27 @@ geo_to_set(GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Convert an integer set into a float set
+ * @param[in] s Set
+ * @csqlfn #Intset_to_floatset()
+ */
+Set *
+intset_floatset(const Set *s)
+{
+  assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_set_isof_type(s, T_INTSET))
+    return NULL;
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
+  /* All distinct integers will yield distinct floats */
+  return set_make_free(values, s->count, T_FLOAT8, ORDERED);
+}
+
+#if MEOS
+/**
  * @ingroup meos_setspan_conversion
  * @brief Convert an integer set into a float set
  * @param[in] s Set
@@ -1125,16 +1146,33 @@ Set *
 intset_to_floatset(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_INTSET))
+  if (! ensure_not_null((void *) s))
+    return NULL;
+  return intset_floatset(s);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Convert a float set into an integer set
+ * @param[in] s Set
+ * @csqlfn #Floatset_to_intset()
+ */
+Set *
+floatset_intset(const Set *s)
+{
+  assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_set_isof_type(s, T_FLOATSET))
     return NULL;
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
-    values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
-  /* All distinct integers will yield distinct floats */
-  return set_make_free(values, s->count, T_FLOAT8, ORDERED);
+    values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
+  /* Two distinct floats can yield the same integer */
+  return set_make_free(values, s->count, T_INT4, ORDERED_NO);
 }
 
+#if MEOS
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a float set into an integer set
@@ -1145,16 +1183,34 @@ Set *
 floatset_to_intset(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_FLOATSET))
+  if (! ensure_not_null((void *) s))
+    return NULL;
+  return floatset_intset(s);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Convert a date set into a timestamptz set
+ * @param[in] s Set
+ * @csqlfn #Dateset_to_tstzset()
+ */
+Set *
+dateset_tstzset(const Set *s)
+{
+  assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_set_isof_type(s, T_DATESET))
     return NULL;
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
-    values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
-  /* Two distinct floats can yield the same integer */
-  return set_make_free(values, s->count, T_INT4, ORDERED_NO);
+    values[i] = TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(
+      SET_VAL_N(s, i))));
+  /* All distinct dates will yield distinct timestamptz */
+  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDERED);
 }
 
+#if MEOS
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a date set into a timestamptz set
@@ -1165,17 +1221,34 @@ Set *
 dateset_to_tstzset(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_DATESET))
+  if (! ensure_not_null((void *) s))
+    return NULL;
+  return dateset_tstzset(s);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Convert a timestamptz set into a date set
+ * @param[in] s Set
+ * @csqlfn #Tstzset_to_dateset()
+ */
+Set *
+tstzset_dateset(const Set *s)
+{
+  assert(s);
+  /* Ensure validity of the arguments */
+  if (! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
-    values[i] = TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(
+    values[i] = DateADTGetDatum(timestamptz_to_date(DatumGetTimestampTz(
       SET_VAL_N(s, i))));
-  /* All distinct dates will yield distinct timestamptz */
-  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDERED);
+  /* Two distinct timestamptz can yield the same date */
+  return set_make_free(values, s->count, T_DATE, ORDERED_NO);
 }
 
+#if MEOS
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a timestamptz set into a date set
@@ -1186,16 +1259,11 @@ Set *
 tstzset_to_dateset(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_TSTZSET))
+  if (! ensure_not_null((void *) s))
     return NULL;
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = DateADTGetDatum(timestamptz_to_date(DatumGetTimestampTz(
-      SET_VAL_N(s, i))));
-  /* Two distinct timestamptz can yield the same date */
-  return set_make_free(values, s->count, T_DATE, ORDERED_NO);
+  return tstzset_dateset(s);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions

@@ -288,15 +288,19 @@ extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool o
 
 /* Conversion functions for set and span types */
 
+extern Set *dateset_tstzset(const Set *s);
 extern Span *datespan_tstzspan(const Span *s);
 extern SpanSet *datespanset_tstzspanset(const SpanSet *ss);
-extern Span *intspan_floatspan(const Span *s);
-extern SpanSet *intspanset_floatspanset(const SpanSet *ss);
+extern Set *floatset_intset(const Set *s);
 extern Span *floatspan_intspan(const Span *s);
 extern SpanSet *floatspanset_intspanset(const SpanSet *ss);
+extern Set *intset_floatset(const Set *s);
+extern Span *intspan_floatspan(const Span *s);
+extern SpanSet *intspanset_floatspanset(const SpanSet *ss);
 extern Span *set_span(const Set *s);
 extern SpanSet *set_spanset(const Set *s);
 extern SpanSet *span_spanset(const Span *s);
+extern Set *tstzset_dateset(const Set *s);
 extern Span *tstzspan_datespan(const Span *s);
 extern SpanSet *tstzspanset_datespanset(const SpanSet *ss);
 extern void value_set_span(Datum value, meosType basetype, Span *s);

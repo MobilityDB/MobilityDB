@@ -679,6 +679,7 @@ span_spanset(const Span *s)
   return spanset_make_exp((Span *) s, 1, 1, NORMALIZE_NO, ORDERED);
 }
 
+#if MEOS
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a span to a span set
@@ -691,8 +692,9 @@ span_to_spanset(const Span *s)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s))
     return NULL;
-  return spanset_make_exp((Span *) s, 1, 1, NORMALIZE_NO, ORDERED);
+  return span_spanset(s);
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 
