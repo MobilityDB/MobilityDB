@@ -248,7 +248,7 @@ Datum
 Intspanset_to_floatspanset(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  SpanSet *result = intspanset_to_floatspanset(ss);
+  SpanSet *result = intspanset_floatspanset(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);
 }
@@ -265,7 +265,7 @@ Datum
 Floatspanset_to_intspanset(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  SpanSet *result = floatspanset_to_intspanset(ss);
+  SpanSet *result = floatspanset_intspanset(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);
 }
@@ -282,7 +282,7 @@ Datum
 Datespanset_to_tstzspanset(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  SpanSet *result = datespanset_to_tstzspanset(ss);
+  SpanSet *result = datespanset_tstzspanset(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);
 }
@@ -299,7 +299,7 @@ Datum
 Tstzspanset_to_datespanset(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  SpanSet *result = tstzspanset_to_datespanset(ss);
+  SpanSet *result = tstzspanset_datespanset(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);
 }

@@ -1046,6 +1046,7 @@ datespan_tstzspan(const Span *s)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a date span to a timestamptz span
@@ -1060,6 +1061,7 @@ datespan_to_tstzspan(const Span *s)
     return NULL;
   return datespan_tstzspan(s);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_conversion
@@ -1101,6 +1103,7 @@ tstzspan_datespan(const Span *s)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a timestamptz span to a date span
@@ -1115,6 +1118,7 @@ tstzspan_to_datespan(const Span *s)
     return NULL;
   return tstzspan_datespan(s);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
