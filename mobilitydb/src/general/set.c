@@ -468,7 +468,42 @@ Floatset_round(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   int maxdd = PG_GETARG_INT32(1);
-  Set *result = floatset_round(s, maxdd);
+  Set *result = floatset_rnd(s, maxdd);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Floatset_degrees(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatset_degrees);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float set with the values converted to degrees
+ * @sqlfn degrees()
+ */
+Datum
+Floatset_degrees(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  bool normalize = false;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    normalize = PG_GETARG_BOOL(1);
+  Set *result = floatset_deg(s, normalize);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Floatset_radians(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatset_radians);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float set with the values converted to radians
+ * @sqlfn radians()
+ */
+Datum
+Floatset_radians(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = floatset_rad(s);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }
@@ -477,7 +512,7 @@ PGDLLEXPORT Datum Textset_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_lower);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set with the values in lowercase
+ * @brief Return a text set with with the values transformed to lowercase
  * @sqlfn lower()
  */
 Datum
@@ -493,7 +528,7 @@ PGDLLEXPORT Datum Textset_upper(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_upper);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set with the values in uppercase
+ * @brief Return a text set with with the values transformed to uppercase
  * @sqlfn upper()
  */
 Datum
@@ -502,6 +537,58 @@ Textset_upper(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   Set *result = textset_upper(s);
   PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Textset_initcap(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Textset_initcap);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a text set with with the values transformed to initcap
+ * @sqlfn initcap()
+ */
+Datum
+Textset_initcap(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = textset_initcap(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Textcat_text_textset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Textcat_text_textset);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a text set with with the values transformed to initcap
+ * @sqlfn initcap()
+ */
+Datum
+Textcat_text_textset(PG_FUNCTION_ARGS)
+{
+  text *txt = PG_GETARG_TEXT_P(0);
+  Set *s = PG_GETARG_SET_P(1);
+  Set *result = textcat_textset_text_int(s, txt, INVERT);
+  PG_FREE_IF_COPY(txt, 0);
+  PG_FREE_IF_COPY(s, 1);
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Textcat_textset_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Textcat_textset_text);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a text set with with the values transformed to initcap
+ * @sqlfn initcap()
+ */
+Datum
+Textcat_textset_text(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  text *txt = PG_GETARG_TEXT_P(1);
+  Set *result = textcat_textset_text_int(s, txt, INVERT_NO);
+  PG_FREE_IF_COPY(s, 0);
+  PG_FREE_IF_COPY(txt, 1);
   PG_RETURN_SET_P(result);
 }
 

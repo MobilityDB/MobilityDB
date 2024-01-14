@@ -1954,8 +1954,77 @@ set_compact(const Set *s)
 #endif /* MEOS */
 
 /**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float set with the values converted to degrees
+ * @param[in] s Set
+ * @param[in] normalize True when the result must be normalized
+ * @csqlfn #Floatset_degrees()
+ */
+Set *
+floatset_deg(const Set *s, bool normalize)
+{
+  assert(s);
+  Set *result = set_cp(s);
+  for (int i = 0; i < s->count; i++)
+    (SET_OFFSETS_PTR(result))[i] = datum_degrees(SET_VAL_N(s, i), normalize);
+  return result;
+}
+
+#if MEOS
+/**
  * @ingroup meos_setspan_transf
- * @brief Return the text set transformed to lowercase
+ * @brief Return a float set with the values converted to degrees
+ * @param[in] s Set
+ * @param[in] normalize True when the result must be normalized
+ * @csqlfn #Floatset_degrees()
+ */
+Set *
+floatset_degrees(const Set *s, bool normalize)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
+    return NULL;
+  return floatset_deg(s, normalize);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float set with the values converted to radians
+ * @param[in] s Set
+ * @csqlfn #Floatset_radians()
+ */
+Set *
+floatset_rad(const Set *s)
+{
+  assert(s);
+  Set *result = set_cp(s);
+  for (int i = 0; i < s->count; i++)
+    (SET_OFFSETS_PTR(result))[i] = datum_radians(SET_VAL_N(s, i));
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float set with the values converted to radians
+ * @param[in] s Set
+ * @param[in] normalize True when the result must be normalized
+ * @csqlfn #Floatset_radians()
+ */
+Set *
+floatset_radians(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
+    return NULL;
+  return floatset_rad(s);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a text set transformed to lowercase
  * @param[in] s Set
  * @csqlfn #Textset_lower()
  */
@@ -1974,7 +2043,7 @@ textset_lower(const Set *s)
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return the text set transformed to uppercase
+ * @brief Return a text set transformed to uppercase
  * @param[in] s Set
  * @csqlfn #Textset_upper()
  */
@@ -1990,6 +2059,81 @@ textset_upper(const Set *s)
     values[i] = datum_upper(SET_VAL_N(s, i));
   return set_make_free(values, s->count, T_TEXT, ORDERED);
 }
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a text set transformed to initcap
+ * @param[in] s Set
+ * @csqlfn #Textset_initcap()
+ */
+Set *
+textset_initcap(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = datum_initcap(SET_VAL_N(s, i));
+  return set_make_free(values, s->count, T_TEXT, ORDERED);
+}
+
+/**
+ * @brief Return the concatenation of a text set and a set
+ * @param[in] s Set
+ * @param[in] txt Text
+ * @param[in] invert True when the arguments must be inverted
+ */
+Set *
+textcat_textset_text_int(const Set *s, const text *txt, bool invert)
+{
+  assert(s); assert(txt); assert((s->settype == T_TEXTSET));
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = invert ? 
+      datum_textcat(PointerGetDatum(txt), SET_VAL_N(s, i)) :
+      datum_textcat(SET_VAL_N(s, i), PointerGetDatum(txt));
+  return set_make_free(values, s->count, T_TEXT, ORDERED);
+}
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return the concatenation of a text and a text set
+ * @param[in] txt Text
+ * @param[in] s Set
+ * @csqlfn #Textcat_text_textset()
+ */
+Set *
+textcat_text_textset(const text *txt, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) || 
+      ! ensure_set_isof_type(s, T_TEXTSET))
+    return NULL;
+
+  return textcat_textset_text_int(s, txt, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return the concatenation of a text set and a text
+ * @param[in] s Set
+ * @param[in] txt Text
+ * @csqlfn #Textcat_textset_text()
+ */
+Set *
+textcat_textset_text(const Set *s, const text *txt)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) || 
+      ! ensure_set_isof_type(s, T_TEXTSET))
+    return NULL;
+
+  return textcat_textset_text_int(s, txt, INVERT_NO);
+}
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -2282,7 +2426,7 @@ set_ne(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  */
 int
-set_cmp1(const Set *s1, const Set *s2)
+set_cmp_int(const Set *s1, const Set *s2)
 {
   assert(s1); assert(s2); assert(s1->settype == s2->settype);
   int count = Min(s1->count, s2->count);
@@ -2311,6 +2455,7 @@ set_cmp1(const Set *s1, const Set *s2)
  * @brief Return -1, 0, or 1 depending on whether the first set is less
  * than, equal, or greater than the second one
  * @param[in] s1,s2 Sets
+ * @return On error return @p INT_MAX
  * @note Function used for B-tree comparison
  * @csqlfn #Set_cmp()
  */
@@ -2321,7 +2466,7 @@ set_cmp(const Set *s1, const Set *s2)
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
     return INT_MAX;
-  return set_cmp1(s1, s2);
+  return set_cmp_int(s1, s2);
 }
 
 /**

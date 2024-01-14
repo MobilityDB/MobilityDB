@@ -765,7 +765,7 @@ SELECT shiftScale(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-0
 
 			<listitem id="floatspan_round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
-				<para>Round the bounds of a float span to a number of decimal places</para>
+				<para>Round a float set, span, or span set to a number of decimal places</para>
 				<para><varname>round({floatset,floatspans},integer=0) → {floatset,floatspans}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(floatset '{1.123456789,2.123456789}', 3);
@@ -779,17 +779,48 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 </programlisting>
 			</listitem>
 
+			<listitem id="floatset_degrees">
+				<indexterm><primary><varname>degrees</varname></primary></indexterm>
+				<indexterm><primary><varname>radians</varname></primary></indexterm>
+				<para>Convert a flot set to degrees or radians</para>
+				<para><varname>degrees(floatset, normalize=false) → floatset</varname></para>
+				<para><varname>radians(floatset) → floatset</varname></para>
+				<para>The additional parameter in the <varname>degrees</varname> function can be used to normalize the values between 0 and 360 degrees.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT round(degrees(floatset '{0, 0.5, 0.7, 1.0}', true), 3);
+-- {0, 28.648, 40.107, 57.296}
+SELECT round(radians(floatset '{0, 45, 90}'), 3);
+-- {0, 0.785, 1.571}
+</programlisting>
+			</listitem>
+
 			<listitem id="textset_lower">
 				<indexterm><primary><varname>lower</varname></primary></indexterm>
 				<indexterm><primary><varname>upper</varname></primary></indexterm>
-				<para>Transform between lowercase and uppercase</para>
+				<indexterm><primary><varname>initcap</varname></primary></indexterm>
+				<para>Transform to lowercase, uppercase, or initcap</para>
 				<para><varname>lower(textset) → textset</varname></para>
 				<para><varname>upper(textset) → textset</varname></para>
+				<para><varname>initcap(textset) → textset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT lower(textset '{"AAA", "BBB", "CCC"}');
 -- {"aaa", "bbb", "ccc"}
 SELECT upper(textset '{"aaa", "bbb", "ccc"}');
 -- {"AAA", "BBB", "CCC"}
+SELECT initcap(textset '{"aaa", "bbb", "ccc"}');
+-- {"Aaa", "Bbb", "Ccc"}
+</programlisting>
+			</listitem>
+
+			<listitem id="textset_concat">
+				<indexterm><primary><varname>||</varname></primary></indexterm>
+				<para>Text concatenation</para>
+				<para><varname>{text,textset} || {text,textset} → textset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT textset '{aaa, bbb}' || text 'XX';
+-- {"aaaXX", "bbbXX"}
+SELECT text 'XX' || textset '{aaa, bbb}';
+-- {"XXaaa", "XXbbb"}
 </programlisting>
 			</listitem>
 

@@ -119,53 +119,6 @@ pnstrdup(const char *in, Size size)
 
   return tmp;
 }
-
-/*
- * ASCII-only lower function
- *
- * We pass the number of bytes so we can pass varlena and char*
- * to this function.  The result is a palloc'd, null-terminated string.
- */
-// char *
-// asc_tolower(const char *buff, size_t nbytes)
-// {
-//   char *result;
-//   char *p;
-
-//   if (!buff)
-//     return NULL;
-
-//   result = pnstrdup(buff, nbytes);
-
-//   for (p = result; *p; p++)
-//     *p = pg_ascii_tolower((unsigned char) *p);
-
-//   return result;
-// }
-
-/*
- * ASCII-only upper function
- *
- * We pass the number of bytes so we can pass varlena and char*
- * to this function.  The result is a palloc'd, null-terminated string.
- */
-// char *
-// asc_toupper(const char *buff, size_t nbytes)
-// {
-//   char *result;
-//   char *p;
-
-//   if (!buff)
-//     return NULL;
-
-//   result = pnstrdup(buff, nbytes);
-
-//   for (p = result; *p; p++)
-//     *p = pg_ascii_toupper((unsigned char) *p);
-
-//   return result;
-// }
-
 #endif /* MEOS */
 
 /**
@@ -232,6 +185,39 @@ Datum
 datum_upper(Datum value)
 {
   return pg_upper(DatumGetTextP(value));
+}
+
+/**
+ * @brief Convert the text value to uppercase
+ * @note Function adapted from the external function @p upper() in file
+ * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID` is used instead of 
+ * @p PG_GET_COLLATION().
+ */
+Datum
+pg_initcap(text *txt)
+{
+  char *out_string;
+  text *result;
+
+#if MEOS
+  out_string = asc_initcap(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
+#else /* ! MEOS */
+  out_string = str_initcap(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
+    DEFAULT_COLLATION_OID);
+#endif /* MEOS */
+  result = cstring2text(out_string);
+  pfree(out_string);
+
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Convert the text value to uppercase
+ */
+Datum
+datum_initcap(Datum value)
+{
+  return pg_initcap(DatumGetTextP(value));
 }
 
 /*****************************************************************************

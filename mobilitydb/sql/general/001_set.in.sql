@@ -658,6 +658,14 @@ CREATE FUNCTION round(floatset, integer DEFAULT 0)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Floatset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION degrees(floatset, bool DEFAULT FALSE)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Floatset_degrees'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION radians(floatset)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Floatset_radians'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lower(textset)
   RETURNS textset
@@ -666,6 +674,10 @@ CREATE FUNCTION lower(textset)
 CREATE FUNCTION upper(textset)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Textset_upper'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION initcap(textset)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Textset_initcap'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -696,6 +708,28 @@ CREATE FUNCTION unnest(tstzset)
   RETURNS SETOF timestamptz
   AS 'MODULE_PATHNAME', 'Set_unnest'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Temporal text concatenation
+ *****************************************************************************/
+
+CREATE FUNCTION textset_cat(text, textset)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Textcat_text_textset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_cat(textset, text)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Textcat_textset_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR || (
+  PROCEDURE = textset_cat,
+  LEFTARG = text, RIGHTARG = textset
+);
+CREATE OPERATOR || (
+  PROCEDURE = textset_cat,
+  LEFTARG = textset, RIGHTARG = text
+);
 
 /******************************************************************************
  * Aggregate functions

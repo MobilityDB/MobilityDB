@@ -220,6 +220,48 @@ SELECT COUNT(*) FROM tbl_dateset WHERE (d::tstzset)::dateset <> d;
      0
 (1 row)
 
+SELECT MAX(memSize(t)) FROM tbl_tstzset;
+ max 
+-----
+  96
+(1 row)
+
+SELECT MIN(lower(span(t))) FROM tbl_tstzset;
+             min              
+------------------------------
+ Mon Jan 01 17:48:00 2001 PST
+(1 row)
+
+SELECT MIN(numValues(t)) FROM tbl_tstzset;
+ min 
+-----
+   1
+(1 row)
+
+SELECT MIN(startValue(t)) FROM tbl_tstzset;
+             min              
+------------------------------
+ Mon Jan 01 17:48:00 2001 PST
+(1 row)
+
+SELECT MIN(endValue(t)) FROM tbl_tstzset;
+             min              
+------------------------------
+ Mon Jan 01 18:09:00 2001 PST
+(1 row)
+
+SELECT MIN(valueN(t, 1)) FROM tbl_tstzset;
+             min              
+------------------------------
+ Mon Jan 01 17:48:00 2001 PST
+(1 row)
+
+SELECT MIN(array_length(getValues(t), 1)) FROM tbl_tstzset;
+ min 
+-----
+   1
+(1 row)
+
 SELECT MIN(startValue(shift(i, 5))) FROM tbl_intset;
  min 
 -----
@@ -298,46 +340,22 @@ SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
  3.88624
 (1 row)
 
-SELECT MAX(memSize(t)) FROM tbl_tstzset;
- max 
------
-  96
+SELECT MIN(startValue(degrees(f))) FROM tbl_floatset;
+        min        
+-------------------
+ 222.6653001294165
 (1 row)
 
-SELECT MIN(lower(span(t))) FROM tbl_tstzset;
-             min              
-------------------------------
- Mon Jan 01 17:48:00 2001 PST
+SELECT MIN(startValue(degrees(f, true))) FROM tbl_floatset;
+        min         
+--------------------
+ 10.101307652625337
 (1 row)
 
-SELECT MIN(numValues(t)) FROM tbl_tstzset;
- min 
------
-   1
-(1 row)
-
-SELECT MIN(startValue(t)) FROM tbl_tstzset;
-             min              
-------------------------------
- Mon Jan 01 17:48:00 2001 PST
-(1 row)
-
-SELECT MIN(endValue(t)) FROM tbl_tstzset;
-             min              
-------------------------------
- Mon Jan 01 18:09:00 2001 PST
-(1 row)
-
-SELECT MIN(valueN(t, 1)) FROM tbl_tstzset;
-             min              
-------------------------------
- Mon Jan 01 17:48:00 2001 PST
-(1 row)
-
-SELECT MIN(array_length(getValues(t), 1)) FROM tbl_tstzset;
- min 
------
-   1
+SELECT MIN(startValue(radians(f))) FROM tbl_floatset;
+         min         
+---------------------
+ 0.06782772920145592
 (1 row)
 
 SELECT numValues(set_union(i)) FROM tbl_int;

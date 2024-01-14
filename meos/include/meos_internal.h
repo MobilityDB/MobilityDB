@@ -165,6 +165,8 @@
 #define DatumGetTimestampTz(X)((TimestampTz) DatumGetInt64(X))
 #endif /* MEOS */
 
+extern Datum datum_degrees(Datum d, Datum normalize);
+extern Datum datum_radians(Datum d);
 extern uint32 datum_hash(Datum d, meosType basetype);
 extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
 
@@ -332,7 +334,11 @@ extern Datum spanset_upper(const SpanSet *ss);
 /* Transformation functions for set and span types */
 
 extern void datespan_set_tstzspan(const Span *s1, Span *s2);
-extern void floatspan_rnd(const Span *span, int maxdd, Span *result);
+extern Set * floatset_deg(const Set *s, bool normalize);
+extern Set * floatset_rad(const Set *s);
+extern Set * floatset_rnd(const Set *s, int size);
+extern Span *floatspan_rnd(const Span *s, int size);
+extern SpanSet *floatspanset_rnd(const SpanSet *ss, int size);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern Set *numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift, bool haswidth);
@@ -340,8 +346,20 @@ extern Span *numspan_shift_scale(const Span *s, Datum shift, Datum width, bool h
 extern SpanSet *numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern Set *set_compact(const Set *s);
 extern void span_expand(const Span *s1, Span *s2);
-extern SpanSet *spanset_compact(const SpanSet *ss);
+extern SpanSet *spanset_compact(SpanSet *ss);
+extern Set *textcat_textset_text_int(const Set *s, const text *txt, bool invert);
 extern void tstzspan_set_datespan(const Span *s1, Span *s2);
+
+/*****************************************************************************
+ * Comparison functions for set and span types
+ *****************************************************************************/
+
+extern int set_cmp_int(const Set *s1, const Set *s2);
+extern bool set_eq_int(const Set *s1, const Set *s2);
+extern int span_cmp_int(const Span *s1, const Span *s2);
+extern bool span_eq_int(const Span *s1, const Span *s2);
+extern int spanset_cmp_int(const SpanSet *ss1, const SpanSet *ss2);
+extern bool spanset_eq_int(const SpanSet *ss1, const SpanSet *ss2);
 
 /*****************************************************************************
  * Bounding box functions for set and span types

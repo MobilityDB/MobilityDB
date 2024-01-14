@@ -98,7 +98,7 @@ SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
 SELECT numValues(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL;
 
 -------------------------------------------------------------------------------
--- Cast
+-- Conversion
 
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tstzset IS NOT NULL;
 
@@ -109,6 +109,19 @@ SELECT MAX(startValue(t::dateset)) FROM tbl_tstzset ORDER BY 1;
 
 SELECT COUNT(*) FROM tbl_intset WHERE (i::floatset)::intset <> i;
 SELECT COUNT(*) FROM tbl_dateset WHERE (d::tstzset)::dateset <> d;
+
+-------------------------------------------------------------------------------
+-- Accessor functions
+
+SELECT MAX(memSize(t)) FROM tbl_tstzset;
+
+SELECT MIN(lower(span(t))) FROM tbl_tstzset;
+
+SELECT MIN(numValues(t)) FROM tbl_tstzset;
+SELECT MIN(startValue(t)) FROM tbl_tstzset;
+SELECT MIN(endValue(t)) FROM tbl_tstzset;
+SELECT MIN(valueN(t, 1)) FROM tbl_tstzset;
+SELECT MIN(array_length(getValues(t), 1)) FROM tbl_tstzset;
 
 -------------------------------------------------------------------------------
 -- Transformation functions
@@ -129,19 +142,9 @@ SELECT MIN(startValue(shiftScale(f, 5, 5))) FROM tbl_floatset;
 SELECT MIN(startValue(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzset;
 
 SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
-
--------------------------------------------------------------------------------
--- Accessor functions
-
-SELECT MAX(memSize(t)) FROM tbl_tstzset;
-
-SELECT MIN(lower(span(t))) FROM tbl_tstzset;
-
-SELECT MIN(numValues(t)) FROM tbl_tstzset;
-SELECT MIN(startValue(t)) FROM tbl_tstzset;
-SELECT MIN(endValue(t)) FROM tbl_tstzset;
-SELECT MIN(valueN(t, 1)) FROM tbl_tstzset;
-SELECT MIN(array_length(getValues(t), 1)) FROM tbl_tstzset;
+SELECT MIN(startValue(degrees(f))) FROM tbl_floatset;
+SELECT MIN(startValue(degrees(f, true))) FROM tbl_floatset;
+SELECT MIN(startValue(radians(f))) FROM tbl_floatset;
 
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions

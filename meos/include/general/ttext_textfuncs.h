@@ -45,6 +45,7 @@
 extern Datum datum_textcat(Datum l, Datum r);
 extern Datum datum_lower(Datum value);
 extern Datum datum_upper(Datum value);
+extern Datum datum_initcap(Datum value);
 
 extern Temporal *textfunc_ttext(const Temporal *temp,
   Datum (*func)(Datum value));

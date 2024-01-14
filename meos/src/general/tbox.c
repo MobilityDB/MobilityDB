@@ -1344,9 +1344,9 @@ same_tbox_tbox(const TBox *box1, const TBox *box2)
       ! topo_tbox_tbox_init(box1, box2, &hasx, &hast))
     return false;
 
-  if (hasx && ! span_eq(&box1->span, &box2->span))
+  if (hasx && ! span_eq_int(&box1->span, &box2->span))
     return false;
-  if (hast && ! span_eq(&box1->period, &box2->period))
+  if (hast && ! span_eq_int(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -1631,8 +1631,8 @@ tbox_eq(const TBox *box1, const TBox *box2)
   if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
     MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
       return false;
-  if (! span_eq1(&box1->span, &box2->span) ||
-      ! span_eq1(&box1->period, &box2->period))
+  if (! span_eq_int(&box1->span, &box2->span) ||
+      ! span_eq_int(&box1->period, &box2->period))
     return false;
   /* The two boxes are equal */
   return true;
@@ -1670,14 +1670,14 @@ tbox_cmp(const TBox *box1, const TBox *box2)
   int cmp;
   if (hast)
   {
-    cmp = span_cmp1(&box1->period, &box2->period);
+    cmp = span_cmp_int(&box1->period, &box2->period);
     /* Compare the box minima */
     if (cmp != 0)
       return cmp;
   }
   if (hasx)
   {
-    cmp = span_cmp1(&box1->span, &box2->span);
+    cmp = span_cmp_int(&box1->span, &box2->span);
     /* Compare the box minima */
     if (cmp != 0)
       return cmp;

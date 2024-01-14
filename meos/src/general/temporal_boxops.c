@@ -115,7 +115,7 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
 {
   assert(temporal_type(temptype));
   if (talpha_type(temptype))
-    return span_eq1((Span *) box1, (Span *) box2);
+    return span_eq_int((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
     return tbox_eq((TBox *) box1, (TBox *) box2);
   if (tspatial_type(temptype))
@@ -143,7 +143,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
 {
   assert(temporal_type(temptype));
   if (talpha_type(temptype))
-    return span_cmp1((Span *) box1, (Span *) box2);
+    return span_cmp_int((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
     return tbox_cmp((TBox *) box1, (TBox *) box2);
   if (tspatial_type(temptype))

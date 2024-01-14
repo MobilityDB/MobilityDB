@@ -873,7 +873,7 @@ Floatspanset_round(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int maxdd = PG_GETARG_INT32(1);
-  SpanSet *result = floatspanset_round(ss, maxdd);
+  SpanSet *result = floatspanset_rnd(ss, maxdd);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);
 }
@@ -895,7 +895,7 @@ Spanset_cmp(PG_FUNCTION_ARGS)
 {
   SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
   SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  int cmp = spanset_cmp(ss1, ss2);
+  int cmp = spanset_cmp_int(ss1, ss2);
   PG_FREE_IF_COPY(ss1, 0);
   PG_FREE_IF_COPY(ss2, 1);
   PG_RETURN_INT32(cmp);
@@ -914,7 +914,7 @@ Spanset_eq(PG_FUNCTION_ARGS)
 {
   SpanSet *ss1 = PG_GETARG_SPANSET_P(0);
   SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
-  bool result = spanset_eq(ss1, ss2);
+  bool result = spanset_eq_int(ss1, ss2);
   PG_FREE_IF_COPY(ss1, 0);
   PG_FREE_IF_COPY(ss2, 1);
   PG_RETURN_BOOL(result);

@@ -166,7 +166,7 @@ SELECT round(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02
 			<listitem id="degrees">
 				<indexterm><primary><varname>degrees</varname></primary></indexterm>
 				<indexterm><primary><varname>radians</varname></primary></indexterm>
-				<para>Convert between radians and degrees</para>
+				<para>Convert to degrees or radians</para>
 				<para><varname>degrees({float,tfloat},normalize=false) → tfloat</varname></para>
 				<para><varname>radians(tfloat) → tfloat</varname></para>
 				<para>The additional parameter in the <varname>degrees</varname> function can be used to normalize the values between 0 and 360 degrees.</para>
@@ -205,7 +205,7 @@ SELECT derivative(tfloat 'Interp=Step;[0@2001-01-01, 10@2001-01-02, 5@2001-01-03
 		<itemizedlist>
 			<listitem id="ttext_concat">
 				<indexterm><primary><varname>||</varname></primary></indexterm>
-				<para>Temporal text concatenation</para>
+				<para>Text concatenation</para>
 				<para><varname>{text,ttext} || {text,ttext} → ttext</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT ttext '[AA@2001-01-01, AA@2001-01-04)' || text 'B';
@@ -221,14 +221,18 @@ SELECT ttext '[A@2001-01-01, B@2001-01-03, C@2001-01-04]' ||
 			<listitem id="ttext_lower">
 				<indexterm><primary><varname>lower</varname></primary></indexterm>
 				<indexterm><primary><varname>upper</varname></primary></indexterm>
-				<para>Transform between lowercase and uppercase</para>
+				<indexterm><primary><varname>initcap</varname></primary></indexterm>
+				<para>Transform in lowercase, uppercase, or initcap</para>
 				<para><varname>upper(ttext) → ttext</varname></para>
 				<para><varname>lower(ttext) → ttext</varname></para>
+				<para><varname>initcap(ttext) → ttext</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT lower(ttext '[AA@2001-01-01, bb@2001-01-02]');
 -- ["aa"@2001-01-01, "bb"@2001-01-02]
 SELECT upper(ttext '[AA@2001-01-01, bb@2001-01-02]');
 -- ["AA"@2001-01-01, "BB"@2001-01-02]
+SELECT initcap(ttext '[AA@2001-01-01, bb@2001-01-02]');
+-- ["Aa"@2001-01-01, "Bb"@2001-01-02]
 </programlisting>
 			</listitem>
 		</itemizedlist>

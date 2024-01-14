@@ -48,7 +48,7 @@ SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
 SELECT asText(floatset '{1.12345678, 2.123456789}', -6);
 
 -------------------------------------------------------------------------------
--- Constructor
+-- Constructors
 -------------------------------------------------------------------------------
 
 SELECT set(ARRAY [date '2000-01-01', '2000-01-02', '2000-01-03']);
@@ -66,7 +66,7 @@ SELECT set(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']);
 SELECT set(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 
 -------------------------------------------------------------------------------
--- Casting
+-- Conversion functions
 -------------------------------------------------------------------------------
 
 SELECT set(date '2000-01-01');
@@ -118,21 +118,6 @@ SELECT getValues(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');
 SELECT getValues(tstzset '{2000-01-01}');
 SELECT getValues(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT shift(intset '{1}', 4);
-SELECT shift(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
-SELECT shift(tstzset '{2000-01-01}', '5 min');
-SELECT shift(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
-
-SELECT scale(intset '{1}', 4);
-SELECT scale(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
-SELECT scale(tstzset '{2000-01-01}', '1 hour');
-SELECT scale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
-
-SELECT shiftScale(intset '{1}', 4, 4);
-SELECT shiftScale(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4, 4);
-SELECT shiftScale(tstzset '{2000-01-01}', '1 day', '1 hour');
-SELECT shiftScale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
-
 SELECT set_cmp(dateset '{2000-01-01}', dateset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
 SELECT dateset '{2000-01-01}' = dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
 SELECT dateset '{2000-01-01}' <> dateset '{2000-01-01, 2000-01-02, 2000-01-03}';
@@ -165,7 +150,31 @@ SELECT set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1) <> set_hash_exten
 -- Transformations
 -------------------------------------------------------------------------------
 
+SELECT shift(intset '{1}', 4);
+SELECT shift(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+SELECT shift(tstzset '{2000-01-01}', '5 min');
+SELECT shift(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
+
+SELECT scale(intset '{1}', 4);
+SELECT scale(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+SELECT scale(tstzset '{2000-01-01}', '1 hour');
+SELECT scale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
+
+SELECT shiftScale(intset '{1}', 4, 4);
+SELECT shiftScale(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4, 4);
+SELECT shiftScale(tstzset '{2000-01-01}', '1 day', '1 hour');
+SELECT shiftScale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
+
+SELECT round(floatset '{0.12345, 1.12345, 2.12345}', 3);
+SELECT degrees(floatset '{0, 0.5, 1}');
+SELECT degrees(floatset '{0, 0.5, 1}', true);
+SELECT radians(floatset '{0, 45, 90}');
+
 SELECT lower(textset '{"AAA", "BBB", "CCC"}');
 SELECT upper(textset '{"aaa", "bbb", "ccc"}');
+SELECT initcap(textset '{"aaa", "bbb", "ccc"}');
+
+SELECT textset '{"aaa", "bbb", "ccc"}' || text 'XXX';
+SELECT text 'XXX' || textset '{"aaa", "bbb", "ccc"}';
 
 -------------------------------------------------------------------------------

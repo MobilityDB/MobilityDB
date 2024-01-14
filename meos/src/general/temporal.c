@@ -1307,7 +1307,7 @@ float_degrees(double value, bool normalize)
 /**
  * @brief Return a number converted from radians to degrees
  */
-static Datum
+Datum
 datum_degrees(Datum value, Datum normalize)
 {
   return Float8GetDatum(float_degrees(DatumGetFloat8(value),
@@ -1317,7 +1317,7 @@ datum_degrees(Datum value, Datum normalize)
 /**
  * @brief Return a number converted from degrees to radians
  */
-static Datum
+Datum
 datum_radians(Datum value)
 {
   return Float8GetDatum(float8_mul(DatumGetFloat8(value), RADIANS_PER_DEGREE));

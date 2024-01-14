@@ -1803,14 +1803,14 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
  * @param[in] ss1,ss2 Span sets
  */
 bool
-spanset_eq1(const SpanSet *ss1, const SpanSet *ss2)
+spanset_eq_int(const SpanSet *ss1, const SpanSet *ss2)
 {
   assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
   if (ss1->count != ss2->count)
     return false;
   /* ss1 and ss2 have the same number of spans */
   for (int i = 0; i < ss1->count; i++)
-    if (! span_eq1(SPANSET_SP_N(ss1, i), SPANSET_SP_N(ss2, i)))
+    if (! span_eq_int(SPANSET_SP_N(ss1, i), SPANSET_SP_N(ss2, i)))
       return false;
   /* All spans of the two span sets are equal */
   return true;
@@ -1830,7 +1830,7 @@ spanset_eq(const SpanSet *ss1, const SpanSet *ss2)
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_same_spanset_type(ss1, ss2))
     return false;
-  return spanset_eq1(ss1, ss2);
+  return spanset_eq_int(ss1, ss2);
 }
 
 /**
@@ -1852,7 +1852,7 @@ spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] ss1,ss2 Span sets
  */
 int
-spanset_cmp1(const SpanSet *ss1, const SpanSet *ss2)
+spanset_cmp_int(const SpanSet *ss1, const SpanSet *ss2)
 {
   assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
 
@@ -1862,7 +1862,7 @@ spanset_cmp1(const SpanSet *ss1, const SpanSet *ss2)
   int result = 0;
   for (int i = 0; i < count; i++)
   {
-    result = span_cmp1(SPANSET_SP_N(ss1, i), SPANSET_SP_N(ss2, i));
+    result = span_cmp_int(SPANSET_SP_N(ss1, i), SPANSET_SP_N(ss2, i));
     if (result)
       break;
   }
@@ -1895,7 +1895,7 @@ spanset_cmp(const SpanSet *ss1, const SpanSet *ss2)
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_same_spanset_type(ss1, ss2))
     return INT_MAX;
-  return spanset_cmp1(ss1, ss2);
+  return spanset_cmp_int(ss1, ss2);
 }
 
 /**

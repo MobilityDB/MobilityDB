@@ -557,7 +557,7 @@ tseqarr_sort_cmp(TSequence **l, TSequence **r)
 {
   Span lp = (*l)->period;
   Span rp = (*r)->period;
-  return span_cmp1(&lp, &rp);
+  return span_cmp_int(&lp, &rp);
 }
 
 /*****************************************************************************/
@@ -613,7 +613,7 @@ void
 spanarr_sort(Span *spans, int count)
 {
   qsort(spans, (size_t) count, sizeof(Span),
-    (qsort_comparator) &span_cmp1);
+    (qsort_comparator) &span_cmp_int);
   return;
 }
 

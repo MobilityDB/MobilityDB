@@ -268,7 +268,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="textset_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transform between lowercase and uppercase</para>
+					<para><link linkend="floatset_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convert a float set to degrees or radians</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="textset_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname></link>: Transform to lowercase, uppercase, or initcap</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="textset_concat"><varname>concat</varname></link>: Text concatenation</para>
 				</listitem>
 
 				<listitem>
@@ -1091,7 +1099,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convert between radians and degrees</para>
+					<para><link linkend="degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convert to degrees or radians</para>
 				</listitem>
 
 				<listitem>
@@ -1126,11 +1134,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttext_concat"><varname>||</varname></link>: Temporal text concatenation</para>
+					<para><link linkend="ttext_concat"><varname>||</varname></link>: Text concatenation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transform between lowercase and uppercase</para>
+					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname></link>: Transform in lowercase, uppercase, or initcap</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

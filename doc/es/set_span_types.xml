@@ -708,7 +708,7 @@ SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 		<itemizedlist>
 			<listitem id="setspan_shift">
 				<indexterm><primary><varname>shift</varname></primary></indexterm>
-				<para>Desplazar el conjunto o el span con un valor o intervalo de tiempo</para>
+				<para>Desplazar un conjunto o un span con un valor o intervalo de tiempo</para>
 				<para><varname>shift(numbers,base) → numbers</varname></para>
 				<para><varname>shift(dates,integer) → dates</varname></para>
 				<para><varname>shift(times,interval) → times</varname></para>
@@ -729,7 +729,7 @@ SELECT shift(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 
 			<listitem id="setspan_scale">
 				<indexterm><primary><varname>scale</varname></primary></indexterm>
-				<para>Escalear el conjunto o el rango con un valor o intervalo</para>
+				<para>Escalear un conjunto o un rango con un valor o intervalo de tiempo</para>
 				<para><varname>scale(numbers,base) → numbers</varname></para>
 				<para><varname>scale(dates,integer) → dates</varname></para>
 				<para><varname>scale(times,interval) → times</varname></para>
@@ -757,7 +757,7 @@ SELECT scale(tstzset '{2001-01-01}', '-1 day');
 
 			<listitem id="setspan_shiftScale">
 				<indexterm><primary><varname>shiftScale</varname></primary></indexterm>
-				<para>Desplazar y escalear el conjunto o rango con los valores o intervalos</para>
+				<para>Desplazar y escalear un conjunto o un rango con los valores o intervalos de tiempo</para>
 				<para><varname>shiftScale(numbers,base,base) → numbers</varname></para>
 				<para><varname>shiftScale(dates,integer,integer) → dates</varname></para>
 				<para><varname>shiftScale(times,interval,interval) → times</varname></para>
@@ -784,7 +784,7 @@ SELECT shiftScale(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-0
 
 			<listitem id="floatspan_round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
-				<para>Redondear los límites de un rango flotante a un número de decimales</para>
+				<para>Redondear un conjunto o un rango flotante a un número de decimales</para>
 				<para><varname>round({floatset,floatspans},integer=0) → {floatset,floatspans}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(floatset '{1.123456789,2.123456789}', 3);
@@ -798,17 +798,48 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 </programlisting>
 			</listitem>
 
+			<listitem id="floatset_degrees">
+				<indexterm><primary><varname>degrees</varname></primary></indexterm>
+				<indexterm><primary><varname>radians</varname></primary></indexterm>
+				<para>Convertir un conjunto flotante a grados o radianes</para>
+				<para><varname>degrees(floatset, normalize=false) → floatset</varname></para>
+				<para><varname>radians(floatset) → floatset</varname></para>
+				<para>El parámetro adicional en la función <varname>degrees</varname> puede ser utilizado para normalizar los valores entre 0 y 360 grados.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT round(degrees(floatset '{0, 0.5, 0.7, 1.0}', true), 3);
+-- {0, 28.648, 40.107, 57.296}
+SELECT round(radians(floatset '{0, 45, 90}'), 3);
+-- {0, 0.785, 1.571}
+</programlisting>
+			</listitem>
+
 			<listitem id="textset_lower">
 				<indexterm><primary><varname>lower</varname></primary></indexterm>
 				<indexterm><primary><varname>upper</varname></primary></indexterm>
-				<para>Transformar a minúsculas o mayúsculas</para>
+				<indexterm><primary><varname>initcap</varname></primary></indexterm>
+				<para>Transformar en minúsculas, majúsculas o initcap</para>
 				<para><varname>lower(textset) → textset</varname></para>
 				<para><varname>upper(textset) → textset</varname></para>
+				<para><varname>initcap(textset) → textset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT lower(textset '{"AAA", "BBB", "CCC"}');
 -- {"aaa", "bbb", "ccc"}
 SELECT upper(textset '{"aaa", "bbb", "ccc"}');
 -- {"AAA", "BBB", "CCC"}
+SELECT initcap(textset '{"aaa", "bbb", "ccc"}');
+-- {"Aaa", "Bbb", "Ccc"}
+</programlisting>
+			</listitem>
+
+			<listitem id="textset_concat">
+				<indexterm><primary><varname>||</varname></primary></indexterm>
+				<para>Concatenación de texto</para>
+				<para><varname>{text,textset} || {text,textset} → textset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT textset '{aaa, bbb}' || text 'XX';
+-- {"aaaXX", "bbbXX"}
+SELECT text 'XX' || textset '{aaa, bbb}';
+-- {"XXaaa", "XXbbb"}
 </programlisting>
 			</listitem>
 
