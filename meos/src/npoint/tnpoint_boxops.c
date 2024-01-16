@@ -67,7 +67,7 @@ npoint_set_stbox(const Npoint *np, STBox *box)
 }
 
 /**
- * @brief Convert a network point to a spatiotemporal box
+ * @brief Return a network point converted to a spatiotemporal box
  */
 STBox *
 npoint_to_stbox(const Npoint *np)
@@ -239,7 +239,7 @@ nsegment_set_stbox(const Nsegment *ns, STBox *box)
 }
 
 /**
- * @brief Convert a network segment into a spatiotemporal box
+ * @brief Return a network segment converted to a spatiotemporal box
  */
 STBox *
 nsegment_to_stbox(const Nsegment *ns)
@@ -251,7 +251,8 @@ nsegment_to_stbox(const Nsegment *ns)
 }
 
 /**
- * @brief Convert a network point and a timestamptz to a spatiotemporal box
+ * @brief Return in the last argument a spatiotemporal box constructed from a
+ * network point and a timestamptz
  */
 bool
 npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
@@ -264,7 +265,8 @@ npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
 }
 
 /**
- * @brief Convert a network point and a timestamptz to a spatiotemporal box
+ * @brief Return a spatiotemporal box constructed from a network point and a
+ * timestamptz
  */
 STBox *
 npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t)
@@ -278,8 +280,8 @@ npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t)
 }
 
 /**
- * @brief Convert a network point and a timestamptz span to a spatiotemporal
- * box
+ * @brief Return in the last argument a spatiotemporal box constructed from a
+ * network point and a timestamptz span
  */
 bool
 npoint_tstzspan_set_stbox(const Npoint *np, const Span *s, STBox *box)
@@ -291,7 +293,8 @@ npoint_tstzspan_set_stbox(const Npoint *np, const Span *s, STBox *box)
 }
 
 /**
- * @brief Convert a network point and a timestamptz to a spatiotemporal box
+ * @brief Return a spatiotemporal box constructed from a network point and a
+ * timestamptz 
  */
 STBox *
 npoint_tstzspan_to_stbox(const Npoint *np, const Span *s)

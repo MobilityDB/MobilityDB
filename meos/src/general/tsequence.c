@@ -514,8 +514,8 @@ tdiscseq_find_timestamptz(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * @brief Convert an array of arrays of temporal sequences into an array of
- * temporal sequences
+ * @brief Return an array of arrays of temporal sequences converted into an
+ * array of temporal sequences
  * @details This function is called by all the functions in which the number of
  * output sequences cannot be determined in advance, typically when each
  * segment of the input sequence can produce an arbitrary number of output
@@ -1414,7 +1414,7 @@ tsequence_compact(const TSequence *seq)
 #if MEOS
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Rturn a temporal sequence restarted by keeping only the last n
+ * @brief Return a temporal sequence restarted by keeping only the last n
  * instants
  * @param[in,out] seq Temporal sequence
  * @param[in] count Number of instants to keep
@@ -2912,7 +2912,7 @@ intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the integral (area under the curve) of a temporal sequence
  * number
  * @param[in] seq Temporal sequence
@@ -2985,7 +2985,7 @@ tnumbercontseq_twavg(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the time-weighted average of a temporal sequence number
  * @param[in] seq Temporal sequence
  * @csqlfn #Tnumber_twavg()

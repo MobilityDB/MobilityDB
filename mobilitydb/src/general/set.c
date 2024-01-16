@@ -163,7 +163,7 @@ PGDLLEXPORT Datum Value_to_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_to_set);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a base value to a set
+ * @brief Return a base value converted to a set
  * @sqlfn set()
  */
 Datum
@@ -181,7 +181,7 @@ PGDLLEXPORT Datum Intset_to_floatset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intset_to_floatset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert an integer set to a float set
+ * @brief Return an integer set converted to a float set
  * @sqlfn floatset()
  * @sqlop @p ::
  */
@@ -198,7 +198,7 @@ PGDLLEXPORT Datum Floatset_to_intset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatset_to_intset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a float set to a integer set
+ * @brief Return a float set converted to a integer set
  * @sqlfn intset()
  * @sqlop @p ::
  */
@@ -215,7 +215,7 @@ PGDLLEXPORT Datum Dateset_to_tstzsset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Dateset_to_tstzset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a date set to a timestamptz set
+ * @brief Return a date set converted to a timestamptz set
  * @sqlfn tstzset()
  * @sqlop @p ::
  */
@@ -232,7 +232,7 @@ PGDLLEXPORT Datum Tstzset_to_dateset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_to_dateset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a timestamptz set to a date set
+ * @brief Return a timestamptz set converted to a date set
  * @sqlfn dateset()
  * @sqlop @p ::
  */

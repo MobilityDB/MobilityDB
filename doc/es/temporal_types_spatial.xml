@@ -218,11 +218,26 @@ SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)
 
 			<listitem id="tpoint_transform">
 				<indexterm><primary><varname>transform</varname></primary></indexterm>
+				<indexterm><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transformar a una referencia espacial diferente &Z_support; &geography_support;</para>
-				<para><varname>transform(tpoint,integer) → tpoint</varname></para>
+				<para><varname>transform(tpoint,to_srid integer) → tpoint</varname></para>
+				<para><varname>transform(tpoint,pipeline text,to_srid integer,is_forward bool=true) → tpoint</varname></para>
+				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el punto temporal tiene un SRID desconocido (representado por 0).</para>
+				<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. El SRID del punto temporal de entrada se ignora y el SRID del punto temporal de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>to_srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 3812));
 -- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01 00:00:00+00
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+WITH test(tpoint, pipeline) AS (
+  SELECT tgeogpoint 'SRID=4326;{Point(4.3525 50.846667 100.0)@2001-01-01,
+    Point(-0.1275 51.507222 100.0)@2001-01-02}',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(tpoint, pipeline, 4326), 
+  pipeline, 4326, false), 6)
+FROM test;
+/* SRID=4326;{POINT Z (4.3525 50.846667 100)@2001-01-01,
+   POINT Z (-0.1275 51.507222 100)@2001-01-02} */
 </programlisting>
 			</listitem>
 		</itemizedlist>

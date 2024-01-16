@@ -114,7 +114,7 @@ tinstant_set(TInstant *inst, Datum value, TimestampTz t)
 }
 
 /**
- * @brief Convert the value of temporal number instant to a double
+ * @brief Return the value of a temporal number instant converted to a double
  */
 double
 tnumberinst_double(const TInstant *inst)

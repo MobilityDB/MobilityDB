@@ -1080,7 +1080,7 @@ tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @brief Convert an integer to a float
+ * @brief Return an integer converted to a float
  * @param[in] d Value
  * @note Function used for lifting
  */
@@ -1091,7 +1091,7 @@ datum_int_to_float(Datum d)
 }
 
 /**
- * @brief Convert a float to an integer
+ * @brief Return a float converted to an integer
  * @param[in] d Value
  * @note Function used for lifting
  */
@@ -1103,7 +1103,7 @@ datum_float_to_int(Datum d)
 
 /**
  * @ingroup meos_temporal_conversion
- * @brief Convert a temporal integer to a temporal float
+ * @brief Return a temporal integer converted to a temporal float
  * @param[in] temp Temporal value
  * @csqlfn #Tint_to_tfloat()
  */
@@ -1127,7 +1127,7 @@ tint_to_tfloat(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_conversion
- * @brief Convert a temporal float to a temporal integer
+ * @brief Return a temporal float converted to a temporal integer
  * @param[in] temp Temporal value
  * @csqlfn #Tfloat_to_tint()
  */
@@ -1261,7 +1261,7 @@ tnumber_to_span(const Temporal *temp)
 #if MEOS
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a temporal number to a temporal box
+ * @brief Return a temporal number converted to a temporal box
  * @param[in] temp Temporal value
  * @csqlfn #Tnumber_to_tbox()
  */
@@ -1392,7 +1392,7 @@ float_degrees(double value, bool normalize)
 }
 
 /**
- * @brief Convert a number from radians to degrees
+ * @brief Return a number converted from radians to degrees
  */
 static Datum
 datum_degrees(Datum value, Datum normalize)
@@ -1402,7 +1402,7 @@ datum_degrees(Datum value, Datum normalize)
 }
 
 /**
- * @brief Convert a number from degrees to radians
+ * @brief Return a number converted from degrees to radians
  */
 static Datum
 datum_radians(Datum value)
@@ -1492,7 +1492,8 @@ temporal_compact(const Temporal *temp)
 #if MEOS
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Restart a temporal sequence (set) by keeping only the last n instants
+ * @brief Return a temporal sequence (set) restarted by keeping only the last n
+ * instants
  * or sequences
  * @param[in] temp Temporal value
  * @param[out] count Number of instants or sequences kept

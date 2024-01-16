@@ -2083,7 +2083,7 @@ pt_force_geodetic(LWPOINT *point)
 
 /**
  * @ingroup meos_internal_temporal_spatial_transf
- * @brief Convert a temporal point instant from/to a temporal
+ * @brief Return a temporal point instant transformed from/to a temporal
  * geometry/geography point
  * @param[in] inst Temporal point instant
  * @param[in] oper True when transforming from geometry to geography,
@@ -2121,7 +2121,7 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 
 /**
  * @ingroup meos_internal_temporal_spatial_transf
- * @brief Convert a temporal point sequence from/to a temporal
+ * @brief Return a temporal point sequence transformed from/to a temporal
  * geometry/geography point
  * @param[in] seq Temporal sequence point
  * @param[in] oper True when transforming from geometry to geography,
@@ -2141,7 +2141,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
 
 /**
  * @ingroup meos_internal_temporal_spatial_transf
- * @brief Convert a temporal point sequence set from/to a temporal
+ * @brief Return a temporal point sequence set transformed from/to a temporal
  * geometry/geography point
  * @param[in] ss Temporal point sequence set
  * @param[in] oper True when transforming from geometry to geography,
@@ -2161,7 +2161,8 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
 
 /**
  * @ingroup meos_internal_temporal_spatial_transf
- * @brief Convert a temporal point from/to a temporal geometry/geography point
+ * @brief Return a temporal point transformed from/to a temporal
+ * geometry/geography point
  * @param[in] temp Temporal point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2193,7 +2194,8 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
 #if MEOS
 /**
  * @ingroup meos_temporal_spatial_transf
- * @brief Convert a temporal geometry point to a temporal geography point
+ * @brief Return a temporal geometry point transformed to a temporal geography
+ * point
  * @param[in] temp Temporal point
  * @csqlfn #Tgeompoint_to_tgeogpoint()
  */
@@ -2208,7 +2210,8 @@ tgeompoint_to_tgeogpoint(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_spatial_transf
- * @brief Convert a temporal geography point to a temporal geometry point
+ * @brief Return a temporal geography point transformed to a temporal geometry
+ * point
  * @param[in] temp Temporal point
  * @csqlfn #Tgeogpoint_to_tgeompoint()
  */
@@ -2258,8 +2261,8 @@ tgeogpoint_to_tgeompoint(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @brief Convert a geometry/geography point and a measure into a PostGIS point
- * with an M coordinate
+ * @brief Return a geometry/geography point and a measure transformed into a
+ * PostGIS point with M coordinates
  */
 static LWGEOM *
 point_meas_to_lwpoint(Datum point, Datum meas)
@@ -2726,8 +2729,8 @@ tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *meas,
  *****************************************************************************/
 
 /**
- * @brief Convert a geometry/geography where the M coordinates encode the
- * timestamps in Unix epoch into a temporal point instant
+ * @brief Return a geometry/geography where the M coordinates encode the
+ * timestamps in Unix epoch transformed into a temporal point instant
  */
 static TInstant *
 geomeas_to_tpointinst_iter(LWPOINT *lwpoint)
@@ -2758,9 +2761,9 @@ geomeas_to_tpointinst_iter(LWPOINT *lwpoint)
 }
 
 /**
- * @brief Convert the PostGIS trajectory geometry/geography where the M
- * coordinates encode the timestamps in Unix epoch into a temporal point
- * instant
+ * @brief Return the PostGIS trajectory geometry/geography where the M
+ * coordinates encode the timestamps in Unix epoch transformed into a temporal
+ * point instant
  */
 static TInstant *
 geomeas_to_tpointinst(const LWGEOM *geom)
@@ -2820,9 +2823,9 @@ ensure_valid_trajectory(const LWGEOM *geom, bool hasz, bool discrete)
 }
 
 /**
- * @brief Convert the PostGIS trajectory geometry/geography where the M
- * coordinates encode the timestamps in Unix epoch into a temporal point
- * discrete sequence
+ * @brief Return the PostGIS trajectory geometry/geography where the M
+ * coordinates encode the timestamps transformed into Unix epoch into a
+ * temporal point discrete sequence
  */
 static TSequence *
 geomeas_to_tpointseq_disc(const LWGEOM *geom, bool hasz)
@@ -2842,9 +2845,9 @@ geomeas_to_tpointseq_disc(const LWGEOM *geom, bool hasz)
 }
 
 /**
- * @brief Convert the PostGIS trajectory geometry/geography where the M
- * coordinates encode the timestamps in Unix epoch into a temporal point
- * sequence
+ * @brief Return the PostGIS trajectory geometry/geography where the M
+ * coordinates encode the timestamps in Unix epoch transformed into a temporal
+ * point sequence
  * @note Notice that it is not possible to encode step interpolation in
  * PostGIS and thus sequences obtained will be either discrete or linear.
  */
@@ -2873,9 +2876,9 @@ geomeas_to_tpointseq_linear(const LWGEOM *geom, bool hasz, bool geodetic)
 }
 
 /**
- * @brief Convert the PostGIS trajectory geometry/geography where the M
- * coordinates encode the timestamps in Unix epoch into a temporal point
- * sequence set
+ * @brief Return the PostGIS trajectory geometry/geography where the M
+ * coordinates encode the timestamps in Unix epoch transformed into a temporal
+ * point sequence set
  * @note With respect to functions #geomeas_to_tpointseq_disc and
  * #geomeas_to_tpointseq_linear, there is no validation of the trajectory since
  * it is more elaborated to be done. Nevertheless, erroneous geometries where
@@ -2947,8 +2950,8 @@ geomeas_to_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
 
 /**
  * @ingroup meos_temporal_spatial_transf
- * @brief Convert a geometry/geography with M measure encoding timestamps to
- * a temporal point
+ * @brief Return a geometry/geography with M measure encoding timestamps 
+ * transformed to a temporal point
  * @param[in] gs Geometry
  * @csqlfn #Geomeas_to_tpoint()
  */

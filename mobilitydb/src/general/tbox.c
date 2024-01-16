@@ -226,7 +226,7 @@ PGDLLEXPORT Datum Number_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Number_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a number to a temporal box
+ * @brief Return a number converted to a temporal box
  * @sqlfn tbox()
  */
 Datum
@@ -241,7 +241,7 @@ PGDLLEXPORT Datum Numeric_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numeric_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a numeric to a temporal box
+ * @brief Return a numeric converted to a temporal box
  * @sqlfn tbox()
  */
 Datum
@@ -270,7 +270,7 @@ PGDLLEXPORT Datum Set_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a set to a temporal box
+ * @brief Return a set converted to a temporal box
  * @sqlfn tbox()
  */
 Datum
@@ -286,7 +286,7 @@ PGDLLEXPORT Datum Span_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a span to a temporal box
+ * @brief Return a span converted to a temporal box
  * @sqlfn tbox()
  */
 Datum
@@ -322,7 +322,7 @@ PGDLLEXPORT Datum Spanset_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_to_tbox);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a span set to a temporal box
+ * @brief Return a span set converted to a temporal box
  * @sqlfn tbox()
  */
 Datum
@@ -340,7 +340,7 @@ PGDLLEXPORT Datum Tbox_to_intspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_intspan);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a temporal box to an integer span
+ * @brief Return a temporal box converted to an integer span
  * @sqlfn floatspan()
  */
 Datum
@@ -354,7 +354,7 @@ PGDLLEXPORT Datum Tbox_to_floatspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_floatspan);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a temporal box to a float span
+ * @brief Return a temporal box converted to a float span
  * @sqlfn floatspan()
  */
 Datum
@@ -368,7 +368,7 @@ PGDLLEXPORT Datum Tbox_to_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_tstzspan);
 /**
  * @ingroup mobilitydb_box_conversion
- * @brief Convert a temporal box to a timestamptz span
+ * @brief Return a temporal box converted to a timestamptz span
  * @sqlfn period()
  */
 Datum

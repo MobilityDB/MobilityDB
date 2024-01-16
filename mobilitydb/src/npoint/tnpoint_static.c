@@ -280,7 +280,7 @@ PGDLLEXPORT Datum Npoint_to_nsegment(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_to_nsegment);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a network point to a network segment
+ * @brief Return a network point converted to a network segment
  * @sqlfn nsegment()
  */
 Datum
@@ -408,7 +408,7 @@ PGDLLEXPORT Datum Npoint_to_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_to_geom);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a network point to a geometry
+ * @brief Return a network point converted to a geometry
  * @sqlfn geometry()
  */
 Datum
@@ -422,7 +422,7 @@ PGDLLEXPORT Datum Geom_to_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geom_to_npoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a geometry to a network point
+ * @brief Return a geometry converted to a network point
  * @sqlfn npoint()
  */
 Datum
@@ -439,7 +439,7 @@ PGDLLEXPORT Datum Nsegment_to_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_to_geom);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a network segment to a geometry
+ * @brief Return a network segment converted to a geometry
  * @sqlfn geometry()
  */
 Datum
@@ -453,7 +453,7 @@ PGDLLEXPORT Datum Geom_to_nsegment(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geom_to_nsegment);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a geometry to a network segment
+ * @brief Return a geometry converted to a network segment
  * @sqlfn nsegment()
  */
 Datum

@@ -1022,7 +1022,7 @@ set_copy(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a value to a set
+ * @brief Return a value converted to a set
  * @param[in] value Value
  * @param[in] basetype Type of the value
  * @csqlfn #Value_to_set()
@@ -1036,7 +1036,7 @@ value_to_set(Datum value, meosType basetype)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert an integer to a set
+ * @brief Return an integer converted to a set
  * @param[in] i Value
  * @csqlfn #Value_to_set()
  */
@@ -1049,7 +1049,7 @@ int_to_set(int i)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a big integer to a set
+ * @brief Return a big integer converted to a set
  * @param[in] i Value
  * @csqlfn #Value_to_set()
  */
@@ -1062,7 +1062,7 @@ bigint_to_set(int64 i)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a float to a set
+ * @brief Return a float converted to a set
  * @param[in] d Value
  * @csqlfn #Value_to_set()
  */
@@ -1075,7 +1075,7 @@ float_to_set(double d)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a text to a set
+ * @brief Return a text converted to a set
  * @param[in] txt Value
  * @csqlfn #Value_to_set()
  */
@@ -1091,7 +1091,7 @@ text_to_set(text *txt)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a date to a set
+ * @brief Return a date converted to a set
  * @param[in] d Value
  * @csqlfn #Value_to_set()
  */
@@ -1104,7 +1104,7 @@ date_to_set(DateADT d)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a timestamptz to a set
+ * @brief Return a timestamptz converted to a set
  * @param[in] t Value
  * @csqlfn #Value_to_set()
  */
@@ -1117,7 +1117,7 @@ timestamptz_to_set(TimestampTz t)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a geometry/geography to a geo set
+ * @brief Return a geometry/geography converted to a geo set
  * @param[in] gs Value
  * @csqlfn #Value_to_set()
  */
@@ -1137,7 +1137,7 @@ geo_to_set(GSERIALIZED *gs)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert an integer set into a float set
+ * @brief Return an integer set converted to a float set
  * @param[in] s Set
  * @csqlfn #Intset_to_floatset()
  */
@@ -1158,7 +1158,7 @@ intset_floatset(const Set *s)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert an integer set into a float set
+ * @brief Return an integer set converted to a float set
  * @param[in] s Set
  * @csqlfn #Intset_to_floatset()
  */
@@ -1174,7 +1174,7 @@ intset_to_floatset(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a float set into an integer set
+ * @brief Return a float set converted to an integer set
  * @param[in] s Set
  * @csqlfn #Floatset_to_intset()
  */
@@ -1195,7 +1195,7 @@ floatset_intset(const Set *s)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a float set into an integer set
+ * @brief Return a float set converted to an integer set
  * @param[in] s Set
  * @csqlfn #Floatset_to_intset()
  */
@@ -1211,7 +1211,7 @@ floatset_to_intset(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a date set into a timestamptz set
+ * @brief Return a date set converted to a timestamptz set
  * @param[in] s Set
  * @csqlfn #Dateset_to_tstzset()
  */
@@ -1233,7 +1233,7 @@ dateset_tstzset(const Set *s)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a date set into a timestamptz set
+ * @brief Return a date set converted to a timestamptz set
  * @param[in] s Set
  * @csqlfn #Dateset_to_tstzset()
  */
@@ -1249,7 +1249,7 @@ dateset_to_tstzset(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a timestamptz set into a date set
+ * @brief Return a timestamptz set converted to a date set
  * @param[in] s Set
  * @csqlfn #Tstzset_to_dateset()
  */
@@ -1271,7 +1271,7 @@ tstzset_dateset(const Set *s)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a timestamptz set into a date set
+ * @brief Return a timestamptz set converted to a date set
  * @param[in] s Set
  * @csqlfn #Tstzset_to_dateset()
  */

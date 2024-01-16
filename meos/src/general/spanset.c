@@ -553,7 +553,7 @@ spanset_copy(const SpanSet *ss)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a value to a span set
+ * @brief Return a value converted to a span set
  * @param[in] value Value
  * @param[in] basetype Type of the value
  */
@@ -570,7 +570,7 @@ value_to_spanset(Datum value, meosType basetype)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert an integer to a span set
+ * @brief Return an integer converted to a span set
  * @param[in] i Value
  * @csqlfn #Value_to_spanset()
  */
@@ -582,7 +582,7 @@ int_to_spanset(int i)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a big integer to a span set
+ * @brief Return a big integer converted to a span set
  * @param[in] i Value
  * @csqlfn #Value_to_spanset()
  */
@@ -594,7 +594,7 @@ bigint_to_spanset(int i)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a float to a span set
+ * @brief Return a float converted to a span set
  * @param[in] d Value
  * @csqlfn #Value_to_spanset()
  */
@@ -606,7 +606,7 @@ float_to_spanset(double d)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a date to a span set
+ * @brief Return a date converted to a span set
  * @param[in] d Value
  * @csqlfn #Value_to_spanset()
  */
@@ -619,7 +619,7 @@ date_to_spanset(DateADT d)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a timestamptz to a span set
+ * @brief Return a timestamptz converted to a span set
  * @param[in] t Value
  * @csqlfn #Value_to_spanset()
  */
@@ -631,7 +631,7 @@ timestamptz_to_spanset(TimestampTz t)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a set to a span set
+ * @brief Return a set converted to a span set
  * @param[in] s Set
  * @csqlfn #Set_to_spanset()
  */
@@ -652,7 +652,7 @@ set_spanset(const Set *s)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a set to a span set
+ * @brief Return a set converted to a span set
  * @param[in] s Set
  * @csqlfn #Set_to_spanset()
  */
@@ -668,7 +668,7 @@ set_to_spanset(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a span to a span set
+ * @brief return a span converted to a span set
  * @param[in] s Span
  * @csqlfn #Span_to_spanset()
  */
@@ -682,7 +682,7 @@ span_spanset(const Span *s)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a span to a span set
+ * @brief Return a span converted to a span set
  * @param[in] s Span
  * @csqlfn #Spanset_to_span()
  */
@@ -700,7 +700,7 @@ span_to_spanset(const Span *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert an integer span set to a float span set
+ * @brief Return an integer span set converted to a float span set
  * @param[in] ss Span set
  * @csqlfn #Intspanset_to_floatspanset()
  */
@@ -720,7 +720,7 @@ intspanset_floatspanset(const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert an integer span set to a float span set
+ * @brief Return an integer span set converted to a float span set
  * @param[in] ss Span set
  * @csqlfn #Intspanset_to_floatspanset()
  */
@@ -736,7 +736,7 @@ intspanset_to_floatspanset(const SpanSet *ss)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a float span set to an integer span set
+ * @brief Return a float span set converted to an integer span set
  * @param[in] ss Span set
  * @csqlfn #Floatspanset_to_intspanset()
  */
@@ -756,7 +756,7 @@ floatspanset_intspanset(const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a float span set to an integer span set
+ * @brief Return a float span set converted to an integer span set
  * @param[in] ss Span set
  * @csqlfn #Floatspanset_to_intspanset()
  */
@@ -772,7 +772,7 @@ floatspanset_to_intspanset(const SpanSet *ss)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a date span set to a timestamptz span set
+ * @brief Return a date span set converted to a timestamptz span set
  * @param[in] ss Span set
  * @csqlfn #Datespanset_to_tstzspanset()
  */
@@ -792,7 +792,7 @@ datespanset_tstzspanset(const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a date span set to a timestamptz span set
+ * @brief Return a date span set converted to a timestamptz span set
  * @param[in] ss Span set
  * @csqlfn #Datespanset_to_tstzspanset()
  */
@@ -808,7 +808,7 @@ datespanset_to_tstzspanset(const SpanSet *ss)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a timestamptz span set to a date span set
+ * @brief Return a timestamptz span set converted to a date span set
  * @param[in] ss Span set
  * @csqlfn #Tstzspanset_to_datespanset()
  */
@@ -828,7 +828,7 @@ tstzspanset_datespanset(const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a timestamptz span set to a date span set
+ * @brief Return a timestamptz span set converted to a date span set
  * @param[in] ss Span set
  * @csqlfn #Tstzspanset_to_datespanset()
  */

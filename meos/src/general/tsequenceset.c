@@ -533,8 +533,8 @@ tsequenceset_copy(const TSequenceSet *ss)
 }
 
 /**
- * @brief Convert an array of temporal sequence sets into an array of temporal
- * sequences
+ * @brief Return an array of temporal sequence sets converted into an array of
+ * temporal sequences
  * @details This function is called by all the functions in which the number of 
  * output sequences cannot be determined in advance, typically when each
  * segment of the input sequence can produce an arbitrary number of output
@@ -2026,7 +2026,7 @@ tsequenceset_out(const TSequenceSet *ss, int maxdd)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the integral (area under the curve) of a temporal number
  * @param[in] ss Temporal sequence set
  */
@@ -2060,7 +2060,7 @@ tsequenceset_interval_double(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the time-weighted average of a temporal number
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tnumber_twavg()

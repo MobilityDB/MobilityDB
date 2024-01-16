@@ -432,7 +432,7 @@ PGDLLEXPORT Datum Tpoint_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal point to a spatiotemporal box
+ * @brief Return a temporal point converted to a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p ::
  */

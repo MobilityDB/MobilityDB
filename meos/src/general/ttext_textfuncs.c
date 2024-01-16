@@ -169,7 +169,7 @@ pnstrdup(const char *in, Size size)
 #endif /* MEOS */
 
 /**
- * @brief Convert the text value to lowercase
+ * @brief Return the text value transformed to lowercase
  * @note Function adapted from the external function @p lower() in file
  * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID is used instead of 
  * @p PG_GET_COLLATION().
@@ -193,7 +193,7 @@ pg_lower(text *txt)
 }
 
 /**
- * @brief Convert the text value to lowercase
+ * @brief Return the text value transformed to lowercase
  */
 Datum
 datum_lower(Datum value)
@@ -202,7 +202,7 @@ datum_lower(Datum value)
 }
 
 /**
- * @brief Convert the text value to uppercase
+ * @brief Return the text value transformed to uppercase
  * @note Function adapted from the external function @p upper() in file
  * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID` is used instead of 
  * @p PG_GET_COLLATION().
@@ -226,7 +226,7 @@ pg_upper(text *txt)
 }
 
 /**
- * @brief Convert the text value to uppercase
+ * @brief Return the text value transformed to uppercase
  */
 Datum
 datum_upper(Datum value)

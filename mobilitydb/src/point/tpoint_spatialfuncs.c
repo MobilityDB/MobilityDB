@@ -252,7 +252,8 @@ PGDLLEXPORT Datum Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_to_tgeogpoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal geometry point to a temporal geography point
+ * @brief Return a temporal geometry point converted to a temporal geography
+ * point
  * @sqlfn tgeogpoint()
  */
 Datum
@@ -268,7 +269,8 @@ PGDLLEXPORT Datum Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeogpoint_to_tgeompoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal geography point to a temporal geometry point
+ * @brief Return a temporal geography point converted to a temporal geometry
+ * point
  * @sqlfn tgeompoint()
  */
 Datum
@@ -374,7 +376,8 @@ PGDLLEXPORT Datum Tpoint_to_geomeas(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_geomeas);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal point to a geometry/geography with M measure
+ * @brief Return a temporal point converted to a geometry/geography with
+ * M measure
  */
 Datum
 Tpoint_to_geomeas(PG_FUNCTION_ARGS)
@@ -391,7 +394,8 @@ PGDLLEXPORT Datum Geomeas_to_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geomeas_to_tpoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a geometry/geography with M measure to a temporal point
+ * @brief Return a geometry/geography with M measure converted to a temporal
+ * point
  */
 Datum
 Geomeas_to_tpoint(PG_FUNCTION_ARGS)
@@ -406,8 +410,8 @@ PGDLLEXPORT Datum Tpoint_tfloat_to_geomeas(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tfloat_to_geomeas);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal point and a temporal float to a geometry/geography
- * with M measure 
+ * @brief Return a geometry/geography with M measure converted from a temporal
+ * point and a temporal float
  */
 Datum
 Tpoint_tfloat_to_geomeas(PG_FUNCTION_ARGS)

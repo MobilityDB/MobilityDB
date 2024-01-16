@@ -161,7 +161,7 @@ PGDLLEXPORT Datum Value_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a value to a span set
+ * @brief Return a value converted to a span set
  * @sqlfn intspanset(), floatspanset(), ...
  */
 Datum
@@ -176,7 +176,7 @@ PGDLLEXPORT Datum Set_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a set to a span set
+ * @brief Return a set converted to a span set
  * @sqlfn intspanset(), floatspanset(), ...
  */
 Datum
@@ -192,7 +192,7 @@ PGDLLEXPORT Datum Span_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a span to a span set
+ * @brief Return a span converted to a span set
  * @sqlfn instspanset(), floatspanset(), ...
  */
 Datum
@@ -224,7 +224,7 @@ PGDLLEXPORT Datum Spanset_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_to_span);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a span set to a span
+ * @brief Return a span set converted to a span
  * @sqlfn span()
  */
 Datum
@@ -240,7 +240,7 @@ PGDLLEXPORT Datum Intspanset_to_floatspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intspanset_to_floatspanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert an integer span set to a float spanset
+ * @brief Return an integer span set converted to a float spanset
  * @sqlfn floatspanset()
  * @sqlop @p ::
  */
@@ -257,7 +257,7 @@ PGDLLEXPORT Datum Floatspanset_to_intspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspanset_to_intspanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a float span set to an integer spanset
+ * @brief Return a float span set converted to an integer spanset
  * @sqlfn intspanset()
  * @sqlop @p ::
  */
@@ -274,7 +274,7 @@ PGDLLEXPORT Datum Datespanset_to_tstzspanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Datespanset_to_tstzspanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a date span set to a timestamptz span set
+ * @brief Return a date span set converted to a timestamptz span set
  * @sqlfn tstzspanset()
  * @sqlop @p ::
  */
@@ -291,7 +291,7 @@ PGDLLEXPORT Datum Tstzspanset_to_datespanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_to_datespanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a timestamptz span set to a date span set
+ * @brief Return a timestamptz span set converted to a date span set
  * @sqlfn datespanset()
  * @sqlop @p ::
  */
@@ -311,7 +311,7 @@ PGDLLEXPORT Datum Spanset_to_multirange(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_to_multirange);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a span set to a multirange
+ * @brief Return a span set converted to a multirange
  * @sqlfn int4range(), tstzrange()
  * @sqlop @p ::
  */
@@ -330,7 +330,7 @@ PGDLLEXPORT Datum Multirange_to_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Multirange_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Convert a multirange to a span set
+ * @brief Return a multirange converted to a span set
  * @sqlfn intspanset(), tstzspanset()
  * @sqlop @p ::
  */

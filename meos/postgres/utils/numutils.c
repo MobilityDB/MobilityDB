@@ -83,11 +83,10 @@ decimalLength64(const uint64 v)
 }
 
 /**
- * @brief Convert input string to a signed 32 bit integer.
- *
- * Allows any number of leading or trailing whitespace characters. Will throw
- * ereport() upon bad input format or overflow.
- * @return On error return PG_INT32_MAX;
+ * @brief Return an input string converted to a signed 32 bit integer.
+ * @details  Allows any number of leading or trailing whitespace characters. 
+ * Will throw `ereport()` upon bad input format or overflow.
+ * @return On error return @p PG_INT32_MAX;
  * @note Accumulate input as a negative number, to deal with two's complement
  * representation of the most negative number, which can't be represented as a
  * positive number.

@@ -64,7 +64,7 @@
  *****************************************************************************/
 
 /**
- * @brief Convert two temporal values into a common subtype
+ * @brief Return two temporal values transformed into a common subtype
  * @param[in] temp1,temp2 Input values
  * @param[out] out1,out2 Output values
  * @note Each of the output values may be equal to the input values to avoid
@@ -1281,7 +1281,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @brief Convert the array of temporal values into a common subtype
+ * @brief Return an array of temporal values transformed into a common subtype
  * @param[in] temparr Array of values
  * @param[in] count Number of values in the array
  * @param[in] subtype common subtype

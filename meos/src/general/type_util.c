@@ -465,7 +465,7 @@ datum_copy(Datum value, meosType basetype)
 }
 
 /**
- * @brief Convert a number to a double
+ * @brief Return a number converted to a double
  * @return On error return @p DBL_MAX
  */
 double
@@ -490,7 +490,7 @@ datum_double(Datum d, meosType type)
 }
 
 /**
- * @brief Convert a double to a number Datum
+ * @brief Return a double converted to a number Datum
  */
 Datum
 double_datum(double d, meosType type)

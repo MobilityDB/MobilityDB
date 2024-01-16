@@ -426,7 +426,7 @@ number_set_tbox(Datum value, meosType basetype, TBox *box)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Convert a number to a temporal box
+ * @brief Return a numberconverted to a temporal box
  * @param[in] value Value
  * @param[in] basetype Type of the value
  * @csqlfn #Number_to_tbox()
@@ -459,7 +459,7 @@ int_set_tbox(int i, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert an integer to a temporal box
+ * @brief Return an integer converted to a temporal box
  * @param[in] i Value
  * @csqlfn #Number_to_tbox()
  */
@@ -488,7 +488,7 @@ float_set_tbox(double d, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a float to a temporal box
+ * @brief Return a float converted to a temporal box
  * @param[in] d Value
  * @csqlfn #Number_to_tbox()
  */
@@ -521,7 +521,7 @@ timestamptz_set_tbox(TimestampTz t, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a timestamptz to a temporal box
+ * @brief Return a timestamptz converted to a temporal box
  * @param[in] t Timestamp
  * @csqlfn #Timestamptz_to_tbox()
  */
@@ -569,7 +569,7 @@ tstzset_set_tbox(const Set *s, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a number or timestamptz set to a temporal box
+ * @brief Return a number or timestamptz set converted to a temporal box
  * @param[in] s Set
  * @csqlfn #Set_to_tbox()
  */
@@ -626,7 +626,7 @@ tstzspan_set_tbox(const Span *s, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a number span to a temporal box
+ * @brief Return a number span converted to a temporal box
  * @param[in] s Span
  * @csqlfn #Span_to_tbox()
  */
@@ -685,7 +685,7 @@ tstzspanset_set_tbox(const SpanSet *ss, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a number span set to a temporal box
+ * @brief Return a number span set converted to a temporal box
  * @param[in] ss Span set
  * @csqlfn #Spanset_to_tbox()
  */
@@ -716,7 +716,7 @@ spanset_to_tbox(const SpanSet *ss)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a temporal box as an integer span
+ * @brief Return a temporal box converted to an integer span
  * @param[in] box Temporal box
  * @csqlfn #Tbox_to_intspan()
  */
@@ -737,7 +737,7 @@ tbox_to_intspan(const TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a temporal box as a float span
+ * @brief Return a temporal box converted to a float span
  * @param[in] box Temporal box
  * @csqlfn #Tbox_to_floatspan()
  */
@@ -758,7 +758,7 @@ tbox_to_floatspan(const TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a temporal box as a timestamptz span
+ * @brief Return a temporal box converted to a timestamptz span
  * @param[in] box Temporal box
  * @csqlfn #Tbox_to_tstzspan()
  */
@@ -1168,7 +1168,7 @@ tbox_shift_scale_time(const TBox *box, const Interval *shift,
 
 /**
  * @ingroup meos_internal_box_transf
- * @brief Expand the second temporal box with the first one
+ * @brief Return the second temporal box expanded with the first one
  * @param[in] box1 Temporal box
  * @param[in,out] box2 Temporal box
  */
@@ -1581,8 +1581,8 @@ union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
 
 /**
  * @ingroup meos_internal_box_set
- * @brief Return the last argument initialized with the result of the
- * intersection of two temporal boxes
+ * @brief Return the last argument initialized with the intersection of two
+ * temporal boxes
  * @param[in] box1,box2 Temporal boxes
  * @param[out] result Resulting box
  * @note This function is equivalent to @ref intersection_tbox_tbox without

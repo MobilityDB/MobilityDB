@@ -67,7 +67,7 @@ extern void ll2cart(const POINT2D *g, POINT3D *p);
 
 /**
  * @ingroup meos_internal_box_transf
- * @brief Expand the second spatiotemporal box with the first one
+ * @brief Return the second spatiotemporal box expanded with the first one
  * @param[in] box1,box2 Spatiotemporal boxes
  * @pre No tests are made concerning the srid, dimensionality, etc.
  * This should be ensured by the calling function.
@@ -473,7 +473,7 @@ stbox_set_box3d(const STBox *box, BOX3D *box3d)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a spatiotemporal box to a @p GBOX
+ * @brief Return a spatiotemporal box converted to a @p GBOX
  * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_box2d()
  */
@@ -491,7 +491,7 @@ stbox_to_gbox(const STBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a spatiotemporal box to a @p BOX3D
+ * @brief Return a spatiotemporal box converted to a @p BOX3D
  * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_box3d()
  */
@@ -511,7 +511,7 @@ stbox_to_box3d(const STBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a spatiotemporal box as a geometry/geography
+ * @brief Return a spatiotemporal box converted as a geometry/geography
  * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_geo()
  */
@@ -573,7 +573,7 @@ stbox_to_geo(const STBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a spatiotemporal box to a timestamptz span
+ * @brief Return a spatiotemporal box converted to a timestamptz span
  * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_tstzspan()
  */
@@ -608,7 +608,7 @@ spatialset_set_stbox(const Set *s, STBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a spatial set to a spatiotemporal box
+ * @brief Return a spatial set converted to a spatiotemporal box
  * @param[in] s Set
  * @csqlfn #Geoset_to_stbox(), #Npointset_to_stbox()
  */
@@ -627,7 +627,7 @@ spatialset_to_stbox(const Set *s)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Convert a @p GBOX to a spatiotemporal box
+ * @brief Return a @p GBOX converted to a spatiotemporal box
  * @param[in] box GBOX
  */
 STBox *
@@ -657,7 +657,7 @@ gbox_to_stbox(const GBOX *box)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Convert a @p BOX3D to a spatiotemporal box
+ * @brief Return a @p BOX3D converted to a spatiotemporal box
  * @param[out] box BOX3D
  */
 STBox *
@@ -708,7 +708,7 @@ point_get_coords(const GSERIALIZED *point, bool hasz, double *x, double *y,
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief return the last argument initialized with a spatiotemporal box
+ * @brief Return the last argument initialized with a spatiotemporal box
  * constructed from a geometry/geography
  * @param[in] gs Geometry/geography
  * @param[out] box Spatiotemporal box
@@ -767,7 +767,7 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
 #if MEOS
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a geometry/geography to a spatiotemporal box
+ * @brief Return a geometry/geography converted to a spatiotemporal box
  * @param[in] gs Geometry/geography
  * @csqlfn #Geo_to_stbox()
  */
@@ -827,7 +827,7 @@ timestamptz_set_stbox(TimestampTz t, STBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a timestamptz to a spatiotemporal box
+ * @brief return a timestamptz converted to a spatiotemporal box
  * @param[in] t Timestamp
  * @csqlfn #Timestamptz_to_stbox()
  */
@@ -859,7 +859,7 @@ tstzset_set_stbox(const Set *s, STBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a timestamptz set to a spatiotemporal box
+ * @brief Return a timestamptz set converted to a spatiotemporal box
  * @param[in] s Set
  * @csqlfn #Tstzset_to_stbox()
  */
@@ -894,7 +894,7 @@ tstzspan_set_stbox(const Span *s, STBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a timestamptz span to a spatiotemporal box
+ * @brief return a timestamptz span converted to a spatiotemporal box
  * @param[in] s Span
  * @csqlfn #Tstzspan_to_stbox()
  */
@@ -930,7 +930,7 @@ tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
 #if MEOS
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a timestamptz span set to a spatiotemporal box
+ * @brief Return a timestamptz span set converted to a spatiotemporal box
  * @param[in] ss Span set
  * @csqlfn #Tstzspanset_to_stbox()
  */

@@ -89,7 +89,6 @@ set_expand_bbox(Datum value, meosType basetype, void *box)
 }
 
 /**
- * @ingroup meos_internal_setspan_agg
  * @brief Append a value to a set
  * @param[in,out] set Set
  * @param[in] value Value

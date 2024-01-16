@@ -309,6 +309,24 @@
 		</sect2>
 
 		<sect2>
+			<title>Sistema de referencia espacial</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="geoset_SRID"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="geoset_setSRID"><varname>setSRID</varname></link>: Especificar el identificador de referencia espacial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="geoset_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a una referencia espacial diferente</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Operaciones de conjuntos</title>
 
 			<itemizedlist>
@@ -547,7 +565,7 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_transform"><varname>transform</varname></link>: Transformar a una referencia espacial diferente</para>
+					<para><link linkend="stbox_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a una referencia espacial diferente</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1220,7 +1238,7 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_transform"><varname>transform</varname></link>: Transformar a una referencia espacial diferente</para>
+					<para><link linkend="tpoint_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a una referencia espacial diferente</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
