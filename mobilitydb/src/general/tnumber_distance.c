@@ -32,8 +32,6 @@
  * @brief Distance functions for temporal numbers
  */
 
-#include "general/tnumber_distance.h"
-
 /* C */
 #include <float.h>
 /* PostgreSQL */
@@ -44,6 +42,7 @@
 #include <meos_internal.h>
 #include "general/tbox.h"
 #include "general/temporal.h"
+#include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
@@ -64,10 +63,7 @@ Distance_number_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  Oid restypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Temporal *result = distance_tnumber_number(temp, value, oid_type(valuetypid),
-    oid_type(restypid));
+  Temporal *result = distance_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -85,10 +81,7 @@ Distance_tnumber_number(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  Oid restypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  Temporal *result = distance_tnumber_number(temp, value, oid_type(valuetypid),
-    oid_type(restypid));
+  Temporal *result = distance_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -130,11 +123,10 @@ Datum
 NAD_number_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double result = nad_tnumber_number(temp, value, oid_type(basetypid));
+  Datum result = nad_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum NAD_tnumber_number(PG_FUNCTION_ARGS);
@@ -150,10 +142,9 @@ NAD_tnumber_number(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  double result = nad_tnumber_number(temp, value, oid_type(basetypid));
+  Datum result = nad_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum NAD_tbox_tbox(PG_FUNCTION_ARGS);
@@ -168,10 +159,11 @@ NAD_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBox *box1 = PG_GETARG_TBOX_P(0);
   TBox *box2 = PG_GETARG_TBOX_P(1);
-  double result = nad_tbox_tbox(box1, box2);
-  if (result == DBL_MAX)
+  Datum result = nad_tbox_tbox(box1, box2);
+  double dresult = datum_double(result, box1->span.basetype);
+  if (dresult < 0.0)
     PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum NAD_tbox_tnumber(PG_FUNCTION_ARGS);
@@ -187,11 +179,12 @@ NAD_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double result = nad_tnumber_tbox(temp, box);
+  Datum result = nad_tnumber_tbox(temp, box);
+  double dresult = datum_double(result, box->span.basetype);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == DBL_MAX)
+  if (dresult < 0.0)
     PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum NAD_tnumber_tbox(PG_FUNCTION_ARGS);
@@ -207,11 +200,12 @@ NAD_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TBox *box = PG_GETARG_TBOX_P(1);
-  double result = nad_tnumber_tbox(temp, box);
+  Datum result = nad_tnumber_tbox(temp, box);
+  double dresult = datum_double(result, box->span.basetype);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == DBL_MAX)
+  if (dresult < 0.0)
     PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum NAD_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -226,13 +220,13 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *dist = distance_tnumber_tnumber(temp1, temp2);
+  Datum result = nad_tnumber_tnumber(temp1, temp2);
+  meosType basetype = temptype_basetype(temp1->temptype);
+  double dresult = datum_double(result, basetype);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (dist == NULL)
+  if (dresult < 0.0)
     PG_RETURN_NULL();
-  Datum result = temporal_min_value(dist);
-  pfree(dist);
   PG_RETURN_DATUM(result);
 }
 

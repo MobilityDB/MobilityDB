@@ -58,7 +58,6 @@
 #include "general/spanset.h"
 #include "general/tinstant.h"
 #include "general/temporal_boxops.h"
-#include "general/tnumber_distance.h"
 #include "general/type_util.h"
 #include "general/type_parser.h"
 #include "point/tpoint_parser.h"
@@ -2367,9 +2366,9 @@ tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
     *result = tinstant_value(inst1);
   else
   {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, n + 1);
     interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-    *result = tsegment_value_at_timestamptz(inst1, inst2, interp, t);
+    *result = tsegment_value_at_timestamptz(inst1,
+      TSEQUENCE_INST_N(seq, n + 1), interp, t);
   }
   return true;
 }

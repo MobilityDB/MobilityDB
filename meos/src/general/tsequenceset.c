@@ -406,7 +406,8 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     /* If there is not already a split by distance */
     if (maxt != NULL && ! split)
     {
-      Interval *duration = minus_timestamptz_timestamptz(instants[i]->t, instants[i - 1]->t);
+      Interval *duration = minus_timestamptz_timestamptz(instants[i]->t,
+        instants[i - 1]->t);
       if (pg_interval_cmp(duration, maxt) > 0)
         split = true;
       // CANNOT pfree(duration);

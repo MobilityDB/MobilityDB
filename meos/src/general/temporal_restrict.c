@@ -58,7 +58,6 @@
 #include "general/spanset.h"
 #include "general/tinstant.h"
 #include "general/temporal_boxops.h"
-#include "general/tnumber_distance.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
 #include "general/type_util.h"

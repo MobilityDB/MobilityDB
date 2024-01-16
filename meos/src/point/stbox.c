@@ -818,10 +818,8 @@ timestamptz_set_stbox(TimestampTz t, STBox *box)
   assert(box);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
-  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_Z(box->flags, false);
+  Datum dt = TimestampTzGetDatum(t);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -850,7 +848,7 @@ timestamptz_to_stbox(TimestampTz t)
 void
 tstzset_set_stbox(const Set *s, STBox *box)
 {
-  assert(s); assert(box);
+  assert(s); assert(box); assert(s->settype == T_TSTZSET);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   set_set_span(s, &box->period);
@@ -868,7 +866,7 @@ STBox *
 tstzset_to_stbox(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
+  if (! ensure_not_null((void *) s))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
   tstzset_set_stbox(s, result);
@@ -885,7 +883,7 @@ tstzset_to_stbox(const Set *s)
 void
 tstzspan_set_stbox(const Span *s, STBox *box)
 {
-  assert(s); assert(box);
+  assert(s); assert(box); assert(s->spantype == T_TSTZSPAN);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   memcpy(&box->period, s, sizeof(Span));
@@ -920,7 +918,7 @@ tstzspan_to_stbox(const Span *s)
 void
 tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
 {
-  assert(ss); assert(box);
+  assert(ss); assert(box); assert(ss->spansettype == T_TSTZSPANSET);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   memcpy(&box->period, &ss->span, sizeof(Span));

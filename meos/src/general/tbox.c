@@ -569,7 +569,7 @@ tstzset_set_tbox(const Set *s, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a number set to a temporal box
+ * @brief Convert a number or timestamptz set to a temporal box
  * @param[in] s Set
  * @csqlfn #Set_to_tbox()
  */
@@ -663,8 +663,7 @@ span_to_tbox(const Span *s)
 void
 numspanset_set_tbox(const SpanSet *ss, TBox *box)
 {
-  assert(ss); assert(box);
-  assert(tnumber_spansettype(ss->spansettype));
+  assert(ss); assert(box); assert(tnumber_spansettype(ss->spansettype));
   tbox_set(&ss->span, NULL, box);
   return;
 }
@@ -694,8 +693,7 @@ TBox *
 spanset_to_tbox(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_numspan_type(ss->spantype))
+  if (! ensure_not_null((void *) ss))
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));

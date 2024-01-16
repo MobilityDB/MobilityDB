@@ -288,15 +288,19 @@ extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool o
 
 /* Conversion functions for set and span types */
 
+extern Set *dateset_tstzset(const Set *s);
 extern Span *datespan_tstzspan(const Span *s);
 extern SpanSet *datespanset_tstzspanset(const SpanSet *ss);
-extern Span *intspan_floatspan(const Span *s);
-extern SpanSet *intspanset_floatspanset(const SpanSet *ss);
+extern Set *floatset_intset(const Set *s);
 extern Span *floatspan_intspan(const Span *s);
 extern SpanSet *floatspanset_intspanset(const SpanSet *ss);
+extern Set *intset_floatset(const Set *s);
+extern Span *intspan_floatspan(const Span *s);
+extern SpanSet *intspanset_floatspanset(const SpanSet *ss);
 extern Span *set_span(const Set *s);
 extern SpanSet *set_spanset(const Set *s);
 extern SpanSet *span_spanset(const Span *s);
+extern Set *tstzset_dateset(const Set *s);
 extern Span *tstzspan_datespan(const Span *s);
 extern SpanSet *tstzspanset_datespanset(const SpanSet *ss);
 extern void value_set_span(Datum value, meosType basetype, Span *s);
@@ -889,8 +893,11 @@ extern TSequenceSet *tnumberseqset_delta_value(const TSequenceSet *ss);
 
 /* Distance functions for temporal types */
 
-extern Temporal *distance_tnumber_number(const Temporal *temp, Datum value, meosType valuetype, meosType restype);
-extern double nad_tnumber_number(const Temporal *temp, Datum value, meosType basetype);
+extern Temporal *distance_tnumber_number(const Temporal *temp, Datum value);
+extern Datum nad_tbox_tbox(const TBox *box1, const TBox *box2);
+extern Datum nad_tnumber_number(const Temporal *temp, Datum value);
+extern Datum nad_tnumber_tbox(const Temporal *temp, const TBox *box);
+extern Datum nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************
  * Spatial functions for temporal points

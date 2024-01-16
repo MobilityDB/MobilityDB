@@ -227,7 +227,7 @@ Datum
 Datespan_to_tstzspan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_SPAN_P(datespan_to_tstzspan(s));
+  PG_RETURN_SPAN_P(datespan_tstzspan(s));
 }
 
 PGDLLEXPORT Datum Tstzspan_to_datespan(PG_FUNCTION_ARGS);
@@ -242,7 +242,7 @@ Datum
 Tstzspan_to_datespan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_SPAN_P(tstzspan_to_datespan(s));
+  PG_RETURN_SPAN_P(tstzspan_datespan(s));
 }
 
 /*****************************************************************************/
