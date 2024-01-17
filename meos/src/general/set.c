@@ -1955,52 +1955,6 @@ set_compact(const Set *s)
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a float set with the precision of the values set to the number
- * of decimal places
- * @param[in] s Set
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Floatset_round()
- */
-Set *
-floatset_round(const Set *s, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET) ||
-      ! ensure_not_negative(maxdd))
-    return NULL;
-
-  Set *result = set_cp(s);
-  Datum size = Int32GetDatum(maxdd);
-  for (int i = 0; i < s->count; i++)
-    (SET_OFFSETS_PTR(result))[i] = datum_round_float(SET_VAL_N(s, i), size);
-  return result;
-}
-
-/**
- * @ingroup meos_setspan_transf
- * @brief Return a geo set with the precision of the coordinates set to the
- * number of decimal places
- * @param[in] s Set
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Geoset_round()
- */
-Set *
-geoset_round(const Set *s, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_not_negative(maxdd))
-    return NULL;
-
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  Datum size = Int32GetDatum(maxdd);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_round_geo(SET_VAL_N(s, i), size);
-  return set_make_free(values, s->count, s->basetype, ORDERED);
-}
-
-/**
- * @ingroup meos_setspan_transf
  * @brief Return the text set transformed to lowercase
  * @param[in] s Set
  * @csqlfn #Textset_lower()

@@ -96,9 +96,9 @@ bool
 tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  Npoint *np1 = DatumGetNpointP(tinstant_val(inst1));
-  Npoint *np2 = DatumGetNpointP(tinstant_val(inst2));
-  Npoint *np = DatumGetNpointP(value);
+  const Npoint *np1 = DatumGetNpointP(tinstant_val(inst1));
+  const Npoint *np2 = DatumGetNpointP(tinstant_val(inst2));
+  const Npoint *np = DatumGetNpointP(value);
   double min = Min(np1->pos, np2->pos);
   double max = Max(np1->pos, np2->pos);
   /* if value is to the left or to the right of the range */
@@ -123,43 +123,6 @@ tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 }
 
 /*****************************************************************************
- * Functions for spatial reference systems of temporal network points
- * For temporal points of duration distinct from TInstant the Spatial
- * reference system identifier (SRID) is obtained from the bounding box.
- *****************************************************************************/
-
-/**
- * @brief Return the SRID of a temporal network point of subtype instant
- */
-int
-tnpointinst_srid(const TInstant *inst)
-{
-  Npoint *np = DatumGetNpointP(tinstant_val(inst));
-  GSERIALIZED *line = route_geom(np->rid);
-  int result = gserialized_get_srid(line);
-  pfree(line);
-  return result;
-}
-
-/**
- * @brief Return the SRID of a temporal network point
- */
-int
-tnpoint_srid(const Temporal *temp)
-{
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return tnpointinst_srid((const TInstant *) temp);
-    case TSEQUENCE:
-      return tpointseq_srid((TSequence *) temp);
-    default: /* TSEQUENCESET */
-      return tpointseqset_srid((TSequenceSet *) temp);
-  }
-}
-
-/*****************************************************************************
  * NPoints Functions
  * Return the network points covered by a temporal network point
  *****************************************************************************/
@@ -181,7 +144,8 @@ tnpointseq_discstep_npoints(const TSequence *seq, int *count)
 }
 
 /**
- * @brief Return the network points covered by a temporal network point
+ * @brief Return the pointers to the network points covered by a temporal
+ * network point
  * @param[in] ss Temporal network point
  * @param[out] count Number of elements of the output array
  * @note Only the particular cases returning points are covered
@@ -214,7 +178,7 @@ tnpointseqset_step_npoints(const TSequenceSet *ss, int *count)
 GSERIALIZED *
 tnpointinst_geom(const TInstant *inst)
 {
-  Npoint *np = DatumGetNpointP(tinstant_val(inst));
+  const Npoint *np = DatumGetNpointP(tinstant_val(inst));
   return npoint_geom(np);
 }
 
@@ -357,13 +321,13 @@ tnpointseq_length(const TSequence *seq)
     return 0;
 
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-  Npoint *np1 = DatumGetNpointP(tinstant_val(inst));
+  const Npoint *np1 = DatumGetNpointP(tinstant_val(inst));
   double length = route_length(np1->rid);
   double fraction = 0;
   for (int i = 1; i < seq->count; i++)
   {
     inst = TSEQUENCE_INST_N(seq, i);
-    Npoint *np2 = DatumGetNpointP(tinstant_val(inst));
+    const Npoint *np2 = DatumGetNpointP(tinstant_val(inst));
     fraction += fabs(np2->pos - np1->pos);
     np1 = np2;
   }

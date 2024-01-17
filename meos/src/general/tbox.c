@@ -1250,30 +1250,6 @@ tbox_expand_time(const TBox *box, const Interval *interv)
   return result;
 }
 
-/**
- * @ingroup meos_box_transf
- * @brief Return a temporal box with the precision of the value span set to a
- * number of decimal places
- * @param[in] box Temporal box
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Tbox_round()
- */
-TBox *
-tbox_round(const TBox *box, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box) ||
-      ! ensure_span_isof_basetype(&box->span, T_FLOAT8) ||
-      ! ensure_not_negative(maxdd))
-    return NULL;
-
-  TBox *result = tbox_cp(box);
-  Datum size = Int32GetDatum(maxdd);
-  result->span.lower = datum_round_float(box->span.lower, size);
-  result->span.upper = datum_round_float(box->span.upper, size);
-  return result;
-}
-
 /*****************************************************************************
  * Topological operators
  *****************************************************************************/

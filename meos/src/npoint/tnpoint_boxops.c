@@ -79,7 +79,7 @@ npoint_to_stbox(const Npoint *np)
 }
 
 /**
- * @brief Return the last argumetn initialized with the spatiotemporal box from
+ * @brief Return the last argument initialized with the spatiotemporal box from
  * an array of network point values
  * @param[in] values Temporal network point values
  * @param[in] count Number of elements in the array
@@ -98,7 +98,7 @@ npointarr_set_stbox(const Datum *values, int count, STBox *box)
   return;
 }
 /**
- * @brief Return the last argument initialized with the spatiotemporal box of a 
+ * @brief Return the last argument initialized with the spatiotemporal box of a
  * temporal network point instant
  * @param[in] inst Temporal network point
  * @param[out] box Spatiotemporal box
@@ -198,7 +198,9 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
 {
   /* Compute the bounding box of the end point of the sequence and the instant */
   STBox box;
-  if (MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR)
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) != LINEAR)
+    tnpointinst_set_stbox(inst, &box);
+  else
   {
     const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
     Npoint *np1 = DatumGetNpointP(tinstant_val(last));
@@ -216,10 +218,6 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
     pfree(line);
     if (posmin != 0 || posmax != 1)
       pfree(gs);
-  }
-  else
-  {
-    tnpointinst_set_stbox(inst, &box);
   }
   /* Expand the bounding box of the sequence with the last edge */
   stbox_expand(&box, (STBox *) TSEQUENCE_BBOX_PTR(seq));
@@ -294,7 +292,7 @@ npoint_tstzspan_set_stbox(const Npoint *np, const Span *s, STBox *box)
 
 /**
  * @brief Return a spatiotemporal box constructed from a network point and a
- * timestamptz 
+ * timestamptz
  */
 STBox *
 npoint_tstzspan_to_stbox(const Npoint *np, const Span *s)

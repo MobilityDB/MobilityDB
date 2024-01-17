@@ -75,13 +75,6 @@ extern int64 nsegment_route(const Nsegment *ns);
 extern double nsegment_start_position(const Nsegment *ns);
 extern double nsegment_end_position(const Nsegment *ns);
 
-/* Transformation functions */
-
-extern Datum datum_npoint_round(Datum npoint, Datum size);
-extern Npoint *npoint_round(const Npoint *np, Datum size);
-extern Nsegment *nsegment_round(const Nsegment *ns, Datum size);
-extern Set *npointset_round(const Set *s, Datum prec);
-
 /* Conversions between network and Euclidean space */
 
 extern bool route_exists(int64 rid);

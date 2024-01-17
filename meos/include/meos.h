@@ -136,10 +136,10 @@ typedef struct
 {
   Span period;          /**< time span */
   double xmin;          /**< minimum x value */
-  double xmax;          /**< maximum x value */
   double ymin;          /**< minimum y value */
-  double ymax;          /**< maximum y value */
   double zmin;          /**< minimum z value */
+  double xmax;          /**< maximum x value */
+  double ymax;          /**< maximum y value */
   double zmax;          /**< maximum z value */
   int32  srid;          /**< SRID */
   int16  flags;         /**< flags */

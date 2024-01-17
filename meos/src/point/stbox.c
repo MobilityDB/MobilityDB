@@ -1339,36 +1339,6 @@ stbox_expand_time(const STBox *box, const Interval *interv)
   return result;
 }
 
-/**
- * @ingroup meos_box_transf
- * @brief Return a spatiotemporal box with the precision of the coordinates set
- * to a number of decimal places
- * @param[in] box Spatiotemporal box
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Stbox_round()
- */
-STBox *
-stbox_round(const STBox *box, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box) ||
-      ! ensure_not_negative(maxdd))
-    return NULL;
-
-  STBox *result = stbox_cp(box);
-  Datum size = Int32GetDatum(maxdd);
-  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin), size));
-  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), size));
-  result->ymin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymin), size));
-  result->ymax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymax), size));
-  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
-  {
-    result->zmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmin), size));
-    result->zmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmax), size));
-  }
-  return result;
-}
-
 /*****************************************************************************
  * Topological operators
  *****************************************************************************/

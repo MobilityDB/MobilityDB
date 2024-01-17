@@ -183,10 +183,6 @@ extern TSequence *tpointcontseq_transform(const TSequence *seq, int srid);
 extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ss, int srid);
 extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 
-/* Set precision of the coordinates */
-
-extern Datum datum_round_geo(Datum value, Datum size);
-
 /* Stop function */
 
 int tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,

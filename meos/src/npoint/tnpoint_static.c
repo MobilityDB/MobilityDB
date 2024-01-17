@@ -103,63 +103,6 @@ get_srid_ways()
  *****************************************************************************/
 
 /**
- * @brief Return a network point with the precision of the position set to a
- * number of decimal places
- * @note Funcion used by the lifting infrastructure
- */
-Datum
-datum_npoint_round(Datum npoint, Datum size)
-{
-  /* Set precision of position */
-  Npoint *np = (Npoint *) DatumGetPointer(npoint);
-  Npoint *result = npoint_round(np, size);
-  return PointerGetDatum(result);
-}
-
-/**
- * @brief Return a network point with the precision of the position set to a
- * number of decimal places
- */
-Npoint *
-npoint_round(const Npoint *np, Datum size)
-{
-  /* Set precision of position */
-  double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
-  return npoint_make(np->rid, pos);
-}
-
-/**
- * @brief Return a network segment with the precision of the positions set to a
- * number of decimal places
- */
-Nsegment *
-nsegment_round(const Nsegment *ns, Datum size)
-{
-  /* Set precision of positions */
-  double pos1 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos1),
-    size));
-  double pos2 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos2),
-    size));
-  return nsegment_make(ns->rid, pos1, pos2);
-}
-
-/**
- * @brief Return a network point set with the precision of the positions set
- * to a number of decimal places
- * @csqlfn #Npointset_round()
- */
-Set *
-npointset_round(const Set *s, Datum prec)
-{
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_npoint_round(SET_VAL_N(s, i), prec);
-  return set_make_free(values, s->count, s->basetype, ORDERED);
-}
-
-/*****************************************************************************/
-
-/**
  * @brief Return an array of network points converted into a geometry
  * @param[in] points Array of network points
  * @param[in] count Number of elements in the input array
