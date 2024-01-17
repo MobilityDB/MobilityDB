@@ -199,6 +199,26 @@ point_transf_pj(GSERIALIZED *gs, int32 srid_to, const LWPROJ *pj)
 
 #if MEOS
 /**
+ * @brief Return a point transformed to another SRID
+ * @param[in] gs Point
+ * @param[in] srid_to Target SRID
+ * @param[in] pj Information about the transformation
+ */
+GSERIALIZED *
+point_transform_pj(const GSERIALIZED *gs, int32 srid_to, LWPROJ *pj)
+{
+  GSERIALIZED *result = geo_copy(gs);
+  if (! point_transf_pj(result, srid_to, pj))
+  {
+    pfree(result); result = NULL;
+  }
+
+  /* Clean up and return */
+  proj_destroy(pj->pj); pfree(pj);
+  return result;
+}
+
+/**
  * @ingroup meos_setspan_spatial_transf
  * @brief Return a point transformed to another SRID
  * @param[in] gs Point
@@ -222,15 +242,7 @@ point_transform(const GSERIALIZED *gs, int32 srid_to)
   LWPROJ *pj = lwproj_transform(srid_from, srid_to);
   if (! pj)
     return NULL;
-  GSERIALIZED *result = geo_copy(gs);
-  if (! point_transf_pj(result, srid_to, pj))
-  {
-    pfree(result); result = NULL;
-  }
-
-  /* Clean up and return */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
+  return point_transform_pj(gs, srid_to, pj);
 }
 
 /**
@@ -257,15 +269,7 @@ point_transform_pipeline(const GSERIALIZED *gs, char *pipeline,
   LWPROJ *pj = lwproj_transform_pipeline(pipeline, is_forward);
   if (! pj)
     return NULL;
-  GSERIALIZED *result = geo_copy(gs);
-  if (! point_transf_pj(result, srid_to, pj))
-  {
-    pfree(result); result = NULL;
-  }
-  
-  /* Clean up and return */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
+  return point_transform_pj(gs, srid_to, pj);
 }
 #endif /* MEOS */
 
@@ -279,7 +283,7 @@ point_transform_pipeline(const GSERIALIZED *gs, char *pipeline,
  * @param[in] pj Information about the transformation
  */
 static Set *
-geoset_transf_pj(Set *s, int32 srid_to, LWPROJ *pj)
+geoset_transform_pj(Set *s, int32 srid_to, LWPROJ *pj)
 {
   assert(s); assert(pj); assert(geoset_type(s->settype));
   /* Transform the temporal point */
@@ -328,7 +332,7 @@ geoset_transform(const Set *s, int32 srid_to)
 
   /* Transform the geo set */
   Set *result = set_cp(s);
-  return geoset_transf_pj(result, srid_to, pj);
+  return geoset_transform_pj(result, srid_to, pj);
 }
 
 /**
@@ -360,7 +364,7 @@ geoset_transform_pipeline(const Set *s, char *pipeline, int32 srid_to,
 
   /* Transform the geo set */
   Set *result = set_cp(s);
-  return geoset_transf_pj(result, srid_to, pj);
+  return geoset_transform_pj(result, srid_to, pj);
 }
 
 /*****************************************************************************/
@@ -374,7 +378,7 @@ geoset_transform_pipeline(const Set *s, char *pipeline, int32 srid_to,
  * @param[in] pj Information about the transformation
  */
 static STBox *
-stbox_transf_pj(const STBox *box, int32 srid_to, LWPROJ *pj)
+stbox_transform_pj(const STBox *box, int32 srid_to, LWPROJ *pj)
 {
   assert(box); assert(pj);
   /* Create the points corresponding to the bounds */
@@ -448,7 +452,7 @@ stbox_transform(const STBox *box, int32 srid_to)
     return NULL;
 
   /* Transform the temporal point */
-  return stbox_transf_pj(box, srid_to, pj);
+  return stbox_transform_pj(box, srid_to, pj);
 }
 
 /**
@@ -477,7 +481,7 @@ stbox_transform_pipeline(const STBox *box, char *pipeline,
     return NULL;
 
   /* Transform the temporal point */
-  return stbox_transf_pj(box, srid_to, pj);
+  return stbox_transform_pj(box, srid_to, pj);
 }
 
 /*****************************************************************************/

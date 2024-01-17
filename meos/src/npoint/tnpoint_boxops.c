@@ -169,7 +169,7 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
 }
 
 /**
- * @brief return the last argument initialized with the spatiotemporal box of
+ * @brief Return the last argument initialized with the spatiotemporal box of
  * an array of temporal network point instants
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
