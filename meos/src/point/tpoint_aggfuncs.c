@@ -331,8 +331,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
   {
     TInstant *inst = instants[i];
     Datum value = doublen_to_point(inst, srid);
-    newinstants[i] = tinstant_make(value, T_TGEOMPOINT, inst->t);
-    pfree(DatumGetPointer(value));
+    newinstants[i] = tinstant_make_free(value, T_TGEOMPOINT, inst->t);
   }
   return tsequence_make_free(newinstants, count,  true, true, DISCRETE,
     NORMALIZE_NO);
@@ -357,8 +356,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       Datum value = doublen_to_point(inst, srid);
-      instants[j] = tinstant_make(value, T_TGEOMPOINT, inst->t);
-      pfree(DatumGetPointer(value));
+      instants[j] = tinstant_make_free(value, T_TGEOMPOINT, inst->t);
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,

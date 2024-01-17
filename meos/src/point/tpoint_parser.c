@@ -294,8 +294,7 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
     return false;
   }
   if (result)
-    *result = tinstant_make(PointerGetDatum(gs), temptype, t);
-  pfree(gs);
+    *result = tinstant_make_free(PointerGetDatum(gs), temptype, t);
   return true;
 }
 

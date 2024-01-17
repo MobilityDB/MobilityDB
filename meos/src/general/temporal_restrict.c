@@ -1035,10 +1035,9 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   /* Interpolation */
   if (atfunc)
   {
-    TInstant *inst = tinstant_make(projvalue, inst1->temptype, t);
+    TInstant *inst = tinstant_make_free(projvalue, inst1->temptype, t);
     result[0] = tinstant_to_tsequence(inst, LINEAR);
     pfree(inst);
-    DATUM_FREE(projvalue, basetype);
     return 1;
   }
   else
@@ -1071,7 +1070,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
     else
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(projvalue, inst1->temptype, t);
+      instants[1] = tinstant_make_free(projvalue, inst1->temptype, t);
       result[0] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, false, LINEAR, NORMALIZE_NO);
       instants[0] = instants[1];
@@ -1079,7 +1078,6 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
       result[1] = tsequence_make((const TInstant **) instants, 2,
         false, upper_inc, LINEAR, NORMALIZE_NO);
       pfree(instants[0]);
-      DATUM_FREE(projvalue, basetype);
       return 2;
     }
   }
@@ -2020,9 +2018,7 @@ tsegment_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   interpType interp, TimestampTz t)
 {
   Datum value = tsegment_value_at_timestamptz(inst1, inst2, interp, t);
-  TInstant *result = tinstant_make(value, inst1->temptype, t);
-  DATUM_FREE(value, temptype_basetype(inst1->temptype));
-  return result;
+  return tinstant_make_free(value, inst1->temptype, t);
 }
 
 /**

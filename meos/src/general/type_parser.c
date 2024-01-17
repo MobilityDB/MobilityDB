@@ -669,7 +669,7 @@ tinstant_parse(const char **str, meosType temptype, bool end,
   if (end && ! ensure_end_input(str, "temporal"))
     return false;
   if (result)
-    *result = tinstant_make(elem, temptype, t);
+    *result = tinstant_make_free(elem, temptype, t);
   return true;
 }
 

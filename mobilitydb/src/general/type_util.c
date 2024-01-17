@@ -238,9 +238,7 @@ datumarr_to_array(Datum *values, int count, meosType type)
   assert(count > 0);
   Oid typid = type_oid(type);
   get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
-  ArrayType *result = construct_array(values, count, typid, elmlen, elmbyval,
-    elmalign);
-  return result;
+  return construct_array(values, count, typid, elmlen, elmbyval, elmalign);
 }
 
 /**

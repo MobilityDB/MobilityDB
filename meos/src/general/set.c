@@ -1928,56 +1928,6 @@ geoset_values(const Set *s)
 #endif /* MEOS */
 
 /*****************************************************************************
- * Functions for spatial reference systems
- *****************************************************************************/
-
-/**
- * @ingroup meos_setspan_accessor
- * @brief Return the SRID of a geo set
- * @param[in] s Set
- * @csqlfn #Geoset_get_srid()
- */
-int
-geoset_srid(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
-    return SRID_INVALID;
-
-  GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(s, 0));
-  return gserialized_get_srid(gs);
-}
-
-/**
- * @ingroup meos_setspan_transf
- * @brief Return a geo set with the coordinates set to an SRID
- * @param[in] s Set
- * @param[in] srid SRID
- * @return On error return @p NULL
- * @csqlfn #Geoset_set_srid()
- */
-Set *
-geoset_set_srid(const Set *s, int32 srid)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
-    return NULL;
-
-
-  Set *result = set_cp(s);
-  /* Set the SRID of the composing points */
-  for (int i = 0; i < s->count; i++)
-  {
-    GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(result, i));
-    gserialized_set_srid(gs, srid);
-  }
-  /* Set the SRID of the bounding box */
-  STBox *box = SET_BBOX_PTR(result);
-  box->srid = srid;
-  return result;
-}
-
-/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 

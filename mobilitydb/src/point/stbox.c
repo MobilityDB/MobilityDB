@@ -804,39 +804,6 @@ Stbox_tmax_inc(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions for spatial reference systems
- *****************************************************************************/
-
-PGDLLEXPORT Datum Stbox_get_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_get_srid);
-/**
- * @ingroup mobilitydb_box_accessor
- * @brief Return the SRID of a spatiotemporal box
- * @sqlfn SRID()
- */
-Datum
-Stbox_get_srid(PG_FUNCTION_ARGS)
-{
-  STBox *box = PG_GETARG_STBOX_P(0);
-  PG_RETURN_INT32(stbox_srid(box));
-}
-
-PGDLLEXPORT Datum Stbox_set_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_set_srid);
-/**
- * @ingroup mobilitydb_box_transf
- * @brief Return a spatiotemporal box with the coordinates set to an SRID
- * @sqlfn setSRID()
- */
-Datum
-Stbox_set_srid(PG_FUNCTION_ARGS)
-{
-  STBox *box = PG_GETARG_STBOX_P(0);
-  int32 srid = PG_GETARG_INT32(1);
-  PG_RETURN_STBOX_P(stbox_set_srid(box, srid));
-}
-
-/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 

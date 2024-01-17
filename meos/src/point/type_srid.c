@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Transformation functions for temporal points
+ * @brief SRID functions for geo sets, spatiotemporal boxes and temporal points
  */
 
 /* PostgreSQL */
@@ -54,8 +54,278 @@
 #define MAX_EPSG_STR 12 /* EPSG:999999 */
 
 /*****************************************************************************
- * Defitions taken from file lwgeom_transform.c
+ * Functions for spatial reference systems
  *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return the SRID of a geo set
+ * @param[in] s Set
+ * @csqlfn #Geoset_get_srid()
+ */
+int
+geoset_srid(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+    return SRID_INVALID;
+
+  GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(s, 0));
+  return gserialized_get_srid(gs);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a geo set with the coordinates set to an SRID
+ * @param[in] s Set
+ * @param[in] srid SRID
+ * @return On error return @p NULL
+ * @csqlfn #Geoset_set_srid()
+ */
+Set *
+geoset_set_srid(const Set *s, int32 srid)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+    return NULL;
+
+
+  Set *result = set_cp(s);
+  /* Set the SRID of the composing points */
+  for (int i = 0; i < s->count; i++)
+  {
+    GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(result, i));
+    gserialized_set_srid(gs, srid);
+  }
+  /* Set the SRID of the bounding box */
+  STBox *box = SET_BBOX_PTR(result);
+  box->srid = srid;
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_box_accessor
+ * @brief Return the SRID of a spatiotemporal box
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Stbox_get_srid()
+ */
+int32
+stbox_srid(const STBox *box)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
+    return SRID_INVALID;
+  return box->srid;
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a spatiotemporal box with the coordinates set to an SRID
+ * @param[in] box Spatiotemporal box
+ * @param[in] srid SRID
+ * @csqlfn #Stbox_set_srid()
+ */
+STBox *
+stbox_set_srid(const STBox *box, int32 srid)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
+    return NULL;
+  STBox *result = stbox_cp(box);
+  result->srid = srid;
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal point instant
+ * @param[in] inst Temporal instant
+ * @csqlfn #Tpoint_get_srid()
+ */
+int
+tpointinst_srid(const TInstant *inst)
+{
+  assert(inst); assert(tgeo_type(inst->temptype));
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+  return gserialized_get_srid(gs);
+}
+
+/**
+ * @ingroup meos_internal_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal point sequence
+ * @param[in] seq Temporal sequence
+ * @csqlfn #Tpoint_get_srid()
+ */
+int
+tpointseq_srid(const TSequence *seq)
+{
+  assert(seq);
+  /* This function is also called for tnpoint */
+  assert(tspatial_type(seq->temptype));
+  STBox *box = TSEQUENCE_BBOX_PTR(seq);
+  return box->srid;
+}
+
+/**
+ * @ingroup meos_internal_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal point sequence set
+ * @param[in] ss Temporal sequence set
+ * @csqlfn #Tpoint_get_srid()
+ */
+int
+tpointseqset_srid(const TSequenceSet *ss)
+{
+  assert(ss);
+  /* This function is also called for tnpoint */
+  assert(tspatial_type(ss->temptype));
+  STBox *box = TSEQUENCESET_BBOX_PTR(ss);
+  return box->srid;
+}
+
+/**
+ * @ingroup meos_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal point
+ * @return On error return @p SRID_INVALID
+ * @param[in] temp Temporal point
+ * @csqlfn #Tpoint_get_srid()
+ */
+int
+tpoint_srid(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return SRID_INVALID;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return tpointinst_srid((TInstant *) temp);
+    case TSEQUENCE:
+      return tpointseq_srid((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return tpointseqset_srid((TSequenceSet *) temp);
+  }
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_spatial_transf
+ * @brief Return a temporal point instant with the coordinates set to an SRID
+ * @param[in] inst Temporal instant
+ * @param[in] srid SRID
+ * @csqlfn #Tpoint_set_srid()
+ */
+TInstant *
+tpointinst_set_srid(const TInstant *inst, int32 srid)
+{
+  assert(inst); assert(tgeo_type(inst->temptype));
+  TInstant *result = tinstant_copy(inst);
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(result));
+  gserialized_set_srid(gs, srid);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_spatial_transf
+ * @brief Return a temporal point sequence with the coordinates set to an SRID
+ * @param[in] seq Temporal sequence
+ * @param[in] srid SRID
+ * @csqlfn #Tpoint_set_srid()
+ */
+TSequence *
+tpointseq_set_srid(const TSequence *seq, int32 srid)
+{
+  assert(seq); assert(tgeo_type(seq->temptype));
+  TSequence *result = tsequence_copy(seq);
+  /* Set the SRID of the composing points */
+  for (int i = 0; i < seq->count; i++)
+  {
+    GSERIALIZED *gs = DatumGetGserializedP(
+      tinstant_val(TSEQUENCE_INST_N(result, i)));
+    gserialized_set_srid(gs, srid);
+  }
+  /* Set the SRID of the bounding box */
+  STBox *box = TSEQUENCE_BBOX_PTR(result);
+  box->srid = srid;
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_spatial_transf
+ * @brief Return a temporal point sequence set with the coordinates set to an
+ * SRID
+ * @param[in] ss Temporal sequence set
+ * @param[in] srid SRID
+ * @csqlfn #Tpoint_set_srid()
+ */
+TSequenceSet *
+tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
+{
+  assert(ss); assert(tgeo_type(ss->temptype));
+  STBox *box;
+  TSequenceSet *result = tsequenceset_copy(ss);
+  /* Loop for every composing sequence */
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(result, i);
+    for (int j = 0; j < seq->count; j++)
+    {
+      /* Set the SRID of the composing points */
+      GSERIALIZED *gs = DatumGetGserializedP(
+        tinstant_val(TSEQUENCE_INST_N(seq, j)));
+      gserialized_set_srid(gs, srid);
+    }
+    /* Set the SRID of the bounding box */
+    box = TSEQUENCE_BBOX_PTR(seq);
+    box->srid = srid;
+  }
+  /* Set the SRID of the bounding box */
+  box = TSEQUENCESET_BBOX_PTR(result);
+  box->srid = srid;
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return a temporal point with the coordinates set to an SRID
+ * @param[in] temp Temporal point
+ * @param[in] srid SRID
+ * @return On error return @p NULL
+ * @see #tpointinst_set_srid()
+ * @see #tpointseq_set_srid()
+ * @see #tpointseqset_set_srid()
+ * @csqlfn #Tpoint_set_srid()
+ */
+Temporal *
+tpoint_set_srid(const Temporal *temp, int32 srid)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tpointinst_set_srid((TInstant *) temp, srid);
+    case TSEQUENCE:
+      return (Temporal *) tpointseq_set_srid((TSequence *) temp, srid);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tpointseqset_set_srid((TSequenceSet *) temp, srid);
+  }
+}
+
+/*****************************************************************************
+ * Transformation functions for spatial reference systems
+ *****************************************************************************/
+
+/* Defitions taken from file lwgeom_transform.c */
 
 /** convert decimal degress to radians */
 static void
@@ -263,7 +533,7 @@ point_transform_pipeline(const GSERIALIZED *gs, char *pipeline,
   if (! ensure_srid_known(srid_from = gserialized_get_srid(gs)))
     return NULL;
 
-  /* There is NO test stating whether the input and output SRIDs are equal */
+  /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Transform the point */
   LWPROJ *pj = lwproj_transform_pipeline(pipeline, is_forward);
@@ -355,7 +625,7 @@ geoset_transform_pipeline(const Set *s, char *pipeline, int32 srid_to,
       ! ensure_srid_known(srid_from = geoset_srid(s)))
     return NULL;
 
-  /* There is NO test stating whether the input and output SRIDs are equal */
+  /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
   LWPROJ *pj = lwproj_transform_pipeline(pipeline, is_forward);
@@ -473,7 +743,7 @@ stbox_transform_pipeline(const STBox *box, char *pipeline,
       ! ensure_srid_known(box->srid))
     return NULL;
 
-  /* There is NO test stating whether the input and output SRIDs are equal */
+  /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
   LWPROJ *pj = lwproj_transform_pipeline(pipeline, is_forward);
@@ -639,7 +909,7 @@ tpoint_transform_pipeline(const Temporal *temp, char *pipeline,
       ! ensure_tgeo_type(temp->temptype))
     return NULL;
 
-  /* There is NO test stating whether the input and output SRIDs are equal */
+  /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
   LWPROJ *pj = lwproj_transform_pipeline(pipeline, is_forward);

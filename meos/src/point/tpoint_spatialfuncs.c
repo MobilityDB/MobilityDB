@@ -1871,191 +1871,6 @@ tpoint_trajectory(const Temporal *temp)
 }
 
 /*****************************************************************************
- * Functions for spatial reference systems
- *****************************************************************************/
-
-/**
- * @ingroup meos_internal_temporal_spatial_accessor
- * @brief Return the SRID of a temporal point instant
- * @param[in] inst Temporal instant
- * @csqlfn #Tpoint_get_srid()
- */
-int
-tpointinst_srid(const TInstant *inst)
-{
-  assert(inst); assert(tgeo_type(inst->temptype));
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
-  return gserialized_get_srid(gs);
-}
-
-/**
- * @ingroup meos_internal_temporal_spatial_accessor
- * @brief Return the SRID of a temporal point sequence
- * @param[in] seq Temporal sequence
- * @csqlfn #Tpoint_get_srid()
- */
-int
-tpointseq_srid(const TSequence *seq)
-{
-  assert(seq);
-  /* This function is also called for tnpoint */
-  assert(tspatial_type(seq->temptype));
-  STBox *box = TSEQUENCE_BBOX_PTR(seq);
-  return box->srid;
-}
-
-/**
- * @ingroup meos_internal_temporal_spatial_accessor
- * @brief Return the SRID of a temporal point sequence set
- * @param[in] ss Temporal sequence set
- * @csqlfn #Tpoint_get_srid()
- */
-int
-tpointseqset_srid(const TSequenceSet *ss)
-{
-  assert(ss);
-  /* This function is also called for tnpoint */
-  assert(tspatial_type(ss->temptype));
-  STBox *box = TSEQUENCESET_BBOX_PTR(ss);
-  return box->srid;
-}
-
-/**
- * @ingroup meos_temporal_spatial_accessor
- * @brief Return the SRID of a temporal point
- * @return On error return @p SRID_INVALID
- * @param[in] temp Temporal point
- * @csqlfn #Tpoint_get_srid()
- */
-int
-tpoint_srid(const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
-    return SRID_INVALID;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return tpointinst_srid((TInstant *) temp);
-    case TSEQUENCE:
-      return tpointseq_srid((TSequence *) temp);
-    default: /* TSEQUENCESET */
-      return tpointseqset_srid((TSequenceSet *) temp);
-  }
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_internal_temporal_spatial_transf
- * @brief Return a temporal point instant with the coordinates set to an SRID
- * @param[in] inst Temporal instant
- * @param[in] srid SRID
- * @csqlfn #Tpoint_set_srid()
- */
-TInstant *
-tpointinst_set_srid(const TInstant *inst, int32 srid)
-{
-  assert(inst); assert(tgeo_type(inst->temptype));
-  TInstant *result = tinstant_copy(inst);
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(result));
-  gserialized_set_srid(gs, srid);
-  return result;
-}
-
-/**
- * @ingroup meos_internal_temporal_spatial_transf
- * @brief Return a temporal point sequence with the coordinates set to an SRID
- * @param[in] seq Temporal sequence
- * @param[in] srid SRID
- * @csqlfn #Tpoint_set_srid()
- */
-TSequence *
-tpointseq_set_srid(const TSequence *seq, int32 srid)
-{
-  assert(seq); assert(tgeo_type(seq->temptype));
-  TSequence *result = tsequence_copy(seq);
-  /* Set the SRID of the composing points */
-  for (int i = 0; i < seq->count; i++)
-  {
-    GSERIALIZED *gs = DatumGetGserializedP(
-      tinstant_val(TSEQUENCE_INST_N(result, i)));
-    gserialized_set_srid(gs, srid);
-  }
-  /* Set the SRID of the bounding box */
-  STBox *box = TSEQUENCE_BBOX_PTR(result);
-  box->srid = srid;
-  return result;
-}
-
-/**
- * @ingroup meos_internal_temporal_spatial_transf
- * @brief Return a temporal point sequence set with the coordinates set to an
- * SRID
- * @param[in] ss Temporal sequence set
- * @param[in] srid SRID
- * @csqlfn #Tpoint_set_srid()
- */
-TSequenceSet *
-tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
-{
-  assert(ss); assert(tgeo_type(ss->temptype));
-  STBox *box;
-  TSequenceSet *result = tsequenceset_copy(ss);
-  /* Loop for every composing sequence */
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(result, i);
-    for (int j = 0; j < seq->count; j++)
-    {
-      /* Set the SRID of the composing points */
-      GSERIALIZED *gs = DatumGetGserializedP(
-        tinstant_val(TSEQUENCE_INST_N(seq, j)));
-      gserialized_set_srid(gs, srid);
-    }
-    /* Set the SRID of the bounding box */
-    box = TSEQUENCE_BBOX_PTR(seq);
-    box->srid = srid;
-  }
-  /* Set the SRID of the bounding box */
-  box = TSEQUENCESET_BBOX_PTR(result);
-  box->srid = srid;
-  return result;
-}
-
-/**
- * @ingroup meos_temporal_spatial_transf
- * @brief Return a temporal point with the coordinates set to an SRID
- * @param[in] temp Temporal point
- * @param[in] srid SRID
- * @return On error return @p NULL
- * @see #tpointinst_set_srid()
- * @see #tpointseq_set_srid()
- * @see #tpointseqset_set_srid()
- * @csqlfn #Tpoint_set_srid()
- */
-Temporal *
-tpoint_set_srid(const Temporal *temp, int32 srid)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
-    return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return (Temporal *) tpointinst_set_srid((TInstant *) temp, srid);
-    case TSEQUENCE:
-      return (Temporal *) tpointseq_set_srid((TSequence *) temp, srid);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tpointseqset_set_srid((TSequenceSet *) temp, srid);
-  }
-}
-
-/*****************************************************************************
  * Conversion functions
  * Notice that a geometry point and a geography point are of different size
  * since the geography point keeps a bounding box
@@ -2113,10 +1928,8 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
     lwgeom_set_geodetic(geom, false);
   }
   GSERIALIZED *gs1 = geo_serialize(geom);
-  TInstant *result = tinstant_make(PointerGetDatum(gs1),
+  return tinstant_make_free(PointerGetDatum(gs1),
     (oper == GEOM_TO_GEOG) ? T_TGEOGPOINT : T_TGEOMPOINT, inst->t);
-  pfree(gs1);
-  return result;
 }
 
 /**
@@ -2754,10 +2567,9 @@ geomeas_to_tpointinst_iter(LWPOINT *lwpoint)
   FLAGS_SET_Z(lwpoint1->flags, hasz);
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint1);
-  meosType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
-  TInstant *result = tinstant_make(PointerGetDatum(gs), temptype, t);
-  lwpoint_free(lwpoint1); pfree(gs);
-  return result;
+  lwpoint_free(lwpoint1); 
+  return tinstant_make_free(PointerGetDatum(gs),
+    geodetic ? T_TGEOGPOINT : T_TGEOMPOINT, t);
 }
 
 /**
@@ -3154,9 +2966,8 @@ tpointinst_affine_iter(const TInstant *inst, const AFFINE *a, int srid,
     lwpoint = lwpoint_make2d(srid, p2d.x, p2d.y);
   }
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-  *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
   lwpoint_free(lwpoint);
-  pfree(gs);
+  *result = tinstant_make_free(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
   return;
 }
 
@@ -3264,10 +3075,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
   lwpoint_free(lwpoint);
   /* Construct the result */
-  TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
-  /* We cannot lwpoint_free(lwpoint) */
-  pfree(gs);
-  return result;
+  return tinstant_make_free(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
 }
 
 /**
@@ -3295,9 +3103,8 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
     LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[ninsts++] = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
     lwpoint_free(lwpoint);
-    pfree(gs);
+    instants[ninsts++] = tinstant_make_free(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
     memcpy(&prev_p, &p, sizeof(POINT4D));
   }
   /* We are sure that ninsts > 0 */

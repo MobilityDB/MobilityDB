@@ -350,43 +350,6 @@ Set_values(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions for spatial reference systems
- *****************************************************************************/
-
-PGDLLEXPORT Datum Geoset_get_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geoset_get_srid);
-/**
- * @ingroup mobilitydb_setspan_accessor
- * @brief Return the SRID of a geo set
- * @sqlfn SRID()
- */
-Datum
-Geoset_get_srid(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int result = geoset_srid(s);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_INT32(result);
-}
-
-PGDLLEXPORT Datum Geoset_set_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geoset_set_srid);
-/**
- * @ingroup mobilitydb_setspan_transf
- * @brief Return a geo set with the coordinates set to an SRID
- * @sqlfn setSRID()
- */
-Datum
-Geoset_set_srid(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int32 srid = PG_GETARG_INT32(1);
-  Set *result = geoset_set_srid(s, srid);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_SET_P(result);
-}
-
-/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 

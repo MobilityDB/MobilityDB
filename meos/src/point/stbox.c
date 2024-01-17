@@ -1232,43 +1232,6 @@ stbox_tmax_inc(const STBox *box, bool *result)
 }
 
 /*****************************************************************************
- * Functions for spatial reference systems
- *****************************************************************************/
-
-/**
- * @ingroup meos_box_accessor
- * @brief Return the SRID of a spatiotemporal box
- * @param[in] box Spatiotemporal box
- * @csqlfn #Stbox_get_srid()
- */
-int32
-stbox_srid(const STBox *box)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
-    return SRID_INVALID;
-  return box->srid;
-}
-
-/**
- * @ingroup meos_box_transf
- * @brief Return a spatiotemporal box with the coordinates set to an SRID
- * @param[in] box Spatiotemporal box
- * @param[in] srid SRID
- * @csqlfn #Stbox_set_srid()
- */
-STBox *
-stbox_set_srid(const STBox *box, int32 srid)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
-    return NULL;
-  STBox *result = stbox_cp(box);
-  result->srid = srid;
-  return result;
-}
-
-/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 

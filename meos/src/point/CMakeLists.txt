@@ -16,7 +16,7 @@ add_library(point OBJECT
   tpoint_spatialrels.c
   tpoint_tempspatialrels.c
   tpoint_tile.c
-  tpoint_transform.c
+  type_srid.c
 )
 
 

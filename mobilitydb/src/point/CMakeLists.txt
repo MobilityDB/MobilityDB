@@ -19,4 +19,5 @@ add_library(pg_point OBJECT
   tpoint_spgist.c
   tpoint_tempspatialrels.c
   tpoint_tile.c
+  type_srid.c
   )
