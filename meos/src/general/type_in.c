@@ -837,6 +837,7 @@ ensure_temptype_mfjson(const char *typestr)
  * @ingroup meos_temporal_inout
  * @brief Return a temporal object from its MF-JSON representation
  * @param[in] mfjson MFJSON string
+ * @param[in] temptype expected temporal type
  * @return On error return @p NULL
  * @see #tinstant_from_mfjson()
  * @see #tsequence_from_mfjson()
