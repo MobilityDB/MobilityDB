@@ -40,6 +40,7 @@
 #endif
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/set.h"
 #include "general/span.h"
 #include "general/tbox.h"
@@ -289,7 +290,7 @@ Temporal_from_mfjson(PG_FUNCTION_ARGS)
 {
   text *mfjson_txt = PG_GETARG_TEXT_P(0);
   char *mfjson = text2cstring(mfjson_txt);
-  Temporal *result = temporal_from_mfjson(mfjson);
+  Temporal *result = temporal_from_mfjson(mfjson, T_UNKNOWN);
   pfree(mfjson);
   PG_RETURN_TEMPORAL_P(result);
 }

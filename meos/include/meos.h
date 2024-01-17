@@ -1275,24 +1275,30 @@ extern bool stbox_gt(const STBox *box1, const STBox *box2);
  *****************************************************************************/
 
 extern Temporal *tbool_in(const char *str);
+extern Temporal *tint_in(const char *str);
+extern Temporal *tfloat_in(const char *str);
+extern Temporal *ttext_in(const char *str);
+extern Temporal *tgeompoint_in(const char *str);
+extern Temporal *tgeogpoint_in(const char *str);
+extern Temporal *tbool_from_mfjson(const char *str);
+extern Temporal *tint_from_mfjson(const char *str);
+extern Temporal *tfloat_from_mfjson(const char *str);
+extern Temporal *ttext_from_mfjson(const char *str);
+extern Temporal *tgeompoint_from_mfjson(const char *str);
+extern Temporal *tgeogpoint_from_mfjson(const char *str);
+extern Temporal *temporal_from_wkb(const uint8_t *wkb, size_t size);
+extern Temporal *temporal_from_hexwkb(const char *hexwkb);
+
 extern char *tbool_out(const Temporal *temp);
-extern char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out);
+extern char *tint_out(const Temporal *temp);
+extern char *tfloat_out(const Temporal *temp, int maxdd);
+extern char *ttext_out(const Temporal *temp);
+extern char *tpoint_out(const Temporal *temp, int maxdd);
+extern char *tpoint_as_text(const Temporal *temp, int maxdd);
+extern char *tpoint_as_ewkt(const Temporal *temp, int maxdd);
 extern char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags, int precision, char *srs);
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
-extern Temporal *temporal_from_hexwkb(const char *hexwkb);
-extern Temporal *temporal_from_mfjson(const char *mfjson);
-extern Temporal *temporal_from_wkb(const uint8_t *wkb, size_t size);
-extern Temporal *tfloat_in(const char *str);
-extern char *tfloat_out(const Temporal *temp, int maxdd);
-extern Temporal *tgeogpoint_in(const char *str);
-extern Temporal *tgeompoint_in(const char *str);
-extern Temporal *tint_in(const char *str);
-extern char *tint_out(const Temporal *temp);
-extern char *tpoint_as_ewkt(const Temporal *temp, int maxdd);
-extern char *tpoint_as_text(const Temporal *temp, int maxdd);
-extern char *tpoint_out(const Temporal *temp, int maxdd);
-extern Temporal *ttext_in(const char *str);
-extern char *ttext_out(const Temporal *temp);
+extern char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 
 /*****************************************************************************
  * Constructor functions for temporal types

@@ -577,6 +577,7 @@ extern TSequence *ttextseq_in(const char *str, interpType interp);
 extern char *ttextseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox);
 extern TSequenceSet *ttextseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *ttextseqset_in(const char *str);
+extern Temporal *temporal_from_mfjson(const char *mfjson, meosType temptype);
 
 /*****************************************************************************/
 

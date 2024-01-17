@@ -824,8 +824,7 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingInteger") != 0 &&
       strcmp(typestr, "MovingFloat") != 0 &&
       strcmp(typestr, "MovingText") != 0 &&
-      strcmp(typestr, "MovingGeomPoint") != 0 &&
-      strcmp(typestr, "MovingGeogPoint") != 0 )
+      strcmp(typestr, "MovingPoint") != 0 )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string");
@@ -836,7 +835,7 @@ ensure_temptype_mfjson(const char *typestr)
 
 /**
  * @ingroup meos_temporal_inout
- * @brief Return a temporal point from its MF-JSON representation
+ * @brief Return a temporal object from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @return On error return @p NULL
  * @see #tinstant_from_mfjson()
@@ -844,7 +843,7 @@ ensure_temptype_mfjson(const char *typestr)
  * @see #tsequenceset_from_mfjson()
  */
 Temporal *
-temporal_from_mfjson(const char *mfjson)
+temporal_from_mfjson(const char *mfjson, meosType temptype)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) mfjson))
@@ -889,21 +888,35 @@ temporal_from_mfjson(const char *mfjson)
 
   /* Determine the type of temporal type */
   const char *typestr = json_object_get_string(poObjType);
-  meosType temptype;
+  meosType jtemptype;
   if (! ensure_temptype_mfjson(typestr))
     return NULL;
   if (strcmp(typestr, "MovingBoolean") == 0)
-    temptype = T_TBOOL;
+    jtemptype = T_TBOOL;
   else if (strcmp(typestr, "MovingInteger") == 0)
-    temptype = T_TINT;
+    jtemptype = T_TINT;
   else if (strcmp(typestr, "MovingFloat") == 0)
-    temptype = T_TFLOAT;
+    jtemptype = T_TFLOAT;
   else if (strcmp(typestr, "MovingText") == 0)
-    temptype = T_TTEXT;
-  else if (strcmp(typestr, "MovingGeomPoint") == 0)
-    temptype = T_TGEOMPOINT;
-  else /* typestr == "MovingGeogPoint" */
-    temptype = T_TGEOGPOINT;
+    jtemptype = T_TTEXT;
+  else /* typestr == "MovingPoint" */
+  {
+    if (temptype == T_TGEOGPOINT)
+      jtemptype = T_TGEOGPOINT;
+    else /* Default to T_TGEOMPOINT */
+      jtemptype = T_TGEOMPOINT;
+  }
+
+  if (temptype != T_UNKNOWN && jtemptype != temptype)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid 'type' value in MFJSON string, expected: %d, received: %d",
+      temptype, jtemptype);
+    return NULL;
+  }
+
+  if (temptype == T_UNKNOWN)
+    temptype = jtemptype;
 
   /*
    * Determine interpolation type
@@ -983,6 +996,86 @@ temporal_from_mfjson(const char *mfjson)
   }
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal boolean from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @return On error return @p NULL
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tbool_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TBOOL);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal integer from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @return On error return @p NULL
+ * @see #tinstant_from_mfjson()
+ */
+Temporal *
+tint_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal float from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @return On error return @p NULL
+ * @see #tinstant_from_mfjson()
+ */
+Temporal *
+tfloat_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TFLOAT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal text from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @return On error return @p NULL
+ * @see #tinstant_from_mfjson()
+ */
+Temporal *
+ttext_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TTEXT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal geometry point from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @return On error return @p NULL
+ * @see #tinstant_from_mfjson()
+ */
+Temporal *
+tgeompoint_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TGEOMPOINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal geography point from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @return On error return @p NULL
+ * @see #tinstant_from_mfjson()
+ */
+Temporal *
+tgeogpoint_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TGEOGPOINT);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Input in Well-Known Binary (WKB) representation

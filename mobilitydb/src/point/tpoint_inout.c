@@ -48,7 +48,7 @@
 #include "pg_general/type_util.h"
 
 /*****************************************************************************
- * Input in EWKT format
+ * Input in EWKT and MFJSON format
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tpoint_from_ewkt(PG_FUNCTION_ARGS);
@@ -73,6 +73,24 @@ Tpoint_from_ewkt(PG_FUNCTION_ARGS)
   Temporal *result = tpoint_parse(&wkt_ptr, oid_type(temptypid));
   pfree(wkt);
   PG_FREE_IF_COPY(wkt_text, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeogpoint_from_mfjson(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeogpoint_from_mfjson);
+/**
+ * @ingroup mobilitydb_temporal_inout
+ * @brief Return a temporal geography point from its
+ * Moving-Features JSON (MF-JSON) representation
+ * @sqlfn tgeogpointFromMFJSON()
+ */
+Datum
+Tgeogpoint_from_mfjson(PG_FUNCTION_ARGS)
+{
+  text *mfjson_txt = PG_GETARG_TEXT_P(0);
+  char *mfjson = text2cstring(mfjson_txt);
+  Temporal *result = temporal_from_mfjson(mfjson, T_TGEOGPOINT);
+  pfree(mfjson);
   PG_RETURN_TEMPORAL_P(result);
 }
 
