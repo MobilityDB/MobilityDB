@@ -49,7 +49,7 @@
  * that apply the lifted function to two base values.
  */
 
-#define MAX_PARAMS 3
+#define MAX_PARAMS 1
 
 typedef struct
 {

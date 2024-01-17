@@ -180,16 +180,18 @@ static Datum
 tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
 {
   /* Lifted functions may have from 0 to MAX_PARAMS parameters */
-  assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
+  assert(lfinfo->numparam >= 0 && lfinfo->numparam <= 1);
   if (lfinfo->numparam == 0)
     return (*lfinfo->func)(value);
-  else if (lfinfo->numparam == 1)
+  else /* if (lfinfo->numparam == 1) */
     return (*lfinfo->func)(value, lfinfo->param[0]);
+#if 0 /* not used */
   else if (lfinfo->numparam == 2)
     return (*lfinfo->func)(value, lfinfo->param[0], lfinfo->param[1]);
   else /* lfinfo->numparam == 3 */
     return (*lfinfo->func)(value, lfinfo->param[0], lfinfo->param[1],
       lfinfo->param[2]);
+#endif /* not used */
 }
 
 /**
@@ -267,7 +269,7 @@ static Datum
 tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
 {
   /* Lifted functions may have from 0 to MAX_PARAMS parameters */
-  assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
+  assert(lfinfo->numparam >= 0 && lfinfo->numparam <= 1);
   if (lfinfo->numparam == 0)
   {
     if (lfinfo->args)
@@ -278,10 +280,11 @@ tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
       return lfinfo->invert ?
         (*lfinfo->func)(value2, value1) : (*lfinfo->func)(value1, value2);
   }
-  else if (lfinfo->numparam == 1)
+  else /* if (lfinfo->numparam == 1) */
     return lfinfo->invert ?
       (*lfinfo->func)(value2, value1, lfinfo->param[0]) :
       (*lfinfo->func)(value1, value2, lfinfo->param[0]);
+#if 0 /* not used */
   else if (lfinfo->numparam == 2)
     return lfinfo->invert ?
       (*lfinfo->func)(value2, value1, lfinfo->param[0], lfinfo->param[1]) :
@@ -292,6 +295,7 @@ tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
         lfinfo->param[2]) :
       (*lfinfo->func)(value1, value2, lfinfo->param[0], lfinfo->param[1],
         lfinfo->param[2]);
+#endif /* not used */
 }
 
 /**
