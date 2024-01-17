@@ -84,7 +84,7 @@ PGDLLEXPORT Datum Tnpoint_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_in);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input function for temporal network points
+ * @brief Return a network point from its Well-Known Text (WKT) representation 
  * @sqlfn tnpoint_in()
  */
 Datum

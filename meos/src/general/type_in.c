@@ -359,7 +359,6 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 {
   assert(mfjson); assert(temporal_type(temptype));
   bool geodetic = (temptype == T_TGEOGPOINT);
-  bool byvalue = basetype_byvalue(temptype_basetype(temptype));
   Datum value = 0; /* make compiler quiet */
   if (! isgeo)
   {
@@ -536,7 +535,6 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 {
   assert(mfjson); assert(count);
   bool geodetic = (temptype == T_TGEOGPOINT);
-  bool byvalue = basetype_byvalue(temptype_basetype(temptype));
   /* Get coordinates and datetimes */
   int nvalues = 0, ndates = 0;
   Datum *values;

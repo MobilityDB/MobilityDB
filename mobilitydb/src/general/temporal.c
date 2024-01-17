@@ -416,7 +416,7 @@ PGDLLEXPORT Datum Temporal_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_in);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input function for temporal types
+ * @brief Return a temporal value from its Well-Known Text (WKT) representation
  * @sqlfn int_in(), tfloat_in(), ...
  */
 Datum
@@ -437,7 +437,7 @@ PGDLLEXPORT Datum Temporal_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_out);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output function for temporal types
+ * @brief Return the Well-Known Text (WKT) representation of a temporal value
  * @sqlfn tint_out(), tfloat_out(), ...
  */
 Datum
@@ -491,7 +491,8 @@ PGDLLEXPORT Datum Temporal_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_recv);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Receive function for temporal types
+ * @brief Return a temporal value from its Well-Known Binary (WKB)
+ * representation
  * @sqlfn tint_recv(), tfloat_recv(), ...
  */
 Datum
@@ -508,7 +509,7 @@ PGDLLEXPORT Datum Temporal_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_send);
 /*
  * @ingroup mobilitydb_temporal_inout
- * @brief Send function for temporal types
+ * @brief Return the Well-Known Binary (WKB) representation of a temporal value
  * @sqlfn tint_send(), tfloat_send(), ...
  */
 Datum

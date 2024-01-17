@@ -10,8 +10,7 @@ add_library(pg_point OBJECT
   tpoint_datagen.c
   tpoint_distance.c
   tpoint_gist.c
-  tpoint_in.c
-  tpoint_out.c
+  tpoint_inout.c
   tpoint_posops.c
   tpoint_selfuncs.c
   tpoint_spatialfuncs.c

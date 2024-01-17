@@ -62,9 +62,7 @@ PGDLLEXPORT Datum Span_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_in);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Input function for span types
- * param[in] str String
- * param[in] spantypid Type oid
+ * @brief Return a span from its Well-Known Text (WKT) representation
  * @sqlfn span_in()
  */
 Datum
@@ -79,7 +77,7 @@ PGDLLEXPORT Datum Span_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_out);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output function for span types
+ * @brief Return the Well-Known Text (WKT) representation of a span
  * @sqlfn span_out()
  */
 Datum
@@ -93,7 +91,7 @@ PGDLLEXPORT Datum Span_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_recv);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Receive function for span types
+ * @brief Return a span from its Well-Known Binary (WKB) representation
  * @sqlfn span_recv()
  */
 Datum
@@ -110,7 +108,7 @@ PGDLLEXPORT Datum Span_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_send);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Send function for span types
+ * @brief Return the Well-Known Binary (WKB) representation of a span
  * @sqlfn span_send()
  */
 Datum

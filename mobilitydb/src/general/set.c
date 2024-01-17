@@ -65,9 +65,7 @@ PGDLLEXPORT Datum Set_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_in);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Input function for set types
- * param[in] input String
- * param[in] typid Type identifier
+ * @brief Return a set from its Well-Known Text (WKT) representation
  * @sqlfn intset_in(), floatset_in(), ...
  */
 Datum
@@ -82,7 +80,7 @@ PGDLLEXPORT Datum Set_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_out);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output function for set types
+ * @brief Return the Well-Known Text (WKT) representation of a set
  * @sqlfn intset_out(), floatset_out(), ...
  */
 Datum
@@ -98,7 +96,7 @@ PGDLLEXPORT Datum Set_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_recv);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Receive function for set types
+ * @brief Return a set from its Well-Known Binary (WKB) representation
  * @sqlfn intset_recv(), floatset_recv(), ...
  */
 Datum
@@ -115,7 +113,7 @@ PGDLLEXPORT Datum Set_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_send);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Send function for set types
+ * @brief Return the Well-Known Binary (WKB) representation of a set
  * @sqlfn intset_send(), floatset_send(), ...
  */
 Datum

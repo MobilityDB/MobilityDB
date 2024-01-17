@@ -66,7 +66,7 @@ PGDLLEXPORT Datum Spanset_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_in);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Input function for span sets
+ * @brief Return a span set from its Well-Known Text (WKT) representation
  * @sqlfn spanset_in()
  */
 Datum
@@ -82,7 +82,7 @@ PGDLLEXPORT Datum Spanset_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_out);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Output function for span sets
+ * @brief Return the Well-Known Text (WKT) representation of a span set
  * @sqlfn spanset_out()
  */
 Datum
@@ -98,7 +98,7 @@ PGDLLEXPORT Datum Spanset_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_recv);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Receive function for span sets
+ * @brief Return a span set from its Well-Known Binary (WKB) representation
  * @sqlfn spanset_recv()
  */
 Datum
@@ -115,7 +115,7 @@ PGDLLEXPORT Datum Spanset_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_send);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Send function for span sets
+ * @brief Return the Well-Known Binary (WKB) representation of a span set
  * @sqlfn spanset_send()
  */
 Datum

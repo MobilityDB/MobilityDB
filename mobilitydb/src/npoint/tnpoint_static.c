@@ -119,10 +119,12 @@ PGDLLEXPORT Datum Npoint_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_in);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input function for network points
+ * @brief Return a network point from its Well-Known Text (WKT) representation
  *
  * Example of input:
+ * @code
  *    (1, 0.5)
+ * @endcode
  * @sqlfn npoint_in()
  */
 Datum
@@ -136,7 +138,7 @@ PGDLLEXPORT Datum Npoint_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_out);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output function for network points
+ * @brief Return the Well-Known Text (WKT) representation of a a network point
  * @sqlfn npoint_out()
  */
 Datum
@@ -150,7 +152,8 @@ PGDLLEXPORT Datum Npoint_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_recv);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Receive function for network points
+ * @brief Return a network point from its Well-Known Binary (WKB)
+ * representation
  * @sqlfn npoint_recv()
  */
 Datum
@@ -164,7 +167,8 @@ PGDLLEXPORT Datum Npoint_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_send);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Send function for network points
+ * @brief Return the Well-Known Binary (WKB) representation of a a network
+ * point
  * @sqlfn npoint_send()
  */
 Datum
@@ -182,10 +186,13 @@ PGDLLEXPORT Datum Nsegment_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_in);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input function for network segments
+ * @brief Return a network segment from its Well-Known Text (WKT)
+ * representation
  *
  * Example of input:
+ * @code
  *    (1, 0.5, 0.6)
+ * @endcode
  * @sqlfn nsegment_in()
  */
 Datum
@@ -199,7 +206,7 @@ PGDLLEXPORT Datum Nsegment_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_out);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output function for network segments
+ * @brief Return the Well-Known Text (WKT) representation of a network segment
  * @sqlfn nsegment_out()
  */
 Datum
@@ -213,7 +220,8 @@ PGDLLEXPORT Datum Nsegment_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_recv);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Receive function for network segments
+ * @brief Return a network segment from its Well-Known Binary (WKB)
+ * representation
  * @sqlfn nsegment_recv()
  */
 Datum
@@ -227,7 +235,8 @@ PGDLLEXPORT Datum Nsegment_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_send);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Send function for network segments
+ * @brief Return the Well-Known Binary (WKB) representation of a network
+ * segment
  * @sqlfn nsegment_sent()
  */
 Datum

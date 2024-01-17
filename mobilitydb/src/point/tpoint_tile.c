@@ -56,7 +56,7 @@ PGDLLEXPORT Datum Stbox_tile_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tile_list);
 /**
  * @brief @ingroup mobilitydb_temporal_analytics_tile
- * @brief Generate a multidimensional grid for temporal points
+ * @brief Return the multidimensional grid of a spatiotemporal box
  * @sqlfn multidimGrid()
  */
 Datum
@@ -175,7 +175,7 @@ PGDLLEXPORT Datum Stbox_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Generate a tile in a multidimensional grid for temporal points
+ * @brief Return a tile in the multidimensional grid of a spatiotemporal box
  * @sqlfn multidimTile()
  */
 Datum
@@ -332,7 +332,7 @@ PGDLLEXPORT Datum Tpoint_space_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_space_split);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Split a temporal point with respect to a spatial grid
+ * @brief Return a temporal point split with respect to a spatial grid
  * @sqlfn spaceSplit()
  */
 Datum
@@ -345,7 +345,7 @@ PGDLLEXPORT Datum Tpoint_space_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_space_time_split);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Split a temporal point with respect to a spatiotemporal grid
+ * @brief Return a temporal point split with respect to a spatiotemporal grid
  * @sqlfn spaceTimeSplit()
  */
 Datum

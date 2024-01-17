@@ -151,7 +151,7 @@ PGDLLEXPORT Datum Tpoint_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_in);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input function for temporal points
+ * @brief Return a temporal point from its Well-Known Text (WKT) representation
  *
  * Examples of input for the various temporal types:
  * @code

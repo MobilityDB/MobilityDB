@@ -324,7 +324,7 @@ PGDLLEXPORT Datum Tnumber_abs(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_abs);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Get the absolute value of a temporal number
+ * @brief Return the absolute value of a temporal number
  * @sqlfn abs()
  */
 Datum
@@ -340,7 +340,7 @@ PGDLLEXPORT Datum Tnumber_delta_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_delta_value);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Get the delta value of a temporal number
+ * @brief Return the delta value of a temporal number
  * @sqlfn deltaValue()
  */
 Datum

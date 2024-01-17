@@ -59,7 +59,7 @@ PGDLLEXPORT Datum Tbox_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_in);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Input function for temporal boxes
+ * @brief Return a temporal box from its Well-Known Text (WKT) representation
  *
  * Examples of input:
  * @code
@@ -82,7 +82,7 @@ PGDLLEXPORT Datum Tbox_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_out);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Output function for temporal boxes
+ * @brief Return the Well-Known Text (WKT) representation of a temporal box
  * @sqlfn tbox_out()
  */
 Datum
@@ -96,7 +96,7 @@ PGDLLEXPORT Datum Tbox_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_recv);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Receive function for temporal boxes
+ * @brief Return a temporal box from its Well-Known Binary (WKB) representation
  * @sqlfn tbox_recv()
  */
 Datum
@@ -113,7 +113,7 @@ PGDLLEXPORT Datum Tbox_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_send);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Send function for temporal boxes
+ * @brief Return the Well-Known Binary (WKB) representation of a temporal box
  * @sqlfn tbox_send()
  */
 Datum
@@ -136,7 +136,7 @@ PGDLLEXPORT Datum Tbox_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_as_text);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Output a temporal box in the Well-Known Text (WKT) representation
+ * @brief Return the Well-Known Text (WKT) representation of a temporal box
  * @sqlfn asText()
  */
 Datum
@@ -160,7 +160,7 @@ PGDLLEXPORT Datum Number_timestamptz_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Number_timestamptz_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a temporal box from a number and a timestamptz
+ * @brief Return a temporal box constructed from a number and a timestamptz
  * @sqlfn tbox()
  */
 Datum
@@ -176,7 +176,7 @@ PGDLLEXPORT Datum Number_tstzspan_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Number_tstzspan_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a temporal box from a number and a timestamptz span
+ * @brief Return a temporal box constructed from a number and a timestamptz span
  * @sqlfn tbox()
  */
 Datum
@@ -192,7 +192,7 @@ PGDLLEXPORT Datum Numspan_timestamptz_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numspan_timestamptz_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a temporal box from a number span and a timestamptz
+ * @brief Return a temporal box constructed from a number span and a timestamptz
  * @sqlfn tbox()
  */
 Datum
@@ -207,7 +207,8 @@ PGDLLEXPORT Datum Numspan_tstzspan_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numspan_tstzspan_to_tbox);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a temporal box from a number span and a timestamptz span
+ * @brief Return a temporal box constructed from a number span and a
+ * timestamptz span
  * @sqlfn tbox()
  */
 Datum

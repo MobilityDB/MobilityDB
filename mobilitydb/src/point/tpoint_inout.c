@@ -29,26 +29,60 @@
 
 /**
  * @file
- * @brief Output of temporal points in WKT, EWKT, and MF-JSON representation
+ * @brief Input and output of temporal points in WKT and EWKT
  */
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
+#include <utils/array.h>
+/* PostGIS */
+#include <liblwgeom_internal.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal.h"
-#include "general/type_out.h"
-#include "general/type_util.h"
+#include "point/tpoint_parser.h"
 /* MobilityDB */
+#include "pg_general/meos_catalog.h" /* For oid_type */
 #include "pg_general/type_util.h"
+
+/*****************************************************************************
+ * Input in EWKT format
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpoint_from_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_from_ewkt);
+/**
+ * @ingroup mobilitydb_temporal_inout
+ * @brief Return a temporal point from its Extended Well-Known Text (EWKT)
+ * representation
+ * @note This just does the same thing as the _in function, except it has to handle
+ * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
+ * @sqlfn tgeompointFromText(), tgeogpointFromText(), tgeompointFromEWKT(),
+ * tgeogpointFromEWKT()
+ */
+Datum
+Tpoint_from_ewkt(PG_FUNCTION_ARGS)
+{
+  text *wkt_text = PG_GETARG_TEXT_P(0);
+  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
+  char *wkt = text2cstring(wkt_text);
+  /* Copy the pointer since it will be advanced during parsing */
+  const char *wkt_ptr = wkt;
+  Temporal *result = tpoint_parse(&wkt_ptr, oid_type(temptypid));
+  pfree(wkt);
+  PG_FREE_IF_COPY(wkt_text, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
 
 /*****************************************************************************
  * Output in WKT and EWKT representation
  *****************************************************************************/
 
 /**
- * @brief Output a temporal point in the Well-Known Text (WKT) representation
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation of
+ * a temporal point
  * @sqlfn asText()
  */
 static Datum
@@ -71,7 +105,7 @@ PGDLLEXPORT Datum Tpoint_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_as_text);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output a temporal point in the Well-Known Text (WKT) representation
+ * @brief Return the Well-Known Text (WKT) representation of a temporal point
  * @sqlfn asText()
  */
 Datum
@@ -84,8 +118,8 @@ PGDLLEXPORT Datum Tpoint_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output a temporal point in the Extended Well-Known Text (EWKT)
- * representation
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * temporal point
  * @note It is the WKT representation prefixed with the SRID
  * @sqlfn asEWKT()
  */
@@ -98,8 +132,8 @@ Tpoint_as_ewkt(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Output an array of geometry/geography in the Well-Known Text (WKT)
- * representation
+ * @brief Return the Well-Known Text (WKT) representation of an array of
+ * geometry/geography
  */
 static Datum
 Geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
@@ -141,8 +175,8 @@ PGDLLEXPORT Datum Geoarr_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoarr_as_text);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output an array of geometries/geographies in the Well-Known Text
- * (WKT) representation
+ * @brief Return the Well-Known Text (WKT) representation of an array of
+ * geometry/geography
  * @sqlfn asText()
  */
 Datum
@@ -155,8 +189,8 @@ PGDLLEXPORT Datum Geoarr_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output an array of geometries/geographies in the Extended Well-Known
- * Text (EWKT) representation
+ * @brief Return the Extended Well-Known Text (EWKT) representation
+ * of a geometry/geography array
  * @note It is the WKT representation prefixed with the SRID
  * @sqlfn asEWKT()
  */
@@ -170,8 +204,8 @@ PGDLLEXPORT Datum Tpointarr_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointarr_as_text);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output an array of temporal points in the Well-Known Text (WKT)
- * representation
+ * @brief Return the Well-Known Text (WKT) representation of a
+ * geometry/geography array
  * @sqlfn asText()
  */
 Datum
@@ -184,9 +218,9 @@ PGDLLEXPORT Datum Tpointarr_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output an array of temporal points in the Extended Well-Known Text
- * (EWKT) representation
- * @note It is the WKT representation prefixed with the SRID
+ * @brief Return the Extended Well-Known Text (EWKT) representation an array of
+ * temporal points
+ * @note IThe output is the WKT representation prefixed with the SRID
  * @sqlfn asEWKT()
  */
 Datum

@@ -61,7 +61,8 @@ PGDLLEXPORT Datum Stbox_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_in);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Input function for spatiotemporal boxes
+ * @brief Return a spatiotemporal box from its Well-Known Text (WKT)
+ * representation
  * @sqlfn stbox_in()
  */
 Datum
@@ -75,7 +76,8 @@ PGDLLEXPORT Datum Stbox_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_out);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Output function for spatiotemporal boxes
+ * @brief Return the Well-Known Text (WKT) representation of a spatiotemporal
+ * box
  * @sqlfn stbox_out()
  */
 Datum
@@ -89,7 +91,8 @@ PGDLLEXPORT Datum Stbox_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_recv);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Receive function for spatiotemporal boxes
+ * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
+ * representation
  * @sqlfn stbox_recv()
  */
 Datum
@@ -106,7 +109,8 @@ PGDLLEXPORT Datum Stbox_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_send);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Send function for spatiotemporal boxes
+ * @brief Return the Well-Known Binary (WKB) representation of a spatiotemporal
+ * box
  * @sqlfn stbox_send()
  */
 Datum
@@ -130,8 +134,8 @@ PGDLLEXPORT Datum Stbox_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_as_text);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Output a spatiotemporal box in the Well-Known Text (WKT)
- * representation
+ * @brief Return the Well-Known Text (WKT) representation of a spatiotemporal
+ * box
  * @sqlfn asText()
  */
 Datum
@@ -152,7 +156,7 @@ Stbox_as_text(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Return a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box constructed from the arguments
  */
 static Datum
 Stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz,
@@ -208,7 +212,7 @@ PGDLLEXPORT Datum Stbox_constructor_x(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_x);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn stbox()
  */
 Datum
@@ -221,7 +225,7 @@ PGDLLEXPORT Datum Stbox_constructor_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_z);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn stbox_z()
  */
 Datum
@@ -234,7 +238,7 @@ PGDLLEXPORT Datum Stbox_constructor_t(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_t);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn stbox_t()
  */
 Datum
@@ -247,7 +251,7 @@ PGDLLEXPORT Datum Stbox_constructor_xt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_xt);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn stbox_xt()
  */
 Datum
@@ -260,7 +264,7 @@ PGDLLEXPORT Datum Stbox_constructor_zt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_zt);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn stbox_zt()
  */
 Datum
@@ -276,7 +280,7 @@ PGDLLEXPORT Datum Geodstbox_constructor_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_z);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn geodstbox_z()
  */
 Datum
@@ -289,7 +293,7 @@ PGDLLEXPORT Datum Geodstbox_constructor_t(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn geodstbox_t()
  */
 Datum
@@ -302,7 +306,7 @@ PGDLLEXPORT Datum Geodstbox_constructor_zt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_zt);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a spatiotemporal box from the arguments
+ * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn geodstbox_zt()
  */
 Datum
@@ -317,8 +321,8 @@ PGDLLEXPORT Datum Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_timestamptz_to_stbox);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a spatiotemporal box from a geometry/geography and a
- * timestamptz
+ * @brief Return a spatiotemporal box constructed from a geometry/geography and
+ * a timestamptz
  * @sqlfn stbox()
  * @sqlfn @p ::
  */
@@ -338,8 +342,8 @@ PGDLLEXPORT Datum Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_tstzspan_to_stbox);
 /**
  * @ingroup mobilitydb_box_constructor
- * @brief Return a spatiotemporal box from a geometry/geography and a
- * timestamptz span
+ * @brief Return a spatiotemporal box constructed from a geometry/geography and
+ * a timestamptz span
  * @sqlfn stbox()
  */
 Datum
@@ -1319,8 +1323,8 @@ PGDLLEXPORT Datum Stbox_quad_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quad_split);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Split a spatiotemporal box with respect to its space bounds in
- * four quadrants/octants
+ * @brief Return a spatiotemporal box split with respect to its space bounds
+ * in four quadrants (2D) or eight octants (3D)
  * @sqlfn stbox_intersection()
  * @sqlop @p *
  */
