@@ -56,6 +56,9 @@ SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?<> tgeogpoint 'Point(1 1)@2000-01-01'
 SELECT tgeogpoint 'Point(1 1)@2000-01-01' %= tgeogpoint 'Point(1 1)@2000-01-01';
 SELECT tgeogpoint 'Point(1 1)@2000-01-01' %<> tgeogpoint 'Point(1 1)@2000-01-01';
 
+-- NULL
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'Point(1 1)@2000-01-02';
+
 /* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'SRID=5676;Point(1 1)@2000-01-01';
 

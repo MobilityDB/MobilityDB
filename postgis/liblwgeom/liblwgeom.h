@@ -32,20 +32,9 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
-
+#include <stdbool.h> // MEOS
 #include "../postgis_config.h"
 
-#if POSTGIS_PROJ_VERSION < 60
-#include "proj_api.h"
-typedef struct PJ
-{
-    projPJ pj_from;
-    projPJ pj_to;
-} PJ;
-
-typedef PJ LWPROJ;
-
-#else
 #include "proj.h"
 
 /* For PROJ6 we cache several extra values to avoid calls to proj_get_source_crs
@@ -53,26 +42,20 @@ typedef PJ LWPROJ;
  */
 typedef struct LWPROJ
 {
-	PJ* pj;
-        /* CRSs are swapped: Used in transformation calls */
-	uint8_t source_swapped;
-	uint8_t target_swapped;
-        /* Source crs is geographic: Used in geography calls (source srid == dst srid) */
-        uint8_t source_is_latlong;
+    PJ* pj;
 
-        /* Source ellipsoid parameters */
-        double source_semi_major_metre;
-        double source_semi_minor_metre;
+	/* for pipeline transforms, whether to do a forward or inverse */
+	bool pipeline_is_forward;
+
+    /* Source crs is geographic: Used in geography calls (source srid == dst srid) */
+    uint8_t source_is_latlong;
+    /* Source ellipsoid parameters */
+    double source_semi_major_metre;
+    double source_semi_minor_metre;
 } LWPROJ;
-#endif
 
-#if POSTGIS_PROJ_VERSION < 49
-/* Use the old (pre-2.2) geodesic functions */
-#undef PROJ_GEODESIC
-#else
 /* Enable new geodesic functions API */
 #define PROJ_GEODESIC
-#endif
 
 /**
 * @file liblwgeom.h
@@ -2439,35 +2422,46 @@ int lwgeom_is_simple(const LWGEOM *lwgeom);
  ******************************************************************************/
 
 int lwgeom_transform_from_str(LWGEOM *geom, const char* instr, const char* outstr);
-
-#if POSTGIS_PROJ_VERSION < 60
-/**
- * Get a projection from a string representation
- *
- * Eg: "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
- */
-projPJ projpj_from_string(const char* txt);
-
-#endif
 /**
  * Transform (reproject) a geometry in-place.
  * @param geom the geometry to transform
- * @param pj the input and output
+ * @param pj the transformation
  */
 int lwgeom_transform(LWGEOM *geom, LWPROJ* pj);
 int ptarray_transform(POINTARRAY *pa, LWPROJ* pj);
-
-#if POSTGIS_PROJ_VERSION >= 60
+int box3d_transform(GBOX *box, LWPROJ *pj);
 
 /**
  * Allocate a new LWPROJ containing the reference to the PROJ's PJ
  * If extra_geography_data is true, it will generate the following values for
  * the source srs: is_latlong (geometric or not) and spheroid values
  */
-LWPROJ *lwproj_from_PJ(PJ *pj, int8_t extra_geography_data);
+LWPROJ *lwproj_from_str(const char* str_in, const char* str_out);
 
-#endif
+/**
+ * Transform (reproject) a geometry in-place using a PROJ pipeline.
+ * @param geom the geometry to transform
+ * @param pipeline the coordinate operation pipeline string. Either:
+ *        - `urn:ogc:def:coordinateOperation:AUTHORITY::CODE`
+ *        - a PROJ pipeline string: `+proj=pipeline ...`
+ *        - concatenated operations: `urn:ogc:def:coordinateOperation,coordinateOperation:EPSG::3895,coordinateOperation:EPSG::1618`
+ * @param is_forward whether to execute the pipeline in a forward or inverse
+ * 		  direction.
+ */
+int lwgeom_transform_pipeline(LWGEOM *geom, const char* pipeline, bool is_forward);
 
+/**
+ * Allocate a new LWPROJ containing the reference to the PROJ's PJ using a
+ * PROJ pipeline definition:
+ * @param str_pipeline the coordinate operation pipeline string. Either:
+ *        - `urn:ogc:def:coordinateOperation:AUTHORITY::CODE`
+ *        - a PROJ pipeline: `+proj=pipeline ...`
+ *        - concatenated operations: `urn:ogc:def:coordinateOperation,coordinateOperation:EPSG::3895,coordinateOperation:EPSG::1618`
+ *        - any other coordinate operation accepted via `proj_create()`
+ * @param is_foward whether to execute the the pipeline in a forward or inverse
+ *        direction.
+ */
+LWPROJ *lwproj_from_str_pipeline(const char* str_pipeline, bool is_forward);
 
 /*******************************************************************************
  * GEOS-dependent extra functions on LWGEOM

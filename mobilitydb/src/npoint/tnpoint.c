@@ -54,7 +54,8 @@
 
 #if 0 /* not used */
 /**
- * @brief Convert a C array of network point values into a PostgreSQL array
+ * @brief Return a C array of network point values converted to a PostgreSQL
+ * array
  */
 ArrayType *
 npointarr_array(Npoint **npointarr, int count)
@@ -65,7 +66,8 @@ npointarr_array(Npoint **npointarr, int count)
 #endif
 
 /**
- * @brief Convert a C array of network segment values into a PostgreSQL array
+ * @brief Return a C array of network segment values with M measure to a 
+ * PostgreSQL array
  */
 ArrayType *
 nsegmentarr_array(Nsegment **nsegmentarr, int count)
@@ -82,7 +84,7 @@ PGDLLEXPORT Datum Tnpoint_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_in);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input function for temporal network points
+ * @brief Return a network point from its Well-Known Text (WKT) representation 
  * @sqlfn tnpoint_in()
  */
 Datum
@@ -102,7 +104,7 @@ PGDLLEXPORT Datum Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_to_tgeompoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal network point to a temporal geometry point
+ * @brief Return a temporal network point converted to a temporal geometry point
  * @sqlfn tgeompoint()
  */
 Datum
@@ -118,7 +120,7 @@ PGDLLEXPORT Datum Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_to_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal geometry point to a temporal network point
+ * @brief Return a temporal geometry point converted to a temporal network point
  * @sqlfn tnpoint()
  */
 Datum

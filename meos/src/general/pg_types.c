@@ -759,7 +759,7 @@ pg_date_in(const char *str)
 
 #if ! MEOS
 /**
- * @brief Convert a string into a date
+ * @brief Return a string converted to a date
  * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
  */
 char *
@@ -1072,7 +1072,7 @@ pg_time_out(TimeADT time)
 
 #if ! MEOS
 /**
- * @brief Convert a string into a timestamp with timezone.
+ * @brief Return a string converted to a timestamp with timezone.
  * @note PostgreSQL function: @p timestamptz_in(PG_FUNCTION_ARGS)
  */
 TimestampTz
@@ -1152,7 +1152,8 @@ MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 }
 
 /**
- * @brief Convert a string to a either timestamp or a timestamp with timezone.
+ * @brief Return a string converted to a either timestamp or a timestamp with
+ * timezone
  * @result On error return DT_NOEND
  * @note The function returns a TimestampTz that must be cast to a Timestamp
  * when calling the function with the last argument to false
@@ -1265,7 +1266,7 @@ pg_timestamptz_in(const char *str, int32 typmod)
 #if ! MEOS
 /**
  * @ingroup meos_pg_types
- * @brief Convert a timestamp with timezone to a string.
+ * @brief Return a timestamp with timezone converted to a string
  * @return On error return @p NULL
  * @note PostgreSQL function: @p timestamptz_out(PG_FUNCTION_ARGS)
  */
@@ -1277,7 +1278,7 @@ pg_timestamptz_out(TimestampTz t)
 }
 #else
 /**
- * @brief Convert either a timestamp or a timestamp to a string.
+ * @brief Return either a timestamp or a timestamptz converted to a string
  */
 char *
 timestamp_out_common(TimestampTz t, bool withtz)
@@ -2060,7 +2061,7 @@ pg_interval_cmp(const Interval *interval1, const Interval *interval2)
  *****************************************************************************/
 
 /**
- * @brief Convert a C binary string into a bytea
+ * @brief Return a C binary string converted to a bytea
  */
 bytea *
 bstring2bytea(const uint8_t *wkb, size_t size)

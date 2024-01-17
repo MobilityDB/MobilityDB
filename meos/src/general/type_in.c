@@ -359,7 +359,6 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 {
   assert(mfjson); assert(temporal_type(temptype));
   bool geodetic = (temptype == T_TGEOGPOINT);
-  bool byvalue = basetype_byvalue(temptype_basetype(temptype));
   Datum value = 0; /* make compiler quiet */
   if (! isgeo)
   {
@@ -445,10 +444,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   /* Replace 'T' by ' ' before converting to timestamptz */
   str[10] = ' ';
   TimestampTz t = pg_timestamptz_in(str, -1);
-  TInstant *result = tinstant_make(value, temptype, t);
-  if (! byvalue)
-    pfree(DatumGetPointer(value));
-  return result;
+  return tinstant_make_free(value, temptype, t);
 }
 
 #if MEOS
@@ -539,7 +535,6 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 {
   assert(mfjson); assert(count);
   bool geodetic = (temptype == T_TGEOGPOINT);
-  bool byvalue = basetype_byvalue(temptype_basetype(temptype));
   /* Get coordinates and datetimes */
   int nvalues = 0, ndates = 0;
   Datum *values;
@@ -559,13 +554,8 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   /* Construct the array of temporal instant points */
   TInstant **result = palloc(sizeof(TInstant *) * nvalues);
   for (int i = 0; i < nvalues; i++)
-    result[i] = tinstant_make(values[i], temptype, times[i]);
+    result[i] = tinstant_make_free(values[i], temptype, times[i]);
 
-  if (! byvalue)
-  {
-    for (int i = 0; i < nvalues; i++)
-      pfree(DatumGetPointer(values[i]));
-  }
   pfree(values); pfree(times);
   *count = nvalues;
   return result;
@@ -1299,7 +1289,7 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
 }
 
 /**
- * @brief Initialize the bound flags from their WKB representation
+ * @brief Return the bound flags initialized from their WKB representation
  */
 static void
 bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
@@ -1437,8 +1427,8 @@ set_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * @brief Initialize the state flags according to a box byte flag read from the
- * buffer
+ * @brief Return the state flags initialized according to a box byte flag read
+ * from the buffer
  */
 static void
 tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
@@ -1478,7 +1468,8 @@ tbox_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * @brief Initialize the state flags with a byte flag read from the buffer
+ * @brief Return the state flags initialized with a byte flag read from the
+ * buffer
  */
 static void
 stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
@@ -1598,10 +1589,7 @@ tinstant_from_wkb_state(wkb_parse_state *s)
   /* Read the values from the buffer and create the instant */
   Datum value = basevalue_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
-  TInstant *result = tinstant_make(value, s->temptype, t);
-  if (! basetype_byvalue(s->basetype))
-    pfree(DatumGetPointer(value));
-  return result;
+  return tinstant_make_free(value, s->temptype, t);
 }
 
 /**
@@ -1616,9 +1604,7 @@ tinstarr_from_wkb_state(wkb_parse_state *s, int count)
     /* Parse the point and the timestamp to create the instant point */
     Datum value = basevalue_from_wkb_state(s);
     TimestampTz t = timestamp_from_wkb_state(s);
-    result[i] = tinstant_make(value, s->temptype, t);
-    if (! basetype_byvalue(s->basetype))
-      pfree(DatumGetPointer(value));
+    result[i] = tinstant_make_free(value, s->temptype, t);
   }
   return result;
 }
@@ -1668,12 +1654,10 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
       /* Parse the value and the timestamp to create the temporal instant */
       Datum value = basevalue_from_wkb_state(s);
       TimestampTz t = timestamp_from_wkb_state(s);
-      instants[j] = tinstant_make(value, s->temptype, t);
-      if (! basetype_byvalue(s->basetype))
-        pfree(DatumGetPointer(value));
+      instants[j] = tinstant_make_free(value, s->temptype, t);
     }
-    sequences[i] = tsequence_make_free(instants, ninst, lower_inc,
-      upper_inc, s->interp, NORMALIZE);
+    sequences[i] = tsequence_make_free(instants, ninst, lower_inc, upper_inc,
+      s->interp, NORMALIZE);
   }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }

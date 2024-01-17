@@ -64,30 +64,6 @@ add_definitions(-DPOSTGIS_VERSION_STRING="${POSTGIS_VERSION_STRING}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
 #--------------------------------
-# Other dependencies
-#--------------------------------
-
-# GSL (GNU Scientific Library) (used for skiplists)
-find_package(GSL REQUIRED)
-include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
-
-# Proj reprojection library
-find_package(PROJ REQUIRED)
-include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
-math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
-message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
-
-# GEOS geometry library
-find_package(GEOS REQUIRED)
-include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
-math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10 + ${GEOS_VERSION_MINOR}")
-message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
-
-# JSON-C library (used for MF-JSON input/output)
-find_package(JSON-C REQUIRED)
-include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
-
-#--------------------------------
 # MobilityDB directories
 #--------------------------------
 

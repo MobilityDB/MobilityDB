@@ -226,7 +226,7 @@ temparr_extract(ArrayType *array, int *count)
 /*****************************************************************************/
 
 /**
- * @brief Convert a C array of datums into a PostgreSQL array.
+ * @brief Return a C array of datums converted into a PostgreSQL array.
  * @note The values will be copied into the object even if pass-by-ref type
  */
 ArrayType *
@@ -238,13 +238,11 @@ datumarr_to_array(Datum *values, int count, meosType type)
   assert(count > 0);
   Oid typid = type_oid(type);
   get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
-  ArrayType *result = construct_array(values, count, typid, elmlen, elmbyval,
-    elmalign);
-  return result;
+  return construct_array(values, count, typid, elmlen, elmbyval, elmalign);
 }
 
 /**
- * @brief Convert a C array of timestamps into a PostgreSQL array
+ * @brief Return a C array of timestamps converted into a PostgreSQL array
  */
 ArrayType *
 int64arr_to_array(int64 *values, int count)
@@ -259,7 +257,7 @@ int64arr_to_array(int64 *values, int count)
 }
 
 /**
- * @brief Convert a C array of dates into a PostgreSQL array
+ * @brief Return a C array of dates converted into a PostgreSQL array
  */
 ArrayType *
 datearr_to_array(DateADT *dates, int count)
@@ -274,7 +272,7 @@ datearr_to_array(DateADT *dates, int count)
 }
 
 /**
- * @brief Convert a C array of timestamps into a PostgreSQL array
+ * @brief Return a C array of timestamps converted into a PostgreSQL array
  */
 ArrayType *
 tstzarr_to_array(TimestampTz *times, int count)
@@ -287,7 +285,7 @@ tstzarr_to_array(TimestampTz *times, int count)
 }
 
 /**
- * @brief Convert a C array of spans into a PostgreSQL array
+ * @brief Return a C array of spans converted into a PostgreSQL array
  */
 ArrayType *
 spanarr_to_array(const Span **spans, int count)
@@ -300,7 +298,7 @@ spanarr_to_array(const Span **spans, int count)
 }
 
 /**
- * @brief Convert a C array of text values into a PostgreSQL array
+ * @brief Return a C array of text values converted into a PostgreSQL array
  */
 ArrayType *
 strarr_to_textarray(char **strarr, int count)
@@ -317,7 +315,23 @@ strarr_to_textarray(char **strarr, int count)
 }
 
 /**
- * @brief Convert a C array of temporal values into a PostgreSQL array
+ * @brief Return a C array of spatiotemporal boxes converted into a PostgreSQL array
+ */
+ArrayType *
+stboxarr_to_array(STBox *boxarr, int count)
+{
+  assert(count > 0);
+  STBox **boxes = palloc(sizeof(STBox *) * count);
+  for (int i = 0; i < count; i++)
+    boxes[i] = &boxarr[i];
+  ArrayType *result = construct_array((Datum *) boxes, count,
+    type_oid(T_STBOX), sizeof(STBox), false, 'd');
+  pfree(boxes);
+  return result;
+}
+
+/**
+ * @brief Return a C array of temporal values converted into a PostgreSQL array
  */
 ArrayType *
 temparr_to_array(Temporal **temparr, int count, bool free_all)
@@ -332,22 +346,6 @@ temparr_to_array(Temporal **temparr, int count, bool free_all)
       pfree(temparr[i]);
   }
   pfree(temparr);
-  return result;
-}
-
-/**
- * @brief Convert a C array of spatiotemporal boxes into a PostgreSQL array
- */
-ArrayType *
-stboxarr_to_array(STBox *boxarr, int count)
-{
-  assert(count > 0);
-  STBox **boxes = palloc(sizeof(STBox *) * count);
-  for (int i = 0; i < count; i++)
-    boxes[i] = &boxarr[i];
-  ArrayType *result = construct_array((Datum *) boxes, count,
-    type_oid(T_STBOX), sizeof(STBox), false, 'd');
-  pfree(boxes);
   return result;
 }
 

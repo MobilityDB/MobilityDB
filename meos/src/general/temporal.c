@@ -670,20 +670,22 @@ mobilitydb_version(void)
 char *
 mobilitydb_full_version(void)
 {
-  const char *proj_ver;
+  const char *proj_vers;
 #if POSTGIS_PROJ_VERSION < 61
-  proj_ver = pj_get_release();
+  proj_vers = pj_get_release();
 #else
   PJ_INFO pji = proj_info();
-  proj_ver = pji.version;
+  proj_vers = pji.version;
 #endif
-  const char* geos_version = GEOSversion();
+  const char* geos_vers = GEOSversion();
+  const char* json_c_vers = json_c_version();
 
   char *result = palloc(sizeof(char) * MOBDB_VERSION_STR_MAX_LEN);
   int len = snprintf(result, MOBDB_VERSION_STR_MAX_LEN,
-    "%s, %s, %s, GEOS %s, PROJ %s",
+    "%s, %s, %s, GEOS %s, PROJ %s, JSON-C %s, GSL %s",
     MOBILITYDB_VERSION_STRING, POSTGRESQL_VERSION_STRING,
-    POSTGIS_VERSION_STRING, geos_version, proj_ver);
+    POSTGIS_VERSION_STRING, geos_vers, proj_vers, json_c_vers,
+    GSL_VERSION_STRING);
   result[len] = '\0';
   return result;
 }
@@ -1078,7 +1080,7 @@ tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @brief Convert an integer to a float
+ * @brief Return an integer converted to a float
  * @param[in] d Value
  * @note Function used for lifting
  */
@@ -1089,7 +1091,7 @@ datum_int_to_float(Datum d)
 }
 
 /**
- * @brief Convert a float to an integer
+ * @brief Return a float converted to an integer
  * @param[in] d Value
  * @note Function used for lifting
  */
@@ -1101,7 +1103,7 @@ datum_float_to_int(Datum d)
 
 /**
  * @ingroup meos_temporal_conversion
- * @brief Convert a temporal integer to a temporal float
+ * @brief Return a temporal integer converted to a temporal float
  * @param[in] temp Temporal value
  * @csqlfn #Tint_to_tfloat()
  */
@@ -1125,7 +1127,7 @@ tint_to_tfloat(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_conversion
- * @brief Convert a temporal float to a temporal integer
+ * @brief Return a temporal float converted to a temporal integer
  * @param[in] temp Temporal value
  * @csqlfn #Tfloat_to_tint()
  */
@@ -1155,7 +1157,8 @@ tfloat_to_tint(const Temporal *temp)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the time span of a temporal value
+ * @brief Return the last argument initialized with the time span of a temporal
+ * value
  * @param[in] temp Temporal value
  * @param[out] s Span
  */
@@ -1199,7 +1202,8 @@ temporal_to_tstzspan(const Temporal *temp)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the value span of a temporal number
+ * @brief Return the last argument initialized with the value span of a
+ * temporal number
  * @param[in] temp Temporal value
  * @param[out] s Span
  */
@@ -1257,7 +1261,7 @@ tnumber_to_span(const Temporal *temp)
 #if MEOS
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a temporal number to a temporal box
+ * @brief Return a temporal number converted to a temporal box
  * @param[in] temp Temporal value
  * @csqlfn #Tnumber_to_tbox()
  */
@@ -1388,7 +1392,7 @@ float_degrees(double value, bool normalize)
 }
 
 /**
- * @brief Convert a number from radians to degrees
+ * @brief Return a number converted from radians to degrees
  */
 static Datum
 datum_degrees(Datum value, Datum normalize)
@@ -1398,7 +1402,7 @@ datum_degrees(Datum value, Datum normalize)
 }
 
 /**
- * @brief Convert a number from degrees to radians
+ * @brief Return a number converted from degrees to radians
  */
 static Datum
 datum_radians(Datum value)
@@ -1466,7 +1470,7 @@ tfloat_radians(const Temporal *temp)
 
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Compact the temporal value by removing extra storage space
+ * @brief Return a copy of the temporal value without any extra storage space
  * @param[in] temp Temporal value
  */
 Temporal *
@@ -1488,7 +1492,8 @@ temporal_compact(const Temporal *temp)
 #if MEOS
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Restart a temporal sequence (set) by keeping only the last n instants
+ * @brief Return a temporal sequence (set) restarted by keeping only the last n
+ * instants
  * or sequences
  * @param[in] temp Temporal value
  * @param[out] count Number of instants or sequences kept
@@ -1955,8 +1960,8 @@ temporal_interp(const Temporal *temp)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the bounding box of a temporal
- * value
+ * @brief Return the last argument initialized with the bounding box of a
+ * temporal value
  * @param[in] temp Temporal value
  * @param[out] box Boundind box
  * @note For temporal instants the bounding box must be computed. For the

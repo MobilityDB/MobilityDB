@@ -1276,6 +1276,8 @@ SELECT stbox 'STBOX T([2001-01-01,2001-01-02])' + stbox 'STBOX T([2001-01-01,200
 (1 row)
 
 /* Errors */
+SELECT stbox 'SRID=5676;STBOX X((1,2),(3,4))' + stbox 'STBOX X((1,2),(3,4))';
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' + stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))';
 ERROR:  The arguments must be of the same dimensionality
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' + stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])';

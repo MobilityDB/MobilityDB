@@ -356,16 +356,36 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
+  /* Get the SRID if it is a geo set  */
+  int32 srid;
+  char str1[20];
+  str1[0] = '\0';
+  outfunc value_out1 = value_out;
+  if (geoset_type(s->settype) && value_out == ewkt_out)
+  {
+    srid = geoset_srid(s);
+    if (srid > 0)
+      sprintf(str1, "SRID=%d;", srid);
+    /* Since the SRID is output at the begining it is not output for the
+     * elements */
+    value_out1 = wkt_out;
+  }
+
   char **strings = palloc(sizeof(char *) * s->count);
   size_t outlen = 0;
   for (int i = 0; i < s->count; i++)
   {
-    strings[i] = value_out(SET_VAL_N(s, i), s->basetype, maxdd);
+    strings[i] = value_out1(SET_VAL_N(s, i), s->basetype, maxdd);
     outlen += strlen(strings[i]) + 1;
   }
   bool quotes = set_basetype_quotes(s->basetype);
-  return stringarr_to_string(strings, s->count, outlen, "", '{', '}', quotes,
-    SPACES);
+  char *str2 = stringarr_to_string(strings, s->count, outlen, "", '{', '}',
+    quotes, SPACES);
+  char *result = palloc(strlen(str1) + strlen(str2) + 1);
+  strcpy(result, str1);
+  strcat(result, str2);
+  pfree(str2);
+  return result;
 }
 
 /**
@@ -1002,7 +1022,7 @@ set_copy(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a value to a set
+ * @brief Return a value converted to a set
  * @param[in] value Value
  * @param[in] basetype Type of the value
  * @csqlfn #Value_to_set()
@@ -1016,7 +1036,7 @@ value_to_set(Datum value, meosType basetype)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert an integer to a set
+ * @brief Return an integer converted to a set
  * @param[in] i Value
  * @csqlfn #Value_to_set()
  */
@@ -1029,7 +1049,7 @@ int_to_set(int i)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a big integer to a set
+ * @brief Return a big integer converted to a set
  * @param[in] i Value
  * @csqlfn #Value_to_set()
  */
@@ -1042,7 +1062,7 @@ bigint_to_set(int64 i)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a float to a set
+ * @brief Return a float converted to a set
  * @param[in] d Value
  * @csqlfn #Value_to_set()
  */
@@ -1055,7 +1075,7 @@ float_to_set(double d)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a text to a set
+ * @brief Return a text converted to a set
  * @param[in] txt Value
  * @csqlfn #Value_to_set()
  */
@@ -1071,7 +1091,7 @@ text_to_set(text *txt)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a date to a set
+ * @brief Return a date converted to a set
  * @param[in] d Value
  * @csqlfn #Value_to_set()
  */
@@ -1084,7 +1104,7 @@ date_to_set(DateADT d)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a timestamptz to a set
+ * @brief Return a timestamptz converted to a set
  * @param[in] t Value
  * @csqlfn #Value_to_set()
  */
@@ -1097,7 +1117,7 @@ timestamptz_to_set(TimestampTz t)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a geometry/geography to a geo set
+ * @brief Return a geometry/geography converted to a geo set
  * @param[in] gs Value
  * @csqlfn #Value_to_set()
  */
@@ -1117,7 +1137,7 @@ geo_to_set(GSERIALIZED *gs)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert an integer set into a float set
+ * @brief Return an integer set converted to a float set
  * @param[in] s Set
  * @csqlfn #Intset_to_floatset()
  */
@@ -1138,7 +1158,7 @@ intset_floatset(const Set *s)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert an integer set into a float set
+ * @brief Return an integer set converted to a float set
  * @param[in] s Set
  * @csqlfn #Intset_to_floatset()
  */
@@ -1154,7 +1174,7 @@ intset_to_floatset(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a float set into an integer set
+ * @brief Return a float set converted to an integer set
  * @param[in] s Set
  * @csqlfn #Floatset_to_intset()
  */
@@ -1175,7 +1195,7 @@ floatset_intset(const Set *s)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a float set into an integer set
+ * @brief Return a float set converted to an integer set
  * @param[in] s Set
  * @csqlfn #Floatset_to_intset()
  */
@@ -1191,7 +1211,7 @@ floatset_to_intset(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a date set into a timestamptz set
+ * @brief Return a date set converted to a timestamptz set
  * @param[in] s Set
  * @csqlfn #Dateset_to_tstzset()
  */
@@ -1213,7 +1233,7 @@ dateset_tstzset(const Set *s)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a date set into a timestamptz set
+ * @brief Return a date set converted to a timestamptz set
  * @param[in] s Set
  * @csqlfn #Dateset_to_tstzset()
  */
@@ -1229,7 +1249,7 @@ dateset_to_tstzset(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Convert a timestamptz set into a date set
+ * @brief Return a timestamptz set converted to a date set
  * @param[in] s Set
  * @csqlfn #Tstzset_to_dateset()
  */
@@ -1251,7 +1271,7 @@ tstzset_dateset(const Set *s)
 #if MEOS
 /**
  * @ingroup meos_setspan_conversion
- * @brief Convert a timestamptz set into a date set
+ * @brief Return a timestamptz set converted to a date set
  * @param[in] s Set
  * @csqlfn #Tstzset_to_dateset()
  */
@@ -1557,7 +1577,8 @@ geoset_end_value(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_accessor
- * @brief Initialize the last argument to (a copy of) the n-th value of a set
+ * @brief Return the last argument initialized to (a copy of) the n-th value of
+ * a set
  * @param[in] s Set
  * @param[in] n Number
  * @param[out] result Value
@@ -1579,7 +1600,8 @@ set_value_n(const Set *s, int n, Datum *result)
 #if MEOS
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of an integer set
+ * @brief Return the last argument initialized to the n-th value of an integer
+ * set
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -1600,7 +1622,8 @@ intset_value_n(const Set *s, int n, int *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a big integer set
+ * @brief Return the last argument initialized to the n-th value of a big
+ * integer set
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -1621,7 +1644,7 @@ bigintset_value_n(const Set *s, int n, int64 *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a float set
+ * @brief Return the last argument initialized to the n-th value of a float set
  * @param[in] s Float set
  * @param[in] n Number
  * @param[out] result Value
@@ -1642,7 +1665,8 @@ floatset_value_n(const Set *s, int n, double *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to a copy of the n-th value of a text set
+ * @brief Return the last argument initialized to a copy of the n-th value of a
+ * text set
  * @param[in] s Text set
  * @param[in] n Number
  * @param[out] result Value
@@ -1663,7 +1687,7 @@ textset_value_n(const Set *s, int n, text **result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a date set
+ * @brief Return the last argument initialized to the n-th value of a date set
  * @param[in] s Date set
  * @param[in] n Number
  * @param[out] result Date
@@ -1684,7 +1708,8 @@ dateset_value_n(const Set *s, int n, DateADT *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to the n-th value of a timestamptz set
+ * @brief Return the last argument initialized to the n-th value of a
+ * timestamptz set
  * @param[in] s Timestamptz set
  * @param[in] n Number
  * @param[out] result Timestamptz
@@ -1705,7 +1730,8 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Initialize the last argument to a copy of the n-th value of a geo set
+ * @brief Return the last argument initialized to a copy of the n-th value of a
+ * geo set
  * @param[in] s Geo set
  * @param[in] n Number
  * @param[out] result Value
@@ -1902,63 +1928,13 @@ geoset_values(const Set *s)
 #endif /* MEOS */
 
 /*****************************************************************************
- * Functions for spatial reference systems
- *****************************************************************************/
-
-/**
- * @ingroup meos_setspan_accessor
- * @brief Return the SRID of a geo set
- * @param[in] s Set
- * @csqlfn #Geoset_get_srid()
- */
-int
-geoset_srid(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
-    return SRID_INVALID;
-
-  GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(s, 0));
-  return gserialized_get_srid(gs);
-}
-
-/**
- * @ingroup meos_setspan_transf
- * @brief Return a geo set with the coordinates set to an SRID
- * @param[in] s Set
- * @param[in] srid SRID
- * @return On error return @p NULL
- * @csqlfn #Geoset_set_srid()
- */
-Set *
-geoset_set_srid(const Set *s, int32 srid)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
-    return NULL;
-
-
-  Set *result = set_cp(s);
-  /* Set the SRID of the composing points */
-  for (int i = 0; i < s->count; i++)
-  {
-    GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(result, i));
-    gserialized_set_srid(gs, srid);
-  }
-  /* Set the SRID of the bounding box */
-  STBox *box = SET_BBOX_PTR(result);
-  box->srid = srid;
-  return result;
-}
-
-/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 
 #if MEOS
 /**
  * @ingroup meos_internal_setspan_transf
- * @brief Return a copy of a set ordered, without duplicates, and with no
+ * @brief Return a copy of a set ordered, without duplicates, and without any
  * additional free space
  * @param[in] s Set
  */

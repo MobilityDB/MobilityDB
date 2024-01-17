@@ -732,7 +732,7 @@ tfloatbox_tile_list(const TBox *box, double vsize, const Interval *duration,
 
 /**
  * @ingroup meos_internal_temporal_analytics_tile
- * @brief Return the tile from the arguments
+ * @brief Return a tile in a multidimensional grid for temporal numbers
  * @param[in] value Value
  * @param[in] t Timestamp
  * @param[in] vsize Value size of the tiles

@@ -840,6 +840,63 @@ SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
 		</itemizedlist>
 	</sect1>
 
+	<sect1 id ="geoset_types_srid">
+		<title>Sistema de referencia espacial</title>
+
+		<itemizedlist>
+			<listitem id="geoset_SRID">
+				<indexterm><primary><varname>SRID</varname></primary></indexterm>
+				<para>Obtener el identificador de referencia espacial</para>
+				<para><varname>SRID(geoset) → integer</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT SRID(geoset 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
+-- 0
+SELECT SRID(geoset 'SRID=5676;STBOX XT(((1.0,2.0),(4.0,5.0)),[2001-01-01,2001-01-02])');
+-- 5676
+SELECT SRID(geoset 'GEODSTBOX T([2001-01-01,2001-01-02))');
+-- ERROR:  The box must have space dimension
+</programlisting>
+			</listitem>
+
+			<listitem id="geoset_setSRID">
+				<indexterm><primary><varname>setSRID</varname></primary></indexterm>
+				<para>Especificar el identificador de referencia espacial</para>
+				<para><varname>setSRID(geoset) → geoset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
+  [2001-01-01,2001-01-02])', 5676);
+-- SRID=5676;STBOX ZT(((1,2,3),(4,5,6)),[2001-01-01,2001-01-02])
+</programlisting>
+				</listitem>
+
+			<listitem id="geoset_transform">
+				<indexterm><primary><varname>transform</varname></primary></indexterm>
+				<indexterm><primary><varname>transformPipeline</varname></primary></indexterm>
+				<para>Transformar a una referencia espacial diferente</para>
+				<para><varname>transform(geoset,to_srid integer) → geoset</varname></para>
+				<para><varname>transform(geoset,pipeline text,to_srid integer,is_forward bool=true) → geoset</varname></para>
+				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el conjunto tiene un SRID desconocido (representado por 0).</para>
+				<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. El SRID del conjunto de entrada se ignora y el SRID de la conjunto de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>to_srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT round(transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
+  (6.575317, 51.553167)),[2001-01-01,2001-01-02])', 3812), 6);
+/* SRID=3812;STBOX XT(((502773.429981,511805.120402),(803028.908265,751590.742629)),
+  [2001-01-01, 2001-01-02]) */
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+WITH test(geoset, pipeline) AS (
+  SELECT geogset 'SRID=4326;{"Point(4.3525 50.846667 100.0)",
+    "Point(-0.1275 51.507222 100.0)"}',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(geoset, pipeline, 4326), 
+  pipeline, 4326, false), 6)
+FROM test;
+-- SRID=4326;{"POINT Z (4.3525 50.846667 100)", "POINT Z (-0.1275 51.507222 100)"}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 id="setspan_set_operators">
 		<title>Operaciones de conjuntos</title>
 

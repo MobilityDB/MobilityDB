@@ -294,8 +294,7 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
     return false;
   }
   if (result)
-    *result = tinstant_make(PointerGetDatum(gs), temptype, t);
-  pfree(gs);
+    *result = tinstant_make_free(PointerGetDatum(gs), temptype, t);
   return true;
 }
 
@@ -458,6 +457,7 @@ Temporal *
 tpoint_parse(const char **str, meosType temptype)
 {
   int tpoint_srid = 0;
+  const char *bak = *str;
   p_whitespace(str);
 
   /* Starts with "SRID=". The SRID specification must be gobbled for all
@@ -465,7 +465,6 @@ tpoint_parse(const char **str, meosType temptype)
    * because this requires a string terminated by '\0' and we cannot
    * modify the string in case it must be passed to the #tpointinst_parse
    * function. */
-  const char *bak = *str;
   if (pg_strncasecmp(*str, "SRID=", 5) == 0)
   {
     /* Move str to the start of the number part */

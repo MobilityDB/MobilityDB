@@ -278,6 +278,24 @@
 		</sect2>
 
 		<sect2>
+			<title>Spatial Reference System</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="geoset_SRID"><varname>SRID</varname></link>: Get the spatial reference identifier</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="geoset_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
+					</listitem>
+
+				<listitem>
+					<para><link linkend="geoset_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a different spatial reference</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Set Operations</title>
 
 			<itemizedlist>
@@ -544,7 +562,7 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_transform"><varname>transform</varname></link>: Transform to a different spatial reference</para>
+					<para><link linkend="stbox_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a different spatial reference</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1189,7 +1207,7 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_transform"><varname>transform</varname></link>: Transform to a different spatial reference</para>
+					<para><link linkend="tpoint_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a different spatial reference</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

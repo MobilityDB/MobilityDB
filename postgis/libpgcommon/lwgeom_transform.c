@@ -53,7 +53,7 @@ PROJSRSCache *PROJ_CACHE = NULL;
  * from spatial_ref_sys query.
  */
 typedef struct {
-	char* authtext;
+	char* authtext; /* auth_name:auth_srid */
 	char* srtext;
 	char* proj4text;
 } PjStrs;
@@ -67,25 +67,12 @@ static void
 PROJSRSDestroyPJ(void *projection)
 {
 	LWPROJ *pj = (LWPROJ *)projection;
-#if POSTGIS_PROJ_VERSION < 60
-/* Ape the Proj 6+ API for versions < 6 */
-	if (pj->pj_from)
-	{
-		pj_free(pj->pj_from);
-		pj->pj_from = NULL;
-	}
-	if (pj->pj_to)
-	{
-		pj_free(pj->pj_to);
-		pj->pj_to = NULL;
-	}
-#else
+
 	if (pj->pj)
 	{
 		proj_destroy(pj->pj);
 		pj->pj = NULL;
 	}
-#endif
 }
 
 /**
@@ -245,7 +232,9 @@ GetProjStringsSPI(int32_t srid)
 
 
 /**
- *  Given an SRID, return the proj4 text.
+ *  Given an SRID, return the corresponding proj strings
+ *  (auth_name:auth_srid/srtext/proj4text)
+ *
  *  If the integer is one of the "well known" projections we support
  *  (WGS84 UTM N/S, Polar Stereographic N/S - see SRID_* macros),
  *  return the proj4text for those.
@@ -359,7 +348,6 @@ pjstrs_pfree(PjStrs *strs)
 		pfree(strs->srtext);
 }
 
-#if POSTGIS_PROJ_VERSION >= 60
 static char*
 pgstrs_get_entry(const PjStrs *strs, int n)
 {
@@ -375,25 +363,6 @@ pgstrs_get_entry(const PjStrs *strs, int n)
 			return NULL;
 	}
 }
-#endif
-
-#if POSTGIS_PROJ_VERSION < 60
-/*
-* Utility function for GML reader that still
-* needs proj4text access
-*/
-char *
-GetProj4String(int32_t srid)
-{
-	PjStrs strs;
-	char *proj4str;
-	memset(&strs, 0, sizeof(strs));
-	strs = GetProjStringsSPI(srid);
-	proj4str = pstrdup(strs.proj4text);
-	pjstrs_pfree(&strs);
-	return proj4str;
-}
-#endif
 
 /**
  * Add an entry to the local PROJ SRS cache. If we need to wrap around then
@@ -421,27 +390,11 @@ AddToPROJSRSCache(PROJSRSCache *PROJCache, int32_t srid_from, int32_t srid_to)
 
 	oldContext = MemoryContextSwitchTo(PROJCache->PROJSRSCacheContext);
 
-#if POSTGIS_PROJ_VERSION < 60
-	PJ *projection = palloc(sizeof(PJ));
-	pj_from_str = from_strs.proj4text;
-	pj_to_str = to_strs.proj4text;
-	projection->pj_from = projpj_from_string(pj_from_str);
-	projection->pj_to = projpj_from_string(pj_to_str);
 
-	if (!projection->pj_from)
-		elog(ERROR,
-		    "could not form projection from 'srid=%d' to 'srid=%d'",
-		    srid_from, srid_to);
-
-	if (!projection->pj_to)
-		elog(ERROR,
-		    "could not form projection from 'srid=%d' to 'srid=%d'",
-		    srid_from, srid_to);
-#else
-	PJ *projpj = NULL;
-	/* Try combinations of ESPG/SRTEXT/PROJ4TEXT until we find */
+	LWPROJ *projection = NULL;
+	/* Try combinations of AUTH_NAME:AUTH_SRID/SRTEXT/PROJ4TEXT until we find */
 	/* one that gives us a usable transform. Note that we prefer */
-	/* EPSG numbers over SRTEXT and SRTEXT over PROJ4TEXT */
+	/* AUTH_NAME:AUTH_SRID over SRTEXT and SRTEXT over PROJ4TEXT */
 	/* (3 entries * 3 entries = 9 combos) */
 	uint32_t i;
 	for (i = 0; i < 9; i++)
@@ -450,22 +403,16 @@ AddToPROJSRSCache(PROJSRSCache *PROJCache, int32_t srid_from, int32_t srid_to)
 		pj_to_str   = pgstrs_get_entry(&to_strs,   i % 3);
 		if (!(pj_from_str && pj_to_str))
 			continue;
-		projpj = proj_create_crs_to_crs(NULL, pj_from_str, pj_to_str, NULL);
-		if (projpj && !proj_errno(projpj))
+
+		projection = lwproj_from_str(pj_from_str, pj_to_str);
+		if (projection)
 			break;
 	}
-	if (!projpj)
-	{
-		elog(ERROR, "could not form projection (PJ) from 'srid=%d' to 'srid=%d'", srid_from, srid_to);
-		return NULL;
-	}
-	LWPROJ *projection = lwproj_from_PJ(projpj, srid_from == srid_to);
 	if (!projection)
 	{
 		elog(ERROR, "could not form projection (LWPROJ) from 'srid=%d' to 'srid=%d'", srid_from, srid_to);
 		return NULL;
 	}
-#endif
 
 	/* If the cache is already full then find the least used element and delete it */
 	uint32_t cache_position = PROJCache->PROJSRSCacheCount;
@@ -536,7 +483,7 @@ DeleteFromPROJSRSCache(PROJSRSCache *PROJCache, uint32_t position)
 
 
 int
-GetLWPROJ(int32_t srid_from, int32_t srid_to, LWPROJ **pj)
+lwproj_lookup(int32_t srid_from, int32_t srid_to, LWPROJ **pj)
 {
 	/* get or initialize the cache for this round */
 	PROJSRSCache* proj_cache = GetPROJSRSCache();
@@ -554,23 +501,19 @@ GetLWPROJ(int32_t srid_from, int32_t srid_to, LWPROJ **pj)
 	return pj != NULL;
 }
 
-static int
-proj_pj_is_latlong(const LWPROJ *pj)
+int
+lwproj_is_latlong(const LWPROJ *pj)
 {
-#if POSTGIS_PROJ_VERSION < 60
-	return pj_is_latlong(pj->pj_from);
-#else
 	return pj->source_is_latlong;
-#endif
 }
 
 static int
 srid_is_latlong(int32_t srid)
 {
 	LWPROJ *pj;
-	if ( GetLWPROJ(srid, srid, &pj) == LW_FAILURE)
+	if ( lwproj_lookup(srid, srid, &pj) == LW_FAILURE)
 		return LW_FALSE;
-	return proj_pj_is_latlong(pj);
+	return lwproj_is_latlong(pj);
 }
 
 void
@@ -611,34 +554,13 @@ int
 spheroid_init_from_srid(int32_t srid, SPHEROID *s)
 {
 	LWPROJ *pj;
-#if POSTGIS_PROJ_VERSION >= 48 && POSTGIS_PROJ_VERSION < 60
-	double major_axis, minor_axis, eccentricity_squared;
-#endif
 
-	if ( GetLWPROJ(srid, srid, &pj) == LW_FAILURE)
+	if ( lwproj_lookup(srid, srid, &pj) == LW_FAILURE)
 		return LW_FAILURE;
 
-#if POSTGIS_PROJ_VERSION >= 60
 	if (!pj->source_is_latlong)
 		return LW_FAILURE;
 	spheroid_init(s, pj->source_semi_major_metre, pj->source_semi_minor_metre);
-
-#elif POSTGIS_PROJ_VERSION >= 48
-	if (!pj_is_latlong(pj->pj_from))
-		return LW_FAILURE;
-	/* For newer versions of Proj we can pull the spheroid paramaeters and initialize */
-	/* using them */
-	pj_get_spheroid_defn(pj->pj_from, &major_axis, &eccentricity_squared);
-	minor_axis = major_axis * sqrt(1-eccentricity_squared);
-	spheroid_init(s, major_axis, minor_axis);
-
-#else
-	if (!pj_is_latlong(pj->pj_from))
-		return LW_FAILURE;
-	/* For old versions of Proj we cannot lookup the spheroid parameters from the API */
-	/* So we use the WGS84 parameters (boo!) */
-	spheroid_init(s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-#endif
 
 	return LW_SUCCESS;
 }

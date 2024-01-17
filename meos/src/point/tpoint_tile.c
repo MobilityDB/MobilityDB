@@ -1115,7 +1115,7 @@ tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
       continue;
 
     /* Construct value of the result */
-    spaces[i] = gspoint_make(box.xmin, box.ymin, box.zmin, hasz, false,
+    spaces[i] = geopoint_make(box.xmin, box.ymin, box.zmin, hasz, false,
       box.srid);
     if (timesplit)
       times[i] = DatumGetTimestampTz(box.period.lower);

@@ -69,7 +69,7 @@ geo_copy(const GSERIALIZED *g)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Convert a temporal point to a spatiotemporal box
+ * @brief Return a temporal point converted to a spatiotemporal box
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_to_stbox()
  */

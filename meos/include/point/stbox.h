@@ -64,10 +64,6 @@ extern void point_get_coords(const GSERIALIZED *point, bool hasz,
 extern void tstzset_stbox_slice(Datum tsdatum, STBox *box);
 extern void tstzspanset_stbox_slice(Datum psdatum, STBox *box);
 
-/* SRID functions */
-
-extern STBox *stbox_set_srid(const STBox *box, int32 srid);
-
 /*****************************************************************************/
 
 #endif

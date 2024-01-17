@@ -514,8 +514,8 @@ tdiscseq_find_timestamptz(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * @brief Convert an array of arrays of temporal sequences into an array of
- * temporal sequences
+ * @brief Return an array of arrays of temporal sequences converted into an
+ * array of temporal sequences
  * @details This function is called by all the functions in which the number of
  * output sequences cannot be determined in advance, typically when each
  * segment of the input sequence can produce an arbitrary number of output
@@ -1116,16 +1116,15 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
   const double *zcoords, const TimestampTz *times, int count, int32 srid,
   bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
-  assert(xcoords); assert(ycoords); assert(times);
-  assert(count > 0);
+  assert(xcoords); assert(ycoords); assert(times); assert(count > 0);
   bool hasz = (zcoords != NULL);
+  meosType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i ++)
   {
-    Datum point = PointerGetDatum(gspoint_make(xcoords[i], ycoords[i],
+    Datum point = PointerGetDatum(geopoint_make(xcoords[i], ycoords[i],
       hasz ? zcoords[i] : 0.0, hasz, geodetic, srid));
-    instants[i] = tinstant_make(point, geodetic ? T_TGEOGPOINT : T_TGEOMPOINT,
-      times[i]);
+    instants[i] = tinstant_make_free(point, temptype, times[i]);
   }
   return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
     normalize);
@@ -1379,7 +1378,7 @@ tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
 
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Return a copy of a temporal sequence with no additional free space
+ * @brief Return a copy of a temporal sequence without any extra storage space
  * @param[in] seq Temporal sequence
  */
 TSequence *
@@ -1414,7 +1413,8 @@ tsequence_compact(const TSequence *seq)
 #if MEOS
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Restart a temporal sequence by keeping only the last n instants
+ * @brief Return a temporal sequence restarted by keeping only the last n
+ * instants
  * @param[in,out] seq Temporal sequence
  * @param[in] count Number of instants to keep
  */
@@ -2031,7 +2031,7 @@ tsequence_duration(const TSequence *seq)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the time span of a temporal
+ * @brief Return the last argument initialized with the time span of a temporal
  * sequence
  * @param[in] seq Temporal sequence
  * @param[out] s Span
@@ -2316,8 +2316,8 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Initialize the last argument with the value of a temporal sequence at
- * a timestamptz
+ * @brief Return the last argument initialized with (a copy of) the value of a
+ * temporal sequence at a timestamptz
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
  * @param[in] strict True if inclusive/exclusive bounds are taken into account
@@ -2474,9 +2474,9 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
       if (tsegment_intersection(instants1[ninsts - 1], inst1, interp1,
         instants2[ninsts - 1], inst2, interp2, &inter1, &inter2, &crosstime))
       {
-        instants1[ninsts] = tofree[nfree++] = tinstant_make(inter1,
+        instants1[ninsts] = tofree[nfree++] = tinstant_make_free(inter1,
           seq1->temptype, crosstime);
-        instants2[ninsts++] = tofree[nfree++] = tinstant_make(inter2,
+        instants2[ninsts++] = tofree[nfree++] = tinstant_make_free(inter2,
           seq2->temptype, crosstime);
       }
     }
@@ -2822,8 +2822,8 @@ tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
  * @param[in] interp1 Interpolation of the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
  * @param[in] interp2 Interpolation of the second segment
- * @param[out] inter1, inter2 Base values taken by the two segments
- * at the timestamp
+ * @param[out] inter1, inter2 (Copy of the) base values taken by the two 
+ * segments at the timestamp
  * @param[out] t Timestamp
  * @pre The instants are synchronized, i.e., `start1->t = start2->t` and
  * `end1->t = end2->t`
@@ -2911,7 +2911,7 @@ intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the integral (area under the curve) of a temporal sequence
  * number
  * @param[in] seq Temporal sequence
@@ -2984,7 +2984,7 @@ tnumbercontseq_twavg(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_agg
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the time-weighted average of a temporal sequence number
  * @param[in] seq Temporal sequence
  * @csqlfn #Tnumber_twavg()

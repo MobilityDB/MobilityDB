@@ -179,7 +179,6 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  * and a number
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @param[in] basetype Type of the value
  */
 Datum
 nad_tnumber_number(const Temporal *temp, Datum value)
@@ -209,7 +208,7 @@ nad_tint_int(const Temporal *temp, int i)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return -1;
-  return DatumGetInt32(nad_tnumber_number(temp, Int32GetDatum(i));
+  return DatumGetInt32(nad_tnumber_number(temp, Int32GetDatum(i)));
 }
 
 /**
@@ -228,7 +227,7 @@ nad_tfloat_float(const Temporal *temp, double d)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return -1.0;
-  return DatumGetFloat8(nad_tnumber_number(temp, Int32GetDatum(i));
+  return DatumGetFloat8(nad_tnumber_number(temp, Float8GetDatum(d)));
 }
 #endif /* MEOS */
 
@@ -323,7 +322,7 @@ nad_tint_tbox(const Temporal *temp, const TBox *box)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
       ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_span(temp1, &box->span))
+      ! ensure_valid_tnumber_span(temp, &box->span))
     return -1;
   return DatumGetInt32(nad_tnumber_tbox(temp, box));
 }
@@ -343,7 +342,7 @@ nad_tfloat_tbox(const Temporal *temp, const TBox *box)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
       ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_span(temp1, &box->span))
+      ! ensure_valid_tnumber_span(temp, &box->span))
     return -1;
   return DatumGetFloat8(nad_tnumber_tbox(temp, box));
 }

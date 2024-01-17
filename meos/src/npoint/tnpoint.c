@@ -51,21 +51,18 @@
  *****************************************************************************/
 
 /**
- * @brief Convert a temporal network point as a temporal geometry point
+ * @brief Return a temporal network point converted to a temporal geometry point
  */
 TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
 {
   const Npoint *np = DatumGetNpointP(tinstant_val(inst));
   GSERIALIZED *geom = npoint_geom(np);
-  TInstant *result = tinstant_make(PointerGetDatum(geom), T_TGEOMPOINT,
-    inst->t);
-  pfree(geom);
-  return result;
+  return tinstant_make_free(PointerGetDatum(geom), T_TGEOMPOINT, inst->t);
 }
 
 /**
- * @brief Convert a temporal network point as a temporal geometry point
+ * @brief Return a temporal network point converted to a temporal geometry point
  */
 TSequence *
 tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
@@ -78,7 +75,7 @@ tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
 }
 
 /**
- * @brief Convert a temporal network point as a temporal geometry point
+ * @brief Return a temporal network point converted to a temporal geometry point
  */
 TSequence *
 tnpointcontseq_tgeompointcontseq(const TSequence *seq)
@@ -98,9 +95,8 @@ tnpointcontseq_tgeompointcontseq(const TSequence *seq)
     assert(opa->npoints <= 1);
     LWGEOM *lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
     Datum point = PointerGetDatum(geo_serialize(lwpoint));
-    instants[i] = tinstant_make(point, T_TGEOMPOINT, inst->t);
     lwgeom_free(lwpoint);
-    pfree(DatumGetPointer(point));
+    instants[i] = tinstant_make_free(point, T_TGEOMPOINT, inst->t);
   }
 
   pfree(line);
@@ -110,7 +106,7 @@ tnpointcontseq_tgeompointcontseq(const TSequence *seq)
 }
 
 /**
- * @brief Convert a temporal network point as a temporal geometry point
+ * @brief Return a temporal network point converted to a temporal geometry point
  */
 TSequenceSet *
 tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
@@ -122,7 +118,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 }
 
 /**
- * @brief Convert a temporal network point as a temporal geometry point
+ * @brief Return a temporal network point converted to a temporal geometry point
  */
 Temporal *
 tnpoint_tgeompoint(const Temporal *temp)
@@ -144,7 +140,7 @@ tnpoint_tgeompoint(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @brief Convert a temporal geometry point as a temporal network point
+ * @brief Return a temporal geometry point converted to a temporal network point
  */
 TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
@@ -153,13 +149,11 @@ tgeompointinst_tnpointinst(const TInstant *inst)
   Npoint *np = geom_npoint(gs);
   if (np == NULL)
     return NULL;
-  TInstant *result = tinstant_make(PointerGetDatum(np), T_TNPOINT, inst->t);
-  pfree(np);
-  return result;
+  return tinstant_make_free(PointerGetDatum(np), T_TNPOINT, inst->t);
 }
 
 /**
- * @brief Convert a temporal geometry point as a temporal network point
+ * @brief Return a temporal geometry point converted to a temporal network point
  */
 TSequence *
 tgeompointseq_tnpointseq(const TSequence *seq)
@@ -181,7 +175,7 @@ tgeompointseq_tnpointseq(const TSequence *seq)
 }
 
 /**
- * @brief Convert a temporal geometry point as a temporal network point
+ * @brief Return a temporal geometry point converted to a temporal network point
  */
 TSequenceSet *
 tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
@@ -201,7 +195,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
 }
 
 /**
- * @brief Convert a temporal geometry point as a temporal network point
+ * @brief Return a temporal geometry point converted to a temporal network point
  */
 Temporal *
 tgeompoint_tnpoint(const Temporal *temp)

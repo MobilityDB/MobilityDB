@@ -131,8 +131,8 @@ nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
   temporal_value_at_timestamptz(temp, resultgeom->t, false, &value);
-  TInstant *result = tinstant_make(value, temp->temptype, resultgeom->t);
-  pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
+  TInstant *result = tinstant_make_free(value, temp->temptype, resultgeom->t);
+  pfree(tempgeom); pfree(resultgeom);
   return result;
 }
 
@@ -150,9 +150,8 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
   temporal_value_at_timestamptz(temp, resultgeom->t, false, &value);
-  TInstant *result = tinstant_make(value, temp->temptype, resultgeom->t);
-  pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
-  pfree(geom);
+  TInstant *result = tinstant_make_free(value, temp->temptype, resultgeom->t);
+  pfree(tempgeom); pfree(resultgeom); pfree(geom);
   return result;
 }
 
@@ -163,17 +162,15 @@ TInstant *
 nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *dist = distance_tnpoint_tnpoint(temp1, temp2);
-  TInstant *result = NULL;
-  if (dist != NULL)
-  {
-    const TInstant *min = temporal_min_instant((const Temporal *) dist);
-    /* The closest point may be at an exclusive bound. */
-    Datum value;
-    temporal_value_at_timestamptz(temp1, min->t, false, &value);
-    result = tinstant_make(value, temp1->temptype, min->t);
-    pfree(dist); pfree(DatumGetPointer(value));
-  }
-  return result;
+  if (dist == NULL)
+    return NULL;
+
+  const TInstant *min = temporal_min_instant((const Temporal *) dist);
+  pfree(dist);
+  /* The closest point may be at an exclusive bound. */
+  Datum value;
+  temporal_value_at_timestamptz(temp1, min->t, false, &value);
+  return tinstant_make_free(value, temp1->temptype, min->t);
 }
 
 /*****************************************************************************

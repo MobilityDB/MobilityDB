@@ -416,7 +416,7 @@ PGDLLEXPORT Datum Temporal_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_in);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Input function for temporal types
+ * @brief Return a temporal value from its Well-Known Text (WKT) representation
  * @sqlfn int_in(), tfloat_in(), ...
  */
 Datum
@@ -437,7 +437,7 @@ PGDLLEXPORT Datum Temporal_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_out);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Output function for temporal types
+ * @brief Return the Well-Known Text (WKT) representation of a temporal value
  * @sqlfn tint_out(), tfloat_out(), ...
  */
 Datum
@@ -491,7 +491,8 @@ PGDLLEXPORT Datum Temporal_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_recv);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Receive function for temporal types
+ * @brief Return a temporal value from its Well-Known Binary (WKB)
+ * representation
  * @sqlfn tint_recv(), tfloat_recv(), ...
  */
 Datum
@@ -508,7 +509,7 @@ PGDLLEXPORT Datum Temporal_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_send);
 /*
  * @ingroup mobilitydb_temporal_inout
- * @brief Send function for temporal types
+ * @brief Return the Well-Known Binary (WKB) representation of a temporal value
  * @sqlfn tint_send(), tfloat_send(), ...
  */
 Datum
@@ -728,7 +729,7 @@ PGDLLEXPORT Datum Tint_to_tfloat(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_to_tfloat);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal integer to a temporal float
+ * @brief Return a temporal integer converted to a temporal float
  * @sqlfn tfloat()
  * @sqlop @p ::
  */
@@ -745,7 +746,7 @@ PGDLLEXPORT Datum Tfloat_to_tint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_to_tint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal float to a temporal integer
+ * @brief Return a temporal float converted to a temporal integer
  * @sqlfn tint()
  * @sqlop @p ::
  */
@@ -762,7 +763,7 @@ PGDLLEXPORT Datum Temporal_to_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_to_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal value to a timestamptz span
+ * @brief Return a temporal value converted to a timestamptz span
  * @sqlfn timeSpan()
  * @sqlop @p ::
  */
@@ -779,7 +780,7 @@ PGDLLEXPORT Datum Tnumber_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_to_span);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal number to a value span
+ * @brief Return a temporal number converted to a value span
  * @sqlfn valueSpan()
  * @sqlop @p ::
  */
@@ -796,7 +797,7 @@ PGDLLEXPORT Datum Tnumber_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Convert a temporal number to a temporal box
+ * @brief Return a temporal number converted to a temporal box
  * @sqlfn tbox()
  * @sqlop @p ::
  */

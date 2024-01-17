@@ -2371,8 +2371,8 @@ minus_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 #endif /* MEOS */
 
 /**
- * @brief Initialize the last argument with the difference of a span and a span
- * set
+ * @brief Return the last argument initialized with the difference of a span
+ * and a span set
  */
 static int
 mi_span_spanset(const Span *s, const SpanSet *ss, int from, int to,

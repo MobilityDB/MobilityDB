@@ -658,9 +658,7 @@ nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
   /* The closest point may be at an exclusive bound */
   Datum value;
   tsequence_value_at_timestamptz(seq, t, false, &value);
-  TInstant *result = tinstant_make(value, seq->temptype, t);
-  pfree(DatumGetPointer(value));
-  return result;
+  return tinstant_make_free(value, seq->temptype, t);
 }
 
 /**
@@ -688,9 +686,7 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
   /* The closest point may be at an exclusive bound. */
   Datum value;
   tsequenceset_value_at_timestamptz(ss, t, false, &value);
-  TInstant *result = tinstant_make(value, ss->temptype, t);
-  pfree(DatumGetPointer(value));
-  return result;
+  return tinstant_make_free(value, ss->temptype, t);
 }
 
 /*****************************************************************************/
@@ -747,18 +743,18 @@ nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return NULL;
 
-  TInstant *result = NULL;
+  /* Compute the temporal distance, it may be NULL if the points do not 
+   * intersect on time */
   Temporal *dist = distance_tpoint_tpoint(temp1, temp2);
-  if (dist != NULL)
-  {
-    const TInstant *min = temporal_min_instant(dist);
-    /* The closest point may be at an exclusive bound => 3rd argument = false */
-    Datum value;
-    temporal_value_at_timestamptz(temp1, min->t, false, &value);
-    result = tinstant_make(value, temp1->temptype, min->t);
-    pfree(dist); pfree(DatumGetPointer(value));
-  }
-  return result;
+  if (dist == NULL)
+    return NULL;
+
+  const TInstant *min = temporal_min_instant(dist);
+  pfree(dist);
+  /* The closest point may be at an exclusive bound => 3rd argument = false */
+  Datum value;
+  temporal_value_at_timestamptz(temp1, min->t, false, &value);
+  return tinstant_make_free(value, temp1->temptype, min->t);
 }
 
 /*****************************************************************************

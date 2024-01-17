@@ -220,7 +220,7 @@ skiplist_delete(SkipList *list, int cur)
 
 /**
  * @ingroup meos_internal_temporal_agg
- * @brief Free the skiplist
+ * @brief Delete the skiplist and free its allocated memory
  * @param[in] list Skiplist
  */
 void

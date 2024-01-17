@@ -32,6 +32,8 @@
  * Spatial functions for temporal points.
  */
 
+/*****************************************************************************/
+
 CREATE FUNCTION SRID(stbox)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Stbox_get_srid'
@@ -43,6 +45,11 @@ CREATE FUNCTION setSRID(stbox, integer)
 CREATE FUNCTION transform(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transformPipeline(stbox, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(stbox, integer DEFAULT 0)
   RETURNS stbox
@@ -80,6 +87,21 @@ CREATE FUNCTION setSRID(tgeogpoint, integer)
 CREATE FUNCTION transform(tgeompoint, integer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transformPipeline(tgeompoint, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpoint_transform_pipeline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transform(tgeogpoint, integer)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tpoint_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transformPipeline(tgeogpoint, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tpoint_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Gauss Kruger transformation

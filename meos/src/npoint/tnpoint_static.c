@@ -160,7 +160,7 @@ npointset_round(const Set *s, Datum prec)
 /*****************************************************************************/
 
 /**
- * @brief Convert an array of network points into a geometry
+ * @brief Return an array of network points converted into a geometry
  * @param[in] points Array of network points
  * @param[in] count Number of elements in the input array
  * @pre The argument @p count is greater than 1
@@ -188,7 +188,7 @@ npointarr_geom(Npoint **points, int count)
 }
 
 /**
- * @brief Convert an array of network segments into a geometry
+ * @brief Return an array of network segments converted into a geometry
  * @param[in] segments Array of network segments
  * @param[in] count Number of elements in the input array
  * @pre The argument @p count is greater than 1
@@ -381,8 +381,8 @@ npoint_make(int64 rid, double pos)
 }
 
 /**
- * @brief Initialize the last argument with a network point constructed from
- * a route identifier and a position
+ * @brief Return the last argument initialized with a network point constructed
+ * from a route identifier and a position
  */
 void
 npoint_set(int64 rid, double pos, Npoint *np)
@@ -420,8 +420,8 @@ nsegment_make(int64 rid, double pos1, double pos2)
 }
 
 /**
- * @brief Initialize the last argument with a network segment constructed from
- * a route identifier and two positions
+ * @brief Return the last argument initialized with a network segment
+ * constructed from a route identifier and two positions
  */
 void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
@@ -449,7 +449,7 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
  *****************************************************************************/
 
 /**
- * @brief Convert a network point to a network segment
+ * @brief Return a network point converted to a network segment
  */
 Nsegment *
 npoint_to_nsegment(const Npoint *np)

@@ -324,7 +324,7 @@ PGDLLEXPORT Datum Tnumber_abs(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_abs);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Get the absolute value of a temporal number
+ * @brief Return the absolute value of a temporal number
  * @sqlfn abs()
  */
 Datum
@@ -340,7 +340,7 @@ PGDLLEXPORT Datum Tnumber_delta_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_delta_value);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Get the delta value of a temporal number
+ * @brief Return the delta value of a temporal number
  * @sqlfn deltaValue()
  */
 Datum
@@ -358,7 +358,7 @@ PGDLLEXPORT Datum Float_degrees(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Float_degrees);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Convert a number from radians to degrees
+ * @brief Return a number transformed from radians to degrees
  * @sqlfn degrees()
  */
 Datum
@@ -375,7 +375,7 @@ PGDLLEXPORT Datum Tfloat_degrees(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_degrees);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Convert a temporal number from radians to degrees
+ * @brief Return a temporal number transformed from radians to degrees
  * @sqlfn degrees()
  */
 Datum
@@ -394,7 +394,7 @@ PGDLLEXPORT Datum Tfloat_radians(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_radians);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Convert a temporal number from degrees to radians
+ * @brief Return a temporal number transformed from degrees to radians
  * @sqlfn radians()
  */
 Datum
