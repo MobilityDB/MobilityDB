@@ -56,8 +56,7 @@
 TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
 {
-  const Npoint *np = DatumGetNpointP(tinstant_val(inst));
-  GSERIALIZED *geom = npoint_geom(np);
+  GSERIALIZED *geom = npoint_geom(DatumGetNpointP(tinstant_val(inst)));
   return tinstant_make_free(PointerGetDatum(geom), T_TGEOMPOINT, inst->t);
 }
 
@@ -99,8 +98,7 @@ tnpointcontseq_tgeompointcontseq(const TSequence *seq)
     instants[i] = tinstant_make_free(point, T_TGEOMPOINT, inst->t);
   }
 
-  pfree(line);
-  lwline_free(lwline);
+  pfree(line); lwline_free(lwline);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
@@ -145,8 +143,7 @@ tnpoint_tgeompoint(const Temporal *temp)
 TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
 {
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
-  Npoint *np = geom_npoint(gs);
+  Npoint *np = geom_npoint(DatumGetGserializedP(tinstant_val(inst)));
   if (np == NULL)
     return NULL;
   return tinstant_make_free(PointerGetDatum(np), T_TNPOINT, inst->t);
@@ -169,9 +166,8 @@ tgeompointseq_tnpointseq(const TSequence *seq)
     }
     instants[i] = inst;
   }
-  return tsequence_make_free(instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 }
 
 /**
@@ -260,14 +256,12 @@ tnpointseq_step_positions(const TSequence *seq, int *count)
 Nsegment *
 tnpointseq_linear_positions(const TSequence *seq)
 {
-  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-  Npoint *np = DatumGetNpointP(tinstant_val(inst));
+  Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
   int64 rid = np->rid;
   double minPos = np->pos, maxPos = np->pos;
   for (int i = 1; i < seq->count; i++)
   {
-    inst = TSEQUENCE_INST_N(seq, i);
-    np = DatumGetNpointP(tinstant_val(inst));
+    np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
     minPos = Min(minPos, np->pos);
     maxPos = Max(maxPos, np->pos);
   }
@@ -280,15 +274,13 @@ tnpointseq_linear_positions(const TSequence *seq)
 Nsegment **
 tnpointseq_positions(const TSequence *seq, int *count)
 {
-  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
-  {
-    Nsegment **result = palloc(sizeof(Nsegment *));
-    result[0] = tnpointseq_linear_positions(seq);
-    *count = 1;
-    return result;
-  }
-  else
+  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
     return tnpointseq_step_positions(seq, count);
+
+  Nsegment **result = palloc(sizeof(Nsegment *));
+  result[0] = tnpointseq_linear_positions(seq);
+  *count = 1;
+  return result;
 }
 
 /**
@@ -409,14 +401,12 @@ tnpointdiscseq_routes(const TSequence *seq)
   Datum *values = palloc(sizeof(Datum) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
+    const Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
     values[i] = Int64GetDatum(np->rid);
   }
   datumarr_sort(values, seq->count, T_INT8);
   int count = datumarr_remove_duplicates(values, seq->count, T_INT8);
-  Set *result = set_make_exp(values, count, count, T_INT8, ORDERED);
-  pfree(values);
-  return result;
+  return set_make_free(values, count, T_INT8, ORDERED);
 }
 
 /**
@@ -425,7 +415,7 @@ tnpointdiscseq_routes(const TSequence *seq)
 Set *
 tnpointcontseq_routes(const TSequence *seq)
 {
-  Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
+  const Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
   Datum value = Int64GetDatum(np->rid);
   return set_make_exp(&value, 1, 1, T_INT8, ORDERED);
 }
@@ -466,29 +456,6 @@ tnpoint_routes(const Temporal *temp)
     default: /* TSEQUENCESET */
       return tnpointseqset_routes((TSequenceSet *) temp);
   }
-}
-
-/*****************************************************************************
- * Conversion functions
- *****************************************************************************/
-
-/**
- * @brief Return a temporal network point with the precision of the fractions 
- * set to a number of decimal places
- */
-Temporal *
-tnpoint_round(const Temporal *temp, Datum size)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_npoint_round;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = size;
-  lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal(temp, &lfinfo);
 }
 
 /*****************************************************************************/

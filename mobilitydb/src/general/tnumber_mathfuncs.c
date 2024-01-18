@@ -302,24 +302,6 @@ Div_tnumber_tnumber(PG_FUNCTION_ARGS)
  * Miscellaneous functions
  *****************************************************************************/
 
-/**
- * @brief Return a number rounded to a given number of decimal places
- */
-Datum
-datum_round_float(Datum value, Datum size)
-{
-  Datum result = value;
-  double d = DatumGetFloat8(value);
-  double inf = get_float8_infinity();
-  if (d != -1 * inf && d != inf)
-  {
-    Datum number = call_function1(float8_numeric, value);
-    Datum roundnumber = call_function2(numeric_round, number, size);
-    result = call_function1(numeric_float8, roundnumber);
-  }
-  return result;
-}
-
 PGDLLEXPORT Datum Tnumber_abs(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_abs);
 /**

@@ -44,6 +44,7 @@
 #include <meos_internal.h>
 #include "general/set.h"
 #include "general/span.h"
+#include "general/type_round.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/stbox.h"

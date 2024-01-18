@@ -1421,48 +1421,6 @@ tstzspan_duration(const Span *s)
 
 /**
  * @ingroup meos_internal_setspan_transf
- * @brief Return the last argument initialized to a float span with the
- * precision set to the number of decimal places
- * @param[in] s Span
- * @param[in] maxdd Maximum number of decimal digits
- * @param[out] result Result span
- */
-void
-floatspan_rnd(const Span *s, Datum maxdd, Span *result)
-{
-  assert(s); assert(s->spantype == T_FLOATSPAN); assert(result);
-  /* Set precision of bounds */
-  Datum lower = datum_round_float(s->lower, maxdd);
-  Datum upper = datum_round_float(s->upper, maxdd);
-  /* Set resulting span */
-  span_set(lower, upper, s->lower_inc, s->upper_inc, s->basetype, s->spantype,
-    result);
-  return;
-}
-
-/**
- * @ingroup meos_setspan_transf
- * @brief Return a float span with the precision of the bounds set to the
- * number of decimal places
- * @param[in] s Span
- * @param[in] maxdd Maximum number of decimal digits
- * @return On error return @p NULL
- */
-Span *
-floatspan_round(const Span *s, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
-      ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return NULL;
-
-  Span *result = palloc(sizeof(Span));
-  floatspan_rnd(s, Int32GetDatum(maxdd), result);
-  return result;
-}
-
-/**
- * @ingroup meos_internal_setspan_transf
  * @brief Return the second span expanded with the first one
  * @param[in] s1,s2 Spans
  */

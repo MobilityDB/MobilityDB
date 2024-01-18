@@ -61,12 +61,11 @@ tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
       ! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
     return NULL;
 
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(tempgeom, gs, tinter, restr,
-     atvalue);
-  pfree(tempgeom); pfree(gs);
+  Temporal *result = tinterrel_tpoint_geo(tpoint, gs, tinter, restr, atvalue);
+  pfree(tpoint); pfree(gs);
   return result;
 }
 
@@ -84,11 +83,10 @@ tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
       ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
     return NULL;
 
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(tempgeom, gs, tinter, restr,
-    atvalue);
-  pfree(tempgeom);
+  Temporal *result = tinterrel_tpoint_geo(tpoint, gs, tinter, restr, atvalue);
+  pfree(tpoint);
   return result;
 }
 
@@ -104,9 +102,9 @@ tcontains_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, bool restr,
 {
   if (gserialized_is_empty(gs))
     return NULL;
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tcontains_geo_tpoint(gs, tempgeom, restr, atvalue);
-  pfree(tempgeom);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *result = tcontains_geo_tpoint(gs, tpoint, restr, atvalue);
+  pfree(tpoint);
   return result;
 }
 
@@ -123,10 +121,10 @@ ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
       ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
     return NULL;
 
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = ttouches_tpoint_geo(tempgeom, gs, restr, atvalue);
-  pfree(tempgeom);
+  Temporal *result = ttouches_tpoint_geo(tpoint, gs, restr, atvalue);
+  pfree(tpoint);
   return result;
 }
 
@@ -153,11 +151,11 @@ ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
   if (! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
     return NULL;
 
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = ttouches_tpoint_geo(tempgeom, gs, restr, atvalue);
-  pfree(tempgeom); pfree(gs);
+  Temporal *result = ttouches_tpoint_geo(tpoint, gs, restr, atvalue);
+  pfree(tpoint); pfree(gs);
   return result;
 }
 
@@ -182,9 +180,9 @@ tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, double dist, bool restr,
 {
   if (gserialized_is_empty(gs))
     return NULL;
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo(tempgeom, gs, dist, restr, atvalue);
-  pfree(tempgeom);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *result = tdwithin_tpoint_geo(tpoint, gs, dist, restr, atvalue);
+  pfree(tpoint);
   return result;
 }
 
@@ -208,8 +206,8 @@ tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, double dist, bool restr,
   bool atvalue)
 {
   GSERIALIZED *geom = npoint_geom(np);
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo(tempgeom, geom, dist, restr, atvalue);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *result = tdwithin_tpoint_geo(tpoint, geom, dist, restr, atvalue);
   pfree(geom);
   return result;
 }
@@ -240,11 +238,11 @@ tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, double dist,
     &sync1, &sync2))
     return NULL;
 
-  Temporal *tempgeom1 = tnpoint_tgeompoint(sync1);
-  Temporal *tempgeom2 = tnpoint_tgeompoint(sync2);
-  Temporal *result = tdwithin_tpoint_tpoint1(tempgeom1, tempgeom2, dist, restr,
+  Temporal *tpoint1 = tnpoint_tgeompoint(sync1);
+  Temporal *tpoint2 = tnpoint_tgeompoint(sync2);
+  Temporal *result = tdwithin_tpoint_tpoint1(tpoint1, tpoint2, dist, restr,
     atvalue);
-  pfree(sync1); pfree(sync2); pfree(tempgeom1); pfree(tempgeom2);
+  pfree(sync1); pfree(sync2); pfree(tpoint1); pfree(tpoint2);
   return result;
 }
 

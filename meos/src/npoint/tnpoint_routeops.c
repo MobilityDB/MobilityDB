@@ -60,7 +60,9 @@ contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  return contains_set_value(routes, Int64GetDatum(rid));
+  bool result = contains_set_value(routes, Int64GetDatum(rid));
+  pfree(routes);
+  return result;
 }
 
 /**
@@ -83,8 +85,10 @@ same_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  return (routes->count == 1) &&
+  bool result = (routes->count == 1) &&
     (DatumGetInt64(SET_VAL_N(routes, 0)) == rid);
+  pfree(routes);
+  return result;
 }
 
 /*****************************************************************************/
@@ -98,7 +102,9 @@ overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  return overlaps_set_set(routes, s);
+  bool result = overlaps_set_set(routes, s);
+  pfree(routes);
+  return result;
 }
 
 /**
@@ -110,7 +116,10 @@ contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert)
 {
   Set *routes = tnpoint_routes(temp);
-  return invert ? contains_set_set(s, routes) : contains_set_set(routes, s);
+  bool result = invert ? contains_set_set(s, routes) :
+    contains_set_set(routes, s);
+  pfree(routes);
+  return result;
 }
 
 /**
@@ -133,7 +142,9 @@ same_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  return set_eq(routes, s);
+  bool result = set_eq(routes, s);
+  pfree(routes);
+  return result;
 }
 
 /*****************************************************************************/
@@ -147,7 +158,9 @@ contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  return contains_set_value(routes, Int64GetDatum(np->rid));
+  bool result = contains_set_value(routes, Int64GetDatum(np->rid));
+  pfree(routes);
+  return result;
 }
 
 /**
@@ -170,8 +183,10 @@ same_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  return (routes->count == 1) &&
+  bool result = (routes->count == 1) &&
     (DatumGetInt64(SET_VAL_N(routes, 0)) == np->rid);
+  pfree(routes);
+  return result;
 }
 
 /*****************************************************************************/
@@ -184,7 +199,9 @@ overlaps_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   Set *routes1 = tnpoint_routes(temp1);
   Set *routes2 = tnpoint_routes(temp2);
-  return overlaps_set_set(routes1, routes2);
+  bool result = overlaps_set_set(routes1, routes2);
+  pfree(routes1); pfree(routes2);
+  return result;
 }
 
 /**
@@ -195,7 +212,9 @@ contains_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   Set *routes1 = tnpoint_routes(temp1);
   Set *routes2 = tnpoint_routes(temp2);
-  return contains_set_set(routes1, routes2);
+  bool result = contains_set_set(routes1, routes2);
+  pfree(routes1); pfree(routes2);
+  return result;
 }
 
 /**
@@ -206,7 +225,9 @@ contained_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   Set *routes1 = tnpoint_routes(temp1);
   Set *routes2 = tnpoint_routes(temp2);
-  return contains_set_set(routes2, routes1);
+  bool result = contains_set_set(routes2, routes1);
+  pfree(routes1); pfree(routes2);
+  return result;
 }
 
 /**
@@ -217,7 +238,9 @@ same_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   Set *routes1 = tnpoint_routes(temp1);
   Set *routes2 = tnpoint_routes(temp2);
-  return set_eq(routes1, routes2);
+  bool result = set_eq(routes1, routes2);
+  pfree(routes1); pfree(routes2);
+  return result;
 }
 
 /*****************************************************************************/

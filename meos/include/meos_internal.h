@@ -332,7 +332,7 @@ extern Datum spanset_upper(const SpanSet *ss);
 /* Transformation functions for set and span types */
 
 extern void datespan_set_tstzspan(const Span *s1, Span *s2);
-extern void floatspan_rnd(const Span *span, Datum size, Span *result);
+extern void floatspan_rnd(const Span *span, int maxdd, Span *result);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern Set *numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift, bool haswidth);

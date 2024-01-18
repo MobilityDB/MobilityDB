@@ -1631,29 +1631,6 @@ spanset_compact(const SpanSet *ss)
 }
 #endif /* MEOS */
 
-/**
- * @ingroup meos_setspan_transf
- * @brief Return a float span set with the precision of the spans set to a
- * number of decimal places
- * @param[in] ss Span set
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Floatspanset_round()
- */
-SpanSet *
-floatspanset_round(const SpanSet *ss, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
-      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
-    return NULL;
-
-  Span *spans = palloc(sizeof(Span) * ss->count);
-  Datum size = Int32GetDatum(maxdd);
-  for (int i = 0; i < ss->count; i++)
-    floatspan_rnd(SPANSET_SP_N(ss, i), size, &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
-}
-
 /*****************************************************************************/
 
 /**

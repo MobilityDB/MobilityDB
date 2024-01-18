@@ -1108,6 +1108,9 @@ geometry_convex_hull(const GSERIALIZED *gs)
   return result;
 }
 
+/**
+ * @brief Return true if the coordinates of the geometry are finite
+ */
 int
 lwgeom_isfinite(const LWGEOM *lwgeom)
 {

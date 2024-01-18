@@ -72,9 +72,9 @@ distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
       gserialized_is_empty(gs) || ! ensure_point_type(gs))
     return NULL;
 
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_point((const Temporal *) tempgeom, gs);
-  pfree(tempgeom);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *result = distance_tpoint_point((const Temporal *) tpoint, gs);
+  pfree(tpoint);
   return result;
 }
 
@@ -86,8 +86,8 @@ Temporal *
 distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_point(tempgeom, geom);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *result = distance_tpoint_point(tpoint, geom);
   pfree(geom);
   return result;
 }
@@ -98,17 +98,10 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 Temporal *
 distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  Temporal *sync1, *sync2;
-  /* Return NULL if the temporal points do not intersect in time */
-  if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
-    &sync1, &sync2))
-    return NULL;
-
-  Temporal *geomsync1 = tnpoint_tgeompoint(sync1);
-  Temporal *geomsync2 = tnpoint_tgeompoint(sync2);
-  Temporal *result = distance_tpoint_tpoint(geomsync1, geomsync2);
-  pfree(sync1); pfree(sync2);
-  pfree(geomsync1); pfree(geomsync2);
+  Temporal *tpoint1 = tnpoint_tgeompoint(temp1);
+  Temporal *tpoint2 = tnpoint_tgeompoint(temp2);
+  Temporal *result = distance_tpoint_tpoint(tpoint1, tpoint2);
+  pfree(tpoint1); pfree(tpoint2);
   return result;
 }
 
@@ -125,14 +118,14 @@ nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
     return NULL;
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(tempgeom, gs);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  TInstant *resultgeom = nai_tpoint_geo(tpoint, gs);
   /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
   temporal_value_at_timestamptz(temp, resultgeom->t, false, &value);
   TInstant *result = tinstant_make_free(value, temp->temptype, resultgeom->t);
-  pfree(tempgeom); pfree(resultgeom);
+  pfree(tpoint); pfree(resultgeom);
   return result;
 }
 
@@ -144,14 +137,14 @@ TInstant *
 nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(tempgeom, geom);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  TInstant *resultgeom = nai_tpoint_geo(tpoint, geom);
   /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
   temporal_value_at_timestamptz(temp, resultgeom->t, false, &value);
   TInstant *result = tinstant_make_free(value, temp->temptype, resultgeom->t);
-  pfree(tempgeom); pfree(resultgeom); pfree(geom);
+  pfree(tpoint); pfree(resultgeom); pfree(geom);
   return result;
 }
 
@@ -204,8 +197,7 @@ nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   GSERIALIZED *traj = tnpoint_geom(temp);
   double result = DatumGetFloat8(geom_distance2d(PointerGetDatum(traj),
     PointerGetDatum(geom)));
-  pfree(traj);
-  pfree(geom);
+  pfree(traj); pfree(geom);
   return result;
 }
 
@@ -261,16 +253,10 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 GSERIALIZED *
 shortestline_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  Temporal *sync1, *sync2;
-  /* Return false if the temporal points do not intersect in time */
-  if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
-      &sync1, &sync2))
-    return NULL;
-
-  Temporal *geomsync1 = tnpoint_tgeompoint(sync1);
-  Temporal *geomsync2 = tnpoint_tgeompoint(sync2);
-  GSERIALIZED *result = shortestline_tpoint_tpoint(geomsync1, geomsync2);
-  pfree(geomsync1); pfree(geomsync2);
+  Temporal *tpoint1 = tnpoint_tgeompoint(temp1);
+  Temporal *tpoint2 = tnpoint_tgeompoint(temp2);
+  GSERIALIZED *result = shortestline_tpoint_tpoint(tpoint1, tpoint2);
+  pfree(tpoint1); pfree(tpoint2);
   return result;
 }
 
