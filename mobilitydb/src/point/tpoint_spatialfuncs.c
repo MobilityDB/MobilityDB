@@ -678,8 +678,8 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Restrict a temporal point to (the complement of) a geometry and
- * possibly a timestamptz span
+ * @brief Return a temporal point restricted to (the complement of) a geometry
+ * and possibly a timestamptz span
  * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations.
  * However the geometry must be in 2D.
  */
@@ -711,7 +711,7 @@ PGDLLEXPORT Datum Tpoint_at_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_at_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal point to a geometry
+ * @brief Return a temporal point restricted to a geometry
  * @sqlfn atGeometry()
  */
 Datum
@@ -724,7 +724,7 @@ PGDLLEXPORT Datum Tpoint_at_geom_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_at_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal point to a geometry and a time value
+ * @brief Return a temporal point restricted to a geometry and a time value
  * @sqlfn atGeometryTime()
  */
 Datum
@@ -737,7 +737,7 @@ PGDLLEXPORT Datum Tpoint_minus_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_minus_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal point to the complement of a geometry
+ * @brief Return a temporal point restricted to the complement of a geometry
  * @sqlfn minusGeometry()
  */
 Datum
@@ -750,8 +750,8 @@ PGDLLEXPORT Datum Tpoint_minus_geom_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_minus_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal point to the complement of a geometry and a
- * period
+ * @brief Return a temporal point restricted to the complement of a geometry
+ * and a time value
  * @sqlfn minusGeometryTime()
  */
 Datum
@@ -766,7 +766,7 @@ PGDLLEXPORT Datum Tpoint_at_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_at_stbox);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal point to a spatiotemporal box
+ * @brief Return a temporal point restricted to a spatiotemporal box
  * @sqlfn atStbox()
  */
 Datum
@@ -785,7 +785,8 @@ PGDLLEXPORT Datum Tpoint_minus_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_minus_stbox);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal point to the complement of a spatiotemporal box
+ * @brief Return a temporal point restricted to the complement of a
+ * spatiotemporal box
  * @sqlfn minusStbox()
  */
 Datum

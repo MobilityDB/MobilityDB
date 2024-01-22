@@ -217,7 +217,7 @@ datum2_point_nsame(Datum point1, Datum point2)
  * @pre It is supposed that the flags such as Z and geodetic have been
  * set up before by the calling function
  */
-GSERIALIZED * 
+GSERIALIZED *
 geo_serialize(const LWGEOM *geom)
 {
   size_t size;
@@ -2567,7 +2567,7 @@ geomeas_to_tpointinst_iter(LWPOINT *lwpoint)
   FLAGS_SET_Z(lwpoint1->flags, hasz);
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint1);
-  lwpoint_free(lwpoint1); 
+  lwpoint_free(lwpoint1);
   return tinstant_make_free(PointerGetDatum(gs),
     geodetic ? T_TGEOGPOINT : T_TGEOMPOINT, t);
 }
@@ -2730,8 +2730,7 @@ geomeas_to_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
     {
       TInstant *inst1 = geomeas_to_tpointinst(geom1);
       /* The resulting sequence assumes linear interpolation */
-      sequences[nseqs++] = tinstant_to_tsequence(inst1, LINEAR);
-      pfree(inst1);
+      sequences[nseqs++] = tinstant_to_tsequence_free(inst1, LINEAR);
     }
     else if (geom1->type == LINETYPE)
       sequences[nseqs++] = geomeas_to_tpointseq_linear(geom1, hasz, geodetic);
@@ -2746,8 +2745,7 @@ geomeas_to_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
         {
           TInstant *inst2 = geomeas_to_tpointinst(geom2);
           /* The resulting sequence assumes linear interpolation */
-          sequences[nseqs++] = tinstant_to_tsequence(inst2, LINEAR);
-          pfree(inst2);
+          sequences[nseqs++] = tinstant_to_tsequence_free(inst2, LINEAR);
         }
         else /* geom2->type == LINETYPE */
           sequences[nseqs++] = geomeas_to_tpointseq_linear(geom2, hasz, geodetic);
@@ -2762,7 +2760,7 @@ geomeas_to_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
 
 /**
  * @ingroup meos_temporal_spatial_transf
- * @brief Return a geometry/geography with M measure encoding timestamps 
+ * @brief Return a geometry/geography with M measure encoding timestamps
  * transformed to a temporal point
  * @param[in] gs Geometry
  * @csqlfn #Geomeas_to_tpoint()
@@ -2875,9 +2873,7 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ss, double tolerance,
   {
     TSequence *seq1 = tpointseq_remove_repeated_points(
       TSEQUENCESET_SEQ_N(ss, 0), tolerance, min_points);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
-    pfree(seq1);
-    return result;
+    return tsequence_to_tsequenceset_free(seq1);
   }
 
   /* No-op on short inputs */
@@ -3162,7 +3158,8 @@ tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
 /*****************************************************************************/
 
 /**
- * @brief Transform a temporal point into vector tile coordinate space
+ * @brief Return a temporal point transformed into vector tile coordinate
+ * space
  * @param[in] tpoint Temporal point
  * @param[in] box Geometric bounds of the tile contents without buffer
  * @param[in] extent Tile extent in tile coordinate space
@@ -3376,7 +3373,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
 
 /**
  * @ingroup meos_temporal_spatial_transf
- * @brief Transform the temporal point to Mapbox Vector Tile format
+ * @brief Return a temporal point transformed to Mapbox Vector Tile format
  * @param[in] temp Temporal point
  * @param[in] bounds Bounds
  * @param[in] extent Extent
@@ -3580,9 +3577,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
   {
     TInstant *inst = tinstant_make(Float8GetDatum(prevlength), T_TFLOAT,
       TSEQUENCE_INST_N(seq, 0)->t);
-    TSequence *result = tinstant_to_tsequence(inst, LINEAR);
-    pfree(inst);
-    return result;
+    return tinstant_to_tsequence_free(inst, LINEAR);
   }
 
   /* General case */
@@ -3778,8 +3773,8 @@ tpoint_speed(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @brief Split the temporal point sequence into temporal float sequences for
- * each of its coordinates (iterator function)
+ * @brief Return a temporal point sequence split into temporal float sequences
+ * for each of its coordinates (iterator function)
  */
 void
 tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
@@ -4916,8 +4911,8 @@ seg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
  *****************************************************************************/
 
 /**
- * @brief Split a temporal point sequence with discrete or step
- * interpolation into an array of non self-intersecting fragments
+ * @brief Return a temporal point sequence with discrete or step
+ * interpolation split into an array of non self-intersecting fragments
  * @param[in] seq Temporal point
  * @param[out] count Number of elements in the resulting array
  * @result Boolean array determining the instant numbers at which the
@@ -4973,8 +4968,8 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
 }
 
 /**
- * @brief Split a temporal point sequence with linear interpolation into an
- * array of non self-intersecting fragments
+ * @brief Return a temporal point sequence with linear interpolation split into
+ * an array of non self-intersecting fragments
  * @note The function works only on 2D even if the input points are in 3D
  * @param[in] seq Temporal point
  * @param[out] count Number of elements in the resulting array
@@ -5175,7 +5170,7 @@ tpoint_is_simple(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @brief Split a temporal discrete sequence point into an array of non
+ * @brief Return a temporal discrete sequence point split into an array of non
  * self-intersecting fragments
  * @param[in] seq Temporal point
  * @param[in] splits Bool array stating the splits
@@ -5208,7 +5203,7 @@ tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
 }
 
 /**
- * @brief Split a temporal point into an array of non self-intersecting
+ * @brief Return a temporal point split into an array of non self-intersecting
  * fragments
  * @param[in] seq Temporal sequence point
  * @param[in] splits Bool array stating the splits
@@ -5270,7 +5265,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
 
 /**
  * @ingroup meos_internal_temporal_spatial_transf
- * @brief Split a temporal sequence point into an array of non
+ * @brief Return a temporal sequence point split into an array of non
  * self-intersecting fragments
  * @param[in] seq Temporal sequence point
  * @param[out] count Number of elements in the resulting array
@@ -5316,7 +5311,7 @@ tpointseq_make_simple(const TSequence *seq, int *count)
 
 /**
  * @ingroup meos_internal_temporal_spatial_transf
- * @brief Split a temporal sequence set point into an array of non
+ * @brief Return a temporal sequence set point split into an array of non
  * self-intersecting fragments
  * @param[in] ss Temporal sequence set point
  * @param[out] count Number of elements in the output array
@@ -5346,7 +5341,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup meos_temporal_spatial_transf
- * @brief Split a temporal point into an array of non self-intersecting
+ * @brief Return a temporal point split into an array of non self-intersecting
  * fragments
  * @param[in] temp Temporal point
  * @param[out] count Number of elements in the output array

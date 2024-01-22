@@ -102,7 +102,7 @@ tpoint_force2d(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @brief Restrict a temporal point instant to (the complement of) a
+ * @brief Return a temporal point instant restricted to (the complement of) a
  * spatiotemporal box (iterator function)
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geom_time
@@ -134,7 +134,8 @@ tpointinst_restrict_geom_time_iter(const TInstant *inst, const GSERIALIZED *gs,
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Restrict a temporal point instant to (the complement of) a geometry
+ * @brief Return a temporal point instant restricted to (the complement of) a
+ * geometry
  * and possibly a Z span and a timestamptz span
  * @param[in] inst Temporal point
  * @param[in] gs Geometry
@@ -153,8 +154,8 @@ tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
 }
 
 /**
- * @brief Restrict a temporal point discrete sequence to (the complement of) a
- * geometry and possibly a Z span and a timestamptz span
+ * @brief Return a temporal point discrete sequence restricted to
+ * (the complement of) a geometry and possibly a Z span and a timestamptz span
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -188,8 +189,8 @@ tpointdiscseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @brief Restrict a temporal sequence point with step interpolation to a
- * geometry and possibly a Z span and a timestamptz span
+ * @brief Return a temporal sequence point with step interpolation
+ * restricted to a geometry and possibly a Z span and a timestamptz span
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -201,8 +202,8 @@ tpointdiscseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
  * restriction with respect to the time dimension.
  */
 TSequenceSet *
-tpointseq_step_restrict_geom_time(const TSequence *seq,
-  const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc)
+tpointseq_step_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
+   const Span *zspan, const Span *period, bool atfunc)
 {
   assert(seq); ensure_not_null((void *) gs);
   assert(tgeo_type(seq->temptype));
@@ -349,8 +350,8 @@ tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
 /**
  * @brief Return the timestamp at which a temporal point sequence is equal to a
  * point
- * @details This function is called by the #tpointseq_interperiods function 
- * while computing atGeometry to find the timestamp at which an intersection 
+ * @details This function is called by the #tpointseq_interperiods function
+ * while computing atGeometry to find the timestamp at which an intersection
  * point found by PostGIS is located. This function differs from function
  * #tpointsegm_intersection_value in particular since the latter is used for
  * finding crossings during synchronization and thus it is required that the
@@ -521,8 +522,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
 }
 
 /**
- * @brief Restrict a temporal sequence point with linear interpolation to a
- * geometry
+ * @brief Return a temporal sequence point with linear interpolation
+ * restricted to a geometry
  * @details The computation is based on the PostGIS function @p ST_Intersection
  * which delegates the computation to GEOS. The geometry must be in 2D.
  * When computing the intersection the Z values of the temporal point must
@@ -645,8 +646,9 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
 }
 
 /**
- * @brief Restrict a temporal sequence point with linear interpolation to
- * (the complement of) a geometry and possibly a Z span and a timestamptz span
+ * @brief Return a temporal sequence point with linear interpolation
+ * restricted to (the complement of) a geometry and possibly a Z span and a
+ * timestamptz span
  * @details The function first filters the temporal point wrt the time 
  * dimension to reduce the number of instants before computing the restriction 
  * to the geometry, which is an expensive operation. Notice that we need to 
@@ -733,8 +735,8 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Restrict a temporal point sequence to (the complement of) a geometry
- * and possibly a Z span and a timestamptz span
+ * @brief Return a temporal point sequence restricted to (the complement of) a
+ * geometry and possibly a Z span and a timestamptz span
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -772,8 +774,8 @@ tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Restrict a temporal point sequence set to (the complement of) a
- * geometry and possibly a Z span and a timestamptz span
+ * @brief Return a temporal point sequence set restricted to (the complement
+ * of) a geometry and possibly a Z span and a timestamptz span
  * @param[in] ss Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -831,8 +833,8 @@ tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Restrict a temporal point to (the complement of) a geometry and
- * possibly a Z span and a timestamptz span
+ * @brief Return a temporal point restricted to (the complement of) a geometry
+ * and possibly a Z span and a timestamptz span
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -890,7 +892,7 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
 #if MEOS
 /**
  * @ingroup meos_temporal_restrict
- * @brief Restrict a temporal point to a geometry
+ * @brief Return a temporal point restricted to a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -909,7 +911,7 @@ tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs,
 
 /**
  * @ingroup meos_temporal_restrict
- * @brief Restrict a temporal point to (the complement of) a geometry
+ * @brief Return a temporal point restricted to (the complement of) a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -1159,7 +1161,7 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal point instant to (the complement of) a
+ * @brief Return a temporal point instant restricted to (the complement of) a
  * spatiotemporal box (iterator function)
  * @pre The arguments have the same SRID. This is verified in
  * #tpoint_restrict_stbox
@@ -1206,7 +1208,7 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Restrict a temporal point instant to (the complement of) a
+ * @brief Return a temporal point instant restricted to (the complement of) a
  * spatiotemporal box
  * @param[in] inst Temporal instant point
  * @param[in] box Spatiotemporal box
@@ -1227,8 +1229,8 @@ tpointinst_restrict_stbox(const TInstant *inst, const STBox *box,
 }
 
 /**
- * @brief Restrict a temporal point discrete sequence to (the complement of) a
- * spatiotemporal box
+ * @brief Return a temporal point discrete sequence restricted to (the
+ * complement of) a spatiotemporal box
  * @param[in] seq Temporal discrete sequence point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
@@ -1261,7 +1263,8 @@ tpointdiscseq_restrict_stbox(const TSequence *seq, const STBox *box,
 }
 
 /**
- * @brief Restrict a temporal sequence point with step interpolation to a
+ * @brief Return a temporal sequence point with step interpolation restricted
+ * to a
  * spatiotemporal box
  * @param[in] seq Temporal point
  * @param[in] box Spatiotemporal box
@@ -1561,7 +1564,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
 }
 
 /**
- * @brief Restrict a temporal point sequence to (the complement of) a
+ * @brief Return a temporal point sequence restricted to (the complement of) a
  * spatiotemporal box
  * @details The function computes the "at" restriction on all dimensions. Then,
  * for the "minus" restriction, it computes the complement of the "at"
@@ -1616,7 +1619,7 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Restrict a temporal point sequence to (the complement of) a
+ * @brief Return a temporal point sequence restricted to (the complement of) a
  * spatiotemporal box
  * @param[in] seq Temporal sequence point
  * @param[in] box Spatiotemporal box
@@ -1657,7 +1660,7 @@ tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border_inc
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Restrict a temporal point sequence set to (the complement of) a
+ * @brief Return a temporal point sequence restricted set to (the complement of) a
  * spatiotemporal box
  * @param[in] ss Temporal sequence set point
  * @param[in] box Spatiotemporal box
@@ -1715,7 +1718,8 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Restrict a temporal point to (the complement of) a spatiotemporal box
+ * @brief Return a temporal point restricted to (the complement of) a
+ * spatiotemporal box
  * @param[in] temp Temporal point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
@@ -1772,7 +1776,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 #if MEOS
 /**
  * @ingroup meos_temporal_restrict
- * @brief Restrict a temporal point to a spatiotemporal box
+ * @brief Return a temporal point restricted to a spatiotemporal box
  * @param[in] temp Temporal point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
@@ -1789,7 +1793,8 @@ tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 
 /**
  * @ingroup meos_temporal_restrict
- * @brief Restrict a temporal point to the complement of a spatiotemporal box
+ * @brief Return a temporal point restricted to the complement of a
+ * spatiotemporal box
  * @param[in] temp Temporal point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border

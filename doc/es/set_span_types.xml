@@ -467,7 +467,7 @@ SELECT memSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
 			<listitem id="lower">
 				<indexterm><primary><varname>lower</varname></primary></indexterm>
 				<indexterm><primary><varname>upper</varname></primary></indexterm>
-				<para>Obtener el límite inferior</para>
+				<para>Obtener el límite inferior o superior</para>
 				<para><varname>lower(spans) → base</varname></para>
 				<para><varname>upper(spans) → base</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -498,7 +498,7 @@ SELECT upper(tstzspan '[2001-01-01, 2001-01-05)');
 			<listitem id="setspan_lower_inc">
 				<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
 				<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
-				<para>¿Es el límite inferior/superior inclusivo?</para>
+				<para>¿Es el límite inferior or superior inclusivo?</para>
 				<para><varname>lower_inc(spans) → boolean</varname></para>
 				<para><varname>upper_inc(spans) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -801,7 +801,7 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 			<listitem id="textset_lower">
 				<indexterm><primary><varname>lower</varname></primary></indexterm>
 				<indexterm><primary><varname>upper</varname></primary></indexterm>
-				<para>Transformar entre minúsculas y mayúsculas</para>
+				<para>Transformar a minúsculas o mayúsculas</para>
 				<para><varname>lower(textset) → textset</varname></para>
 				<para><varname>upper(textset) → textset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -822,7 +822,7 @@ SELECT tprecision(timestamptz '2001-12-03', '30 days');
 -- 2001-11-23
 SELECT tprecision(timestamptz '2001-12-03', '30 days', '2001-12-01');
 -- 2001-12-01
-SELECT tprecision(tstzset '{2001-01-01 08:00, 2001-01-01 08:10, 2001-01-01 09:00, 
+SELECT tprecision(tstzset '{2001-01-01 08:00, 2001-01-01 08:10, 2001-01-01 09:00,
   2001-01-01 09:10}', '1 hour');
 -- {"2001-01-01 08:00:00+01", "2001-01-01 09:00:00+01"}
 SELECT tprecision(tstzspan '[2001-12-01 08:00, 2001-12-01 09:00]', '1 day');
@@ -888,7 +888,7 @@ WITH test(geoset, pipeline) AS (
   SELECT geogset 'SRID=4326;{"Point(4.3525 50.846667 100.0)",
     "Point(-0.1275 51.507222 100.0)"}',
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
-SELECT asEWKT(transformPipeline(transformPipeline(geoset, pipeline, 4326), 
+SELECT asEWKT(transformPipeline(transformPipeline(geoset, pipeline, 4326),
   pipeline, 4326, false), 6)
 FROM test;
 -- SRID=4326;{"POINT Z (4.3525 50.846667 100)", "POINT Z (-0.1275 51.507222 100)"}

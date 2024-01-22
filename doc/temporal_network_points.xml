@@ -132,7 +132,7 @@ SELECT round(nsegment(76, 0.123456789, 0.223456789), 6);
 			<itemizedlist>
 				<listitem id="route">
 					<indexterm><primary><varname>route</varname></primary></indexterm>
-					<para>Get the route identifier</para>
+					<para>Return the route identifier</para>
 					<para><varname>route({npoint,nsegment}) → bigint</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT route(npoint 'Npoint(63, 0.3)');
@@ -144,7 +144,7 @@ SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 
 				<listitem id="getPosition">
 					<indexterm><primary><varname>getPosition</varname></primary></indexterm>
-					<para>Get the position</para>
+					<para>Return the position</para>
 					<para><varname>getPosition(npoint) → float</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT getPosition(npoint 'Npoint(63, 0.3)');
@@ -155,7 +155,7 @@ SELECT getPosition(npoint 'Npoint(63, 0.3)');
 				<listitem id="startPosition">
 					<indexterm><primary><varname>startPosition</varname></primary></indexterm>
 					<indexterm><primary><varname>endPosition</varname></primary></indexterm>
-					<para>Get the start/end position</para>
+					<para>Return the start/end position</para>
 					<para><varname>startPosition(nsegment) → float</varname></para>
 					<para><varname>endPosition(nsegment) → float</varname></para>
 					<programlisting language="sql" xml:space="preserve">
@@ -174,7 +174,7 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 			<itemizedlist>
 				<listitem id="npoint_srid">
 					<indexterm><primary><varname>SRID</varname></primary></indexterm>
-					<para>Get the spatial reference identifier</para>
+					<para>Return the spatial reference identifier</para>
 					<para><varname>srid({npoint,nsegment}) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT SRID(npoint 'Npoint(76, 0.3)');
@@ -511,7 +511,7 @@ SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-
 
 			<listitem id="tnpoint_getValues">
 				<indexterm><primary><varname>getValues</varname></primary></indexterm>
-				<para>Get the values</para>
+				<para>Return the values</para>
 				<para><varname>getValues(tnpoint) → npoint[]</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02)}');
@@ -523,7 +523,7 @@ SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.3)@2001-01-02
 
 			<listitem id="tnpoint_routes">
 				<indexterm><primary><varname>routes</varname></primary></indexterm>
-				<para>Get the road identifiers</para>
+				<para>Return the road identifiers</para>
 				<para><varname>routes(tnpoint) → bigintset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT routes(tnpoint '{NPoint(3, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02}');
@@ -533,7 +533,7 @@ SELECT routes(tnpoint '{NPoint(3, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02}');
 
 			<listitem id="tnpoint_valueAtTimestamp">
 				<indexterm><primary><varname>valueAtTimestamp</varname></primary></indexterm>
-				<para>Get the value at a timestamp</para>
+				<para>Return the value at a timestamp</para>
 				<para><varname>valueAtTimestamp(tnpoint,timestamptz) → npoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT valueAtTimestamp(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)',
@@ -544,7 +544,7 @@ SELECT valueAtTimestamp(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001
 
 			<listitem id="tnpoint_length">
 				<indexterm><primary><varname>length</varname></primary></indexterm>
-				<para>Get the length traversed by the temporal network point</para>
+				<para>Return the length traversed by the temporal network point</para>
 				<para><varname>length(tnpoint) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT length(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]');
@@ -554,7 +554,7 @@ SELECT length(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]');
 
 			<listitem id="tnpoint_cumulativeLength">
 				<indexterm><primary><varname>cumulativeLength</varname></primary></indexterm>
-				<para>Get the cumulative length traversed by the temporal network point</para>
+				<para>Return the cumulative length traversed by the temporal network point</para>
 				<para><varname>cumulativeLength(tnpoint) → tfloat</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02,
@@ -566,7 +566,7 @@ SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@200
 
 			<listitem id="tnpoint_speed">
 				<indexterm><primary><varname>speed</varname></primary></indexterm>
-				<para>Get the speed of the temporal network point in units per second</para>
+				<para>Return the speed of the temporal network point in units per second</para>
 				<para><varname>speed({tnpoint_seq, tnpoint_seqset}) → tfloat_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT speed(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.4)@2001-01-02,
@@ -593,7 +593,7 @@ SELECT stbox(npoint 'NPoint(1,0.3)', tstzspan '[2001-01-01,2001-01-02]');
 
 			<listitem id="tnpoint_twCentroid">
 				<indexterm><primary><varname>twCentroid</varname></primary></indexterm>
-				<para>Get the time-weighted centroid</para>
+				<para>Return the time-weighted centroid</para>
 				<para><varname>twCentroid(tnpoint) → geometry(Point)</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT st_astext(twCentroid(tnpoint '{[NPoint(1, 0.3)@2001-01-01,
@@ -604,7 +604,7 @@ SELECT st_astext(twCentroid(tnpoint '{[NPoint(1, 0.3)@2001-01-01,
 
 			<listitem id="tnpoint_azimuth">
 				<indexterm><primary><varname>azimuth</varname></primary></indexterm>
-				<para>Get the temporal azimuth</para>
+				<para>Return the temporal azimuth</para>
 				<para><varname>azimuth(tnpoint) → tfloat</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT azimuth(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-02]');
@@ -618,7 +618,7 @@ SELECT azimuth(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-02]')
 
 			<listitem id="tnpoint_nearestApproachInstant">
 				<indexterm><primary><varname>nearestApproachInstant</varname></primary></indexterm>
-				<para>Get the instant of the first temporal network point at which the two arguments are at the nearest distance</para>
+				<para>Return the instant of the first temporal network point at which the two arguments are at the nearest distance</para>
 				<para><varname>nearestApproachInstant({geo,npoint,tpoint},{geo,npoint,tpoint}) → tpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
@@ -632,7 +632,7 @@ SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
 
 			<listitem id="tnpoint_nearestApproachDistance">
 				<indexterm><primary><varname>nearestApproachDistance</varname></primary></indexterm>
-				<para>Get the smallest distance ever between the two arguments</para>
+				<para>Return the smallest distance ever between the two arguments</para>
 				<para><varname>nearestApproachDistance({geo,npoint,tpoint},{geo,npoint,tpoint}) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2001-01-01,
@@ -647,7 +647,7 @@ SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2001-01-01,
 
 			<listitem id="tnpoint_shortestLine">
 				<indexterm><primary><varname>shortestLine</varname></primary></indexterm>
-				<para>Get the line connecting the nearest approach point between the two arguments</para>
+				<para>Return the line connecting the nearest approach point between the two arguments</para>
 				<para><varname>shortestLine({geo,npoint,tpoint},{geo,npoint,tpoint}) → geometry</varname></para>
 				<para>The function will only return the first line that it finds if there are more than one</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -807,7 +807,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' ~=
 
 			<listitem id="tnpoint_smallestDistance">
 				<indexterm><primary><varname>|=|</varname></primary></indexterm>
-				<para>Get the smallest distance ever between the two arguments</para>
+				<para>Return the smallest distance ever between the two arguments</para>
 				<para><varname>tgeompoint |=| tnpoint → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' |=|
@@ -821,7 +821,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' |=|
 
 			<listitem id="tnpoint_distance">
 				<indexterm><primary><varname>&lt;-&gt;</varname></primary></indexterm>
-				<para>Get the temporal distance</para>
+				<para>Return the temporal distance</para>
 				<para><varname>tgeompoint &lt;-&gt; tnpoint → tfloat</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;

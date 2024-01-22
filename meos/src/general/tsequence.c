@@ -1491,6 +1491,22 @@ tinstant_to_tsequence(const TInstant *inst, interpType interp)
   return tsequence_make(&inst, 1, true, true, interp, NORMALIZE_NO);
 }
 
+/**
+ * @ingroup meos_internal_temporal_transf
+ * @brief Return a temporal instant transformed into a temporal sequence
+ * @param[in] inst Temporal instant
+ * @param[in] interp Interpolation
+ * @csqlfn #Temporal_to_tsequence()
+ */
+TSequence *
+tinstant_to_tsequence_free(TInstant *inst, interpType interp)
+{
+  assert(inst);
+  TSequence *result = tinstant_to_tsequence((const TInstant *) inst, interp);
+  pfree(inst);
+  return result;
+}
+
 /*****************************************************************************/
 
 /**
@@ -2822,7 +2838,7 @@ tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
  * @param[in] interp1 Interpolation of the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
  * @param[in] interp2 Interpolation of the second segment
- * @param[out] inter1, inter2 (Copy of the) base values taken by the two 
+ * @param[out] inter1, inter2 (Copy of the) base values taken by the two
  * segments at the timestamp
  * @param[out] t Timestamp
  * @pre The instants are synchronized, i.e., `start1->t = start2->t` and

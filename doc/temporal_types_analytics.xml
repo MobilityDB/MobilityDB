@@ -17,7 +17,7 @@
 			<listitem id="minDistSimplify">
 				<indexterm><primary><varname>minDistSimplify</varname></primary></indexterm>
 				<indexterm><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
-				<para>Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain distance or time interval apart &Z_support; &geography_support;</para>
+				<para>Return a temporal float or a temporal point simplified ensuring that consecutive values are at least a certain distance or time interval apart &Z_support; &geography_support;</para>
 				<para><varname>minDistSimplify({tfloat,tpoint},mindist float) → {tfloat,tpoint}</varname></para>
 				<para><varname>minTimeDeltaSimplify({tfloat,tpoint},mint interval) → {tfloat,tpoint}</varname></para>
 				<para>In the case of temporal points, the distance is specified in the units of the coordinate system. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
@@ -44,7 +44,7 @@ SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2001-01-01,
 			<listitem id="DouglasPeuckerSimplify">
 				<indexterm><primary><varname>maxDistSimplify</varname></primary></indexterm>
 				<indexterm><primary><varname>DouglasPeuckerSimplify</varname></primary></indexterm>
-				<para>Simplify a temporal float or a temporal point using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;</para>
+				<para>Return a temporal float or a temporal point simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;</para>
 				<para><varname>maxDistSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
 				<para><varname>  {tfloat,tgeompoint}</varname></para>
 				<para><varname>DouglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
@@ -175,7 +175,7 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-
 		<itemizedlist>
 			<listitem id="hausdorffDistance">
 				<indexterm><primary><varname>hausdorffDistance</varname></primary></indexterm>
-				<para>Get the discrete <ulink url="https://en.wikipedia.org/wiki/Hausdorff_distance">Hausdorff distance</ulink> between two temporal values &Z_support; &geography_support;</para>
+				<para>Return the discrete <ulink url="https://en.wikipedia.org/wiki/Hausdorff_distance">Hausdorff distance</ulink> between two temporal values &Z_support; &geography_support;</para>
 				<para><varname>hausdorffDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para>This function has a quadratic time complexity in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -192,7 +192,7 @@ SELECT round(hausdorffDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@20
 
 			<listitem id="frechetDistance">
 				<indexterm><primary><varname>frechetDistance</varname></primary></indexterm>
-				<para>Get the discrete <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">Fréchet distance</ulink> between two temporal values &Z_support; &geography_support;</para>
+				<para>Return the discrete <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">Fréchet distance</ulink> between two temporal values &Z_support; &geography_support;</para>
 				<para><varname>frechetDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -209,7 +209,7 @@ SELECT round(frechetDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001
 
 			<listitem id="frechetDistancePath">
 				<indexterm><primary><varname>frechetDistancePath</varname></primary></indexterm>
-				<para>Get the correspondence pairs between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
+				<para>Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
 				<para><varname>frechetDistancePath({tnumber, tgeo}, {tnumber, tgeo}) → {(i,j)}</varname></para>
 				<para>The result is a set of pairs <varname>(i,j)</varname>. This function requires to allocate in memory a distance matrix whose size is quadratic in the number of instants of the temporal values. Therefore, the function will fail for temporal values with large number of instants depending on the available memory.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -234,7 +234,7 @@ SELECT frechetDistancePath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-0
 
 			<listitem id="dynTimeWarpDistance">
 				<indexterm><primary><varname>dynTimeWarpDistance</varname></primary></indexterm>
-				<para>Get the <ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> (DTW) distance between two temporal values &Z_support; &geography_support;</para>
+				<para>Return the <ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> (DTW) distance between two temporal values &Z_support; &geography_support;</para>
 				<para><varname>dynTimeWarpDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -242,7 +242,7 @@ SELECT dynTimeWarpDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- 2
 SELECT round(dynTimeWarpDistance(tgeompoint '[Point(1 1)@2001-01-01,
-  Point(3 3)@2001-01-03, Point(1 1)@2001-01-05]', 
+  Point(3 3)@2001-01-03, Point(1 1)@2001-01-05]',
   tgeompoint '[Point(1.1 1.1)@2001-01-01, Point(2.5 2.5)@2001-01-02,
   Point(4 4)@2001-01-03, Point(3 3)@2001-01-04, Point(1.5 2)@2001-01-05]')::numeric, 6);
 -- 3.380776
@@ -251,7 +251,7 @@ SELECT round(dynTimeWarpDistance(tgeompoint '[Point(1 1)@2001-01-01,
 
 			<listitem id="dynTimeWarpPath">
 				<indexterm><primary><varname>dynTimeWarpPath</varname></primary></indexterm>
-				<para>Get the correspondence pairs between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
+				<para>Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
 				<para><varname>dynTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}) → {(i,j)}</varname></para>
 				<para>The result is a set of pairs <varname>(i,j)</varname>. This function requires to allocate a distance matrix which is quadratic in the size of the number of instants of the temporal values. Therefore, memory allocation will fail for temporal values with large number of instants.</para>
 				<programlisting language="sql" xml:space="preserve">

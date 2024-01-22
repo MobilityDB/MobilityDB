@@ -68,7 +68,7 @@
  * index of the sequence is returned in the output parameter. Otherwise,
  * returns a number encoding whether the timestamp is before, between two
  * sequences, or after the temporal sequence set.
- * 
+ *
  * For example, given a value composed of 3 sequences
  * and a timestamp, the value returned in the output parameter is as follows:
  * @code
@@ -535,7 +535,7 @@ tsequenceset_copy(const TSequenceSet *ss)
 /**
  * @brief Return an array of temporal sequence sets converted into an array of
  * temporal sequences
- * @details This function is called by all the functions in which the number of 
+ * @details This function is called by all the functions in which the number of
  * output sequences cannot be determined in advance, typically when each
  * segment of the input sequence can produce an arbitrary number of output
  * sequences, as in the case of @p atGeometries.
@@ -792,7 +792,7 @@ tsequenceset_minmax_inst(const TSequenceSet *ss,
  * @brief Return a pointer to the instant with minimum base value of a
  * temporal sequence set
  * @details The function does not take into account whether the instant is at
- * an exclusive bound or not. 
+ * an exclusive bound or not.
  * @param[in] ss Temporal sequence set
  * @note This function used, e.g., for computing the shortest line between two
  * temporal points from their temporal distance.
@@ -809,7 +809,7 @@ tsequenceset_min_inst(const TSequenceSet *ss)
  * @brief Return a pointer to the instant with maximum base value of a
  * temporal sequence set
  * @details The function does not take into account whether the instant is at
- * an exclusive bound or not. 
+ * an exclusive bound or not.
  * @param[in] ss Temporal sequence set
  * @csqlfn #Temporal_max_instant()
  */
@@ -1344,12 +1344,8 @@ tsequenceset_restart(TSequenceSet *ss, int count)
 TSequenceSet *
 tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
 {
-  assert(inst);
-  assert(interp == STEP || interp == LINEAR);
-  TSequence *seq = tinstant_to_tsequence(inst, interp);
-  TSequenceSet *result = tsequence_to_tsequenceset(seq);
-  pfree(seq);
-  return result;
+  assert(inst); assert(interp == STEP || interp == LINEAR);
+  return tsequence_to_tsequenceset_free(tinstant_to_tsequence(inst, interp));
 }
 
 /**
@@ -1390,6 +1386,21 @@ tsequence_to_tsequenceset(const TSequence *seq)
  * @ingroup meos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal sequence set
  * @param[in] seq Temporal sequence
+ * @csqlfn #Temporal_to_tsequenceset()
+ */
+TSequenceSet *
+tsequence_to_tsequenceset_free(TSequence *seq)
+{
+  assert(seq);
+  TSequenceSet *result = tsequence_to_tsequenceset((const TSequence *) seq);
+  pfree(seq);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_transf
+ * @brief Return a temporal sequence transformed into a temporal sequence set
+ * @param[in] seq Temporal sequence
  * @param[out] interp Interpolation
  * @csqlfn #Temporal_to_tsequenceset()
  */
@@ -1401,17 +1412,13 @@ tsequence_to_tsequenceset_interp(const TSequence *seq, interpType interp)
   if (interp == interp1)
     return tsequenceset_make(&seq, 1, NORMALIZE_NO);
 
-  Temporal *temp1 = tsequence_set_interp(seq, interp);
-  if (! temp1)
+  Temporal *temp = tsequence_set_interp(seq, interp);
+  if (! temp)
     return NULL;
-  if (temp1->subtype == TSEQUENCESET)
-    return (TSequenceSet *) temp1;
+  if (temp->subtype == TSEQUENCESET)
+    return (TSequenceSet *) temp;
   else
-  {
-    TSequenceSet *result =  tsequence_to_tsequenceset((TSequence *) temp1);
-    pfree(temp1);
-    return result;
-  }
+    return tsequence_to_tsequenceset_free((TSequence *) temp);
 }
 
 /**

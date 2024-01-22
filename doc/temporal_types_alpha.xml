@@ -52,7 +52,7 @@ SELECT ~tbool '[true@2001-01-03, true@2001-01-05)';
 
 			<listitem id="whenTrue">
 				<indexterm><primary><varname>whenTrue</varname></primary></indexterm>
-				<para>Get the time when the temporal Boolean takes the value true</para>
+				<para>Return the time when the temporal Boolean takes the value true</para>
 				<para><varname>whenTrue(tbool) → tstzspanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT whenTrue(tfloat '[1@2001-01-01, 4@2001-01-04, 1@2001-01-07]' #> 2);
@@ -129,7 +129,7 @@ SELECT tfloat '[-1@2001-01-04, 1@2001-01-05]' / tfloat '[-1@2001-01-01, 1@2001-0
 
 			<listitem id="abs">
 				<indexterm><primary><varname>abs</varname></primary></indexterm>
-				<para>Get the absolute value of the temporal number</para>
+				<para>Return the absolute value of the temporal number</para>
 				<para><varname>abs(tnumber) → tnumber</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT abs(tfloat '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
@@ -141,7 +141,7 @@ SELECT abs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 
 			<listitem id="deltaValue">
 				<indexterm><primary><varname>deltaValue</varname></primary></indexterm>
-				<para>Get the value difference between consecutive instants of the temporal number</para>
+				<para>Return the value difference between consecutive instants of the temporal number</para>
 				<para><varname>deltaValue(tnumber) → tnumber</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT deltaValue(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
@@ -184,7 +184,7 @@ SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 
 			<listitem id="derivative">
 				<indexterm><primary><varname>derivative</varname></primary></indexterm>
-				<para>Get the derivative over time of the temporal float in units per second</para>
+				<para>Return the derivative over time of the temporal float in units per second</para>
 				<para><varname>derivative(tfloat) → tfloat</varname></para>
 				<para>The temporal float must have linear interpolation</para>
 				<programlisting language="sql" xml:space="preserve">

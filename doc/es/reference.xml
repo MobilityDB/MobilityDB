@@ -191,11 +191,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower"><varname>lower</varname>, <varname>upper</varname></link>: Obtener el límite inferior/superior</para>
+					<para><link linkend="lower"><varname>lower</varname>, <varname>upper</varname></link>: Obtener el límite inferior o superior</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: ¿Es el límite inferior/superior inclusivo?</para>
+					<para><link linkend="setspan_lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: ¿Es el límite inferior o superior inclusivo?</para>
 				</listitem>
 
 				<listitem>

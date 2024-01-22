@@ -1020,8 +1020,8 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
       start, end, tunits, count, buckets, newcount);
     TSequenceSet **result = palloc(sizeof(TSequenceSet *) * *newcount);
     for (int i = 0; i < *newcount; i++)
-      result[i] = tsequence_to_tsequenceset(sequences[i]);
-    pfree_array((void **) sequences, *newcount);
+      result[i] = tsequence_to_tsequenceset_free(sequences[i]);
+    pfree(sequences);
     return result;
   }
 
@@ -1062,7 +1062,9 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
     if (l > 1)
     {
       /* Assemble the accumulated fragments of the first time bucket (if any)  */
-      if (nfrags > 0)
+      if (nfrags == 0)
+        result[nbucks++] = tsequence_to_tsequenceset_free(sequences[0]);
+      else
       {
         fragments[nfrags++] = sequences[0];
         result[nbucks++] = tsequenceset_make((const TSequence **) fragments,
@@ -1071,16 +1073,8 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
           pfree(fragments[j]);
         nfrags = 0;
       }
-      else
-      {
-        result[nbucks++] = tsequence_to_tsequenceset(sequences[0]);
-        pfree(sequences[0]);
-      }
       for (int j = 1; j < l - 1; j++)
-      {
-        result[nbucks++] = tsequence_to_tsequenceset(sequences[j]);
-        pfree(sequences[j]);
-      }
+        result[nbucks++] = tsequence_to_tsequenceset_free(sequences[j]);
     }
     /* Save the last fragment in case it is necessary to assemble with the
      * first one of the next sequence */
