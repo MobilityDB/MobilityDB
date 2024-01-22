@@ -52,8 +52,7 @@ textcat_text_text(const text *txt1, const text *txt2)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) txt1) || ! ensure_not_null((void *) txt2))
     return NULL;
-  return DatumGetTextP(datum_textcat(PointerGetDatum(txt1), 
-    PointerGetDatum(txt2)));
+  return text_catenate(txt1, txt2);
 }
 
 /**

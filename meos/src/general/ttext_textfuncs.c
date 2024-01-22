@@ -124,7 +124,7 @@ pnstrdup(const char *in, Size size)
 /**
  * @brief Return the text value transformed to lowercase
  * @note Function adapted from the external function @p lower() in file
- * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID is used instead of 
+ * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID is used instead of
  * @p PG_GET_COLLATION().
  */
 static Datum
@@ -157,7 +157,7 @@ datum_lower(Datum value)
 /**
  * @brief Return the text value transformed to uppercase
  * @note Function adapted from the external function @p upper() in file
- * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID` is used instead of 
+ * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID` is used instead of
  * @p PG_GET_COLLATION().
  */
 Datum
@@ -190,10 +190,10 @@ datum_upper(Datum value)
 /**
  * @brief Convert the text value to uppercase
  * @note Function adapted from the external function @p upper() in file
- * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID` is used instead of 
+ * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID is used instead of
  * @p PG_GET_COLLATION().
  */
-Datum
+text *
 pg_initcap(text *txt)
 {
   char *out_string;
@@ -208,7 +208,7 @@ pg_initcap(text *txt)
   result = cstring2text(out_string);
   pfree(out_string);
 
-  return PointerGetDatum(result);
+  return result;
 }
 
 /**
