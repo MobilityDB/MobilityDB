@@ -14,7 +14,7 @@ SELECT isGeodetic(stbox 'GEODSTBOX Z((1.0,1.0,0.0),(3.0,3.0,1.0))');
 -- true
 SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])');
 -- false
-</pre></li><li class="listitem"><a name="Xmin"></a><a class="indexterm" name="idm1662"></a><a class="indexterm" name="idm1665"></a><a class="indexterm" name="idm1668"></a><a class="indexterm" name="idm1671"></a><p>Get the minimum X/Y/Z/T value</p><p><code class="varname">Xmin(box) → float</code></p><p><code class="varname">Ymin(stbox) → float</code></p><p><code class="varname">Zmin(stbox) → float</code></p><p><code class="varname">Tmin(box) → timestamptz</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="Xmin"></a><a class="indexterm" name="idm1662"></a><a class="indexterm" name="idm1665"></a><a class="indexterm" name="idm1668"></a><a class="indexterm" name="idm1671"></a><p>Return the minimum X/Y/Z/T value</p><p><code class="varname">Xmin(box) → float</code></p><p><code class="varname">Ymin(stbox) → float</code></p><p><code class="varname">Zmin(stbox) → float</code></p><p><code class="varname">Tmin(box) → timestamptz</code></p><pre class="programlisting">
 SELECT Xmin(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- 1
 SELECT Ymin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
@@ -23,7 +23,7 @@ SELECT Zmin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 3
 SELECT Tmin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-01
-</pre><p>Notice that for <code class="varname">tbox</code> the result value for <code class="varname">Xmin</code> and <code class="varname">Ymin</code> is converted to a <code class="varname">float</code> for the temporal boxes with an integer span.</p></li><li class="listitem"><a name="Xmax"></a><a class="indexterm" name="idm1690"></a><a class="indexterm" name="idm1693"></a><a class="indexterm" name="idm1696"></a><a class="indexterm" name="idm1699"></a><p>Get the maximum X/Y/Z/T value</p><p><code class="varname">Xmax(box) → float</code></p><p><code class="varname">Ymax(stbox) → float</code></p><p><code class="varname">Zmax(stbox) → float</code></p><p><code class="varname">Tmax(box) → timestamptz</code></p><pre class="programlisting">
+</pre><p>Notice that for <code class="varname">tbox</code> the result value for <code class="varname">Xmin</code> and <code class="varname">Ymin</code> is converted to a <code class="varname">float</code> for the temporal boxes with an integer span.</p></li><li class="listitem"><a name="Xmax"></a><a class="indexterm" name="idm1690"></a><a class="indexterm" name="idm1693"></a><a class="indexterm" name="idm1696"></a><a class="indexterm" name="idm1699"></a><p>Return the maximum X/Y/Z/T value</p><p><code class="varname">Xmax(box) → float</code></p><p><code class="varname">Ymax(stbox) → float</code></p><p><code class="varname">Zmax(stbox) → float</code></p><p><code class="varname">Tmax(box) → timestamptz</code></p><pre class="programlisting">
 SELECT Xmax(tbox 'TBOXINT X([1,4))');
 -- 3
 SELECT Ymax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');

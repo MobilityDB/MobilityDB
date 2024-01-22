@@ -4,7 +4,7 @@ SELECT memSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
 SELECT memSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
   [2001-01-05, 2001-01-06]}');
 -- 112
-</pre></li><li class="listitem"><a name="lower"></a><a class="indexterm" name="idm877"></a><a class="indexterm" name="idm880"></a><p>Obtener el límite inferior</p><p><code class="varname">lower(spans) → base</code></p><p><code class="varname">upper(spans) → base</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="lower"></a><a class="indexterm" name="idm877"></a><a class="indexterm" name="idm880"></a><p>Obtener el límite inferior o superior</p><p><code class="varname">lower(spans) → base</code></p><p><code class="varname">upper(spans) → base</code></p><pre class="programlisting">
 SELECT lower(tstzspan '[2001-01-01, 2001-01-05)');
 -- 2001-01-01
 SELECT lower(intspanset '{[1,2],[4,5]}');
@@ -24,7 +24,7 @@ SELECT upper(floatspan '[20.5, 25.3)');
 -- 25.3
 SELECT upper(tstzspan '[2001-01-01, 2001-01-05)');
 -- 2001-01-05
-</pre></li><li class="listitem"><a name="setspan_lower_inc"></a><a class="indexterm" name="idm892"></a><a class="indexterm" name="idm895"></a><p>¿Es el límite inferior/superior inclusivo?</p><p><code class="varname">lower_inc(spans) → boolean</code></p><p><code class="varname">upper_inc(spans) → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_lower_inc"></a><a class="indexterm" name="idm892"></a><a class="indexterm" name="idm895"></a><p>¿Es el límite inferior or superior inclusivo?</p><p><code class="varname">lower_inc(spans) → boolean</code></p><p><code class="varname">upper_inc(spans) → boolean</code></p><pre class="programlisting">
 SELECT lower_inc(datespan '[2001-01-01, 2001-01-05)');
 -- true
 SELECT lower_inc(intspanset '{[1,2],[4,5]}');

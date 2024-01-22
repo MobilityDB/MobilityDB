@@ -64,7 +64,7 @@ SELECT tprecision(timestamptz '2001-12-03', '30 days');
 -- 2001-11-23
 SELECT tprecision(timestamptz '2001-12-03', '30 days', '2001-12-01');
 -- 2001-12-01
-SELECT tprecision(tstzset '{2001-01-01 08:00, 2001-01-01 08:10, 2001-01-01 09:00, 
+SELECT tprecision(tstzset '{2001-01-01 08:00, 2001-01-01 08:10, 2001-01-01 09:00,
   2001-01-01 09:10}', '1 hour');
 -- {"2001-01-01 08:00:00+01", "2001-01-01 09:00:00+01"}
 SELECT tprecision(tstzspan '[2001-12-01 08:00, 2001-12-01 09:00]', '1 day');

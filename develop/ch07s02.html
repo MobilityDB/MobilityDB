@@ -27,12 +27,12 @@ SELECT 2 / tfloat '[-1@2001-01-01, 1@2001-01-02]';
 -- ERROR:  Division by zero
 SELECT tfloat '[-1@2001-01-04, 1@2001-01-05]' / tfloat '[-1@2001-01-01, 1@2001-01-05]';
 -- [-2@2001-01-04, 1@2001-01-05]
-</pre></li><li class="listitem"><a name="abs"></a><a class="indexterm" name="idm3790"></a><p>Get the absolute value of the temporal number</p><p><code class="varname">abs(tnumber) → tnumber</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="abs"></a><a class="indexterm" name="idm3790"></a><p>Return the absolute value of the temporal number</p><p><code class="varname">abs(tnumber) → tnumber</code></p><pre class="programlisting">
 SELECT abs(tfloat '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 -- [1@2001-01-01, 0@2001-01-02, 1@2001-01-03, 0@2001-01-04, 1@2001-01-05]
 SELECT abs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 -- [1@2001-01-01, 1@2001-01-05]
-</pre></li><li class="listitem"><a name="deltaValue"></a><a class="indexterm" name="idm3798"></a><p>Get the value difference between consecutive instants of the temporal number</p><p><code class="varname">deltaValue(tnumber) → tnumber</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="deltaValue"></a><a class="indexterm" name="idm3798"></a><p>Return the value difference between consecutive instants of the temporal number</p><p><code class="varname">deltaValue(tnumber) → tnumber</code></p><pre class="programlisting">
 SELECT deltaValue(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
 -- [1@2001-01-01, -1@2001-01-02, -1@2001-01-03)
 SELECT deltaValue(tfloat '{[1.5@2001-01-01, 2@2001-01-02, 1@2001-01-03],
@@ -51,7 +51,7 @@ SELECT round(degrees(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@20
 -- [45@2001-01-01, 135@2001-01-02]
 SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 -- [0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]
-</pre></li><li class="listitem"><a name="derivative"></a><a class="indexterm" name="idm3829"></a><p>Get the derivative over time of the temporal float in units per second</p><p><code class="varname">derivative(tfloat) → tfloat</code></p><p>The temporal float must have linear interpolation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="derivative"></a><a class="indexterm" name="idm3829"></a><p>Return the derivative over time of the temporal float in units per second</p><p><code class="varname">derivative(tfloat) → tfloat</code></p><p>The temporal float must have linear interpolation</p><pre class="programlisting">
 SELECT derivative(tfloat '{[0@2001-01-01, 10@2001-01-02, 5@2001-01-03],
   [1@2001-01-04, 0@2001-01-05]}') * 3600 * 24;
 /* Interp=Step;{[-10@2001-01-01, 5@2001-01-02, 5@2001-01-03],

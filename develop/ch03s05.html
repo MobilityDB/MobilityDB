@@ -30,7 +30,7 @@ SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
 SELECT shiftScaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
   interval '1 hour', interval '3 hours');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01 01:00:00, 2001-01-01 04:00:00])
-</pre></li><li class="listitem"><a name="getSpace"></a><a class="indexterm" name="idm1795"></a><p>Get the spatial dimension of the bounding box, removing the temporal dimension if any</p><p><code class="varname">getSpace(stbox) → stbox</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="getSpace"></a><a class="indexterm" name="idm1795"></a><p>Return the spatial dimension of the bounding box, removing the temporal dimension if any</p><p><code class="varname">getSpace(stbox) → stbox</code></p><pre class="programlisting">
 SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 -- STBOX Z((1,1,1),(2,2,2))
 </pre></li></ul></div><p>

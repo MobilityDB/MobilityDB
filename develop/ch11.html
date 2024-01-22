@@ -31,20 +31,20 @@ SELECT round(npoint(76, 0.123456789), 6);
 --  NPoint(76,0.123457)
 SELECT round(nsegment(76, 0.123456789, 0.223456789), 6);
 --  NSegment(76,0.123457,0.223457)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="accessor_functions"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="route"></a><a class="indexterm" name="idm6077"></a><p>Get the route identifier</p><p><code class="varname">route({npoint,nsegment}) → bigint</code></p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="accessor_functions"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="route"></a><a class="indexterm" name="idm6077"></a><p>Return the route identifier</p><p><code class="varname">route({npoint,nsegment}) → bigint</code></p><pre class="programlisting">
 SELECT route(npoint 'Npoint(63, 0.3)');
 -- 63
 SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 -- 76
-</pre></li><li class="listitem"><a name="getPosition"></a><a class="indexterm" name="idm6085"></a><p>Get the position</p><p><code class="varname">getPosition(npoint) → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="getPosition"></a><a class="indexterm" name="idm6085"></a><p>Return the position</p><p><code class="varname">getPosition(npoint) → float</code></p><pre class="programlisting">
 SELECT getPosition(npoint 'Npoint(63, 0.3)');
 -- 0.3
-</pre></li><li class="listitem"><a name="startPosition"></a><a class="indexterm" name="idm6093"></a><a class="indexterm" name="idm6096"></a><p>Get the start/end position</p><p><code class="varname">startPosition(nsegment) → float</code></p><p><code class="varname">endPosition(nsegment) → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="startPosition"></a><a class="indexterm" name="idm6093"></a><a class="indexterm" name="idm6096"></a><p>Return the start/end position</p><p><code class="varname">startPosition(nsegment) → float</code></p><p><code class="varname">endPosition(nsegment) → float</code></p><pre class="programlisting">
 SELECT startPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.3
 SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.5
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="spatial_functions"></a>Spatial Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_srid"></a><a class="indexterm" name="idm6109"></a><p>Get the spatial reference identifier</p><p><code class="varname">srid({npoint,nsegment}) → integer</code></p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="spatial_functions"></a>Spatial Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_srid"></a><a class="indexterm" name="idm6109"></a><p>Return the spatial reference identifier</p><p><code class="varname">srid({npoint,nsegment}) → integer</code></p><pre class="programlisting">
 SELECT SRID(npoint 'Npoint(76, 0.3)');
 -- 5676
 SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');

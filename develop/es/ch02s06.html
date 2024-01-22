@@ -19,7 +19,7 @@ WITH test(geoset, pipeline) AS (
   SELECT geogset 'SRID=4326;{"Point(4.3525 50.846667 100.0)",
     "Point(-0.1275 51.507222 100.0)"}',
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
-SELECT asEWKT(transformPipeline(transformPipeline(geoset, pipeline, 4326), 
+SELECT asEWKT(transformPipeline(transformPipeline(geoset, pipeline, 4326),
   pipeline, 4326, false), 6)
 FROM test;
 -- SRID=4326;{"POINT Z (4.3525 50.846667 100)", "POINT Z (-0.1275 51.507222 100)"}

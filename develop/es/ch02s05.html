@@ -54,7 +54,7 @@ SELECT round(floatspan '[1.123456789, inf)', 3);
 -- [1.123,Infinity)
 SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]}', 3);
 -- {[1.123, 2.123], [3.123, 4.123]}
-</pre></li><li class="listitem"><a name="textset_lower"></a><a class="indexterm" name="idm1112"></a><a class="indexterm" name="idm1115"></a><p>Transformar entre minúsculas y mayúsculas</p><p><code class="varname">lower(textset) → textset</code></p><p><code class="varname">upper(textset) → textset</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="textset_lower"></a><a class="indexterm" name="idm1112"></a><a class="indexterm" name="idm1115"></a><p>Transformar a minúsculas o mayúsculas</p><p><code class="varname">lower(textset) → textset</code></p><p><code class="varname">upper(textset) → textset</code></p><pre class="programlisting">
 SELECT lower(textset '{"AAA", "BBB", "CCC"}');
 -- {"aaa", "bbb", "ccc"}
 SELECT upper(textset '{"aaa", "bbb", "ccc"}');
@@ -64,7 +64,7 @@ SELECT tprecision(timestamptz '2001-12-03', '30 days');
 -- 2001-11-23
 SELECT tprecision(timestamptz '2001-12-03', '30 days', '2001-12-01');
 -- 2001-12-01
-SELECT tprecision(tstzset '{2001-01-01 08:00, 2001-01-01 08:10, 2001-01-01 09:00, 
+SELECT tprecision(tstzset '{2001-01-01 08:00, 2001-01-01 08:10, 2001-01-01 09:00,
   2001-01-01 09:10}', '1 hour');
 -- {"2001-01-01 08:00:00+01", "2001-01-01 09:00:00+01"}
 SELECT tprecision(tstzspan '[2001-12-01 08:00, 2001-12-01 09:00]', '1 day');
