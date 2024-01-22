@@ -2091,7 +2091,7 @@ textcat_textset_text_int(const Set *s, const text *txt, bool invert)
   assert(s); assert(txt); assert((s->settype == T_TEXTSET));
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
-    values[i] = invert ? 
+    values[i] = invert ?
       datum_textcat(PointerGetDatum(txt), SET_VAL_N(s, i)) :
       datum_textcat(SET_VAL_N(s, i), PointerGetDatum(txt));
   return set_make_free(values, s->count, T_TEXT, ORDERED);
@@ -2109,11 +2109,10 @@ Set *
 textcat_text_textset(const text *txt, const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) || 
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
-
-  return textcat_textset_text_int(s, txt, INVERT_NO);
+  return textcat_textset_text_int(s, txt, INVERT);
 }
 
 /**
@@ -2127,7 +2126,7 @@ Set *
 textcat_textset_text(const Set *s, const text *txt)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) || 
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
 

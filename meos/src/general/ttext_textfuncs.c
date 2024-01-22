@@ -52,15 +52,15 @@
  * @brief Return the concatenation of the two text values
  * @note Function adapted from the external function in file @p varlena.c
  */
-static text *
-text_catenate(text *t1, text *t2)
+text *
+text_catenate(const text *txt1, const text *txt2)
 {
   text *result;
   int len1, len2, len;
   char *ptr;
 
-  len1 = VARSIZE_ANY_EXHDR(t1);
-  len2 = VARSIZE_ANY_EXHDR(t2);
+  len1 = VARSIZE_ANY_EXHDR(txt1);
+  len2 = VARSIZE_ANY_EXHDR(txt2);
 
   /* paranoia ... probably should throw error instead? */
   if (len1 < 0)
@@ -77,9 +77,9 @@ text_catenate(text *t1, text *t2)
   /* Fill data field of result string... */
   ptr = VARDATA(result);
   if (len1 > 0)
-    memcpy(ptr, VARDATA_ANY(t1), len1);
+    memcpy(ptr, VARDATA_ANY(txt1), len1);
   if (len2 > 0)
-    memcpy(ptr + len1, VARDATA_ANY(t2), len2);
+    memcpy(ptr + len1, VARDATA_ANY(txt2), len2);
 
   return result;
 }
@@ -217,7 +217,7 @@ pg_initcap(text *txt)
 Datum
 datum_initcap(Datum value)
 {
-  return pg_initcap(DatumGetTextP(value));
+  return PointerGetDatum(pg_initcap(DatumGetTextP(value)));
 }
 
 /*****************************************************************************
