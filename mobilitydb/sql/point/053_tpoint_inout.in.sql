@@ -60,7 +60,7 @@ CREATE FUNCTION tgeompointFromMFJSON(text)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpointFromMFJSON(text)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tgeogpoint_from_mfjson'
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompointFromBinary(bytea)

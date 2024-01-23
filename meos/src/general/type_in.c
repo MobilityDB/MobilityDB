@@ -911,8 +911,8 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Invalid 'type' value in MFJSON string, expected: %d, received: %d",
-      temptype, jtemptype);
+      "Invalid 'type' value in MFJSON string, expected: %s, received: %s",
+      meostype_name(temptype), meostype_name(jtemptype));
     return NULL;
   }
 

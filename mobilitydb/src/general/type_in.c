@@ -46,6 +46,8 @@
 #include "general/tbox.h"
 #include "general/temporal.h"
 #include "point/stbox.h"
+/* MobilityDB */
+#include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
  * Input in WKB and HexWKB representation for sets, spans, and span sets types
@@ -290,7 +292,8 @@ Temporal_from_mfjson(PG_FUNCTION_ARGS)
 {
   text *mfjson_txt = PG_GETARG_TEXT_P(0);
   char *mfjson = text2cstring(mfjson_txt);
-  Temporal *result = temporal_from_mfjson(mfjson, T_UNKNOWN);
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  Temporal *result = temporal_from_mfjson(mfjson, temptype);
   pfree(mfjson);
   PG_RETURN_TEMPORAL_P(result);
 }
