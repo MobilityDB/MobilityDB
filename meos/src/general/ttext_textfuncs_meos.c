@@ -43,6 +43,20 @@
 
 /**
  * @ingroup meos_temporal_text
+ * @brief Return the concatenation of two texts
+ * @param[in] txt1,txt2 Values
+ */
+text *
+textcat_text_text(const text *txt1, const text *txt2)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) txt1) || ! ensure_not_null((void *) txt2))
+    return NULL;
+  return text_catenate(txt1, txt2);
+}
+
+/**
+ * @ingroup meos_temporal_text
  * @brief Return the concatenation of a text and a temporal text
  * @param[in] txt Value
  * @param[in] temp Temporal value
@@ -98,6 +112,22 @@ textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_temporal_text
+ * @brief Return a temporal text transformed to lowercase
+ * @param[in] temp Temporal value
+ * @csqlfn #Ttext_lower()
+ */
+Temporal *
+ttext_lower(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
+    return NULL;
+  return textfunc_ttext(temp, &datum_lower);
+}
+
+/**
+ * @ingroup meos_temporal_text
  * @brief Return a temporal text transformed to uppercase
  * @param[in] temp Temporal value
  * @csqlfn #Ttext_upper()
@@ -114,18 +144,18 @@ ttext_upper(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_text
- * @brief Return a temporal text transformed to lowercase
+ * @brief Return a temporal text transformed to initcap
  * @param[in] temp Temporal value
  * @csqlfn #Ttext_lower()
  */
 Temporal *
-ttext_lower(const Temporal *temp)
+ttext_initcap(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
-  return textfunc_ttext(temp, &datum_lower);
+  return textfunc_ttext(temp, &datum_initcap);
 }
 
 /*****************************************************************************/

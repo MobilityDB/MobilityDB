@@ -386,7 +386,11 @@ extern char *pg_timestamptz_out(TimestampTz t);
 extern char *text2cstring(const text *txt);
 extern int text_cmp(const text *txt1, const text *txt2);
 extern text *text_copy(const text *txt);
+extern text *text_initcap(const text *txt);
+extern text *text_lower(const text *txt);
 extern char *text_out(const text *txt);
+extern text *text_upper(const text *txt);
+extern text *textcat_text_text(const text *txt1, const text *txt2);
 extern DateADT timestamptz_to_date(TimestampTz t);
 
 /*===========================================================================*
@@ -624,6 +628,8 @@ extern SpanSet *bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 
 extern Set *dateset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
 extern Span *datespan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
 extern SpanSet *datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
+extern Set *floatset_degrees(const Set *s, bool normalize);
+extern Set *floatset_radians(const Set *s);
 extern Set *floatset_round(const Set *s, int maxdd);
 extern Set *floatset_shift_scale(const Set *s, double shift, double width, bool hasshift, bool haswidth);
 extern Span *floatspan_round(const Span *s, int maxdd);
@@ -639,8 +645,11 @@ extern GSERIALIZED *point_transform_pipeline(const GSERIALIZED *gs, char *pipeli
 extern Set *intset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
 extern Span *intspan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
 extern SpanSet *intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
+extern Set *textset_initcap(const Set *s);
 extern Set *textset_lower(const Set *s);
 extern Set *textset_upper(const Set *s);
+extern Set *textcat_textset_text(const Set *s, const text *txt);
+extern Set *textcat_text_textset(const text *txt, const Set *s);
 extern TimestampTz timestamptz_tprecision(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Set *tstzset_shift_scale(const Set *s, const Interval *shift, const Interval *duration);
 extern Set *tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin);
@@ -1868,6 +1877,7 @@ extern Temporal *textcat_ttext_text(const Temporal *temp, const text *txt);
 extern Temporal *textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *ttext_upper(const Temporal *temp);
 extern Temporal *ttext_lower(const Temporal *temp);
+extern Temporal *ttext_initcap(const Temporal *temp);
 
 /*****************************************************************************
  * Distance functions for temporal types

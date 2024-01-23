@@ -113,9 +113,6 @@ extern int mi_span_value(const Span *s, Datum value, Span *result);
 
 extern double dist_double_value_value(Datum l, Datum r, meosType type);
 
-extern bool span_eq1(const Span *s1, const Span *s2);
-extern int span_cmp1(const Span *s1, const Span *s2);
-
 /*****************************************************************************/
 
 #endif /* __SPAN_H__ */

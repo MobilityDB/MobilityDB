@@ -427,8 +427,8 @@ temporal_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Initialize the last argument with the base value of a temporal value
- * at a timestamptz
+ * @brief Return the last argument initialized with the base value of a
+ * temporal value at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
@@ -1036,10 +1036,9 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   /* Interpolation */
   if (atfunc)
   {
-    TInstant *inst = tinstant_make(projvalue, inst1->temptype, t);
+    TInstant *inst = tinstant_make_free(projvalue, inst1->temptype, t);
     result[0] = tinstant_to_tsequence(inst, LINEAR);
     pfree(inst);
-    DATUM_FREE(projvalue, basetype);
     return 1;
   }
   else
@@ -1072,7 +1071,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
     else
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(projvalue, inst1->temptype, t);
+      instants[1] = tinstant_make_free(projvalue, inst1->temptype, t);
       result[0] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, false, LINEAR, NORMALIZE_NO);
       instants[0] = instants[1];
@@ -1080,7 +1079,6 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
       result[1] = tsequence_make((const TInstant **) instants, 2,
         false, upper_inc, LINEAR, NORMALIZE_NO);
       pfree(instants[0]);
-      DATUM_FREE(projvalue, basetype);
       return 2;
     }
   }
@@ -1772,8 +1770,8 @@ tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @brief Initialize the last argument with the value of a temporal discrete
- * sequence at a timestamptz
+ * @brief Return the last argument initialized with the value of a temporal
+ * discrete sequence at a timestamptz
  * @note In order to be compatible with the corresponding functions for
  * temporal sequences that need to interpolate the value, it is necessary to
  * return a copy of the value.
@@ -2021,9 +2019,7 @@ tsegment_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   interpType interp, TimestampTz t)
 {
   Datum value = tsegment_value_at_timestamptz(inst1, inst2, interp, t);
-  TInstant *result = tinstant_make(value, inst1->temptype, t);
-  DATUM_FREE(value, temptype_basetype(inst1->temptype));
-  return result;
+  return tinstant_make_free(value, inst1->temptype, t);
 }
 
 /**

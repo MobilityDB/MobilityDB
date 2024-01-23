@@ -540,7 +540,7 @@ Floatspan_round(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   int maxdd = PG_GETARG_INT32(1);
-  PG_RETURN_SPAN_P(floatspan_round(s, maxdd));
+  PG_RETURN_SPAN_P(floatspan_rnd(s, maxdd));
 }
 
 /*****************************************************************************
@@ -560,7 +560,7 @@ Span_eq(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
   Span *s2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_BOOL(span_eq(s1, s2));
+  PG_RETURN_BOOL(span_eq_int(s1, s2));
 }
 
 PGDLLEXPORT Datum Span_ne(PG_FUNCTION_ARGS);
@@ -592,7 +592,7 @@ Span_cmp(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
   Span *s2 = PG_GETARG_SPAN_P(1);
-  PG_RETURN_INT32(span_cmp(s1, s2));
+  PG_RETURN_INT32(span_cmp_int(s1, s2));
 }
 
 PGDLLEXPORT Datum Span_lt(PG_FUNCTION_ARGS);

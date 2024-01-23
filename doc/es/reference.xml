@@ -253,23 +253,31 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar el conjunto o el rango con un valor o intervalo de tiempo</para>
+					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar un conjunto o un rango con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Escalar el conjunto o el rango con un valor o intervalo de tiempo</para>
+					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Escalar un conjunto o un rango con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Desplazar y escalar el conjunto o el rango los valores or intervalos de tiempo</para>
+					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Desplazar y escalar un conjunto o un rango con los valores o intervalos de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
+					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear un conjunto o un rango flotante a un número de decimales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="textset_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transformar entre minúsculas y majúsculas</para>
+					<para><link linkend="floatset_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir un conjunto flotante a grados o radianes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="textset_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname></link>: Transformar en minúsculas, majúsculas o initcap</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="textset_concat"><varname>concat</varname></link>: Concatenación de texto</para>
 				</listitem>
 
 				<listitem>
@@ -546,7 +554,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_round"><varname>round</varname></link>: Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
+					<para><link linkend="box_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir a grados o radianes</para>
 				</listitem>
 
 			</itemizedlist>
@@ -1123,7 +1131,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir entre radianes y grados</para>
+					<para><link linkend="degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir a grados o radianes</para>
 				</listitem>
 
 				<listitem>
@@ -1158,11 +1166,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttext_concat"><varname>||</varname></link>: Concatenación de texto temporal</para>
+					<para><link linkend="ttext_concat"><varname>||</varname></link>: Concatenación de texto</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transformar entre minúsculas y mayúsculas</para>
+					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname></link>: Transformar en minúsculas, mayúsculas o initcap</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

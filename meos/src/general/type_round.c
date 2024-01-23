@@ -110,7 +110,22 @@ set_round(const Set *s, int maxdd, datum_func2 func)
   return set_make_free(values, s->count, s->basetype, ORDERED_NO);
 }
 
- /**
+/**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float set with the precision of the values set to a number
+ * of decimal places
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Floatset_round()
+ */
+Set *
+floatset_rnd(const Set *s, int maxdd)
+{
+  assert(s); assert(maxdd >= 0); assert(s->settype == T_FLOATSET);
+  return set_round(s, maxdd, &datum_round_float);
+}
+
+/**
  * @ingroup meos_setspan_transf
  * @brief Return a float set with the precision of the values set to a number
  * of decimal places
@@ -174,7 +189,7 @@ npointset_round(const Set *s, int maxdd)
  * @param[out] result Result span
  */
 void
-floatspan_rnd(const Span *s, int maxdd, Span *result)
+floatspan_rnd_set(const Span *s, int maxdd, Span *result)
 {
   assert(s); assert(s->spantype == T_FLOATSPAN); assert(result);
   /* Set precision of bounds */
@@ -197,6 +212,23 @@ floatspan_rnd(const Span *s, int maxdd, Span *result)
 }
 
 /**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float span with the precision of the bounds set to a
+ * number of decimal places
+ * @param[in] s Span
+ * @param[in] maxdd Maximum number of decimal digits
+ * @return On error return @p NULL
+ */
+Span *
+floatspan_rnd(const Span *s, int maxdd)
+{
+  assert(s); assert(maxdd >=0); assert(s->spantype == T_FLOATSPAN);
+  Span *result = palloc(sizeof(Span));
+  floatspan_rnd_set(s, maxdd, result);
+  return result;
+}
+
+/**
  * @ingroup meos_setspan_transf
  * @brief Return a float span with the precision of the bounds set to a
  * number of decimal places
@@ -211,15 +243,31 @@ floatspan_round(const Span *s, int maxdd)
   if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
       ! ensure_span_isof_type(s, T_FLOATSPAN))
     return NULL;
-
-  Span *result = palloc(sizeof(Span));
-  floatspan_rnd(s, maxdd, result);
-  return result;
+  return floatspan_rnd(s, maxdd);
 }
 
 /*****************************************************************************
  * SpanSet
  *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span set with the precision of the spans set to a
+ * number of decimal places
+ * @param[in] ss Span set
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Floatspanset_round()
+ */
+SpanSet *
+floatspanset_rnd(const SpanSet *ss, int maxdd)
+{
+  assert(ss); assert(maxdd >= 0); assert(ss->spansettype == T_FLOATSPANSET);
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    floatspan_rnd_set(SPANSET_SP_N(ss, i), maxdd, &spans[i]);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
+}
+
 
 /**
  * @ingroup meos_setspan_transf
@@ -236,11 +284,7 @@ floatspanset_round(const SpanSet *ss, int maxdd)
   if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
-
-  Span *spans = palloc(sizeof(Span) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-    floatspan_rnd(SPANSET_SP_N(ss, i), maxdd, &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
+  return floatspanset_rnd(ss, maxdd);
 }
 
 /*****************************************************************************
@@ -265,7 +309,7 @@ tbox_round(const TBox *box, int maxdd)
     return NULL;
 
   TBox *result = tbox_cp(box);
-  floatspan_rnd(&box->span, maxdd, &result->span);
+  floatspan_rnd_set(&box->span, maxdd, &result->span);
   return result;
 }
 

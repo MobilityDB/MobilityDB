@@ -2078,7 +2078,7 @@ stbox_cmp(const STBox *box1, const STBox *box2)
   stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
   if (hast)
   {
-    int cmp = span_cmp1(&box1->period, &box2->period);
+    int cmp = span_cmp_int(&box1->period, &box2->period);
     /* Compare the box minima */
     if (cmp != 0)
       return cmp;

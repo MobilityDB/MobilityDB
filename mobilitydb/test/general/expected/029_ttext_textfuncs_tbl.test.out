@@ -28,3 +28,9 @@ SELECT COUNT(*) FROM tbl_ttext WHERE lower(temp) IS NOT NULL;
     96
 (1 row)
 
+SELECT COUNT(*) FROM tbl_ttext WHERE initcap(temp) IS NOT NULL;
+ count 
+-------
+    96
+(1 row)
+

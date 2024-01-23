@@ -253,7 +253,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   {
     const TSequence *sequences[2];
     /* The two sequences do not intersect: copy the sequences in the right order */
-    if (span_cmp1(&seq1->period, &seq2->period) < 0)
+    if (span_cmp_int(&seq1->period, &seq2->period) < 0)
     {
       sequences[0] = (TSequence *) seq1;
       sequences[1] = (TSequence *) seq2;

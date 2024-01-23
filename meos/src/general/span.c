@@ -1813,7 +1813,7 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
  * @param[in] s1,s2 Sets
  */
 bool
-span_eq1(const Span *s1, const Span *s2)
+span_eq_int(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
   if (s1->lower != s2->lower || s1->upper != s2->upper ||
@@ -1836,7 +1836,7 @@ span_eq(const Span *s1, const Span *s2)
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return false;
-  return span_eq1(s1, s2);
+  return span_eq_int(s1, s2);
 }
 
 /**
@@ -1858,7 +1858,7 @@ span_ne(const Span *s1, const Span *s2)
  * @param[in] s1,s2 Sets
  */
 int
-span_cmp1(const Span *s1, const Span *s2)
+span_cmp_int(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
   int cmp = datum_cmp(s1->lower, s2->lower, s1->basetype);
@@ -1889,7 +1889,7 @@ span_cmp(const Span *s1, const Span *s2)
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return INT_MAX;
-  return span_cmp1(s1, s2);
+  return span_cmp_int(s1, s2);
 }
 
 /* Inequality operators using the span_cmp function */

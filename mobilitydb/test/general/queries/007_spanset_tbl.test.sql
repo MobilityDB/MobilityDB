@@ -105,12 +105,6 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE (i::floatspanset)::intspanset <> i;
 SELECT COUNT(*) FROM tbl_datespanset WHERE (d::tstzspanset)::datespanset <> d;
 
 -------------------------------------------------------------------------------
--- Transformation Functions
--------------------------------------------------------------------------------
-
-SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
-
--------------------------------------------------------------------------------
 -- Accessor Functions
 -------------------------------------------------------------------------------
 
@@ -217,5 +211,11 @@ SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t >= t2.t;
 
 SELECT MAX(spanset_hash(t)) != 0 FROM tbl_tstzspanset;
 SELECT MAX(spanset_hash_extended(t, 1)) != 0 FROM tbl_tstzspanset;
+
+-------------------------------------------------------------------------------
+-- Transformation Functions
+-------------------------------------------------------------------------------
+
+SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
 
 -------------------------------------------------------------------------------

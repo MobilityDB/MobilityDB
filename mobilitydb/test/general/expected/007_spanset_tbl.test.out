@@ -227,12 +227,6 @@ SELECT COUNT(*) FROM tbl_datespanset WHERE (d::tstzspanset)::datespanset <> d;
      0
 (1 row)
 
-SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
-    max    
------------
- 47.333306
-(1 row)
-
 SELECT MAX(memSize(i)) FROM tbl_intspanset;
  max 
 -----
@@ -743,5 +737,11 @@ SELECT MAX(spanset_hash_extended(t, 1)) != 0 FROM tbl_tstzspanset;
  ?column? 
 ----------
  t
+(1 row)
+
+SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
+    max    
+-----------
+ 47.333306
 (1 row)
 

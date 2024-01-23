@@ -52,15 +52,15 @@
  * @brief Return the concatenation of the two text values
  * @note Function adapted from the external function in file @p varlena.c
  */
-static text *
-text_catenate(text *t1, text *t2)
+text *
+text_catenate(const text *txt1, const text *txt2)
 {
   text *result;
   int len1, len2, len;
   char *ptr;
 
-  len1 = VARSIZE_ANY_EXHDR(t1);
-  len2 = VARSIZE_ANY_EXHDR(t2);
+  len1 = VARSIZE_ANY_EXHDR(txt1);
+  len2 = VARSIZE_ANY_EXHDR(txt2);
 
   /* paranoia ... probably should throw error instead? */
   if (len1 < 0)
@@ -77,9 +77,9 @@ text_catenate(text *t1, text *t2)
   /* Fill data field of result string... */
   ptr = VARDATA(result);
   if (len1 > 0)
-    memcpy(ptr, VARDATA_ANY(t1), len1);
+    memcpy(ptr, VARDATA_ANY(txt1), len1);
   if (len2 > 0)
-    memcpy(ptr + len1, VARDATA_ANY(t2), len2);
+    memcpy(ptr + len1, VARDATA_ANY(txt2), len2);
 
   return result;
 }
@@ -119,59 +119,12 @@ pnstrdup(const char *in, Size size)
 
   return tmp;
 }
-
-/*
- * ASCII-only lower function
- *
- * We pass the number of bytes so we can pass varlena and char*
- * to this function.  The result is a palloc'd, null-terminated string.
- */
-// char *
-// asc_tolower(const char *buff, size_t nbytes)
-// {
-//   char *result;
-//   char *p;
-
-//   if (!buff)
-//     return NULL;
-
-//   result = pnstrdup(buff, nbytes);
-
-//   for (p = result; *p; p++)
-//     *p = pg_ascii_tolower((unsigned char) *p);
-
-//   return result;
-// }
-
-/*
- * ASCII-only upper function
- *
- * We pass the number of bytes so we can pass varlena and char*
- * to this function.  The result is a palloc'd, null-terminated string.
- */
-// char *
-// asc_toupper(const char *buff, size_t nbytes)
-// {
-//   char *result;
-//   char *p;
-
-//   if (!buff)
-//     return NULL;
-
-//   result = pnstrdup(buff, nbytes);
-
-//   for (p = result; *p; p++)
-//     *p = pg_ascii_toupper((unsigned char) *p);
-
-//   return result;
-// }
-
 #endif /* MEOS */
 
 /**
  * @brief Return the text value transformed to lowercase
  * @note Function adapted from the external function @p lower() in file
- * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID is used instead of 
+ * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID is used instead of
  * @p PG_GET_COLLATION().
  */
 static Datum
@@ -204,7 +157,7 @@ datum_lower(Datum value)
 /**
  * @brief Return the text value transformed to uppercase
  * @note Function adapted from the external function @p upper() in file
- * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID` is used instead of 
+ * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID` is used instead of
  * @p PG_GET_COLLATION().
  */
 Datum
@@ -232,6 +185,39 @@ Datum
 datum_upper(Datum value)
 {
   return pg_upper(DatumGetTextP(value));
+}
+
+/**
+ * @brief Convert the text value to uppercase
+ * @note Function adapted from the external function @p upper() in file
+ * @p varlena.c. Notice that @p DEFAULT_COLLATION_OID is used instead of
+ * @p PG_GET_COLLATION().
+ */
+text *
+pg_initcap(text *txt)
+{
+  char *out_string;
+  text *result;
+
+#if MEOS
+  out_string = asc_initcap(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
+#else /* ! MEOS */
+  out_string = str_initcap(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
+    DEFAULT_COLLATION_OID);
+#endif /* MEOS */
+  result = cstring2text(out_string);
+  pfree(out_string);
+
+  return result;
+}
+
+/**
+ * @brief Convert the text value to uppercase
+ */
+Datum
+datum_initcap(Datum value)
+{
+  return PointerGetDatum(pg_initcap(DatumGetTextP(value)));
 }
 
 /*****************************************************************************
