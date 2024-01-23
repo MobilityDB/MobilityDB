@@ -45,7 +45,7 @@ SELECT shiftScale(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-0
   '1 day', '1 day');
 /* {[2001-01-02 00:00:00, 2001-01-02 12:00:00],
    [2001-01-02 18:00:00, 2001-01-03 00:00:00]} */
-</pre></li><li class="listitem"><a name="floatspan_round"></a><a class="indexterm" name="idm1073"></a><p>Round the bounds of a float span to a number of decimal places</p><p><code class="varname">round({floatset,floatspans},integer=0) → {floatset,floatspans}</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="floatspan_round"></a><a class="indexterm" name="idm1073"></a><p>Round a float set, span, or span set to a number of decimal places</p><p><code class="varname">round({floatset,floatspans},integer=0) → {floatset,floatspans}</code></p><pre class="programlisting">
 SELECT round(floatset '{1.123456789,2.123456789}', 3);
 -- {1.123, 2.123}
 SELECT round(floatspan '[1.123456789,2.123456789)', 3);
@@ -54,12 +54,24 @@ SELECT round(floatspan '[1.123456789, inf)', 3);
 -- [1.123,Infinity)
 SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]}', 3);
 -- {[1.123, 2.123], [3.123, 4.123]}
-</pre></li><li class="listitem"><a name="textset_lower"></a><a class="indexterm" name="idm1081"></a><a class="indexterm" name="idm1084"></a><p>Transform between lowercase and uppercase</p><p><code class="varname">lower(textset) → textset</code></p><p><code class="varname">upper(textset) → textset</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="floatset_degrees"></a><a class="indexterm" name="idm1081"></a><a class="indexterm" name="idm1084"></a><p>Convert a flot set to degrees or radians</p><p><code class="varname">degrees(floatset, normalize=false) → floatset</code></p><p><code class="varname">radians(floatset) → floatset</code></p><p>The additional parameter in the <code class="varname">degrees</code> function can be used to normalize the values between 0 and 360 degrees.</p><pre class="programlisting">
+SELECT round(degrees(floatset '{0, 0.5, 0.7, 1.0}', true), 3);
+-- {0, 28.648, 40.107, 57.296}
+SELECT round(radians(floatset '{0, 45, 90}'), 3);
+-- {0, 0.785, 1.571}
+</pre></li><li class="listitem"><a name="textset_lower"></a><a class="indexterm" name="idm1096"></a><a class="indexterm" name="idm1099"></a><a class="indexterm" name="idm1102"></a><p>Transform to lowercase, uppercase, or initcap</p><p><code class="varname">lower(textset) → textset</code></p><p><code class="varname">upper(textset) → textset</code></p><p><code class="varname">initcap(textset) → textset</code></p><pre class="programlisting">
 SELECT lower(textset '{"AAA", "BBB", "CCC"}');
 -- {"aaa", "bbb", "ccc"}
 SELECT upper(textset '{"aaa", "bbb", "ccc"}');
 -- {"AAA", "BBB", "CCC"}
-</pre></li><li class="listitem"><a name="time_tprecision"></a><a class="indexterm" name="idm1094"></a><p>Set the temporal precision of the time value to the interval with respect to the origin</p><p><code class="varname">tprecision(times,interval,origin timestamptz=’2000-01-03’) → times</code></p><p>If the origin is not specified, it is set by default to Monday, January 3, 2000</p><pre class="programlisting">
+SELECT initcap(textset '{"aaa", "bbb", "ccc"}');
+-- {"Aaa", "Bbb", "Ccc"}
+</pre></li><li class="listitem"><a name="textset_concat"></a><a class="indexterm" name="idm1114"></a><p>Text concatenation</p><p><code class="varname">{text,textset} || {text,textset} → textset</code></p><pre class="programlisting">
+SELECT textset '{aaa, bbb}' || text 'XX';
+-- {"aaaXX", "bbbXX"}
+SELECT text 'XX' || textset '{aaa, bbb}';
+-- {"XXaaa", "XXbbb"}
+</pre></li><li class="listitem"><a name="time_tprecision"></a><a class="indexterm" name="idm1122"></a><p>Set the temporal precision of the time value to the interval with respect to the origin</p><p><code class="varname">tprecision(times,interval,origin timestamptz=’2000-01-03’) → times</code></p><p>If the origin is not specified, it is set by default to Monday, January 3, 2000</p><pre class="programlisting">
 SELECT tprecision(timestamptz '2001-12-03', '30 days');
 -- 2001-11-23
 SELECT tprecision(timestamptz '2001-12-03', '30 days', '2001-12-01');
