@@ -359,92 +359,25 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 {
   assert(mfjson); assert(temporal_type(temptype));
   bool geodetic = (temptype == T_TGEOGPOINT);
-  Datum value = 0; /* make compiler quiet */
+  /* Get coordinates and datetimes */
+  int nvalues = 0, ndates = 0;
+  Datum *values;
   if (! isgeo)
-  {
-    /* Get values */
-    json_object *values = findMemberByName(mfjson, "values");
-    if (values == NULL)
-    {
-      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-        "Unable to find 'values' in MFJSON string");
-      return NULL;
-    }
-    json_object *val = json_object_array_get_idx(values, 0);
-    switch (temptype)
-    {
-      case T_TBOOL:
-        if (json_object_get_type(val) != json_type_boolean)
-        {
-          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-            "Invalid boolean value in 'values' array in MFJSON string");
-          return NULL;
-        }
-        value = BoolGetDatum(json_object_get_boolean(val));
-        break;
-      case T_TINT:
-        if (json_object_get_type(val) != json_type_int)
-        {
-          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-            "Invalid integer value in 'values' array in MFJSON string");
-          return NULL;
-        }
-        value = Int32GetDatum(json_object_get_int(val));
-        break;
-      case T_TFLOAT:
-        value = Float8GetDatum(json_object_get_double(val));
-        break;
-      case T_TTEXT:
-        if (json_object_get_type(val) != json_type_string)
-        {
-          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-            "Invalid string value in 'values' array in MFJSON string");
-          return NULL;
-        }
-        value = PointerGetDatum(cstring2text(json_object_get_string(val)));
-        break;
-      default: /* Error! */
-        meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-          "Unknown temporal type in MFJSON string: %d", temptype);
-        return NULL;
-    }
-  }
+    values = parse_mfjson_values(mfjson, temptype, &nvalues);
   else
+    values = parse_mfjson_points(mfjson, srid, geodetic, &nvalues);
+  TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
+  if (nvalues != 1 || ndates != 1)
   {
-    /* Get coordinates */
-    json_object *coordinates = findMemberByName(mfjson, "coordinates");
-    if (coordinates == NULL)
-    {
-      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-        "Unable to find 'coordinates' in MFJSON string");
-      return NULL;
-    }
-    json_object *coords = json_object_array_get_idx(coordinates, 0);
-    value = parse_mfjson_coord(coords, srid, geodetic);
-  }
-
-  /* Get datetimes
-   * The maximum length of a datetime is 32 characters, e.g.,
-   *  "2019-08-06T18:35:48.021455+02:30"
-   */
-  char str[33];
-  json_object *datetimes = findMemberByName(mfjson, "datetimes");
-  /* We don't need to test that datetimes is NULL since we look for the
-   * "datetimes" member and then call this function */
-  json_object* datevalue = NULL;
-  datevalue = json_object_array_get_idx(datetimes, 0);
-  const char *strdatetimes = json_object_get_string(datevalue);
-  if (strdatetimes == NULL)
-  {
+    pfree(values); pfree(times);
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Invalid 'datetimes' value in MFJSON string");
+      "Invalid number of elements in '%s' and/or 'datetimes' arrays",
+      ! isgeo ? "values" : "coordinates");
     return NULL;
   }
-  strcpy(str, strdatetimes);
-  /* Replace 'T' by ' ' before converting to timestamptz */
-  str[10] = ' ';
-  TimestampTz t = pg_timestamptz_in(str, -1);
-  return tinstant_make_free(value, temptype, t);
+  TInstant *result = tinstant_make_free(values[0], temptype, times[0]);
+  pfree(values); pfree(times);
+  return result;
 }
 
 #if MEOS
