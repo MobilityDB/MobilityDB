@@ -48,7 +48,7 @@
 #include "pg_general/type_util.h"
 
 /*****************************************************************************
- * Input in EWKT and MFJSON format
+ * Input in EWKT format
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tpoint_from_ewkt(PG_FUNCTION_ARGS);
