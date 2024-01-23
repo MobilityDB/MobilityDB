@@ -513,27 +513,29 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   TInstant **instants = tinstarr_from_mfjson(mfjson, isgeo, srid, temptype,
     &count);
 
-  /* Get lower bound flag */
-  json_object *lowerinc = NULL;
-  lowerinc = findMemberByName(mfjson, "lower_inc");
-  if (lowerinc == NULL)
+  /* Get lower bound flag, default to true if not specified */
+  bool lower_inc = true;
+  json_object *lowerinc = findMemberByName(mfjson, "lower_inc");
+  if (lowerinc != NULL)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Unable to find 'lower_inc' in MFJSON string");
-    return NULL;
+    if (json_object_get_type(lowerinc) != json_type_boolean)
+      meos_error(WARNING, MEOS_ERR_MFJSON_INPUT,
+        "Type of 'lower_inc' value in MFJSON string is not boolean, defaulting to true");
+    else
+      lower_inc = (bool) json_object_get_boolean(lowerinc);
   }
-  bool lower_inc = (bool) json_object_get_boolean(lowerinc);
 
-  /* Get upper bound flag */
-  json_object *upperinc = NULL;
-  upperinc = findMemberByName(mfjson, "upper_inc");
-  if (upperinc == NULL)
+  /* Get upper bound flag, default to true if not specified */
+  bool upper_inc = true;
+  json_object *upperinc = findMemberByName(mfjson, "upper_inc");
+  if (upperinc != NULL)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Unable to find 'upper_inc' in MFJSON string");
-    return NULL;
+    if (json_object_get_type(upperinc) != json_type_boolean)
+      meos_error(WARNING, MEOS_ERR_MFJSON_INPUT,
+        "Type of 'upper_inc' value in MFJSON string is not boolean, defaulting to true");
+    else
+      upper_inc = (bool) json_object_get_boolean(upperinc);
   }
-  bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
   /* Construct the temporal point */
   return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
