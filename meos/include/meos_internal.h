@@ -346,7 +346,7 @@ extern Span *numspan_shift_scale(const Span *s, Datum shift, Datum width, bool h
 extern SpanSet *numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern Set *set_compact(const Set *s);
 extern void span_expand(const Span *s1, Span *s2);
-extern SpanSet *spanset_compact(SpanSet *ss);
+extern SpanSet *spanset_compact(const SpanSet *ss);
 extern Set *textcat_textset_text_int(const Set *s, const text *txt, bool invert);
 extern void tstzspan_set_datespan(const Span *s1, Span *s2);
 

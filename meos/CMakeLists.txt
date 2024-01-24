@@ -158,21 +158,38 @@ target_link_libraries(${MEOS_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 # Belongs to MEOS
 #--------------------------------
 
-install(
-  FILES "${CMAKE_BINARY_DIR}/meos_export.h"
-  DESTINATION "/usr/local/include"
-  RENAME "meos.h")
-install(
-  FILES "${CMAKE_BINARY_DIR}/meos_internal_export.h"
-  DESTINATION "/usr/local/include"
-  RENAME "meos_internal.h")
-install(
-  FILES "${CMAKE_SOURCE_DIR}/meos/include/general/meos_catalog.h"
-  DESTINATION "/usr/local/include")
-install(TARGETS ${MEOS_LIB_NAME} DESTINATION "/usr/local/lib")
-message(STATUS "Building MEOS:")
-message(STATUS "  Library file: '/usr/local/lib'")
-message(STATUS "  Include file: '/usr/local/include'")
+if(APPLE)
+  install(FILES "${CMAKE_BINARY_DIR}/meos_export.h"
+    DESTINATION "/opt/homebrew/include"
+    RENAME "meos.h")
+  install(
+    FILES "${CMAKE_BINARY_DIR}/meos_internal_export.h"
+    DESTINATION "/opt/homebrew/include"
+    RENAME "meos_internal.h")
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/general/meos_catalog.h"
+    DESTINATION "/opt/homebrew/include")
+  install(TARGETS ${MEOS_LIB_NAME} DESTINATION "/opt/homebrew/lib")
+  message(STATUS "Building MEOS:")
+  message(STATUS "  Library file: '/opt/homebrew/lib'")
+  message(STATUS "  Include file: '/opt/homebrew/include'")
+else()
+  install(
+    FILES "${CMAKE_BINARY_DIR}/meos_export.h"
+    DESTINATION "/usr/local/include"
+    RENAME "meos.h")
+  install(
+    FILES "${CMAKE_BINARY_DIR}/meos_internal_export.h"
+    DESTINATION "/usr/local/include"
+    RENAME "meos_internal.h")
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/general/meos_catalog.h"
+    DESTINATION "/usr/local/include")
+  install(TARGETS ${MEOS_LIB_NAME} DESTINATION "/usr/local/lib")
+  message(STATUS "Building MEOS:")
+  message(STATUS "  Library file: '/usr/local/lib'")
+  message(STATUS "  Include file: '/usr/local/include'")
+endif()
 
 #-----------------------------------------------------------------------------
 # Documentation
