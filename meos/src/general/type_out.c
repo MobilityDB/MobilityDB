@@ -473,10 +473,8 @@ temptype_mfjson_size(meosType temptype)
       size = sizeof("{'type':'MovingText',");
       break;
     case T_TGEOMPOINT:
-      size = sizeof("{'type':'MovingGeomPoint',");
-      break;
     case T_TGEOGPOINT:
-      size = sizeof("{'type':'MovingGeogPoint',");
+      size = sizeof("{'type':'MovingPoint',");
       break;
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
@@ -511,10 +509,8 @@ temptype_mfjson_buf(char *output, meosType temptype)
       ptr += sprintf(ptr, "{\"type\":\"MovingText\",");
       break;
     case T_TGEOMPOINT:
-      ptr += sprintf(ptr, "{\"type\":\"MovingGeomPoint\",");
-      break;
     case T_TGEOGPOINT:
-      ptr += sprintf(ptr, "{\"type\":\"MovingGeogPoint\",");
+      ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
       break;
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
