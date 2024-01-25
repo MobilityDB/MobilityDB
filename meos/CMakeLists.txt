@@ -158,7 +158,7 @@ target_link_libraries(${MEOS_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 # Belongs to MEOS
 #--------------------------------
 
-if(APPLE)
+if(APPLE AND ${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
   install(FILES "${CMAKE_BINARY_DIR}/meos_export.h"
     DESTINATION "/opt/homebrew/include"
     RENAME "meos.h")
