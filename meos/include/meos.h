@@ -1143,6 +1143,7 @@ extern STBox *timestamptz_to_stbox(TimestampTz t);
 extern TBox *timestamptz_to_tbox(TimestampTz t);
 extern STBox *tstzset_to_stbox(const Set *s);
 extern STBox *tstzspan_to_stbox(const Span *s);
+extern STBox *tstzspanset_to_stbox(const SpanSet *ss);
 extern TBox *tnumber_to_tbox(const Temporal *temp);
 extern STBox *tpoint_to_stbox(const Temporal *temp);
 
