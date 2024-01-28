@@ -2496,7 +2496,7 @@ distance_set_timestamptz(const Set *s, TimestampTz t)
   if (! ensure_not_null((void *) s) ||
       ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
     return -1.0;
-  return distance_set_value(s, TimestampTzGetDatum(t));
+  return DatumGetFloat8(distance_set_value(s, TimestampTzGetDatum(t)));
 }
 #endif /* MEOS */
 
