@@ -1031,7 +1031,7 @@ extern int distance_dateset_dateset(const Set *s1, const Set *s2);
 extern int distance_datespan_datespan(const Span *s1, const Span *s2);
 extern int distance_datespanset_datespan(const SpanSet *ss, const Span *s);
 extern int distance_datespanset_datespanset(const SpanSet *ss1, const SpanSet *ss2);
-extern double distance_floatset_floatset (const Set *s1, const Set *s2);
+extern double distance_floatset_floatset(const Set *s1, const Set *s2);
 extern double distance_floatspan_floatspan(const Span *s1, const Span *s2);
 extern double distance_floatspanset_floatspan(const SpanSet *ss, const Span *s);
 extern double distance_floatspanset_floatspanset(const SpanSet *ss1, const SpanSet *ss2);
