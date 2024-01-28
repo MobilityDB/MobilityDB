@@ -2545,7 +2545,7 @@ distance_intset_intset(const Set *s1, const Set *s2)
       ! ensure_set_isof_basetype(s1, T_INT4) ||
       ! ensure_set_isof_basetype(s2, T_INT4))
     return -1;
-  return distance_set_set(s1, s2);
+  return DatumGetInt32(distance_set_set(s1, s2));
 }
 
 /**
@@ -2563,7 +2563,7 @@ distance_bigintset_bigintset(const Set *s1, const Set *s2)
       ! ensure_set_isof_basetype(s1, T_INT8) ||
       ! ensure_set_isof_basetype(s2, T_INT8))
     return -1;
-  return distance_set_set(s1, s2);
+  return DatumGetInt64(distance_set_set(s1, s2));
 }
 
 /**
@@ -2581,7 +2581,7 @@ distance_floatset_floatset(const Set *s1, const Set *s2)
      ! ensure_set_isof_basetype(s1, T_FLOAT8) ||
      ! ensure_set_isof_basetype(s2, T_FLOAT8))
     return -1.0;
-  return distance_set_set(s1, s2);
+  return DatumGetFloat8(distance_set_set(s1, s2));
 }
 
 /**
@@ -2599,7 +2599,7 @@ distance_dateset_dateset(const Set *s1, const Set *s2)
       ! ensure_set_isof_basetype(s1, T_DATE) ||
       ! ensure_set_isof_basetype(s2, T_DATE))
     return -1;
-  return distance_set_set(s1, s2);
+  return DatumGetInt32(distance_set_set(s1, s2));
 }
 
 /**
@@ -2617,7 +2617,7 @@ distance_tstzset_tstzset(const Set *s1, const Set *s2)
       ! ensure_set_isof_basetype(s1, T_TIMESTAMPTZ) ||
       ! ensure_set_isof_basetype(s2, T_TIMESTAMPTZ))
     return -1.0;
-  return distance_set_set(s1, s2);
+  return DatumGetFloat8(distance_set_set(s1, s2));
 }
 #endif /* MEOS */
 
