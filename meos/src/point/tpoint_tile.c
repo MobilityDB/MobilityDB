@@ -1054,6 +1054,26 @@ tpoint_space_time_split_init(Temporal *temp, float xsize, float ysize,
  * possibly a time grid
  * @param[in] temp Temporal point
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] sorigin Origin for the space dimension
+ * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
+ * @param[out] space_buckets Array of space buckets
+ * @param[out] count Number of elements in the output arrays
+ */
+Temporal **
+tpoint_space_split(Temporal *temp, float xsize, float ysize, float zsize,
+  GSERIALIZED *sorigin, bool bitmatrix, GSERIALIZED ***space_buckets,
+  int *count)
+{
+  return tpoint_space_time_split(temp, xsize, ysize, zsize, NULL, sorigin, 0,
+    bitmatrix, space_buckets, NULL, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the fragments a temporal point split according to a space and
+ * possibly a time grid
+ * @param[in] temp Temporal point
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
  * @param[in] duration Duration
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension

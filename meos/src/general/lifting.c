@@ -1692,21 +1692,22 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
       (lfinfo->func == (varfunc) &datum2_point_eq));
     /* Determine whether there is a crossing and if there is one compute the
      * value at the crossing */
-    bool hascross = tlinearsegm_intersection_value(start, end, value,
-      basetype, eqfn ? NULL : &intvalue, eqfn ? NULL : &inttime);
-    if (eqfn)
-      res = hascross;
-    else
-      res = ! hascross ||
-        DatumGetBool(tfunc_base_base(intvalue, value, lfinfo));
-    if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+    if (tlinearsegm_intersection_value(start, end, value,
+      basetype, eqfn ? NULL : &intvalue, eqfn ? NULL : &inttime))
     {
+      if (eqfn)
+        res = true;
+      else
+        res = DatumGetBool(tfunc_base_base(intvalue, value, lfinfo));
+      if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+      {
+        if (! eqfn)
+          DATUM_FREE(intvalue, basetype);
+        return lfinfo->ever ? 1 : 0;
+      }
       if (! eqfn)
         DATUM_FREE(intvalue, basetype);
-      return lfinfo->ever ? 1 : 0;
     }
-    if (! eqfn)
-      DATUM_FREE(intvalue, basetype);
     start = end;
     lower_inc = true;
   }
