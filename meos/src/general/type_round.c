@@ -160,7 +160,7 @@ geoset_round(const Set *s, int maxdd)
     return NULL;
   return set_round(s, maxdd, &datum_round_geo);
 }
-
+#if NPOINT
 /**
  * @brief Return a network point set with the precision of the positions set
  * to a number of decimal places
@@ -175,7 +175,7 @@ npointset_round(const Set *s, int maxdd)
     return NULL;
   return set_round(s, maxdd, &datum_npoint_round);
 }
-
+#endif
 /*****************************************************************************
  * Span
  *****************************************************************************/
@@ -817,7 +817,7 @@ tpointarr_round(const Temporal **temparr, int count, int maxdd)
 /*****************************************************************************
  * Network Point
  *****************************************************************************/
-
+#if NPOINT
 /**
  * @brief Return a network point with the precision of the position set to a
  * number of decimal places
@@ -880,3 +880,4 @@ tnpoint_round(const Temporal *temp, Datum size)
 }
 
 /*****************************************************************************/
+#endif
