@@ -361,7 +361,7 @@ nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
       ! ensure_span_isof_basetype(&box2->span, T_INT4))
     return -1;
 
-  return Int32GetDatum(nad_tbox_tbox(box1, box2));
+  return DatumGetInt32(nad_tbox_tbox(box1, box2));
 }
 
 /**
@@ -378,7 +378,7 @@ nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
       ! ensure_span_isof_basetype(&box2->span, T_FLOAT8))
     return -1;
 
-  return Float8GetDatum(nad_tbox_tbox(box1, box2));
+  return DatumGetFloat8(nad_tbox_tbox(box1, box2));
 }
 
 #endif /* MEOS */
