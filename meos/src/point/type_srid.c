@@ -322,13 +322,13 @@ tpoint_set_srid(const Temporal *temp, int32 srid)
   }
 }
 
-
 /*****************************************************************************
  * Functions for spatial reference systems of temporal network points
  * For temporal points of duration distinct from TInstant the Spatial
  * reference system identifier (SRID) is obtained from the bounding box.
  *****************************************************************************/
 
+#if NPOINT
 /**
  * @brief Return the SRID of a temporal network point of subtype instant
  */
@@ -359,6 +359,7 @@ tnpoint_srid(const Temporal *temp)
       return tpointseqset_srid((TSequenceSet *) temp);
   }
 }
+#endif /* NPOINT */
 
 /*****************************************************************************
  * Transformation functions for spatial reference systems
@@ -723,7 +724,7 @@ stbox_transform_pj(const STBox *box, int32 srid_to, LWPROJ *pj)
 {
   assert(box); assert(pj);
   /* Copy the spatiotemporal box to transform its composing points in place */
-  STBox *result = stbox_cp(box);   
+  STBox *result = stbox_cp(box);
   if (! stbox_transf_pj(result, srid_to, pj))
   {
     pfree(result); result = NULL;

@@ -90,7 +90,7 @@ datum_round_float(Datum value, Datum size)
 /*****************************************************************************
  * Set
  *****************************************************************************/
- 
+
 /**
  * @ingroup meos_setspan_transf
  * @brief Return a set with the precision of the values set to a number of
@@ -161,6 +161,7 @@ geoset_round(const Set *s, int maxdd)
   return set_round(s, maxdd, &datum_round_geo);
 }
 
+#if NPOINT
 /**
  * @brief Return a network point set with the precision of the positions set
  * to a number of decimal places
@@ -175,6 +176,7 @@ npointset_round(const Set *s, int maxdd)
     return NULL;
   return set_round(s, maxdd, &datum_npoint_round);
 }
+#endif /* NPOINT */
 
 /*****************************************************************************
  * Span
@@ -818,6 +820,7 @@ tpointarr_round(const Temporal **temparr, int count, int maxdd)
  * Network Point
  *****************************************************************************/
 
+#if NPOINT
 /**
  * @brief Return a network point with the precision of the position set to a
  * number of decimal places
@@ -839,7 +842,7 @@ Datum
 datum_npoint_round(Datum npoint, Datum size)
 {
   /* Set precision of position */
-  return PointerGetDatum(npoint_round(DatumGetNpointP(npoint), 
+  return PointerGetDatum(npoint_round(DatumGetNpointP(npoint),
     DatumGetInt32(size)));
 }
 
@@ -855,11 +858,13 @@ nsegment_round(const Nsegment *ns, int maxdd)
   double pos2 = float_round(ns->pos2, maxdd);
   return nsegment_make(ns->rid, pos1, pos2);
 }
+#endif /* NPOINT */
 
 /*****************************************************************************
  * Temporal Network Point
  *****************************************************************************/
 
+#if NPOINT
 /**
  * @brief Return a temporal network point with the precision of the fractions
  * set to a number of decimal places
@@ -878,5 +883,6 @@ tnpoint_round(const Temporal *temp, Datum size)
   lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
+#endif /* NPOINT */
 
 /*****************************************************************************/
