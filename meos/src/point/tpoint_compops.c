@@ -361,29 +361,3 @@ tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /*****************************************************************************/
-
-/**
- * @ingroup meos_temporal_comp_temp
- * @brief Return true if two temporal points are ever equal
- * @param[in] temp1,temp2 Temporal points
- * @csqlfn #Ever_eq_tpoint_tpoint()
- */
-Temporal *
-teq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  return tcomp_tpoint_tpoint(temp1, temp2, &datum2_eq);
-}
-
-/**
- * @ingroup meos_temporal_comp_temp
- * @brief Return true if two temporal points are ever different
- * @param[in] temp1,temp2 Temporal points
- * @csqlfn #Ever_ne_tpoint_tpoint()
- */
-Temporal *
-tne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  return tcomp_tpoint_tpoint(temp1, temp2, &datum2_ne);
-}
-
-/*****************************************************************************/

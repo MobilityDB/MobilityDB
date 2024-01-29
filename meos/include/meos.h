@@ -1626,17 +1626,12 @@ extern Temporal *teq_float_tfloat(double d, const Temporal *temp);
 extern Temporal *teq_int_tint(int i, const Temporal *temp);
 extern Temporal *teq_point_tpoint(const GSERIALIZED *gs, const Temporal *temp);
 extern Temporal *teq_tbool_bool(const Temporal *temp, bool b);
-extern Temporal *teq_tbool_tbool(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *teq_text_ttext(const text *txt, const Temporal *temp);
 extern Temporal *teq_tfloat_float(const Temporal *temp, double d);
-extern Temporal *teq_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *teq_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *teq_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *teq_tint_int(const Temporal *temp, int i);
-extern Temporal *teq_tint_tint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *teq_ttext_text(const Temporal *temp, const text *txt);
-extern Temporal *teq_ttext_ttext(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tge_float_tfloat(double d, const Temporal *temp);
 extern Temporal *tge_int_tint(int i, const Temporal *temp);
 extern Temporal *tge_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
@@ -1670,17 +1665,12 @@ extern Temporal *tne_float_tfloat(double d, const Temporal *temp);
 extern Temporal *tne_int_tint(int i, const Temporal *temp);
 extern Temporal *tne_point_tpoint(const GSERIALIZED *gs, const Temporal *temp);
 extern Temporal *tne_tbool_bool(const Temporal *temp, bool b);
-extern Temporal *tne_tbool_tbool(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tne_text_ttext(const text *txt, const Temporal *temp);
 extern Temporal *tne_tfloat_float(const Temporal *temp, double d);
-extern Temporal *tne_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tne_tpoint_point(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *tne_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tne_tint_int(const Temporal *temp, int i);
-extern Temporal *tne_tint_tint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
-extern Temporal *tne_ttext_ttext(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************
  * Bounding box functions for temporal types
