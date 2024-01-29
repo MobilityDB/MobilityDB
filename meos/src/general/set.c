@@ -2009,7 +2009,6 @@ floatset_rad(const Set *s)
  * @ingroup meos_setspan_transf
  * @brief Return a float set with the values converted to radians
  * @param[in] s Set
- * @param[in] normalize True when the result must be normalized
  * @csqlfn #Floatset_radians()
  */
 Set *

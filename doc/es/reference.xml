@@ -1390,15 +1390,15 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tdisjoint"><varname>tDisjoint</varname></link>: Disjunto temporal</para>
+						<para><link linkend="tDisjoint"><varname>tDisjoint</varname></link>: Disjunto temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tdwithin"><varname>tDwithin</varname></link>: Estar a distancia de temporal </para>
+						<para><link linkend="tDwithin"><varname>tDwithin</varname></link>: Estar a distancia de temporal </para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tintersects"><varname>tIntersects</varname></link>: Intersección temporal</para>
+						<para><link linkend="tIntersects"><varname>tIntersects</varname></link>: Intersección temporal</para>
 					</listitem>
 
 					<listitem>

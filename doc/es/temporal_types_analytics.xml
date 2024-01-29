@@ -164,16 +164,15 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-
 -- [POINT(3 3)@2001-01-01, POINT(3 3)@2001-01-05]
 </programlisting>
 				<para>Cambiar la precisión de un valor temporal es similar a cambiar su <emphasis>granularidad temporal</emphasis>, por ejemplo, de marcas de tiempo a horas o días, aunque la precisión se puede establecer en un intervalo arbitrario, como 2 horas y 15 minutos. La <xref linkend="fig_tprecision" /> ilustra un cambio de precisión temporal para números flotantes temporales con varias interpolaciones.</para>
+				<figure id="fig_tprecision">
+					<title>Cambio de precisión de números flotantes temporales con interpolación discreta, escalonada y lineal.</title>
+					<mediaobject>
+						<imageobject><imagedata format="PDF" scale='75' fileref="../images/tprecision.pdf"/></imageobject>
+						<imageobject><imagedata format="SVG" scale='75' fileref="../images/tprecision.svg"/></imageobject>
+						<imageobject><imagedata format="PNG" scale='75' fileref="../images/tprecision.png"/></imageobject>
+					</mediaobject>
+				</figure>
 			</listitem>
-
-			<figure id="fig_tprecision">
-				<title>Cambio de precisión de números flotantes temporales con interpolación discreta, escalonada y lineal.</title>
-				<mediaobject>
-					<imageobject><imagedata format="PDF" scale='75' fileref="../images/tprecision.pdf"/></imageobject>
-					<imageobject><imagedata format="SVG" scale='75' fileref="../images/tprecision.svg"/></imageobject>
-					<imageobject><imagedata format="PNG" scale='75' fileref="../images/tprecision.png"/></imageobject>
-				</mediaobject>
-			</figure>
 		</itemizedlist>
 	</sect1>
 
@@ -249,7 +248,7 @@ SELECT dynTimeWarpDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- 2
 SELECT round(dynTimeWarpDistance(tgeompoint '[Point(1 1)@2001-01-01,
-  Point(3 3)@2001-01-03, Point(1 1)@2001-01-05]', 
+  Point(3 3)@2001-01-03, Point(1 1)@2001-01-05]',
   tgeompoint '[Point(1.1 1.1)@2001-01-01, Point(2.5 2.5)@2001-01-02,
   Point(4 4)@2001-01-03, Point(3 3)@2001-01-04, Point(1.5 2)@2001-01-05]')::numeric, 6);
 -- 3.380776

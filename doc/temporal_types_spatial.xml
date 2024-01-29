@@ -808,7 +808,7 @@ SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 </programlisting>
 				</listitem>
 
-				<listitem id="edisjoint">
+				<listitem id="eDisjoint">
 					<indexterm><primary><varname>eDisjoint</varname></primary></indexterm>
 					<indexterm><primary><varname>aDisjoint</varname></primary></indexterm>
 					<para>Is ever or always disjoint &Z_support; &geography_support;</para>

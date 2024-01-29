@@ -77,8 +77,7 @@ eacomp_base_temporal(Datum value, const Temporal *temp,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
   lfinfo.args = true;
-  lfinfo.argtype[0] = basetype;
-  lfinfo.argtype[1] = basetype;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT;
@@ -109,8 +108,7 @@ eacomp_temporal_base(const Temporal *temp, Datum value,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
   lfinfo.args = true;
-  lfinfo.argtype[0] = basetype;
-  lfinfo.argtype[1] = basetype;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
