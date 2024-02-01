@@ -39,6 +39,7 @@
 #include <meos_internal.h>
 #include "general/temporal.h"
 #include "general/type_util.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Ever/always comparisons
@@ -1619,8 +1620,10 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
-  if (temp1->temptype == T_TGEOMPOINT || temp1->temptype == T_TGEOGPOINT)
-    return tcomp_tpoint_tpoint(temp1, temp2, &datum2_eq);
+  if (tgeo_type(temp1->temptype) && (
+          ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+          ! ensure_same_dimensionality(temp1->flags, temp2->flags)))
+    return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
 }
 
@@ -1781,8 +1784,10 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return NULL;
-  if (temp1->temptype == T_TGEOMPOINT || temp1->temptype == T_TGEOGPOINT)
-    return tcomp_tpoint_tpoint(temp1, temp2, &datum2_ne);
+  if (tgeo_type(temp1->temptype) && (
+          ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+          ! ensure_same_dimensionality(temp1->flags, temp2->flags)))
+    return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
 }
 

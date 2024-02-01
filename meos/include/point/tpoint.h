@@ -83,8 +83,6 @@ extern Temporal *tcomp_point_tpoint(const GSERIALIZED *gs,
   const Temporal *temp, Datum (*func)(Datum, Datum, meosType));
 extern Temporal *tcomp_tpoint_point(const Temporal *temp,
   const GSERIALIZED *gs, Datum (*func)(Datum, Datum, meosType));
-extern Temporal * tcomp_tpoint_tpoint(const Temporal *temp1,
-  const Temporal *temp2, Datum (*func)(Datum, Datum, meosType));
 
 /*****************************************************************************/
 

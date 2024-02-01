@@ -397,7 +397,7 @@ PG_FUNCTION_INFO_V1(Teq_tpoint_tpoint);
 Datum
 Teq_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return Tcomp_tpoint_tpoint(fcinfo, &teq_tpoint_tpoint);
+  return Tcomp_tpoint_tpoint(fcinfo, &teq_temporal_temporal);
 }
 
 PGDLLEXPORT Datum Tne_tpoint_tpoint(PG_FUNCTION_ARGS);
@@ -410,7 +410,7 @@ PG_FUNCTION_INFO_V1(Tne_tpoint_tpoint);
 Datum
 Tne_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return Tcomp_tpoint_tpoint(fcinfo, &tne_tpoint_tpoint);
+  return Tcomp_tpoint_tpoint(fcinfo, &tne_temporal_temporal);
 }
 
 /*****************************************************************************/

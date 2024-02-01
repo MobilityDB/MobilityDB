@@ -286,24 +286,6 @@ tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
   return tcomp_temporal_base(temp, PointerGetDatum(gs), func);
 }
 
-/**
- * @brief Return the temporal comparison of two temporal points
- * @param[in] temp1,temp2 Temporal values
- * @param[in] func Comparison function
- */
-Temporal *
-tcomp_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, meosType))
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
-      ! ensure_same_dimensionality(temp1->flags, temp2->flags))
-    return NULL;
-  return tcomp_temporal_temporal(temp1, temp2, func);
-}
-
 /*****************************************************************************/
 
 /**
