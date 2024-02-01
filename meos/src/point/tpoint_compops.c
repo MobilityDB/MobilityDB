@@ -291,7 +291,7 @@ tcomp_tpoint_point(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] temp1,temp2 Temporal values
  * @param[in] func Comparison function
  */
-static Temporal *
+Temporal *
 tcomp_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType))
 {
