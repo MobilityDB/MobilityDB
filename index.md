@@ -26,4 +26,4 @@ The documentation is also avaible in Spanish.
 
 The documentation is available for the master and develop branches.
 
-*   HTML: [master](https://mobilitydb.github.io/MobilityDB/master/), [develop](https://mobilitydb.github.io/MobilityDB/develop/)
+*   HTML: [master](https://mobilitydb.github.io/MobilityDB/master-dev/), [develop](https://mobilitydb.github.io/MobilityDB/develop-dev/)
