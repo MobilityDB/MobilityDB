@@ -39,7 +39,6 @@
 #include <meos_internal.h>
 #include "general/temporal.h"
 #include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Ever/always comparisons

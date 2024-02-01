@@ -772,3 +772,5 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
 }
+
+/*****************************************************************************/
