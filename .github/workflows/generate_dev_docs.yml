@@ -35,7 +35,7 @@ jobs:
       - name: Upload output directory
         uses: actions/upload-artifact@v4
         with:
-          name: devdoc-files
+          name: devdocs-files
           path: |
             docs/html/*
           retention-days: 1
@@ -52,9 +52,9 @@ jobs:
 
       # download the doc files, most of which are generated above
       - name: Download output directory
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
-          name: devdoc-files
+          name: devdocs-files
           path: devdocs-temp
 
       # Rename the directory to master
