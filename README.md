@@ -206,7 +206,7 @@ make doc
 ```
 The resulting documentation will be generated in the `doc` directory of the build directory.
 
-In addition, pregenerated versions of them are available for both the master and develop branches.
+In addition, pregenerated versions are available for the master and develop branches.
 
 *   HTML: [master](https://mobilitydb.github.io/MobilityDB/master/), [develop](https://mobilitydb.github.io/MobilityDB/develop/)
 *   PDF: [master](https://mobilitydb.github.io/MobilityDB/master/mobilitydb-manual.pdf), [develop](https://mobilitydb.github.io/MobilityDB/develop/mobilitydb-manual.pdf)
@@ -229,9 +229,9 @@ make doc_dev
 
 The resulting HTML documentation will be generated in the `doxygen` directory of the build directory.
 
-In addition, a pregenerated version of the documentation is available.
+In addition, pregenerated versions are available for the master and develop branches.
 
-*   [HTML](https://docs.mobilitydb.com/MobilityDB/develop/api/html)
+*   HTML: [master](https://mobilitydb.github.io/MobilityDB/master-dev/), [develop](https://mobilitydb.github.io/MobilityDB/develop-dev/)
 
 Licenses
 --------
