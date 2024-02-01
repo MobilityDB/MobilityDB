@@ -310,6 +310,25 @@ Tcomp_tpoint_point(FunctionCallInfo fcinfo,
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * @brief Generic function for the temporal ever/always comparison operators
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always comparison
+ */
+static Datum
+Tcomp_tpoint_tpoint(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const Temporal *, const Temporal *))
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = func(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************/
 
 PGDLLEXPORT Datum Teq_point_tpoint(PG_FUNCTION_ARGS);
@@ -364,6 +383,34 @@ Datum
 Tne_tpoint_point(PG_FUNCTION_ARGS)
 {
   return Tcomp_tpoint_point(fcinfo, &tne_tpoint_point);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Teq_tpoint_tpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Teq_tpoint_tpoint);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if two temporal points are ever equal
+ * @sqlfn teq()
+ */
+Datum
+Teq_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+  return Tcomp_tpoint_tpoint(fcinfo, &teq_temporal_temporal);
+}
+
+PGDLLEXPORT Datum Tne_tpoint_tpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tne_tpoint_tpoint);
+/**
+ * @ingroup mobilitydb_temporal_comp_ever
+ * @brief Return true if two temporal points are ever different
+ * @sqlfn tne()
+ */
+Datum
+Tne_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+  return Tcomp_tpoint_tpoint(fcinfo, &tne_temporal_temporal);
 }
 
 /*****************************************************************************/
