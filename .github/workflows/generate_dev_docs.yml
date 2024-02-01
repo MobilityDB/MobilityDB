@@ -29,7 +29,7 @@ jobs:
       - name: Generate documentation
         uses: mattnotmitt/doxygen-action@v1.9.5
         with:
-          doxyfile-path: "doxygen/Doxyfile"
+          doxyfile-path: "doxygen/Doxyfile_test"
 
       # store the documentation files
       - name: Upload output directory
