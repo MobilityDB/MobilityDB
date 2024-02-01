@@ -29,7 +29,7 @@ jobs:
       - name: Generate documentation
         uses: mattnotmitt/doxygen-action@v1.9.5
         with:
-          doxyfile-path: "doxygen/Doxyfile_test"
+          doxyfile-path: "doxygen/Doxyfile_gha"
 
       # store the documentation files
       - name: Upload output directory
@@ -82,5 +82,5 @@ jobs:
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
-          message: 'Update docs'
+          message: 'Update dev docs'
           default_author: github_actions

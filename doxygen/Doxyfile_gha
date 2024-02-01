@@ -1,5 +1,8 @@
 # Doxyfile 1.9.8
 
+# This Doxygen file is used by a GitHub Action
+# to generate the dev docs automatic
+
 # This file describes the settings to be used by the documentation system
 # doxygen (www.doxygen.org) for a project.
 #
@@ -85,7 +88,7 @@ CREATE_SUBDIRS         = NO
 # level increment doubles the number of directories, resulting in 4096
 # directories at level 8 which is the default and also the maximum value. The
 # sub-directories are organized in 2 levels, the first level always has a fixed
-# numer of 16 directories.
+# number of 16 directories.
 # Minimum value: 0, maximum value: 8, default value: 8.
 # This tag requires that the tag CREATE_SUBDIRS is set to YES.
 
@@ -272,7 +275,8 @@ TAB_SIZE               = 4
 # with the commands \{ and \} for these it is advised to use the version @{ and
 # @} or use a double escape (\\{ and \\})
 
-ALIASES                = "sqlfunc=@par SQL Function:^^" \
+ALIASES                = "csqlfunc=@par C-SQL Function:^^" \
+                         "sqlfunc=@par SQL Function:^^" \
                          "sqlop=@par SQL Operator:^^" \
                          "pymeosfunc=@par PyMEOS Function:^^"
 
