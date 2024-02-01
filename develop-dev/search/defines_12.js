@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['radians_5fper_5fdegree_0',['RADIANS_PER_DEGREE',['../float_8h_a3478b02a2cce17123c3d98aa39decee1.html#a3478b02a2cce17123c3d98aa39decee1',1,'float.h']]],
+  ['readlink_1',['readlink',['../win32__port_8h_ab8172254f6e9ee644a4ca9469b257b84.html#ab8172254f6e9ee644a4ca9469b257b84',1,'win32_port.h']]],
+  ['recv_2',['recv',['../win32__port_8h_aa5c74db6487bc9c1c53ca42f19ecb61e.html#aa5c74db6487bc9c1c53ca42f19ecb61e',1,'win32_port.h']]],
+  ['regprocedureisvalid_3',['RegProcedureIsValid',['../c_8h_a2017cc124aed18375fcdf8cb90cacd3a.html#a2017cc124aed18375fcdf8cb90cacd3a',1,'c.h']]],
+  ['relseg_5fsize_4',['RELSEG_SIZE',['../pg__config_8h_a4e7e68147acf215db1e795233d0f9cc5.html#a4e7e68147acf215db1e795233d0f9cc5',1,'pg_config.h']]],
+  ['repalloc_5',['repalloc',['../postgres_8h_a48777ac0ff6bff59f14caab0c4eeb2f9.html#a48777ac0ff6bff59f14caab0c4eeb2f9',1,'postgres.h']]],
+  ['reserv_6',['RESERV',['../datetime_8h_a7a999fda9c1a6cc77c0ce98d1737e9be.html#a7a999fda9c1a6cc77c0ce98d1737e9be',1,'datetime.h']]],
+  ['rest_5fat_7',['REST_AT',['../meos_2include_2general_2temporal_8h_a1ee885037ecefdc8818adffd80e45ca5.html#a1ee885037ecefdc8818adffd80e45ca5',1,'temporal.h']]],
+  ['rest_5fminus_8',['REST_MINUS',['../meos_2include_2general_2temporal_8h_a2b6e02f4e22acf43b3850f7b2a696609.html#a2b6e02f4e22acf43b3850f7b2a696609',1,'temporal.h']]],
+  ['rest_5ftime_9',['REST_TIME',['../tpoint__restrfuncs_8h_a4aa656aa643ba2daab08cb1efa1b70a2.html#a4aa656aa643ba2daab08cb1efa1b70a2',1,'tpoint_restrfuncs.h']]],
+  ['rest_5ftime_5fno_10',['REST_TIME_NO',['../tpoint__restrfuncs_8h_adca1332bd5ed0cc080a75e6715be0517.html#adca1332bd5ed0cc080a75e6715be0517',1,'tpoint_restrfuncs.h']]],
+  ['restrict_11',['restrict',['../pg__config_8h_a080abdcb9c02438f1cd2bb707af25af8.html#a080abdcb9c02438f1cd2bb707af25af8',1,'pg_config.h']]],
+  ['return_5ferror_12',['RETURN_ERROR',['../formatting_8c_a329f266ec7e3c134c76485958277867a.html#a329f266ec7e3c134c76485958277867a',1,'formatting.c']]],
+  ['rot_13',['rot',['../hashfn_8c_aae44e21ada356d9d84450d5440fbb0c4.html#aae44e21ada356d9d84450d5440fbb0c4',1,'rot():&#160;hashfn.c'],['../pg__types_8c_aae44e21ada356d9d84450d5440fbb0c4.html#aae44e21ada356d9d84450d5440fbb0c4',1,'rot():&#160;pg_types.c']]],
+  ['rotate_5fhigh_5fand_5flow_5f32bits_14',['ROTATE_HIGH_AND_LOW_32BITS',['../hashfn_8h_a13947063cfe039d862906478c986ebe9.html#a13947063cfe039d862906478c986ebe9',1,'hashfn.h']]],
+  ['rtafterstrategynumber_15',['RTAfterStrategyNumber',['../mobilitydb_2pg__include_2pg__general_2temporal_8h_a22c909cb945152ad66a6f12772c503d7.html#a22c909cb945152ad66a6f12772c503d7',1,'temporal.h']]],
+  ['rtbackstrategynumber_16',['RTBackStrategyNumber',['../mobilitydb_2pg__include_2pg__general_2temporal_8h_a3db4ca22740e4efcc50d88f93a6440aa.html#a3db4ca22740e4efcc50d88f93a6440aa',1,'temporal.h']]],
+  ['rtbeforestrategynumber_17',['RTBeforeStrategyNumber',['../mobilitydb_2pg__include_2pg__general_2temporal_8h_aa5140c52c8c50eff0be205bf38b57afc.html#aa5140c52c8c50eff0be205bf38b57afc',1,'temporal.h']]],
+  ['rtfrontstrategynumber_18',['RTFrontStrategyNumber',['../mobilitydb_2pg__include_2pg__general_2temporal_8h_aca41ea991d2974a59be9bec726ecf45e.html#aca41ea991d2974a59be9bec726ecf45e',1,'temporal.h']]],
+  ['rtoverafterstrategynumber_19',['RTOverAfterStrategyNumber',['../mobilitydb_2pg__include_2pg__general_2temporal_8h_a40bec39a344e1d378a9aa7dbcdd05a72.html#a40bec39a344e1d378a9aa7dbcdd05a72',1,'temporal.h']]],
+  ['rtoverbackstrategynumber_20',['RTOverBackStrategyNumber',['../mobilitydb_2pg__include_2pg__general_2temporal_8h_a5950580c62140985a9710a46f4cb5402.html#a5950580c62140985a9710a46f4cb5402',1,'temporal.h']]],
+  ['rtoverbeforestrategynumber_21',['RTOverBeforeStrategyNumber',['../mobilitydb_2pg__include_2pg__general_2temporal_8h_a27133d26b548ba6649b737868c9dde87.html#a27133d26b548ba6649b737868c9dde87',1,'temporal.h']]],
+  ['rtoverfrontstrategynumber_22',['RTOverFrontStrategyNumber',['../mobilitydb_2pg__include_2pg__general_2temporal_8h_a7fb6125cf2d29f0c0f7edb652c21301e.html#a7fb6125cf2d29f0c0f7edb652c21301e',1,'temporal.h']]],
+  ['rusage_5fchildren_23',['RUSAGE_CHILDREN',['../resource_8h_a76da11928becba8246c8c406314e6282.html#a76da11928becba8246c8c406314e6282',1,'resource.h']]],
+  ['rusage_5fself_24',['RUSAGE_SELF',['../resource_8h_af96c310e02eee3878d8fb3af154c2ba0.html#af96c310e02eee3878d8fb3af154c2ba0',1,'resource.h']]]
+];
