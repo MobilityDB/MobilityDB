@@ -8,12 +8,10 @@ on:
       - '.github/workflows/generate_dev_docs.yml'
       - './meos/**'
       - './mobilitydb/**'
-      - './postgis/**'
       - './doxygen/**'
     branches:
       - master
       - develop
-      - devdocs
 
 jobs:
   build:
@@ -70,13 +68,6 @@ jobs:
         run: |
           rm -rf develop-dev
           mv devdocs-temp develop-dev
-
-      # Rename the directory to devdocs
-      - name: Rename the directory to devdocs
-        if: ${{ github.ref == 'refs/heads/devdocs' }}
-        run: |
-          rm -rf devdocs-dev
-          mv devdocs-temp devdocs-dev
 
       # add, commit and push to gh-pages
       - name: Commit changes
