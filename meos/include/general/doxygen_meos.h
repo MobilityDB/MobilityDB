@@ -29,7 +29,34 @@
 
 /**
  * @file
- * @brief Sections for the documentation of the MEOS library
+ * @mainpage MEOS and MobilityDB Developer's Documentation
+ *
+ * \htmlonly
+ * <div class="row">
+ *   <div class="column">
+ *     <img src="meos-logo.png" alt="MEOS logo" width="10%"/>
+ *   </div>
+ *   <div class="column">
+ *     <img src="mobilitydb-logo.png" alt="MobilityDB logo" width="10%"/>
+ *   </div>
+ * </div>
+ * \endhtmlonly
+ *
+ * @image latex meos-logo.png width=10%
+ * @image latex mobilitydb-logo.png width=10%
+ *
+ * This document defines the developer's documentation of both the MEOS library
+ * and MobilityDB. The documentation is divided into modules, where the
+ * top-level modules are as follows:
+ *
+ * - MEOS library
+ *   - MEOS API
+ *   - Internal functions
+ * - MobilityDB API
+ *
+ * \tableofcontents
+ *
+ * Please refer to the Modules tab for a detailed account of these modules.
  */
 
 /*****************************************************************************
@@ -42,11 +69,11 @@
  * @defgroup meos MEOS library
  * @brief Mobility Engine Open Source (MEOS) library
  *
- * @defgroup meos_api API of the MEOS library
+ * @defgroup meos_api API
  * @ingroup meos
  * @brief API of the Mobility Engine Open Source (MEOS) library
  *
- * @defgroup meos_internal Internal API of the MEOS library
+ * @defgroup meos_internal Internal API
  * @ingroup meos
  * @brief Internal API of Mobility Engine Open Source (MEOS) library
  */
