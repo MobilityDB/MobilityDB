@@ -1,72 +1,33 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 User's Manual"><link rel="up" href="ch02.html" title="Chapter 2. Set and Span Types"><link rel="prev" href="ch02s06.html" title="Set Operations"><link rel="next" href="ch02s08.html" title="Distance Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s06.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Set and Span Types</th><td width="20%" align="right"> <a accesskey="n" href="ch02s08.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="setspan_topo_pos"></a>Bounding Box Operations</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm1082"></a>Topological Operations</h3></div></div></div><p>The topological operations available for the set and span types are given next.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_overlaps"></a><a class="indexterm" name="idm1087"></a><p>Do the values overlap (have values in common)?</p><p><code class="varname">{set,spans} &amp;&amp; {set,spans} → boolean</code></p><pre class="programlisting">
-SELECT intset '{1, 3}' &amp;&amp; intset '{2, 3, 4}';
--- true
-SELECT floatspan '[1, 3)' &amp;&amp; floatspan '[3, 4)';
--- false
-SELECT tstzspan '[2011-01-01, 2011-01-05)' &amp;&amp; tstzspan '[2011-01-02, 2011-01-07)';
--- true
-SELECT floatspanset '{[1, 5),[6, 8)}' &amp;&amp; floatspan '[1, 6)';
--- true
-</pre></li><li class="listitem"><a name="setspan_contains"></a><a class="indexterm" name="idm1095"></a><p>Does the first value contain the second one?</p><p><code class="varname">{set,spans} @&gt; {base,set,spans} → boolean</code></p><pre class="programlisting">
-SELECT floatset '{1.5, 2.5}' @&gt; 2.5;
--- true
-SELECT tstzspan '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
--- true
-SELECT floatspanset '{[1, 2),(2, 3)}' @&gt; 2.0;
--- false
-</pre></li><li class="listitem"><a name="setspan_containedby"></a><a class="indexterm" name="idm1103"></a><p>Is the first value contained by the second one?</p><p><code class="varname">{base,set,spans} &lt;@ {set,spans} → boolean</code></p><pre class="programlisting">
-SELECT timestamptz '2011-01-10' &lt;@ tstzspan '[2011-01-01, 2011-05-01)';
--- true
-SELECT floatspan '[2, 5]' &lt;@ floatspan '[1, 5)';
--- false
-SELECT tstzspan '[2011-02-01, 2011-03-01)' &lt;@ tstzspan '[2011-01-01, 2011-05-01)';
--- true
-SELECT floatspanset '{[1,2],[3,4]}' &lt;@ floatspan '[1, 6]';
--- true
-</pre></li><li class="listitem"><a name="setspan_adjacent"></a><a class="indexterm" name="idm1111"></a><p>Is the first value adjacent to the second one?</p><p><code class="varname">spans -|- spans → boolean</code></p><pre class="programlisting">
-SELECT intspan '[2, 6)' -|- intspan '[6, 7)';
--- true
-SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
--- false
-SELECT floatspanset '{[2, 3],[4, 5)}' -|- floatspan '(5, 6)';
--- true
-SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-01-03)';
--- false
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm1118"></a>Position Operations</h3></div></div></div><p>The position operations available for set and span types are given next. Notice that the operators for time types have an additional <code class="varname">#</code> to distinguish them from the operators for number types.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_left"></a><a class="indexterm" name="idm1124"></a><a class="indexterm" name="idm1127"></a><p>Is the first value strictly left of the second one?</p><p><code class="varname">{number,numspans} &lt;&lt; {number,numspans} → boolean</code></p><p><code class="varname">time &lt;&lt;# time → boolean</code></p><pre class="programlisting">
-SELECT intspan '[15, 20)' &lt;&lt; 20;
--- true
-SELECT intspanset '{[15, 17],[18, 20)}' &lt;&lt; 20;
--- true
-SELECT floatspan '[15, 20)' &lt;&lt; floatspan '(15, 20)';
--- false
-SELECT tstzspan '[2011-01-01, 2011-01-03)' &lt;&lt;# tstzset '{2011-01-03, 2011-01-05}';
--- true
-</pre></li><li class="listitem"><a name="setspan_right"></a><a class="indexterm" name="idm1137"></a><a class="indexterm" name="idm1140"></a><p>Is the first value strictly to the right of the second one?</p><p><code class="varname">{number,numspans} &gt;&gt; {number,numspans} → boolean</code></p><p><code class="varname">time #&gt;&gt; time → boolean</code></p><pre class="programlisting">
-SELECT intspan '[15, 20)' &gt;&gt; 10;
--- true
-SELECT floatspan '[15, 20)' &gt;&gt; floatspan '[5, 10]';
--- true
-SELECT floatspanset '{[15, 17], [18, 20)}' &gt;&gt; floatspan '[5, 10]';
--- true
-SELECT tstzspan '[2011-01-04, 2011-01-05)' #&gt;&gt;
-  tstzspanset '{[2011-01-01, 2011-01-04), [2011-01-05, 2011-01-06)}';
--- true
-</pre></li><li class="listitem"><a name="setspan_overleft"></a><a class="indexterm" name="idm1150"></a><a class="indexterm" name="idm1153"></a><p>Is the first value not to the right of the second one?</p><p><code class="varname">{number,numspans} &amp;&lt; {number,numspans} → boolean</code></p><p><code class="varname">time &amp;&lt;# time → boolean</code></p><pre class="programlisting">
-SELECT intspan '[15, 20)' &amp;&lt; 18;
--- false
-SELECT intspanset '{[15, 16],[17, 18)}' &amp;&lt; 18;
--- true
-SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
--- true
-SELECT tstzset '{2011-01-02, 2011-01-05}' &amp;&lt;# tstzspan '[2011-01-01, 2011-01-05)';
--- false
-</pre></li><li class="listitem"><a name="setspan_overright"></a><a class="indexterm" name="idm1163"></a><a class="indexterm" name="idm1166"></a><p>Is the first value not to the left of the second one?</p><p><code class="varname">{number,numspans} &amp;&gt; {number,numspans} → boolean</code></p><p><code class="varname">time #&amp;&gt; time → boolean</code></p><pre class="programlisting">
-SELECT intspan '[15, 20)' &amp;&gt; 30;
--- true
-SELECT floatspan '[1, 6]' &amp;&gt; floatspan '(1, 3)';
--- false
-SELECT floatspanset '{[1, 2],[3, 4]}' &amp;&gt; floatspan '(1, 3)';
--- false
-SELECT timestamp '2011-01-01' #&amp;&gt; tstzspan '[2011-01-01, 2011-01-05)';
--- true
-</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Set Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Distance Operations</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Set Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 User's Manual"><link rel="up" href="ch02.html" title="Chapter 2. Set and Span Types"><link rel="prev" href="ch02s06.html" title="Spatial Reference System"><link rel="next" href="ch02s08.html" title="Bounding Box Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Set Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s06.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Set and Span Types</th><td width="20%" align="right"> <a accesskey="n" href="ch02s08.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="setspan_set_operators"></a>Set Operations</h2></div></div></div><p>The set and span types have associated set operators, namely union, difference, and intersection, which are represented, respectively by <code class="varname">+</code>, <code class="varname">-</code>, and <code class="varname">*</code>. The set operators for the set and span types are given next.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_union"></a><a class="indexterm" name="idm1177"></a><p>Union of set or span values</p><p><code class="varname">{set,spans} + {set,spans} → {set,spans}</code></p><pre class="programlisting">
+SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' +
+  dateset '{2001-01-03, 2001-01-06}';
+-- {2001-01-01, 2001-01-03, 2001-01-05, 2001-01-06}
+SELECT intspan '[1, 3)' + intspan '[3, 5)';
+-- [1, 5)
+SELECT floatspan '[1, 3)' + floatspan '[4, 5)';
+-- {[1, 3), [4, 5)}
+SELECT tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}' +
+  tstzspan '[2001-01-03, 2001-01-04)';
+-- {[2001-01-01, 2001-01-05)}
+</pre></li><li class="listitem"><a name="setspan_difference"></a><a class="indexterm" name="idm1185"></a><p>Difference of set or span values</p><p><code class="varname">{set,spans} - {set,spans} → {set,spans}</code></p><pre class="programlisting">
+SELECT intset '{1, 3, 5}' - intset '{3, 6}';
+-- {1, 5}
+SELECT datespan '[2001-01-01, 2001-01-05)' - datespan '[2001-01-03, 2001-01-07)';
+-- {[2001-01-01, 2001-01-03)}
+SELECT floatspan '[1, 5]' - floatspan '[3, 4]';
+-- {[1, 3), (4, 5]}
+SELECT tstzspanset '{[2001-01-01, 2001-01-06], [2001-01-07, 2001-01-10]}' -
+  tstzspanset '{[2001-01-02, 2001-01-03], [2001-01-04, 2001-01-05],
+  [2001-01-08, 2001-01-09]}';
+/* {[2001-01-01,2001-01-02), (2001-01-03,2001-01-04), (2001-01-05,2001-01-06],
+   [2001-01-07,2001-01-08), (2001-01-09,2001-01-10]} */
+</pre></li><li class="listitem"><a name="setspan_intersection"></a><a class="indexterm" name="idm1193"></a><p>Intersection of set or span values</p><p><code class="varname">{set,spans} * {set,spans} → {set,spans}</code></p><pre class="programlisting">
+SELECT tstzset '{2001-01-01, 2001-01-03}' * tstzset '{2001-01-03, 2001-01-05}';
+-- {2001-01-03}
+SELECT intspan '[1, 5)' * intspan '[3, 6)';
+-- [3, 5)
+SELECT floatspanset '{[1, 5),[6, 8)}' * floatspan '[1, 6)';
+-- {[1, 5)}
+SELECT tstzspan '[2001-01-01, 2001-01-05)' * tstzspan '[2001-01-03, 2001-01-07)';
+-- [2001-01-03, 2001-01-05)
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Spatial Reference System </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Bounding Box Operations</td></tr></table></div></body></html>

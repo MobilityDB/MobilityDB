@@ -70,105 +70,105 @@ SELECT tgeogpoint 'Interp=Step;{[Point(0 0)@2017-01-01 08:00:00,
 </pre><p>
 			For temporal points, it is possible to specify the spatial reference identifier (SRID) using the Extended Well-Known text (EWKT) representation as follows:
 		</p><pre class="programlisting">
-SELECT tgeompoint 'SRID=5435;[Point(0 0)@2000-01-01,Point(0 1)@2000-01-02]'
+SELECT tgeompoint 'SRID=5435;[Point(0 0)@2001-01-01,Point(0 1)@2001-01-02]'
 </pre><p>
 			All component geometries of a temporal point will then be of the given SRID. Furthermore, each component geometry can specify its SRID with the EWKT format as in the following example
 		</p><pre class="programlisting">
-SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=5435;Point(0 1)@2000-01-02]'
+SELECT tgeompoint '[SRID=5435;Point(0 0)@2001-01-01,SRID=5435;Point(0 1)@2001-01-02]'
 </pre><p>
 			An error is raised if the component geometries are not all in the same SRID or if the SRID of a component geometry is different from the one of the temporal point, as shown below.
 		</p><pre class="programlisting">
-SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=4326;Point(0 1)@2000-01-02]';
+SELECT tgeompoint '[SRID=5435;Point(0 0)@2001-01-01,SRID=4326;Point(0 1)@2001-01-02]';
 -- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
-SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
-  SRID=4326;Point(0 1)@2000-01-02]';
+SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2001-01-01,
+  SRID=4326;Point(0 1)@2001-01-02]';
 -- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 </pre><p>
 			If not specified, the default SRID for temporal geometric points is 0 (unknown) and for temporal geographic points is 4326 (WGS 84). Temporal points with step interpolation may also specify the SRID, as shown next.
 		</p><pre class="programlisting">
-SELECT tgeompoint 'SRID=5435,Interp=Step;[Point(0 0)@2000-01-01,
-  Point(0 1)@2000-01-02]';
-SELECT tgeogpoint 'Interp=Step;[SRID=4326;Point(0 0)@2000-01-01,
-  SRID=4326;Point(0 1)@2000-01-02]';
+SELECT tgeompoint 'SRID=5435,Interp=Step;[Point(0 0)@2001-01-01,
+  Point(0 1)@2001-01-02]';
+SELECT tgeogpoint 'Interp=Step;[SRID=4326;Point(0 0)@2001-01-01,
+  SRID=4326;Point(0 1)@2001-01-02]';
 </pre><p>
 			We give below the input and output functions in Well-Known Text (WKT), Well-Known Binary (WKB), and Moving Features JSON (MF-JSON) format for temporal alphanumeric types. The corresponding functions for temporal points are detailed in <a class="xref" href="ch08.html#tpoint_inout" title="Input and Output">the section called “Input and Output”</a>.  The default output format of all temporal alphanumeric types is the Well-Known Text format. The function <code class="varname">asText</code> given next enables to determine the output of temporal float values.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="temporal_asText"></a><a class="indexterm" name="idm2399"></a><p>Get the Well-Known Text (WKT) representation</p><p><code class="varname">asText(tfloat,maxdecdigits=15) → text</code></p><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
-SELECT asText(tfloat '[10.55@2000-01-01, 25.55@2000-01-02]', 0);
--- [11@2000-01-01, 26@2000-01-02]
-</pre></li><li class="listitem"><a name="temporal_asBinary"></a><a class="indexterm" name="idm2409"></a><p>Get the Well-Known Binary (WKB) representation</p><p><code class="varname">asBinary(ttype,endian text='') → bytea</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="temporal_asText"></a><a class="indexterm" name="idm2552"></a><p>Return the Well-Known Text (WKT) representation</p><p><code class="varname">asText(tfloat,maxdecdigits=15) → text</code></p><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
+SELECT asText(tfloat '[10.55@2001-01-01, 25.55@2001-01-02]', 0);
+-- [11@2001-01-01, 26@2001-01-02]
+</pre></li><li class="listitem"><a name="temporal_asBinary"></a><a class="indexterm" name="idm2562"></a><p>Return the Well-Known Binary (WKB) representation</p><p><code class="varname">asBinary(ttype,endian text='') → bytea</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
 SELECT asBinary(tbool 'true@2001-01-01');
--- \x010d000101009c57d3c11c0000
+-- \x011a000101009c57d3c11c0000
 SELECT asBinary(tint '1@2001-01-01', 'XDR');
--- \x000016010000000100001cc1d3579c00
+-- \x000023010000000100001cc1d3579c00
 SELECT asBinary(tfloat '1.5@2001-01-01');
--- \x01130081000000000000f83f009c57d3c11c0000
+-- \x01210001000000000000f83f009c57d3c11c0000
 SELECT asBinary(ttext 'AAA@2001-01-01');
--- \x01170001040000000000000041414100009c57d3c11c0000
-</pre></li><li class="listitem"><a name="temporal_asHexWKB"></a><a class="indexterm" name="idm2418"></a><p>Get the Hexadecimal Well-Known Binary (WKB) representation as text</p><p><code class="varname">asHexWKB(ttype,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+-- \x01290001040000000000000041414100009c57d3c11c0000
+</pre></li><li class="listitem"><a name="temporal_asHexWKB"></a><a class="indexterm" name="idm2571"></a><p>Return the Hexadecimal Well-Known Binary (WKB) representation as text</p><p><code class="varname">asHexWKB(ttype,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
 SELECT asHexWKB(tbool 'true@2001-01-01');
--- 010D000101009C57D3C11C0000
+-- 011A000101009C57D3C11C0000
 SELECT asHexWKB(tint '1@2001-01-01', 'XDR');
--- 000016010000000100001CC1D3579C00
+-- 000023010000000100001CC1D3579C00
 SELECT asHexWKB(tfloat '1.5@2001-01-01');
--- 01130081000000000000F83F009C57D3C11C0000
+-- 01210001000000000000F83F009C57D3C11C0000
 SELECT asHexWKB(ttext 'AAA@2001-01-01');
--- 01170001040000000000000041414100009C57D3C11C0000
-</pre></li><li class="listitem"><a name="temporal_asMFJSON"></a><a class="indexterm" name="idm2427"></a><p>Get the Moving Features JSON (MF-JSON) representation</p><p><code class="varname">asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea</code></p><p>The <code class="varname">options</code> argument can be used to add a bounding box in the MFJSON output:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: MFJSON BBOX</p></li></ul></div><p>The <code class="varname">flags</code> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <code class="varname">json-c</code> library for the possible values. Typical values are as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: JSON_C_TO_STRING_SPACED</p></li><li class="listitem"><p>2: JSON_C_TO_STRING_PRETTY</p></li></ul></div><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
-SELECT asMFJSON(tbool 't@2019-01-01 18:00:00', 1);
-/* {"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
-  "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
-  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"} */
-SELECT asMFJSON(tint '{10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}', 1);
-/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
-   "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
-   "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
+-- 01290001040000000000000041414100009C57D3C11C0000
+</pre></li><li class="listitem"><a name="temporal_asMFJSON"></a><a class="indexterm" name="idm2580"></a><p>Return the Moving Features JSON (MF-JSON) representation</p><p><code class="varname">asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea</code></p><p>The <code class="varname">options</code> argument can be used to add a bounding box in the MFJSON output:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: MFJSON BBOX</p></li></ul></div><p>The <code class="varname">flags</code> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <code class="varname">json-c</code> library for the possible values. Typical values are as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: JSON_C_TO_STRING_SPACED</p></li><li class="listitem"><p>2: JSON_C_TO_STRING_PRETTY</p></li></ul></div><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
+SELECT asMFJSON(tbool 't@2001-01-01 18:00:00', 1);
+/* {"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
+  "end":"2001-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
+  "values":[true],"datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"} */
+SELECT asMFJSON(tint '{10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}', 1);
+/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00+01",
+   "end":"2001-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2001-01-01T18:00:00+01",
+   "2001-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
    "interpolation":"Discrete"} */
-SELECT asMFJSON(tfloat '[10.5@2019-01-01 18:00:00+02, 25.5@2019-01-01 18:10:00+02]');
-/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
-  "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"} */
-SELECT asMFJSON(ttext '{[walking@2019-01-01 18:00:00+02,
-  driving@2019-01-01 18:10:00+02]}');
+SELECT asMFJSON(tfloat '[10.5@2001-01-01 18:00:00+02, 25.5@2001-01-01 18:10:00+02]');
+/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00+01",
+  "2001-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"} */
+SELECT asMFJSON(ttext '{[walking@2001-01-01 18:00:00+02,
+  driving@2001-01-01 18:10:00+02]}');
 /* {"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
+  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
   "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
-</pre></li><li class="listitem"><a name="temporal_FromBinary"></a><a class="indexterm" name="idm2454"></a><p>Input a temporal value from its Well-Known Binary (WKB) representation</p><p><code class="varname">ttypeFromBinary(bytea) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
-SELECT tboolFromBinary('\x010d000101009c57d3c11c0000');
+</pre></li><li class="listitem"><a name="temporal_FromBinary"></a><a class="indexterm" name="idm2607"></a><p>Input a temporal value from its Well-Known Binary (WKB) representation</p><p><code class="varname">ttypeFromBinary(bytea) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
+SELECT tboolFromBinary('\x011a000101009c57d3c11c0000');
 -- t@2001-01-01
-SELECT tintFromBinary('\x000016010000000100001cc1d3579c00');
+SELECT tintFromBinary('\x000023010000000100001cc1d3579c00');
 -- 1@2001-01-01
-SELECT tfloatFromBinary('\x01130081000000000000f83f009c57d3c11c0000');
+SELECT tfloatFromBinary('\x01210001000000000000f83f009c57d3c11c0000');
 -- 1.5@2001-01-01
-SELECT ttextFromBinary('\x01170001040000000000000041414100009c57d3c11c0000');
+SELECT ttextFromBinary('\x01290001040000000000000041414100009c57d3c11c0000');
 -- "AAA"@2001-01-01
-</pre></li><li class="listitem"><a name="temporal_FromHexWKB"></a><a class="indexterm" name="idm2465"></a><p>Input a temporal value from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><p><code class="varname">ttypeFromHexWKB(text) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
-SELECT tboolFromHexWKB('010D000101009C57D3C11C0000');
+</pre></li><li class="listitem"><a name="temporal_FromHexWKB"></a><a class="indexterm" name="idm2618"></a><p>Input a temporal value from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><p><code class="varname">ttypeFromHexWKB(text) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
+SELECT tboolFromHexWKB('011A000101009C57D3C11C0000');
 -- t@2001-01-01
-SELECT tintFromHexWKB('000016010000000100001CC1D3579C00');
+SELECT tintFromHexWKB('000023010000000100001CC1D3579C00');
 -- 1@2001-01-01
-SELECT tfloatFromHexWKB('01130081000000000000F83F009C57D3C11C0000');
+SELECT tfloatFromHexWKB('01210001000000000000F83F009C57D3C11C0000');
 -- 1.5@2001-01-01
-SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
+SELECT ttextFromHexWKB('01290001040000000000000041414100009C57D3C11C0000');
 -- "AAA"@2001-01-01
-</pre></li><li class="listitem"><a name="temporal_FromMFJSON"></a><a class="indexterm" name="idm2476"></a><p>Input a temporal value from its Moving Features JSON (MF-JSON) representation</p><p><code class="varname">ttypeFromMFJSON(bytea) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="temporal_FromMFJSON"></a><a class="indexterm" name="idm2629"></a><p>Input a temporal value from its Moving Features JSON (MF-JSON) representation</p><p><code class="varname">ttypeFromMFJSON(bytea) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
 SELECT tboolFromMFJSON(text
-  '{"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
-  "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
-  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"}');
--- t@2019-01-01 18:00:00
+  '{"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
+  "end":"2001-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
+  "values":[true],"datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"}');
+-- t@2001-01-01 18:00:00
 SELECT tintFromMFJSON(text
-  '{"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
-   "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
-   "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
+  '{"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00+01",
+   "end":"2001-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2001-01-01T18:00:00+01",
+   "2001-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
    "interpolation":"Discrete"}');
--- {10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}
+-- {10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}
 SELECT tfloatFromMFJSON(text
-  '{"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
-   "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,
+  '{"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00+01",
+   "2001-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,
    "interpolation":"Linear"}');
--- [10.5@2019-01-01 18:00:00, 25.5@2019-01-01 18:10:00]'
+-- [10.5@2001-01-01 18:00:00, 25.5@2001-01-01 18:10:00]'
 SELECT ttextFromMFJSON(text
   '{"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
+  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
   "lower_inc":true,"upper_inc":true}],"interpolation":"Step"}');
--- {["walking"@2019-01-01 18:00:00, "driving"@2019-01-01 18:10:00]}');
+-- {["walking"@2001-01-01 18:00:00, "driving"@2001-01-01 18:10:00]}');
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch05.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch05.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch05s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 5. Temporal Types: Generic Operations (Part 1) </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>
